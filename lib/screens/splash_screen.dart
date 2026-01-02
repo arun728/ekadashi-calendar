@@ -58,7 +58,7 @@ class _SplashScreenState extends State<SplashScreen> {
             ),
             const SizedBox(height: 8),
             const Text(
-              'Om Namo Bhagavate Vasudevaya',
+              'Om Namo Narayana!',
               style: TextStyle(
                 color: Colors.white54,
                 fontSize: 14,

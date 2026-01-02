@@ -12,13 +12,17 @@ import 'services/language_service.dart';
 import 'screens/calendar_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/details_screen.dart';
+import 'screens/splash_screen.dart'; // Ensure splash is imported
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
     await NotificationService().init();
+    // Pre-load data in main for high performance.
+    // This is safe because we use SplashScreen as home, giving it time if needed.
+    await EkadashiService().initializeData();
   } catch (e) {
-    debugPrint('Notification Init Failed: $e');
+    debugPrint('Init Failed: $e');
   }
   runApp(
     MultiProvider(
@@ -44,7 +48,8 @@ class MyApp extends StatelessWidget {
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
           themeMode: themeService.themeMode,
-          home: const MainScreen(),
+          // Use SplashScreen to handle initial navigation gracefully
+          home: const SplashScreen(),
         );
       },
     );
@@ -78,14 +83,29 @@ class _MainScreenState extends State<MainScreen> {
     super.initState();
     _startTimer();
 
+    // Defer startup sequence to next frame to ensure context is valid
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _runStartupSequence();
+      if (mounted) {
+        _runStartupSequence();
+      }
     });
   }
 
   Future<void> _runStartupSequence() async {
+    // 1. Initial Data Load (Instant because data is pre-loaded in main)
+    if (mounted) {
+      final lang = Provider.of<LanguageService>(context, listen: false);
+      _refreshData(lang.currentLocale.languageCode);
+    }
+
+    // 2. Request Permissions
     await NotificationService().requestPermissions();
+
+    // 3. Wait slightly to prevent UI jank
+    if (!mounted) return;
     await Future.delayed(const Duration(milliseconds: 500));
+
+    // 4. Handle Location
     if (mounted) {
       await _handleLocation();
     }
@@ -95,9 +115,10 @@ class _MainScreenState extends State<MainScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final langService = Provider.of<LanguageService>(context);
+    // Detect language change and refresh instantly
     if (_currentLangCode != langService.currentLocale.languageCode) {
       _currentLangCode = langService.currentLocale.languageCode;
-      _loadData(languageCode: _currentLangCode);
+      _refreshData(_currentLangCode);
     }
   }
 
@@ -124,6 +145,9 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Future<void> _handleLocation() async {
+    // Safety check at start
+    if (!mounted) return;
+
     try {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
@@ -147,7 +171,13 @@ class _MainScreenState extends State<MainScreen> {
         return;
       }
 
+      // If app was killed/backgrounded during permission request, check mounted again
+      if (!mounted) return;
+
       Position position = await Geolocator.getCurrentPosition();
+
+      if (!mounted) return;
+
       List<Placemark> placemarks = await placemarkFromCoordinates(
           position.latitude,
           position.longitude
@@ -162,6 +192,49 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
+  // INSTANT REFRESH LOGIC
+  void _refreshData(String languageCode) {
+    // 1. Get data instantly from Service Cache (Synchronous)
+    final dates = _ekadashiService.getEkadashis(languageCode);
+
+    // 2. Update State Instantly
+    if (mounted) {
+      setState(() {
+        _ekadashiList = dates;
+        _isLoading = false;
+      });
+    }
+
+    // 3. Jump to correct date
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _scrollToNextEkadashi(animate: false);
+      }
+    });
+
+    // 4. Background: Schedule notifications
+    _scheduleNotificationsInBackground(dates);
+  }
+
+  Future<void> _scheduleNotificationsInBackground(List<EkadashiDate> dates) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      bool remind1 = prefs.getBool('remind_one_day_before') ?? true;
+      bool remind2 = prefs.getBool('remind_two_days_before') ?? true;
+      bool remindOnDay = prefs.getBool('remind_on_day') ?? true;
+
+      // Check mounted before accessing context for Provider
+      if (mounted && (prefs.getBool('notifications_enabled') ?? true)) {
+        final langService = Provider.of<LanguageService>(context, listen: false);
+        await NotificationService().cancelAll();
+        await NotificationService().scheduleAllNotifications(
+            dates, remind1, remind2, remindOnDay, langService.localizedStrings);
+      }
+    } catch (e) {
+      debugPrint("Bg Notification Schedule Error: $e");
+    }
+  }
+
   void _scrollToNextEkadashi({bool animate = true}) {
     if (_ekadashiList.isEmpty) return;
 
@@ -169,7 +242,6 @@ class _MainScreenState extends State<MainScreen> {
     final today = DateTime(now.year, now.month, now.day);
     int indexToScroll = 0;
 
-    // Find first future or today's Ekadashi
     for (int i = 0; i < _ekadashiList.length; i++) {
       if (_ekadashiList[i].date.isAfter(today) || _ekadashiList[i].date.isAtSameMomentAs(today)) {
         indexToScroll = i;
@@ -193,61 +265,15 @@ class _MainScreenState extends State<MainScreen> {
   void _onBottomNavTapped(int index) {
     if (index == _currentIndex) {
       if (index == 0) {
-        // Tap Home again -> Scroll to upcoming with animation
         _scrollToNextEkadashi(animate: true);
       } else if (index == 1) {
         _calendarKey.currentState?.resetToToday();
       }
     } else {
       setState(() => _currentIndex = index);
-      // Switching BACK to Home -> Jump instantly
       if (index == 0) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          _scrollToNextEkadashi(animate: false);
-        });
-      }
-    }
-  }
-
-  Future<void> _loadData({String languageCode = 'en'}) async {
-    setState(() => _isLoading = true);
-
-    try {
-      final dates = await _ekadashiService.getUpcomingEkadashis(languageCode: languageCode);
-
-      try {
-        final prefs = await SharedPreferences.getInstance();
-        bool remind1 = prefs.getBool('remind_one_day_before') ?? true;
-        bool remind2 = prefs.getBool('remind_two_days_before') ?? true;
-        bool remindOnDay = prefs.getBool('remind_on_day') ?? true;
-
-        if (prefs.getBool('notifications_enabled') ?? true) {
-          final langService = Provider.of<LanguageService>(context, listen: false);
-          await NotificationService().cancelAll();
-          await NotificationService().scheduleAllNotifications(
-              dates, remind1, remind2, remindOnDay, langService.localizedStrings);
-        }
-      } catch (e) {
-        debugPrint("Notification schedule error: $e");
-      }
-
-      if (mounted) {
-        setState(() {
-          _ekadashiList = dates;
-          _isLoading = false;
-        });
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          // First load -> Jump instantly
-          _scrollToNextEkadashi(animate: false);
-        });
-      }
-    } catch (e) {
-      debugPrint("Error loading data: $e");
-      if (mounted) {
-        final lang = Provider.of<LanguageService>(context, listen: false);
-        setState(() {
-          _errorMessage = lang.translate('failed_load');
-          _isLoading = false;
+          if (mounted) _scrollToNextEkadashi(animate: false);
         });
       }
     }
@@ -307,7 +333,6 @@ class _MainScreenState extends State<MainScreen> {
       locText = locText.split(',').first.trim();
     }
 
-    // Determine display text for the button based on current language
     String displayLanguage = "English";
     TextStyle langTextStyle = TextStyle(
         fontSize: 16,
@@ -336,7 +361,6 @@ class _MainScreenState extends State<MainScreen> {
                   color: Theme.of(context).textTheme.bodyMedium?.color
               )),
               const Spacer(),
-              // REPLACED DropdownButton with PopupMenuButton
               PopupMenuButton<String>(
                 onSelected: (String newValue) {
                   lang.changeLanguage(newValue);
@@ -348,7 +372,6 @@ class _MainScreenState extends State<MainScreen> {
                   const PopupMenuItem<String>(value: 'hi', child: Text("हिंदी", style: TextStyle(fontWeight: FontWeight.bold))),
                   const PopupMenuItem<String>(value: 'ta', child: Text("தமிழ்")),
                 ],
-                // Adjust offset if needed to push menu down slightly
                 offset: const Offset(0, 40),
                 child: Row(
                   children: [
