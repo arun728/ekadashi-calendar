@@ -79,7 +79,7 @@ class LanguageService extends ChangeNotifier {
       'about': 'பற்றி',
       'version': 'பதிப்பு',
       'significance': 'சிறப்பு',
-      'story_history': 'कथा & வரலாறு',
+      'story_history': 'கதை மற்றும் வரலாறு',
       'fasting_rules': 'விரத விதிமுறைகள்',
       'spiritual_benefits': 'ஆன்மீக பலன்கள்',
       'locating': 'கண்டறிகிறது...',
