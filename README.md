@@ -1,4 +1,4 @@
-# ekadashi_calendar
+# Ekadashi Calendar app for Android and iOS.
 
 A new Flutter project.
 
