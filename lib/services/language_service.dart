@@ -37,7 +37,7 @@ class LanguageService extends ChangeNotifier {
       'about': 'About',
       'version': 'Version',
       'significance': 'Significance',
-      'story_history': 'Story & History',
+      'story_history': 'Story and History',
       'fasting_rules': 'Fasting Rules',
       'spiritual_benefits': 'Spiritual Benefits',
       'locating': 'Locating...',
