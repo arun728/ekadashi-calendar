@@ -22,13 +22,12 @@ class NotificationService {
     try {
       final String timeZoneName = await FlutterTimezone.getLocalTimezone();
       tz.setLocalLocation(tz.getLocation(timeZoneName));
+      debugPrint('✅ Timezone set to: $timeZoneName');
     } catch (e) {
-      debugPrint('Error setting location: $e');
+      debugPrint('⚠️ Error setting location: $e');
       tz.setLocalLocation(tz.getLocation('UTC'));
     }
 
-    // ANDROID ICON SETUP:
-    // Small Icon: White Silhouette (@drawable/notification_icon)
     const fln.AndroidInitializationSettings initializationSettingsAndroid =
     fln.AndroidInitializationSettings('@drawable/notification_icon');
 
@@ -48,9 +47,25 @@ class NotificationService {
     await flutterLocalNotificationsPlugin.initialize(
       initializationSettings,
       onDidReceiveNotificationResponse: (fln.NotificationResponse response) {
-        debugPrint('Notification clicked: ${response.payload}');
+        debugPrint('🔔 Notification clicked: ${response.payload}');
       },
     );
+
+    debugPrint('✅ Notification service initialized');
+  }
+
+  Future<bool> hasExactAlarmPermission() async {
+    if (Platform.isAndroid) {
+      final androidImplementation = flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<
+          fln.AndroidFlutterLocalNotificationsPlugin>();
+
+      if (androidImplementation != null) {
+        final bool? canSchedule = await androidImplementation.canScheduleExactNotifications();
+        return canSchedule ?? false;
+      }
+    }
+    return true;
   }
 
   Future<void> requestPermissions() async {
@@ -63,13 +78,72 @@ class NotificationService {
         badge: true,
         sound: true,
       );
+      debugPrint('✅ iOS notification permissions requested');
     } else if (Platform.isAndroid) {
       final fln.AndroidFlutterLocalNotificationsPlugin? androidImplementation =
       flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
           fln.AndroidFlutterLocalNotificationsPlugin>();
 
       await androidImplementation?.requestNotificationsPermission();
-      await androidImplementation?.requestExactAlarmsPermission();
+      final bool? exactAlarmGranted = await androidImplementation?.requestExactAlarmsPermission();
+      debugPrint('✅ Android notification permissions requested');
+      debugPrint('📱 Exact alarms granted: ${exactAlarmGranted ?? false}');
+    }
+  }
+
+  // DEBUG: Schedule notification exactly 1 minute from NOW
+  Future<bool> scheduleDebugNotificationIn1Minute() async {
+    try {
+      if (Platform.isAndroid && !await hasExactAlarmPermission()) {
+        debugPrint('❌ Cannot schedule - exact alarm permission not granted');
+        return false;
+      }
+
+      final now = tz.TZDateTime.now(tz.local);
+      final scheduledTime = now.add(const Duration(minutes: 1));
+
+      final formatter = DateFormat('hh:mm:ss a');
+      debugPrint('🧪 DEBUG: Scheduling test notification');
+      debugPrint('   Current time: ${formatter.format(now)}');
+      debugPrint('   Scheduled for: ${formatter.format(scheduledTime)}');
+      debugPrint('   Time difference: 60 seconds');
+
+      await flutterLocalNotificationsPlugin.zonedSchedule(
+        999, // Special ID for debug notification
+        '⚡ DEBUG Test Successful!',
+        'This notification was scheduled exactly 1 minute ago at ${formatter.format(now)}',
+        scheduledTime,
+        const fln.NotificationDetails(
+          android: fln.AndroidNotificationDetails(
+            'ekadashi_debug_channel',
+            'Debug Notifications',
+            channelDescription: 'Test notifications for debugging',
+            importance: fln.Importance.max,
+            priority: fln.Priority.max,
+            playSound: true,
+            enableVibration: true,
+            icon: '@drawable/notification_icon',
+            color: Color(0xFFFF9800), // Orange for debug
+            largeIcon: fln.DrawableResourceAndroidBitmap('@drawable/app_icon'),
+          ),
+          iOS: fln.DarwinNotificationDetails(
+            presentAlert: true,
+            presentBadge: true,
+            presentSound: true,
+          ),
+        ),
+        androidScheduleMode: fln.AndroidScheduleMode.exactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+        fln.UILocalNotificationDateInterpretation.absoluteTime,
+        matchDateTimeComponents: fln.DateTimeComponents.dateAndTime,
+      );
+
+      debugPrint('✅ DEBUG notification scheduled successfully');
+      return true;
+
+    } catch (e) {
+      debugPrint('❌ DEBUG notification error: $e');
+      return false;
     }
   }
 
@@ -80,6 +154,11 @@ class NotificationService {
     required tz.TZDateTime scheduledDate,
   }) async {
     try {
+      if (Platform.isAndroid && !await hasExactAlarmPermission()) {
+        debugPrint('⚠️ Cannot schedule notification #$id - exact alarm permission not granted');
+        return;
+      }
+
       await flutterLocalNotificationsPlugin.zonedSchedule(
         id,
         title,
@@ -87,24 +166,17 @@ class NotificationService {
         scheduledDate,
         const fln.NotificationDetails(
           android: fln.AndroidNotificationDetails(
-            'ekadashi_reminder_channel_v5', // V5: Fresh channel
+            'ekadashi_reminder_channel_v7',
             'Ekadashi Reminders',
             channelDescription: 'Notifications for upcoming Ekadashi fasts',
-
             importance: fln.Importance.max,
             priority: fln.Priority.max,
             category: fln.AndroidNotificationCategory.reminder,
             visibility: fln.NotificationVisibility.public,
-
             playSound: true,
             enableVibration: true,
-
-            // SMALL ICON (Status Bar - Silhouette)
             icon: '@drawable/notification_icon',
             color: Color(0xFF00A19B),
-
-            // LARGE ICON (Notification Body - Full Color)
-            // Points to the file you manually copied to android/app/src/main/res/drawable/app_icon.png
             largeIcon: fln.DrawableResourceAndroidBitmap('@drawable/app_icon'),
           ),
           iOS: fln.DarwinNotificationDetails(
@@ -119,8 +191,13 @@ class NotificationService {
         fln.UILocalNotificationDateInterpretation.absoluteTime,
         matchDateTimeComponents: fln.DateTimeComponents.dateAndTime,
       );
+
+      final formatter = DateFormat('MMM dd, yyyy hh:mm a');
+      final nowFormatted = DateFormat('MMM dd hh:mm a').format(DateTime.now());
+      debugPrint('✅ Scheduled #$id: "$title" at ${formatter.format(scheduledDate)} (now: $nowFormatted)');
+
     } catch (e) {
-      debugPrint("CRITICAL ERROR SCHEDULING: $e");
+      debugPrint("❌ ERROR scheduling notification #$id: $e");
     }
   }
 
@@ -132,22 +209,33 @@ class NotificationService {
       Map<String, String> texts) async {
 
     await cancelAll();
+    await Future.delayed(const Duration(milliseconds: 100));
 
-    if (!remind1Day && !remind2Days && !remindOnDay) return;
+    debugPrint('🔧 Scheduling with: 2-day=$remind2Days, 1-day=$remind1Day, on-day=$remindOnDay');
+    debugPrint('🕐 Current time: ${DateFormat('MMM dd, yyyy hh:mm a').format(DateTime.now())}');
+
+    if (!remind1Day && !remind2Days && !remindOnDay) {
+      debugPrint('⚠️ All toggles OFF - no notifications scheduled');
+      return;
+    }
+
+    if (Platform.isAndroid && !await hasExactAlarmPermission()) {
+      debugPrint('❌ Exact alarm permission NOT granted!');
+      return;
+    }
 
     int id = 1;
     final now = tz.TZDateTime.now(tz.local);
+    int scheduled2Day = 0, scheduled1Day = 0, scheduledOnDay = 0;
 
     for (var ekadashi in dates) {
       final ekadashiDate = ekadashi.date;
-      if (ekadashiDate.add(const Duration(days: 1)).isBefore(DateTime.now())) {
-        continue;
-      }
 
+      // 2 DAYS BEFORE
       if (remind2Days) {
-        final scheduledDate = ekadashiDate.subtract(const Duration(days: 2));
+        final notifDate = ekadashiDate.subtract(const Duration(days: 2));
         final scheduledDateTime = tz.TZDateTime(
-            tz.local, scheduledDate.year, scheduledDate.month, scheduledDate.day, 8, 0);
+            tz.local, notifDate.year, notifDate.month, notifDate.day, 8, 0);
 
         if (scheduledDateTime.isAfter(now)) {
           await _scheduleNotification(
@@ -156,13 +244,17 @@ class NotificationService {
             body: '${ekadashi.name} ${texts['notif_2day_body']}',
             scheduledDate: scheduledDateTime,
           );
+          scheduled2Day++;
+        } else {
+          debugPrint('⏭️ Skipped 2-day for ${ekadashi.name}: notification time ${DateFormat('MMM dd hh:mm a').format(scheduledDateTime)} has passed');
         }
       }
 
+      // 1 DAY BEFORE
       if (remind1Day) {
-        final scheduledDate = ekadashiDate.subtract(const Duration(days: 1));
+        final notifDate = ekadashiDate.subtract(const Duration(days: 1));
         final scheduledDateTime = tz.TZDateTime(
-            tz.local, scheduledDate.year, scheduledDate.month, scheduledDate.day, 8, 0);
+            tz.local, notifDate.year, notifDate.month, notifDate.day, 8, 0);
 
         if (scheduledDateTime.isAfter(now)) {
           await _scheduleNotification(
@@ -171,15 +263,20 @@ class NotificationService {
             body: '${ekadashi.name} ${texts['notif_1day_body']} ${ekadashi.fastStartTime}.',
             scheduledDate: scheduledDateTime,
           );
+          scheduled1Day++;
+        } else {
+          debugPrint('⏭️ Skipped 1-day for ${ekadashi.name}: notification time ${DateFormat('MMM dd hh:mm a').format(scheduledDateTime)} has passed');
         }
       }
 
+      // ON THE DAY
       if (remindOnDay) {
         try {
           final format = DateFormat("hh:mm a");
           final timeParts = format.parse(ekadashi.fastStartTime);
           final scheduledDateTime = tz.TZDateTime(
-              tz.local, ekadashiDate.year, ekadashiDate.month, ekadashiDate.day, timeParts.hour, timeParts.minute);
+              tz.local, ekadashiDate.year, ekadashiDate.month, ekadashiDate.day,
+              timeParts.hour, timeParts.minute);
 
           if (scheduledDateTime.isAfter(now)) {
             await _scheduleNotification(
@@ -188,9 +285,25 @@ class NotificationService {
               body: '${texts['notif_start_body']} ${ekadashi.name}. ${texts['notif_start_suffix']}',
               scheduledDate: scheduledDateTime,
             );
+            scheduledOnDay++;
+          } else {
+            debugPrint('⏭️ Skipped on-day for ${ekadashi.name}: notification time ${DateFormat('MMM dd hh:mm a').format(scheduledDateTime)} has passed');
           }
-        } catch (e) { debugPrint("Error parsing time: $e"); }
+        } catch (e) {
+          debugPrint("⚠️ Error parsing time for ${ekadashi.name}: $e");
+        }
       }
+    }
+
+    debugPrint('✅ Scheduled: $scheduled2Day (2-day) + $scheduled1Day (1-day) + $scheduledOnDay (on-day) = ${scheduled2Day + scheduled1Day + scheduledOnDay} total');
+
+    if (Platform.isAndroid) {
+      final androidImplementation = flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<
+          fln.AndroidFlutterLocalNotificationsPlugin>();
+
+      final pendingNotifications = await androidImplementation?.pendingNotificationRequests() ?? [];
+      debugPrint('📊 Android reports ${pendingNotifications.length} pending notifications');
     }
   }
 
@@ -201,11 +314,8 @@ class NotificationService {
       'Instant Alerts',
       importance: fln.Importance.max,
       priority: fln.Priority.high,
-
-      // ICONS
       icon: '@drawable/notification_icon',
       color: Color(0xFF00A19B),
-      // LARGE ICON
       largeIcon: fln.DrawableResourceAndroidBitmap('@drawable/app_icon'),
     );
 
@@ -216,9 +326,12 @@ class NotificationService {
           iOS: fln.DarwinNotificationDetails()
       ),
     );
+
+    debugPrint('🔔 Instant notification sent: "$title"');
   }
 
   Future<void> cancelAll() async {
     await flutterLocalNotificationsPlugin.cancelAll();
+    debugPrint('🗑️ ALL notifications cancelled');
   }
 }

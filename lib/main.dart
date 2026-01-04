@@ -12,17 +12,13 @@ import 'services/language_service.dart';
 import 'screens/calendar_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/details_screen.dart';
-import 'screens/splash_screen.dart'; // Ensure splash is imported
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
     await NotificationService().init();
-    // Pre-load data in main for high performance.
-    // This is safe because we use SplashScreen as home, giving it time if needed.
-    await EkadashiService().initializeData();
   } catch (e) {
-    debugPrint('Init Failed: $e');
+    debugPrint('Notification Init Failed: $e');
   }
   runApp(
     MultiProvider(
@@ -48,8 +44,7 @@ class MyApp extends StatelessWidget {
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
           themeMode: themeService.themeMode,
-          // Use SplashScreen to handle initial navigation gracefully
-          home: const SplashScreen(),
+          home: const MainScreen(),
         );
       },
     );
@@ -83,42 +78,34 @@ class _MainScreenState extends State<MainScreen> {
     super.initState();
     _startTimer();
 
-    // Defer startup sequence to next frame to ensure context is valid
+    // FIXED: Start background tasks immediately, don't block UI
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _runStartupSequence();
-      }
+      _runBackgroundTasks();
     });
   }
 
-  Future<void> _runStartupSequence() async {
-    // 1. Initial Data Load (Instant because data is pre-loaded in main)
-    if (mounted) {
-      final lang = Provider.of<LanguageService>(context, listen: false);
-      _refreshData(lang.currentLocale.languageCode);
-    }
-
-    // 2. Request Permissions
-    await NotificationService().requestPermissions();
-
-    // 3. Wait slightly to prevent UI jank
-    if (!mounted) return;
-    await Future.delayed(const Duration(milliseconds: 500));
-
-    // 4. Handle Location
-    if (mounted) {
-      await _handleLocation();
-    }
+  // FIXED: All slow tasks run in background
+  void _runBackgroundTasks() {
+    // Request permissions in background
+    Future.microtask(() async {
+      try {
+        await NotificationService().requestPermissions();
+        // Small delay to avoid Android permission conflict
+        await Future.delayed(const Duration(milliseconds: 100));
+        await _handleLocation();
+      } catch (e) {
+        debugPrint('⚠️ Background task error: $e');
+      }
+    });
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     final langService = Provider.of<LanguageService>(context);
-    // Detect language change and refresh instantly
     if (_currentLangCode != langService.currentLocale.languageCode) {
       _currentLangCode = langService.currentLocale.languageCode;
-      _refreshData(_currentLangCode);
+      _loadData(languageCode: _currentLangCode);
     }
   }
 
@@ -145,9 +132,6 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Future<void> _handleLocation() async {
-    // Safety check at start
-    if (!mounted) return;
-
     try {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
@@ -171,12 +155,9 @@ class _MainScreenState extends State<MainScreen> {
         return;
       }
 
-      // If app was killed/backgrounded during permission request, check mounted again
-      if (!mounted) return;
-
-      Position position = await Geolocator.getCurrentPosition();
-
-      if (!mounted) return;
+      Position position = await Geolocator.getCurrentPosition(
+        timeLimit: const Duration(seconds: 5),
+      );
 
       List<Placemark> placemarks = await placemarkFromCoordinates(
           position.latitude,
@@ -188,50 +169,8 @@ class _MainScreenState extends State<MainScreen> {
         setState(() => _locationText = '${place.locality}, ${place.administrativeArea}');
       }
     } catch (e) {
+      debugPrint('⚠️ Location error: $e');
       if (mounted) setState(() => _locationText = 'Chennai, TN');
-    }
-  }
-
-  // INSTANT REFRESH LOGIC
-  void _refreshData(String languageCode) {
-    // 1. Get data instantly from Service Cache (Synchronous)
-    final dates = _ekadashiService.getEkadashis(languageCode);
-
-    // 2. Update State Instantly
-    if (mounted) {
-      setState(() {
-        _ekadashiList = dates;
-        _isLoading = false;
-      });
-    }
-
-    // 3. Jump to correct date
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _scrollToNextEkadashi(animate: false);
-      }
-    });
-
-    // 4. Background: Schedule notifications
-    _scheduleNotificationsInBackground(dates);
-  }
-
-  Future<void> _scheduleNotificationsInBackground(List<EkadashiDate> dates) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      bool remind1 = prefs.getBool('remind_one_day_before') ?? true;
-      bool remind2 = prefs.getBool('remind_two_days_before') ?? true;
-      bool remindOnDay = prefs.getBool('remind_on_day') ?? true;
-
-      // Check mounted before accessing context for Provider
-      if (mounted && (prefs.getBool('notifications_enabled') ?? true)) {
-        final langService = Provider.of<LanguageService>(context, listen: false);
-        await NotificationService().cancelAll();
-        await NotificationService().scheduleAllNotifications(
-            dates, remind1, remind2, remindOnDay, langService.localizedStrings);
-      }
-    } catch (e) {
-      debugPrint("Bg Notification Schedule Error: $e");
     }
   }
 
@@ -273,7 +212,68 @@ class _MainScreenState extends State<MainScreen> {
       setState(() => _currentIndex = index);
       if (index == 0) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) _scrollToNextEkadashi(animate: false);
+          _scrollToNextEkadashi(animate: false);
+        });
+      }
+    }
+  }
+
+  void _scheduleNotificationsInBackground(List<EkadashiDate> dates) {
+    Future.microtask(() async {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+
+        if (!(prefs.getBool('notifications_enabled') ?? true)) {
+          debugPrint('⚠️ Notifications disabled globally');
+          return;
+        }
+
+        bool remind1 = prefs.getBool('remind_one_day_before') ?? true;
+        bool remind2 = prefs.getBool('remind_two_days_before') ?? true;
+        bool remindOnDay = prefs.getBool('remind_on_day') ?? true;
+
+        final langService = Provider.of<LanguageService>(context, listen: false);
+        await NotificationService().scheduleAllNotifications(
+            dates, remind1, remind2, remindOnDay, langService.localizedStrings);
+
+        debugPrint('✅ Background notification scheduling completed');
+      } catch (e) {
+        debugPrint("❌ Background notification error: $e");
+      }
+    });
+  }
+
+  Future<void> _loadData({String languageCode = 'en'}) async {
+    // FIXED: Only show spinner on very first load
+    final isInitialLoad = _ekadashiList.isEmpty;
+
+    if (isInitialLoad) {
+      setState(() => _isLoading = true);
+    }
+
+    try {
+      final dates = await _ekadashiService.getUpcomingEkadashis(languageCode: languageCode);
+
+      if (mounted) {
+        // FIXED: Use AnimatedSwitcher for smooth transition
+        setState(() {
+          _ekadashiList = dates;
+          _isLoading = false;
+        });
+
+        _scheduleNotificationsInBackground(dates);
+
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _scrollToNextEkadashi(animate: false);
+        });
+      }
+    } catch (e) {
+      debugPrint("Error loading data: $e");
+      if (mounted) {
+        final lang = Provider.of<LanguageService>(context, listen: false);
+        setState(() {
+          _errorMessage = lang.translate('failed_load');
+          _isLoading = false;
         });
       }
     }
@@ -285,42 +285,67 @@ class _MainScreenState extends State<MainScreen> {
         builder: (context, languageService, child) {
           const tealColor = Color(0xFF00A19B);
 
-          if (_isLoading) {
-            return const Scaffold(
-              body: Center(child: CircularProgressIndicator(color: tealColor)),
-            );
-          }
-          if (_errorMessage.isNotEmpty) {
-            return Scaffold(
-              body: Center(child: Text(_errorMessage)),
-            );
-          }
-
-          final pages = [
-            _buildHomeTab(context),
-            CalendarScreen(key: _calendarKey, ekadashiList: _ekadashiList),
-            const SettingsScreen(),
-          ];
-
+          // FIXED: Use AnimatedSwitcher for smooth transition
           return Scaffold(
-            appBar: AppBar(
+            appBar: _isLoading || _errorMessage.isNotEmpty
+                ? null
+                : AppBar(
               title: Text(languageService.translate('app_title')),
               centerTitle: true,
             ),
-            body: pages[_currentIndex],
-            bottomNavigationBar: BottomNavigationBar(
-              currentIndex: _currentIndex,
-              onTap: _onBottomNavTapped,
-              selectedItemColor: const Color(0xFF00A19B),
-              unselectedItemColor: Colors.grey,
-              items: [
-                BottomNavigationBarItem(icon: const Icon(Icons.home), label: languageService.translate('home')),
-                BottomNavigationBarItem(icon: const Icon(Icons.calendar_month), label: languageService.translate('calendar')),
-                BottomNavigationBarItem(icon: const Icon(Icons.settings), label: languageService.translate('settings')),
-              ],
+            body: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: _isLoading
+                  ? const Center(
+                key: ValueKey('loading'),
+                child: CircularProgressIndicator(color: tealColor),
+              )
+                  : _errorMessage.isNotEmpty
+                  ? Center(
+                key: ValueKey('error'),
+                child: Text(_errorMessage),
+              )
+                  : _buildMainContent(languageService),
             ),
           );
         }
+    );
+  }
+
+  Widget _buildMainContent(LanguageService languageService) {
+    const tealColor = Color(0xFF00A19B);
+
+    final pages = [
+      _buildHomeTab(context),
+      CalendarScreen(key: _calendarKey, ekadashiList: _ekadashiList),
+      const SettingsScreen(),
+    ];
+
+    return Column(
+      key: const ValueKey('content'),
+      children: [
+        Expanded(child: pages[_currentIndex]),
+        BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: _onBottomNavTapped,
+          selectedItemColor: tealColor,
+          unselectedItemColor: Colors.grey,
+          items: [
+            BottomNavigationBarItem(
+                icon: const Icon(Icons.home),
+                label: languageService.translate('home')
+            ),
+            BottomNavigationBarItem(
+                icon: const Icon(Icons.calendar_month),
+                label: languageService.translate('calendar')
+            ),
+            BottomNavigationBarItem(
+                icon: const Icon(Icons.settings),
+                label: languageService.translate('settings')
+            ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -368,7 +393,6 @@ class _MainScreenState extends State<MainScreen> {
                 color: Theme.of(context).cardColor,
                 itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                   const PopupMenuItem<String>(value: 'en', child: Text("English")),
-                  // Reordered: Hindi first, then Tamil
                   const PopupMenuItem<String>(value: 'hi', child: Text("हिंदी", style: TextStyle(fontWeight: FontWeight.bold))),
                   const PopupMenuItem<String>(value: 'ta', child: Text("தமிழ்")),
                 ],
