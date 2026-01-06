@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
@@ -15,11 +16,12 @@ import 'screens/details_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  try {
-    await NotificationService().init();
-  } catch (e) {
-    debugPrint('Notification Init Failed: $e');
-  }
+
+  await Future.wait([
+    NotificationService().init(),
+    EkadashiService().initializeData(),
+  ]);
+
   runApp(
     MultiProvider(
       providers: [
@@ -58,7 +60,7 @@ class MainScreen extends StatefulWidget {
   State<MainScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   int _currentIndex = 0;
   final EkadashiService _ekadashiService = EkadashiService();
   String _currentLangCode = '';
@@ -66,9 +68,11 @@ class _MainScreenState extends State<MainScreen> {
   List<EkadashiDate> _ekadashiList = [];
   bool _isLoading = true;
   String _errorMessage = '';
-  String _locationText = 'Locating...';
-  String _currentTime = '';
-  Timer? _timer;
+  String _locationText = '';
+  bool _locationDenied = false;
+  bool _isRequestingLocation = false; // NEW: Track if we're requesting permission
+  int _currentPage = 0;
+  bool _isResuming = false;
 
   final PageController _pageController = PageController(viewportFraction: 1.0);
   final GlobalKey<CalendarScreenState> _calendarKey = GlobalKey();
@@ -76,27 +80,18 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
-    _startTimer();
-
-    // FIXED: Start background tasks immediately, don't block UI
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _runBackgroundTasks();
-    });
+    WidgetsBinding.instance.addObserver(this);
+    _pageController.addListener(_onPageChanged);
+    _initializeApp();
   }
 
-  // FIXED: All slow tasks run in background
-  void _runBackgroundTasks() {
-    // Request permissions in background
-    Future.microtask(() async {
-      try {
-        await NotificationService().requestPermissions();
-        // Small delay to avoid Android permission conflict
-        await Future.delayed(const Duration(milliseconds: 100));
-        await _handleLocation();
-      } catch (e) {
-        debugPrint('⚠️ Background task error: $e');
+  void _onPageChanged() {
+    if (_pageController.page != null && mounted) {
+      final newPage = _pageController.page!.round();
+      if (newPage != _currentPage) {
+        setState(() => _currentPage = newPage);
       }
-    });
+    }
   }
 
   @override
@@ -111,93 +106,270 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   void dispose() {
-    _timer?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
+    _pageController.removeListener(_onPageChanged);
     _pageController.dispose();
     super.dispose();
   }
 
-  void _startTimer() {
-    _updateTime();
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      _updateTime();
-    });
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && !_isResuming && !_isRequestingLocation) {
+      _isResuming = true;
+      // Use post frame callback instead of delay for smoother experience
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _safeLocationCheck();
+        }
+        _isResuming = false;
+      });
+    }
   }
 
-  void _updateTime() {
+  /// Safe location check that won't crash during activity recreation
+  Future<void> _safeLocationCheck() async {
+    if (!mounted) return;
+
+    try {
+      final permission = await Geolocator.checkPermission()
+          .timeout(const Duration(seconds: 3), onTimeout: () => LocationPermission.denied);
+
+      if (!mounted) return;
+
+      final hasPermission = permission == LocationPermission.whileInUse ||
+          permission == LocationPermission.always;
+
+      if (hasPermission && _locationDenied) {
+        // Permission was granted while away - fetch location
+        _handleLocation();
+      } else if (!hasPermission && !_locationDenied) {
+        // Permission was revoked while away - update UI immediately
+        setState(() {
+          _locationDenied = true;
+          _locationText = '';
+        });
+      }
+    } catch (e) {
+      debugPrint('Safe location check error: $e');
+    }
+  }
+
+  Future<void> _initializeApp() async {
+    final prefs = await SharedPreferences.getInstance();
+    final hasLaunched = prefs.getBool('has_launched') ?? false;
+
+    if (!hasLaunched) {
+      await prefs.setBool('has_launched', true);
+      await _requestPermissionsOnFirstLaunch();
+    } else {
+      _handleLocation();
+    }
+  }
+
+  Future<void> _requestPermissionsOnFirstLaunch() async {
+    // Show "Detecting location..." immediately during first launch
     if (mounted) {
       setState(() {
-        _currentTime = DateFormat('hh:mm a').format(DateTime.now());
+        _isRequestingLocation = true;
+        _locationDenied = false;
+        _locationText = '';
       });
+    }
+
+    final notifGranted = await NotificationService().requestNotificationPermission();
+
+    if (notifGranted) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('notifications_enabled', true);
+      await prefs.setBool('remind_one_day_before', true);
+      await prefs.setBool('remind_two_days_before', true);
+      await prefs.setBool('remind_on_day', true);
+      debugPrint('✅ Notification preferences saved: all enabled');
+    }
+
+    if (notifGranted && Platform.isAndroid) {
+      await NotificationService().openExactAlarmSettings();
+      await Future.delayed(const Duration(milliseconds: 500));
+    }
+
+    // Now request location permission (dialog will show over "Detecting Location...")
+    try {
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+
+      if (mounted) {
+        setState(() => _isRequestingLocation = false);
+      }
+
+      if (permission == LocationPermission.whileInUse ||
+          permission == LocationPermission.always) {
+        await _handleLocation();
+      } else {
+        _setLocationDenied();
+      }
+    } catch (e) {
+      debugPrint('Location permission error: $e');
+      if (mounted) {
+        setState(() => _isRequestingLocation = false);
+      }
+      _setLocationDenied();
     }
   }
 
   Future<void> _handleLocation() async {
     try {
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled()
+          .timeout(const Duration(seconds: 3), onTimeout: () => false);
       if (!serviceEnabled) {
-        if (mounted && _locationText == 'Locating...') {
-          setState(() => _locationText = 'Chennai, TN');
-        }
+        _setLocationDenied();
         return;
       }
 
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          if (mounted) setState(() => _locationText = 'Chennai, TN');
-          return;
-        }
+      LocationPermission permission = await Geolocator.checkPermission()
+          .timeout(const Duration(seconds: 2), onTimeout: () => LocationPermission.denied);
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        _setLocationDenied();
+        return;
       }
 
-      if (permission == LocationPermission.deniedForever) {
-        if (mounted) setState(() => _locationText = 'Chennai, TN');
-        return;
+      if (mounted) {
+        setState(() {
+          _locationText = '';
+          _locationDenied = false;
+        });
       }
 
       Position position = await Geolocator.getCurrentPosition(
-        timeLimit: const Duration(seconds: 5),
+        timeLimit: const Duration(seconds: 10),
       );
 
       List<Placemark> placemarks = await placemarkFromCoordinates(
           position.latitude,
           position.longitude
-      );
+      ).timeout(const Duration(seconds: 5), onTimeout: () => []);
 
       if (placemarks.isNotEmpty && mounted) {
         final place = placemarks.first;
-        setState(() => _locationText = '${place.locality}, ${place.administrativeArea}');
+        setState(() {
+          _locationText = place.locality ?? place.subAdministrativeArea ?? '';
+          _locationDenied = false;
+        });
       }
     } catch (e) {
-      debugPrint('⚠️ Location error: $e');
-      if (mounted) setState(() => _locationText = 'Chennai, TN');
+      debugPrint('Location error: $e');
+      _setLocationDenied();
+    }
+  }
+
+  void _setLocationDenied() {
+    if (mounted) {
+      setState(() {
+        _locationText = '';
+        _locationDenied = true;
+        _isRequestingLocation = false;
+      });
+    }
+  }
+
+  Future<void> _requestLocationAgain() async {
+    try {
+      LocationPermission permission = await Geolocator.checkPermission();
+
+      if (permission == LocationPermission.deniedForever) {
+        await Geolocator.openAppSettings();
+      } else {
+        // Show detecting state while requesting
+        if (mounted) {
+          setState(() {
+            _isRequestingLocation = true;
+            _locationDenied = false;
+          });
+        }
+
+        permission = await Geolocator.requestPermission();
+
+        if (mounted) {
+          setState(() => _isRequestingLocation = false);
+        }
+
+        if (permission == LocationPermission.whileInUse ||
+            permission == LocationPermission.always) {
+          await _handleLocation();
+        } else {
+          _setLocationDenied();
+        }
+      }
+    } catch (e) {
+      debugPrint('Location request error: $e');
+      if (mounted) {
+        setState(() => _isRequestingLocation = false);
+      }
+    }
+  }
+
+  Future<void> _loadData({String languageCode = 'en'}) async {
+    if (!mounted) return;
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+    });
+
+    try {
+      final dates = _ekadashiService.getEkadashis(languageCode);
+
+      if (mounted) {
+        setState(() {
+          _ekadashiList = dates;
+          _isLoading = false;
+        });
+
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _scrollToNextEkadashi(animate: false);
+        });
+
+        _scheduleNotificationsInBackground(dates);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Failed to load data';
+        });
+      }
     }
   }
 
   void _scrollToNextEkadashi({bool animate = true}) {
-    if (_ekadashiList.isEmpty) return;
+    if (_ekadashiList.isEmpty || !_pageController.hasClients) return;
 
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     int indexToScroll = 0;
 
     for (int i = 0; i < _ekadashiList.length; i++) {
-      if (_ekadashiList[i].date.isAfter(today) || _ekadashiList[i].date.isAtSameMomentAs(today)) {
+      if (_ekadashiList[i].date.isAfter(today) ||
+          _ekadashiList[i].date.isAtSameMomentAs(today)) {
         indexToScroll = i;
         break;
       }
     }
 
-    if (_pageController.hasClients) {
-      if (animate) {
-        _pageController.animateToPage(
-            indexToScroll,
-            duration: const Duration(milliseconds: 800),
-            curve: Curves.easeOutCubic
-        );
-      } else {
-        _pageController.jumpToPage(indexToScroll);
-      }
+    if (animate) {
+      _pageController.animateToPage(
+          indexToScroll,
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeOutCubic
+      );
+    } else {
+      _pageController.jumpToPage(indexToScroll);
+    }
+
+    if (mounted) {
+      setState(() => _currentPage = indexToScroll);
     }
   }
 
@@ -210,11 +382,6 @@ class _MainScreenState extends State<MainScreen> {
       }
     } else {
       setState(() => _currentIndex = index);
-      if (index == 0) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _scrollToNextEkadashi(animate: false);
-        });
-      }
     }
   }
 
@@ -222,231 +389,261 @@ class _MainScreenState extends State<MainScreen> {
     Future.microtask(() async {
       try {
         final prefs = await SharedPreferences.getInstance();
+        if (!(prefs.getBool('notifications_enabled') ?? true)) return;
 
-        if (!(prefs.getBool('notifications_enabled') ?? true)) {
-          debugPrint('⚠️ Notifications disabled globally');
-          return;
-        }
+        final hasPermission = await NotificationService().hasNotificationPermission();
+        if (!hasPermission) return;
 
         bool remind1 = prefs.getBool('remind_one_day_before') ?? true;
         bool remind2 = prefs.getBool('remind_two_days_before') ?? true;
         bool remindOnDay = prefs.getBool('remind_on_day') ?? true;
 
+        if (!mounted) return;
         final langService = Provider.of<LanguageService>(context, listen: false);
         await NotificationService().scheduleAllNotifications(
             dates, remind1, remind2, remindOnDay, langService.localizedStrings);
-
-        debugPrint('✅ Background notification scheduling completed');
       } catch (e) {
-        debugPrint("❌ Background notification error: $e");
+        debugPrint("Error scheduling notifications: $e");
       }
     });
   }
 
-  Future<void> _loadData({String languageCode = 'en'}) async {
-    // FIXED: Only show spinner on very first load
-    final isInitialLoad = _ekadashiList.isEmpty;
-
-    if (isInitialLoad) {
-      setState(() => _isLoading = true);
-    }
-
-    try {
-      final dates = await _ekadashiService.getUpcomingEkadashis(languageCode: languageCode);
-
-      if (mounted) {
-        // FIXED: Use AnimatedSwitcher for smooth transition
-        setState(() {
-          _ekadashiList = dates;
-          _isLoading = false;
-        });
-
-        _scheduleNotificationsInBackground(dates);
-
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _scrollToNextEkadashi(animate: false);
-        });
-      }
-    } catch (e) {
-      debugPrint("Error loading data: $e");
-      if (mounted) {
-        final lang = Provider.of<LanguageService>(context, listen: false);
-        setState(() {
-          _errorMessage = lang.translate('failed_load');
-          _isLoading = false;
-        });
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Consumer<LanguageService>(
-        builder: (context, languageService, child) {
-          const tealColor = Color(0xFF00A19B);
+    final lang = Provider.of<LanguageService>(context);
+    const tealColor = Color(0xFF00A19B);
 
-          // FIXED: Use AnimatedSwitcher for smooth transition
-          return Scaffold(
-            appBar: _isLoading || _errorMessage.isNotEmpty
-                ? null
-                : AppBar(
-              title: Text(languageService.translate('app_title')),
-              centerTitle: true,
-            ),
-            body: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              child: _isLoading
-                  ? const Center(
-                key: ValueKey('loading'),
-                child: CircularProgressIndicator(color: tealColor),
-              )
-                  : _errorMessage.isNotEmpty
-                  ? Center(
-                key: ValueKey('error'),
-                child: Text(_errorMessage),
-              )
-                  : _buildMainContent(languageService),
-            ),
-          );
-        }
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(lang.translate('app_title')),
+        centerTitle: true,
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: tealColor))
+          : _errorMessage.isNotEmpty
+          ? Center(child: Text(_errorMessage))
+          : IndexedStack(
+        index: _currentIndex,
+        children: [
+          _buildHomeContent(),
+          CalendarScreen(key: _calendarKey, ekadashiList: _ekadashiList),
+          const SettingsScreen(),
+        ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: _onBottomNavTapped,
+        selectedItemColor: tealColor,
+        items: [
+          BottomNavigationBarItem(
+              icon: const Icon(Icons.home),
+              label: lang.translate('home')
+          ),
+          BottomNavigationBarItem(
+              icon: const Icon(Icons.calendar_month),
+              label: lang.translate('calendar')
+          ),
+          BottomNavigationBarItem(
+              icon: const Icon(Icons.settings),
+              label: lang.translate('settings')
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildMainContent(LanguageService languageService) {
+  Widget _buildHomeContent() {
     const tealColor = Color(0xFF00A19B);
-
-    final pages = [
-      _buildHomeTab(context),
-      CalendarScreen(key: _calendarKey, ekadashiList: _ekadashiList),
-      const SettingsScreen(),
-    ];
+    final lang = Provider.of<LanguageService>(context);
+    final bool isFirstPage = _currentPage == 0;
+    final bool isLastPage = _currentPage >= _ekadashiList.length - 1;
 
     return Column(
-      key: const ValueKey('content'),
       children: [
-        Expanded(child: pages[_currentIndex]),
-        BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: _onBottomNavTapped,
-          selectedItemColor: tealColor,
-          unselectedItemColor: Colors.grey,
-          items: [
-            BottomNavigationBarItem(
-                icon: const Icon(Icons.home),
-                label: languageService.translate('home')
+        // Header with more vertical space
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: _buildLocationWidget(lang, tealColor),
+              ),
+              const SizedBox(width: 20),
+              _buildLanguageSelector(lang, tealColor),
+            ],
+          ),
+        ),
+
+        // Card with arrows - takes remaining space
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.only(left: 4, right: 4, top: 8, bottom: 8),
+            child: Row(
+              children: [
+                // Left arrow
+                SizedBox(
+                  width: 44,
+                  child: IconButton(
+                    onPressed: isFirstPage ? null : () {
+                      _pageController.previousPage(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                      );
+                    },
+                    icon: const Icon(Icons.chevron_left, size: 36),
+                    color: isFirstPage ? Colors.grey.shade600 : tealColor,
+                    padding: EdgeInsets.zero,
+                  ),
+                ),
+
+                // Card
+                Expanded(
+                  child: PageView.builder(
+                    controller: _pageController,
+                    itemCount: _ekadashiList.length,
+                    itemBuilder: (context, index) {
+                      return _buildEkadashiCard(_ekadashiList[index]);
+                    },
+                  ),
+                ),
+
+                // Right arrow
+                SizedBox(
+                  width: 44,
+                  child: IconButton(
+                    onPressed: isLastPage ? null : () {
+                      _pageController.nextPage(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                      );
+                    },
+                    icon: const Icon(Icons.chevron_right, size: 36),
+                    color: isLastPage ? Colors.grey.shade600 : tealColor,
+                    padding: EdgeInsets.zero,
+                  ),
+                ),
+              ],
             ),
-            BottomNavigationBarItem(
-                icon: const Icon(Icons.calendar_month),
-                label: languageService.translate('calendar')
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLocationWidget(LanguageService lang, Color tealColor) {
+    // Show "Detecting location..." while requesting permission
+    if (_isRequestingLocation) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: 14,
+            height: 14,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: tealColor,
             ),
-            BottomNavigationBarItem(
-                icon: const Icon(Icons.settings),
-                label: languageService.translate('settings')
+          ),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              lang.translate('detecting_location'),
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade400),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      );
+    }
+
+    if (_locationDenied) {
+      return GestureDetector(
+        onTap: _requestLocationAgain,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.location_off, size: 18, color: Colors.orange.shade400),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                lang.translate('location_denied'),
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.orange.shade400,
+                  decoration: TextDecoration.underline,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ],
         ),
+      );
+    }
+
+    if (_locationText.isEmpty) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.location_on, size: 18, color: tealColor),
+          const SizedBox(width: 6),
+          Text(
+            lang.translate('locating'),
+            style: const TextStyle(fontSize: 14),
+          ),
+        ],
+      );
+    }
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(Icons.location_on, size: 18, color: tealColor),
+        const SizedBox(width: 6),
+        Flexible(
+          child: Text(
+            _locationText,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildHomeTab(BuildContext context) {
-    const tealColor = Color(0xFF00A19B);
-    final lang = Provider.of<LanguageService>(context);
-
-    String locText = _locationText == 'Locating...' ? lang.translate('locating') : _locationText;
-    if (locText.contains(',')) {
-      locText = locText.split(',').first.trim();
+  Widget _buildLanguageSelector(LanguageService lang, Color tealColor) {
+    String displayLanguage;
+    switch (lang.currentLocale.languageCode) {
+      case 'ta': displayLanguage = 'தமிழ்'; break;
+      case 'hi': displayLanguage = 'हिंदी'; break;
+      default: displayLanguage = 'English';
     }
 
-    String displayLanguage = "English";
-    TextStyle langTextStyle = TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.w500,
-        color: Theme.of(context).textTheme.bodyMedium?.color
-    );
-
-    if (lang.currentLocale.languageCode == 'ta') {
-      displayLanguage = "தமிழ்";
-    } else if (lang.currentLocale.languageCode == 'hi') {
-      displayLanguage = "हिंदी";
-      langTextStyle = langTextStyle.copyWith(fontWeight: FontWeight.bold);
-    }
-
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 24.0),
-          child: Row(
-            children: [
-              const Icon(Icons.location_on, size: 20, color: tealColor),
-              const SizedBox(width: 8),
-              Text(locText, style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                  color: Theme.of(context).textTheme.bodyMedium?.color
-              )),
-              const Spacer(),
-              PopupMenuButton<String>(
-                onSelected: (String newValue) {
-                  lang.changeLanguage(newValue);
-                },
-                color: Theme.of(context).cardColor,
-                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                  const PopupMenuItem<String>(value: 'en', child: Text("English")),
-                  const PopupMenuItem<String>(value: 'hi', child: Text("हिंदी", style: TextStyle(fontWeight: FontWeight.bold))),
-                  const PopupMenuItem<String>(value: 'ta', child: Text("தமிழ்")),
-                ],
-                offset: const Offset(0, 40),
-                child: Row(
-                  children: [
-                    Text(displayLanguage, style: langTextStyle),
-                    const Padding(
-                      padding: EdgeInsets.only(left: 8.0),
-                      child: Icon(Icons.language, color: tealColor),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        Expanded(
-          child: Row(
-            children: [
-              IconButton(
-                onPressed: () {
-                  if (_pageController.page != null && _pageController.page! > 0) {
-                    _pageController.previousPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
-                  }
-                },
-                icon: const Icon(Icons.arrow_back_ios, size: 24),
-                color: tealColor,
-              ),
-              Expanded(
-                child: PageView.builder(
-                  controller: _pageController,
-                  itemCount: _ekadashiList.length,
-                  itemBuilder: (context, index) {
-                    final ekadashi = _ekadashiList[index];
-                    return _buildEkadashiCard(ekadashi);
-                  },
-                ),
-              ),
-              IconButton(
-                onPressed: () {
-                  if (_pageController.page != null && _pageController.page! < _ekadashiList.length -1) {
-                    _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
-                  }
-                },
-                icon: const Icon(Icons.arrow_forward_ios, size: 24),
-                color: tealColor,
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 30),
+    return PopupMenuButton<String>(
+      onSelected: (String newValue) => lang.changeLanguage(newValue),
+      color: Theme.of(context).cardColor,
+      itemBuilder: (context) => [
+        const PopupMenuItem(value: 'en', child: Text("English")),
+        const PopupMenuItem(value: 'hi', child: Text("हिंदी", style: TextStyle(fontWeight: FontWeight.bold))),
+        const PopupMenuItem(value: 'ta', child: Text("தமிழ்")),
       ],
+      offset: const Offset(0, 40),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            displayLanguage,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: lang.currentLocale.languageCode == 'hi'
+                  ? FontWeight.bold
+                  : FontWeight.w500,
+            ),
+          ),
+          const SizedBox(width: 6),
+          Icon(Icons.language, color: tealColor, size: 20),
+        ],
+      ),
     );
   }
 
@@ -471,116 +668,189 @@ class _MainScreenState extends State<MainScreen> {
       daysText = lang.translateWithArgs('in_days', [daysUntil.toString()]);
     }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
-      child: Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 20,
-              spreadRadius: 2,
-            )
-          ],
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Align(
-                alignment: Alignment.topRight,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: daysUntil < 0 ? Colors.grey : tealColor,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    daysText,
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
-
-              Center(
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            spreadRadius: 1,
+          )
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+        child: Column(
+          children: [
+            // Scrollable content area
+            Expanded(
+              child: SingleChildScrollView(
                 child: Column(
                   children: [
+                    // Days badge - top right
+                    Align(
+                      alignment: Alignment.topRight,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: daysUntil < 0 ? Colors.grey : tealColor,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Text(
+                          daysText,
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Date
                     Text(
                       DateFormat('MMM dd, yyyy').format(ekadashi.date),
                       style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w300),
                     ),
+                    const SizedBox(height: 4),
                     Text(
                       DateFormat('EEEE').format(ekadashi.date),
-                      style: const TextStyle(fontSize: 18, color: Colors.grey),
+                      style: TextStyle(fontSize: 16, color: Colors.grey.shade500),
                     ),
+
                     const SizedBox(height: 16),
+
+                    // Ekadashi name
                     Text(
                       ekadashi.name,
-                      style: const TextStyle(color: tealColor, fontSize: 24, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                          color: tealColor,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Start Fasting section
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        lang.translate('start_fasting'),
+                        style: const TextStyle(
+                            color: tealColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        DateFormat('MMM dd, yyyy').format(ekadashi.date),
+                        style: TextStyle(fontSize: 15, color: Colors.grey.shade500),
+                      ),
+                    ),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        ekadashi.fastStartTime,
+                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Break Fasting section
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        lang.translate('break_fasting'),
+                        style: const TextStyle(
+                            color: tealColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        DateFormat('MMM dd, yyyy').format(
+                            ekadashi.date.add(const Duration(days: 1))
+                        ),
+                        style: TextStyle(fontSize: 15, color: Colors.grey.shade500),
+                      ),
+                    ),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        breakTime,
+                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Divider
+                    Divider(color: Colors.grey.shade400, height: 1),
+
+                    const SizedBox(height: 16),
+
+                    // Description
+                    Text(
+                      ekadashi.description,
+                      style: TextStyle(
+                        fontStyle: FontStyle.italic,
+                        fontSize: 15,
+                        color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.8),
+                        height: 1.4,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 30),
+            ),
 
-              Text(lang.translate('start_fasting'), style: const TextStyle(color: tealColor, fontWeight: FontWeight.bold, fontSize: 16)),
-              const SizedBox(height: 6),
-              Text(DateFormat('MMM dd, yyyy').format(ekadashi.date), style: const TextStyle(fontSize: 14, color: Colors.grey)),
-              Text(ekadashi.fastStartTime, style: const TextStyle(fontSize: 18)),
+            const SizedBox(height: 16),
 
-              const SizedBox(height: 20),
-
-              Text(lang.translate('break_fasting'), style: const TextStyle(color: tealColor, fontWeight: FontWeight.bold, fontSize: 16)),
-              const SizedBox(height: 6),
-              Text(DateFormat('MMM dd, yyyy').format(ekadashi.date.add(const Duration(days: 1))), style: const TextStyle(fontSize: 14, color: Colors.grey)),
-              Text(breakTime, style: const TextStyle(fontSize: 18)),
-
-              const SizedBox(height: 24),
-              const Divider(),
-              const SizedBox(height: 16),
-
-              Text(
-                ekadashi.description,
-                style: TextStyle(
-                    fontStyle: FontStyle.italic,
-                    color: Theme.of(context).textTheme.bodyMedium?.color
-                ),
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-              ),
-
-              const SizedBox(height: 24),
-              Center(
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => DetailsScreen(ekadashi: ekadashi),
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: tealColor,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 0,
+            // View Details button - ALWAYS VISIBLE at bottom
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => DetailsScreen(ekadashi: ekadashi),
                     ),
-                    child: Text(lang.translate('view_details'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: tealColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
+                  elevation: 0,
+                ),
+                child: Text(
+                  lang.translate('view_details'),
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

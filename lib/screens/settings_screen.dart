@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:app_settings/app_settings.dart';
 import '../services/theme_service.dart';
 import '../services/notification_service.dart';
 import '../services/language_service.dart';
@@ -13,42 +15,238 @@ class SettingsScreen extends StatefulWidget {
   State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObserver {
   bool _remind1Day = true;
   bool _remind2Days = true;
   bool _remindOnDay = true;
   bool _notificationsEnabled = true;
+
+  bool _hasNotificationPermission = false;
+  bool _hasExactAlarmPermission = true;
+  bool _permissionsExpanded = false;
+  bool _isInitialized = false;
+  bool _isCheckingPermissions = false;
 
   final EkadashiService _ekadashiService = EkadashiService();
 
   @override
   void initState() {
     super.initState();
-    _loadSettings();
+    WidgetsBinding.instance.addObserver(this);
+    _initialize();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _isInitialized && !_isCheckingPermissions) {
+      // Use post frame callback for smoother UI update
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _checkPermissionsAfterResume();
+        }
+      });
+    }
+  }
+
+  Future<void> _initialize() async {
+    await _loadSettings();
+    await _checkAllPermissions();
+    if (mounted) {
+      setState(() => _isInitialized = true);
+    }
   }
 
   Future<void> _loadSettings() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _notificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
-      _remind1Day = prefs.getBool('remind_one_day_before') ?? true;
-      _remind2Days = prefs.getBool('remind_two_days_before') ?? true;
-      _remindOnDay = prefs.getBool('remind_on_day') ?? true;
-    });
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (mounted) {
+        setState(() {
+          _notificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
+          _remind1Day = prefs.getBool('remind_one_day_before') ?? true;
+          _remind2Days = prefs.getBool('remind_two_days_before') ?? true;
+          _remindOnDay = prefs.getBool('remind_on_day') ?? true;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading settings: $e');
+    }
   }
 
-  void _rescheduleNotificationsInBackground() {
-    if (!_notificationsEnabled) {
-      debugPrint('⚠️ Master toggle OFF - cancelling all notifications');
+  /// Check all permissions - called on init
+  Future<void> _checkAllPermissions() async {
+    if (_isCheckingPermissions || !mounted) return;
+    _isCheckingPermissions = true;
+
+    try {
+      // Check notification permission
+      bool hasNotif = false;
+      try {
+        hasNotif = await NotificationService().hasNotificationPermission();
+      } catch (e) {
+        debugPrint('Notification permission check error: $e');
+      }
+
+      // Check exact alarm permission (Android only) - NO TIMEOUT with wrong default
+      bool hasAlarm = true;
+      if (Platform.isAndroid) {
+        try {
+          hasAlarm = await NotificationService().hasExactAlarmPermission();
+          debugPrint('Exact alarm permission: $hasAlarm');
+        } catch (e) {
+          debugPrint('Alarm permission check error: $e');
+          // On error, we don't know the state - assume needs check
+          hasAlarm = false;
+        }
+      }
+
+      if (!mounted) {
+        _isCheckingPermissions = false;
+        return;
+      }
+
+      final prefs = await SharedPreferences.getInstance();
+
+      // Sync notification state
+      if (hasNotif) {
+        final currentEnabled = prefs.getBool('notifications_enabled');
+        // If not set or false, enable all toggles
+        if (currentEnabled == null || !currentEnabled) {
+          await prefs.setBool('notifications_enabled', true);
+          await prefs.setBool('remind_one_day_before', true);
+          await prefs.setBool('remind_two_days_before', true);
+          await prefs.setBool('remind_on_day', true);
+        }
+
+        if (mounted) {
+          setState(() {
+            _hasNotificationPermission = true;
+            _notificationsEnabled = true;
+            _remind1Day = prefs.getBool('remind_one_day_before') ?? true;
+            _remind2Days = prefs.getBool('remind_two_days_before') ?? true;
+            _remindOnDay = prefs.getBool('remind_on_day') ?? true;
+            _hasExactAlarmPermission = hasAlarm;
+            _permissionsExpanded = !hasAlarm; // Expand if alarm permission missing
+          });
+        }
+      } else {
+        await prefs.setBool('notifications_enabled', false);
+
+        if (mounted) {
+          setState(() {
+            _hasNotificationPermission = false;
+            _notificationsEnabled = false;
+            _hasExactAlarmPermission = hasAlarm;
+            _permissionsExpanded = false;
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Check all permissions error: $e');
+    } finally {
+      _isCheckingPermissions = false;
+    }
+  }
+
+  /// Check permissions after returning from system settings
+  Future<void> _checkPermissionsAfterResume() async {
+    if (_isCheckingPermissions || !mounted) return;
+    _isCheckingPermissions = true;
+
+    debugPrint('🔄 Checking permissions after resume...');
+
+    try {
+      // Check notification permission
+      bool hasNotif = false;
+      try {
+        hasNotif = await NotificationService().hasNotificationPermission();
+        debugPrint('  Notification permission: $hasNotif');
+      } catch (e) {
+        debugPrint('  Resume notification check error: $e');
+        hasNotif = _hasNotificationPermission;
+      }
+
+      // CRITICAL: Always check alarm permission fresh - don't cache or use timeout defaults
+      bool hasAlarm = true;
+      if (Platform.isAndroid) {
+        try {
+          // Force fresh check - this is the key fix
+          hasAlarm = await NotificationService().hasExactAlarmPermission();
+          debugPrint('  Exact alarm permission (fresh check): $hasAlarm');
+        } catch (e) {
+          debugPrint('  Resume alarm check error: $e');
+          // On error, assume we need to check again - don't use cached value
+          hasAlarm = false;
+        }
+      }
+
+      if (!mounted) {
+        _isCheckingPermissions = false;
+        return;
+      }
+
+      // Always update state to reflect current permissions
+      final prefs = await SharedPreferences.getInstance();
+
+      if (hasNotif && !_hasNotificationPermission) {
+        // Permission was granted - enable toggles
+        await prefs.setBool('notifications_enabled', true);
+        await prefs.setBool('remind_one_day_before', true);
+        await prefs.setBool('remind_two_days_before', true);
+        await prefs.setBool('remind_on_day', true);
+
+        debugPrint('  ✅ Notification permission granted - enabling toggles');
+
+        setState(() {
+          _hasNotificationPermission = true;
+          _notificationsEnabled = true;
+          _remind1Day = true;
+          _remind2Days = true;
+          _remindOnDay = true;
+          _hasExactAlarmPermission = hasAlarm;
+          _permissionsExpanded = !hasAlarm;
+        });
+      } else if (!hasNotif && _hasNotificationPermission) {
+        // Permission was revoked - disable
+        await prefs.setBool('notifications_enabled', false);
+
+        debugPrint('  ❌ Notification permission revoked - disabling toggles');
+
+        setState(() {
+          _hasNotificationPermission = false;
+          _notificationsEnabled = false;
+          _hasExactAlarmPermission = hasAlarm;
+          _permissionsExpanded = false;
+        });
+      } else {
+        // Notification permission unchanged - but alarm might have changed
+        debugPrint('  Alarm permission changed: $_hasExactAlarmPermission -> $hasAlarm');
+
+        setState(() {
+          _hasExactAlarmPermission = hasAlarm;
+          // Expand permissions section if alarm is now disabled
+          if (!hasAlarm && _notificationsEnabled && _hasNotificationPermission) {
+            _permissionsExpanded = true;
+          }
+        });
+      }
+    } catch (e) {
+      debugPrint('Check permissions after resume error: $e');
+    } finally {
+      _isCheckingPermissions = false;
+    }
+  }
+
+  void _rescheduleNotifications() {
+    if (!_notificationsEnabled || !_hasNotificationPermission) {
       NotificationService().cancelAll();
       return;
     }
-
-    final bool current1Day = _remind1Day;
-    final bool current2Days = _remind2Days;
-    final bool currentOnDay = _remindOnDay;
-
-    debugPrint('🔄 Rescheduling with: 2-day=$current2Days, 1-day=$current1Day, on-day=$currentOnDay');
 
     Future.microtask(() async {
       try {
@@ -58,54 +256,73 @@ class _SettingsScreenState extends State<SettingsScreen> {
         );
 
         await NotificationService().scheduleAllNotifications(
-            dates,
-            current1Day,
-            current2Days,
-            currentOnDay,
+            dates, _remind1Day, _remind2Days, _remindOnDay,
             langService.localizedStrings
         );
-
-        debugPrint('✅ Notifications rescheduled in background');
       } catch (e) {
-        debugPrint("❌ Error rescheduling: $e");
+        debugPrint("Error rescheduling: $e");
       }
     });
   }
 
   Future<void> _toggleNotifications(bool value) async {
-    setState(() => _notificationsEnabled = value);
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('notifications_enabled', value);
+    if (value && !_hasNotificationPermission) {
+      try {
+        final granted = await NotificationService().requestNotificationPermission();
 
-    if (value) {
-      final remind1 = prefs.getBool('remind_one_day_before') ?? true;
-      final remind2 = prefs.getBool('remind_two_days_before') ?? true;
-      final remindDay = prefs.getBool('remind_on_day') ?? true;
+        if (granted) {
+          final prefs = await SharedPreferences.getInstance();
 
-      setState(() {
-        _remind1Day = remind1;
-        _remind2Days = remind2;
-        _remindOnDay = remindDay;
-      });
+          await prefs.setBool('notifications_enabled', true);
+          await prefs.setBool('remind_one_day_before', true);
+          await prefs.setBool('remind_two_days_before', true);
+          await prefs.setBool('remind_on_day', true);
 
-      await NotificationService().requestPermissions();
+          // Also check alarm permission after enabling notifications
+          bool hasAlarm = true;
+          if (Platform.isAndroid) {
+            try {
+              hasAlarm = await NotificationService().hasExactAlarmPermission();
+            } catch (e) {
+              hasAlarm = false;
+            }
+          }
 
-      final hasPermission = await NotificationService().hasExactAlarmPermission();
-      if (!hasPermission && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              '⚠️ Please enable "Alarms & reminders" in Settings → Apps → Ekadashi Calendar',
-              style: TextStyle(fontSize: 13),
-            ),
-            duration: Duration(seconds: 5),
-          ),
-        );
+          if (mounted) {
+            setState(() {
+              _hasNotificationPermission = true;
+              _notificationsEnabled = true;
+              _remind1Day = true;
+              _remind2Days = true;
+              _remindOnDay = true;
+              _hasExactAlarmPermission = hasAlarm;
+              _permissionsExpanded = !hasAlarm;
+            });
+          }
+
+          _rescheduleNotifications();
+        }
+      } catch (e) {
+        debugPrint('Error requesting notification permission: $e');
       }
+      return;
+    }
 
-      _rescheduleNotificationsInBackground();
-    } else {
-      await NotificationService().cancelAll();
+    if (mounted) {
+      setState(() => _notificationsEnabled = value);
+    }
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('notifications_enabled', value);
+
+      if (value) {
+        _rescheduleNotifications();
+      } else {
+        await NotificationService().cancelAll();
+      }
+    } catch (e) {
+      debugPrint('Error toggling notifications: $e');
     }
   }
 
@@ -113,21 +330,37 @@ class _SettingsScreenState extends State<SettingsScreen> {
     setState(() => _remind1Day = value);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('remind_one_day_before', value);
-    _rescheduleNotificationsInBackground();
+    _rescheduleNotifications();
   }
 
   Future<void> _toggleRemind2(bool value) async {
     setState(() => _remind2Days = value);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('remind_two_days_before', value);
-    _rescheduleNotificationsInBackground();
+    _rescheduleNotifications();
   }
 
   Future<void> _toggleRemindOnDay(bool value) async {
     setState(() => _remindOnDay = value);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('remind_on_day', value);
-    _rescheduleNotificationsInBackground();
+    _rescheduleNotifications();
+  }
+
+  Future<void> _openAlarmSettings() async {
+    try {
+      await NotificationService().openExactAlarmSettings();
+    } catch (e) {
+      debugPrint('Error opening alarm settings: $e');
+    }
+  }
+
+  Future<void> _openAppSettings() async {
+    try {
+      await AppSettings.openAppSettings(type: AppSettingsType.settings);
+    } catch (e) {
+      debugPrint('Error opening app settings: $e');
+    }
   }
 
   @override
@@ -135,16 +368,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final lang = Provider.of<LanguageService>(context);
     const tealColor = Color(0xFF00A19B);
 
+    final bool allPermissionsOK = _hasNotificationPermission && _hasExactAlarmPermission;
+    final bool togglesEnabled = _hasNotificationPermission && _notificationsEnabled;
+
+    // Show permissions section ONLY when notifications are enabled
+    final bool showPermissionsSection = Platform.isAndroid && _notificationsEnabled && _hasNotificationPermission;
+
+    if (!_isInitialized) {
+      return const Center(child: CircularProgressIndicator(color: tealColor));
+    }
+
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        Text(
-            lang.translate('appearance'),
-            style: const TextStyle(
-                color: tealColor,
-                fontWeight: FontWeight.bold
-            )
-        ),
+        // APPEARANCE
+        Text(lang.translate('appearance'),
+            style: const TextStyle(color: tealColor, fontWeight: FontWeight.bold)),
         SwitchListTile(
           title: Text(lang.translate('dark_mode')),
           value: Provider.of<ThemeService>(context).isDarkMode,
@@ -155,128 +394,220 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         const Divider(),
 
-        Text(
-            lang.translate('notifications'),
-            style: const TextStyle(
-                color: tealColor,
-                fontWeight: FontWeight.bold
-            )
-        ),
+        // NOTIFICATIONS
+        Text(lang.translate('notifications'),
+            style: const TextStyle(color: tealColor, fontWeight: FontWeight.bold)),
 
-        // Master Toggle
         SwitchListTile(
           title: Text(lang.translate('enable_notifications')),
-          subtitle: _notificationsEnabled
-              ? Text('${_getEnabledCount()} of 3 reminders active',
-              style: const TextStyle(fontSize: 12, color: Colors.grey))
-              : null,
-          value: _notificationsEnabled,
+          subtitle: _hasNotificationPermission
+              ? (_notificationsEnabled
+              ? Text(
+              lang.translateWithArgs('reminders_active', [_getEnabledCount().toString()]),
+              style: const TextStyle(fontSize: 12, color: Colors.grey)
+          )
+              : null)
+              : Text(
+              lang.translate('notifications_off'),
+              style: const TextStyle(fontSize: 12, color: Colors.orange)
+          ),
+          value: _notificationsEnabled && _hasNotificationPermission,
           activeColor: tealColor,
           onChanged: _toggleNotifications,
         ),
 
-        // Sub-Toggles
         SwitchListTile(
           title: Text(lang.translate('notify_start')),
-          subtitle: _remindOnDay && _notificationsEnabled
-              ? const Text('✓ Active', style: TextStyle(fontSize: 11, color: Colors.green))
-              : const Text('Disabled', style: TextStyle(fontSize: 11, color: Colors.grey)),
-          value: _remindOnDay,
+          subtitle: Text(
+            togglesEnabled && _remindOnDay
+                ? lang.translate('status_active')
+                : lang.translate('status_disabled'),
+            style: TextStyle(
+              fontSize: 11,
+              color: togglesEnabled && _remindOnDay ? Colors.green : Colors.grey,
+            ),
+          ),
+          value: _remindOnDay && togglesEnabled,
           activeColor: tealColor,
-          onChanged: _notificationsEnabled ? _toggleRemindOnDay : null,
+          onChanged: togglesEnabled ? _toggleRemindOnDay : null,
         ),
+
         SwitchListTile(
           title: Text(lang.translate('notify_1day')),
-          subtitle: _remind1Day && _notificationsEnabled
-              ? const Text('✓ Active', style: TextStyle(fontSize: 11, color: Colors.green))
-              : const Text('Disabled', style: TextStyle(fontSize: 11, color: Colors.grey)),
-          value: _remind1Day,
+          subtitle: Text(
+            togglesEnabled && _remind1Day
+                ? lang.translate('status_active')
+                : lang.translate('status_disabled'),
+            style: TextStyle(
+              fontSize: 11,
+              color: togglesEnabled && _remind1Day ? Colors.green : Colors.grey,
+            ),
+          ),
+          value: _remind1Day && togglesEnabled,
           activeColor: tealColor,
-          onChanged: _notificationsEnabled ? _toggleRemind1 : null,
+          onChanged: togglesEnabled ? _toggleRemind1 : null,
         ),
+
         SwitchListTile(
           title: Text(lang.translate('notify_2day')),
-          subtitle: _remind2Days && _notificationsEnabled
-              ? const Text('✓ Active', style: TextStyle(fontSize: 11, color: Colors.green))
-              : const Text('Disabled', style: TextStyle(fontSize: 11, color: Colors.grey)),
-          value: _remind2Days,
+          subtitle: Text(
+            togglesEnabled && _remind2Days
+                ? lang.translate('status_active')
+                : lang.translate('status_disabled'),
+            style: TextStyle(
+              fontSize: 11,
+              color: togglesEnabled && _remind2Days ? Colors.green : Colors.grey,
+            ),
+          ),
+          value: _remind2Days && togglesEnabled,
           activeColor: tealColor,
-          onChanged: _notificationsEnabled ? _toggleRemind2 : null,
+          onChanged: togglesEnabled ? _toggleRemind2 : null,
         ),
+
+        if (togglesEnabled)
+          ListTile(
+            leading: const Icon(Icons.notifications_active_outlined, color: tealColor),
+            title: Text(lang.translate('test_notification')),
+            subtitle: Text(
+              lang.translate('test_notification_desc'),
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+            onTap: () async {
+              try {
+                final langService = Provider.of<LanguageService>(context, listen: false);
+                await NotificationService().showTestNotification(langService.localizedStrings);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(lang.translate('notif_sent_msg')),
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                }
+              } catch (e) {
+                debugPrint('Error sending test notification: $e');
+              }
+            },
+          ),
+
+        // PERMISSIONS - Only shown when notifications are ENABLED
+        if (showPermissionsSection) ...[
+          const Divider(height: 32),
+
+          InkWell(
+            onTap: () => setState(() => _permissionsExpanded = !_permissionsExpanded),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Row(
+                children: [
+                  Icon(
+                    allPermissionsOK ? Icons.check_circle : Icons.warning_amber_rounded,
+                    color: allPermissionsOK ? Colors.green : Colors.orange,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(lang.translate('permissions'),
+                      style: const TextStyle(color: tealColor, fontWeight: FontWeight.bold)),
+                  const Spacer(),
+                  Text(
+                    allPermissionsOK
+                        ? lang.translate('permissions_ok')
+                        : lang.translate('permissions_needed'),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: allPermissionsOK ? Colors.green : Colors.orange,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(
+                    _permissionsExpanded ? Icons.expand_less : Icons.expand_more,
+                    color: Colors.grey,
+                    size: 20,
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          if (_permissionsExpanded) ...[
+            _buildPermissionRow(
+              icon: _hasExactAlarmPermission ? Icons.check_circle : Icons.error_outline,
+              iconColor: _hasExactAlarmPermission ? Colors.green : Colors.orange,
+              title: lang.translate('alarms_reminders'),
+              subtitle: _hasExactAlarmPermission
+                  ? lang.translate('alarms_enabled')
+                  : lang.translate('alarms_disabled'),
+              subtitleColor: _hasExactAlarmPermission ? Colors.green : Colors.orange,
+              showButton: !_hasExactAlarmPermission,
+              buttonText: lang.translate('open_settings'),
+              onTap: _openAlarmSettings,
+            ),
+
+            _buildPermissionRow(
+              icon: Icons.battery_saver,
+              iconColor: tealColor,
+              title: lang.translate('battery_optimization'),
+              subtitle: lang.translate('battery_desc'),
+              subtitleColor: Colors.grey,
+              showButton: true,
+              buttonText: lang.translate('open_settings'),
+              onTap: _openAppSettings,
+            ),
+          ],
+        ],
 
         const Divider(height: 32),
 
-        // TESTING SECTION
-        Text(
-            '🧪 Notification Testing',
-            style: const TextStyle(
-              color: tealColor,
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            )
-        ),
-        const SizedBox(height: 8),
-
-        // Test Notification
-        if (_notificationsEnabled)
-          ListTile(
-            leading: const Icon(Icons.notifications_active_outlined, color: tealColor),
-            title: const Text('Instant Test'),
-            subtitle: const Text('Tap to send notification immediately'),
-            onTap: () async {
-              await NotificationService().showInstantNotification(
-                  'Ekadashi Calendar',
-                  'Hari Om! Your notifications are working! 🙏'
-              );
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('✅ Instant notification sent! Check your status bar.'),
-                    duration: Duration(seconds: 2),
-                  ),
-                );
-              }
-            },
-          ),
-
-        // DEBUG: 1-Minute Test
-        if (_notificationsEnabled)
-          ListTile(
-            leading: const Icon(Icons.timer, color: Colors.orange),
-            title: const Text('⚡ 1-Minute Test (DEBUG)'),
-            subtitle: const Text('Schedule notification for 1 minute from NOW'),
-            onTap: () async {
-              final result = await NotificationService().scheduleDebugNotificationIn1Minute();
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      result
-                          ? '⏰ Debug notification scheduled for 1 minute from now!\n\nSTAY in the app or keep screen on and wait...'
-                          : '❌ Failed to schedule. Check permissions.',
-                      style: const TextStyle(fontSize: 13),
-                    ),
-                    duration: const Duration(seconds: 4),
-                    backgroundColor: result ? Colors.green : Colors.red,
-                  ),
-                );
-              }
-            },
-          ),
-
-        const Divider(),
-        Text(
-            lang.translate('about'),
-            style: const TextStyle(
-                color: tealColor,
-                fontWeight: FontWeight.bold
-            )
-        ),
+        // ABOUT
+        Text(lang.translate('about'),
+            style: const TextStyle(color: tealColor, fontWeight: FontWeight.bold)),
         ListTile(
           title: Text(lang.translate('version')),
           trailing: const Text("1.0.0", style: TextStyle(color: Colors.grey)),
         ),
       ],
+    );
+  }
+
+  Widget _buildPermissionRow({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String subtitle,
+    required Color subtitleColor,
+    required bool showButton,
+    required String buttonText,
+    VoidCallback? onTap,
+  }) {
+    const tealColor = Color(0xFF00A19B);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+      child: Row(
+        children: [
+          Icon(icon, color: iconColor, size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(fontSize: 14)),
+                Text(subtitle, style: TextStyle(fontSize: 11, color: subtitleColor)),
+              ],
+            ),
+          ),
+          if (showButton)
+            TextButton(
+              onPressed: onTap,
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              child: Text(buttonText, style: const TextStyle(color: tealColor, fontSize: 12)),
+            ),
+        ],
+      ),
     );
   }
 
