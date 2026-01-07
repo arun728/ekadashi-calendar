@@ -41,6 +41,15 @@ class CalendarScreenState extends State<CalendarScreen> {
     _checkSelectedDayEkadashi();
   }
 
+  @override
+  void didUpdateWidget(CalendarScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // When ekadashiList changes (e.g., language change), refresh the selected ekadashi
+    if (widget.ekadashiList != oldWidget.ekadashiList) {
+      _checkSelectedDayEkadashi();
+    }
+  }
+
   void _checkSelectedDayEkadashi() {
     final selected = DateTime(_selectedDay.year, _selectedDay.month, _selectedDay.day);
 

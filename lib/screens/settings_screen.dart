@@ -538,7 +538,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
                   ? lang.translate('alarms_enabled')
                   : lang.translate('alarms_disabled'),
               subtitleColor: _hasExactAlarmPermission ? Colors.green : Colors.orange,
-              showButton: !_hasExactAlarmPermission,
+              showButton: true,  // Always show button for quick access
               buttonText: lang.translate('open_settings'),
               onTap: _openAlarmSettings,
             ),

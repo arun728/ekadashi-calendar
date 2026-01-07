@@ -81,17 +81,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _pageController.addListener(_onPageChanged);
     _initializeApp();
-  }
-
-  void _onPageChanged() {
-    if (_pageController.page != null && mounted) {
-      final newPage = _pageController.page!.round();
-      if (newPage != _currentPage) {
-        setState(() => _currentPage = newPage);
-      }
-    }
   }
 
   @override
@@ -107,7 +97,6 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _pageController.removeListener(_onPageChanged);
     _pageController.dispose();
     super.dispose();
   }
@@ -185,14 +174,17 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       await prefs.setBool('remind_two_days_before', true);
       await prefs.setBool('remind_on_day', true);
       debugPrint('✅ Notification preferences saved: all enabled');
+
+      // Check alarm permission status (don't open settings automatically!)
+      // User can enable it later from Settings tab if needed
+      if (Platform.isAndroid) {
+        final hasAlarmPermission = await NotificationService().hasExactAlarmPermission();
+        debugPrint('📢 Alarm permission on first launch: $hasAlarmPermission');
+        // If not granted, user will see warning in Settings > Permissions
+      }
     }
 
-    if (notifGranted && Platform.isAndroid) {
-      await NotificationService().openExactAlarmSettings();
-      await Future.delayed(const Duration(milliseconds: 500));
-    }
-
-    // Now request location permission (dialog will show over "Detecting Location...")
+    // Now request location permission
     try {
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
@@ -375,13 +367,23 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
   void _onBottomNavTapped(int index) {
     if (index == _currentIndex) {
+      // Already on this tab - special actions
       if (index == 0) {
         _scrollToNextEkadashi(animate: true);
       } else if (index == 1) {
         _calendarKey.currentState?.resetToToday();
       }
     } else {
+      // Switching tabs
       setState(() => _currentIndex = index);
+
+      // When switching TO Home tab, scroll to upcoming ekadashi
+      if (index == 0) {
+        // Use post-frame callback to ensure page controller is ready
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _scrollToNextEkadashi(animate: false);
+        });
+      }
     }
   }
 
@@ -475,6 +477,18 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           ),
         ),
 
+        // Page indicator (shows current position in list)
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Text(
+            '${_currentPage + 1} / ${_ekadashiList.length}',
+            style: TextStyle(
+              fontSize: 13,
+              color: Colors.grey.shade500,
+            ),
+          ),
+        ),
+
         // Card with arrows - takes remaining space
         Expanded(
           child: Padding(
@@ -502,6 +516,12 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                   child: PageView.builder(
                     controller: _pageController,
                     itemCount: _ekadashiList.length,
+                    onPageChanged: (index) {
+                      // Update page indicator when user swipes
+                      if (mounted) {
+                        setState(() => _currentPage = index);
+                      }
+                    },
                     itemBuilder: (context, index) {
                       return _buildEkadashiCard(_ekadashiList[index]);
                     },

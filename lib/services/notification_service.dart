@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart' as fln;
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -15,6 +16,9 @@ class NotificationService {
 
   final fln.FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
   fln.FlutterLocalNotificationsPlugin();
+
+  // Native method channel for Android-specific permission handling
+  static const MethodChannel _permissionChannel = MethodChannel('com.ekadashi.permissions');
 
   String _currentTimeZone = 'UTC';
 
@@ -93,13 +97,32 @@ class NotificationService {
     return true;
   }
 
+  /// Check if app has exact alarm permission using native Android code.
+  /// Uses AppOpsManager for reliable detection across all devices including Samsung.
   Future<bool> hasExactAlarmPermission() async {
     if (Platform.isAndroid) {
-      final android = flutterLocalNotificationsPlugin
-          .resolvePlatformSpecificImplementation<fln.AndroidFlutterLocalNotificationsPlugin>();
-      return await android?.canScheduleExactNotifications() ?? false;
+      try {
+        // Use native method channel for reliable permission check
+        // This uses AppOpsManager which is more reliable than the flutter plugin
+        final bool result = await _permissionChannel.invokeMethod('canScheduleExactAlarms');
+        debugPrint('🔔 Native hasExactAlarmPermission: $result');
+        return result;
+      } catch (e) {
+        debugPrint('❌ Native alarm permission check failed: $e');
+        // Fallback to flutter plugin if native method fails
+        try {
+          final android = flutterLocalNotificationsPlugin
+              .resolvePlatformSpecificImplementation<fln.AndroidFlutterLocalNotificationsPlugin>();
+          final result = await android?.canScheduleExactNotifications() ?? false;
+          debugPrint('🔔 Fallback hasExactAlarmPermission: $result');
+          return result;
+        } catch (e2) {
+          debugPrint('❌ Fallback also failed: $e2');
+          return false;
+        }
+      }
     }
-    return true;
+    return true; // iOS doesn't need this permission
   }
 
   Future<bool> requestNotificationPermission() async {
@@ -116,12 +139,30 @@ class NotificationService {
     return false;
   }
 
-  Future<void> openExactAlarmSettings() async {
+  /// Opens the system's Alarms & Reminders settings page.
+  /// Uses native Android code for reliable cross-device compatibility.
+  Future<bool> openExactAlarmSettings() async {
     if (Platform.isAndroid) {
-      final android = flutterLocalNotificationsPlugin
-          .resolvePlatformSpecificImplementation<fln.AndroidFlutterLocalNotificationsPlugin>();
-      await android?.requestExactAlarmsPermission();
+      try {
+        // Use native method channel for reliable intent handling
+        final bool result = await _permissionChannel.invokeMethod('openAlarmSettings');
+        debugPrint('🔔 openAlarmSettings result: $result');
+        return result;
+      } catch (e) {
+        debugPrint('❌ openAlarmSettings error: $e');
+        // Fallback: Try the flutter_local_notifications method
+        try {
+          final android = flutterLocalNotificationsPlugin
+              .resolvePlatformSpecificImplementation<fln.AndroidFlutterLocalNotificationsPlugin>();
+          await android?.requestExactAlarmsPermission();
+          return true;
+        } catch (e2) {
+          debugPrint('❌ Fallback also failed: $e2');
+          return false;
+        }
+      }
     }
+    return false;
   }
 
   /// Android notification details with large app icon on the right
