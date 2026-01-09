@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:app_settings/app_settings.dart';
+import 'package:share_plus/share_plus.dart';
 import '../services/theme_service.dart';
 import '../services/notification_service.dart';
 import '../services/language_service.dart';
@@ -541,6 +542,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
               showButton: true,  // Always show button for quick access
               buttonText: lang.translate('open_settings'),
               onTap: _openAlarmSettings,
+              onInfoTap: _showAlarmsInfoDialog,
             ),
 
             _buildPermissionRow(
@@ -552,6 +554,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
               showButton: true,
               buttonText: lang.translate('open_settings'),
               onTap: _openAppSettings,
+              onInfoTap: _showBatteryInfoDialog,
             ),
           ],
         ],
@@ -562,11 +565,26 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
         Text(lang.translate('about'),
             style: const TextStyle(color: tealColor, fontWeight: FontWeight.bold)),
         ListTile(
+          leading: const Icon(Icons.share, color: tealColor),
+          title: Text(lang.translate('share_app')),
+          subtitle: Text(
+            lang.translate('share_app_desc'),
+            style: const TextStyle(fontSize: 12, color: Colors.grey),
+          ),
+          onTap: _shareApp,
+        ),
+        ListTile(
           title: Text(lang.translate('version')),
           trailing: const Text("1.0.0", style: TextStyle(color: Colors.grey)),
         ),
       ],
     );
+  }
+
+  void _shareApp() {
+    final lang = Provider.of<LanguageService>(context, listen: false);
+    final shareMessage = lang.translate('share_message');
+    Share.share(shareMessage);
   }
 
   Widget _buildPermissionRow({
@@ -578,6 +596,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     required bool showButton,
     required String buttonText,
     VoidCallback? onTap,
+    VoidCallback? onInfoTap,
   }) {
     const tealColor = Color(0xFF00A19B);
 
@@ -591,7 +610,22 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontSize: 14)),
+                Row(
+                  children: [
+                    Text(title, style: const TextStyle(fontSize: 14)),
+                    if (onInfoTap != null) ...[
+                      const SizedBox(width: 4),
+                      GestureDetector(
+                        onTap: onInfoTap,
+                        child: Icon(
+                          Icons.info_outline,
+                          size: 16,
+                          color: Colors.grey.shade500,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
                 Text(subtitle, style: TextStyle(fontSize: 11, color: subtitleColor)),
               ],
             ),
@@ -606,6 +640,167 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
               ),
               child: Text(buttonText, style: const TextStyle(color: tealColor, fontSize: 12)),
             ),
+        ],
+      ),
+    );
+  }
+
+  void _showAlarmsInfoDialog() {
+    final lang = Provider.of<LanguageService>(context, listen: false);
+    const tealColor = Color(0xFF00A19B);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            const Icon(Icons.alarm, color: tealColor),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                lang.translate('alarms_info_title'),
+                style: const TextStyle(fontSize: 18),
+              ),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Why it's needed
+              Text(
+                lang.translate('alarms_info_why'),
+                style: const TextStyle(fontWeight: FontWeight.bold, color: tealColor),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                lang.translate('alarms_info_why_desc'),
+                style: const TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 16),
+
+              // How to enable
+              Text(
+                lang.translate('alarms_info_steps'),
+                style: const TextStyle(fontWeight: FontWeight.bold, color: tealColor),
+              ),
+              const SizedBox(height: 4),
+              Text(lang.translate('alarms_info_step1'), style: const TextStyle(fontSize: 14)),
+              Text(lang.translate('alarms_info_step2'), style: const TextStyle(fontSize: 14)),
+              const SizedBox(height: 12),
+
+              // Note
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.grey.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.info, size: 16, color: Colors.grey.shade600),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        lang.translate('alarms_info_note'),
+                        style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(lang.translate('info_close'), style: const TextStyle(color: tealColor)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showBatteryInfoDialog() {
+    final lang = Provider.of<LanguageService>(context, listen: false);
+    const tealColor = Color(0xFF00A19B);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            const Icon(Icons.battery_saver, color: tealColor),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                lang.translate('battery_info_title'),
+                style: const TextStyle(fontSize: 18),
+              ),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Why it's needed
+              Text(
+                lang.translate('battery_info_why'),
+                style: const TextStyle(fontWeight: FontWeight.bold, color: tealColor),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                lang.translate('battery_info_why_desc'),
+                style: const TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 16),
+
+              // How to allow background usage
+              Text(
+                lang.translate('battery_info_steps'),
+                style: const TextStyle(fontWeight: FontWeight.bold, color: tealColor),
+              ),
+              const SizedBox(height: 4),
+              Text(lang.translate('battery_info_step1'), style: const TextStyle(fontSize: 14)),
+              Text(lang.translate('battery_info_step2'), style: const TextStyle(fontSize: 14)),
+              Text(lang.translate('battery_info_step3'), style: const TextStyle(fontSize: 14)),
+              const SizedBox(height: 12),
+
+              // Note
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.green.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.check_circle_outline, size: 16, color: Colors.green),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        lang.translate('battery_info_note'),
+                        style: const TextStyle(fontSize: 12, color: Colors.green),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(lang.translate('info_close'), style: const TextStyle(color: tealColor)),
+          ),
         ],
       ),
     );
