@@ -7,8 +7,13 @@ import 'details_screen.dart';
 
 class CalendarScreen extends StatefulWidget {
   final List<EkadashiDate> ekadashiList;
+  final String? currentTimezone;
 
-  const CalendarScreen({super.key, required this.ekadashiList});
+  const CalendarScreen({
+    super.key,
+    required this.ekadashiList,
+    this.currentTimezone,
+  });
 
   @override
   State<CalendarScreen> createState() => CalendarScreenState();
@@ -44,8 +49,9 @@ class CalendarScreenState extends State<CalendarScreen> {
   @override
   void didUpdateWidget(CalendarScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // When ekadashiList changes (e.g., language change), refresh the selected ekadashi
-    if (widget.ekadashiList != oldWidget.ekadashiList) {
+    // When ekadashiList changes (e.g., language or timezone change), refresh the selected ekadashi
+    if (widget.ekadashiList != oldWidget.ekadashiList ||
+        widget.currentTimezone != oldWidget.currentTimezone) {
       _checkSelectedDayEkadashi();
     }
   }
@@ -231,6 +237,17 @@ class CalendarScreenState extends State<CalendarScreen> {
                 ),
                 textAlign: TextAlign.center,
               ),
+              // Show timezone info if available
+              if (widget.currentTimezone != null && widget.currentTimezone!.isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(
+                  widget.currentTimezone!,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade500,
+                  ),
+                ),
+              ],
               const SizedBox(height: 12),
               // View Details button
               SizedBox(
@@ -240,7 +257,10 @@ class CalendarScreenState extends State<CalendarScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => DetailsScreen(ekadashi: ekadashi),
+                        builder: (_) => DetailsScreen(
+                          ekadashi: ekadashi,
+                          timezone: widget.currentTimezone,
+                        ),
                       ),
                     );
                   },

@@ -6,14 +6,19 @@ import '../services/language_service.dart';
 
 class DetailsScreen extends StatelessWidget {
   final EkadashiDate ekadashi;
+  final String? timezone;
 
-  const DetailsScreen({super.key, required this.ekadashi});
+  const DetailsScreen({
+    super.key,
+    required this.ekadashi,
+    this.timezone,
+  });
 
   @override
   Widget build(BuildContext context) {
     const tealColor = Color(0xFF00A19B);
     final lang = Provider.of<LanguageService>(context);
-    
+
     // Clean up break time string
     String breakTime = ekadashi.fastBreakTime;
     breakTime = breakTime.replaceAll(RegExp(r'^[a-zA-Z]{3} \d{1,2}, '), '');
@@ -39,12 +44,31 @@ class DetailsScreen extends StatelessWidget {
                   Text(
                     ekadashi.name,
                     style: const TextStyle(
-                      color: tealColor, 
-                      fontSize: 32, 
-                      fontWeight: FontWeight.bold
+                        color: tealColor,
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold
                     ),
                     textAlign: TextAlign.center,
                   ),
+                  // Show timezone if available
+                  if (timezone != null && timezone!.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: tealColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        timezone!,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: tealColor.withOpacity(0.8),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -85,7 +109,7 @@ class DetailsScreen extends StatelessWidget {
               style: const TextStyle(fontSize: 16, height: 1.5),
             ),
             const SizedBox(height: 24),
-            
+
             // Benefits Section
             Text(
               lang.translate('spiritual_benefits'),
@@ -102,45 +126,75 @@ class DetailsScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Theme.of(context).cardColor,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: tealColor.withValues(alpha: 0.3)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 10,
-                  )
-                ]
+                  color: Theme.of(context).cardColor,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: tealColor.withOpacity(0.3)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                    )
+                  ]
               ),
               child: Column(
                 children: [
+                  // Fasting Start
                   Row(
                     children: [
                       const Icon(Icons.restaurant_menu, color: tealColor),
                       const SizedBox(width: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(lang.translate('start_fasting'), style: const TextStyle(color: tealColor, fontWeight: FontWeight.bold)),
-                          Text(DateFormat('MMM dd, yyyy').format(ekadashi.date), style: const TextStyle(fontSize: 13, color: Colors.grey)),
-                          Text(ekadashi.fastStartTime, style: const TextStyle(fontSize: 18)),
-                        ],
-                      )
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                                lang.translate('start_fasting'),
+                                style: const TextStyle(color: tealColor, fontWeight: FontWeight.bold)
+                            ),
+                            Text(
+                                DateFormat('MMM dd, yyyy').format(ekadashi.date),
+                                style: const TextStyle(fontSize: 13, color: Colors.grey)
+                            ),
+                            Text(ekadashi.fastStartTime, style: const TextStyle(fontSize: 18)),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                   const Divider(height: 24),
+                  // Parana (Break Fast) Time
                   Row(
                     children: [
                       const Icon(Icons.wb_twilight, color: tealColor),
                       const SizedBox(width: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(lang.translate('break_fasting'), style: const TextStyle(color: tealColor, fontWeight: FontWeight.bold)),
-                          Text(DateFormat('MMM dd, yyyy').format(ekadashi.date.add(const Duration(days: 1))), style: const TextStyle(fontSize: 13, color: Colors.grey)),
-                          Text(breakTime, style: const TextStyle(fontSize: 18)),
-                        ],
-                      )
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                                lang.translate('break_fasting'),
+                                style: const TextStyle(color: tealColor, fontWeight: FontWeight.bold)
+                            ),
+                            Text(
+                                DateFormat('MMM dd, yyyy').format(ekadashi.date.add(const Duration(days: 1))),
+                                style: const TextStyle(fontSize: 13, color: Colors.grey)
+                            ),
+                            Text(breakTime, style: const TextStyle(fontSize: 18)),
+                            // Show parana end time if available
+                            if (ekadashi.paranaEndIso.isNotEmpty) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                _formatParanaWindow(breakTime, ekadashi.paranaEndIso),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey.shade600,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ],
@@ -151,5 +205,17 @@ class DetailsScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// Format parana window text (e.g., "Window: 06:30 AM - 10:15 AM")
+  String _formatParanaWindow(String startTime, String endTimeIso) {
+    try {
+      // Parse the ISO datetime to get just the time
+      final endDateTime = DateTime.parse(endTimeIso);
+      final endTime = DateFormat('hh:mm a').format(endDateTime);
+      return 'Window: $startTime - $endTime';
+    } catch (e) {
+      return '';
+    }
   }
 }

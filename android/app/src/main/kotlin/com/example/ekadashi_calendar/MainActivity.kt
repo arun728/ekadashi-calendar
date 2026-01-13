@@ -12,15 +12,55 @@ import android.util.Log
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
+import kotlinx.coroutines.*
 
 class MainActivity: FlutterActivity() {
-    private val CHANNEL = "com.ekadashi.permissions"
-    private val TAG = "EkadashiPermission"
+    // Channel names
+    private val PERMISSION_CHANNEL = "com.ekadashi.permissions"
+    private val LOCATION_CHANNEL = "com.ekadashi.location"
+    private val NOTIFICATION_CHANNEL = "com.ekadashi.notifications"
+    private val SETTINGS_CHANNEL = "com.ekadashi.settings"
+
+    private val TAG = "EkadashiMain"
+
+    // Coroutine scope for async operations
+    private val mainScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+
+    // Services
+    private lateinit var locationService: LocationService
+    private lateinit var notificationScheduler: NotificationScheduler
+    private lateinit var settingsService: SettingsService
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
 
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
+        // Initialize services
+        locationService = LocationService(applicationContext)
+        notificationScheduler = NotificationScheduler(applicationContext)
+        settingsService = SettingsService(applicationContext)
+
+        // Setup permission channel (existing)
+        setupPermissionChannel(flutterEngine)
+
+        // Setup location channel (new)
+        setupLocationChannel(flutterEngine)
+
+        // Setup notification channel (new)
+        setupNotificationChannel(flutterEngine)
+
+        // Setup settings channel (new - for native permission handling)
+        setupSettingsChannel(flutterEngine)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        mainScope.cancel()
+    }
+
+    // ==================== PERMISSION CHANNEL ====================
+
+    private fun setupPermissionChannel(flutterEngine: FlutterEngine) {
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, PERMISSION_CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
                 "canScheduleExactAlarms" -> {
                     val canSchedule = canScheduleExactAlarms()
@@ -39,14 +79,346 @@ class MainActivity: FlutterActivity() {
         }
     }
 
-    /**
-     * Open the system's Alarms & Reminders settings page.
-     * Uses multiple fallback strategies to ensure compatibility across all Android devices.
-     */
+    // ==================== LOCATION CHANNEL ====================
+
+    private fun setupLocationChannel(flutterEngine: FlutterEngine) {
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, LOCATION_CHANNEL).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "getCurrentLocation" -> {
+                    mainScope.launch {
+                        try {
+                            val locationResult = locationService.getCurrentLocation()
+                            when (locationResult) {
+                                is LocationResult.Success -> result.success(locationResult.toMap())
+                                is LocationResult.Error -> result.success(locationResult.toMap())
+                            }
+                        } catch (e: Exception) {
+                            Log.e(TAG, "getCurrentLocation error: ${e.message}")
+                            result.error("LOCATION_ERROR", e.message, null)
+                        }
+                    }
+                }
+
+                "getCachedLocation" -> {
+                    val cached = locationService.getCachedLocation()
+                    if (cached != null) {
+                        result.success(cached.toMap())
+                    } else {
+                        result.success(mapOf("success" to false, "errorCode" to "NO_CACHE", "errorMessage" to "No cached location"))
+                    }
+                }
+
+                "hasLocationPermission" -> {
+                    result.success(locationService.hasLocationPermission())
+                }
+
+                "isLocationEnabled" -> {
+                    mainScope.launch {
+                        result.success(locationService.isLocationEnabled())
+                    }
+                }
+
+                "getSelectedCityId" -> {
+                    result.success(locationService.getSelectedCityId())
+                }
+
+                "setSelectedCityId" -> {
+                    val cityId = call.argument<String?>("cityId")
+                    locationService.setSelectedCityId(cityId)
+                    result.success(true)
+                }
+
+                "isAutoDetectEnabled" -> {
+                    result.success(locationService.isAutoDetectEnabled())
+                }
+
+                "setAutoDetectEnabled" -> {
+                    val enabled = call.argument<Boolean>("enabled") ?: true
+                    locationService.setAutoDetectEnabled(enabled)
+                    result.success(true)
+                }
+
+                "getCurrentTimezone" -> {
+                    result.success(locationService.getCurrentTimezone())
+                }
+
+                "setTimezone" -> {
+                    val timezone = call.argument<String>("timezone") ?: "IST"
+                    locationService.setTimezone(timezone)
+                    result.success(true)
+                }
+
+                "clearLocationCache" -> {
+                    locationService.clearCache()
+                    result.success(true)
+                }
+
+                else -> {
+                    result.notImplemented()
+                }
+            }
+        }
+    }
+
+    // ==================== NOTIFICATION CHANNEL ====================
+
+    private fun setupNotificationChannel(flutterEngine: FlutterEngine) {
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, NOTIFICATION_CHANNEL).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "scheduleNotification" -> {
+                    try {
+                        val ekadashiId = call.argument<Int>("ekadashiId") ?: 0
+                        val ekadashiName = call.argument<String>("ekadashiName") ?: ""
+                        val fastingStartTime = call.argument<String>("fastingStartTime") ?: ""
+                        val paranaStartTime = call.argument<String>("paranaStartTime") ?: ""
+                        val texts = call.argument<Map<String, String>>("texts") ?: emptyMap()
+
+                        val count = notificationScheduler.scheduleEkadashiNotifications(
+                            ekadashiId, ekadashiName, fastingStartTime, paranaStartTime, texts
+                        )
+                        result.success(count)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "scheduleNotification error: ${e.message}")
+                        result.error("SCHEDULE_ERROR", e.message, null)
+                    }
+                }
+
+                "scheduleAllNotifications" -> {
+                    try {
+                        @Suppress("UNCHECKED_CAST")
+                        val ekadashiList = call.argument<List<Map<String, Any>>>("ekadashis") ?: emptyList()
+                        val texts = call.argument<Map<String, String>>("texts") ?: emptyMap()
+
+                        var totalScheduled = 0
+                        for (ekadashi in ekadashiList) {
+                            val id = (ekadashi["id"] as? Number)?.toInt() ?: continue
+                            val name = ekadashi["name"] as? String ?: continue
+                            val fastingStart = ekadashi["fastingStart"] as? String ?: continue
+                            val paranaStart = ekadashi["paranaStart"] as? String ?: continue
+
+                            totalScheduled += notificationScheduler.scheduleEkadashiNotifications(
+                                id, name, fastingStart, paranaStart, texts
+                            )
+                        }
+
+                        Log.d(TAG, "Scheduled $totalScheduled notifications for ${ekadashiList.size} Ekadashis")
+                        result.success(totalScheduled)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "scheduleAllNotifications error: ${e.message}")
+                        result.error("SCHEDULE_ERROR", e.message, null)
+                    }
+                }
+
+                "cancelAllNotifications" -> {
+                    notificationScheduler.cancelAllNotifications()
+                    result.success(true)
+                }
+
+                "cancelEkadashiNotifications" -> {
+                    val ekadashiId = call.argument<Int>("ekadashiId") ?: 0
+                    notificationScheduler.cancelEkadashiNotifications(ekadashiId)
+                    result.success(true)
+                }
+
+                "showTestNotification" -> {
+                    val title = call.argument<String>("title") ?: "Test"
+                    val body = call.argument<String>("body") ?: "Test notification"
+                    notificationScheduler.showTestNotification(title, body)
+                    result.success(true)
+                }
+
+                "getPendingCount" -> {
+                    mainScope.launch {
+                        val count = notificationScheduler.getPendingNotificationCount()
+                        result.success(count)
+                    }
+                }
+
+                "getSettings" -> {
+                    result.success(notificationScheduler.getSettings())
+                }
+
+                "updateSettings" -> {
+                    @Suppress("UNCHECKED_CAST")
+                    val settings = call.argument<Map<String, Boolean>>("settings") ?: emptyMap()
+                    notificationScheduler.updateSettings(settings)
+                    result.success(true)
+                }
+
+                "isNotificationsEnabled" -> {
+                    result.success(notificationScheduler.isNotificationsEnabled())
+                }
+
+                "setNotificationsEnabled" -> {
+                    val enabled = call.argument<Boolean>("enabled") ?: true
+                    notificationScheduler.setNotificationsEnabled(enabled)
+                    result.success(true)
+                }
+
+                else -> {
+                    result.notImplemented()
+                }
+            }
+        }
+    }
+
+    // ==================== PERMISSION HELPERS (existing) ====================
+
+    // ==================== SETTINGS CHANNEL (NEW) ====================
+
+    private fun setupSettingsChannel(flutterEngine: FlutterEngine) {
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, SETTINGS_CHANNEL).setMethodCallHandler { call, result ->
+            when (call.method) {
+                // Permission checks - all run on IO thread
+                "checkAllPermissions" -> {
+                    mainScope.launch {
+                        try {
+                            val permissions = settingsService.checkAllPermissions()
+                            result.success(permissions)
+                        } catch (e: Exception) {
+                            Log.e(TAG, "checkAllPermissions error: ${e.message}")
+                            result.error("PERMISSION_ERROR", e.message, null)
+                        }
+                    }
+                }
+
+                "hasNotificationPermission" -> {
+                    mainScope.launch {
+                        try {
+                            result.success(settingsService.hasNotificationPermission())
+                        } catch (e: Exception) {
+                            result.error("PERMISSION_ERROR", e.message, null)
+                        }
+                    }
+                }
+
+                "hasExactAlarmPermission" -> {
+                    mainScope.launch {
+                        try {
+                            result.success(settingsService.hasExactAlarmPermission())
+                        } catch (e: Exception) {
+                            result.error("PERMISSION_ERROR", e.message, null)
+                        }
+                    }
+                }
+
+                "hasLocationPermission" -> {
+                    mainScope.launch {
+                        try {
+                            result.success(settingsService.hasLocationPermission())
+                        } catch (e: Exception) {
+                            result.error("PERMISSION_ERROR", e.message, null)
+                        }
+                    }
+                }
+
+                "isBatteryOptimizationDisabled" -> {
+                    mainScope.launch {
+                        try {
+                            result.success(settingsService.isBatteryOptimizationDisabled())
+                        } catch (e: Exception) {
+                            result.error("PERMISSION_ERROR", e.message, null)
+                        }
+                    }
+                }
+
+                // Open settings intents
+                "openNotificationSettings" -> {
+                    result.success(settingsService.openNotificationSettings())
+                }
+
+                "openExactAlarmSettings" -> {
+                    result.success(settingsService.openExactAlarmSettings())
+                }
+
+                "openBatteryOptimizationSettings" -> {
+                    result.success(settingsService.openBatteryOptimizationSettings())
+                }
+
+                "openAppSettings" -> {
+                    result.success(settingsService.openAppSettings())
+                }
+
+                "openLocationSettings" -> {
+                    result.success(settingsService.openLocationSettings())
+                }
+
+                // Notification settings
+                "getNotificationSettings" -> {
+                    result.success(settingsService.getNotificationSettings())
+                }
+
+                "updateNotificationSettings" -> {
+                    @Suppress("UNCHECKED_CAST")
+                    val settings = call.argument<Map<String, Boolean>>("settings") ?: emptyMap()
+                    result.success(settingsService.updateNotificationSettings(settings))
+                }
+
+                "setNotificationSetting" -> {
+                    val key = call.argument<String>("key") ?: ""
+                    val value = call.argument<Boolean>("value") ?: false
+                    result.success(settingsService.setNotificationSetting(key, value))
+                }
+
+                // Location settings
+                "getLocationSettings" -> {
+                    result.success(settingsService.getLocationSettings())
+                }
+
+                "updateLocationSettings" -> {
+                    val autoDetect = call.argument<Boolean>("autoDetect") ?: true
+                    val cityId = call.argument<String?>("cityId")
+                    val timezone = call.argument<String>("timezone") ?: "IST"
+                    result.success(settingsService.updateLocationSettings(autoDetect, cityId, timezone))
+                }
+
+                // Theme settings
+                "isDarkMode" -> {
+                    result.success(settingsService.isDarkMode())
+                }
+
+                "setDarkMode" -> {
+                    val enabled = call.argument<Boolean>("enabled") ?: false
+                    result.success(settingsService.setDarkMode(enabled))
+                }
+
+                // Language settings
+                "getLanguageCode" -> {
+                    result.success(settingsService.getLanguageCode())
+                }
+
+                "setLanguageCode" -> {
+                    val code = call.argument<String>("code") ?: "en"
+                    result.success(settingsService.setLanguageCode(code))
+                }
+
+                // All settings
+                "getAllSettings" -> {
+                    mainScope.launch {
+                        try {
+                            val settings = settingsService.getAllSettings()
+                            result.success(settings)
+                        } catch (e: Exception) {
+                            Log.e(TAG, "getAllSettings error: ${e.message}")
+                            result.error("SETTINGS_ERROR", e.message, null)
+                        }
+                    }
+                }
+
+                "resetToDefaults" -> {
+                    result.success(settingsService.resetToDefaults())
+                }
+
+                else -> {
+                    result.notImplemented()
+                }
+            }
+        }
+    }
+
     private fun openAlarmSettings(): Boolean {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             try {
-                // Primary: Direct intent to exact alarm settings (Android 12+)
                 val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
                     data = Uri.parse("package:$packageName")
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -57,7 +429,6 @@ class MainActivity: FlutterActivity() {
             } catch (e: Exception) {
                 Log.w(TAG, "ACTION_REQUEST_SCHEDULE_EXACT_ALARM failed: ${e.message}")
 
-                // Fallback 1: Try generic app notification settings
                 try {
                     val fallbackIntent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
                         putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
@@ -69,7 +440,6 @@ class MainActivity: FlutterActivity() {
                 } catch (e2: Exception) {
                     Log.w(TAG, "ACTION_APP_NOTIFICATION_SETTINGS failed: ${e2.message}")
 
-                    // Fallback 2: Open app details settings
                     try {
                         val detailsIntent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                             data = Uri.parse("package:$packageName")
@@ -85,7 +455,6 @@ class MainActivity: FlutterActivity() {
                 }
             }
         } else {
-            // Pre-Android 12: Open app details settings
             try {
                 val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                     data = Uri.parse("package:$packageName")
@@ -100,43 +469,27 @@ class MainActivity: FlutterActivity() {
         }
     }
 
-    /**
-     * Check if the app can schedule exact alarms using multiple methods.
-     * Samsung One UI has a known bug where AlarmManager.canScheduleExactAlarms()
-     * returns cached/stale values. We use AppOpsManager as a more reliable check.
-     */
     private fun canScheduleExactAlarms(): Boolean {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            // Method 1: Use AppOpsManager (more reliable on Samsung)
             val appOpsResult = checkViaAppOps()
             Log.d(TAG, "AppOpsManager check: $appOpsResult")
 
-            // Method 2: Use AlarmManager (standard API)
             val alarmManagerResult = checkViaAlarmManager()
             Log.d(TAG, "AlarmManager check: $alarmManagerResult")
 
-            // On Samsung devices, AppOpsManager is more reliable
-            // If they disagree, trust AppOpsManager
             if (appOpsResult != null) {
                 return appOpsResult
             }
 
-            // Fallback to AlarmManager if AppOpsManager fails
             return alarmManagerResult
         }
-        // Pre-Android 12 doesn't need this permission
         return true
     }
 
-    /**
-     * Check permission via AppOpsManager - more reliable on Samsung devices
-     */
     private fun checkViaAppOps(): Boolean? {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             try {
                 val appOpsManager = getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
-
-                // OPSTR_SCHEDULE_EXACT_ALARM = "android:schedule_exact_alarm"
                 val opStr = "android:schedule_exact_alarm"
 
                 val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -151,11 +504,7 @@ class MainActivity: FlutterActivity() {
                 return when (mode) {
                     AppOpsManager.MODE_ALLOWED -> true
                     AppOpsManager.MODE_IGNORED, AppOpsManager.MODE_ERRORED -> false
-                    AppOpsManager.MODE_DEFAULT -> {
-                        // MODE_DEFAULT means check the underlying permission
-                        // Fall through to AlarmManager check
-                        null
-                    }
+                    AppOpsManager.MODE_DEFAULT -> null
                     else -> null
                 }
             } catch (e: Exception) {
@@ -166,13 +515,9 @@ class MainActivity: FlutterActivity() {
         return null
     }
 
-    /**
-     * Check permission via AlarmManager - standard API
-     */
     private fun checkViaAlarmManager(): Boolean {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             try {
-                // Use applicationContext to avoid any activity-level caching
                 val alarmManager = applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager
                 return alarmManager.canScheduleExactAlarms()
             } catch (e: Exception) {

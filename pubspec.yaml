@@ -2,7 +2,7 @@ name: ekadashi_calendar
 description: "Ekadashi Calendar App"
 publish_to: 'none'
 
-version: 1.0.0+1
+version: 2.0.0+1
 
 environment:
   sdk: ^3.10.4
@@ -10,6 +10,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+
+  # Sharing
   share_plus: ^7.2.2
 
   # Core
@@ -17,11 +19,7 @@ dependencies:
   shared_preferences: ^2.5.4
   provider: ^6.1.1
 
-  # Location
-  geolocator: ^14.0.2
-  geocoding: ^4.0.0
-
-  # Notifications
+  # Notifications (flutter_local_notifications kept for test notifications display)
   flutter_local_notifications: ^18.0.0
   timezone: ^0.9.2
   flutter_timezone: ^3.0.0
@@ -29,8 +27,12 @@ dependencies:
   # UI
   table_calendar: ^3.2.0
 
-  # Settings
-  app_settings: ^5.1.1
+  # ============================================================
+  # REMOVED DEPENDENCIES (v2.0 - replaced with native Kotlin)
+  # ============================================================
+  # geolocator: ^14.0.2      # REMOVED - causes app freeze on activity recreation
+  # geocoding: ^4.0.0        # REMOVED - no longer needed
+  # app_settings: ^5.1.1     # REMOVED - causes freeze when returning from settings
 
 dev_dependencies:
   flutter_test:
@@ -42,6 +44,7 @@ flutter:
   uses-material-design: true
 
   assets:
+    - assets/ekadashi_data_v2.json
     - assets/ekadashi_data_en.json
     - assets/ekadashi_data_ta.json
     - assets/ekadashi_data_hi.json

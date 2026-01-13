@@ -1,18 +1,19 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:geocoding/geocoding.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 import 'services/ekadashi_service.dart';
 import 'services/notification_service.dart';
+import 'services/native_location_service.dart';
+import 'services/native_notification_service.dart';
 import 'services/theme_service.dart';
 import 'services/language_service.dart';
 import 'screens/calendar_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/details_screen.dart';
+import 'screens/city_selection_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -63,16 +64,17 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   int _currentIndex = 0;
   final EkadashiService _ekadashiService = EkadashiService();
+  final NativeLocationService _locationService = NativeLocationService();
   String _currentLangCode = '';
 
   List<EkadashiDate> _ekadashiList = [];
   bool _isLoading = true;
   String _errorMessage = '';
   String _locationText = '';
+  String _currentTimezone = 'IST';
   bool _locationDenied = false;
-  bool _isRequestingLocation = false; // NEW: Track if we're requesting permission
+  bool _isAutoDetectEnabled = true;
   int _currentPage = 0;
-  bool _isResuming = false;
 
   final PageController _pageController = PageController(viewportFraction: 1.0);
   final GlobalKey<CalendarScreenState> _calendarKey = GlobalKey();
@@ -90,7 +92,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     final langService = Provider.of<LanguageService>(context);
     if (_currentLangCode != langService.currentLocale.languageCode) {
       _currentLangCode = langService.currentLocale.languageCode;
-      _loadData(languageCode: _currentLangCode);
+      _loadData();
     }
   }
 
@@ -103,49 +105,20 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && !_isResuming && !_isRequestingLocation) {
-      _isResuming = true;
-      // Use post frame callback instead of delay for smoother experience
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          _safeLocationCheck();
-        }
-        _isResuming = false;
-      });
+    if (state == AppLifecycleState.resumed) {
+      // Refresh location when app resumes (non-blocking)
+      _refreshLocationIfNeeded();
     }
   }
 
-  /// Safe location check that won't crash during activity recreation
-  Future<void> _safeLocationCheck() async {
-    if (!mounted) return;
-
-    try {
-      final permission = await Geolocator.checkPermission()
-          .timeout(const Duration(seconds: 3), onTimeout: () => LocationPermission.denied);
-
-      if (!mounted) return;
-
-      final hasPermission = permission == LocationPermission.whileInUse ||
-          permission == LocationPermission.always;
-
-      if (hasPermission && _locationDenied) {
-        // Permission was granted while away - fetch location
-        _handleLocation();
-      } else if (!hasPermission && !_locationDenied) {
-        // Permission was revoked while away - update UI immediately
-        setState(() {
-          _locationDenied = true;
-          _locationText = '';
-        });
-      }
-    } catch (e) {
-      debugPrint('Safe location check error: $e');
-    }
-  }
-
+  /// Initialize app - check settings and load data
   Future<void> _initializeApp() async {
     final prefs = await SharedPreferences.getInstance();
     final hasLaunched = prefs.getBool('has_launched') ?? false;
+
+    // Load saved settings
+    _isAutoDetectEnabled = await _locationService.isAutoDetectEnabled();
+    _currentTimezone = await _locationService.getCurrentTimezone();
 
     if (!hasLaunched) {
       await prefs.setBool('has_launched', true);
@@ -156,153 +129,111 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   }
 
   Future<void> _requestPermissionsOnFirstLaunch() async {
-    // Show "Detecting location..." immediately during first launch
-    if (mounted) {
-      setState(() {
-        _isRequestingLocation = true;
-        _locationDenied = false;
-        _locationText = '';
-      });
-    }
-
+    // Request notification permission
     final notifGranted = await NotificationService().requestNotificationPermission();
-
     if (notifGranted) {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('notifications_enabled', true);
       await prefs.setBool('remind_one_day_before', true);
       await prefs.setBool('remind_two_days_before', true);
       await prefs.setBool('remind_on_day', true);
-      debugPrint('✅ Notification preferences saved: all enabled');
-
-      // Check alarm permission status (don't open settings automatically!)
-      // User can enable it later from Settings tab if needed
-      if (Platform.isAndroid) {
-        final hasAlarmPermission = await NotificationService().hasExactAlarmPermission();
-        debugPrint('📢 Alarm permission on first launch: $hasAlarmPermission');
-        // If not granted, user will see warning in Settings > Permissions
-      }
+      debugPrint('✅ Notification preferences saved');
     }
 
-    // Now request location permission
-    try {
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-      }
-
-      if (mounted) {
-        setState(() => _isRequestingLocation = false);
-      }
-
-      if (permission == LocationPermission.whileInUse ||
-          permission == LocationPermission.always) {
-        await _handleLocation();
-      } else {
-        _setLocationDenied();
-      }
-    } catch (e) {
-      debugPrint('Location permission error: $e');
-      if (mounted) {
-        setState(() => _isRequestingLocation = false);
-      }
-      _setLocationDenied();
-    }
+    // Handle location (native service will request permission if needed)
+    await _handleLocation();
   }
 
+  /// Handle location detection using native service
   Future<void> _handleLocation() async {
+    if (!mounted) return;
+
+    setState(() {
+      _locationText = '';
+      _locationDenied = false;
+    });
+
     try {
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled()
-          .timeout(const Duration(seconds: 3), onTimeout: () => false);
-      if (!serviceEnabled) {
-        _setLocationDenied();
-        return;
-      }
+      if (_isAutoDetectEnabled) {
+        // Try to get current location
+        final location = await _locationService.getCurrentLocation();
 
-      LocationPermission permission = await Geolocator.checkPermission()
-          .timeout(const Duration(seconds: 2), onTimeout: () => LocationPermission.denied);
-      if (permission == LocationPermission.denied ||
-          permission == LocationPermission.deniedForever) {
-        _setLocationDenied();
-        return;
-      }
+        if (location != null && mounted) {
+          setState(() {
+            _locationText = location.city;
+            _currentTimezone = location.timezone;
+            _locationDenied = false;
+          });
 
-      if (mounted) {
-        setState(() {
-          _locationText = '';
-          _locationDenied = false;
-        });
-      }
-
-      Position position = await Geolocator.getCurrentPosition(
-        timeLimit: const Duration(seconds: 10),
-      );
-
-      List<Placemark> placemarks = await placemarkFromCoordinates(
-          position.latitude,
-          position.longitude
-      ).timeout(const Duration(seconds: 5), onTimeout: () => []);
-
-      if (placemarks.isNotEmpty && mounted) {
-        final place = placemarks.first;
-        setState(() {
-          _locationText = place.locality ?? place.subAdministrativeArea ?? '';
-          _locationDenied = false;
-        });
+          // Save timezone
+          await _locationService.setTimezone(location.timezone);
+        } else {
+          // Try cached location
+          final cached = await _locationService.getCachedLocation();
+          if (cached != null && mounted) {
+            setState(() {
+              _locationText = cached.city;
+              _currentTimezone = cached.timezone;
+              _locationDenied = false;
+            });
+          } else {
+            _setLocationDenied();
+          }
+        }
+      } else {
+        // Manual city selection - load from preferences
+        final cityId = await _locationService.getSelectedCityId();
+        if (cityId != null) {
+          final city = _ekadashiService.getCityById(cityId);
+          if (city != null && mounted) {
+            setState(() {
+              _locationText = city.name;
+              _currentTimezone = city.timezone;
+              _locationDenied = false;
+            });
+          }
+        }
       }
     } catch (e) {
       debugPrint('Location error: $e');
       _setLocationDenied();
     }
+
+    // Load data regardless of location result
+    await _loadData();
   }
 
   void _setLocationDenied() {
     if (mounted) {
       setState(() {
-        _locationText = '';
         _locationDenied = true;
-        _isRequestingLocation = false;
+        _locationText = '';
       });
     }
   }
 
-  Future<void> _requestLocationAgain() async {
-    try {
-      LocationPermission permission = await Geolocator.checkPermission();
+  /// Refresh location in background when app resumes
+  Future<void> _refreshLocationIfNeeded() async {
+    if (!_isAutoDetectEnabled) return;
 
-      if (permission == LocationPermission.deniedForever) {
-        await Geolocator.openAppSettings();
-      } else {
-        // Show detecting state while requesting
-        if (mounted) {
-          setState(() {
-            _isRequestingLocation = true;
-            _locationDenied = false;
-          });
-        }
-
-        permission = await Geolocator.requestPermission();
-
-        if (mounted) {
-          setState(() => _isRequestingLocation = false);
-        }
-
-        if (permission == LocationPermission.whileInUse ||
-            permission == LocationPermission.always) {
-          await _handleLocation();
-        } else {
-          _setLocationDenied();
-        }
-      }
-    } catch (e) {
-      debugPrint('Location request error: $e');
-      if (mounted) {
-        setState(() => _isRequestingLocation = false);
+    final location = await _locationService.getCurrentLocation();
+    if (location != null && mounted) {
+      if (location.timezone != _currentTimezone) {
+        // Timezone changed - reload data
+        setState(() {
+          _locationText = location.city;
+          _currentTimezone = location.timezone;
+        });
+        await _loadData();
+      } else if (location.city != _locationText) {
+        // Just city name changed
+        setState(() => _locationText = location.city);
       }
     }
   }
 
-  Future<void> _loadData({String languageCode = 'en'}) async {
+  /// Load Ekadashi data for current timezone and language
+  Future<void> _loadData({String? languageCode}) async {
     if (!mounted) return;
 
     setState(() {
@@ -311,21 +242,45 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     });
 
     try {
-      final dates = _ekadashiService.getEkadashis(languageCode);
+      final lang = languageCode ?? _currentLangCode;
+      final ekadashis = _ekadashiService.getEkadashis(
+        timezone: _currentTimezone,
+        languageCode: lang.isEmpty ? 'en' : lang,
+      );
+
+      // Filter to upcoming Ekadashis (from today onwards, plus a few past ones for context)
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final cutoffDate = today.subtract(const Duration(days: 7)); // Show last week too
+
+      final filtered = ekadashis.where((e) => e.date.isAfter(cutoffDate)).toList();
+
+      // Find index of next upcoming Ekadashi
+      int startIndex = 0;
+      for (int i = 0; i < filtered.length; i++) {
+        if (!filtered[i].date.isBefore(today)) {
+          startIndex = i;
+          break;
+        }
+      }
 
       if (mounted) {
         setState(() {
-          _ekadashiList = dates;
+          _ekadashiList = filtered;
+          _currentPage = startIndex;
           _isLoading = false;
         });
 
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _scrollToNextEkadashi(animate: false);
-        });
+        // Jump to current Ekadashi
+        if (_pageController.hasClients && filtered.isNotEmpty) {
+          _pageController.jumpToPage(startIndex);
+        }
 
-        _scheduleNotificationsInBackground(dates);
+        // Schedule notifications
+        _scheduleNotifications();
       }
     } catch (e) {
+      debugPrint('Error loading data: $e');
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -335,304 +290,297 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     }
   }
 
-  void _scrollToNextEkadashi({bool animate = true}) {
-    if (_ekadashiList.isEmpty || !_pageController.hasClients) return;
+  /// Schedule notifications for all Ekadashis
+  Future<void> _scheduleNotifications() async {
+    if (_ekadashiList.isEmpty) return;
 
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    int indexToScroll = 0;
+    final prefs = await SharedPreferences.getInstance();
+    final notificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
+    if (!notificationsEnabled) return;
 
-    for (int i = 0; i < _ekadashiList.length; i++) {
-      if (_ekadashiList[i].date.isAfter(today) ||
-          _ekadashiList[i].date.isAtSameMomentAs(today)) {
-        indexToScroll = i;
-        break;
-      }
-    }
+    final lang = Provider.of<LanguageService>(context, listen: false);
+    final texts = lang.localizedStrings;
 
-    if (animate) {
-      _pageController.animateToPage(
-          indexToScroll,
-          duration: const Duration(milliseconds: 400),
-          curve: Curves.easeOutCubic
+    // Use native notification service if available, fallback to old service
+    try {
+      final nativeNotifService = NativeNotificationService();
+      final ekadashiData = _ekadashiList.map((e) => EkadashiNotificationData(
+        id: e.id,
+        name: e.name,
+        fastingStartTime: e.fastingStartIso,
+        paranaStartTime: e.paranaStartIso,
+      )).toList();
+
+      await nativeNotifService.scheduleAllNotifications(
+        ekadashis: ekadashiData,
+        texts: texts,
       );
-    } else {
-      _pageController.jumpToPage(indexToScroll);
-    }
+    } catch (e) {
+      // Fallback to old notification service
+      debugPrint('Native notifications failed, using fallback: $e');
+      final remind1Day = prefs.getBool('remind_one_day_before') ?? true;
+      final remind2Days = prefs.getBool('remind_two_days_before') ?? true;
+      final remindOnDay = prefs.getBool('remind_on_day') ?? true;
 
-    if (mounted) {
-      setState(() => _currentPage = indexToScroll);
+      await NotificationService().scheduleAllNotifications(
+        _ekadashiList,
+        remind1Day,
+        remind2Days,
+        remindOnDay,
+        texts,
+      );
     }
   }
 
-  void _onBottomNavTapped(int index) {
-    if (index == _currentIndex) {
-      // Already on this tab - special actions
-      if (index == 0) {
-        _scrollToNextEkadashi(animate: true);
-      } else if (index == 1) {
-        _calendarKey.currentState?.resetToToday();
-      }
-    } else {
-      // Switching tabs
-      setState(() => _currentIndex = index);
+  /// Handle city selection
+  void _onCitySelected(String cityId, String timezone, bool autoDetect) async {
+    await _locationService.setAutoDetectEnabled(autoDetect);
+    await _locationService.setTimezone(timezone);
 
-      // When switching TO Home tab, scroll to upcoming ekadashi
-      if (index == 0) {
-        // Use post-frame callback to ensure page controller is ready
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _scrollToNextEkadashi(animate: false);
+    if (!autoDetect && cityId != 'auto') {
+      await _locationService.setSelectedCityId(cityId);
+      final city = _ekadashiService.getCityById(cityId);
+      if (city != null) {
+        setState(() {
+          _locationText = city.name;
+          _isAutoDetectEnabled = false;
         });
       }
+    } else {
+      await _locationService.setSelectedCityId(null);
+      setState(() => _isAutoDetectEnabled = true);
     }
+
+    setState(() => _currentTimezone = timezone);
+    _loadData();
   }
 
-  void _scheduleNotificationsInBackground(List<EkadashiDate> dates) {
-    Future.microtask(() async {
-      try {
-        final prefs = await SharedPreferences.getInstance();
-        if (!(prefs.getBool('notifications_enabled') ?? true)) return;
+  /// Open city selection screen
+  void _openCitySelection() async {
+    final cityId = await _locationService.getSelectedCityId();
 
-        final hasPermission = await NotificationService().hasNotificationPermission();
-        if (!hasPermission) return;
+    if (!mounted) return;
 
-        bool remind1 = prefs.getBool('remind_one_day_before') ?? true;
-        bool remind2 = prefs.getBool('remind_two_days_before') ?? true;
-        bool remindOnDay = prefs.getBool('remind_on_day') ?? true;
-
-        if (!mounted) return;
-        final langService = Provider.of<LanguageService>(context, listen: false);
-        await NotificationService().scheduleAllNotifications(
-            dates, remind1, remind2, remindOnDay, langService.localizedStrings);
-      } catch (e) {
-        debugPrint("Error scheduling notifications: $e");
-      }
-    });
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => CitySelectionScreen(
+          currentCityId: cityId,
+          isAutoDetectEnabled: _isAutoDetectEnabled,
+          onCitySelected: _onCitySelected,
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final lang = Provider.of<LanguageService>(context);
     const tealColor = Color(0xFF00A19B);
+    final lang = Provider.of<LanguageService>(context);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(lang.translate('app_title')),
         centerTitle: true,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: _buildLanguageDropdown(lang),
+          ),
+        ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: tealColor))
-          : _errorMessage.isNotEmpty
-          ? Center(child: Text(_errorMessage))
-          : IndexedStack(
-        index: _currentIndex,
+      body: Column(
         children: [
-          _buildHomeContent(),
-          CalendarScreen(key: _calendarKey, ekadashiList: _ekadashiList),
-          const SettingsScreen(),
+          // Location header
+          _buildLocationHeader(lang, tealColor),
+
+          // Main content
+          Expanded(
+            child: _buildBody(lang, tealColor),
+          ),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        onTap: _onBottomNavTapped,
         selectedItemColor: tealColor,
         items: [
           BottomNavigationBarItem(
-              icon: const Icon(Icons.home),
-              label: lang.translate('home')
+            icon: const Icon(Icons.spa),
+            label: lang.translate('home'),
           ),
           BottomNavigationBarItem(
-              icon: const Icon(Icons.calendar_month),
-              label: lang.translate('calendar')
+            icon: const Icon(Icons.calendar_month),
+            label: lang.translate('calendar'),
           ),
           BottomNavigationBarItem(
-              icon: const Icon(Icons.settings),
-              label: lang.translate('settings')
+            icon: const Icon(Icons.settings),
+            label: lang.translate('settings'),
           ),
         ],
+        onTap: (index) {
+          if (index == 1 && _currentIndex == 1) {
+            _calendarKey.currentState?.resetToToday();
+          }
+          setState(() => _currentIndex = index);
+        },
       ),
     );
   }
 
-  Widget _buildHomeContent() {
-    const tealColor = Color(0xFF00A19B);
-    final lang = Provider.of<LanguageService>(context);
-    final bool isFirstPage = _currentPage == 0;
-    final bool isLastPage = _currentPage >= _ekadashiList.length - 1;
-
-    return Column(
-      children: [
-        // Header with more vertical space
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: _buildLocationWidget(lang, tealColor),
+  Widget _buildLocationHeader(LanguageService lang, Color tealColor) {
+    return InkWell(
+      onTap: _openCitySelection,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          border: Border(
+            bottom: BorderSide(
+              color: Colors.grey.withOpacity(0.2),
+            ),
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              _isAutoDetectEnabled ? Icons.my_location : Icons.location_on,
+              size: 18,
+              color: _locationDenied ? Colors.orange : tealColor,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _locationText.isNotEmpty
+                  ? Text(
+                '$_locationText • $_currentTimezone',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Theme.of(context).textTheme.bodyMedium?.color,
+                ),
+              )
+                  : Text(
+                _locationDenied
+                    ? lang.translate('location_denied')
+                    : lang.translate('detecting_location'),
+                style: TextStyle(
+                  fontSize: 14,
+                  color: _locationDenied ? Colors.orange : Colors.grey,
+                ),
               ),
-              const SizedBox(width: 20),
-              _buildLanguageSelector(lang, tealColor),
-            ],
-          ),
-        ),
-
-        // Page indicator (shows current position in list)
-        Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: Text(
-            '${_currentPage + 1} / ${_ekadashiList.length}',
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.grey.shade500,
             ),
-          ),
-        ),
-
-        // Card with arrows - takes remaining space
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.only(left: 4, right: 4, top: 8, bottom: 8),
-            child: Row(
-              children: [
-                // Left arrow
-                SizedBox(
-                  width: 44,
-                  child: IconButton(
-                    onPressed: isFirstPage ? null : () {
-                      _pageController.previousPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
-                      );
-                    },
-                    icon: const Icon(Icons.chevron_left, size: 36),
-                    color: isFirstPage ? Colors.grey.shade600 : tealColor,
-                    padding: EdgeInsets.zero,
-                  ),
-                ),
-
-                // Card
-                Expanded(
-                  child: PageView.builder(
-                    controller: _pageController,
-                    itemCount: _ekadashiList.length,
-                    onPageChanged: (index) {
-                      // Update page indicator when user swipes
-                      if (mounted) {
-                        setState(() => _currentPage = index);
-                      }
-                    },
-                    itemBuilder: (context, index) {
-                      return _buildEkadashiCard(_ekadashiList[index]);
-                    },
-                  ),
-                ),
-
-                // Right arrow
-                SizedBox(
-                  width: 44,
-                  child: IconButton(
-                    onPressed: isLastPage ? null : () {
-                      _pageController.nextPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
-                      );
-                    },
-                    icon: const Icon(Icons.chevron_right, size: 36),
-                    color: isLastPage ? Colors.grey.shade600 : tealColor,
-                    padding: EdgeInsets.zero,
-                  ),
-                ),
-              ],
+            Icon(
+              Icons.chevron_right,
+              size: 20,
+              color: Colors.grey.shade400,
             ),
-          ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
-  Widget _buildLocationWidget(LanguageService lang, Color tealColor) {
-    // Show "Detecting location..." while requesting permission
-    if (_isRequestingLocation) {
-      return Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(
-            width: 14,
-            height: 14,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: tealColor,
-            ),
-          ),
-          const SizedBox(width: 8),
-          Flexible(
-            child: Text(
-              lang.translate('detecting_location'),
-              style: TextStyle(fontSize: 14, color: Colors.grey.shade400),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      );
-    }
-
-    if (_locationDenied) {
-      return GestureDetector(
-        onTap: _requestLocationAgain,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
+  Widget _buildBody(LanguageService lang, Color tealColor) {
+    if (_isLoading) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.location_off, size: 18, color: Colors.orange.shade400),
-            const SizedBox(width: 6),
-            Flexible(
-              child: Text(
-                lang.translate('location_denied'),
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.orange.shade400,
-                  decoration: TextDecoration.underline,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
+            CircularProgressIndicator(color: tealColor),
+            const SizedBox(height: 16),
+            Text(
+              lang.translate('locating'),
+              style: TextStyle(color: Colors.grey.shade500),
             ),
           ],
         ),
       );
     }
 
-    if (_locationText.isEmpty) {
-      return Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.location_on, size: 18, color: tealColor),
-          const SizedBox(width: 6),
-          Text(
-            lang.translate('locating'),
-            style: const TextStyle(fontSize: 14),
-          ),
-        ],
+    if (_errorMessage.isNotEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, size: 48, color: Colors.grey.shade400),
+            const SizedBox(height: 16),
+            Text(_errorMessage, style: TextStyle(color: Colors.grey.shade500)),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => _loadData(),
+              style: ElevatedButton.styleFrom(backgroundColor: tealColor),
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
       );
     }
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
+    switch (_currentIndex) {
+      case 0:
+        return _buildHomeTab(lang, tealColor);
+      case 1:
+        return CalendarScreen(
+          key: _calendarKey,
+          ekadashiList: _ekadashiList,
+          currentTimezone: _currentTimezone,
+        );
+      case 2:
+        return const SettingsScreen();
+      default:
+        return _buildHomeTab(lang, tealColor);
+    }
+  }
+
+  Widget _buildHomeTab(LanguageService lang, Color tealColor) {
+    if (_ekadashiList.isEmpty) {
+      return Center(
+        child: Text(
+          lang.translate('no_ekadashi'),
+          style: TextStyle(color: Colors.grey.shade500),
+        ),
+      );
+    }
+
+    return Column(
       children: [
-        Icon(Icons.location_on, size: 18, color: tealColor),
-        const SizedBox(width: 6),
-        Flexible(
-          child: Text(
-            _locationText,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-            overflow: TextOverflow.ellipsis,
+        Expanded(
+          child: PageView.builder(
+            controller: _pageController,
+            itemCount: _ekadashiList.length,
+            onPageChanged: (index) {
+              setState(() => _currentPage = index);
+            },
+            itemBuilder: (context, index) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: _buildEkadashiCard(_ekadashiList[index]),
+              );
+            },
+          ),
+        ),
+        // Page indicator
+        Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                '${_currentPage + 1} / ${_ekadashiList.length}',
+                style: TextStyle(
+                  color: Colors.grey.shade500,
+                  fontSize: 12,
+                ),
+              ),
+            ],
           ),
         ),
       ],
     );
   }
 
-  Widget _buildLanguageSelector(LanguageService lang, Color tealColor) {
+  Widget _buildLanguageDropdown(LanguageService lang) {
+    const tealColor = Color(0xFF00A19B);
     String displayLanguage;
+
     switch (lang.currentLocale.languageCode) {
       case 'ta': displayLanguage = 'தமிழ்'; break;
       case 'hi': displayLanguage = 'हिंदी'; break;
@@ -705,12 +653,11 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
         child: Column(
           children: [
-            // Scrollable content area
             Expanded(
               child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    // Days badge - top right
+                    // Days badge
                     Align(
                       alignment: Alignment.topRight,
                       child: Container(
@@ -722,14 +669,13 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                         child: Text(
                           daysText,
                           style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
                           ),
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 16),
 
                     // Date
@@ -742,31 +688,29 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                       DateFormat('EEEE').format(ekadashi.date),
                       style: TextStyle(fontSize: 16, color: Colors.grey.shade500),
                     ),
-
                     const SizedBox(height: 16),
 
                     // Ekadashi name
                     Text(
                       ekadashi.name,
                       style: const TextStyle(
-                          color: tealColor,
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold
+                        color: tealColor,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
                       ),
                       textAlign: TextAlign.center,
                     ),
-
                     const SizedBox(height: 24),
 
-                    // Start Fasting section
+                    // Start Fasting
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
                         lang.translate('start_fasting'),
                         style: const TextStyle(
-                            color: tealColor,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16
+                          color: tealColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
                         ),
                       ),
                     ),
@@ -785,18 +729,17 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                         style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
                       ),
                     ),
-
                     const SizedBox(height: 16),
 
-                    // Break Fasting section
+                    // Break Fasting
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
                         lang.translate('break_fasting'),
                         style: const TextStyle(
-                            color: tealColor,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16
+                          color: tealColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
                         ),
                       ),
                     ),
@@ -805,7 +748,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                       alignment: Alignment.centerLeft,
                       child: Text(
                         DateFormat('MMM dd, yyyy').format(
-                            ekadashi.date.add(const Duration(days: 1))
+                          ekadashi.date.add(const Duration(days: 1)),
                         ),
                         style: TextStyle(fontSize: 15, color: Colors.grey.shade500),
                       ),
@@ -817,12 +760,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                         style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
                       ),
                     ),
-
                     const SizedBox(height: 16),
 
-                    // Divider
                     Divider(color: Colors.grey.shade400, height: 1),
-
                     const SizedBox(height: 16),
 
                     // Description
@@ -840,10 +780,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                 ),
               ),
             ),
-
             const SizedBox(height: 16),
 
-            // View Details button - ALWAYS VISIBLE at bottom
+            // View Details button
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(

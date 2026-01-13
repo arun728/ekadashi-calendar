@@ -45,5 +45,20 @@ flutter {
 }
 
 dependencies {
+    // Desugaring for Java 8+ time APIs
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+
+    // ============================================================
+    // NATIVE HYBRID ARCHITECTURE DEPENDENCIES (v2.0)
+    // ============================================================
+
+    // Location - Native FusedLocationProviderClient (replaces Geolocator plugin)
+    implementation("com.google.android.gms:play-services-location:21.0.1")
+
+    // WorkManager - Reliable notification scheduling (replaces AlarmManager)
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
+
+    // Coroutines - Async operations on IO threads (prevents main thread blocking)
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
 }
