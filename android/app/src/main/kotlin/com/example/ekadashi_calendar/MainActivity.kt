@@ -89,8 +89,8 @@ class MainActivity: FlutterActivity() {
                         try {
                             val locationResult = locationService.getCurrentLocation()
                             when (locationResult) {
-                                is LocationResult.Success -> result.success(locationResult.toMap())
-                                is LocationResult.Error -> result.success(locationResult.toMap())
+                                is LocationServiceResult.Success -> result.success(locationResult.toMap())
+                                is LocationServiceResult.Error -> result.success(locationResult.toMap())
                             }
                         } catch (e: Exception) {
                             Log.e(TAG, "getCurrentLocation error: ${e.message}")

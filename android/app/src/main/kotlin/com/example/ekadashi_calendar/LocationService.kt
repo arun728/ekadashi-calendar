@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.location.Location
-import android.os.Build
 import android.os.Looper
 import android.util.Log
 import androidx.core.content.ContextCompat
@@ -83,13 +82,13 @@ class LocationService(private val context: Context) {
      * Get current location with timeout and fallback to cache
      * Runs entirely on background thread
      */
-    suspend fun getCurrentLocation(): LocationResult = withContext(Dispatchers.IO) {
+    suspend fun getCurrentLocation(): LocationServiceResult = withContext(Dispatchers.IO) {
         Log.d(TAG, "getCurrentLocation called")
 
         // Check permission first
         if (!hasLocationPermission()) {
             Log.w(TAG, "Location permission not granted")
-            return@withContext LocationResult.Error("PERMISSION_DENIED", "Location permission not granted")
+            return@withContext LocationServiceResult.Error("PERMISSION_DENIED", "Location permission not granted")
         }
 
         // Check if location services enabled
@@ -100,7 +99,7 @@ class LocationService(private val context: Context) {
                 Log.d(TAG, "Returning cached location (services disabled)")
                 return@withContext cached
             }
-            return@withContext LocationResult.Error("LOCATION_DISABLED", "Location services are disabled")
+            return@withContext LocationServiceResult.Error("LOCATION_DISABLED", "Location services are disabled")
         }
 
         try {
@@ -117,7 +116,7 @@ class LocationService(private val context: Context) {
                 // Cache the result
                 cacheLocation(location.latitude, location.longitude, cityName, timezone)
 
-                return@withContext LocationResult.Success(
+                return@withContext LocationServiceResult.Success(
                     latitude = location.latitude,
                     longitude = location.longitude,
                     city = cityName,
@@ -132,7 +131,7 @@ class LocationService(private val context: Context) {
             Log.e(TAG, "Error getting location: ${e.message}")
             // Try cached as fallback
             getCachedLocation()?.let { return@withContext it }
-            return@withContext LocationResult.Error("LOCATION_ERROR", e.message ?: "Unknown error")
+            return@withContext LocationServiceResult.Error("LOCATION_ERROR", e.message ?: "Unknown error")
         }
     }
 
@@ -151,9 +150,11 @@ class LocationService(private val context: Context) {
         }.build()
 
         val locationCallback = object : LocationCallback() {
-            override fun onLocationResult(result: LocationResult) {
+            // Use fully qualified name to avoid conflict with our LocationServiceResult
+            override fun onLocationResult(result: com.google.android.gms.location.LocationResult) {
                 fusedLocationClient.removeLocationUpdates(this)
-                val location = result.lastLocation
+                // Use locations list and get the last one
+                val location = result.locations.lastOrNull()
                 if (continuation.isActive) {
                     continuation.resume(location)
                 }
@@ -181,9 +182,9 @@ class LocationService(private val context: Context) {
      * Get last known location or fall back to cache
      */
     @Suppress("MissingPermission")
-    private suspend fun getLastKnownOrCached(): LocationResult {
+    private suspend fun getLastKnownOrCached(): LocationServiceResult {
         if (!hasLocationPermission()) {
-            return getCachedLocation() ?: LocationResult.Error("PERMISSION_DENIED", "No permission")
+            return getCachedLocation() ?: LocationServiceResult.Error("PERMISSION_DENIED", "No permission")
         }
 
         try {
@@ -193,7 +194,7 @@ class LocationService(private val context: Context) {
                 val cityName = getCityName(lastLocation.latitude, lastLocation.longitude)
                 val timezone = detectTimezone(lastLocation.latitude, lastLocation.longitude)
                 cacheLocation(lastLocation.latitude, lastLocation.longitude, cityName, timezone)
-                return LocationResult.Success(
+                return LocationServiceResult.Success(
                     latitude = lastLocation.latitude,
                     longitude = lastLocation.longitude,
                     city = cityName,
@@ -205,13 +206,13 @@ class LocationService(private val context: Context) {
         }
 
         // Fall back to cache
-        return getCachedLocation() ?: LocationResult.Error("NO_LOCATION", "Could not get location")
+        return getCachedLocation() ?: LocationServiceResult.Error("NO_LOCATION", "Could not get location")
     }
 
     /**
      * Get cached location instantly (for fast UI response)
      */
-    fun getCachedLocation(): LocationResult.Success? {
+    fun getCachedLocation(): LocationServiceResult.Success? {
         val lat = prefs.getFloat(KEY_LATITUDE, Float.MIN_VALUE)
         val lng = prefs.getFloat(KEY_LONGITUDE, Float.MIN_VALUE)
         val city = prefs.getString(KEY_CITY, null)
@@ -230,7 +231,7 @@ class LocationService(private val context: Context) {
         }
 
         Log.d(TAG, "Returning cached location: $lat, $lng, $city")
-        return LocationResult.Success(
+        return LocationServiceResult.Success(
             latitude = lat.toDouble(),
             longitude = lng.toDouble(),
             city = city ?: "Unknown",
@@ -355,15 +356,16 @@ class LocationService(private val context: Context) {
 }
 
 /**
- * Sealed class representing location result
+ * Sealed class representing location result.
+ * Named LocationServiceResult to avoid conflict with com.google.android.gms.location.LocationResult
  */
-sealed class LocationResult {
+sealed class LocationServiceResult {
     data class Success(
         val latitude: Double,
         val longitude: Double,
         val city: String,
         val timezone: String
-    ) : LocationResult() {
+    ) : LocationServiceResult() {
         fun toMap(): Map<String, Any> = mapOf(
             "latitude" to latitude,
             "longitude" to longitude,
@@ -376,7 +378,7 @@ sealed class LocationResult {
     data class Error(
         val code: String,
         val message: String
-    ) : LocationResult() {
+    ) : LocationServiceResult() {
         fun toMap(): Map<String, Any> = mapOf(
             "success" to false,
             "errorCode" to code,
