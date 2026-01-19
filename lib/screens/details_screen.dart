@@ -180,11 +180,11 @@ class DetailsScreen extends StatelessWidget {
                                 style: const TextStyle(fontSize: 13, color: Colors.grey)
                             ),
                             Text(breakTime, style: const TextStyle(fontSize: 18)),
-                            // Show parana end time if available
-                            if (ekadashi.paranaEndIso.isNotEmpty) ...[
+                            // Show parana window label if we have the full window (contains " - ")
+                            if (breakTime.contains(' - ')) ...[
                               const SizedBox(height: 4),
                               Text(
-                                _formatParanaWindow(breakTime, ekadashi.paranaEndIso),
+                                'Parana Window',
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: Colors.grey.shade600,
@@ -207,15 +207,4 @@ class DetailsScreen extends StatelessWidget {
     );
   }
 
-  /// Format parana window text (e.g., "Window: 06:30 AM - 10:15 AM")
-  String _formatParanaWindow(String startTime, String endTimeIso) {
-    try {
-      // Parse the ISO datetime to get just the time
-      final endDateTime = DateTime.parse(endTimeIso);
-      final endTime = DateFormat('hh:mm a').format(endDateTime);
-      return 'Window: $startTime - $endTime';
-    } catch (e) {
-      return '';
-    }
-  }
 }

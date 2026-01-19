@@ -13,7 +13,6 @@ import 'services/language_service.dart';
 import 'screens/calendar_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/details_screen.dart';
-import 'screens/city_selection_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -73,8 +72,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   String _locationText = '';
   String _currentTimezone = 'IST';
   bool _locationDenied = false;
-  bool _isAutoDetectEnabled = true;
+  bool _isRequestingLocation = false;
   int _currentPage = 0;
+  bool _isResuming = false;
 
   final PageController _pageController = PageController(viewportFraction: 1.0);
   final GlobalKey<CalendarScreenState> _calendarKey = GlobalKey();
@@ -105,9 +105,14 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      // Refresh location when app resumes (non-blocking)
-      _refreshLocationIfNeeded();
+    if (state == AppLifecycleState.resumed && !_isResuming && !_isRequestingLocation) {
+      _isResuming = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _refreshLocationIfNeeded();
+        }
+        _isResuming = false;
+      });
     }
   }
 
@@ -116,8 +121,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     final prefs = await SharedPreferences.getInstance();
     final hasLaunched = prefs.getBool('has_launched') ?? false;
 
-    // Load saved settings
-    _isAutoDetectEnabled = await _locationService.isAutoDetectEnabled();
+    // Load saved timezone
     _currentTimezone = await _locationService.getCurrentTimezone();
 
     if (!hasLaunched) {
@@ -129,6 +133,15 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   }
 
   Future<void> _requestPermissionsOnFirstLaunch() async {
+    // Show "Detecting location..." immediately
+    if (mounted) {
+      setState(() {
+        _isRequestingLocation = true;
+        _locationDenied = false;
+        _locationText = '';
+      });
+    }
+
     // Request notification permission
     final notifGranted = await NotificationService().requestNotificationPermission();
     if (notifGranted) {
@@ -137,7 +150,12 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       await prefs.setBool('remind_one_day_before', true);
       await prefs.setBool('remind_two_days_before', true);
       await prefs.setBool('remind_on_day', true);
+      await prefs.setBool('remind_on_parana', true);
       debugPrint('✅ Notification preferences saved');
+    }
+
+    if (mounted) {
+      setState(() => _isRequestingLocation = false);
     }
 
     // Handle location (native service will request permission if needed)
@@ -154,44 +172,29 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     });
 
     try {
-      if (_isAutoDetectEnabled) {
-        // Try to get current location
-        final location = await _locationService.getCurrentLocation();
+      // Try to get current location using native service
+      final location = await _locationService.getCurrentLocation();
 
-        if (location != null && mounted) {
+      if (location != null && mounted) {
+        setState(() {
+          _locationText = location.city;
+          _currentTimezone = location.timezone;
+          _locationDenied = false;
+        });
+
+        // Save timezone
+        await _locationService.setTimezone(location.timezone);
+      } else {
+        // Try cached location
+        final cached = await _locationService.getCachedLocation();
+        if (cached != null && mounted) {
           setState(() {
-            _locationText = location.city;
-            _currentTimezone = location.timezone;
+            _locationText = cached.city;
+            _currentTimezone = cached.timezone;
             _locationDenied = false;
           });
-
-          // Save timezone
-          await _locationService.setTimezone(location.timezone);
         } else {
-          // Try cached location
-          final cached = await _locationService.getCachedLocation();
-          if (cached != null && mounted) {
-            setState(() {
-              _locationText = cached.city;
-              _currentTimezone = cached.timezone;
-              _locationDenied = false;
-            });
-          } else {
-            _setLocationDenied();
-          }
-        }
-      } else {
-        // Manual city selection - load from preferences
-        final cityId = await _locationService.getSelectedCityId();
-        if (cityId != null) {
-          final city = _ekadashiService.getCityById(cityId);
-          if (city != null && mounted) {
-            setState(() {
-              _locationText = city.name;
-              _currentTimezone = city.timezone;
-              _locationDenied = false;
-            });
-          }
+          _setLocationDenied();
         }
       }
     } catch (e) {
@@ -208,13 +211,62 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       setState(() {
         _locationDenied = true;
         _locationText = '';
+        _isRequestingLocation = false;
       });
+    }
+  }
+
+  /// Request location permission again when user taps on "Location Denied"
+  Future<void> _requestLocationAgain() async {
+    if (_isRequestingLocation) return;
+
+    setState(() {
+      _isRequestingLocation = true;
+      _locationDenied = false;
+    });
+
+    try {
+      final location = await _locationService.getCurrentLocation();
+
+      if (mounted) {
+        setState(() => _isRequestingLocation = false);
+      }
+
+      if (location != null && mounted) {
+        setState(() {
+          _locationText = location.city;
+          _currentTimezone = location.timezone;
+          _locationDenied = false;
+        });
+        await _locationService.setTimezone(location.timezone);
+        await _loadData();
+      } else {
+        _setLocationDenied();
+      }
+    } catch (e) {
+      debugPrint('Location request error: $e');
+      if (mounted) {
+        setState(() => _isRequestingLocation = false);
+      }
+      _setLocationDenied();
     }
   }
 
   /// Refresh location in background when app resumes
   Future<void> _refreshLocationIfNeeded() async {
-    if (!_isAutoDetectEnabled) return;
+    if (_locationDenied) {
+      // Check if permission was granted while away
+      final location = await _locationService.getCurrentLocation();
+      if (location != null && mounted) {
+        setState(() {
+          _locationText = location.city;
+          _currentTimezone = location.timezone;
+          _locationDenied = false;
+        });
+        await _loadData();
+      }
+      return;
+    }
 
     final location = await _locationService.getCurrentLocation();
     if (location != null && mounted) {
@@ -233,7 +285,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   }
 
   /// Load Ekadashi data for current timezone and language
-  Future<void> _loadData({String? languageCode}) async {
+  Future<void> _loadData() async {
     if (!mounted) return;
 
     setState(() {
@@ -242,39 +294,21 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     });
 
     try {
-      final lang = languageCode ?? _currentLangCode;
+      final lang = _currentLangCode.isEmpty ? 'en' : _currentLangCode;
       final ekadashis = _ekadashiService.getEkadashis(
         timezone: _currentTimezone,
-        languageCode: lang.isEmpty ? 'en' : lang,
+        languageCode: lang,
       );
-
-      // Filter to upcoming Ekadashis (from today onwards, plus a few past ones for context)
-      final now = DateTime.now();
-      final today = DateTime(now.year, now.month, now.day);
-      final cutoffDate = today.subtract(const Duration(days: 7)); // Show last week too
-
-      final filtered = ekadashis.where((e) => e.date.isAfter(cutoffDate)).toList();
-
-      // Find index of next upcoming Ekadashi
-      int startIndex = 0;
-      for (int i = 0; i < filtered.length; i++) {
-        if (!filtered[i].date.isBefore(today)) {
-          startIndex = i;
-          break;
-        }
-      }
 
       if (mounted) {
         setState(() {
-          _ekadashiList = filtered;
-          _currentPage = startIndex;
+          _ekadashiList = ekadashis;
           _isLoading = false;
         });
 
-        // Jump to current Ekadashi
-        if (_pageController.hasClients && filtered.isNotEmpty) {
-          _pageController.jumpToPage(startIndex);
-        }
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _scrollToNextEkadashi(animate: false);
+        });
 
         // Schedule notifications
         _scheduleNotifications();
@@ -285,6 +319,59 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         setState(() {
           _isLoading = false;
           _errorMessage = 'Failed to load data';
+        });
+      }
+    }
+  }
+
+  /// Scroll to next upcoming Ekadashi
+  void _scrollToNextEkadashi({bool animate = true}) {
+    if (_ekadashiList.isEmpty || !_pageController.hasClients) return;
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    int indexToScroll = 0;
+
+    for (int i = 0; i < _ekadashiList.length; i++) {
+      if (_ekadashiList[i].date.isAfter(today) ||
+          _ekadashiList[i].date.isAtSameMomentAs(today)) {
+        indexToScroll = i;
+        break;
+      }
+    }
+
+    if (animate) {
+      _pageController.animateToPage(
+        indexToScroll,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeOutCubic,
+      );
+    } else {
+      _pageController.jumpToPage(indexToScroll);
+    }
+
+    if (mounted) {
+      setState(() => _currentPage = indexToScroll);
+    }
+  }
+
+  /// Handle bottom navigation taps
+  void _onBottomNavTapped(int index) {
+    if (index == _currentIndex) {
+      // Already on this tab - special actions
+      if (index == 0) {
+        _scrollToNextEkadashi(animate: true);
+      } else if (index == 1) {
+        _calendarKey.currentState?.resetToToday();
+      }
+    } else {
+      // Switching tabs
+      setState(() => _currentIndex = index);
+
+      // When switching TO Home tab, scroll to upcoming Ekadashi
+      if (index == 0) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _scrollToNextEkadashi(animate: false);
         });
       }
     }
@@ -301,7 +388,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     final lang = Provider.of<LanguageService>(context, listen: false);
     final texts = lang.localizedStrings;
 
-    // Use native notification service if available, fallback to old service
+    // Use native notification service
     try {
       final nativeNotifService = NativeNotificationService();
       final ekadashiData = _ekadashiList.map((e) => EkadashiNotificationData(
@@ -332,80 +419,24 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     }
   }
 
-  /// Handle city selection
-  void _onCitySelected(String cityId, String timezone, bool autoDetect) async {
-    await _locationService.setAutoDetectEnabled(autoDetect);
-    await _locationService.setTimezone(timezone);
-
-    if (!autoDetect && cityId != 'auto') {
-      await _locationService.setSelectedCityId(cityId);
-      final city = _ekadashiService.getCityById(cityId);
-      if (city != null) {
-        setState(() {
-          _locationText = city.name;
-          _isAutoDetectEnabled = false;
-        });
-      }
-    } else {
-      await _locationService.setSelectedCityId(null);
-      setState(() => _isAutoDetectEnabled = true);
-    }
-
-    setState(() => _currentTimezone = timezone);
-    _loadData();
-  }
-
-  /// Open city selection screen
-  void _openCitySelection() async {
-    final cityId = await _locationService.getSelectedCityId();
-
-    if (!mounted) return;
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => CitySelectionScreen(
-          currentCityId: cityId,
-          isAutoDetectEnabled: _isAutoDetectEnabled,
-          onCitySelected: _onCitySelected,
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    const tealColor = Color(0xFF00A19B);
     final lang = Provider.of<LanguageService>(context);
+    const tealColor = Color(0xFF00A19B);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(lang.translate('app_title')),
         centerTitle: true,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: _buildLanguageDropdown(lang),
-          ),
-        ],
       ),
-      body: Column(
-        children: [
-          // Location header
-          _buildLocationHeader(lang, tealColor),
-
-          // Main content
-          Expanded(
-            child: _buildBody(lang, tealColor),
-          ),
-        ],
-      ),
+      body: _buildBody(lang, tealColor),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
+        onTap: _onBottomNavTapped,
         selectedItemColor: tealColor,
         items: [
           BottomNavigationBarItem(
-            icon: const Icon(Icons.spa),
+            icon: const Icon(Icons.home),
             label: lang.translate('home'),
           ),
           BottomNavigationBarItem(
@@ -417,63 +448,6 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             label: lang.translate('settings'),
           ),
         ],
-        onTap: (index) {
-          if (index == 1 && _currentIndex == 1) {
-            _calendarKey.currentState?.resetToToday();
-          }
-          setState(() => _currentIndex = index);
-        },
-      ),
-    );
-  }
-
-  Widget _buildLocationHeader(LanguageService lang, Color tealColor) {
-    return InkWell(
-      onTap: _openCitySelection,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          border: Border(
-            bottom: BorderSide(
-              color: Colors.grey.withOpacity(0.2),
-            ),
-          ),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              _isAutoDetectEnabled ? Icons.my_location : Icons.location_on,
-              size: 18,
-              color: _locationDenied ? Colors.orange : tealColor,
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: _locationText.isNotEmpty
-                  ? Text(
-                '$_locationText • $_currentTimezone',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Theme.of(context).textTheme.bodyMedium?.color,
-                ),
-              )
-                  : Text(
-                _locationDenied
-                    ? lang.translate('location_denied')
-                    : lang.translate('detecting_location'),
-                style: TextStyle(
-                  fontSize: 14,
-                  color: _locationDenied ? Colors.orange : Colors.grey,
-                ),
-              ),
-            ),
-            Icon(
-              Icons.chevron_right,
-              size: 20,
-              color: Colors.grey.shade400,
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -514,23 +488,21 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       );
     }
 
-    switch (_currentIndex) {
-      case 0:
-        return _buildHomeTab(lang, tealColor);
-      case 1:
-        return CalendarScreen(
+    return IndexedStack(
+      index: _currentIndex,
+      children: [
+        _buildHomeContent(lang, tealColor),
+        CalendarScreen(
           key: _calendarKey,
           ekadashiList: _ekadashiList,
           currentTimezone: _currentTimezone,
-        );
-      case 2:
-        return const SettingsScreen();
-      default:
-        return _buildHomeTab(lang, tealColor);
-    }
+        ),
+        const SettingsScreen(),
+      ],
+    );
   }
 
-  Widget _buildHomeTab(LanguageService lang, Color tealColor) {
+  Widget _buildHomeContent(LanguageService lang, Color tealColor) {
     if (_ekadashiList.isEmpty) {
       return Center(
         child: Text(
@@ -540,51 +512,197 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       );
     }
 
+    final bool isFirstPage = _currentPage == 0;
+    final bool isLastPage = _currentPage >= _ekadashiList.length - 1;
+
     return Column(
       children: [
-        Expanded(
-          child: PageView.builder(
-            controller: _pageController,
-            itemCount: _ekadashiList.length,
-            onPageChanged: (index) {
-              setState(() => _currentPage = index);
-            },
-            itemBuilder: (context, index) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: _buildEkadashiCard(_ekadashiList[index]),
-              );
-            },
+        // Header with location and language inline (v1.0 style)
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: _buildLocationWidget(lang, tealColor),
+              ),
+              const SizedBox(width: 20),
+              _buildLanguageSelector(lang, tealColor),
+            ],
           ),
         ),
+
         // Page indicator
         Padding(
-          padding: const EdgeInsets.only(bottom: 16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                '${_currentPage + 1} / ${_ekadashiList.length}',
-                style: TextStyle(
-                  color: Colors.grey.shade500,
-                  fontSize: 12,
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Text(
+            '${_currentPage + 1} / ${_ekadashiList.length}',
+            style: TextStyle(
+              fontSize: 13,
+              color: Colors.grey.shade500,
+            ),
+          ),
+        ),
+
+        // Card with navigation arrows
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.only(left: 4, right: 4, top: 8, bottom: 8),
+            child: Row(
+              children: [
+                // Left arrow
+                SizedBox(
+                  width: 44,
+                  child: IconButton(
+                    onPressed: isFirstPage
+                        ? null
+                        : () {
+                            _pageController.previousPage(
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
+                            );
+                          },
+                    icon: const Icon(Icons.chevron_left, size: 36),
+                    color: isFirstPage ? Colors.grey.shade600 : tealColor,
+                    padding: EdgeInsets.zero,
+                  ),
                 ),
-              ),
-            ],
+
+                // Card with PageView
+                Expanded(
+                  child: PageView.builder(
+                    controller: _pageController,
+                    itemCount: _ekadashiList.length,
+                    onPageChanged: (index) {
+                      if (mounted) {
+                        setState(() => _currentPage = index);
+                      }
+                    },
+                    itemBuilder: (context, index) {
+                      return _buildEkadashiCard(_ekadashiList[index]);
+                    },
+                  ),
+                ),
+
+                // Right arrow
+                SizedBox(
+                  width: 44,
+                  child: IconButton(
+                    onPressed: isLastPage
+                        ? null
+                        : () {
+                            _pageController.nextPage(
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
+                            );
+                          },
+                    icon: const Icon(Icons.chevron_right, size: 36),
+                    color: isLastPage ? Colors.grey.shade600 : tealColor,
+                    padding: EdgeInsets.zero,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildLanguageDropdown(LanguageService lang) {
-    const tealColor = Color(0xFF00A19B);
-    String displayLanguage;
+  Widget _buildLocationWidget(LanguageService lang, Color tealColor) {
+    // Show spinner while detecting location
+    if (_isRequestingLocation) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: 14,
+            height: 14,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: tealColor,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              lang.translate('detecting_location'),
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade400),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      );
+    }
 
+    // Show "Location Denied" with tap to retry
+    if (_locationDenied) {
+      return GestureDetector(
+        onTap: _requestLocationAgain,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.location_off, size: 18, color: Colors.orange.shade400),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                lang.translate('location_denied'),
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.orange.shade400,
+                  decoration: TextDecoration.underline,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Show "Locating..." while loading
+    if (_locationText.isEmpty) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.location_on, size: 18, color: tealColor),
+          const SizedBox(width: 6),
+          Text(
+            lang.translate('locating'),
+            style: const TextStyle(fontSize: 14),
+          ),
+        ],
+      );
+    }
+
+    // Show city name and timezone
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(Icons.location_on, size: 18, color: tealColor),
+        const SizedBox(width: 6),
+        Flexible(
+          child: Text(
+            '$_locationText • $_currentTimezone',
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLanguageSelector(LanguageService lang, Color tealColor) {
+    String displayLanguage;
     switch (lang.currentLocale.languageCode) {
-      case 'ta': displayLanguage = 'தமிழ்'; break;
-      case 'hi': displayLanguage = 'हिंदी'; break;
-      default: displayLanguage = 'English';
+      case 'ta':
+        displayLanguage = 'தமிழ்';
+        break;
+      case 'hi':
+        displayLanguage = 'हिंदी';
+        break;
+      default:
+        displayLanguage = 'English';
     }
 
     return PopupMenuButton<String>(
@@ -592,7 +710,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       color: Theme.of(context).cardColor,
       itemBuilder: (context) => [
         const PopupMenuItem(value: 'en', child: Text("English")),
-        const PopupMenuItem(value: 'hi', child: Text("हिंदी", style: TextStyle(fontWeight: FontWeight.bold))),
+        const PopupMenuItem(
+          value: 'hi',
+          child: Text("हिंदी", style: TextStyle(fontWeight: FontWeight.bold)),
+        ),
         const PopupMenuItem(value: 'ta', child: Text("தமிழ்")),
       ],
       offset: const Offset(0, 40),
@@ -661,7 +782,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                     Align(
                       alignment: Alignment.topRight,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: daysUntil < 0 ? Colors.grey : tealColor,
                           borderRadius: BorderRadius.circular(16),
@@ -681,7 +805,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                     // Date
                     Text(
                       DateFormat('MMM dd, yyyy').format(ekadashi.date),
-                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w300),
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w300,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -726,7 +853,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                       alignment: Alignment.centerLeft,
                       child: Text(
                         ekadashi.fastStartTime,
-                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -757,7 +887,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                       alignment: Alignment.centerLeft,
                       child: Text(
                         breakTime,
-                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -771,7 +904,11 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                       style: TextStyle(
                         fontStyle: FontStyle.italic,
                         fontSize: 15,
-                        color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.8),
+                        color: Theme.of(context)
+                            .textTheme
+                            .bodyMedium
+                            ?.color
+                            ?.withOpacity(0.8),
                         height: 1.4,
                       ),
                       textAlign: TextAlign.center,

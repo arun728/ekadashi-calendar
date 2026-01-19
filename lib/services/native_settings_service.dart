@@ -157,7 +157,7 @@ class NativeSettingsService {
         remind2Days: map['remind2Days'] as bool? ?? true,
         remind1Day: map['remind1Day'] as bool? ?? true,
         remindOnStart: map['remindOnStart'] as bool? ?? true,
-        remindOnParana: map['remindOnParana'] as bool? ?? false,
+        remindOnParana: map['remindOnParana'] as bool? ?? true,
       );
     } catch (e) {
       debugPrint('NativeSettingsService.getNotificationSettings error: $e');
@@ -382,7 +382,7 @@ class NotificationPrefs {
     remind2Days: true,
     remind1Day: true,
     remindOnStart: true,
-    remindOnParana: false,
+    remindOnParana: true,
   );
 
   /// Get count of enabled reminder types.

@@ -7,20 +7,16 @@ import '../services/language_service.dart';
 import '../services/ekadashi_service.dart';
 import '../services/native_settings_service.dart';
 import '../services/native_notification_service.dart' show NativeNotificationService, EkadashiNotificationData, NotificationSettings;
-import '../services/native_location_service.dart';
-import 'city_selection_screen.dart';
 
 /// Settings Screen - Updated to use native Kotlin services for:
 /// - Permission handling (no freeze on return from system settings)
 /// - Notification settings
-/// - Location/city selection
 ///
 /// Key improvements over original:
 /// - No Flutter plugin freezes
 /// - Native permission checks run on IO threads
 /// - Faster permission state updates
-/// - Added parana reminder option
-/// - Added city/timezone selection
+/// - Added parana reminder option (Break Fasting Reminder)
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
@@ -32,7 +28,6 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
   // Services
   final NativeSettingsService _settingsService = NativeSettingsService();
   final NativeNotificationService _notificationService = NativeNotificationService();
-  final NativeLocationService _locationService = NativeLocationService();
   final EkadashiService _ekadashiService = EkadashiService();
 
   // State
@@ -46,9 +41,8 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
   // Notification settings
   NotificationPrefs _notificationSettings = NotificationPrefs.defaults();
 
-  // Location settings
-  LocationSettings _locationSettings = LocationSettings.defaults();
-  String _cityName = '';
+  // Location settings (for timezone in notifications only)
+  String _currentTimezone = 'IST';
 
   static const Color tealColor = Color(0xFF00A19B);
 
@@ -90,21 +84,11 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
       // Get all settings at once (more efficient)
       final allSettings = await _settingsService.getAllSettings();
 
-      // Get city name if a city is selected
-      String cityName = '';
-      if (allSettings.location.cityId != null) {
-        final city = _ekadashiService.getCityById(allSettings.location.cityId!);
-        cityName = city?.name ?? '';
-      } else if (allSettings.location.autoDetect) {
-        cityName = 'Auto-detect';
-      }
-
       if (mounted) {
         setState(() {
           _permissionStatus = allSettings.permissions;
           _notificationSettings = allSettings.notifications;
-          _locationSettings = allSettings.location;
-          _cityName = cityName;
+          _currentTimezone = allSettings.location.timezone;
 
           // Expand permissions if something is missing and notifications are enabled
           _permissionsExpanded = _notificationSettings.enabled &&
@@ -203,7 +187,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
         final langService = Provider.of<LanguageService>(context, listen: false);
         final ekadashis = await _ekadashiService.getUpcomingEkadashis(
             languageCode: langService.currentLocale.languageCode,
-            timezone: _locationSettings.timezone
+            timezone: _currentTimezone
         );
 
         // Convert to notification data format
@@ -289,70 +273,6 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
   }
 
   // ============================================================
-  // CITY SELECTION
-  // ============================================================
-
-  Future<void> _openCitySelection() async {
-    final result = await Navigator.push<Map<String, dynamic>>(
-      context,
-      MaterialPageRoute(
-        builder: (context) => CitySelectionScreen(
-          currentCityId: _locationSettings.cityId,
-          isAutoDetectEnabled: _locationSettings.autoDetect,
-          onCitySelected: (cityId, timezone, autoDetect) {
-            Navigator.pop(context, {
-              'cityId': cityId,
-              'timezone': timezone,
-              'autoDetect': autoDetect,
-            });
-          },
-        ),
-      ),
-    );
-
-    if (result != null && mounted) {
-      final cityId = result['cityId'] as String?;
-      final timezone = result['timezone'] as String;
-      final autoDetect = result['autoDetect'] as bool;
-
-      // Update location settings
-      await _settingsService.updateLocationSettings(
-        autoDetect: autoDetect,
-        cityId: cityId,
-        timezone: timezone,
-      );
-
-      // Update native location service
-      await _locationService.setAutoDetectEnabled(autoDetect);
-      if (cityId != null) {
-        await _locationService.setSelectedCityId(cityId);
-      }
-      await _locationService.setTimezone(timezone);
-
-      // Get city name
-      String cityName = '';
-      if (autoDetect) {
-        cityName = 'Auto-detect';
-      } else if (cityId != null) {
-        final city = _ekadashiService.getCityById(cityId);
-        cityName = city?.name ?? '';
-      }
-
-      setState(() {
-        _locationSettings = LocationSettings(
-          autoDetect: autoDetect,
-          cityId: cityId,
-          timezone: timezone,
-        );
-        _cityName = cityName;
-      });
-
-      // Reschedule notifications with new timezone
-      _rescheduleNotifications();
-    }
-  }
-
-  // ============================================================
   // BUILD UI
   // ============================================================
 
@@ -387,23 +307,6 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
             Provider.of<ThemeService>(context, listen: false).toggleTheme(value);
             _settingsService.setDarkMode(value);
           },
-        ),
-        const Divider(),
-
-        // ==================== LOCATION/CITY ====================
-        Text(lang.translate('location'),
-            style: const TextStyle(color: tealColor, fontWeight: FontWeight.bold)),
-        ListTile(
-          leading: const Icon(Icons.location_city, color: tealColor),
-          title: Text(lang.translate('select_city')),
-          subtitle: Text(
-            _cityName.isNotEmpty
-                ? '$_cityName (${_locationSettings.timezone})'
-                : _locationSettings.timezone,
-            style: const TextStyle(fontSize: 12, color: Colors.grey),
-          ),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: _openCitySelection,
         ),
         const Divider(),
 

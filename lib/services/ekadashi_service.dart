@@ -207,16 +207,41 @@ class EkadashiService {
   }
 
   /// Format ISO datetime to display time (e.g., "06:40 AM")
+  /// IMPORTANT: Extract time directly from ISO string WITHOUT timezone conversion.
+  /// The JSON already has correct times for each timezone, so we display as-is.
   String _formatTimeFromIso(String isoString) {
     if (isoString.isEmpty) return '';
     try {
-      final dt = DateTime.parse(isoString);
-      final hour = dt.hour;
-      final minute = dt.minute;
+      // Extract time directly from ISO string without timezone conversion
+      // Format: "2026-01-14T06:40:00+05:30" -> extract "06:40"
+      final tIndex = isoString.indexOf('T');
+      if (tIndex == -1 || tIndex >= isoString.length - 1) return '';
+
+      // Get the time part (after T, before timezone offset)
+      String timePart = isoString.substring(tIndex + 1);
+      // Remove timezone offset if present (+/-HH:MM or Z)
+      final plusIndex = timePart.indexOf('+');
+      final minusIndex = timePart.lastIndexOf('-');
+      final zIndex = timePart.indexOf('Z');
+      if (plusIndex > 0) {
+        timePart = timePart.substring(0, plusIndex);
+      } else if (minusIndex > 0) {
+        timePart = timePart.substring(0, minusIndex);
+      } else if (zIndex > 0) {
+        timePart = timePart.substring(0, zIndex);
+      }
+
+      // Parse HH:MM:SS
+      final parts = timePart.split(':');
+      if (parts.length < 2) return '';
+
+      final hour = int.parse(parts[0]);
+      final minute = int.parse(parts[1]);
       final period = hour >= 12 ? 'PM' : 'AM';
       final displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
       return '${displayHour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')} $period';
     } catch (e) {
+      debugPrint('Error parsing time from ISO: $e');
       return '';
     }
   }

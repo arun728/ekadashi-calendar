@@ -116,7 +116,7 @@ class NativeNotificationService {
           remind2Days: map['remind_2_days'] as bool? ?? true,
           remind1Day: map['remind_1_day'] as bool? ?? true,
           remindOnStart: map['remind_on_start'] as bool? ?? true,
-          remindOnParana: map['remind_on_parana'] as bool? ?? false,
+          remindOnParana: map['remind_on_parana'] as bool? ?? true,
         );
       }
     } catch (e) {
@@ -175,7 +175,7 @@ class NotificationSettings {
     this.remind2Days = true,
     this.remind1Day = true,
     this.remindOnStart = true,
-    this.remindOnParana = false,
+    this.remindOnParana = true,
   });
 
   int get enabledCount {
