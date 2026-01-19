@@ -105,14 +105,18 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && !_isResuming && !_isRequestingLocation) {
-      _isResuming = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          _refreshLocationIfNeeded();
-        }
-        _isResuming = false;
-      });
+    if (state == AppLifecycleState.resumed) {
+      // Only refresh if not already loading or requesting
+      if (!_isResuming && !_isRequestingLocation && !_isLoading) {
+        _isResuming = true;
+        // Small delay to let the app settle after resume
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (mounted && _isResuming) {
+            _refreshLocationIfNeeded();
+          }
+          _isResuming = false;
+        });
+      }
     }
   }
 
@@ -120,14 +124,29 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   Future<void> _initializeApp() async {
     final prefs = await SharedPreferences.getInstance();
     final hasLaunched = prefs.getBool('has_launched') ?? false;
+    final appVersion = prefs.getString('app_version') ?? '1.0';
 
     // Load saved timezone
     _currentTimezone = await _locationService.getCurrentTimezone();
 
     if (!hasLaunched) {
+      // First launch - request permissions
       await prefs.setBool('has_launched', true);
+      await prefs.setString('app_version', '2.0');
       await _requestPermissionsOnFirstLaunch();
     } else {
+      // Existing user - check for upgrade migration
+      if (appVersion != '2.0') {
+        debugPrint('📦 Migrating from v$appVersion to v2.0...');
+        await prefs.setString('app_version', '2.0');
+
+        // Enable Break Fasting Reminder by default in v2.0
+        // Only set if not explicitly set before (check for key existence by checking both Flutter and native prefs)
+        if (!prefs.containsKey('remind_on_parana')) {
+          await prefs.setBool('remind_on_parana', true);
+          debugPrint('  ✅ Enabled Break Fasting Reminder by default');
+        }
+      }
       _handleLocation();
     }
   }
@@ -142,7 +161,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       });
     }
 
-    // Request notification permission
+    // Request notification permission first
     final notifGranted = await NotificationService().requestNotificationPermission();
     if (notifGranted) {
       final prefs = await SharedPreferences.getInstance();
@@ -154,11 +173,16 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       debugPrint('✅ Notification preferences saved');
     }
 
+    // Request location permission
+    debugPrint('📍 Requesting location permission...');
+    final locationGranted = await _locationService.requestLocationPermission();
+    debugPrint('📍 Location permission result: $locationGranted');
+
     if (mounted) {
       setState(() => _isRequestingLocation = false);
     }
 
-    // Handle location (native service will request permission if needed)
+    // Now handle location after permission is requested
     await _handleLocation();
   }
 
@@ -226,6 +250,26 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     });
 
     try {
+      // First check if we already have permission
+      final hasPermission = await _locationService.hasLocationPermission();
+
+      if (!hasPermission) {
+        // Request permission again - this will show system dialog or open settings
+        debugPrint('📍 Re-requesting location permission...');
+        final granted = await _locationService.requestLocationPermission();
+        debugPrint('📍 Permission re-request result: $granted');
+
+        if (!granted) {
+          // Permission denied - show location denied state
+          if (mounted) {
+            setState(() => _isRequestingLocation = false);
+          }
+          _setLocationDenied();
+          return;
+        }
+      }
+
+      // Permission granted - try to get location
       final location = await _locationService.getCurrentLocation();
 
       if (mounted) {
@@ -254,8 +298,21 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
   /// Refresh location in background when app resumes
   Future<void> _refreshLocationIfNeeded() async {
+    // Guard against concurrent calls
+    if (_isRequestingLocation || _isLoading) {
+      debugPrint('⏭️ Skipping location refresh - already in progress');
+      return;
+    }
+
     if (_locationDenied) {
       // Check if permission was granted while away
+      final hasPermission = await _locationService.hasLocationPermission();
+      if (!hasPermission) {
+        debugPrint('⏭️ Location still denied - skipping refresh');
+        return;
+      }
+
+      // Permission granted now - try to get location
       final location = await _locationService.getCurrentLocation();
       if (location != null && mounted) {
         setState(() {
@@ -265,6 +322,13 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         });
         await _loadData();
       }
+      return;
+    }
+
+    // Only refresh if we have permission
+    final hasPermission = await _locationService.hasLocationPermission();
+    if (!hasPermission) {
+      debugPrint('⏭️ No location permission - skipping refresh');
       return;
     }
 

@@ -487,7 +487,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
               subtitleColor: _permissionStatus.hasExactAlarmPermission
                   ? Colors.green : Colors.orange,
               showButton: true,
-              buttonText: lang.translate('open_settings'),
+              buttonText: lang.translate('settings_button'),
               onTap: () => _settingsService.openExactAlarmSettings(),
               onInfoTap: _showAlarmsInfoDialog,
             ),
@@ -499,8 +499,8 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
               subtitle: lang.translate('battery_desc'),
               subtitleColor: Colors.grey,
               showButton: true,
-              buttonText: lang.translate('open_settings'),
-              onTap: () => _settingsService.openBatteryOptimizationSettings(),
+              buttonText: lang.translate('settings_button'),
+              onTap: () => _settingsService.openAppSettings(),  // Open App Info for all permissions
               onInfoTap: _showBatteryInfoDialog,
             ),
           ],

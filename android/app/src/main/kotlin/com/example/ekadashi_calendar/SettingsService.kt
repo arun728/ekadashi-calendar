@@ -282,7 +282,7 @@ class SettingsService(private val context: Context) {
             "remind2Days" to prefs.getBoolean(KEY_REMIND_2_DAYS, true),
             "remind1Day" to prefs.getBoolean(KEY_REMIND_1_DAY, true),
             "remindOnStart" to prefs.getBoolean(KEY_REMIND_ON_START, true),
-            "remindOnParana" to prefs.getBoolean(KEY_REMIND_ON_PARANA, false)
+            "remindOnParana" to prefs.getBoolean(KEY_REMIND_ON_PARANA, true)  // Default true in v2.0
         )
     }
 

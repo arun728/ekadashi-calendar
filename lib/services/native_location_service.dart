@@ -67,6 +67,17 @@ class NativeLocationService {
     }
   }
 
+  /// Request location permission (shows system dialog)
+  /// Returns true if permission was granted, false otherwise
+  Future<bool> requestLocationPermission() async {
+    try {
+      return await _channel.invokeMethod<bool>('requestLocationPermission') ?? false;
+    } catch (e) {
+      debugPrint('requestLocationPermission error: $e');
+      return false;
+    }
+  }
+
   /// Check if location services are enabled
   Future<bool> isLocationEnabled() async {
     try {

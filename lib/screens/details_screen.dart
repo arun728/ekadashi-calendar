@@ -180,18 +180,6 @@ class DetailsScreen extends StatelessWidget {
                                 style: const TextStyle(fontSize: 13, color: Colors.grey)
                             ),
                             Text(breakTime, style: const TextStyle(fontSize: 18)),
-                            // Show parana window label if we have the full window (contains " - ")
-                            if (breakTime.contains(' - ')) ...[
-                              const SizedBox(height: 4),
-                              Text(
-                                'Parana Window',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey.shade600,
-                                  fontStyle: FontStyle.italic,
-                                ),
-                              ),
-                            ],
                           ],
                         ),
                       ),
