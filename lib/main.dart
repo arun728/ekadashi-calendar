@@ -927,7 +927,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => DetailsScreen(ekadashi: ekadashi),
+                      builder: (_) => DetailsScreen(
+                        ekadashi: ekadashi,
+                        timezone: _currentTimezone,
+                      ),
                     ),
                   );
                 },
