@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 
@@ -25,7 +26,8 @@ class NativeSettingsService {
   /// Returns a PermissionStatus object with all permission states.
   Future<PermissionStatus> checkAllPermissions() async {
     try {
-      final result = await _channel.invokeMethod<Map<Object?, Object?>>('checkAllPermissions');
+      final result = await _channel.invokeMethod<Map<Object?, Object?>>('checkAllPermissions')
+          .timeout(const Duration(milliseconds: 1500));
       if (result == null) return PermissionStatus.defaults();
 
       // Convert to proper types
@@ -40,6 +42,9 @@ class NativeSettingsService {
         requiresExactAlarmPermission: map['requiresExactAlarmPermission'] as bool? ?? false,
         requiresNotificationPermission: map['requiresNotificationPermission'] as bool? ?? false,
       );
+    } on TimeoutException {
+      debugPrint('NativeSettingsService.checkAllPermissions timeout - returning defaults');
+      return PermissionStatus.defaults();
     } catch (e) {
       debugPrint('NativeSettingsService.checkAllPermissions error: $e');
       return PermissionStatus.defaults();

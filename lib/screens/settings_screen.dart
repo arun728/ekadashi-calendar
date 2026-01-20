@@ -33,7 +33,6 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
   // State
   bool _isInitialized = false;
   bool _isCheckingPermissions = false;
-  bool _permissionsExpanded = false;
 
   // Permission states
   PermissionStatus _permissionStatus = PermissionStatus.defaults();
@@ -61,12 +60,14 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && _isInitialized && !_isCheckingPermissions) {
-      // Use post frame callback for smoother UI update
+    if (state == AppLifecycleState.resumed) {
+      // Debounce to avoid freeze on return
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          _checkPermissionsAfterResume();
-        }
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (mounted) {
+            _checkPermissionsAfterResume();
+          }
+        });
       });
     }
   }
@@ -89,11 +90,6 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
           _permissionStatus = allSettings.permissions;
           _notificationSettings = allSettings.notifications;
           _currentTimezone = allSettings.location.timezone;
-
-          // Expand permissions if something is missing and notifications are enabled
-          _permissionsExpanded = _notificationSettings.enabled &&
-              _permissionStatus.hasNotificationPermission &&
-              !_permissionStatus.hasExactAlarmPermission;
         });
       }
     } catch (e) {
@@ -101,79 +97,19 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     }
   }
 
-  /// Check permissions after returning from system settings
-  /// Uses native service - no freeze!
   Future<void> _checkPermissionsAfterResume() async {
-    if (_isCheckingPermissions || !mounted) return;
-    _isCheckingPermissions = true;
+    if (!mounted) return;
 
-    debugPrint('🔄 Checking permissions after resume (native)...');
+    // 1. Fetch latest settings (includes permissions and notifications)
+    // We use getAllSettings because checkAllPermissions does not return notification settings.
+    final allSettings = await _settingsService.getAllSettings();
+    if (!mounted) return;
 
-    try {
-      // Native permission check - runs on IO thread, no freeze
-      final newPermissions = await _settingsService.checkAllPermissions();
-
-      if (!mounted) {
-        _isCheckingPermissions = false;
-        return;
-      }
-
-      final bool notificationChanged =
-          newPermissions.hasNotificationPermission != _permissionStatus.hasNotificationPermission;
-      final bool alarmChanged =
-          newPermissions.hasExactAlarmPermission != _permissionStatus.hasExactAlarmPermission;
-
-      if (notificationChanged) {
-        if (newPermissions.hasNotificationPermission && !_permissionStatus.hasNotificationPermission) {
-          // Permission was granted - enable notifications
-          debugPrint('  ✅ Notification permission granted');
-          final newSettings = _notificationSettings.copyWith(enabled: true);
-          await _settingsService.updateNotificationSettings(newSettings);
-
-          if (mounted) {
-            setState(() {
-              _notificationSettings = newSettings;
-              _permissionsExpanded = !newPermissions.hasExactAlarmPermission;
-            });
-          }
-
-          _rescheduleNotifications();
-        } else if (!newPermissions.hasNotificationPermission && _permissionStatus.hasNotificationPermission) {
-          // Permission was revoked - disable notifications
-          debugPrint('  ❌ Notification permission revoked');
-          final newSettings = _notificationSettings.copyWith(enabled: false);
-          await _settingsService.updateNotificationSettings(newSettings);
-
-          if (mounted) {
-            setState(() {
-              _notificationSettings = newSettings;
-              _permissionsExpanded = false;
-            });
-          }
-
-          await _notificationService.cancelAllNotifications();
-        }
-      }
-
-      // Update permission status
-      if (mounted) {
-        setState(() {
-          _permissionStatus = newPermissions;
-
-          // Expand permissions if alarm is missing and notifications are enabled
-          if (alarmChanged && !newPermissions.hasExactAlarmPermission &&
-              _notificationSettings.enabled && newPermissions.hasNotificationPermission) {
-            _permissionsExpanded = true;
-          }
-        });
-      }
-
-      debugPrint('  Alarm permission: ${newPermissions.hasExactAlarmPermission}');
-    } catch (e) {
-      debugPrint('Check permissions after resume error: $e');
-    } finally {
-      _isCheckingPermissions = false;
-    }
+    setState(() {
+      _permissionStatus = allSettings.permissions;
+      // 2. Sync Notification Settings
+      _notificationSettings = allSettings.notifications;
+    });
   }
 
   void _rescheduleNotifications() {
@@ -280,14 +216,11 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
   Widget build(BuildContext context) {
     final lang = Provider.of<LanguageService>(context);
 
-    final bool allPermissionsOK = _permissionStatus.allPermissionsGranted;
     final bool togglesEnabled = _permissionStatus.hasNotificationPermission &&
         _notificationSettings.enabled;
 
-    // Show permissions section ONLY when notifications are enabled
-    final bool showPermissionsSection = Platform.isAndroid &&
-        _notificationSettings.enabled &&
-        _permissionStatus.hasNotificationPermission;
+    // Show permissions section always on Android (since USE_EXACT_ALARM is auto-granted)
+    final bool showPermissionsSection = Platform.isAndroid;
 
     if (!_isInitialized) {
       return const Center(child: CircularProgressIndicator(color: tealColor));
@@ -439,71 +372,19 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
         if (showPermissionsSection) ...[
           const Divider(height: 32),
 
-          InkWell(
-            onTap: () => setState(() => _permissionsExpanded = !_permissionsExpanded),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Row(
-                children: [
-                  Icon(
-                    allPermissionsOK ? Icons.check_circle : Icons.warning_amber_rounded,
-                    color: allPermissionsOK ? Colors.green : Colors.orange,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(lang.translate('permissions'),
-                      style: const TextStyle(color: tealColor, fontWeight: FontWeight.bold)),
-                  const Spacer(),
-                  Text(
-                    allPermissionsOK
-                        ? lang.translate('permissions_ok')
-                        : lang.translate('permissions_needed'),
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: allPermissionsOK ? Colors.green : Colors.orange,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  Icon(
-                    _permissionsExpanded ? Icons.expand_less : Icons.expand_more,
-                    color: Colors.grey,
-                    size: 20,
-                  ),
-                ],
-              ),
-            ),
+          Text(lang.translate('permissions'),
+              style: const TextStyle(color: tealColor, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+
+          _buildPermissionRow(
+            icon: Icons.settings_applications,
+            iconColor: tealColor,
+            title: lang.translate('app_settings'),
+            showButton: true,
+            buttonText: lang.translate('settings_button'),
+            onTap: () => _settingsService.openAppSettings(),
+            onInfoTap: _showPermissionsGuideDialog,
           ),
-
-          if (_permissionsExpanded) ...[
-            _buildPermissionRow(
-              icon: _permissionStatus.hasExactAlarmPermission
-                  ? Icons.check_circle : Icons.error_outline,
-              iconColor: _permissionStatus.hasExactAlarmPermission
-                  ? Colors.green : Colors.orange,
-              title: lang.translate('alarms_reminders'),
-              subtitle: _permissionStatus.hasExactAlarmPermission
-                  ? lang.translate('alarms_enabled')
-                  : lang.translate('alarms_disabled'),
-              subtitleColor: _permissionStatus.hasExactAlarmPermission
-                  ? Colors.green : Colors.orange,
-              showButton: true,
-              buttonText: lang.translate('settings_button'),
-              onTap: () => _settingsService.openExactAlarmSettings(),
-              onInfoTap: _showAlarmsInfoDialog,
-            ),
-
-            _buildPermissionRow(
-              icon: Icons.battery_saver,
-              iconColor: tealColor,
-              title: lang.translate('battery_optimization'),
-              subtitle: lang.translate('battery_desc'),
-              subtitleColor: Colors.grey,
-              showButton: true,
-              buttonText: lang.translate('settings_button'),
-              onTap: () => _settingsService.openAppSettings(),  // Open App Info for all permissions
-              onInfoTap: _showBatteryInfoDialog,
-            ),
-          ],
         ],
 
         const Divider(height: 32),
@@ -538,40 +419,32 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     required IconData icon,
     required Color iconColor,
     required String title,
-    required String subtitle,
-    required Color subtitleColor,
     required bool showButton,
     required String buttonText,
     VoidCallback? onTap,
     VoidCallback? onInfoTap,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
       child: Row(
         children: [
           Icon(icon, color: iconColor, size: 20),
           const SizedBox(width: 12),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
               children: [
-                Row(
-                  children: [
-                    Text(title, style: const TextStyle(fontSize: 14)),
-                    if (onInfoTap != null) ...[
-                      const SizedBox(width: 4),
-                      GestureDetector(
-                        onTap: onInfoTap,
-                        child: Icon(
-                          Icons.info_outline,
-                          size: 16,
-                          color: Colors.grey.shade500,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-                Text(subtitle, style: TextStyle(fontSize: 11, color: subtitleColor)),
+                Text(title, style: const TextStyle(fontSize: 14)),
+                if (onInfoTap != null) ...[
+                  const SizedBox(width: 4),
+                  GestureDetector(
+                    onTap: onInfoTap,
+                    child: Icon(
+                      Icons.info_outline,
+                      size: 16,
+                      color: Colors.grey.shade500,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -590,7 +463,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     );
   }
 
-  void _showAlarmsInfoDialog() {
+  void _showPermissionsGuideDialog() {
     final lang = Provider.of<LanguageService>(context, listen: false);
 
     showDialog(
@@ -598,135 +471,20 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
       builder: (context) => AlertDialog(
         title: Row(
           children: [
-            const Icon(Icons.alarm, color: tealColor),
+            const Icon(Icons.settings_applications, color: tealColor),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                lang.translate('alarms_info_title'),
+                lang.translate('perm_guide_title'),
                 style: const TextStyle(fontSize: 18),
               ),
             ),
           ],
         ),
         content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                lang.translate('alarms_info_why'),
-                style: const TextStyle(fontWeight: FontWeight.bold, color: tealColor),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                lang.translate('alarms_info_why_desc'),
-                style: const TextStyle(fontSize: 14),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                lang.translate('alarms_info_steps'),
-                style: const TextStyle(fontWeight: FontWeight.bold, color: tealColor),
-              ),
-              const SizedBox(height: 4),
-              Text(lang.translate('alarms_info_step1'), style: const TextStyle(fontSize: 14)),
-              Text(lang.translate('alarms_info_step2'), style: const TextStyle(fontSize: 14)),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.grey.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(Icons.info, size: 16, color: Colors.grey.shade600),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        lang.translate('alarms_info_note'),
-                        style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(lang.translate('info_close'), style: const TextStyle(color: tealColor)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showBatteryInfoDialog() {
-    final lang = Provider.of<LanguageService>(context, listen: false);
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            const Icon(Icons.battery_saver, color: tealColor),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                lang.translate('battery_info_title'),
-                style: const TextStyle(fontSize: 18),
-              ),
-            ),
-          ],
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                lang.translate('battery_info_why'),
-                style: const TextStyle(fontWeight: FontWeight.bold, color: tealColor),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                lang.translate('battery_info_why_desc'),
-                style: const TextStyle(fontSize: 14),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                lang.translate('battery_info_steps'),
-                style: const TextStyle(fontWeight: FontWeight.bold, color: tealColor),
-              ),
-              const SizedBox(height: 4),
-              Text(lang.translate('battery_info_step1'), style: const TextStyle(fontSize: 14)),
-              Text(lang.translate('battery_info_step2'), style: const TextStyle(fontSize: 14)),
-              Text(lang.translate('battery_info_step3'), style: const TextStyle(fontSize: 14)),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Icon(Icons.check_circle_outline, size: 16, color: Colors.green),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        lang.translate('battery_info_note'),
-                        style: const TextStyle(fontSize: 12, color: Colors.green),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+          child: Text(
+            lang.translate('perm_guide_desc'),
+            style: const TextStyle(fontSize: 14),
           ),
         ),
         actions: [

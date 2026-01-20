@@ -28,41 +28,63 @@ class MainActivity: FlutterActivity() {
     private val TAG = "EkadashiMain"
 
     // Coroutine scope for async operations
-    private val mainScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+    private var mainScope: CoroutineScope? = null
 
     // Permission request code and pending result
     private val LOCATION_PERMISSION_REQUEST_CODE = 1001
     private var locationPermissionResult: MethodChannel.Result? = null
 
-    // Services
-    private lateinit var locationService: LocationService
-    private lateinit var notificationScheduler: NotificationScheduler
-    private lateinit var settingsService: SettingsService
+    // Services - lazy initialized to prevent issues during recreation
+    private var locationService: LocationService? = null
+    private var notificationScheduler: NotificationScheduler? = null
+    private var settingsService: SettingsService? = null
+
+    // Flag to prevent duplicate initialization
+    private var servicesInitialized = false
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
 
-        // Initialize services
-        locationService = LocationService(applicationContext)
-        notificationScheduler = NotificationScheduler(applicationContext)
-        settingsService = SettingsService(applicationContext)
+        // Initialize coroutine scope if not already created
+        if (mainScope == null) {
+            mainScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+        }
 
-        // Setup permission channel (existing)
+        // Initialize services only once (prevent duplicate init on recreation)
+        if (!servicesInitialized) {
+            locationService = LocationService(applicationContext)
+            notificationScheduler = NotificationScheduler(applicationContext)
+            settingsService = SettingsService(applicationContext)
+            servicesInitialized = true
+            Log.d(TAG, "Services initialized")
+        } else {
+            Log.d(TAG, "Services already initialized, skipping")
+        }
+
+        // Setup channels (these need to be re-setup on engine recreation)
         setupPermissionChannel(flutterEngine)
-
-        // Setup location channel (new)
         setupLocationChannel(flutterEngine)
-
-        // Setup notification channel (new)
         setupNotificationChannel(flutterEngine)
-
-        // Setup settings channel (new - for native permission handling)
         setupSettingsChannel(flutterEngine)
     }
 
     override fun onDestroy() {
+        // Cancel coroutine scope to prevent leaks
+        mainScope?.cancel()
+        mainScope = null
+        
+        // Clear pending permission result to prevent memory leaks
+        locationPermissionResult = null
+        
+        // Clear service references to prevent stale context during recreation
+        locationService = null
+        notificationScheduler = null
+        settingsService = null
+        servicesInitialized = false
+        
+        Log.d(TAG, "onDestroy: Cleaned up services")
+        
         super.onDestroy()
-        mainScope.cancel()
     }
 
     override fun onRequestPermissionsResult(
@@ -111,11 +133,20 @@ class MainActivity: FlutterActivity() {
 
     private fun setupLocationChannel(flutterEngine: FlutterEngine) {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, LOCATION_CHANNEL).setMethodCallHandler { call, result ->
+            // Guard against null services during recreation
+            val locService = locationService
+            val scope = mainScope
+            if (locService == null || scope == null) {
+                Log.w(TAG, "Services not ready for ${call.method}")
+                result.error("SERVICE_NOT_READY", "Services not initialized", null)
+                return@setMethodCallHandler
+            }
+
             when (call.method) {
                 "getCurrentLocation" -> {
-                    mainScope.launch {
+                    scope.launch {
                         try {
-                            val locationResult = locationService.getCurrentLocation()
+                            val locationResult = locService.getCurrentLocation()
                             when (locationResult) {
                                 is LocationServiceResult.Success -> result.success(locationResult.toMap())
                                 is LocationServiceResult.Error -> result.success(locationResult.toMap())
@@ -128,7 +159,7 @@ class MainActivity: FlutterActivity() {
                 }
 
                 "getCachedLocation" -> {
-                    val cached = locationService.getCachedLocation()
+                    val cached = locService.getCachedLocation()
                     if (cached != null) {
                         result.success(cached.toMap())
                     } else {
@@ -137,12 +168,12 @@ class MainActivity: FlutterActivity() {
                 }
 
                 "hasLocationPermission" -> {
-                    result.success(locationService.hasLocationPermission())
+                    result.success(locService.hasLocationPermission())
                 }
 
                 "requestLocationPermission" -> {
                     // Check if already granted
-                    if (locationService.hasLocationPermission()) {
+                    if (locService.hasLocationPermission()) {
                         Log.d(TAG, "Location permission already granted")
                         result.success(true)
                         return@setMethodCallHandler
@@ -170,44 +201,50 @@ class MainActivity: FlutterActivity() {
                 }
 
                 "isLocationEnabled" -> {
-                    mainScope.launch {
-                        result.success(locationService.isLocationEnabled())
+                    scope.launch {
+                        result.success(locService.isLocationEnabled())
                     }
                 }
 
                 "getSelectedCityId" -> {
-                    result.success(locationService.getSelectedCityId())
+                    result.success(locService.getSelectedCityId())
                 }
 
                 "setSelectedCityId" -> {
                     val cityId = call.argument<String?>("cityId")
-                    locationService.setSelectedCityId(cityId)
+                    locService.setSelectedCityId(cityId)
                     result.success(true)
                 }
 
                 "isAutoDetectEnabled" -> {
-                    result.success(locationService.isAutoDetectEnabled())
+                    result.success(locService.isAutoDetectEnabled())
                 }
 
                 "setAutoDetectEnabled" -> {
                     val enabled = call.argument<Boolean>("enabled") ?: true
-                    locationService.setAutoDetectEnabled(enabled)
+                    locService.setAutoDetectEnabled(enabled)
                     result.success(true)
                 }
 
                 "getCurrentTimezone" -> {
-                    result.success(locationService.getCurrentTimezone())
+                    result.success(locService.getCurrentTimezone())
                 }
 
                 "setTimezone" -> {
                     val timezone = call.argument<String>("timezone") ?: "IST"
-                    locationService.setTimezone(timezone)
+                    locService.setTimezone(timezone)
                     result.success(true)
                 }
 
                 "clearLocationCache" -> {
-                    locationService.clearCache()
+                    locService.clearCache()
                     result.success(true)
+                }
+
+                "shouldShowRequestRationale" -> {
+                    // Check if we should show permission rationale
+                    // Returns false if user has permanently denied ("Don't ask again")
+                    result.success(locService.shouldShowRequestPermissionRationale(this@MainActivity))
                 }
 
                 else -> {
@@ -216,11 +253,19 @@ class MainActivity: FlutterActivity() {
             }
         }
     }
-
     // ==================== NOTIFICATION CHANNEL ====================
 
     private fun setupNotificationChannel(flutterEngine: FlutterEngine) {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, NOTIFICATION_CHANNEL).setMethodCallHandler { call, result ->
+            // Guard against null services during recreation
+            val notifScheduler = notificationScheduler
+            val scope = mainScope
+            if (notifScheduler == null) {
+                Log.w(TAG, "NotificationScheduler not ready for ${call.method}")
+                result.error("SERVICE_NOT_READY", "Services not initialized", null)
+                return@setMethodCallHandler
+            }
+
             when (call.method) {
                 "scheduleNotification" -> {
                     try {
@@ -230,7 +275,7 @@ class MainActivity: FlutterActivity() {
                         val paranaStartTime = call.argument<String>("paranaStartTime") ?: ""
                         val texts = call.argument<Map<String, String>>("texts") ?: emptyMap()
 
-                        val count = notificationScheduler.scheduleEkadashiNotifications(
+                        val count = notifScheduler.scheduleEkadashiNotifications(
                             ekadashiId, ekadashiName, fastingStartTime, paranaStartTime, texts
                         )
                         result.success(count)
@@ -253,7 +298,7 @@ class MainActivity: FlutterActivity() {
                             val fastingStart = ekadashi["fastingStart"] as? String ?: continue
                             val paranaStart = ekadashi["paranaStart"] as? String ?: continue
 
-                            totalScheduled += notificationScheduler.scheduleEkadashiNotifications(
+                            totalScheduled += notifScheduler.scheduleEkadashiNotifications(
                                 id, name, fastingStart, paranaStart, texts
                             )
                         }
@@ -267,48 +312,52 @@ class MainActivity: FlutterActivity() {
                 }
 
                 "cancelAllNotifications" -> {
-                    notificationScheduler.cancelAllNotifications()
+                    notifScheduler.cancelAllNotifications()
                     result.success(true)
                 }
 
                 "cancelEkadashiNotifications" -> {
                     val ekadashiId = call.argument<Int>("ekadashiId") ?: 0
-                    notificationScheduler.cancelEkadashiNotifications(ekadashiId)
+                    notifScheduler.cancelEkadashiNotifications(ekadashiId)
                     result.success(true)
                 }
 
                 "showTestNotification" -> {
                     val title = call.argument<String>("title") ?: "Test"
                     val body = call.argument<String>("body") ?: "Test notification"
-                    notificationScheduler.showTestNotification(title, body)
+                    notifScheduler.showTestNotification(title, body)
                     result.success(true)
                 }
 
                 "getPendingCount" -> {
-                    mainScope.launch {
-                        val count = notificationScheduler.getPendingNotificationCount()
-                        result.success(count)
+                    if (scope != null) {
+                        scope.launch {
+                            val count = notifScheduler.getPendingNotificationCount()
+                            result.success(count)
+                        }
+                    } else {
+                        result.success(0)
                     }
                 }
 
                 "getSettings" -> {
-                    result.success(notificationScheduler.getSettings())
+                    result.success(notifScheduler.getSettings())
                 }
 
                 "updateSettings" -> {
                     @Suppress("UNCHECKED_CAST")
                     val settings = call.argument<Map<String, Boolean>>("settings") ?: emptyMap()
-                    notificationScheduler.updateSettings(settings)
+                    notifScheduler.updateSettings(settings)
                     result.success(true)
                 }
 
                 "isNotificationsEnabled" -> {
-                    result.success(notificationScheduler.isNotificationsEnabled())
+                    result.success(notifScheduler.isNotificationsEnabled())
                 }
 
                 "setNotificationsEnabled" -> {
                     val enabled = call.argument<Boolean>("enabled") ?: true
-                    notificationScheduler.setNotificationsEnabled(enabled)
+                    notifScheduler.setNotificationsEnabled(enabled)
                     result.success(true)
                 }
 
@@ -325,145 +374,187 @@ class MainActivity: FlutterActivity() {
 
     private fun setupSettingsChannel(flutterEngine: FlutterEngine) {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, SETTINGS_CHANNEL).setMethodCallHandler { call, result ->
+            // Guard against null services during recreation
+            val settingsSvc = settingsService
+            val scope = mainScope
+            if (settingsSvc == null) {
+                Log.w(TAG, "SettingsService not ready for ${call.method}")
+                result.error("SERVICE_NOT_READY", "Services not initialized", null)
+                return@setMethodCallHandler
+            }
+
             when (call.method) {
                 // Permission checks - all run on IO thread
                 "checkAllPermissions" -> {
-                    mainScope.launch {
-                        try {
-                            val permissions = settingsService.checkAllPermissions()
-                            result.success(permissions)
-                        } catch (e: Exception) {
-                            Log.e(TAG, "checkAllPermissions error: ${e.message}")
-                            result.error("PERMISSION_ERROR", e.message, null)
+                    if (scope != null) {
+                        scope.launch {
+                            try {
+                                val permissions = settingsSvc.checkAllPermissions()
+                                result.success(permissions)
+                            } catch (e: Exception) {
+                                Log.e(TAG, "checkAllPermissions error: ${e.message}")
+                                // Return safe defaults on error
+                                result.success(mapOf(
+                                    "hasNotificationPermission" to false,
+                                    "hasExactAlarmPermission" to true,
+                                    "hasLocationPermission" to false,
+                                    "isBatteryOptimizationDisabled" to false,
+                                    "androidVersion" to android.os.Build.VERSION.SDK_INT,
+                                    "requiresExactAlarmPermission" to (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S),
+                                    "requiresNotificationPermission" to (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU)
+                                ))
+                            }
                         }
+                    } else {
+                        result.success(emptyMap<String, Any>())
                     }
                 }
 
                 "hasNotificationPermission" -> {
-                    mainScope.launch {
-                        try {
-                            result.success(settingsService.hasNotificationPermission())
-                        } catch (e: Exception) {
-                            result.error("PERMISSION_ERROR", e.message, null)
+                    if (scope != null) {
+                        scope.launch {
+                            try {
+                                result.success(settingsSvc.hasNotificationPermission())
+                            } catch (e: Exception) {
+                                result.success(false)
+                            }
                         }
+                    } else {
+                        result.success(false)
                     }
                 }
 
                 "hasExactAlarmPermission" -> {
-                    mainScope.launch {
-                        try {
-                            result.success(settingsService.hasExactAlarmPermission())
-                        } catch (e: Exception) {
-                            result.error("PERMISSION_ERROR", e.message, null)
+                    if (scope != null) {
+                        scope.launch {
+                            try {
+                                result.success(settingsSvc.hasExactAlarmPermission())
+                            } catch (e: Exception) {
+                                result.success(true)
+                            }
                         }
+                    } else {
+                        result.success(true)
                     }
                 }
 
                 "hasLocationPermission" -> {
-                    mainScope.launch {
-                        try {
-                            result.success(settingsService.hasLocationPermission())
-                        } catch (e: Exception) {
-                            result.error("PERMISSION_ERROR", e.message, null)
+                    if (scope != null) {
+                        scope.launch {
+                            try {
+                                result.success(settingsSvc.hasLocationPermission())
+                            } catch (e: Exception) {
+                                result.success(false)
+                            }
                         }
+                    } else {
+                        result.success(false)
                     }
                 }
 
                 "isBatteryOptimizationDisabled" -> {
-                    mainScope.launch {
-                        try {
-                            result.success(settingsService.isBatteryOptimizationDisabled())
-                        } catch (e: Exception) {
-                            result.error("PERMISSION_ERROR", e.message, null)
+                    if (scope != null) {
+                        scope.launch {
+                            try {
+                                result.success(settingsSvc.isBatteryOptimizationDisabled())
+                            } catch (e: Exception) {
+                                result.success(false)
+                            }
                         }
+                    } else {
+                        result.success(false)
                     }
                 }
 
                 // Open settings intents
                 "openNotificationSettings" -> {
-                    result.success(settingsService.openNotificationSettings())
+                    result.success(settingsSvc.openNotificationSettings())
                 }
 
                 "openExactAlarmSettings" -> {
-                    result.success(settingsService.openExactAlarmSettings())
+                    result.success(settingsSvc.openExactAlarmSettings())
                 }
 
                 "openBatteryOptimizationSettings" -> {
-                    result.success(settingsService.openBatteryOptimizationSettings())
+                    result.success(settingsSvc.openBatteryOptimizationSettings())
                 }
 
                 "openAppSettings" -> {
-                    result.success(settingsService.openAppSettings())
+                    result.success(settingsSvc.openAppSettings())
                 }
 
                 "openLocationSettings" -> {
-                    result.success(settingsService.openLocationSettings())
+                    result.success(settingsSvc.openLocationSettings())
                 }
 
                 // Notification settings
                 "getNotificationSettings" -> {
-                    result.success(settingsService.getNotificationSettings())
+                    result.success(settingsSvc.getNotificationSettings())
                 }
 
                 "updateNotificationSettings" -> {
                     @Suppress("UNCHECKED_CAST")
                     val settings = call.argument<Map<String, Boolean>>("settings") ?: emptyMap()
-                    result.success(settingsService.updateNotificationSettings(settings))
+                    result.success(settingsSvc.updateNotificationSettings(settings))
                 }
 
                 "setNotificationSetting" -> {
                     val key = call.argument<String>("key") ?: ""
                     val value = call.argument<Boolean>("value") ?: false
-                    result.success(settingsService.setNotificationSetting(key, value))
+                    result.success(settingsSvc.setNotificationSetting(key, value))
                 }
 
                 // Location settings
                 "getLocationSettings" -> {
-                    result.success(settingsService.getLocationSettings())
+                    result.success(settingsSvc.getLocationSettings())
                 }
 
                 "updateLocationSettings" -> {
                     val autoDetect = call.argument<Boolean>("autoDetect") ?: true
                     val cityId = call.argument<String?>("cityId")
                     val timezone = call.argument<String>("timezone") ?: "IST"
-                    result.success(settingsService.updateLocationSettings(autoDetect, cityId, timezone))
+                    result.success(settingsSvc.updateLocationSettings(autoDetect, cityId, timezone))
                 }
 
                 // Theme settings
                 "isDarkMode" -> {
-                    result.success(settingsService.isDarkMode())
+                    result.success(settingsSvc.isDarkMode())
                 }
 
                 "setDarkMode" -> {
                     val enabled = call.argument<Boolean>("enabled") ?: false
-                    result.success(settingsService.setDarkMode(enabled))
+                    result.success(settingsSvc.setDarkMode(enabled))
                 }
 
                 // Language settings
                 "getLanguageCode" -> {
-                    result.success(settingsService.getLanguageCode())
+                    result.success(settingsSvc.getLanguageCode())
                 }
 
                 "setLanguageCode" -> {
                     val code = call.argument<String>("code") ?: "en"
-                    result.success(settingsService.setLanguageCode(code))
+                    result.success(settingsSvc.setLanguageCode(code))
                 }
 
                 // All settings
                 "getAllSettings" -> {
-                    mainScope.launch {
-                        try {
-                            val settings = settingsService.getAllSettings()
-                            result.success(settings)
-                        } catch (e: Exception) {
-                            Log.e(TAG, "getAllSettings error: ${e.message}")
-                            result.error("SETTINGS_ERROR", e.message, null)
+                    if (scope != null) {
+                        scope.launch {
+                            try {
+                                val settings = settingsSvc.getAllSettings()
+                                result.success(settings)
+                            } catch (e: Exception) {
+                                Log.e(TAG, "getAllSettings error: ${e.message}")
+                                result.success(emptyMap<String, Any>())
+                            }
                         }
+                    } else {
+                        result.success(emptyMap<String, Any>())
                     }
                 }
 
                 "resetToDefaults" -> {
-                    result.success(settingsService.resetToDefaults())
+                    result.success(settingsSvc.resetToDefaults())
                 }
 
                 else -> {

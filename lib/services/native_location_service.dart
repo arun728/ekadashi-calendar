@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
@@ -14,7 +15,8 @@ class NativeLocationService {
   /// This runs on a background thread in Kotlin - never blocks UI
   Future<LocationData?> getCurrentLocation() async {
     try {
-      final result = await _channel.invokeMethod<Map>('getCurrentLocation');
+      final result = await _channel.invokeMethod<Map>('getCurrentLocation')
+          .timeout(const Duration(milliseconds: 1500));
       if (result == null) return null;
 
       final map = Map<String, dynamic>.from(result);
@@ -29,6 +31,9 @@ class NativeLocationService {
         debugPrint('Location error: ${map['errorCode']} - ${map['errorMessage']}');
         return null;
       }
+    } on TimeoutException {
+      debugPrint('NativeLocationService.getCurrentLocation timeout');
+      return null;
     } catch (e) {
       debugPrint('NativeLocationService.getCurrentLocation error: $e');
       return null;
@@ -60,7 +65,11 @@ class NativeLocationService {
   /// Check if location permission is granted
   Future<bool> hasLocationPermission() async {
     try {
-      return await _channel.invokeMethod<bool>('hasLocationPermission') ?? false;
+      return await _channel.invokeMethod<bool>('hasLocationPermission')
+          .timeout(const Duration(milliseconds: 1500)) ?? false;
+    } on TimeoutException {
+      debugPrint('hasLocationPermission timeout');
+      return false;
     } catch (e) {
       debugPrint('hasLocationPermission error: $e');
       return false;
@@ -84,6 +93,18 @@ class NativeLocationService {
       return await _channel.invokeMethod<bool>('isLocationEnabled') ?? false;
     } catch (e) {
       debugPrint('isLocationEnabled error: $e');
+      return false;
+    }
+  }
+
+  /// Check if we should show permission rationale.
+  /// Returns false if user has permanently denied ("Don't ask again").
+  /// Use this after requestLocationPermission() returns false to detect permanent denial.
+  Future<bool> shouldShowRequestRationale() async {
+    try {
+      return await _channel.invokeMethod<bool>('shouldShowRequestRationale') ?? false;
+    } catch (e) {
+      debugPrint('shouldShowRequestRationale error: $e');
       return false;
     }
   }

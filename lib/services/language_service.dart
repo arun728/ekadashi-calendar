@@ -105,6 +105,15 @@ class LanguageService extends ChangeNotifier {
       'save': 'Save',
       'location': 'Location',
       'change_city': 'Change City',
+      // Location permission dialog
+      'location_permission_title': 'Location Required',
+      'location_permission_permanent': 'Location permission is permanently disabled. Please enable it in App Settings to use location-based features.',
+      'cancel': 'Cancel',
+      // App Settings (NEW)
+      'app_settings': 'App Settings',
+      'app_settings_desc': 'Manage permissions & battery',
+      'perm_guide_title': 'Permissions Guide',
+      'perm_guide_desc': 'For accurate notifications and location features, please allow:\n• Notifications\n• Location\n• Battery (Unrestricted/Background)',
     },
 
     'ta': {
@@ -199,6 +208,15 @@ class LanguageService extends ChangeNotifier {
       'save': 'சேமி',
       'location': 'இருப்பிடம்',
       'change_city': 'நகரத்தை மாற்று',
+      // Location permission dialog
+      'location_permission_title': 'இருப்பிடம் தேவை',
+      'location_permission_permanent': 'இருப்பிட அனுமதி நிரந்தரமாக முடக்கப்பட்டுள்ளது. இருப்பிட அம்சங்களைப் பயன்படுத்த ஆப் அமைப்புகளில் இயக்கவும்.',
+      'cancel': 'ரத்து செய்',
+      // App Settings (NEW)
+      'app_settings': 'ஆப் அமைப்புகள்',
+      'app_settings_desc': 'அனுமதிகள் மற்றும் பேட்டரியை நிர்வகிக்கவும்',
+      'perm_guide_title': 'அனுமதி வழிகாட்டி',
+      'perm_guide_desc': 'துல்லியமான அறிவிப்புகள் மற்றும் இருப்பிட அம்சங்களுக்கு, அனுமதிக்கவும்:\n• அறிவிப்புகள்\n• இருப்பிடம்\n• பேட்டரி (வரம்பற்ற/பின்னணி)',
     },
 
     'hi': {
@@ -293,6 +311,15 @@ class LanguageService extends ChangeNotifier {
       'save': 'सेव करें',
       'location': 'स्थान',
       'change_city': 'शहर बदलें',
+      // Location permission dialog
+      'location_permission_title': 'स्थान आवश्यक',
+      'location_permission_permanent': 'स्थान अनुमति स्थायी रूप से अक्षम है। स्थान-आधारित सुविधाओं का उपयोग करने के लिए कृपया ऐप सेटिंग्स में इसे सक्षम करें।',
+      'cancel': 'रद्द करें',
+      // App Settings (NEW)
+      'app_settings': 'ऐप सेटिंग्स',
+      'app_settings_desc': 'अनुमतियां और बैटरी प्रबंधित करें',
+      'perm_guide_title': 'अनुमति गाइड',
+      'perm_guide_desc': 'सटीक सूचनाओं और स्थान सुविधाओं के लिए, कृपया अनुमति दें:\n• सूचनाएं\n• स्थान\n• बैटरी (अप्रतिबंधित/पृष्ठभूमि)',
     }
   };
 

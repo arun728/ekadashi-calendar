@@ -1,5 +1,6 @@
 package com.example.ekadashi_calendar
 
+import android.app.Activity
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
@@ -62,6 +63,21 @@ class LocationService(private val context: Context) {
                     context,
                     Manifest.permission.ACCESS_COARSE_LOCATION
                 ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    /**
+     * Check if we should show permission rationale.
+     * Returns false if user has permanently denied ("Don't ask again").
+     * This requires an Activity reference to check.
+     */
+    fun shouldShowRequestPermissionRationale(activity: Activity): Boolean {
+        return androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale(
+            activity,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) || androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale(
+            activity,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        )
     }
 
     /**

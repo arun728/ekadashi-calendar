@@ -8,6 +8,7 @@ import 'services/ekadashi_service.dart';
 import 'services/notification_service.dart';
 import 'services/native_location_service.dart';
 import 'services/native_notification_service.dart';
+import 'services/native_settings_service.dart';
 import 'services/theme_service.dart';
 import 'services/language_service.dart';
 import 'screens/calendar_screen.dart';
@@ -106,17 +107,20 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      // Only refresh if not already loading or requesting
-      if (!_isResuming && !_isRequestingLocation && !_isLoading) {
-        _isResuming = true;
-        // Small delay to let the app settle after resume
+      // Wait for the first frame to render (ensure engine is attached)
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        // Add a small safety buffer for low-end devices/heavy restoration
         Future.delayed(const Duration(milliseconds: 500), () {
-          if (mounted && _isResuming) {
-            _refreshLocationIfNeeded();
+          if (mounted && !_isResuming && !_isRequestingLocation && !_isLoading) {
+            _isResuming = true;
+            _refreshLocationIfNeeded().catchError((e) {
+              debugPrint('⚠️ Resume refresh error: $e');
+            }).whenComplete(() {
+              _isResuming = false;
+            });
           }
-          _isResuming = false;
         });
-      }
+      });
     }
   }
 
@@ -254,13 +258,24 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       final hasPermission = await _locationService.hasLocationPermission();
 
       if (!hasPermission) {
-        // Request permission again - this will show system dialog or open settings
+        // Request permission - this attempts to show system dialog
         debugPrint('📍 Re-requesting location permission...');
         final granted = await _locationService.requestLocationPermission();
         debugPrint('📍 Permission re-request result: $granted');
 
         if (!granted) {
-          // Permission denied - show location denied state
+          // Permission denied - check if it's permanent denial
+          final shouldShowRationale = await _locationService.shouldShowRequestRationale();
+          debugPrint('📍 shouldShowRequestRationale: $shouldShowRationale');
+
+          if (!shouldShowRationale) {
+            // Permanent denial - OS blocked the dialog, open App Settings
+            debugPrint('📍 Permanent denial detected - opening App Settings');
+            final settings = NativeSettingsService();
+            await settings.openAppSettings();
+          }
+          // If shouldShowRationale is true, user just denied again - do nothing
+
           if (mounted) {
             setState(() => _isRequestingLocation = false);
           }
@@ -304,47 +319,54 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       return;
     }
 
-    if (_locationDenied) {
-      // Check if permission was granted while away
+    try {
+      // STEP A: Immediately check current permission status
       final hasPermission = await _locationService.hasLocationPermission();
+
+      // STEP B: If permission denied, instantly update UI synchronously
       if (!hasPermission) {
-        debugPrint('⏭️ Location still denied - skipping refresh');
+        debugPrint('⚠️ Permission denied - updating UI synchronously');
+        if (mounted) {
+          setState(() {
+            _locationDenied = true;
+            _locationText = '';
+          });
+        }
         return;
       }
 
-      // Permission granted now - try to get location
+      // Permission granted - if was previously denied, try to get location
+      if (_locationDenied) {
+        final location = await _locationService.getCurrentLocation();
+        if (location != null && mounted) {
+          setState(() {
+            _locationText = location.city;
+            _currentTimezone = location.timezone;
+            _locationDenied = false;
+          });
+          await _loadData();
+        }
+        return;
+      }
+
+      // Have permission and not denied - try to get location
       final location = await _locationService.getCurrentLocation();
       if (location != null && mounted) {
-        setState(() {
-          _locationText = location.city;
-          _currentTimezone = location.timezone;
-          _locationDenied = false;
-        });
-        await _loadData();
+        if (location.timezone != _currentTimezone) {
+          // Timezone changed - reload data
+          setState(() {
+            _locationText = location.city;
+            _currentTimezone = location.timezone;
+          });
+          await _loadData();
+        } else if (location.city != _locationText) {
+          // Just city name changed
+          setState(() => _locationText = location.city);
+        }
       }
-      return;
-    }
-
-    // Only refresh if we have permission
-    final hasPermission = await _locationService.hasLocationPermission();
-    if (!hasPermission) {
-      debugPrint('⏭️ No location permission - skipping refresh');
-      return;
-    }
-
-    final location = await _locationService.getCurrentLocation();
-    if (location != null && mounted) {
-      if (location.timezone != _currentTimezone) {
-        // Timezone changed - reload data
-        setState(() {
-          _locationText = location.city;
-          _currentTimezone = location.timezone;
-        });
-        await _loadData();
-      } else if (location.city != _locationText) {
-        // Just city name changed
-        setState(() => _locationText = location.city);
-      }
+    } catch (e) {
+      debugPrint('⚠️ _refreshLocationIfNeeded error: $e');
+      // Don't crash - just skip the refresh
     }
   }
 

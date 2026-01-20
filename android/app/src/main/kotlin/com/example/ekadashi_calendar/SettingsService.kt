@@ -138,20 +138,32 @@ class SettingsService(private val context: Context) {
     /**
      * Check all permissions at once - more efficient than multiple calls.
      * Returns a map with all permission states.
+     * Catches all exceptions (including DeadObjectException) to prevent crashes
+     * when returning from system settings.
      */
     suspend fun checkAllPermissions(): Map<String, Any> = withContext(Dispatchers.IO) {
         val result = mutableMapOf<String, Any>()
 
         try {
-            result["hasNotificationPermission"] = hasNotificationPermission()
-            result["hasExactAlarmPermission"] = hasExactAlarmPermission()
-            result["hasLocationPermission"] = hasLocationPermission()
-            result["isBatteryOptimizationDisabled"] = isBatteryOptimizationDisabled()
+            // Wrap each check individually to get partial results if some fail
+            result["hasNotificationPermission"] = try { hasNotificationPermission() } catch (e: Exception) { false }
+            result["hasExactAlarmPermission"] = try { hasExactAlarmPermission() } catch (e: Exception) { true }
+            result["hasLocationPermission"] = try { hasLocationPermission() } catch (e: Exception) { false }
+            result["isBatteryOptimizationDisabled"] = try { isBatteryOptimizationDisabled() } catch (e: Exception) { false }
             result["androidVersion"] = Build.VERSION.SDK_INT
             result["requiresExactAlarmPermission"] = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
             result["requiresNotificationPermission"] = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
         } catch (e: Exception) {
+            // Catch-all for any unexpected exceptions (including DeadObjectException)
             android.util.Log.e("SettingsService", "Error checking all permissions: $e")
+            // Return safe defaults
+            result["hasNotificationPermission"] = false
+            result["hasExactAlarmPermission"] = true
+            result["hasLocationPermission"] = false
+            result["isBatteryOptimizationDisabled"] = false
+            result["androidVersion"] = Build.VERSION.SDK_INT
+            result["requiresExactAlarmPermission"] = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+            result["requiresNotificationPermission"] = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
         }
 
         result
