@@ -11,8 +11,7 @@ import android.os.Build
 import android.os.Process
 import android.provider.Settings
 import android.util.Log
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -31,32 +30,14 @@ class MainActivity: FlutterActivity() {
     // Coroutine scope for async operations
     private val mainScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
-    // Permission request launchers
+    // Permission request code and pending result
+    private val LOCATION_PERMISSION_REQUEST_CODE = 1001
     private var locationPermissionResult: MethodChannel.Result? = null
-    private lateinit var locationPermissionLauncher: ActivityResultLauncher<Array<String>>
 
     // Services
     private lateinit var locationService: LocationService
     private lateinit var notificationScheduler: NotificationScheduler
     private lateinit var settingsService: SettingsService
-
-    override fun onCreate(savedInstanceState: android.os.Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        // Initialize permission launcher before configureFlutterEngine
-        locationPermissionLauncher = registerForActivityResult(
-            ActivityResultContracts.RequestMultiplePermissions()
-        ) { permissions ->
-            val fineLocationGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] ?: false
-            val coarseLocationGranted = permissions[Manifest.permission.ACCESS_COARSE_LOCATION] ?: false
-            val granted = fineLocationGranted || coarseLocationGranted
-
-            Log.d(TAG, "Location permission result: fine=$fineLocationGranted, coarse=$coarseLocationGranted")
-
-            locationPermissionResult?.success(granted)
-            locationPermissionResult = null
-        }
-    }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -82,6 +63,26 @@ class MainActivity: FlutterActivity() {
     override fun onDestroy() {
         super.onDestroy()
         mainScope.cancel()
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        when (requestCode) {
+            LOCATION_PERMISSION_REQUEST_CODE -> {
+                val granted = grantResults.isNotEmpty() &&
+                        grantResults.any { it == PackageManager.PERMISSION_GRANTED }
+
+                Log.d(TAG, "Location permission result: granted=$granted")
+
+                locationPermissionResult?.success(granted)
+                locationPermissionResult = null
+            }
+        }
     }
 
     // ==================== PERMISSION CHANNEL ====================
@@ -150,13 +151,15 @@ class MainActivity: FlutterActivity() {
                     // Store the result for the callback
                     locationPermissionResult = result
 
-                    // Request both permissions
+                    // Request both permissions using traditional approach
                     try {
-                        locationPermissionLauncher.launch(
+                        ActivityCompat.requestPermissions(
+                            this@MainActivity,
                             arrayOf(
                                 Manifest.permission.ACCESS_FINE_LOCATION,
                                 Manifest.permission.ACCESS_COARSE_LOCATION
-                            )
+                            ),
+                            LOCATION_PERMISSION_REQUEST_CODE
                         )
                         Log.d(TAG, "Location permission request launched")
                     } catch (e: Exception) {
