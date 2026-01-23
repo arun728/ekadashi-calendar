@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../main.dart';
 
+import '../services/ekadashi_service.dart';
+import '../services/notification_service.dart';
+
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -13,13 +16,23 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const MainScreen()),
-        );
-      }
-    });
+    _initializeApp();
+  }
+
+  Future<void> _initializeApp() async {
+    // Run initialization tasks
+    await Future.wait([
+      NotificationService().init(),
+      EkadashiService().initializeData(),
+      // Ensure splash is visible for at least 2 seconds
+      Future.delayed(const Duration(seconds: 2)), 
+    ]);
+
+    if (mounted) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const MainScreen()),
+      );
+    }
   }
 
   @override

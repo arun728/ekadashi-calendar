@@ -14,14 +14,11 @@ import 'services/language_service.dart';
 import 'screens/calendar_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/details_screen.dart';
+import 'screens/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  await Future.wait([
-    NotificationService().init(),
-    EkadashiService().initializeData(),
-  ]);
+  // Initialization moved to SplashScreen to prevent cold start freeze
 
   runApp(
     MultiProvider(
@@ -47,7 +44,7 @@ class MyApp extends StatelessWidget {
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
           themeMode: themeService.themeMode,
-          home: const MainScreen(),
+          home: const SplashScreen(),
         );
       },
     );
@@ -76,6 +73,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   bool _isRequestingLocation = false;
   int _currentPage = 0;
   bool _isResuming = false;
+  bool _isPermanentDenial = false;
 
   final PageController _pageController = PageController(viewportFraction: 1.0);
   final GlobalKey<CalendarScreenState> _calendarKey = GlobalKey();
@@ -84,7 +82,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _initializeApp();
+    // Defer initialization to prevent freeze on process restoration
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeApp();
+    });
   }
 
   @override
@@ -247,60 +248,53 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   /// Request location permission again when user taps on "Location Denied"
   Future<void> _requestLocationAgain() async {
     if (_isRequestingLocation) return;
-
+    
+    // 1. Always try to request permission first
     setState(() {
       _isRequestingLocation = true;
       _locationDenied = false;
     });
 
     try {
-      // First check if we already have permission
-      final hasPermission = await _locationService.hasLocationPermission();
-
-      if (!hasPermission) {
-        // Request permission - this attempts to show system dialog
-        debugPrint('📍 Re-requesting location permission...');
-        final granted = await _locationService.requestLocationPermission();
-        debugPrint('📍 Permission re-request result: $granted');
-
-        if (!granted) {
-          // Permission denied - check if it's permanent denial
-          final shouldShowRationale = await _locationService.shouldShowRequestRationale();
-          debugPrint('📍 shouldShowRequestRationale: $shouldShowRationale');
-
-          if (!shouldShowRationale) {
-            // Permanent denial - OS blocked the dialog, open App Settings
-            debugPrint('📍 Permanent denial detected - opening App Settings');
-            final settings = NativeSettingsService();
-            await settings.openAppSettings();
-          }
-          // If shouldShowRationale is true, user just denied again - do nothing
-
-          if (mounted) {
-            setState(() => _isRequestingLocation = false);
-          }
-          _setLocationDenied();
-          return;
+      // This will either show the dialog (if allowed) or auto-deny (if permanently denied previously but we didn't track it yet)
+      final granted = await _locationService.requestLocationPermission();
+      
+      if (granted) {
+        // Success
+        if (mounted) {
+          setState(() {
+            _isPermanentDenial = false;
+            _isRequestingLocation = false;
+          });
         }
-      }
-
-      // Permission granted - try to get location
-      final location = await _locationService.getCurrentLocation();
-
-      if (mounted) {
-        setState(() => _isRequestingLocation = false);
-      }
-
-      if (location != null && mounted) {
-        setState(() {
-          _locationText = location.city;
-          _currentTimezone = location.timezone;
-          _locationDenied = false;
-        });
-        await _locationService.setTimezone(location.timezone);
-        await _loadData();
+        await _refreshLocationIfNeeded(); 
       } else {
-        _setLocationDenied();
+        // Denied
+        final shouldShowRationale = await _locationService.shouldShowRequestRationale();
+        debugPrint('📍 Permission denied. shouldShowRationale: $shouldShowRationale');
+        
+        if (mounted) {
+          setState(() {
+            _isRequestingLocation = false;
+            _locationDenied = true;
+            _locationText = '';
+          });
+          
+          // 2. Smart Redirect Logic:
+          // If we failed to get permission AND the system refused to show a rationale (dialog blocked),
+          // AND we have already flagged this state previously, THEN open settings.
+          if (!shouldShowRationale) {
+            if (_isPermanentDenial) {
+               // User clicked AGAIN after we already knew it was blocked.
+               // Now we open settings.
+               final settings = NativeSettingsService();
+               await settings.openAppSettings(); 
+            } else {
+               // First time discovering it's blocked. Just flag it. Do NOT redirect.
+               setState(() => _isPermanentDenial = true);
+            }
+          }
+        }
       }
     } catch (e) {
       debugPrint('Location request error: $e');
