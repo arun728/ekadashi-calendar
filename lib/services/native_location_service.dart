@@ -15,8 +15,9 @@ class NativeLocationService {
   /// This runs on a background thread in Kotlin - never blocks UI
   Future<LocationData?> getCurrentLocation() async {
     try {
+      // 15s timeout to cover native 10s timeout + overhead (especially on cold boot)
       final result = await _channel.invokeMethod<Map>('getCurrentLocation')
-          .timeout(const Duration(milliseconds: 1500));
+          .timeout(const Duration(seconds: 15));
       if (result == null) return null;
 
       final map = Map<String, dynamic>.from(result);
@@ -32,7 +33,8 @@ class NativeLocationService {
         return null;
       }
     } on TimeoutException {
-      debugPrint('NativeLocationService.getCurrentLocation timeout');
+      // Timeout is NOT a permission issue - just slow GPS on cold start
+      debugPrint('⚠️ NativeLocationService.getCurrentLocation TIMEOUT (15s) - GPS may be cold starting');
       return null;
     } catch (e) {
       debugPrint('NativeLocationService.getCurrentLocation error: $e');

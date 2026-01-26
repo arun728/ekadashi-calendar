@@ -157,7 +157,7 @@ class LocationService(private val context: Context) {
     @Suppress("MissingPermission")
     private suspend fun getFreshLocation(): Location? = suspendCancellableCoroutine { continuation ->
         val locationRequest = LocationRequest.Builder(
-            Priority.PRIORITY_BALANCED_POWER_ACCURACY,
+            Priority.PRIORITY_HIGH_ACCURACY,
             1000L
         ).apply {
             setMaxUpdates(1)

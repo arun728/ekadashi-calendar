@@ -198,6 +198,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     setState(() {
       _locationText = '';
       _locationDenied = false;
+      _isRequestingLocation = true; // Show spinner while getting location
     });
 
     try {
@@ -209,26 +210,65 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           _locationText = location.city;
           _currentTimezone = location.timezone;
           _locationDenied = false;
+          _isRequestingLocation = false;
         });
 
         // Save timezone
         await _locationService.setTimezone(location.timezone);
       } else {
-        // Try cached location
-        final cached = await _locationService.getCachedLocation();
-        if (cached != null && mounted) {
-          setState(() {
-            _locationText = cached.city;
-            _currentTimezone = cached.timezone;
-            _locationDenied = false;
-          });
-        } else {
+        // Location is null - could be timeout OR permission issue
+        // Check permissions to distinguish between the two
+        final hasPermission = await _locationService.hasLocationPermission();
+        debugPrint('📍 Location null - hasPermission: $hasPermission');
+
+        // Priority: Check permission FIRST before cache
+        if (!hasPermission) {
+          // Permission denied - show Location Denied immediately, ignore cache
+          debugPrint('📍 Permission denied - showing Location Denied');
           _setLocationDenied();
+        } else {
+          // Permission granted but location is null (timeout/GPS issue)
+          // Try cached location as fallback
+          final cached = await _locationService.getCachedLocation();
+          if (cached != null && mounted) {
+            setState(() {
+              _locationText = cached.city;
+              _currentTimezone = cached.timezone;
+              _locationDenied = false;
+              _isRequestingLocation = false;
+            });
+          } else {
+            // No cache available - default to IST
+            debugPrint('📍 Location unavailable (timeout) - defaulting to IST');
+            if (mounted) {
+              setState(() {
+                _locationText = 'India (Default)';
+                _currentTimezone = 'IST';
+                _locationDenied = false;
+                _isRequestingLocation = false;
+              });
+            }
+          }
         }
       }
     } catch (e) {
       debugPrint('Location error: $e');
-      _setLocationDenied();
+      // On error, check if it's permission-related
+      final hasPermission = await _locationService.hasLocationPermission();
+      if (!hasPermission) {
+        _setLocationDenied();
+      } else {
+        // Error but have permission - just use defaults
+        debugPrint('📍 Location error with permission - defaulting to IST');
+        if (mounted) {
+          setState(() {
+            _locationText = 'India (Default)';
+            _currentTimezone = 'IST';
+            _locationDenied = false;
+            _isRequestingLocation = false;
+          });
+        }
+      }
     }
 
     // Load data regardless of location result
@@ -464,6 +504,18 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     final prefs = await SharedPreferences.getInstance();
     final notificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
     if (!notificationsEnabled) return;
+
+    // Check system notification permission before scheduling
+    try {
+      final status = await NativeSettingsService().checkAllPermissions();
+      if (!status.hasNotificationPermission) {
+        debugPrint('⏭️ Skipping scheduling - System notifications disabled');
+        return;
+      }
+    } catch (e) {
+      debugPrint('⚠️ Failed to check system notification permission: $e');
+      // Continue with scheduling attempt on error
+    }
 
     final lang = Provider.of<LanguageService>(context, listen: false);
     final texts = lang.localizedStrings;
