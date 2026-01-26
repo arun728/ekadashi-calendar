@@ -1,40 +1,67 @@
 {
-  "version": "2.0",
+  "version": "1.0",
   "generated": "2025-01-13",
   "source": "Drik Panchang",
   "date_range": {
     "start": "2026-01-01",
-    "end": "2027-03-31"
+    "end": "2026-12-31"
   },
   "timezones": {
     "IST": {
       "name": "India Standard Time",
       "utc_offset": "+05:30",
-      "cities": ["Chennai", "Mumbai", "Delhi", "Kolkata", "Bangalore", "Hyderabad", "Pune", "Ahmedabad", "Jaipur", "Lucknow"]
+      "cities": [
+        "India"
+      ]
     },
     "EST": {
       "name": "Eastern Standard Time",
       "utc_offset": "-05:00",
       "dst_offset": "-04:00",
-      "cities": ["New York", "Boston", "Newark", "Philadelphia", "Atlanta", "Miami", "Washington DC"]
+      "cities": [
+        "New York",
+        "Boston",
+        "Newark",
+        "Philadelphia",
+        "Atlanta",
+        "Miami",
+        "Washington DC"
+      ]
     },
     "CST": {
       "name": "Central Standard Time",
       "utc_offset": "-06:00",
       "dst_offset": "-05:00",
-      "cities": ["Chicago", "Houston", "Dallas", "San Antonio", "Austin"]
+      "cities": [
+        "Chicago",
+        "Houston",
+        "Dallas",
+        "San Antonio",
+        "Austin"
+      ]
     },
     "MST": {
       "name": "Mountain Standard Time",
       "utc_offset": "-07:00",
       "dst_offset": "-06:00",
-      "cities": ["Denver", "Phoenix", "Albuquerque", "Salt Lake City"]
+      "cities": [
+        "Denver",
+        "Phoenix",
+        "Albuquerque",
+        "Salt Lake City"
+      ]
     },
     "PST": {
       "name": "Pacific Standard Time",
       "utc_offset": "-08:00",
       "dst_offset": "-07:00",
-      "cities": ["Los Angeles", "San Francisco", "San Jose", "Seattle", "Portland"]
+      "cities": [
+        "Los Angeles",
+        "San Francisco",
+        "San Jose",
+        "Seattle",
+        "Portland"
+      ]
     }
   },
   "ekadashis": [
@@ -483,10 +510,10 @@
       "month": "vaishakha",
       "timing": {
         "IST": {
-          "date": "2026-04-28",
-          "fasting_start": "2026-04-28T05:36:00+05:30",
-          "parana_start": "2026-04-29T05:35:00+05:30",
-          "parana_end": "2026-04-29T09:47:00+05:30"
+          "date": "2026-04-27",
+          "fasting_start": "2026-04-27T05:36:00+05:30",
+          "parana_start": "2026-04-28T05:35:00+05:30",
+          "parana_end": "2026-04-28T09:47:00+05:30"
         },
         "EST": {
           "date": "2026-04-28",
@@ -545,10 +572,10 @@
       "month": "vaishakha",
       "timing": {
         "IST": {
-          "date": "2026-05-12",
-          "fasting_start": "2026-05-12T05:27:00+05:30",
-          "parana_start": "2026-05-13T05:26:00+05:30",
-          "parana_end": "2026-05-13T09:40:00+05:30"
+          "date": "2026-05-13",
+          "fasting_start": "2026-05-13T05:26:00+05:30",
+          "parana_start": "2026-05-14T05:25:00+05:30",
+          "parana_end": "2026-05-14T09:39:00+05:30"
         },
         "EST": {
           "date": "2026-05-12",
@@ -1227,10 +1254,10 @@
       "month": "kartik",
       "timing": {
         "IST": {
-          "date": "2026-10-21",
-          "fasting_start": "2026-10-21T06:18:00+05:30",
-          "parana_start": "2026-10-22T06:19:00+05:30",
-          "parana_end": "2026-10-22T10:28:00+05:30"
+          "date": "2026-10-22",
+          "fasting_start": "2026-10-22T06:19:00+05:30",
+          "parana_start": "2026-10-23T06:20:00+05:30",
+          "parana_end": "2026-10-23T10:29:00+05:30"
         },
         "EST": {
           "date": "2026-10-21",
@@ -1413,10 +1440,10 @@
       "month": "margashirsha",
       "timing": {
         "IST": {
-          "date": "2026-12-05",
-          "fasting_start": "2026-12-05T06:45:00+05:30",
-          "parana_start": "2026-12-06T06:46:00+05:30",
-          "parana_end": "2026-12-06T10:50:00+05:30"
+          "date": "2026-12-04",
+          "fasting_start": "2026-12-04T06:44:00+05:30",
+          "parana_start": "2026-12-05T06:45:00+05:30",
+          "parana_end": "2026-12-05T10:49:00+05:30"
         },
         "EST": {
           "date": "2026-12-05",
@@ -1475,10 +1502,10 @@
       "month": "pausha",
       "timing": {
         "IST": {
-          "date": "2026-12-19",
-          "fasting_start": "2026-12-19T06:53:00+05:30",
-          "parana_start": "2026-12-20T06:54:00+05:30",
-          "parana_end": "2026-12-20T10:56:00+05:30"
+          "date": "2026-12-20",
+          "fasting_start": "2026-12-20T06:54:00+05:30",
+          "parana_start": "2026-12-21T06:55:00+05:30",
+          "parana_end": "2026-12-21T10:57:00+05:30"
         },
         "EST": {
           "date": "2026-12-19",
@@ -1524,378 +1551,6 @@
         "en": "Grants worthy children and family prosperity.",
         "ta": "தகுதியான குழந்தைகளையும் குடும்ப செழிப்பையும் அருளுகிறது.",
         "hi": "योग्य संतान और पारिवारिक समृद्धि प्रदान करता है।"
-      }
-    },
-    {
-      "id": 25,
-      "name": {
-        "en": "Shattila Ekadashi",
-        "ta": "ஷட்டில ஏகாதசி",
-        "hi": "षटतिला एकादशी"
-      },
-      "paksha": "krishna",
-      "month": "pausha",
-      "timing": {
-        "IST": {
-          "date": "2027-01-03",
-          "fasting_start": "2027-01-03T06:58:00+05:30",
-          "parana_start": "2027-01-04T06:58:00+05:30",
-          "parana_end": "2027-01-04T10:59:00+05:30"
-        },
-        "EST": {
-          "date": "2027-01-03",
-          "fasting_start": "2027-01-03T07:20:00-05:00",
-          "parana_start": "2027-01-04T07:20:00-05:00",
-          "parana_end": "2027-01-04T10:54:00-05:00"
-        },
-        "CST": {
-          "date": "2027-01-03",
-          "fasting_start": "2027-01-03T07:14:00-06:00",
-          "parana_start": "2027-01-04T07:14:00-06:00",
-          "parana_end": "2027-01-04T10:47:00-06:00"
-        },
-        "MST": {
-          "date": "2027-01-03",
-          "fasting_start": "2027-01-03T06:57:00-07:00",
-          "parana_start": "2027-01-04T06:57:00-07:00",
-          "parana_end": "2027-01-04T10:30:00-07:00"
-        },
-        "PST": {
-          "date": "2027-01-03",
-          "fasting_start": "2027-01-03T07:10:00-08:00",
-          "parana_start": "2027-01-04T07:10:00-08:00",
-          "parana_end": "2027-01-04T10:43:00-08:00"
-        }
-      },
-      "description": {
-        "en": "The day of Sesame Seeds (Til). Removes poverty and misfortune.",
-        "ta": "எள் தினம். வறுமை மற்றும் துர்பாக்கியத்தை நீக்கும்.",
-        "hi": "तिल का दिन। गरीबी और दुर्भाग्य दूर करता है।"
-      },
-      "story": {
-        "en": "A wealthy woman once gave a handful of clay to a beggar instead of food. She later died and went to heaven but found an empty house. She observed Shattila Ekadashi to remedy this.",
-        "ta": "ஒரு பணக்கார பெண் ஒரு பிச்சைக்காரனுக்கு உணவுக்கு பதிலாக களிமண் கொடுத்தாள்.",
-        "hi": "एक धनी महिला ने एक बार भिखारी को भोजन के बजाय मिट्टी दी।"
-      },
-      "fasting_rules": {
-        "en": "Six Uses of Til: 1. Bathe in sesame water. 2. Rub sesame paste. 3. Offer sesame in fire. 4. Eat sesame. 5. Give sesame water. 6. Donate sesame seeds.",
-        "ta": "எள்ளின் ஆறு பயன்கள்: எள் நீரில் குளிக்கவும், எள் பேஸ்ட் தேய்க்கவும், நெருப்பில் எள் படைக்கவும்.",
-        "hi": "तिल के छह उपयोग: तिल के पानी से स्नान, तिल का लेप, अग्नि में तिल अर्पित करना।"
-      },
-      "benefits": {
-        "en": "Cures poverty and bad luck. Using sesame seeds purifies the body.",
-        "ta": "வறுமை மற்றும் துரதிர்ஷ்டத்தை குணப்படுத்துகிறது.",
-        "hi": "गरीबी और बुरी किस्मत को दूर करता है।"
-      }
-    },
-    {
-      "id": 26,
-      "name": {
-        "en": "Jaya Ekadashi",
-        "ta": "ஜயா ஏகாதசி",
-        "hi": "जया एकादशी"
-      },
-      "paksha": "shukla",
-      "month": "magha",
-      "timing": {
-        "IST": {
-          "date": "2027-01-18",
-          "fasting_start": "2027-01-18T07:00:00+05:30",
-          "parana_start": "2027-01-19T07:00:00+05:30",
-          "parana_end": "2027-01-19T10:58:00+05:30"
-        },
-        "EST": {
-          "date": "2027-01-18",
-          "fasting_start": "2027-01-18T07:18:00-05:00",
-          "parana_start": "2027-01-19T07:18:00-05:00",
-          "parana_end": "2027-01-19T10:50:00-05:00"
-        },
-        "CST": {
-          "date": "2027-01-18",
-          "fasting_start": "2027-01-18T07:12:00-06:00",
-          "parana_start": "2027-01-19T07:12:00-06:00",
-          "parana_end": "2027-01-19T10:43:00-06:00"
-        },
-        "MST": {
-          "date": "2027-01-18",
-          "fasting_start": "2027-01-18T06:55:00-07:00",
-          "parana_start": "2027-01-19T06:55:00-07:00",
-          "parana_end": "2027-01-19T10:26:00-07:00"
-        },
-        "PST": {
-          "date": "2027-01-18",
-          "fasting_start": "2027-01-18T07:08:00-08:00",
-          "parana_start": "2027-01-19T07:08:00-08:00",
-          "parana_end": "2027-01-19T10:39:00-08:00"
-        }
-      },
-      "description": {
-        "en": "Also called Bhaimi Ekadashi. Grants liberation from ghostly existence.",
-        "ta": "பைமி ஏகாதசி என்றும் அழைக்கப்படுகிறது.",
-        "hi": "भैमी एकादशी भी कहा जाता है।"
-      },
-      "story": {
-        "en": "In the celestial gardens of Indra, Malyavan and Pushpavati were cursed to become ghosts. By observing Jaya Ekadashi, they were freed.",
-        "ta": "இந்திரனின் வான தோட்டங்களில், மால்யவான் மற்றும் புஷ்பவதி பேய்களாக சாபம் பெற்றனர்.",
-        "hi": "इंद्र के उद्यान में मल्यवान और पुष्पवती को भूत बनने का श्राप मिला।"
-      },
-      "fasting_rules": {
-        "en": "Diet: Satvik diet (fruits/roots). Pray for liberation of ancestors.",
-        "ta": "உணவு: சாத்வீக உணவு (பழங்கள்/கிழங்குகள்).",
-        "hi": "आहार: सात्विक भोजन (फल/कंद)।"
-      },
-      "benefits": {
-        "en": "Destroys karma leading to lower births. Grants victory over lower modes.",
-        "ta": "கீழ் பிறப்புகளுக்கு வழிவகுக்கும் கர்மாவை அழிக்கிறது.",
-        "hi": "निम्न जन्मों की ओर ले जाने वाले कर्म को नष्ट करता है।"
-      }
-    },
-    {
-      "id": 27,
-      "name": {
-        "en": "Vijaya Ekadashi",
-        "ta": "விஜயா ஏகாதசி",
-        "hi": "विजया एकादशी"
-      },
-      "paksha": "krishna",
-      "month": "magha",
-      "timing": {
-        "IST": {
-          "date": "2027-02-02",
-          "fasting_start": "2027-02-02T06:55:00+05:30",
-          "parana_start": "2027-02-03T06:54:00+05:30",
-          "parana_end": "2027-02-03T10:52:00+05:30"
-        },
-        "EST": {
-          "date": "2027-02-02",
-          "fasting_start": "2027-02-02T07:10:00-05:00",
-          "parana_start": "2027-02-03T07:09:00-05:00",
-          "parana_end": "2027-02-03T10:42:00-05:00"
-        },
-        "CST": {
-          "date": "2027-02-02",
-          "fasting_start": "2027-02-02T07:04:00-06:00",
-          "parana_start": "2027-02-03T07:03:00-06:00",
-          "parana_end": "2027-02-03T10:35:00-06:00"
-        },
-        "MST": {
-          "date": "2027-02-02",
-          "fasting_start": "2027-02-02T06:47:00-07:00",
-          "parana_start": "2027-02-03T06:46:00-07:00",
-          "parana_end": "2027-02-03T10:18:00-07:00"
-        },
-        "PST": {
-          "date": "2027-02-02",
-          "fasting_start": "2027-02-02T07:00:00-08:00",
-          "parana_start": "2027-02-03T06:59:00-08:00",
-          "parana_end": "2027-02-03T10:31:00-08:00"
-        }
-      },
-      "description": {
-        "en": "The day Lord Rama sought victory to cross the ocean.",
-        "ta": "ராமர் கடலைக் கடக்க வெற்றி வேண்டிய நாள்.",
-        "hi": "वह दिन जब भगवान राम ने समुद्र पार करने के लिए विजय की कामना की।"
-      },
-      "story": {
-        "en": "When Lord Rama reached the ocean facing Lanka, sage Bakadalbhya advised Him to observe Vijaya Ekadashi for victory.",
-        "ta": "ராமர் இலங்கையை எதிர்நோக்கி கடலை அடைந்தபோது, பகதால்ப்ய முனிவர் விஜயா ஏகாதசி கடைப்பிடிக்க அறிவுறுத்தினார்.",
-        "hi": "जब भगवान राम लंका की ओर समुद्र के किनारे पहुंचे, ऋषि बकदालभ्य ने विजया एकादशी का व्रत करने की सलाह दी।"
-      },
-      "fasting_rules": {
-        "en": "Worship: Offer worship to Lord Rama.\nChanting: 'Sri Rama Jaya Rama Jaya Jaya Rama'.",
-        "ta": "வழிபாடு: ராமருக்கு வழிபாடு செய்யுங்கள்.",
-        "hi": "पूजा: भगवान राम की पूजा करें।"
-      },
-      "benefits": {
-        "en": "Ensures victory in all endeavors, both material and spiritual.",
-        "ta": "பொருள் மற்றும் ஆன்மீக முயற்சிகளில் வெற்றி உறுதி செய்கிறது.",
-        "hi": "भौतिक और आध्यात्मिक दोनों प्रयासों में विजय सुनिश्चित करता है।"
-      }
-    },
-    {
-      "id": 28,
-      "name": {
-        "en": "Amalaki Ekadashi",
-        "ta": "ஆமலகி ஏகாதசி",
-        "hi": "आमलकी एकादशी"
-      },
-      "paksha": "shukla",
-      "month": "phalguna",
-      "timing": {
-        "IST": {
-          "date": "2027-02-17",
-          "fasting_start": "2027-02-17T06:44:00+05:30",
-          "parana_start": "2027-02-18T06:43:00+05:30",
-          "parana_end": "2027-02-18T10:42:00+05:30"
-        },
-        "EST": {
-          "date": "2027-02-17",
-          "fasting_start": "2027-02-17T06:54:00-05:00",
-          "parana_start": "2027-02-18T06:53:00-05:00",
-          "parana_end": "2027-02-18T10:27:00-05:00"
-        },
-        "CST": {
-          "date": "2027-02-17",
-          "fasting_start": "2027-02-17T06:48:00-06:00",
-          "parana_start": "2027-02-18T06:47:00-06:00",
-          "parana_end": "2027-02-18T10:20:00-06:00"
-        },
-        "MST": {
-          "date": "2027-02-17",
-          "fasting_start": "2027-02-17T06:31:00-07:00",
-          "parana_start": "2027-02-18T06:30:00-07:00",
-          "parana_end": "2027-02-18T10:03:00-07:00"
-        },
-        "PST": {
-          "date": "2027-02-17",
-          "fasting_start": "2027-02-17T06:44:00-08:00",
-          "parana_start": "2027-02-18T06:43:00-08:00",
-          "parana_end": "2027-02-18T10:16:00-08:00"
-        }
-      },
-      "description": {
-        "en": "Worship of the Amla tree. Marks the beginning of Holi festivities.",
-        "ta": "நெல்லிக்காய் மரத்தை வழிபடுதல். ஹோலி பண்டிகையின் தொடக்கம்.",
-        "hi": "आंवले के पेड़ की पूजा। होली उत्सव की शुरुआत।"
-      },
-      "story": {
-        "en": "The Amla tree is revered as the resting place of Lord Vishnu. King Chitrasena was protected by divine light.",
-        "ta": "நெல்லிக்காய் மரம் விஷ்ணுவின் இருப்பிடமாக போற்றப்படுகிறது.",
-        "hi": "आंवले का पेड़ भगवान विष्णु का विश्राम स्थल माना जाता है।"
-      },
-      "fasting_rules": {
-        "en": "Ritual: Water and worship the Amla tree. Offer Amla fruits to the Lord.",
-        "ta": "சடங்கு: நெல்லிக்காய் மரத்திற்கு நீர் ஊற்றி வழிபடுங்கள்.",
-        "hi": "अनुष्ठान: आंवले के पेड़ को जल अर्पित करें और पूजा करें।"
-      },
-      "benefits": {
-        "en": "Destroys great sins. Circumambulating the Amla tree grants the merit of donating 1,000 cows.",
-        "ta": "பெரும் பாவங்களை அழிக்கிறது.",
-        "hi": "महान पापों को नष्ट करता है।"
-      }
-    },
-    {
-      "id": 29,
-      "name": {
-        "en": "Papmochani Ekadashi",
-        "ta": "பாபமோசனி ஏகாதசி",
-        "hi": "पापमोचनी एकादशी"
-      },
-      "paksha": "krishna",
-      "month": "phalguna",
-      "timing": {
-        "IST": {
-          "date": "2027-03-04",
-          "fasting_start": "2027-03-04T06:31:00+05:30",
-          "parana_start": "2027-03-05T06:30:00+05:30",
-          "parana_end": "2027-03-05T10:30:00+05:30"
-        },
-        "EST": {
-          "date": "2027-03-04",
-          "fasting_start": "2027-03-04T06:36:00-05:00",
-          "parana_start": "2027-03-05T06:35:00-05:00",
-          "parana_end": "2027-03-05T10:11:00-05:00"
-        },
-        "CST": {
-          "date": "2027-03-04",
-          "fasting_start": "2027-03-04T06:30:00-06:00",
-          "parana_start": "2027-03-05T06:29:00-06:00",
-          "parana_end": "2027-03-05T10:04:00-06:00"
-        },
-        "MST": {
-          "date": "2027-03-04",
-          "fasting_start": "2027-03-04T06:13:00-07:00",
-          "parana_start": "2027-03-05T06:12:00-07:00",
-          "parana_end": "2027-03-05T09:47:00-07:00"
-        },
-        "PST": {
-          "date": "2027-03-04",
-          "fasting_start": "2027-03-04T06:26:00-08:00",
-          "parana_start": "2027-03-05T06:25:00-08:00",
-          "parana_end": "2027-03-05T10:00:00-08:00"
-        }
-      },
-      "description": {
-        "en": "The remover of all sins and mental conditioning.",
-        "ta": "அனைத்து பாவங்களையும் மன கட்டுப்பாடுகளையும் நீக்குபவர்.",
-        "hi": "सभी पापों और मानसिक बंधनों को दूर करने वाला।"
-      },
-      "story": {
-        "en": "The sage Medhavi was seduced and broke his vow. His father advised Papmochani Ekadashi to cleanse the sin.",
-        "ta": "மேதாவி முனிவர் தனது விரதத்தை மீறினார்.",
-        "hi": "ऋषि मेधावी ने अपना व्रत तोड़ा।"
-      },
-      "fasting_rules": {
-        "en": "Focus: Intense repentance and prayer.\nDiet: Strict fasting is recommended.",
-        "ta": "கவனம்: தீவிர மனந்திரும்புதல் மற்றும் பிரார்த்தனை.",
-        "hi": "ध्यान: गहन पश्चाताप और प्रार्थना।"
-      },
-      "benefits": {
-        "en": "Neutralizes the most grievous sins. Ultimate reset for spiritual life.",
-        "ta": "மிகக் கொடிய பாவங்களை நடுநிலையாக்குகிறது.",
-        "hi": "सबसे गंभीर पापों को निष्प्रभावी करता है।"
-      }
-    },
-    {
-      "id": 30,
-      "name": {
-        "en": "Kamada Ekadashi",
-        "ta": "காமதா ஏகாதசி",
-        "hi": "कामदा एकादशी"
-      },
-      "paksha": "shukla",
-      "month": "chaitra",
-      "timing": {
-        "IST": {
-          "date": "2027-03-18",
-          "fasting_start": "2027-03-18T06:17:00+05:30",
-          "parana_start": "2027-03-19T06:16:00+05:30",
-          "parana_end": "2027-03-19T10:18:00+05:30"
-        },
-        "EST": {
-          "date": "2027-03-18",
-          "fasting_start": "2027-03-18T07:10:00-04:00",
-          "parana_start": "2027-03-19T07:08:00-04:00",
-          "parana_end": "2027-03-19T10:46:00-04:00"
-        },
-        "CST": {
-          "date": "2027-03-18",
-          "fasting_start": "2027-03-18T07:04:00-05:00",
-          "parana_start": "2027-03-19T07:02:00-05:00",
-          "parana_end": "2027-03-19T10:39:00-05:00"
-        },
-        "MST": {
-          "date": "2027-03-18",
-          "fasting_start": "2027-03-18T06:47:00-06:00",
-          "parana_start": "2027-03-19T06:45:00-06:00",
-          "parana_end": "2027-03-19T10:22:00-06:00"
-        },
-        "PST": {
-          "date": "2027-03-18",
-          "fasting_start": "2027-03-18T07:00:00-07:00",
-          "parana_start": "2027-03-19T06:58:00-07:00",
-          "parana_end": "2027-03-19T10:35:00-07:00"
-        }
-      },
-      "description": {
-        "en": "The fulfiller of all spiritual and material desires.",
-        "ta": "அனைத்து ஆன்மீக மற்றும் பொருள் விருப்பங்களை நிறைவேற்றுபவர்.",
-        "hi": "सभी आध्यात्मिक और भौतिक इच्छाओं को पूरा करने वाला।"
-      },
-      "story": {
-        "en": "Lalit was cursed to become a demon. His wife observed Kamada Ekadashi and transferred the merit to him.",
-        "ta": "லலித் அரக்கனாக சாபம் பெற்றார். அவரது மனைவி காமதா ஏகாதசி கடைப்பிடித்தாள்.",
-        "hi": "ललित को राक्षस बनने का श्राप मिला। उनकी पत्नी ने कामदा एकादशी का व्रत किया।"
-      },
-      "fasting_rules": {
-        "en": "Diet: Standard Ekadashi rules.\nIntention: Dedicate the merit to a suffering family member.",
-        "ta": "உணவு: நிலையான ஏகாதசி விதிகள்.",
-        "hi": "आहार: मानक एकादशी नियम।"
-      },
-      "benefits": {
-        "en": "Cures mental distortions and fulfills the soul's deepest desires.",
-        "ta": "மன சிதைவுகளை குணப்படுத்துகிறது.",
-        "hi": "मानसिक विकृतियों को ठीक करता है।"
       }
     }
   ]

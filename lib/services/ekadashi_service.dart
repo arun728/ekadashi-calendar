@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 
 /// Ekadashi date with timezone-aware timing
 class EkadashiDate {
@@ -120,10 +121,10 @@ class EkadashiService {
     if (_isDataLoaded) return;
 
     try {
-      final String response = await rootBundle.loadString('assets/ekadashi_data_v2.json');
+      final String response = await rootBundle.loadString('assets/ekadashi_data.json');
       _rawData = json.decode(response);
       _isDataLoaded = true;
-      debugPrint("✅ Ekadashi Data v2 Initialized Successfully");
+      debugPrint("✅ Ekadashi Data Initialized Successfully");
     } catch (e) {
       debugPrint("❌ Critical Error loading Ekadashi data: $e");
       // Fallback to empty data
@@ -304,5 +305,97 @@ class EkadashiService {
   /// Clear cache (useful when language changes)
   void clearCache() {
     _cache.clear();
+  }
+
+  /// Get the best matching app timezone based on device's system timezone.
+  /// Used as fallback when location permission is denied.
+  Future<String> getDeviceAppTimezone() async {
+    try {
+      final systemTimezone = await FlutterTimezone.getLocalTimezone();
+      debugPrint('📍 Device system timezone: $systemTimezone');
+
+      // Map common system timezone IDs to our supported app timezones
+      const Map<String, String> timezoneMapping = {
+        // IST - India Standard Time
+        'Asia/Kolkata': 'IST',
+        'Asia/Calcutta': 'IST',
+        
+        // EST - Eastern Standard Time
+        'America/New_York': 'EST',
+        'America/Detroit': 'EST',
+        'America/Toronto': 'EST',
+        'America/Indiana/Indianapolis': 'EST',
+        'America/Kentucky/Louisville': 'EST',
+        
+        // CST - Central Standard Time
+        'America/Chicago': 'CST',
+        'America/Winnipeg': 'CST',
+        'America/Mexico_City': 'CST',
+        
+        // MST - Mountain Standard Time
+        'America/Denver': 'MST',
+        'America/Edmonton': 'MST',
+        'America/Phoenix': 'MST',
+        'America/Boise': 'MST',
+        
+        // PST - Pacific Standard Time
+        'America/Los_Angeles': 'PST',
+        'America/Vancouver': 'PST',
+        'America/Tijuana': 'PST',
+      };
+
+      // Direct lookup
+      if (timezoneMapping.containsKey(systemTimezone)) {
+        final appTimezone = timezoneMapping[systemTimezone]!;
+        debugPrint('📍 Matched timezone: $systemTimezone → $appTimezone');
+        return appTimezone;
+      }
+
+      // Fallback: Check by prefix for broader US timezone matching
+      if (systemTimezone.startsWith('America/')) {
+        // Try to infer from common patterns
+        if (systemTimezone.contains('New_York') || 
+            systemTimezone.contains('Detroit') ||
+            systemTimezone.contains('Toronto') ||
+            systemTimezone.contains('Indiana') ||
+            systemTimezone.contains('Kentucky')) {
+          debugPrint('📍 Inferred EST from: $systemTimezone');
+          return 'EST';
+        }
+        if (systemTimezone.contains('Chicago') ||
+            systemTimezone.contains('Winnipeg') ||
+            systemTimezone.contains('Mexico')) {
+          debugPrint('📍 Inferred CST from: $systemTimezone');
+          return 'CST';
+        }
+        if (systemTimezone.contains('Denver') ||
+            systemTimezone.contains('Phoenix') ||
+            systemTimezone.contains('Edmonton') ||
+            systemTimezone.contains('Boise')) {
+          debugPrint('📍 Inferred MST from: $systemTimezone');
+          return 'MST';
+        }
+        if (systemTimezone.contains('Los_Angeles') ||
+            systemTimezone.contains('Vancouver') ||
+            systemTimezone.contains('Seattle') ||
+            systemTimezone.contains('Portland')) {
+          debugPrint('📍 Inferred PST from: $systemTimezone');
+          return 'PST';
+        }
+      }
+
+      // India timezone fallback
+      if (systemTimezone.startsWith('Asia/')) {
+        debugPrint('📍 Default to IST for Asia timezone: $systemTimezone');
+        return 'IST';
+      }
+
+      // Final fallback
+      debugPrint('📍 No match found, defaulting to IST');
+      return 'IST';
+    } catch (e) {
+      debugPrint('⚠️ Error getting device timezone: $e');
+      return 'IST';
+    }
   }
 }

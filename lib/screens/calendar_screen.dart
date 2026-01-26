@@ -20,8 +20,8 @@ class CalendarScreen extends StatefulWidget {
 }
 
 class CalendarScreenState extends State<CalendarScreen> {
-  // Fixed date range: Jan 2025 to Dec 2026
-  static final DateTime _firstDay = DateTime(2025, 1, 1);
+  // Fixed date range: 2026 only
+  static final DateTime _firstDay = DateTime(2026, 1, 1);
   static final DateTime _lastDay = DateTime(2026, 12, 31);
 
   late DateTime _focusedDay;

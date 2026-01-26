@@ -44,10 +44,7 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/ekadashi_data_v2.json
-    - assets/ekadashi_data_en.json
-    - assets/ekadashi_data_ta.json
-    - assets/ekadashi_data_hi.json
+    - assets/ekadashi_data.json
     - assets/app_icon.png
 
 flutter_launcher_icons:

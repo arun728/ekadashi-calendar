@@ -224,7 +224,15 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         // Priority: Check permission FIRST before cache
         if (!hasPermission) {
           // Permission denied - show Location Denied immediately, ignore cache
-          debugPrint('📍 Permission denied - showing Location Denied');
+          // BUT use smart timezone fallback based on device's system timezone
+          debugPrint('📍 Permission denied - detecting device timezone');
+          final deviceTimezone = await _ekadashiService.getDeviceAppTimezone();
+          debugPrint('📍 Using device timezone: $deviceTimezone');
+          if (mounted) {
+            setState(() {
+              _currentTimezone = deviceTimezone;
+            });
+          }
           _setLocationDenied();
         } else {
           // Permission granted but location is null (timeout/GPS issue)
