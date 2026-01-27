@@ -350,10 +350,12 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
             onTap: () async {
               try {
                 final langService = Provider.of<LanguageService>(context, listen: false);
+                // FIXED: Passing individual strings instead of Map to match method signature
                 await _notificationService.showTestNotification(
                   langService.translate('test_notif_title'),
                   langService.translate('test_notif_body'),
                 );
+
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -393,6 +395,12 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
         Text(lang.translate('about'),
             style: const TextStyle(color: tealColor, fontWeight: FontWeight.bold)),
         ListTile(
+          leading: const Icon(Icons.star_rate_rounded, color: tealColor),
+          title: Text(lang.translate('rate_app')),
+          subtitle: Text(lang.translate('rate_app_desc'), style: const TextStyle(fontSize: 12, color: Colors.grey)),
+          onTap: () => _settingsService.openStoreListing(),
+        ),
+        ListTile(
           leading: const Icon(Icons.share, color: tealColor),
           title: Text(lang.translate('share_app')),
           subtitle: Text(
@@ -403,7 +411,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
         ),
         ListTile(
           title: Text(lang.translate('version')),
-          trailing: const Text("2.0.0", style: TextStyle(color: Colors.grey)),
+          trailing: const Text("1.0.0", style: TextStyle(color: Colors.grey)),
         ),
       ],
     );

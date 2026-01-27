@@ -137,16 +137,16 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     if (!hasLaunched) {
       // First launch - request permissions
       await prefs.setBool('has_launched', true);
-      await prefs.setString('app_version', '2.0');
+      await prefs.setString('app_version', '1.0');
       await _requestPermissionsOnFirstLaunch();
     } else {
       // Existing user - check for upgrade migration
-      if (appVersion != '2.0') {
-        debugPrint('📦 Migrating from v$appVersion to v2.0...');
-        await prefs.setString('app_version', '2.0');
+      // Updated to target 1.0 for first release
+      if (appVersion != '1.0') {
+        debugPrint('📦 Migrating from v$appVersion to v1.0...');
+        await prefs.setString('app_version', '1.0');
 
-        // Enable Break Fasting Reminder by default in v2.0
-        // Only set if not explicitly set before (check for key existence by checking both Flutter and native prefs)
+        // Enable Break Fasting Reminder by default
         if (!prefs.containsKey('remind_on_parana')) {
           await prefs.setBool('remind_on_parana', true);
           debugPrint('  ✅ Enabled Break Fasting Reminder by default');
@@ -296,7 +296,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   /// Request location permission again when user taps on "Location Denied"
   Future<void> _requestLocationAgain() async {
     if (_isRequestingLocation) return;
-    
+
     // 1. Always try to request permission first
     setState(() {
       _isRequestingLocation = true;
@@ -306,7 +306,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     try {
       // This will either show the dialog (if allowed) or auto-deny (if permanently denied previously but we didn't track it yet)
       final granted = await _locationService.requestLocationPermission();
-      
+
       if (granted) {
         // Success
         if (mounted) {
@@ -315,31 +315,31 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             _isRequestingLocation = false;
           });
         }
-        await _refreshLocationIfNeeded(); 
+        await _refreshLocationIfNeeded();
       } else {
         // Denied
         final shouldShowRationale = await _locationService.shouldShowRequestRationale();
         debugPrint('📍 Permission denied. shouldShowRationale: $shouldShowRationale');
-        
+
         if (mounted) {
           setState(() {
             _isRequestingLocation = false;
             _locationDenied = true;
             _locationText = '';
           });
-          
+
           // 2. Smart Redirect Logic:
           // If we failed to get permission AND the system refused to show a rationale (dialog blocked),
           // AND we have already flagged this state previously, THEN open settings.
           if (!shouldShowRationale) {
             if (_isPermanentDenial) {
-               // User clicked AGAIN after we already knew it was blocked.
-               // Now we open settings.
-               final settings = NativeSettingsService();
-               await settings.openAppSettings(); 
+              // User clicked AGAIN after we already knew it was blocked.
+              // Now we open settings.
+              final settings = NativeSettingsService();
+              await settings.openAppSettings();
             } else {
-               // First time discovering it's blocked. Just flag it. Do NOT redirect.
-               setState(() => _isPermanentDenial = true);
+              // First time discovering it's blocked. Just flag it. Do NOT redirect.
+              setState(() => _isPermanentDenial = true);
             }
           }
         }
@@ -697,11 +697,11 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                     onPressed: isFirstPage
                         ? null
                         : () {
-                            _pageController.previousPage(
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            );
-                          },
+                      _pageController.previousPage(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                      );
+                    },
                     icon: const Icon(Icons.chevron_left, size: 36),
                     color: isFirstPage ? Colors.grey.shade600 : tealColor,
                     padding: EdgeInsets.zero,
@@ -731,11 +731,11 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                     onPressed: isLastPage
                         ? null
                         : () {
-                            _pageController.nextPage(
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            );
-                          },
+                      _pageController.nextPage(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                      );
+                    },
                     icon: const Icon(Icons.chevron_right, size: 36),
                     color: isLastPage ? Colors.grey.shade600 : tealColor,
                     padding: EdgeInsets.zero,

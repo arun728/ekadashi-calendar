@@ -281,6 +281,31 @@ class SettingsService(private val context: Context) {
         }
     }
 
+    /**
+     * Open Play Store listing.
+     */
+    fun openStoreListing(): Boolean {
+        return try {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=${context.packageName}")).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            context.startActivity(intent)
+            true
+        } catch (e: Exception) {
+            android.util.Log.e("SettingsService", "Error opening play store: $e")
+            // Fallback to browser
+            try {
+                val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=${context.packageName}")).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                context.startActivity(browserIntent)
+                true
+            } catch (e2: Exception) {
+                false
+            }
+        }
+    }
+
     // ============================================================
     // NOTIFICATION SETTINGS - Stored locally
     // ============================================================

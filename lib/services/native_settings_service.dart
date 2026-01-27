@@ -145,6 +145,16 @@ class NativeSettingsService {
     }
   }
 
+  /// Open Play Store listing.
+  Future<bool> openStoreListing() async {
+    try {
+      return await _channel.invokeMethod<bool>('openStoreListing') ?? false;
+    } catch (e) {
+      debugPrint('NativeSettingsService.openStoreListing error: $e');
+      return false;
+    }
+  }
+
   // ============================================================
   // NOTIFICATION SETTINGS
   // ============================================================
