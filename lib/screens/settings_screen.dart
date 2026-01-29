@@ -266,22 +266,22 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
           onChanged: _toggleNotifications,
         ),
 
-        // Remind on start (Ekadashi day)
+        // Remind 2 days before
         SwitchListTile(
-          title: Text(lang.translate('notify_start')),
+          title: Text(lang.translate('notify_2day')),
           subtitle: Text(
-            togglesEnabled && _notificationSettings.remindOnStart
+            togglesEnabled && _notificationSettings.remind2Days
                 ? lang.translate('status_active')
                 : lang.translate('status_disabled'),
             style: TextStyle(
               fontSize: 11,
-              color: togglesEnabled && _notificationSettings.remindOnStart
+              color: togglesEnabled && _notificationSettings.remind2Days
                   ? Colors.green : Colors.grey,
             ),
           ),
-          value: _notificationSettings.remindOnStart && togglesEnabled,
+          value: _notificationSettings.remind2Days && togglesEnabled,
           activeColor: tealColor,
-          onChanged: togglesEnabled ? _toggleRemindOnStart : null,
+          onChanged: togglesEnabled ? _toggleRemind2Days : null,
         ),
 
         // Remind 1 day before
@@ -302,25 +302,25 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
           onChanged: togglesEnabled ? _toggleRemind1Day : null,
         ),
 
-        // Remind 2 days before
+        // Remind on start (Ekadashi day)
         SwitchListTile(
-          title: Text(lang.translate('notify_2day')),
+          title: Text(lang.translate('notify_start')),
           subtitle: Text(
-            togglesEnabled && _notificationSettings.remind2Days
+            togglesEnabled && _notificationSettings.remindOnStart
                 ? lang.translate('status_active')
                 : lang.translate('status_disabled'),
             style: TextStyle(
               fontSize: 11,
-              color: togglesEnabled && _notificationSettings.remind2Days
+              color: togglesEnabled && _notificationSettings.remindOnStart
                   ? Colors.green : Colors.grey,
             ),
           ),
-          value: _notificationSettings.remind2Days && togglesEnabled,
+          value: _notificationSettings.remindOnStart && togglesEnabled,
           activeColor: tealColor,
-          onChanged: togglesEnabled ? _toggleRemind2Days : null,
+          onChanged: togglesEnabled ? _toggleRemindOnStart : null,
         ),
 
-        // NEW: Remind on Parana (breaking fast)
+        // Remind on Parana (breaking fast)
         SwitchListTile(
           title: Text(lang.translate('notify_parana')),
           subtitle: Text(

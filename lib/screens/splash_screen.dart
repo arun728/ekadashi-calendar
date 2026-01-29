@@ -25,7 +25,7 @@ class _SplashScreenState extends State<SplashScreen> {
       NotificationService().init(),
       EkadashiService().initializeData(),
       // Ensure splash is visible for at least 2 seconds
-      Future.delayed(const Duration(seconds: 2)), 
+      Future.delayed(const Duration(seconds: 2)),
     ]);
 
     if (mounted) {
