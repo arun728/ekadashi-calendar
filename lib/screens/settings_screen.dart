@@ -100,8 +100,10 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
   Future<void> _checkPermissionsAfterResume() async {
     if (!mounted) return;
 
+    // Capture previous state to detect changes
+    final previousPermission = _permissionStatus.hasNotificationPermission;
+
     // 1. Fetch latest settings (includes permissions and notifications)
-    // We use getAllSettings because checkAllPermissions does not return notification settings.
     final allSettings = await _settingsService.getAllSettings();
     if (!mounted) return;
 
@@ -110,10 +112,19 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
       // 2. Sync Notification Settings
       _notificationSettings = allSettings.notifications;
     });
+
+    // 3. Auto-reschedule if we just gained permission
+    if (!previousPermission && _permissionStatus.hasNotificationPermission) {
+      if (_notificationSettings.enabled) {
+        debugPrint('SettingsScreen: Permission granted on resume - Auto rescheduling');
+        _rescheduleNotifications();
+      }
+    }
   }
 
   void _rescheduleNotifications() {
     if (!_notificationSettings.enabled || !_permissionStatus.hasNotificationPermission) {
+      debugPrint('SettingsScreen: Reschedule aborted. Enabled=${_notificationSettings.enabled}, Perm=${_permissionStatus.hasNotificationPermission}');
       _notificationService.cancelAllNotifications();
       return;
     }
