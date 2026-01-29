@@ -113,102 +113,114 @@ class CalendarScreenState extends State<CalendarScreen> {
     final lang = Provider.of<LanguageService>(context);
     const tealColor = Color(0xFF00A19B);
 
-    return Column(
-      children: [
-        TableCalendar(
-          firstDay: _firstDay,
-          lastDay: _lastDay,
-          focusedDay: _focusedDay,
-          selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-          // Increase row height to prevent overlap
-          rowHeight: 48,
-          daysOfWeekHeight: 28,
-          onDaySelected: (selectedDay, focusedDay) {
-            setState(() {
-              _selectedDay = selectedDay;
-              _focusedDay = focusedDay;
-            });
+    return CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(
+          child: TableCalendar(
+            firstDay: _firstDay,
+            lastDay: _lastDay,
+            focusedDay: _focusedDay,
+            selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+            // Increase row height to prevent overlap
+            rowHeight: 48,
+            daysOfWeekHeight: 28,
+            onDaySelected: (selectedDay, focusedDay) {
+              setState(() {
+                _selectedDay = selectedDay;
+                _focusedDay = focusedDay;
+              });
 
-            final selected = DateTime(selectedDay.year, selectedDay.month, selectedDay.day);
-            EkadashiDate? found;
+              final selected = DateTime(selectedDay.year, selectedDay.month, selectedDay.day);
+              EkadashiDate? found;
 
-            for (var ekadashi in widget.ekadashiList) {
-              final ekadashiDate = DateTime(ekadashi.date.year, ekadashi.date.month, ekadashi.date.day);
-              if (ekadashiDate == selected) {
-                found = ekadashi;
-                break;
+              for (var ekadashi in widget.ekadashiList) {
+                final ekadashiDate = DateTime(ekadashi.date.year, ekadashi.date.month, ekadashi.date.day);
+                if (ekadashiDate == selected) {
+                  found = ekadashi;
+                  break;
+                }
               }
-            }
-            setState(() => _selectedEkadashi = found);
-          },
-          onPageChanged: (focusedDay) {
-            setState(() {
-              _focusedDay = focusedDay;
-            });
-          },
-          calendarStyle: CalendarStyle(
-            todayDecoration: BoxDecoration(
-              color: tealColor.withOpacity(0.5),
-              shape: BoxShape.circle,
-            ),
-            selectedDecoration: const BoxDecoration(
-              color: tealColor,
-              shape: BoxShape.circle,
-            ),
-            // Adjust cell margins for better spacing
-            cellMargin: const EdgeInsets.all(4),
-          ),
-          calendarBuilders: CalendarBuilders(
-            markerBuilder: (context, date, events) {
-              if (_isEkadashiDay(date)) {
-                return Positioned(
-                  bottom: 4,
-                  child: Container(
-                    width: 6,
-                    height: 6,
-                    decoration: const BoxDecoration(
-                      color: tealColor,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                );
-              }
-              return null;
+              setState(() => _selectedEkadashi = found);
             },
-          ),
-          headerStyle: HeaderStyle(
-            formatButtonVisible: false,
-            titleCentered: true,
-            // Custom chevrons with grey color at boundaries
-            leftChevronIcon: Icon(
-              Icons.chevron_left,
-              color: _isFirstMonth ? Colors.grey.shade500 : tealColor,
+            onPageChanged: (focusedDay) {
+              setState(() {
+                _focusedDay = focusedDay;
+              });
+            },
+            calendarStyle: CalendarStyle(
+              todayDecoration: BoxDecoration(
+                color: tealColor.withOpacity(0.5),
+                shape: BoxShape.circle,
+              ),
+              selectedDecoration: const BoxDecoration(
+                color: tealColor,
+                shape: BoxShape.circle,
+              ),
+              // Adjust cell margins for better spacing
+              cellMargin: const EdgeInsets.all(4),
             ),
-            rightChevronIcon: Icon(
-              Icons.chevron_right,
-              color: _isLastMonth ? Colors.grey.shade500 : tealColor,
+            calendarBuilders: CalendarBuilders(
+              markerBuilder: (context, date, events) {
+                if (_isEkadashiDay(date)) {
+                  return Positioned(
+                    bottom: 4,
+                    child: Container(
+                      width: 6,
+                      height: 6,
+                      decoration: const BoxDecoration(
+                        color: tealColor,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  );
+                }
+                return null;
+              },
             ),
-          ),
-          availableGestures: AvailableGestures.all,
-        ),
-
-        const SizedBox(height: 16),
-
-        // Simplified ekadashi details - just name and button
-        if (_selectedEkadashi != null)
-          _buildSimpleEkadashiCard(_selectedEkadashi!)
-        else
-          Expanded(
-            child: Center(
-              child: Text(
-                lang.translate('no_ekadashi'),
-                style: TextStyle(
-                  fontSize: 15,
-                  color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.6),
-                ),
+            headerStyle: HeaderStyle(
+              formatButtonVisible: false,
+              titleCentered: true,
+              // Custom chevrons with grey color at boundaries
+              leftChevronIcon: Icon(
+                Icons.chevron_left,
+                color: _isFirstMonth ? Colors.grey.shade500 : tealColor,
+              ),
+              rightChevronIcon: Icon(
+                Icons.chevron_right,
+                color: _isLastMonth ? Colors.grey.shade500 : tealColor,
               ),
             ),
+            availableGestures: AvailableGestures.all,
           ),
+        ),
+
+        // Spacer between calendar and details
+        const SliverToBoxAdapter(child: SizedBox(height: 16)),
+
+        // Simplified ekadashi details - fills remaining space
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: Column(
+            children: [
+              if (_selectedEkadashi != null)
+                _buildSimpleEkadashiCard(_selectedEkadashi!)
+              else
+                Expanded(
+                  child: Center(
+                    child: Text(
+                      lang.translate('no_ekadashi'),
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.6),
+                      ),
+                    ),
+                  ),
+                ),
+                // Add bottom padding to ensure content isn't cut off on very small screens
+                const SizedBox(height: 16),
+            ],
+          ),
+        ),
       ],
     );
   }
