@@ -61,4 +61,7 @@ dependencies {
     // Coroutines - Async operations on IO threads (prevents main thread blocking)
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
+
+    // Splash Screen - Android 12+ API for seamless launch
+    implementation("androidx.core:core-splashscreen:1.0.1")
 }

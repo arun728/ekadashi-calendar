@@ -159,7 +159,7 @@ class NotificationScheduler(private val context: Context) {
             }
 
             // At parana time
-            if (prefs.getBoolean(KEY_REMIND_ON_PARANA, false)) {
+            if (prefs.getBoolean(KEY_REMIND_ON_PARANA, true)) {
                 val title = texts["notif_parana_title"] ?: "Parana Time"
                 val body = "$ekadashiName ${texts["notif_parana_body"] ?: "- You can break your fast now."}"
                 if (scheduleNotification(ekadashiId, paranaStart, title, body, NotificationType.ON_PARANA)) {
@@ -250,7 +250,7 @@ class NotificationScheduler(private val context: Context) {
         prefs.edit().putBoolean(KEY_REMIND_ON_START, enabled).apply()
     }
 
-    fun isRemindOnParanaEnabled(): Boolean = prefs.getBoolean(KEY_REMIND_ON_PARANA, false)
+    fun isRemindOnParanaEnabled(): Boolean = prefs.getBoolean(KEY_REMIND_ON_PARANA, true)
 
     fun setRemindOnParanaEnabled(enabled: Boolean) {
         prefs.edit().putBoolean(KEY_REMIND_ON_PARANA, enabled).apply()

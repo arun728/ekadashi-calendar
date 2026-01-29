@@ -13,6 +13,7 @@ import android.provider.Settings
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -41,6 +42,12 @@ class MainActivity: FlutterActivity() {
 
     // Flag to prevent duplicate initialization
     private var servicesInitialized = false
+
+    override fun onCreate(savedInstanceState: android.os.Bundle?) {
+        // Handle the splash screen transition.
+        installSplashScreen()
+        super.onCreate(savedInstanceState)
+    }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)

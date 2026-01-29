@@ -20,13 +20,18 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _initializeApp() async {
+    final stopwatch = Stopwatch()..start();
+
     // Run initialization tasks
-    await Future.wait([
-      NotificationService().init(),
-      EkadashiService().initializeData(),
-      // Ensure splash is visible for at least 2 seconds
-      Future.delayed(const Duration(seconds: 2)),
-    ]);
+    // Priority 3: Keep EkadashiService blocking (needed for Home)
+    await EkadashiService().initializeData();
+
+    debugPrint('Splash blocking init took: ${stopwatch.elapsedMilliseconds}ms');
+
+    // Priority 3: Defer NotificationService init (fire-and-forget)
+    NotificationService().init().then((_) {
+      debugPrint('NotificationService init completed (deferred) in ${stopwatch.elapsedMilliseconds}ms total');
+    });
 
     if (mounted) {
       Navigator.of(context).pushReplacement(
