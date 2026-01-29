@@ -307,11 +307,11 @@ class LocationService(private val context: Context) {
             // US Eastern (roughly -85°W to -67°W)
             lng >= -85.0 && lng <= -67.0 && lat >= 24.0 && lat <= 50.0 -> "EST"
 
-            // US Central (roughly -105°W to -85°W)
-            lng >= -105.0 && lng < -85.0 && lat >= 24.0 && lat <= 50.0 -> "CST"
+            // US Central (roughly -102°W to -85°W)
+            lng >= -102.0 && lng < -85.0 && lat >= 24.0 && lat <= 50.0 -> "CST"
 
-            // US Mountain (roughly -115°W to -105°W)
-            lng >= -115.0 && lng < -105.0 && lat >= 24.0 && lat <= 50.0 -> "MST"
+            // US Mountain (roughly -115°W to -102°W)
+            lng >= -115.0 && lng < -102.0 && lat >= 24.0 && lat <= 50.0 -> "MST"
 
             // US Pacific (roughly -125°W to -115°W)
             lng >= -125.0 && lng < -115.0 && lat >= 24.0 && lat <= 50.0 -> "PST"

@@ -816,19 +816,29 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     }
 
     // Show city name and timezone
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(Icons.location_on, size: 18, color: tealColor),
-        const SizedBox(width: 6),
-        Flexible(
-          child: Text(
-            '$_locationText • $_currentTimezone',
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-            overflow: TextOverflow.ellipsis,
-          ),
+    // Show city name and timezone (Clickable to retry)
+    return InkWell(
+      onTap: _handleLocation,
+      borderRadius: BorderRadius.circular(16),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.location_on, size: 18, color: tealColor),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                '$_locationText • $_currentTimezone',
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(Icons.refresh, size: 14, color: Colors.grey.shade400),
+          ],
         ),
-      ],
+      ),
     );
   }
 
