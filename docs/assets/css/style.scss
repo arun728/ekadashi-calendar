@@ -1,18 +1,24 @@
 --- --- @import "{{ site.theme }}";
-
 /* Ekadashi Calendar - Custom Dark + Teal Theme */
-
 $teal: #00A19B;
 
-/* Dark background */
+/* CRITICAL: Override Cayman's default white background */
 body {
-    background-color: #121212;
+    background-color: #121212 !important;
     color: #e0e0e0;
+}
+
+/* Force dark background on all wrappers */
+.page-header,
+.main-content,
+body::before,
+body::after {
+    background-color: #121212;
 }
 
 /* Main content styling */
 .main-content {
-    background-color: #1F1F1F;
+    background-color: #1F1F1F !important;
     color: #e0e0e0;
     font-size: 17px;
     line-height: 1.7;
@@ -56,10 +62,10 @@ body {
     text-decoration: underline;
 }
 
-/* Page header with teal gradient */
+/* Page header with teal gradient - COMPACT */
 .page-header {
-    background: linear-gradient(120deg, #006b68, $teal);
-    padding: 3rem 4rem;
+    background: linear-gradient(120deg, #006b68, $teal) !important;
+    padding: 1.5rem 2rem;
 }
 
 .project-name {
