@@ -1,7 +1,5 @@
 --- --- @import "{{ site.theme }}";
-
 /* Ekadashi Calendar - Custom Dark + Teal Theme */
-
 $teal: #00A19B;
 
 /* Dark background */
@@ -56,10 +54,11 @@ body {
     text-decoration: underline;
 }
 
-/* Page header with teal gradient */
+/* Page header with teal gradient - REDUCED HEIGHT */
 .page-header {
     background: linear-gradient(120deg, #006b68, $teal);
-    padding: 3rem 4rem;
+    padding: 1.5rem 2rem;
+    /* ONLY CHANGE: reduced from 3rem 4rem */
 }
 
 .project-name {
