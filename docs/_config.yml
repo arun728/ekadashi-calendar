@@ -1,7 +1,7 @@
 # Place this file in your /docs folder as _config.yml
 
-# Use Midnight theme which is fully dark
-theme: jekyll-theme-midnight
+# Use Hacker theme - widely used, consistent dark mode, larger fonts
+theme: jekyll-theme-hacker
 
 # Remove site title/header text to avoid duplication
 title: ""
