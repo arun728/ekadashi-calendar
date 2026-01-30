@@ -10,29 +10,6 @@ body {
     color: #e0e0e0;
 }
 
-/* COMPACT PAGE HEADER - Reduced height */
-.page-header {
-    background: linear-gradient(120deg, #006b68, $teal);
-    padding: 1.5rem 2rem;
-    /* Reduced from 3rem 4rem */
-    text-align: center;
-}
-
-.project-name {
-    color: white;
-    font-size: 1.75rem;
-    /* Reduced from 2.5rem */
-    margin-top: 0;
-    margin-bottom: 0.5rem;
-}
-
-.project-tagline {
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 1rem;
-    /* Reduced from 1.25rem */
-    margin-bottom: 0;
-}
-
 /* Main content styling */
 .main-content {
     background-color: #1F1F1F;
@@ -77,6 +54,22 @@ body {
 .main-content a:hover {
     color: #00c9c1;
     text-decoration: underline;
+}
+
+/* Page header with teal gradient */
+.page-header {
+    background: linear-gradient(120deg, #006b68, $teal);
+    padding: 3rem 4rem;
+}
+
+.project-name {
+    color: white;
+    font-size: 2.5rem;
+}
+
+.project-tagline {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.25rem;
 }
 
 /* Code blocks */
@@ -143,9 +136,4 @@ body {
 
 .main-content li {
     margin: 0.5rem 0;
-}
-
-/* Hide "View on GitHub" button if present */
-.btn {
-    display: none;
 }
