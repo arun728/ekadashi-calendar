@@ -1,0 +1,11 @@
+# Place this file in your /docs folder as _config.yml
+
+# Use minimal theme without header
+theme: jekyll-theme-minimal
+
+# Remove site title/header
+title: ""
+description: ""
+
+# Hide the default header
+show_downloads: false
