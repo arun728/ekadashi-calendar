@@ -1,9 +1,9 @@
 # Place this file in your /docs folder as _config.yml
 
-# Use Slate which is a dark theme with a teal-ish header
-theme: jekyll-theme-slate
+# Use Midnight theme which is fully dark
+theme: jekyll-theme-midnight
 
-# Remove site title/header text to avoid duplication with index.md content
+# Remove site title/header text to avoid duplication
 title: ""
 description: ""
 
