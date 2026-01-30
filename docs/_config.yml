@@ -1,11 +1,11 @@
 # Place this file in your /docs folder as _config.yml
 
-# Use minimal theme without header
-theme: jekyll-theme-minimal
+# Use Slate which is a dark theme with a teal-ish header
+theme: jekyll-theme-slate
 
-# Remove site title/header
+# Remove site title/header text to avoid duplication with index.md content
 title: ""
 description: ""
 
-# Hide the default header
+# Hide the default header buttons
 show_downloads: false
