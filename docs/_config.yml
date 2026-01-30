@@ -1,11 +1,6 @@
-# Place this file in your /docs folder as _config.yml
+# Cayman theme - Most popular, needs custom CSS for dark mode
+theme: jekyll-theme-cayman
 
-# Reverted to Midnight theme (User preference)
-theme: jekyll-theme-midnight
-
-# Remove site title/header text to avoid duplication
 title: ""
 description: ""
-
-# Hide the default header buttons
 show_downloads: false
