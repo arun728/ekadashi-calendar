@@ -3,9 +3,9 @@
 # Use minimal theme without header
 theme: jekyll-theme-minimal
 
-# Remove site title/header
-title: ""
-description: ""
+# Set explicit title and description to override repository defaults
+title: "Ekadashi Calendar"
+description: "Accurate Ekadashi fasting times for multiple timezones"
 
-# Hide the default header
+# Hide the default header (downloads, etc.)
 show_downloads: false
