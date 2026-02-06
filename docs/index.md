@@ -57,7 +57,7 @@
 ## Supported Locations
 
 ### India (IST)
-Chennai, Mumbai, Delhi, Kolkata, Bangalore, Hyderabad, Pune, Ahmedabad, Jaipur, Lucknow, and more
+All across India (One Timezone)
 
 ### United States
 - **Eastern Time (EST):** New York, Boston, Philadelphia, Atlanta, Miami, Washington DC
