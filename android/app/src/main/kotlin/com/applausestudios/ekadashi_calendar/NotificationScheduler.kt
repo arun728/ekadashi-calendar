@@ -1,4 +1,4 @@
-package com.example.ekadashi_calendar
+package com.applausestudios.ekadashi_calendar
 
 import android.content.Context
 import android.content.SharedPreferences

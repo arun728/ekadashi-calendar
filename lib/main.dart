@@ -153,6 +153,38 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         }
       }
       _handleLocation();
+      // Ensure permissions are requested if missing (handles reinstall case)
+      _ensurePermissionsOnResume();
+    }
+  }
+
+  /// Check and request permissions if missing, but safely (avoid pestering)
+  Future<void> _ensurePermissionsOnResume() async {
+    // 1. Check current status
+    final settings = NativeSettingsService();
+    final status = await settings.checkAllPermissions();
+
+    // 2. Notification Permission
+    // Simple check - let the OS handle the policy (Android 13+ only asks once/twice)
+    if (!status.hasNotificationPermission) {
+      debugPrint('🔔 Re-requesting notification permission on resume...');
+      await NotificationService().requestNotificationPermission();
+    }
+
+    // 3. Location Permission
+    if (!status.hasLocationPermission) {
+      // Vital check: shouldShowRequestRationale
+      // If TRUE: User denied once. Do NOT ask again (don't pester).
+      // If FALSE: Either "First Time" (Reinstall) OR "Permanent Denial".
+      // We ask. If it's "First Time", dialog shows. If "Permanent", it auto-denies silently.
+      final shouldShowRationale = await _locationService.shouldShowRequestRationale();
+      
+      if (!shouldShowRationale) {
+        debugPrint('📍 Re-requesting location permission (Reinstall or Permanent check)...');
+        await _requestLocationAgain(); 
+      } else {
+        debugPrint('📍 Location permission denied previously (Rationale needed). Not asking automatically.');
+      }
     }
   }
 

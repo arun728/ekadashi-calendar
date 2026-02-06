@@ -1,4 +1,4 @@
-package com.example.ekadashi_calendar
+package com.applausestudios.ekadashi_calendar
 
 import android.Manifest
 import android.app.AlarmManager
@@ -492,6 +492,10 @@ class MainActivity: FlutterActivity() {
 
                 "openLocationSettings" -> {
                     result.success(settingsSvc.openLocationSettings())
+                }
+
+                "openStoreListing" -> {
+                    result.success(settingsSvc.openStoreListing())
                 }
 
                 // Notification settings

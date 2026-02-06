@@ -96,7 +96,7 @@ class LanguageService extends ChangeNotifier {
       // Share translations
       'share_app': 'Share App',
       'share_app_desc': 'Tell friends about this app',
-      'share_message': '🙏 Ekadashi Calendar - Never miss an Ekadashi!\n\nGet reminders for fasting times, read stories & significance of each Ekadashi.\n\nDownload now: https://play.google.com/store/apps/details?id=com.example.ekadashi_calendar',
+      'share_message': '🙏 Ekadashi Calendar - Never miss an Ekadashi!\n\nGet reminders for fasting times, read stories & significance of each Ekadashi.\n\nDownload now: https://play.google.com/store/apps/details?id=com.applausestudios.ekadashi_calendar',
       // City selection translations (NEW)
       'select_city': 'Select City',
       'search_city': 'Search city...',
@@ -201,7 +201,7 @@ class LanguageService extends ChangeNotifier {
       // Share translations
       'share_app': 'ஆப்பை பகிர்',
       'share_app_desc': 'நண்பர்களிடம் பகிரவும்',
-      'share_message': '🙏 ஏகாதசி காலண்டர் - ஒரு ஏகாதசியையும் தவறவிடாதீர்கள்!\n\nவிரத நேர நினைவூட்டல்கள், ஒவ்வொரு ஏகாதசியின் கதைகள் & முக்கியத்துவம் பெறுங்கள்.\n\nஇப்போது பதிவிறக்கவும்: https://play.google.com/store/apps/details?id=com.example.ekadashi_calendar',
+      'share_message': '🙏 ஏகாதசி காலண்டர் - ஒரு ஏகாதசியையும் தவறவிடாதீர்கள்!\n\nவிரத நேர நினைவூட்டல்கள், ஒவ்வொரு ஏகாதசியின் கதைகள் & முக்கியத்துவம் பெறுங்கள்.\n\nஇப்போது பதிவிறக்கவும்: https://play.google.com/store/apps/details?id=com.applausestudios.ekadashi_calendar',
       // City selection translations (NEW)
       'select_city': 'நகரத்தை தேர்வு செய்',
       'search_city': 'நகரத்தை தேடு...',
@@ -306,7 +306,7 @@ class LanguageService extends ChangeNotifier {
       // Share translations
       'share_app': 'ऐप शेयर करें',
       'share_app_desc': 'दोस्तों को बताएं',
-      'share_message': '🙏 एकादशी कैलेंडर - कोई एकादशी न छूटे!\n\nव्रत के समय की याद दिलाएं, हर एकादशी की कथाएं और महत्व पढ़ें।\n\nअभी डाउनलोड करें: https://play.google.com/store/apps/details?id=com.example.ekadashi_calendar',
+      'share_message': '🙏 एकादशी कैलेंडर - कोई एकादशी न छूटे!\n\nव्रत के समय की याद दिलाएं, हर एकादशी की कथाएं और महत्व पढ़ें।\n\nअभी डाउनलोड करें: https://play.google.com/store/apps/details?id=com.applausestudios.ekadashi_calendar',
       // City selection translations (NEW)
       'select_city': 'शहर चुनें',
       'search_city': 'शहर खोजें...',
