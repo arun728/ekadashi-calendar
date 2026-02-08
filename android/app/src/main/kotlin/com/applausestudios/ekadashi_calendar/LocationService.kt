@@ -29,7 +29,7 @@ class LocationService(private val context: Context) {
 
     companion object {
         private const val TAG = "LocationService"
-        private const val LOCATION_TIMEOUT_MS = 10000L // 10 seconds
+        private const val LOCATION_TIMEOUT_MS = 30000L // 30 seconds
         private const val CACHE_VALIDITY_MS = 5 * 60 * 1000L // 5 minutes
 
         // SharedPreferences keys
@@ -119,35 +119,146 @@ class LocationService(private val context: Context) {
         }
 
         try {
-            // Try to get fresh location with timeout
+            // 1. Try to get fresh location with timeout (Fused)
             val location = withTimeoutOrNull(LOCATION_TIMEOUT_MS) {
                 getFreshLocation()
             }
 
             if (location != null) {
-                Log.d(TAG, "Got fresh location: ${location.latitude}, ${location.longitude}")
-                val cityName = getCityName(location.latitude, location.longitude)
-                val timezone = detectTimezone(location.latitude, location.longitude)
-
-                // Cache the result
-                cacheLocation(location.latitude, location.longitude, cityName, timezone)
-
-                return@withContext LocationServiceResult.Success(
-                    latitude = location.latitude,
-                    longitude = location.longitude,
-                    city = cityName,
-                    timezone = timezone
-                )
-            } else {
-                Log.w(TAG, "Location timeout, trying last known location")
-                // Timeout - try last known location
-                return@withContext getLastKnownOrCached()
+                return@withContext processLocation(location)
+            } 
+            
+            Log.w(TAG, "Fused location timeout, trying active legacy updates")
+            
+            // 2. Timeout - try ACTIVE Legacy Update (wakes up emulator)
+            val activeLegacy = awaitLegacyLocationUpdate()
+             if (activeLegacy != null) {
+                Log.d(TAG, "Got location from active legacy provider")
+                return@withContext processLocation(activeLegacy)
             }
+            
+            Log.w(TAG, "Active legacy failed, checking passive last known")
+
+            // 3. Try passive legacy LocationManager (GPS/Network)
+            // This is often more reliable on emulators if active failed
+            val legacyLocation = getLegacyFallback()
+            if (legacyLocation != null) {
+                Log.d(TAG, "Got location from passive legacy provider")
+                return@withContext processLocation(legacyLocation)
+            }
+
+            Log.w(TAG, "Legacy failed, trying last known Fused location")
+
+            // 3. Try last known location (Fused)
+            return@withContext getLastKnownOrCached()
+            
         } catch (e: Exception) {
             Log.e(TAG, "Error getting location: ${e.message}")
             // Try cached as fallback
             getCachedLocation()?.let { return@withContext it }
             return@withContext LocationServiceResult.Error("LOCATION_ERROR", e.message ?: "Unknown error")
+        }
+    }
+
+    private fun processLocation(location: Location): LocationServiceResult.Success {
+        Log.d(TAG, "Processing location: ${location.latitude}, ${location.longitude}")
+        val cityName = getCityName(location.latitude, location.longitude)
+        val timezone = detectTimezone(location.latitude, location.longitude)
+
+        // Cache the result
+        cacheLocation(location.latitude, location.longitude, cityName, timezone)
+
+        return LocationServiceResult.Success(
+            latitude = location.latitude,
+            longitude = location.longitude,
+            city = cityName,
+            timezone = timezone
+        )
+    }
+
+    /**
+     * Actively wait for a legacy location update (useful for waking up emulators)
+     */
+    @Suppress("MissingPermission")
+    private suspend fun awaitLegacyLocationUpdate(): Location? = suspendCancellableCoroutine { continuation ->
+        val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as android.location.LocationManager
+        
+        val listener = object : android.location.LocationListener {
+            override fun onLocationChanged(location: Location) {
+                if (continuation.isActive) {
+                    Log.d(TAG, "Legacy active update received: $location")
+                    continuation.resume(location)
+                    locationManager.removeUpdates(this)
+                }
+            }
+            override fun onProviderEnabled(provider: String) {}
+            override fun onProviderDisabled(provider: String) {}
+            override fun onStatusChanged(provider: String?, status: Int, extras: android.os.Bundle?) {}
+        }
+
+        try {
+            // Try GPS first, then Network
+            val provider = when {
+                locationManager.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER) -> android.location.LocationManager.GPS_PROVIDER
+                locationManager.isProviderEnabled(android.location.LocationManager.NETWORK_PROVIDER) -> android.location.LocationManager.NETWORK_PROVIDER
+                else -> null
+            }
+
+            if (provider != null) {
+                Log.d(TAG, "Requesting active legacy update from $provider")
+                locationManager.requestLocationUpdates(
+                    provider,
+                    1000L,
+                    0f,
+                    listener,
+                    Looper.getMainLooper()
+                )
+
+                // Short timeout for this fallback (5 seconds)
+                // We don't want to delay the user too long if this also fails
+                val handler = android.os.Handler(Looper.getMainLooper())
+                handler.postDelayed({
+                    if (continuation.isActive) {
+                         Log.w(TAG, "Legacy active update timed out")
+                         try { locationManager.removeUpdates(listener) } catch(e: Exception) {}
+                         continuation.resume(null)
+                    }
+                }, 5000L)
+                
+                continuation.invokeOnCancellation {
+                    try { locationManager.removeUpdates(listener) } catch(e: Exception) {}
+                }
+            } else {
+                 Log.w(TAG, "No suitable legacy provider enabled")
+                 continuation.resume(null)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error requesting legacy updates: ${e.message}")
+            if (continuation.isActive) continuation.resume(null)
+        }
+    }
+
+    /**
+     * fallback using legacy LocationManager (useful for emulators)
+     */
+    @Suppress("MissingPermission")
+    private fun getLegacyFallback(): Location? {
+        try {
+            val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as android.location.LocationManager
+            val providers = locationManager.getProviders(true)
+            
+            var bestLocation: Location? = null
+            
+            for (provider in providers) {
+                val l = locationManager.getLastKnownLocation(provider) ?: continue
+                if (bestLocation == null || l.time > bestLocation.time) {
+                    bestLocation = l
+                }
+            }
+            return bestLocation
+        } catch (e: Exception) {
+            Log.e(TAG, "Legacy fallback error: ${e.message}")
+            return null
         }
     }
 
@@ -222,7 +333,35 @@ class LocationService(private val context: Context) {
         }
 
         // Fall back to cache
-        return getCachedLocation() ?: LocationServiceResult.Error("NO_LOCATION", "Could not get location")
+        val cached = getCachedLocation()
+        if (cached != null) return cached
+
+        // Last Resort for Emulators
+        if (isEmulator()) {
+             Log.w(TAG, "Emulator detected with no location - returning Last Resort (India/IST)")
+             return LocationServiceResult.Success(
+                latitude = 28.6139,
+                longitude = 77.2090,
+                city = "New Delhi",
+                timezone = "IST"
+             )
+        }
+
+        return LocationServiceResult.Error("NO_LOCATION", "Could not get location")
+    }
+
+    /**
+     * Check if running on emulator
+     */
+    private fun isEmulator(): Boolean {
+        return (android.os.Build.FINGERPRINT.startsWith("generic")
+                || android.os.Build.FINGERPRINT.startsWith("unknown")
+                || android.os.Build.MODEL.contains("google_sdk")
+                || android.os.Build.MODEL.contains("Emulator")
+                || android.os.Build.MODEL.contains("Android SDK built for x86")
+                || android.os.Build.MANUFACTURER.contains("Genymotion")
+                || (android.os.Build.BRAND.startsWith("generic") && android.os.Build.DEVICE.startsWith("generic"))
+                || "google_sdk" == android.os.Build.PRODUCT)
     }
 
     /**
@@ -275,22 +414,69 @@ class LocationService(private val context: Context) {
      */
     @Suppress("DEPRECATION")
     private fun getCityName(lat: Double, lng: Double): String {
-        return try {
-            val geocoder = Geocoder(context, Locale.getDefault())
+        try {
+            // Use English locale to ensure consistent city names (e.g. "Mysuru" vs "Mysore" or non-English chars)
+            val geocoder = Geocoder(context, Locale.US)
             val addresses = geocoder.getFromLocation(lat, lng, 1)
             if (!addresses.isNullOrEmpty()) {
                 val address = addresses[0]
                 // Try locality first, then subAdminArea, then adminArea
-                address.locality
+                val city = address.locality
                     ?: address.subAdminArea
                     ?: address.adminArea
                     ?: "Unknown"
+                 Log.d(TAG, "Resolved city: $city ($lat, $lng)")
+                 return city
             } else {
-                "Unknown"
+                Log.w(TAG, "Geocoder returned no addresses for $lat, $lng")
             }
         } catch (e: Exception) {
             Log.e(TAG, "Geocoding error: ${e.message}")
-            "Unknown"
+        }
+
+        // Fallback for emulators/offline
+        return getOfflineFallbackCity(lat, lng)
+    }
+
+    /**
+     * Offline fallback for common emulator locations when Geocoder fails
+     */
+    private fun getOfflineFallbackCity(lat: Double, lng: Double): String {
+        // Simple distance check (approximate)
+        // 1 degree ~ 111km. we check within ~0.5 degree (~50km)
+        
+        fun isNear(targetLat: Double, targetLng: Double): Boolean {
+            return Math.abs(lat - targetLat) < 0.5 && Math.abs(lng - targetLng) < 0.5
+        }
+
+        return when {
+            // US West
+            isNear(37.338, -121.885) -> "San Jose" // Android Emulator Default
+            isNear(37.422, -122.084) -> "Mountain View" // Googleplex
+            isNear(37.774, -122.419) -> "San Francisco"
+            isNear(34.052, -118.243) -> "Los Angeles"
+            isNear(47.606, -122.332) -> "Seattle"
+
+            // US East
+            isNear(40.712, -74.006) -> "New York"
+            isNear(39.952, -75.165) -> "Philadelphia"
+            isNear(38.907, -77.036) -> "Washington DC"
+            isNear(42.360, -71.058) -> "Boston"
+
+            // EU
+            isNear(51.507, -0.127) -> "London"
+            isNear(48.856, 2.352) -> "Paris"
+            isNear(52.520, 13.405) -> "Berlin"
+
+            // India
+            isNear(12.971, 77.594) -> "Bengaluru"
+            isNear(19.076, 72.877) -> "Mumbai"
+            isNear(28.613, 77.209) -> "Delhi"
+            isNear(13.082, 80.270) -> "Chennai"
+            isNear(17.385, 78.486) -> "Hyderabad"
+            isNear(22.572, 88.363) -> "Kolkata"
+
+            else -> "Unknown"
         }
     }
 

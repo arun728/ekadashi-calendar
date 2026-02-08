@@ -15,9 +15,9 @@ class NativeLocationService {
   /// This runs on a background thread in Kotlin - never blocks UI
   Future<LocationData?> getCurrentLocation() async {
     try {
-      // 15s timeout to cover native 10s timeout + overhead (especially on cold boot)
+      // 40s timeout to cover native 30s timeout + 5s legacy fallback + overhead
       final result = await _channel.invokeMethod<Map>('getCurrentLocation')
-          .timeout(const Duration(seconds: 15));
+          .timeout(const Duration(seconds: 40));
       if (result == null) return null;
 
       final map = Map<String, dynamic>.from(result);
