@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 import 'services/ekadashi_service.dart';
@@ -15,9 +17,18 @@ import 'screens/calendar_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/details_screen.dart';
 import 'screens/splash_screen.dart';
+import 'package:timezone/timezone.dart' as tz;
+import 'package:timezone/data/latest.dart' as tz;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Lock orientation to portrait only
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+
   // Initialization moved to SplashScreen to prevent cold start freeze
 
   runApp(
@@ -48,6 +59,18 @@ class MyApp extends StatelessWidget {
         );
       },
     );
+  }
+}
+
+/// Helper to convert App Timezone codes to IANA IDs for timezone package
+String _getIANATimezone(String appTimezone) {
+  switch (appTimezone) {
+    case 'IST': return 'Asia/Kolkata';
+    case 'EST': return 'America/New_York';
+    case 'PST': return 'America/Los_Angeles';
+    case 'CST': return 'America/Chicago';
+    case 'MST': return 'America/Denver';
+    default: return appTimezone; // Hope it's already IANA or fallback
   }
 }
 
@@ -133,6 +156,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
     // Load saved timezone
     _currentTimezone = await _locationService.getCurrentTimezone();
+
+    // Initialize date formatting for all locales
+    await initializeDateFormatting();
 
     if (!hasLaunched) {
       // First launch - request permissions
@@ -278,13 +304,15 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
               _isRequestingLocation = false;
             });
           } else {
-            // No cache available - default to IST
-            debugPrint('📍 Location unavailable (timeout) - defaulting to IST');
+            // No cache available - use device timezone fallback
+            debugPrint('📍 Location unavailable (timeout) - using device timezone fallback');
+            final deviceTimezone = await _ekadashiService.getDeviceAppTimezone();
+            
             if (mounted) {
               setState(() {
-                _locationText = 'India (Default)';
-                _currentTimezone = 'IST';
-                _locationDenied = false;
+                _locationText = ''; // No city name, just timezone logic applies
+                _currentTimezone = deviceTimezone;
+                _locationDenied = false; // It's not denied, just timed out
                 _isRequestingLocation = false;
               });
             }
@@ -298,12 +326,14 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       if (!hasPermission) {
         _setLocationDenied();
       } else {
-        // Error but have permission - just use defaults
-        debugPrint('📍 Location error with permission - defaulting to IST');
+        // Error but have permission - use device timezone fallback
+        debugPrint('📍 Location error with permission - using device timezone fallback');
+        final deviceTimezone = await _ekadashiService.getDeviceAppTimezone();
+        
         if (mounted) {
           setState(() {
-            _locationText = 'India (Default)';
-            _currentTimezone = 'IST';
+            _locationText = '';
+            _currentTimezone = deviceTimezone;
             _locationDenied = false;
             _isRequestingLocation = false;
           });
@@ -448,6 +478,12 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   Future<void> _loadData() async {
     if (!mounted) return;
 
+    // Save the ID of the currently viewing Ekadashi before reloading
+    int? currentEkadashiId;
+    if (_ekadashiList.isNotEmpty && _currentPage < _ekadashiList.length) {
+      currentEkadashiId = _ekadashiList[_currentPage].id;
+    }
+
     setState(() {
       _isLoading = true;
       _errorMessage = '';
@@ -467,7 +503,21 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         });
 
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          _scrollToNextEkadashi(animate: false);
+          bool restored = false;
+          // Try to restore the view to the previously selected Ekadashi
+          if (currentEkadashiId != null) {
+            final index = _ekadashiList.indexWhere((e) => e.id == currentEkadashiId);
+            if (index != -1) {
+              _pageController.jumpToPage(index);
+              setState(() => _currentPage = index);
+              restored = true;
+            }
+          }
+
+          // If restoration failed (or first load), scroll to upcoming
+          if (!restored) {
+            _scrollToNextEkadashi(animate: false);
+          }
         });
 
         // Schedule notifications
@@ -488,11 +538,23 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   void _scrollToNextEkadashi({bool animate = true}) {
     if (_ekadashiList.isEmpty || !_pageController.hasClients) return;
 
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
+    // Use timezone-aware "today" check
+    // If timezone is not yet initialized or invalid, fallback to local
+    DateTime today;
+    try {
+      final location = tz.getLocation(_getIANATimezone(_currentTimezone));
+      final nowTz = tz.TZDateTime.now(location);
+      today = DateTime(nowTz.year, nowTz.month, nowTz.day);
+    } catch (e) {
+      debugPrint('Error parsing timezone $_currentTimezone: $e');
+      final now = DateTime.now();
+      today = DateTime(now.year, now.month, now.day);
+    }
+
     int indexToScroll = 0;
 
     for (int i = 0; i < _ekadashiList.length; i++) {
+        // ekadashiList[i].date is typically 00:00:00 of that day
       if (_ekadashiList[i].date.isAfter(today) ||
           _ekadashiList[i].date.isAtSameMomentAs(today)) {
         indexToScroll = i;
@@ -919,10 +981,23 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   }
 
   Widget _buildEkadashiCard(EkadashiDate ekadashi) {
+    // Use timezone-aware "today" calculation
+  DateTime today;
+  try {
+    final location = tz.getLocation(_getIANATimezone(_currentTimezone));
+    final nowTz = tz.TZDateTime.now(location);
+    today = DateTime(nowTz.year, nowTz.month, nowTz.day);
+  } catch (e) {
+    // Fallback to local time if timezone is invalid
     final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    int daysUntil = ekadashi.date.difference(today).inDays;
-    const tealColor = Color(0xFF00A19B);
+    today = DateTime(now.year, now.month, now.day);
+  }
+
+  // Calculate difference based on dates only (ignoring time)
+  final ekadashiDate = DateTime(ekadashi.date.year, ekadashi.date.month, ekadashi.date.day);
+  final daysUntil = ekadashiDate.difference(today).inDays;
+
+  const tealColor = Color(0xFF00A19B);
     final lang = Provider.of<LanguageService>(context);
 
     String breakTime = ekadashi.fastBreakTime;
@@ -994,7 +1069,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      DateFormat('EEEE').format(ekadashi.date),
+                      DateFormat('EEEE', lang.currentLocale.languageCode).format(ekadashi.date),
                       style: TextStyle(fontSize: 16, color: Colors.grey.shade500),
                     ),
                     const SizedBox(height: 16),

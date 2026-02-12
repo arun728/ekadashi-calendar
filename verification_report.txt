@@ -1,0 +1,299 @@
+Verifying Notification Logic (Android WorkManager Implementation)
+Logic:
+  - 2 Days Before: Fasting Start Time - 48 Hours
+  - 1 Day Before:  Fasting Start Time - 24 Hours
+  - Fasting Start: Fasting Start Time
+  - Parana Start:  Parana Start Time
+----------------------------------------------------------------
+
+✅ Data integrity check passed for all 48 timezone entries.
+
+=== VERIFICATION REPORT (All Ekadashis) ===
+Ekadashi: Shattila Ekadashi (IST)
+  2 Days Before (-48h): 2026-01-12T01:05:00.000Z
+  1 Day Before  (-24h): 2026-01-13T01:05:00.000Z
+  Fasting Start (0h):   2026-01-14T01:05:00.000Z
+  Parana Start:         2026-01-15T01:05:00.000Z
+----------------------------------------------------------------
+Ekadashi: Shattila Ekadashi (PST)
+  2 Days Before (-48h): 2026-01-11T21:16:00.000Z
+  1 Day Before  (-24h): 2026-01-12T21:16:00.000Z
+  Fasting Start (0h):   2026-01-13T21:16:00.000Z
+  Parana Start:         2026-01-14T21:16:00.000Z
+----------------------------------------------------------------
+Ekadashi: Jaya Ekadashi (IST)
+  2 Days Before (-48h): 2026-01-27T01:06:00.000Z
+  1 Day Before  (-24h): 2026-01-28T01:06:00.000Z
+  Fasting Start (0h):   2026-01-29T01:06:00.000Z
+  Parana Start:         2026-01-30T01:06:00.000Z
+----------------------------------------------------------------
+Ekadashi: Jaya Ekadashi (PST)
+  2 Days Before (-48h): 2026-01-26T15:13:00.000Z
+  1 Day Before  (-24h): 2026-01-27T15:13:00.000Z
+  Fasting Start (0h):   2026-01-28T15:13:00.000Z
+  Parana Start:         2026-01-29T15:13:00.000Z
+----------------------------------------------------------------
+Ekadashi: Vijaya Ekadashi (IST)
+  2 Days Before (-48h): 2026-02-11T01:02:00.000Z
+  1 Day Before  (-24h): 2026-02-12T01:02:00.000Z
+  Fasting Start (0h):   2026-02-13T01:02:00.000Z
+  Parana Start:         2026-02-14T01:02:00.000Z
+----------------------------------------------------------------
+Ekadashi: Vijaya Ekadashi (PST)
+  2 Days Before (-48h): 2026-02-10T15:19:00.000Z
+  1 Day Before  (-24h): 2026-02-11T15:19:00.000Z
+  Fasting Start (0h):   2026-02-12T15:19:00.000Z
+  Parana Start:         2026-02-13T15:19:00.000Z
+----------------------------------------------------------------
+Ekadashi: Amalaki Ekadashi (IST)
+  2 Days Before (-48h): 2026-02-25T00:55:00.000Z
+  1 Day Before  (-24h): 2026-02-26T00:55:00.000Z
+  Fasting Start (0h):   2026-02-27T00:55:00.000Z
+  Parana Start:         2026-02-28T00:55:00.000Z
+----------------------------------------------------------------
+Ekadashi: Amalaki Ekadashi (PST)
+  2 Days Before (-48h): 2026-02-25T14:40:00.000Z
+  1 Day Before  (-24h): 2026-02-26T14:40:00.000Z
+  Fasting Start (0h):   2026-02-27T14:40:00.000Z
+  Parana Start:         2026-02-28T14:40:00.000Z
+----------------------------------------------------------------
+Ekadashi: Papamochani Ekadashi (IST)
+  2 Days Before (-48h): 2026-03-13T00:46:00.000Z
+  1 Day Before  (-24h): 2026-03-14T00:46:00.000Z
+  Fasting Start (0h):   2026-03-15T00:46:00.000Z
+  Parana Start:         2026-03-16T00:46:00.000Z
+----------------------------------------------------------------
+Ekadashi: Papamochani Ekadashi (PST)
+  2 Days Before (-48h): 2026-03-12T14:18:00.000Z
+  1 Day Before  (-24h): 2026-03-13T14:18:00.000Z
+  Fasting Start (0h):   2026-03-14T14:18:00.000Z
+  Parana Start:         2026-03-15T14:18:00.000Z
+----------------------------------------------------------------
+Ekadashi: Kamada Ekadashi (IST)
+  2 Days Before (-48h): 2026-03-27T00:37:00.000Z
+  1 Day Before  (-24h): 2026-03-28T00:37:00.000Z
+  Fasting Start (0h):   2026-03-29T00:37:00.000Z
+  Parana Start:         2026-03-30T00:37:00.000Z
+----------------------------------------------------------------
+Ekadashi: Kamada Ekadashi (PST)
+  2 Days Before (-48h): 2026-03-26T13:57:00.000Z
+  1 Day Before  (-24h): 2026-03-27T13:57:00.000Z
+  Fasting Start (0h):   2026-03-28T13:57:00.000Z
+  Parana Start:         2026-03-29T13:57:00.000Z
+----------------------------------------------------------------
+Ekadashi: Varuthini Ekadashi (IST)
+  2 Days Before (-48h): 2026-04-11T01:24:00.000Z
+  1 Day Before  (-24h): 2026-04-12T01:24:00.000Z
+  Fasting Start (0h):   2026-04-13T01:24:00.000Z
+  Parana Start:         2026-04-14T01:24:00.000Z
+----------------------------------------------------------------
+Ekadashi: Varuthini Ekadashi (PST)
+  2 Days Before (-48h): 2026-04-11T13:34:00.000Z
+  1 Day Before  (-24h): 2026-04-12T13:34:00.000Z
+  Fasting Start (0h):   2026-04-13T13:34:00.000Z
+  Parana Start:         2026-04-14T13:34:00.000Z
+----------------------------------------------------------------
+Ekadashi: Mohini Ekadashi (IST)
+  2 Days Before (-48h): 2026-04-25T00:20:00.000Z
+  1 Day Before  (-24h): 2026-04-26T00:20:00.000Z
+  Fasting Start (0h):   2026-04-27T00:20:00.000Z
+  Parana Start:         2026-04-28T00:20:00.000Z
+----------------------------------------------------------------
+Ekadashi: Mohini Ekadashi (PST)
+  2 Days Before (-48h): 2026-04-24T21:27:00.000Z
+  1 Day Before  (-24h): 2026-04-25T21:27:00.000Z
+  Fasting Start (0h):   2026-04-26T21:27:00.000Z
+  Parana Start:         2026-04-27T21:27:00.000Z
+----------------------------------------------------------------
+Ekadashi: Apara Ekadashi (IST)
+  2 Days Before (-48h): 2026-05-11T00:14:00.000Z
+  1 Day Before  (-24h): 2026-05-12T00:14:00.000Z
+  Fasting Start (0h):   2026-05-13T00:14:00.000Z
+  Parana Start:         2026-05-14T00:14:00.000Z
+----------------------------------------------------------------
+Ekadashi: Apara Ekadashi (PST)
+  2 Days Before (-48h): 2026-05-10T13:27:00.000Z
+  1 Day Before  (-24h): 2026-05-11T13:27:00.000Z
+  Fasting Start (0h):   2026-05-12T13:27:00.000Z
+  Parana Start:         2026-05-13T13:27:00.000Z
+----------------------------------------------------------------
+Ekadashi: Padmini Ekadashi (IST)
+  2 Days Before (-48h): 2026-05-25T00:12:00.000Z
+  1 Day Before  (-24h): 2026-05-26T00:12:00.000Z
+  Fasting Start (0h):   2026-05-27T00:12:00.000Z
+  Parana Start:         2026-05-28T00:12:00.000Z
+----------------------------------------------------------------
+Ekadashi: Padmini Ekadashi (PST)
+  2 Days Before (-48h): 2026-05-24T12:51:00.000Z
+  1 Day Before  (-24h): 2026-05-25T12:51:00.000Z
+  Fasting Start (0h):   2026-05-26T12:51:00.000Z
+  Parana Start:         2026-05-27T12:51:00.000Z
+----------------------------------------------------------------
+Ekadashi: Parama Ekadashi (IST)
+  2 Days Before (-48h): 2026-06-09T00:12:00.000Z
+  1 Day Before  (-24h): 2026-06-10T00:12:00.000Z
+  Fasting Start (0h):   2026-06-11T00:12:00.000Z
+  Parana Start:         2026-06-12T00:12:00.000Z
+----------------------------------------------------------------
+Ekadashi: Parama Ekadashi (PST)
+  2 Days Before (-48h): 2026-06-09T12:46:00.000Z
+  1 Day Before  (-24h): 2026-06-10T12:46:00.000Z
+  Fasting Start (0h):   2026-06-11T12:46:00.000Z
+  Parana Start:         2026-06-12T12:46:00.000Z
+----------------------------------------------------------------
+Ekadashi: Nirjala Ekadashi (IST)
+  2 Days Before (-48h): 2026-06-23T00:15:00.000Z
+  1 Day Before  (-24h): 2026-06-24T00:15:00.000Z
+  Fasting Start (0h):   2026-06-25T00:15:00.000Z
+  Parana Start:         2026-06-26T00:15:00.000Z
+----------------------------------------------------------------
+Ekadashi: Nirjala Ekadashi (PST)
+  2 Days Before (-48h): 2026-06-23T12:49:00.000Z
+  1 Day Before  (-24h): 2026-06-24T12:49:00.000Z
+  Fasting Start (0h):   2026-06-25T12:49:00.000Z
+  Parana Start:         2026-06-26T12:49:00.000Z
+----------------------------------------------------------------
+Ekadashi: Yogini Ekadashi (IST)
+  2 Days Before (-48h): 2026-07-08T00:19:00.000Z
+  1 Day Before  (-24h): 2026-07-09T00:19:00.000Z
+  Fasting Start (0h):   2026-07-10T00:19:00.000Z
+  Parana Start:         2026-07-11T00:19:00.000Z
+----------------------------------------------------------------
+Ekadashi: Yogini Ekadashi (PST)
+  2 Days Before (-48h): 2026-07-08T12:56:00.000Z
+  1 Day Before  (-24h): 2026-07-09T12:56:00.000Z
+  Fasting Start (0h):   2026-07-10T12:56:00.000Z
+  Parana Start:         2026-07-11T12:56:00.000Z
+----------------------------------------------------------------
+Ekadashi: Devshayani Ekadashi (IST)
+  2 Days Before (-48h): 2026-07-23T00:23:00.000Z
+  1 Day Before  (-24h): 2026-07-24T00:23:00.000Z
+  Fasting Start (0h):   2026-07-25T00:23:00.000Z
+  Parana Start:         2026-07-26T00:23:00.000Z
+----------------------------------------------------------------
+Ekadashi: Devshayani Ekadashi (PST)
+  2 Days Before (-48h): 2026-07-22T13:07:00.000Z
+  1 Day Before  (-24h): 2026-07-23T13:07:00.000Z
+  Fasting Start (0h):   2026-07-24T13:07:00.000Z
+  Parana Start:         2026-07-25T13:07:00.000Z
+----------------------------------------------------------------
+Ekadashi: Kamika Ekadashi (IST)
+  2 Days Before (-48h): 2026-08-07T00:26:00.000Z
+  1 Day Before  (-24h): 2026-08-08T00:26:00.000Z
+  Fasting Start (0h):   2026-08-09T00:26:00.000Z
+  Parana Start:         2026-08-10T00:26:00.000Z
+----------------------------------------------------------------
+Ekadashi: Kamika Ekadashi (PST)
+  2 Days Before (-48h): 2026-08-06T13:19:00.000Z
+  1 Day Before  (-24h): 2026-08-07T13:19:00.000Z
+  Fasting Start (0h):   2026-08-08T13:19:00.000Z
+  Parana Start:         2026-08-09T13:19:00.000Z
+----------------------------------------------------------------
+Ekadashi: Shravana Putrada Ekadashi (IST)
+  2 Days Before (-48h): 2026-08-21T00:27:00.000Z
+  1 Day Before  (-24h): 2026-08-22T00:27:00.000Z
+  Fasting Start (0h):   2026-08-23T00:27:00.000Z
+  Parana Start:         2026-08-24T00:27:00.000Z
+----------------------------------------------------------------
+Ekadashi: Shravana Putrada Ekadashi (PST)
+  2 Days Before (-48h): 2026-08-21T13:32:00.000Z
+  1 Day Before  (-24h): 2026-08-22T13:32:00.000Z
+  Fasting Start (0h):   2026-08-23T13:32:00.000Z
+  Parana Start:         2026-08-24T13:32:00.000Z
+----------------------------------------------------------------
+Ekadashi: Aja Ekadashi (IST)
+  2 Days Before (-48h): 2026-09-05T00:28:00.000Z
+  1 Day Before  (-24h): 2026-09-06T00:28:00.000Z
+  Fasting Start (0h):   2026-09-07T00:28:00.000Z
+  Parana Start:         2026-09-08T00:28:00.000Z
+----------------------------------------------------------------
+Ekadashi: Aja Ekadashi (PST)
+  2 Days Before (-48h): 2026-09-04T21:22:00.000Z
+  1 Day Before  (-24h): 2026-09-05T21:22:00.000Z
+  Fasting Start (0h):   2026-09-06T21:22:00.000Z
+  Parana Start:         2026-09-07T21:22:00.000Z
+----------------------------------------------------------------
+Ekadashi: Parivartini Ekadashi (IST)
+  2 Days Before (-48h): 2026-09-20T00:28:00.000Z
+  1 Day Before  (-24h): 2026-09-21T00:28:00.000Z
+  Fasting Start (0h):   2026-09-22T00:28:00.000Z
+  Parana Start:         2026-09-23T00:28:00.000Z
+----------------------------------------------------------------
+Ekadashi: Parivartini Ekadashi (PST)
+  2 Days Before (-48h): 2026-09-20T13:57:00.000Z
+  1 Day Before  (-24h): 2026-09-21T13:57:00.000Z
+  Fasting Start (0h):   2026-09-22T13:57:00.000Z
+  Parana Start:         2026-09-23T13:57:00.000Z
+----------------------------------------------------------------
+Ekadashi: Indira Ekadashi (IST)
+  2 Days Before (-48h): 2026-10-04T00:44:00.000Z
+  1 Day Before  (-24h): 2026-10-05T00:44:00.000Z
+  Fasting Start (0h):   2026-10-06T00:44:00.000Z
+  Parana Start:         2026-10-07T00:44:00.000Z
+----------------------------------------------------------------
+Ekadashi: Indira Ekadashi (PST)
+  2 Days Before (-48h): 2026-10-04T14:09:00.000Z
+  1 Day Before  (-24h): 2026-10-05T14:09:00.000Z
+  Fasting Start (0h):   2026-10-06T14:09:00.000Z
+  Parana Start:         2026-10-07T14:09:00.000Z
+----------------------------------------------------------------
+Ekadashi: Papankusha Ekadashi (IST)
+  2 Days Before (-48h): 2026-10-20T00:30:00.000Z
+  1 Day Before  (-24h): 2026-10-21T00:30:00.000Z
+  Fasting Start (0h):   2026-10-22T00:30:00.000Z
+  Parana Start:         2026-10-23T00:30:00.000Z
+----------------------------------------------------------------
+Ekadashi: Papankusha Ekadashi (PST)
+  2 Days Before (-48h): 2026-10-19T15:14:00.000Z
+  1 Day Before  (-24h): 2026-10-20T15:14:00.000Z
+  Fasting Start (0h):   2026-10-21T15:14:00.000Z
+  Parana Start:         2026-10-22T15:14:00.000Z
+----------------------------------------------------------------
+Ekadashi: Rama Ekadashi (IST)
+  2 Days Before (-48h): 2026-11-03T00:34:00.000Z
+  1 Day Before  (-24h): 2026-11-04T00:34:00.000Z
+  Fasting Start (0h):   2026-11-05T00:34:00.000Z
+  Parana Start:         2026-11-06T00:34:00.000Z
+----------------------------------------------------------------
+Ekadashi: Rama Ekadashi (PST)
+  2 Days Before (-48h): 2026-11-02T14:37:00.000Z
+  1 Day Before  (-24h): 2026-11-03T14:37:00.000Z
+  Fasting Start (0h):   2026-11-04T14:37:00.000Z
+  Parana Start:         2026-11-05T14:37:00.000Z
+----------------------------------------------------------------
+Ekadashi: Prabodhini Ekadashi (IST)
+  2 Days Before (-48h): 2026-11-18T00:41:00.000Z
+  1 Day Before  (-24h): 2026-11-19T00:41:00.000Z
+  Fasting Start (0h):   2026-11-20T00:41:00.000Z
+  Parana Start:         2026-11-21T00:41:00.000Z
+----------------------------------------------------------------
+Ekadashi: Prabodhini Ekadashi (PST)
+  2 Days Before (-48h): 2026-11-18T14:53:00.000Z
+  1 Day Before  (-24h): 2026-11-19T14:53:00.000Z
+  Fasting Start (0h):   2026-11-20T14:53:00.000Z
+  Parana Start:         2026-11-21T14:53:00.000Z
+----------------------------------------------------------------
+Ekadashi: Utpanna Ekadashi (IST)
+  2 Days Before (-48h): 2026-12-02T00:48:00.000Z
+  1 Day Before  (-24h): 2026-12-03T00:48:00.000Z
+  Fasting Start (0h):   2026-12-04T00:48:00.000Z
+  Parana Start:         2026-12-05T00:48:00.000Z
+----------------------------------------------------------------
+Ekadashi: Utpanna Ekadashi (PST)
+  2 Days Before (-48h): 2026-12-02T15:07:00.000Z
+  1 Day Before  (-24h): 2026-12-03T15:07:00.000Z
+  Fasting Start (0h):   2026-12-04T15:07:00.000Z
+  Parana Start:         2026-12-05T15:07:00.000Z
+----------------------------------------------------------------
+Ekadashi: Mokshada Ekadashi (IST)
+  2 Days Before (-48h): 2026-12-18T00:56:00.000Z
+  1 Day Before  (-24h): 2026-12-19T00:56:00.000Z
+  Fasting Start (0h):   2026-12-20T00:56:00.000Z
+  Parana Start:         2026-12-21T00:56:00.000Z
+----------------------------------------------------------------
+Ekadashi: Mokshada Ekadashi (PST)
+  2 Days Before (-48h): 2026-12-17T21:03:00.000Z
+  1 Day Before  (-24h): 2026-12-18T21:03:00.000Z
+  Fasting Start (0h):   2026-12-19T21:03:00.000Z
+  Parana Start:         2026-12-20T21:03:00.000Z
+----------------------------------------------------------------

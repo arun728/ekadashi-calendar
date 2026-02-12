@@ -3,6 +3,8 @@ import '../main.dart';
 
 import '../services/ekadashi_service.dart';
 import '../services/notification_service.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:timezone/data/latest.dart' as tz;
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -25,6 +27,12 @@ class _SplashScreenState extends State<SplashScreen> {
     // Run initialization tasks
     // Priority 3: Keep EkadashiService blocking (needed for Home)
     await EkadashiService().initializeData();
+
+    // Initialize locale data for DateFormat
+    await initializeDateFormatting();
+
+    // Initialize timezone database
+    tz.initializeTimeZones();
 
     debugPrint('Splash blocking init took: ${stopwatch.elapsedMilliseconds}ms');
 

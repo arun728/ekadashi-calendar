@@ -3,6 +3,7 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:provider/provider.dart';
 import '../services/ekadashi_service.dart';
 import '../services/language_service.dart';
+import 'package:intl/intl.dart';
 import 'details_screen.dart';
 
 class CalendarScreen extends StatefulWidget {
@@ -120,6 +121,23 @@ class CalendarScreenState extends State<CalendarScreen> {
             firstDay: _firstDay,
             lastDay: _lastDay,
             focusedDay: _focusedDay,
+            locale: lang.currentLocale.languageCode, // Localize day headers (Mon/Tue -> தி/செ)
+            calendarFormat: CalendarFormat.month,
+            headerStyle: HeaderStyle(
+              formatButtonVisible: false,
+              titleCentered: true,
+              // Force English Month Name (January 2026) regardless of locale
+              titleTextFormatter: (date, locale) => DateFormat.yMMMM('en').format(date),
+              // Custom chevrons with grey color at boundaries
+              leftChevronIcon: Icon(
+                Icons.chevron_left,
+                color: _isFirstMonth ? Colors.grey.shade500 : tealColor,
+              ),
+              rightChevronIcon: Icon(
+                Icons.chevron_right,
+                color: _isLastMonth ? Colors.grey.shade500 : tealColor,
+              ),
+            ),
             selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
             // Increase row height to prevent overlap
             rowHeight: 48,
@@ -177,19 +195,7 @@ class CalendarScreenState extends State<CalendarScreen> {
                 return null;
               },
             ),
-            headerStyle: HeaderStyle(
-              formatButtonVisible: false,
-              titleCentered: true,
-              // Custom chevrons with grey color at boundaries
-              leftChevronIcon: Icon(
-                Icons.chevron_left,
-                color: _isFirstMonth ? Colors.grey.shade500 : tealColor,
-              ),
-              rightChevronIcon: Icon(
-                Icons.chevron_right,
-                color: _isLastMonth ? Colors.grey.shade500 : tealColor,
-              ),
-            ),
+
             availableGestures: AvailableGestures.all,
           ),
         ),

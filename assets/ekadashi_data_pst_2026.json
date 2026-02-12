@@ -1,0 +1,345 @@
+{
+  "version": "1.6",
+  "generated": "2026-02-12",
+  "source": "Drik Panchang (San Jose) - User Verified List",
+  "year": 2026,
+  "notes": "Parana times for San Jose, CA. Includes DST adjustments. Fasting Start calculated as Parana Start - 1 Day.",
+  "ekadashis": [
+    {
+      "id": 1,
+      "name": {
+        "en": "Shattila Ekadashi"
+      },
+      "timing": {
+        "PST": {
+          "date": "2026-01-13",
+          "fasting_start": "2026-01-13T13:16:00-08:00",
+          "parana_start": "2026-01-14T13:16:00-08:00",
+          "parana_end": "2026-01-14T15:14:00-08:00"
+        }
+      }
+    },
+    {
+      "id": 2,
+      "name": {
+        "en": "Jaya Ekadashi"
+      },
+      "timing": {
+        "PST": {
+          "date": "2026-01-28",
+          "fasting_start": "2026-01-28T07:13:00-08:00",
+          "parana_start": "2026-01-29T07:13:00-08:00",
+          "parana_end": "2026-01-29T09:16:00-08:00"
+        }
+      }
+    },
+    {
+      "id": 3,
+      "name": {
+        "en": "Vijaya Ekadashi"
+      },
+      "timing": {
+        "PST": {
+          "date": "2026-02-12",
+          "fasting_start": "2026-02-12T07:19:00-08:00",
+          "parana_start": "2026-02-13T07:19:00-08:00",
+          "parana_end": "2026-02-13T09:08:00-08:00"
+        }
+      }
+    },
+    {
+      "id": 4,
+      "name": {
+        "en": "Amalaki Ekadashi"
+      },
+      "timing": {
+        "PST": {
+          "date": "2026-02-27",
+          "fasting_start": "2026-02-27T06:40:00-08:00",
+          "parana_start": "2026-02-28T06:40:00-08:00",
+          "parana_end": "2026-02-28T07:13:00-08:00"
+        }
+      }
+    },
+    {
+      "id": 5,
+      "name": {
+        "en": "Papamochani Ekadashi"
+      },
+      "timing": {
+        "PST": {
+          "date": "2026-03-14",
+          "fasting_start": "2026-03-14T07:18:00-07:00",
+          "parana_start": "2026-03-15T07:18:00-07:00",
+          "parana_end": "2026-03-15T09:42:00-07:00"
+        }
+      }
+    },
+    {
+      "id": 6,
+      "name": {
+        "en": "Kamada Ekadashi"
+      },
+      "timing": {
+        "PST": {
+          "date": "2026-03-28",
+          "fasting_start": "2026-03-28T06:57:00-07:00",
+          "parana_start": "2026-03-29T06:57:00-07:00",
+          "parana_end": "2026-03-29T09:27:00-07:00"
+        }
+      }
+    },
+    {
+      "id": 7,
+      "name": {
+        "en": "Varuthini Ekadashi"
+      },
+      "timing": {
+        "PST": {
+          "date": "2026-04-13",
+          "fasting_start": "2026-04-13T06:34:00-07:00",
+          "parana_start": "2026-04-14T06:34:00-07:00",
+          "parana_end": "2026-04-14T09:12:00-07:00"
+        }
+      }
+    },
+    {
+      "id": 8,
+      "name": {
+        "en": "Mohini Ekadashi"
+      },
+      "timing": {
+        "PST": {
+          "date": "2026-04-26",
+          "fasting_start": "2026-04-26T14:27:00-07:00",
+          "parana_start": "2026-04-27T14:27:00-07:00",
+          "parana_end": "2026-04-27T17:11:00-07:00"
+        }
+      }
+    },
+    {
+      "id": 9,
+      "name": {
+        "en": "Apara Ekadashi"
+      },
+      "timing": {
+        "PST": {
+          "date": "2026-05-12",
+          "fasting_start": "2026-05-12T06:27:00-07:00",
+          "parana_start": "2026-05-13T06:27:00-07:00",
+          "parana_end": "2026-05-13T08:50:00-07:00"
+        }
+      }
+    },
+    {
+      "id": 10,
+      "name": {
+        "en": "Padmini Ekadashi"
+      },
+      "timing": {
+        "PST": {
+          "date": "2026-05-26",
+          "fasting_start": "2026-05-26T05:51:00-07:00",
+          "parana_start": "2026-05-27T05:51:00-07:00",
+          "parana_end": "2026-05-27T08:44:00-07:00"
+        }
+      }
+    },
+    {
+      "id": 11,
+      "name": {
+        "en": "Parama Ekadashi"
+      },
+      "timing": {
+        "PST": {
+          "date": "2026-06-11",
+          "fasting_start": "2026-06-11T05:46:00-07:00",
+          "parana_start": "2026-06-12T05:46:00-07:00",
+          "parana_end": "2026-06-12T07:06:00-07:00"
+        }
+      }
+    },
+    {
+      "id": 12,
+      "name": {
+        "en": "Nirjala Ekadashi"
+      },
+      "timing": {
+        "PST": {
+          "date": "2026-06-25",
+          "fasting_start": "2026-06-25T05:49:00-07:00",
+          "parana_start": "2026-06-26T05:49:00-07:00",
+          "parana_end": "2026-06-26T08:45:00-07:00"
+        }
+      }
+    },
+    {
+      "id": 13,
+      "name": {
+        "en": "Yogini Ekadashi"
+      },
+      "timing": {
+        "PST": {
+          "date": "2026-07-10",
+          "fasting_start": "2026-07-10T05:56:00-07:00",
+          "parana_start": "2026-07-11T05:56:00-07:00",
+          "parana_end": "2026-07-11T08:51:00-07:00"
+        }
+      }
+    },
+    {
+      "id": 14,
+      "name": {
+        "en": "Devshayani Ekadashi"
+      },
+      "timing": {
+        "PST": {
+          "date": "2026-07-24",
+          "fasting_start": "2026-07-24T06:07:00-07:00",
+          "parana_start": "2026-07-25T06:07:00-07:00",
+          "parana_end": "2026-07-25T08:57:00-07:00"
+        }
+      }
+    },
+    {
+      "id": 15,
+      "name": {
+        "en": "Kamika Ekadashi"
+      },
+      "timing": {
+        "PST": {
+          "date": "2026-08-08",
+          "fasting_start": "2026-08-08T06:19:00-07:00",
+          "parana_start": "2026-08-09T06:19:00-07:00",
+          "parana_end": "2026-08-09T09:05:00-07:00"
+        }
+      }
+    },
+    {
+      "id": 16,
+      "name": {
+        "en": "Shravana Putrada Ekadashi"
+      },
+      "timing": {
+        "PST": {
+          "date": "2026-08-23",
+          "fasting_start": "2026-08-23T06:32:00-07:00",
+          "parana_start": "2026-08-24T06:32:00-07:00",
+          "parana_end": "2026-08-24T09:11:00-07:00"
+        }
+      }
+    },
+    {
+      "id": 17,
+      "name": {
+        "en": "Aja Ekadashi"
+      },
+      "timing": {
+        "PST": {
+          "date": "2026-09-06",
+          "fasting_start": "2026-09-06T14:22:00-07:00",
+          "parana_start": "2026-09-07T14:22:00-07:00",
+          "parana_end": "2026-09-07T16:55:00-07:00"
+        }
+      }
+    },
+    {
+      "id": 18,
+      "name": {
+        "en": "Parivartini Ekadashi"
+      },
+      "timing": {
+        "PST": {
+          "date": "2026-09-22",
+          "fasting_start": "2026-09-22T06:57:00-07:00",
+          "parana_start": "2026-09-23T06:57:00-07:00",
+          "parana_end": "2026-09-23T09:22:00-07:00"
+        }
+      }
+    },
+    {
+      "id": 19,
+      "name": {
+        "en": "Indira Ekadashi"
+      },
+      "timing": {
+        "PST": {
+          "date": "2026-10-06",
+          "fasting_start": "2026-10-06T07:09:00-07:00",
+          "parana_start": "2026-10-07T07:09:00-07:00",
+          "parana_end": "2026-10-07T09:27:00-07:00"
+        }
+      }
+    },
+    {
+      "id": 20,
+      "name": {
+        "en": "Papankusha Ekadashi"
+      },
+      "timing": {
+        "PST": {
+          "date": "2026-10-21",
+          "fasting_start": "2026-10-21T08:14:00-07:00",
+          "parana_start": "2026-10-22T08:14:00-07:00",
+          "parana_end": "2026-10-22T09:34:00-07:00"
+        }
+      }
+    },
+    {
+      "id": 21,
+      "name": {
+        "en": "Rama Ekadashi"
+      },
+      "timing": {
+        "PST": {
+          "date": "2026-11-04",
+          "fasting_start": "2026-11-04T06:37:00-08:00",
+          "parana_start": "2026-11-05T06:37:00-08:00",
+          "parana_end": "2026-11-05T08:42:00-08:00"
+        }
+      }
+    },
+    {
+      "id": 22,
+      "name": {
+        "en": "Prabodhini Ekadashi"
+      },
+      "timing": {
+        "PST": {
+          "date": "2026-11-20",
+          "fasting_start": "2026-11-20T06:53:00-08:00",
+          "parana_start": "2026-11-21T06:53:00-08:00",
+          "parana_end": "2026-11-21T08:53:00-08:00"
+        }
+      }
+    },
+    {
+      "id": 23,
+      "name": {
+        "en": "Utpanna Ekadashi"
+      },
+      "timing": {
+        "PST": {
+          "date": "2026-12-04",
+          "fasting_start": "2026-12-04T07:07:00-08:00",
+          "parana_start": "2026-12-05T07:07:00-08:00",
+          "parana_end": "2026-12-05T09:03:00-08:00"
+        }
+      }
+    },
+    {
+      "id": 24,
+      "name": {
+        "en": "Mokshada Ekadashi"
+      },
+      "timing": {
+        "PST": {
+          "date": "2026-12-19",
+          "fasting_start": "2026-12-19T13:03:00-08:00",
+          "parana_start": "2026-12-20T13:03:00-08:00",
+          "parana_end": "2026-12-20T14:58:00-08:00"
+        }
+      }
+    }
+  ]
+}
