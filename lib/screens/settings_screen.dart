@@ -422,7 +422,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
         ),
         ListTile(
           title: Text(lang.translate('version')),
-          trailing: const Text("1.1.0", style: TextStyle(color: Colors.grey)),
+          trailing: const Text("1.1.1", style: TextStyle(color: Colors.grey)),
         ),
       ],
     );

@@ -316,7 +316,31 @@
     {
       "id": 5,
       "name": {
-        "en": "Papamochani Ekadashi"
+        "en": "Papamochani Ekadashi",
+        "ta": "பாபமோசனி ஏகாதசி",
+        "hi": "पापमोचिनी एकादशी"
+      },
+      "paksha": "krishna",
+      "month": "phalguna",
+      "description": {
+        "en": "The name 'Papamochani' means 'the remover of all sins'. It is the last Ekadashi of the Vedic year.",
+        "ta": "'பாபமோசனி' என்றால் 'பாவங்களிலிருந்து விடுவிப்பது' என்று பொருள். இது வேத ஆண்டின் கடைசி ஏகாதசி.",
+        "hi": "'पापमोचिनी' का अर्थ है 'वह जो पाप से मुक्त करता है'। यह वैदिक वर्ष की अंतिम एकादशी है।"
+      },
+      "story": {
+        "en": "Sage Medhavi was seduced by Apsara Manjughosha, losing his years of penance. He cursed her to become a witch. Later, both observed Papamochani Ekadashi advice by Sage Chyavana to be freed from their sins and curses.",
+        "ta": "மேதாவி முனிவர் மஞ்சுஷோஷா என்ற அப்சரஸால் ஈர்க்கப்பட்டு தன் தவத்தை இழந்தார். அவர் அவளை பிசாசாக மாற சபித்தார். பின்னர், சியவன முனிவரின் அறிவுரைப்படி இருவரும் பாபமோசனி ஏகாதசி விரதம் இருந்து சாப விமோசனம் பெற்றனர்.",
+        "hi": "ऋषि मेधावी अप्सरा मंजुघोषा से मोहित हो गए और अपनी तपस्या खो दी। उन्होंने उसे पिशाचिनी बनने का श्राप दिया। बाद में, दोनों ने पापमोचिनी एकादशी का व्रत किया और अपने पापों और श्रापों से मुक्त हुए।"
+      },
+      "fasting_rules": {
+        "en": "Diet: Satvik food or complete fast.\nWorship: Pray to Lord Vishnu (Chaturbhuja form) to destroy sins.",
+        "ta": "உணவு: சாத்வீக உணவு அல்லது முழு விரதம்.\nவழிபாடு: பாவங்களை அழிக்க விஷ்ணுவை (சதுர்புஜ வடிவம்) பிரார்த்திக்கவும்.",
+        "hi": "आहार: सात्विक भोजन या पूर्ण उपवास।\nपूजा: पापों के नाश के लिए भगवान विष्णु (चतुर्भुज रूप) की प्रार्थना करें।"
+      },
+      "benefits": {
+        "en": "Destroys all sins, including grievous ones. It liberates the soul from guilt and karmic burdens.",
+        "ta": "கடுமையான பாவங்கள் உட்பட அனைத்து பாவங்களையும் அழிக்கிறது. இது ஆன்மாவை குற்ற உணர்வு மற்றும் கர்ம சுமைகளிலிருந்து விடுவிக்கிறது.",
+        "hi": "भयानक पापों सहित सभी पापों का नाश करता है। यह आत्मा को अपराधबोध और कर्म के बोझ से मुक्त करता है।"
       },
       "timing": {
         "IST": {

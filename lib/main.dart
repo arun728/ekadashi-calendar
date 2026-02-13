@@ -342,7 +342,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     }
 
     // Load data regardless of location result
-    await _loadData();
+    // If we updated location successfully (or fallback), we should probably ensure we show the correct Ekadashi for that location
+    await _loadData(shouldScrollToNext: true);
   }
 
   void _setLocationDenied() {
@@ -462,7 +463,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             _locationText = location.city;
             _currentTimezone = location.timezone;
           });
-          await _loadData();
+          await _loadData(shouldScrollToNext: true);
         } else if (location.city != _locationText) {
           // Just city name changed
           setState(() => _locationText = location.city);
@@ -475,12 +476,15 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   }
 
   /// Load Ekadashi data for current timezone and language
-  Future<void> _loadData() async {
+  /// [shouldScrollToNext] - if true, ignores previous scroll position and forces scroll to "Next/Active" Ekadashi.
+  /// Useful when timezone/location changes significantly.
+  Future<void> _loadData({bool shouldScrollToNext = false}) async {
     if (!mounted) return;
 
     // Save the ID of the currently viewing Ekadashi before reloading
+    // ONLY if we are not forced to scroll away
     int? currentEkadashiId;
-    if (_ekadashiList.isNotEmpty && _currentPage < _ekadashiList.length) {
+    if (!shouldScrollToNext && _ekadashiList.isNotEmpty && _currentPage < _ekadashiList.length) {
       currentEkadashiId = _ekadashiList[_currentPage].id;
     }
 
@@ -514,9 +518,14 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             }
           }
 
-          // If restoration failed (or first load), scroll to upcoming
+          // If restoration failed OR we forced a scroll, go to next upcoming
           if (!restored) {
-            _scrollToNextEkadashi(animate: false);
+             // Use a slight delay to ensure PageView is built with new data
+             Future.delayed(const Duration(milliseconds: 100), () {
+                if (mounted) {
+                  _scrollToNextEkadashi(animate: false, includeParana: true);
+                }
+             });
           }
         });
 
@@ -535,15 +544,29 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   }
 
   /// Scroll to next upcoming Ekadashi
-  void _scrollToNextEkadashi({bool animate = true}) {
-    if (_ekadashiList.isEmpty || !_pageController.hasClients) return;
+  /// [includeParana] - if true, will scroll to a "Passed" Ekadashi if the Parana time is still active.
+  /// If false (e.g. user manually taps Home), it skips to the strictly next upcoming one.
+  void _scrollToNextEkadashi({bool animate = true, int retryCount = 0, bool includeParana = true}) {
+    if (_ekadashiList.isEmpty) return;
+    
+    if (!_pageController.hasClients) {
+      if (retryCount < 50) { // Increased to 5s for slow emulators
+        Future.delayed(const Duration(milliseconds: 100), () {
+          if (mounted) {
+            _scrollToNextEkadashi(animate: animate, retryCount: retryCount + 1, includeParana: includeParana);
+          }
+        });
+      }
+      return;
+    }
 
-    // Use timezone-aware "today" check
-    // If timezone is not yet initialized or invalid, fallback to local
+    // Use timezone-aware "today" calculation - MUST MATCH _buildEkadashiCard LOGIC EXACTLY
     DateTime today;
+    tz.TZDateTime? nowTz;
+    
     try {
       final location = tz.getLocation(_getIANATimezone(_currentTimezone));
-      final nowTz = tz.TZDateTime.now(location);
+      nowTz = tz.TZDateTime.now(location);
       today = DateTime(nowTz.year, nowTz.month, nowTz.day);
     } catch (e) {
       debugPrint('Error parsing timezone $_currentTimezone: $e');
@@ -552,29 +575,64 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     }
 
     int indexToScroll = 0;
+    bool found = false;
 
     for (int i = 0; i < _ekadashiList.length; i++) {
-        // ekadashiList[i].date is typically 00:00:00 of that day
-      if (_ekadashiList[i].date.isAfter(today) ||
-          _ekadashiList[i].date.isAtSameMomentAs(today)) {
-        indexToScroll = i;
-        break;
+        final ekadashi = _ekadashiList[i];
+        
+        // Calculate difference based on dates only (ignoring time)
+        // This MUST match the logic in _buildEkadashiCard to ensure consistency
+        final ekadashiDate = DateTime(ekadashi.date.year, ekadashi.date.month, ekadashi.date.day);
+        final daysUntil = ekadashiDate.difference(today).inDays;
+        
+        bool isParanaActive = false;
+        
+        // Check Parana logic if requested and we have current time (nowTz)
+        if (includeParana && daysUntil < 0 && nowTz != null && ekadashi.paranaEndIso.isNotEmpty) {
+           try {
+             // Parse paranaEndIso (e.g. "2026-02-14T08:52:00+05:30")
+             // We need to parse it carefully to compare with nowTz
+             final paranaEnd = tz.TZDateTime.parse(tz.getLocation(_getIANATimezone(_currentTimezone)), ekadashi.paranaEndIso);
+             
+             if (nowTz.isBefore(paranaEnd)) {
+               // Parana is still active
+               isParanaActive = true;
+             }
+           } catch (e) {
+             debugPrint('Error checking parana active: $e');
+           }
+        }
+        
+        // If daysUntil >= 0, it means Today (0) or Future (>0) - show it!
+        // OR if Parana is still active for a passed Ekadashi
+        if (daysUntil >= 0 || isParanaActive) {
+            indexToScroll = i;
+            found = true;
+            break;
+        }
+    }
+    
+    // Safety check: If list is not empty but nothing found (rare end-of-year edge case)
+    // stay at last index or 0.
+    
+    // Fix for Race Condition: Give the PageView a moment to verify layout before jumping
+    Future.delayed(const Duration(milliseconds: 50), () {
+      if (mounted && _pageController.hasClients) {
+        if (animate) {
+          _pageController.animateToPage(
+            indexToScroll,
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeOutCubic,
+          );
+        } else {
+          _pageController.jumpToPage(indexToScroll);
+        }
+        
+        if (mounted) {
+           setState(() => _currentPage = indexToScroll);
+        }
       }
-    }
-
-    if (animate) {
-      _pageController.animateToPage(
-        indexToScroll,
-        duration: const Duration(milliseconds: 400),
-        curve: Curves.easeOutCubic,
-      );
-    } else {
-      _pageController.jumpToPage(indexToScroll);
-    }
-
-    if (mounted) {
-      setState(() => _currentPage = indexToScroll);
-    }
+    });
   }
 
   /// Handle bottom navigation taps
@@ -582,7 +640,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     if (index == _currentIndex) {
       // Already on this tab - special actions
       if (index == 0) {
-        _scrollToNextEkadashi(animate: true);
+        // User explicitly tapped Home - strictly go to next upcoming (skip Parana)
+        _scrollToNextEkadashi(animate: false, includeParana: false);
       } else if (index == 1) {
         _calendarKey.currentState?.resetToToday();
       }
@@ -593,7 +652,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       // When switching TO Home tab, scroll to upcoming Ekadashi
       if (index == 0) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          _scrollToNextEkadashi(animate: false);
+          _scrollToNextEkadashi(animate: false, includeParana: true);
         });
       }
     }
@@ -953,12 +1012,18 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       onSelected: (String newValue) => lang.changeLanguage(newValue),
       color: Theme.of(context).cardColor,
       itemBuilder: (context) => [
-        const PopupMenuItem(value: 'en', child: Text("English")),
+        const PopupMenuItem(
+          value: 'en',
+          child: Text("English", style: TextStyle(fontWeight: FontWeight.normal)),
+        ),
         const PopupMenuItem(
           value: 'hi',
-          child: Text("हिंदी", style: TextStyle(fontWeight: FontWeight.bold)),
+          child: Text("हिंदी", style: TextStyle(fontWeight: FontWeight.normal)),
         ),
-        const PopupMenuItem(value: 'ta', child: Text("தமிழ்")),
+        const PopupMenuItem(
+          value: 'ta',
+          child: Text("தமிழ்", style: TextStyle(fontWeight: FontWeight.normal)),
+        ),
       ],
       offset: const Offset(0, 40),
       child: Row(
@@ -966,11 +1031,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         children: [
           Text(
             displayLanguage,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 14,
-              fontWeight: lang.currentLocale.languageCode == 'hi'
-                  ? FontWeight.bold
-                  : FontWeight.w500,
+              fontWeight: FontWeight.w500, // Consistent weight for all languages
             ),
           ),
           const SizedBox(width: 6),

@@ -121,7 +121,7 @@ class CalendarScreenState extends State<CalendarScreen> {
             firstDay: _firstDay,
             lastDay: _lastDay,
             focusedDay: _focusedDay,
-            locale: lang.currentLocale.languageCode, // Localize day headers (Mon/Tue -> தி/செ)
+            locale: 'en', // Force English for weekdays (Mon, Tue...) regardless of app language
             calendarFormat: CalendarFormat.month,
             headerStyle: HeaderStyle(
               formatButtonVisible: false,
@@ -136,6 +136,19 @@ class CalendarScreenState extends State<CalendarScreen> {
               rightChevronIcon: Icon(
                 Icons.chevron_right,
                 color: _isLastMonth ? Colors.grey.shade500 : tealColor,
+              ),
+            ),
+            // Weekdays matching the Header (Month Year) style (w500)
+            daysOfWeekStyle: DaysOfWeekStyle(
+              weekdayStyle: TextStyle(
+                color: Theme.of(context).textTheme.titleMedium?.color,
+                fontWeight: FontWeight.w500, // Match header's medium weight
+                fontSize: 14,
+              ),
+              weekendStyle: TextStyle(
+                color: Theme.of(context).textTheme.titleMedium?.color,
+                fontWeight: FontWeight.w500, // Match header's medium weight
+                fontSize: 14,
               ),
             ),
             selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
