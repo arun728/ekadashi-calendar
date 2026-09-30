@@ -1,12 +1,17 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 import 'services/ekadashi_service.dart';
+import 'services/ekadashi_widget_service.dart';
+import 'data/sqflite_calendar_entry_repository.dart';
+import 'services/google_calendar_service.dart';
+import 'services/google_auth_gateway_android.dart';
 import 'services/notification_service.dart';
 import 'services/native_location_service.dart';
 import 'services/native_notification_service.dart';
@@ -100,6 +105,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
   final PageController _pageController = PageController(viewportFraction: 1.0);
   final GlobalKey<CalendarScreenState> _calendarKey = GlobalKey();
+  SqfliteCalendarEntryRepository? _calendarRepo;
+  GoogleCalendarService? _googleCalendarService;
+  bool _calendarServicesReady = false;
 
   @override
   void initState() {
@@ -108,6 +116,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     // Defer initialization to prevent freeze on process restoration
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeApp();
+      _initCalendarServices();
     });
   }
 
@@ -118,6 +127,37 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     if (_currentLangCode != langService.currentLocale.languageCode) {
       _currentLangCode = langService.currentLocale.languageCode;
       _loadData();
+    }
+  }
+
+
+  Future<void> _initCalendarServices() async {
+    try {
+      final repo = SqfliteCalendarEntryRepository();
+      await repo.init();
+      final google = GoogleCalendarService(
+        auth: GoogleAuthGatewayAndroid(),
+        repository: repo,
+      );
+      if (!mounted) return;
+      setState(() {
+        _calendarRepo = repo;
+        _googleCalendarService = google;
+        _calendarServicesReady = true;
+      });
+    } catch (e) {
+      debugPrint('Calendar services init failed: $e');
+      try {
+        final repo = SqfliteCalendarEntryRepository();
+        await repo.init();
+        if (!mounted) return;
+        setState(() {
+          _calendarRepo = repo;
+          _calendarServicesReady = true;
+        });
+      } catch (e2) {
+        debugPrint('Calendar DB init failed: $e2');
+      }
     }
   }
 
@@ -531,6 +571,12 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
         // Schedule notifications
         _scheduleNotifications();
+
+        // Home-screen widget: next Ekadashi in current language
+        EkadashiWidgetService().refresh(
+          ekadashis: ekadashis,
+          languageCode: lang,
+        );
       }
     } catch (e) {
       debugPrint('Error loading data: $e');
@@ -789,6 +835,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           key: _calendarKey,
           ekadashiList: _ekadashiList,
           currentTimezone: _currentTimezone,
+          repository: _calendarRepo,
+          googleService: _googleCalendarService,
         ),
         const SettingsScreen(),
       ],
@@ -1004,6 +1052,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       case 'hi':
         displayLanguage = 'हिंदी';
         break;
+      case 'te':
+        displayLanguage = 'తెలుగు';
+        break;
       default:
         displayLanguage = 'English';
     }
@@ -1023,6 +1074,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         const PopupMenuItem(
           value: 'ta',
           child: Text("தமிழ்", style: TextStyle(fontWeight: FontWeight.normal)),
+        ),
+        const PopupMenuItem(
+          value: 'te',
+          child: Text("తెలుగు", style: TextStyle(fontWeight: FontWeight.normal)),
         ),
       ],
       offset: const Offset(0, 40),

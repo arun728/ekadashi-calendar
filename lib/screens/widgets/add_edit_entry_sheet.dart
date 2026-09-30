@@ -1,0 +1,181 @@
+import 'package:flutter/material.dart';
+import '../../models/calendar_entry.dart';
+
+class AddEditEntrySheet extends StatefulWidget {
+  final DateTime initialDay;
+  final CalendarEntry? existing;
+
+  const AddEditEntrySheet({
+    super.key,
+    required this.initialDay,
+    this.existing,
+  });
+
+  static Future<CalendarEntry?> show(
+    BuildContext context, {
+    required DateTime initialDay,
+    CalendarEntry? existing,
+  }) {
+    return showModalBottomSheet<CalendarEntry>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) =>
+          AddEditEntrySheet(initialDay: initialDay, existing: existing),
+    );
+  }
+
+  @override
+  State<AddEditEntrySheet> createState() => _AddEditEntrySheetState();
+}
+
+class _AddEditEntrySheetState extends State<AddEditEntrySheet> {
+  final _titleCtrl = TextEditingController();
+  final _notesCtrl = TextEditingController();
+  late DateTime _day;
+  late TimeOfDay _start;
+  late TimeOfDay _end;
+  bool _allDay = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final e = widget.existing;
+    _day = DateTime(
+        widget.initialDay.year, widget.initialDay.month, widget.initialDay.day);
+    if (e != null) {
+      _titleCtrl.text = e.title;
+      _notesCtrl.text = e.notes ?? '';
+      _allDay = e.isAllDay;
+      _start = TimeOfDay(hour: e.startAt.hour, minute: e.startAt.minute);
+      _end = TimeOfDay(hour: e.endAt.hour, minute: e.endAt.minute);
+      _day = DateTime(e.startAt.year, e.startAt.month, e.startAt.day);
+    } else {
+      _start = const TimeOfDay(hour: 9, minute: 0);
+      _end = const TimeOfDay(hour: 10, minute: 0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _titleCtrl.dispose();
+    _notesCtrl.dispose();
+    super.dispose();
+  }
+
+  DateTime _combine(DateTime day, TimeOfDay t) =>
+      DateTime(day.year, day.month, day.day, t.hour, t.minute);
+
+  Future<void> _pickStart() async {
+    final t = await showTimePicker(context: context, initialTime: _start);
+    if (t != null) setState(() => _start = t);
+  }
+
+  Future<void> _pickEnd() async {
+    final t = await showTimePicker(context: context, initialTime: _end);
+    if (t != null) setState(() => _end = t);
+  }
+
+  void _save() {
+    final title = _titleCtrl.text.trim();
+    if (title.isEmpty) return;
+    DateTime startAt;
+    DateTime endAt;
+    if (_allDay) {
+      startAt = _day;
+      endAt = _day;
+    } else {
+      startAt = _combine(_day, _start);
+      endAt = _combine(_day, _end);
+      if (endAt.isBefore(startAt)) {
+        endAt = startAt.add(const Duration(hours: 1));
+      }
+    }
+    final entry = CalendarEntry(
+      id: widget.existing?.id ??
+          'custom_${DateTime.now().millisecondsSinceEpoch}',
+      title: title,
+      notes: _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
+      startAt: startAt,
+      endAt: endAt,
+      isAllDay: _allDay,
+      source: CalendarEntrySource.custom,
+      updatedAt: DateTime.now().toUtc(),
+    );
+    Navigator.pop(context, entry);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    const purple = Color(CalendarMarkerColors.customPurple);
+    final bottom = MediaQuery.of(context).viewInsets.bottom;
+    return Padding(
+      padding:
+          EdgeInsets.only(left: 20, right: 20, top: 16, bottom: bottom + 20),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              widget.existing == null ? 'Add entry' : 'Edit entry',
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _titleCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Title',
+                border: OutlineInputBorder(),
+              ),
+              textCapitalization: TextCapitalization.sentences,
+              autofocus: widget.existing == null,
+            ),
+            const SizedBox(height: 12),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('All-day'),
+              value: _allDay,
+              activeColor: purple,
+              onChanged: (v) => setState(() => _allDay = v),
+            ),
+            if (!_allDay) ...[
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Starts'),
+                trailing: Text(_start.format(context)),
+                onTap: _pickStart,
+              ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Ends'),
+                trailing: Text(_end.format(context)),
+                onTap: _pickEnd,
+              ),
+            ],
+            TextField(
+              controller: _notesCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Notes (optional)',
+                border: OutlineInputBorder(),
+              ),
+              maxLines: 2,
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _save,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: purple,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+              child: const Text('Save'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
