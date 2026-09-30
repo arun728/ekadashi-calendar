@@ -5,6 +5,10 @@ import '../services/ekadashi_service.dart';
 import '../services/language_service.dart';
 import 'package:intl/intl.dart';
 import 'details_screen.dart';
+import '../services/vrat_tracker_service.dart';
+import '../models/vrat_tracker_models.dart';
+import 'vrat_tracker/record_vrat_dialog.dart';
+import 'vrat_tracker/achievement_unlock_dialog.dart';
 
 class CalendarScreen extends StatefulWidget {
   final List<EkadashiDate> ekadashiList;
@@ -180,7 +184,7 @@ class CalendarScreenState extends State<CalendarScreen> {
             },
             calendarStyle: CalendarStyle(
               todayDecoration: BoxDecoration(
-                color: tealColor.withOpacity(0.5),
+                color: tealColor.withValues(alpha: 0.5),
                 shape: BoxShape.circle,
               ),
               selectedDecoration: const BoxDecoration(
@@ -230,7 +234,7 @@ class CalendarScreenState extends State<CalendarScreen> {
                       lang.translate('no_ekadashi'),
                       style: TextStyle(
                         fontSize: 15,
-                        color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.6),
+                        color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.6),
                       ),
                     ),
                   ),
@@ -246,7 +250,40 @@ class CalendarScreenState extends State<CalendarScreen> {
 
   Widget _buildSimpleEkadashiCard(EkadashiDate ekadashi) {
     final lang = Provider.of<LanguageService>(context);
+    final tracker = Provider.of<VratTrackerService>(context);
     const tealColor = Color(0xFF00A19B);
+
+    final record = tracker.getRecord(ekadashi.id);
+    final status = record?.status ?? ObservanceStatus.unrecorded;
+
+    Color? statusColor;
+    String? statusLabel;
+    IconData? statusIcon;
+
+    if (tracker.trackerEnabled) {
+      switch (status) {
+        case ObservanceStatus.observed:
+          statusColor = Colors.green;
+          statusLabel = lang.translate('observed');
+          statusIcon = Icons.check_circle;
+          break;
+        case ObservanceStatus.partial:
+          statusColor = Colors.amber.shade700;
+          statusLabel = lang.translate('partial');
+          statusIcon = Icons.adjust;
+          break;
+        case ObservanceStatus.missed:
+          statusColor = Colors.red.shade400;
+          statusLabel = lang.translate('missed');
+          statusIcon = Icons.highlight_off;
+          break;
+        case ObservanceStatus.unrecorded:
+          statusColor = Colors.grey;
+          statusLabel = lang.translate('not_recorded');
+          statusIcon = Icons.help_outline;
+          break;
+      }
+    }
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -268,6 +305,35 @@ class CalendarScreenState extends State<CalendarScreen> {
                 ),
                 textAlign: TextAlign.center,
               ),
+
+              // Subtle Vrat status indicator on calendar (Requirement 18 - NO CHECKBOX)
+              if (tracker.trackerEnabled && statusLabel != null && statusColor != null) ...[
+                const SizedBox(height: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: statusColor.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: statusColor.withValues(alpha: 0.35)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(statusIcon, size: 13, color: statusColor),
+                      const SizedBox(width: 4),
+                      Text(
+                        statusLabel,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: statusColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+
               // Show timezone info if available
               if (widget.currentTimezone != null && widget.currentTimezone!.isNotEmpty) ...[
                 const SizedBox(height: 4),
@@ -280,34 +346,72 @@ class CalendarScreenState extends State<CalendarScreen> {
                 ),
               ],
               const SizedBox(height: 12),
-              // View Details button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => DetailsScreen(
-                          ekadashi: ekadashi,
-                          timezone: widget.currentTimezone,
+
+              // Action buttons: View Details and Record Vrat (Requirement 17)
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => DetailsScreen(
+                              ekadashi: ekadashi,
+                              timezone: widget.currentTimezone,
+                            ),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: tealColor,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: tealColor,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      child: Text(
+                        lang.translate('view_details'),
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                      ),
                     ),
                   ),
-                  child: Text(
-                    lang.translate('view_details'),
-                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-                  ),
-                ),
+                  if (tracker.trackerEnabled) ...[
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () async {
+                          final unlocks = await RecordVratDialog.show(
+                            context,
+                            ekadashi: ekadashi,
+                            allOccurrences: widget.ekadashiList,
+                            currentTimezone: widget.currentTimezone ?? 'IST',
+                          );
+                          if (unlocks != null && unlocks.isNotEmpty && mounted) {
+                            for (final u in unlocks) {
+                              await AchievementUnlockDialog.show(context, u);
+                            }
+                          }
+                        },
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: statusColor ?? tealColor,
+                          side: BorderSide(color: statusColor ?? tealColor),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: Text(
+                          record != null
+                              ? lang.translate('edit_record')
+                              : lang.translate('record_vrat'),
+                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ],
           ),

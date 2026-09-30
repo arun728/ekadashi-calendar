@@ -32,7 +32,6 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
 
   // State
   bool _isInitialized = false;
-  bool _isCheckingPermissions = false;
 
   // Permission states
   PermissionStatus _permissionStatus = PermissionStatus.defaults();
@@ -130,6 +129,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     }
 
     Future.microtask(() async {
+      if (!mounted) return;
       try {
         final langService = Provider.of<LanguageService>(context, listen: false);
         final ekadashis = await _ekadashiService.getUpcomingEkadashis(
@@ -246,7 +246,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
         SwitchListTile(
           title: Text(lang.translate('dark_mode')),
           value: Provider.of<ThemeService>(context).isDarkMode,
-          activeColor: tealColor,
+          activeThumbColor: tealColor,
           onChanged: (value) {
             Provider.of<ThemeService>(context, listen: false).toggleTheme(value);
             _settingsService.setDarkMode(value);
@@ -273,7 +273,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
               style: const TextStyle(fontSize: 12, color: Colors.orange)
           ),
           value: _notificationSettings.enabled && _permissionStatus.hasNotificationPermission,
-          activeColor: tealColor,
+          activeThumbColor: tealColor,
           onChanged: _toggleNotifications,
         ),
 
@@ -291,7 +291,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
             ),
           ),
           value: _notificationSettings.remind2Days && togglesEnabled,
-          activeColor: tealColor,
+          activeThumbColor: tealColor,
           onChanged: togglesEnabled ? _toggleRemind2Days : null,
         ),
 
@@ -309,7 +309,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
             ),
           ),
           value: _notificationSettings.remind1Day && togglesEnabled,
-          activeColor: tealColor,
+          activeThumbColor: tealColor,
           onChanged: togglesEnabled ? _toggleRemind1Day : null,
         ),
 
@@ -327,7 +327,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
             ),
           ),
           value: _notificationSettings.remindOnStart && togglesEnabled,
-          activeColor: tealColor,
+          activeThumbColor: tealColor,
           onChanged: togglesEnabled ? _toggleRemindOnStart : null,
         ),
 
@@ -345,7 +345,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
             ),
           ),
           value: _notificationSettings.remindOnParana && togglesEnabled,
-          activeColor: tealColor,
+          activeThumbColor: tealColor,
           onChanged: togglesEnabled ? _toggleRemindOnParana : null,
         ),
 

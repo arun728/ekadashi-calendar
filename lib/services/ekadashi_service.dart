@@ -311,7 +311,8 @@ class EkadashiService {
   /// Used as fallback when location permission is denied.
   Future<String> getDeviceAppTimezone() async {
     try {
-      final systemTimezone = await FlutterTimezone.getLocalTimezone();
+      final systemTimezone = await FlutterTimezone.getLocalTimezone()
+          .timeout(const Duration(milliseconds: 2000));
       debugPrint('📍 Device system timezone: $systemTimezone');
 
       // Map common system timezone IDs to our supported app timezones

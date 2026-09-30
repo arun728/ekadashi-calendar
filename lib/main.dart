@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -17,8 +16,12 @@ import 'screens/calendar_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/details_screen.dart';
 import 'screens/splash_screen.dart';
+import 'services/vrat_tracker_service.dart';
+import 'screens/vrat_tracker/vrat_tracker_screen.dart';
+import 'screens/vrat_tracker/record_vrat_dialog.dart';
+import 'screens/vrat_tracker/achievement_unlock_dialog.dart';
+import 'models/vrat_tracker_models.dart';
 import 'package:timezone/timezone.dart' as tz;
-import 'package:timezone/data/latest.dart' as tz;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,15 +34,7 @@ void main() async {
 
   // Initialization moved to SplashScreen to prevent cold start freeze
 
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => ThemeService()..loadTheme()),
-        ChangeNotifierProvider(create: (_) => LanguageService()),
-      ],
-      child: const MyApp(),
-    ),
-  );
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -47,17 +42,24 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ThemeService>(
-      builder: (context, themeService, child) {
-        return MaterialApp(
-          title: 'Ekadashi Calendar',
-          debugShowCheckedModeBanner: false,
-          theme: AppTheme.lightTheme,
-          darkTheme: AppTheme.darkTheme,
-          themeMode: themeService.themeMode,
-          home: const SplashScreen(),
-        );
-      },
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ThemeService()..loadTheme()),
+        ChangeNotifierProvider(create: (_) => LanguageService()),
+        ChangeNotifierProvider(create: (_) => VratTrackerService()),
+      ],
+      child: Consumer<ThemeService>(
+        builder: (context, themeService, child) {
+          return MaterialApp(
+            title: 'Ekadashi Calendar',
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: themeService.themeMode,
+            home: const SplashScreen(),
+          );
+        },
+      ),
     );
   }
 }
@@ -506,6 +508,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           _isLoading = false;
         });
 
+        // Initialize Vrat Tracker with loaded occurrences
+        Provider.of<VratTrackerService>(context, listen: false).init(occurrences: ekadashis);
+
         WidgetsBinding.instance.addPostFrameCallback((_) {
           bool restored = false;
           // Try to restore the view to the previously selected Ekadashi
@@ -613,7 +618,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     }
     
     // Safety check: If list is not empty but nothing found (rare end-of-year edge case)
-    // stay at last index or 0.
+    // stay at last index.
+    if (!found && _ekadashiList.isNotEmpty) {
+      indexToScroll = _ekadashiList.length - 1;
+    }
     
     // Fix for Race Condition: Give the PageView a moment to verify layout before jumping
     Future.delayed(const Duration(milliseconds: 50), () {
@@ -678,6 +686,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       // Continue with scheduling attempt on error
     }
 
+    if (!mounted) return;
     final lang = Provider.of<LanguageService>(context, listen: false);
     final texts = lang.localizedStrings;
 
@@ -724,6 +733,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       ),
       body: _buildBody(lang, tealColor),
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
         currentIndex: _currentIndex,
         onTap: _onBottomNavTapped,
         selectedItemColor: tealColor,
@@ -735,6 +745,11 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           BottomNavigationBarItem(
             icon: const Icon(Icons.calendar_month),
             label: lang.translate('calendar'),
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.spa_outlined),
+            activeIcon: const Icon(Icons.spa),
+            label: lang.translate('vrat'),
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.settings),
@@ -787,6 +802,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         _buildHomeContent(lang, tealColor),
         CalendarScreen(
           key: _calendarKey,
+          ekadashiList: _ekadashiList,
+          currentTimezone: _currentTimezone,
+        ),
+        VratTrackerScreen(
           ekadashiList: _ekadashiList,
           currentTimezone: _currentTimezone,
         ),
@@ -1084,7 +1103,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             spreadRadius: 1,
           )
@@ -1228,7 +1247,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                             .textTheme
                             .bodyMedium
                             ?.color
-                            ?.withOpacity(0.8),
+                            ?.withValues(alpha: 0.8),
                         height: 1.4,
                       ),
                       textAlign: TextAlign.center,
@@ -1239,35 +1258,87 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             ),
             const SizedBox(height: 16),
 
-            // View Details button
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => DetailsScreen(
-                        ekadashi: ekadashi,
-                        timezone: _currentTimezone,
+            // Action buttons: View Details and Record Vrat
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => DetailsScreen(
+                            ekadashi: ekadashi,
+                            timezone: _currentTimezone,
+                          ),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: tealColor,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
+                      elevation: 0,
                     ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: tealColor,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    child: Text(
+                      lang.translate('view_details'),
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                    ),
                   ),
-                  elevation: 0,
                 ),
-                child: Text(
-                  lang.translate('view_details'),
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                Consumer<VratTrackerService>(
+                  builder: (ctx, trackerService, _) {
+                    if (!trackerService.trackerEnabled) return const SizedBox.shrink();
+                    final record = trackerService.getRecord(ekadashi.id);
+                    final isObserved = record?.status == ObservanceStatus.observed;
+                    final isPartial = record?.status == ObservanceStatus.partial;
+                    final isMissed = record?.status == ObservanceStatus.missed;
+                    final iconColor = isObserved
+                        ? Colors.green
+                        : (isPartial
+                            ? Colors.amber.shade700
+                            : (isMissed ? Colors.red.shade400 : tealColor));
+
+                    return Padding(
+                      padding: const EdgeInsets.only(left: 8),
+                      child: OutlinedButton(
+                        onPressed: () async {
+                          final unlocks = await RecordVratDialog.show(
+                            context,
+                            ekadashi: ekadashi,
+                            allOccurrences: _ekadashiList,
+                            currentTimezone: _currentTimezone,
+                          );
+                          if (unlocks != null && unlocks.isNotEmpty && mounted) {
+                            for (final u in unlocks) {
+                              await AchievementUnlockDialog.show(context, u);
+                            }
+                          }
+                        },
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: iconColor, width: 1.5),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                        ),
+                        child: Icon(
+                          isObserved
+                              ? Icons.check_circle
+                              : (isPartial
+                                  ? Icons.adjust
+                                  : (isMissed ? Icons.highlight_off : Icons.edit_calendar_outlined)),
+                          color: iconColor,
+                          size: 20,
+                        ),
+                      ),
+                    );
+                  },
                 ),
-              ),
+              ],
             ),
           ],
         ),

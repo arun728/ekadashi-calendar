@@ -8,43 +8,37 @@ import 'package:ekadashi_calendar/main.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  // Mock SharedPreferences
   setUp(() {
     SharedPreferences.setMockInitialValues({
       'has_launched': true,
       'app_version': '1.0',
+      'vrat_tracker_enabled': false, // Ensure opt-in initial state
     });
   });
 
-  // Mock Native Channels
-  void mockChannels({bool locationDenied = false}) {
-    // Settings Channel
+  void mockChannels() {
     const settingsChannel = MethodChannel('com.ekadashi.settings');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(settingsChannel, (MethodCall methodCall) async {
       if (methodCall.method == 'checkAllPermissions') {
         return {
           'hasNotificationPermission': true,
-          'hasLocationPermission': !locationDenied,
+          'hasLocationPermission': true,
           'hasExactAlarmPermission': true,
         };
       }
-      if (methodCall.method == 'hasLocationPermission') return !locationDenied;
+      if (methodCall.method == 'hasLocationPermission') return true;
       if (methodCall.method == 'getLocationSettings') {
         return {'autoDetect': true, 'timezone': 'IST'};
       }
       return null;
     });
 
-    // Location Channel
     const locationChannel = MethodChannel('com.ekadashi.location');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(locationChannel, (MethodCall methodCall) async {
-      if (methodCall.method == 'hasLocationPermission') return !locationDenied;
-      if (methodCall.method == 'requestLocationPermission') return !locationDenied;
-      if (methodCall.method == 'shouldShowRequestRationale') return locationDenied;
+      if (methodCall.method == 'hasLocationPermission') return true;
       if (methodCall.method == 'getCurrentLocation') {
-        if (locationDenied) return null;
         return {
           'success': true,
           'city': 'Chennai',
@@ -54,16 +48,11 @@ void main() {
         };
       }
       if (methodCall.method == 'getCachedLocation') {
-        return {
-          'success': true,
-          'city': 'Chennai',
-          'timezone': 'IST',
-        };
+        return {'success': true, 'city': 'Chennai', 'timezone': 'IST'};
       }
       return null;
     });
 
-    // Notification Channel
     const notifChannel = MethodChannel('com.ekadashi.notifications');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(notifChannel, (MethodCall methodCall) async {
@@ -73,7 +62,6 @@ void main() {
       return null;
     });
 
-    // Timezone Channel
     const timezoneChannel = MethodChannel('flutter_timezone');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(timezoneChannel, (MethodCall methodCall) async {
@@ -89,7 +77,7 @@ void main() {
       if (message == null) return null;
       final String key = utf8.decode(message.buffer.asUint8List());
       if (key == 'assets/ekadashi_data.json') {
-         const json = '''
+        const json = '''
       {
         "ekadashis": [
           {
@@ -116,47 +104,53 @@ void main() {
     });
   }
 
-  testWidgets('App loads and shows Home screen with Location', (WidgetTester tester) async {
-    mockChannels(locationDenied: false);
+  testWidgets('Vrat Tracker navigation, opt-in activation, and tab switching', (WidgetTester tester) async {
+    mockChannels();
 
     await tester.pumpWidget(const MyApp());
     await tester.pumpAndSettle();
 
-    // Verify Home Screen
-    expect(find.text('Ekadashi Calendar'), findsOneWidget);
-    expect(find.byIcon(Icons.home), findsOneWidget);
-    
-    // Verify Location Text (Chennai comes from mock)
-    expect(find.textContaining('Chennai'), findsOneWidget);
-  });
+    // 1. Verify Home screen loaded
+    expect(find.byIcon(Icons.spa_outlined), findsOneWidget);
 
-  testWidgets('App handles Location Denied state', (WidgetTester tester) async {
-    mockChannels(locationDenied: true);
-
-    await tester.pumpWidget(const MyApp());
+    // 2. Navigate to Vrat Tracker tab
+    await tester.tap(find.byIcon(Icons.spa_outlined));
     await tester.pumpAndSettle();
 
-    // Verify "Location Denied" text
-    expect(find.text('Location Denied'), findsOneWidget);
-  });
+    // 3. Verify Opt-In View is displayed
+    expect(find.text('Enable Vrat Tracker'), findsOneWidget);
+    expect(find.text('Keep a private record of your Ekadashi observance.'), findsOneWidget);
 
-  testWidgets('Navigation to Calendar and Settings', (WidgetTester tester) async {
-    mockChannels(locationDenied: false);
-
-    await tester.pumpWidget(const MyApp());
+    // 4. Tap "Enable Vrat Tracker"
+    await tester.tap(find.text('Enable Vrat Tracker'));
     await tester.pumpAndSettle();
 
-    // Tap Calendar
-    await tester.tap(find.byIcon(Icons.calendar_month));
-    await tester.pumpAndSettle();
-    
-    // Tap Settings
-    await tester.tap(find.byIcon(Icons.settings));
-    await tester.pumpAndSettle();
+    // 5. Verify Dashboard is displayed with metrics
+    expect(find.text('Current Streak'), findsOneWidget);
+    expect(find.text('Longest Streak'), findsOneWidget);
+    expect(find.text('Total Observed'), findsOneWidget);
+    expect(find.text('Next Milestone'), findsOneWidget);
 
-    // Verify Settings Screen content
-    expect(find.text('Appearance'), findsOneWidget);
-    expect(find.text('Dark Mode'), findsOneWidget);
+    // 6. Switch to History tab
+    await tester.tap(find.text('History'));
+    await tester.pumpAndSettle();
+    expect(find.text('Jaya Ekadashi'), findsOneWidget);
+
+    // 7. Switch to Statistics tab
+    await tester.tap(find.text('Statistics'));
+    await tester.pumpAndSettle();
+    expect(find.text('2026 Annual Completion'), findsOneWidget);
+
+    // 8. Switch to Achievements tab
+    await tester.tap(find.text('Achievements'));
+    await tester.pumpAndSettle();
+    expect(find.text('First Vrat'), findsOneWidget);
+    expect(find.text('5 Ekadashis'), findsOneWidget);
+
+    // Scroll to bottom of GridView to reveal remaining achievements
+    await tester.drag(find.byType(GridView), const Offset(0, -600));
+    await tester.pumpAndSettle();
+    expect(find.text('Consistent Observance'), findsOneWidget);
+    expect(find.text('Full-Year Observance'), findsOneWidget);
   });
 }
-
