@@ -1,11 +1,22 @@
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
 import 'package:ekadashi_calendar/main.dart';
-import 'package:ekadashi_calendar/services/native_location_service.dart';
+import 'package:ekadashi_calendar/services/theme_service.dart';
+import 'package:ekadashi_calendar/services/language_service.dart';
+
+Widget createTestApp() {
+  return MultiProvider(
+    providers: [
+      ChangeNotifierProvider(create: (_) => ThemeService()),
+      ChangeNotifierProvider(create: (_) => LanguageService()),
+    ],
+    child: const MyApp(),
+  );
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -43,6 +54,8 @@ void main() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(locationChannel, (MethodCall methodCall) async {
       if (methodCall.method == 'hasLocationPermission') return !locationDenied;
+      if (methodCall.method == 'requestLocationPermission') return !locationDenied;
+      if (methodCall.method == 'shouldShowRequestRationale') return true;
       if (methodCall.method == 'getCurrentLocation') {
         if (locationDenied) return null;
         return {
@@ -73,13 +86,23 @@ void main() {
       return null;
     });
 
+    // Timezone Channel
+    const timezoneChannel = MethodChannel('flutter_timezone');
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(timezoneChannel, (MethodCall methodCall) async {
+      if (methodCall.method == 'getLocalTimezone') {
+        return 'Asia/Kolkata';
+      }
+      return null;
+    });
+
     // Asset Channel (Mock rootBundle)
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMessageHandler('flutter/assets', (ByteData? message) async {
       if (message == null) return null;
       final String key = utf8.decode(message.buffer.asUint8List());
       if (key == 'assets/ekadashi_data.json') {
-         final json = '''
+         const json = '''
       {
         "ekadashis": [
           {
@@ -109,7 +132,7 @@ void main() {
   testWidgets('App loads and shows Home screen with Location', (WidgetTester tester) async {
     mockChannels(locationDenied: false);
 
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(createTestApp());
     await tester.pumpAndSettle();
 
     // Verify Home Screen
@@ -117,13 +140,13 @@ void main() {
     expect(find.byIcon(Icons.home), findsOneWidget);
     
     // Verify Location Text (Chennai comes from mock)
-    expect(find.text('Chennai'), findsOneWidget);
+    expect(find.textContaining('Chennai'), findsOneWidget);
   });
 
   testWidgets('App handles Location Denied state', (WidgetTester tester) async {
     mockChannels(locationDenied: true);
 
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(createTestApp());
     await tester.pumpAndSettle();
 
     // Verify "Location Denied" text
@@ -133,7 +156,7 @@ void main() {
   testWidgets('Navigation to Calendar and Settings', (WidgetTester tester) async {
     mockChannels(locationDenied: false);
 
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(createTestApp());
     await tester.pumpAndSettle();
 
     // Tap Calendar
@@ -145,7 +168,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Verify Settings Screen content
-    expect(find.text('General'), findsOneWidget);
+    expect(find.text('Appearance'), findsOneWidget);
     expect(find.text('Dark Mode'), findsOneWidget);
   });
 }

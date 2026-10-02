@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Ekadashi Calendar</string>
+    <string name="widget_a_title">Next Ekadashi</string>
+    <string name="widget_a_description"></string>
+    <string name="widget_b_title">Ekadashi Today</string>
+    <string name="widget_b_description"></string>
+    <string name="widget_c_title">Upcoming Ekadashi</string>
+    <string name="widget_c_description"></string>
+</resources>

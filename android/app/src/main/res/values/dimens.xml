@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Widget Typography Scale (Premium Glanceable Readability) -->
+    <dimen name="widget_text_title">12sp</dimen>
+    <dimen name="widget_text_badge">11sp</dimen>
+    <dimen name="widget_text_hero_name_small">18sp</dimen>
+    <dimen name="widget_text_hero_name_medium">19sp</dimen>
+    <dimen name="widget_text_hero_name_large">20sp</dimen>
+    <dimen name="widget_text_date_small">13sp</dimen>
+    <dimen name="widget_text_date_medium">13sp</dimen>
+    <dimen name="widget_text_date_large">14sp</dimen>
+    <dimen name="widget_text_timing_label">11sp</dimen>
+    <dimen name="widget_text_timing_value">14sp</dimen>
+    <dimen name="widget_text_timing_value_medium">15sp</dimen>
+    <dimen name="widget_text_countdown_label">12sp</dimen>
+    <dimen name="widget_text_countdown_value_small">17sp</dimen>
+    <dimen name="widget_text_countdown_value_medium">16sp</dimen>
+    <dimen name="widget_text_list_item_name">15sp</dimen>
+    <dimen name="widget_text_list_item_date">12sp</dimen>
+    <dimen name="widget_text_secondary">12sp</dimen>
+    <dimen name="widget_text_chevron">18sp</dimen>
+</resources>
