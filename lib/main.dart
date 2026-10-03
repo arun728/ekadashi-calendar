@@ -25,7 +25,7 @@ import 'package:timezone/timezone.dart' as tz;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Lock orientation to portrait only
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
@@ -67,12 +67,18 @@ class MyApp extends StatelessWidget {
 /// Helper to convert App Timezone codes to IANA IDs for timezone package
 String _getIANATimezone(String appTimezone) {
   switch (appTimezone) {
-    case 'IST': return 'Asia/Kolkata';
-    case 'EST': return 'America/New_York';
-    case 'PST': return 'America/Los_Angeles';
-    case 'CST': return 'America/Chicago';
-    case 'MST': return 'America/Denver';
-    default: return appTimezone; // Hope it's already IANA or fallback
+    case 'IST':
+      return 'Asia/Kolkata';
+    case 'EST':
+      return 'America/New_York';
+    case 'PST':
+      return 'America/Los_Angeles';
+    case 'CST':
+      return 'America/Chicago';
+    case 'MST':
+      return 'America/Denver';
+    default:
+      return appTimezone; // Hope it's already IANA or fallback
   }
 }
 
@@ -137,13 +143,18 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         // Add a small safety buffer for low-end devices/heavy restoration
         Future.delayed(const Duration(milliseconds: 500), () {
-          if (mounted && !_isResuming && !_isRequestingLocation && !_isLoading) {
+          if (mounted &&
+              !_isResuming &&
+              !_isRequestingLocation &&
+              !_isLoading) {
             _isResuming = true;
-            _refreshLocationIfNeeded().catchError((e) {
-              debugPrint('⚠️ Resume refresh error: $e');
-            }).whenComplete(() {
-              _isResuming = false;
-            });
+            _refreshLocationIfNeeded()
+                .catchError((e) {
+                  debugPrint('⚠️ Resume refresh error: $e');
+                })
+                .whenComplete(() {
+                  _isResuming = false;
+                });
           }
         });
       });
@@ -205,13 +216,18 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       // If TRUE: User denied once. Do NOT ask again (don't pester).
       // If FALSE: Either "First Time" (Reinstall) OR "Permanent Denial".
       // We ask. If it's "First Time", dialog shows. If "Permanent", it auto-denies silently.
-      final shouldShowRationale = await _locationService.shouldShowRequestRationale();
-      
+      final shouldShowRationale = await _locationService
+          .shouldShowRequestRationale();
+
       if (!shouldShowRationale) {
-        debugPrint('📍 Re-requesting location permission (Reinstall or Permanent check)...');
-        await _requestLocationAgain(); 
+        debugPrint(
+          '📍 Re-requesting location permission (Reinstall or Permanent check)...',
+        );
+        await _requestLocationAgain();
       } else {
-        debugPrint('📍 Location permission denied previously (Rationale needed). Not asking automatically.');
+        debugPrint(
+          '📍 Location permission denied previously (Rationale needed). Not asking automatically.',
+        );
       }
     }
   }
@@ -227,7 +243,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     }
 
     // Request notification permission first
-    final notifGranted = await NotificationService().requestNotificationPermission();
+    final notifGranted = await NotificationService()
+        .requestNotificationPermission();
     if (notifGranted) {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('notifications_enabled', true);
@@ -307,9 +324,12 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             });
           } else {
             // No cache available - use device timezone fallback
-            debugPrint('📍 Location unavailable (timeout) - using device timezone fallback');
-            final deviceTimezone = await _ekadashiService.getDeviceAppTimezone();
-            
+            debugPrint(
+              '📍 Location unavailable (timeout) - using device timezone fallback',
+            );
+            final deviceTimezone = await _ekadashiService
+                .getDeviceAppTimezone();
+
             if (mounted) {
               setState(() {
                 _locationText = ''; // No city name, just timezone logic applies
@@ -329,9 +349,11 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         _setLocationDenied();
       } else {
         // Error but have permission - use device timezone fallback
-        debugPrint('📍 Location error with permission - using device timezone fallback');
+        debugPrint(
+          '📍 Location error with permission - using device timezone fallback',
+        );
         final deviceTimezone = await _ekadashiService.getDeviceAppTimezone();
-        
+
         if (mounted) {
           setState(() {
             _locationText = '';
@@ -383,8 +405,11 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         await _refreshLocationIfNeeded();
       } else {
         // Denied
-        final shouldShowRationale = await _locationService.shouldShowRequestRationale();
-        debugPrint('📍 Permission denied. shouldShowRationale: $shouldShowRationale');
+        final shouldShowRationale = await _locationService
+            .shouldShowRequestRationale();
+        debugPrint(
+          '📍 Permission denied. shouldShowRationale: $shouldShowRationale',
+        );
 
         if (mounted) {
           setState(() {
@@ -486,7 +511,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     // Save the ID of the currently viewing Ekadashi before reloading
     // ONLY if we are not forced to scroll away
     int? currentEkadashiId;
-    if (!shouldScrollToNext && _ekadashiList.isNotEmpty && _currentPage < _ekadashiList.length) {
+    if (!shouldScrollToNext &&
+        _ekadashiList.isNotEmpty &&
+        _currentPage < _ekadashiList.length) {
       currentEkadashiId = _ekadashiList[_currentPage].id;
     }
 
@@ -509,13 +536,18 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         });
 
         // Initialize Vrat Tracker with loaded occurrences
-        Provider.of<VratTrackerService>(context, listen: false).init(occurrences: ekadashis);
+        Provider.of<VratTrackerService>(
+          context,
+          listen: false,
+        ).init(occurrences: ekadashis);
 
         WidgetsBinding.instance.addPostFrameCallback((_) {
           bool restored = false;
           // Try to restore the view to the previously selected Ekadashi
           if (currentEkadashiId != null) {
-            final index = _ekadashiList.indexWhere((e) => e.id == currentEkadashiId);
+            final index = _ekadashiList.indexWhere(
+              (e) => e.id == currentEkadashiId,
+            );
             if (index != -1) {
               _pageController.jumpToPage(index);
               setState(() => _currentPage = index);
@@ -525,12 +557,12 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
           // If restoration failed OR we forced a scroll, go to next upcoming
           if (!restored) {
-             // Use a slight delay to ensure PageView is built with new data
-             Future.delayed(const Duration(milliseconds: 100), () {
-                if (mounted) {
-                  _scrollToNextEkadashi(animate: false, includeParana: true);
-                }
-             });
+            // Use a slight delay to ensure PageView is built with new data
+            Future.delayed(const Duration(milliseconds: 100), () {
+              if (mounted) {
+                _scrollToNextEkadashi(animate: false, includeParana: true);
+              }
+            });
           }
         });
 
@@ -551,14 +583,23 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   /// Scroll to next upcoming Ekadashi
   /// [includeParana] - if true, will scroll to a "Passed" Ekadashi if the Parana time is still active.
   /// If false (e.g. user manually taps Home), it skips to the strictly next upcoming one.
-  void _scrollToNextEkadashi({bool animate = true, int retryCount = 0, bool includeParana = true}) {
+  void _scrollToNextEkadashi({
+    bool animate = true,
+    int retryCount = 0,
+    bool includeParana = true,
+  }) {
     if (_ekadashiList.isEmpty) return;
-    
+
     if (!_pageController.hasClients) {
-      if (retryCount < 50) { // Increased to 5s for slow emulators
+      if (retryCount < 50) {
+        // Increased to 5s for slow emulators
         Future.delayed(const Duration(milliseconds: 100), () {
           if (mounted) {
-            _scrollToNextEkadashi(animate: animate, retryCount: retryCount + 1, includeParana: includeParana);
+            _scrollToNextEkadashi(
+              animate: animate,
+              retryCount: retryCount + 1,
+              includeParana: includeParana,
+            );
           }
         });
       }
@@ -568,7 +609,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     // Use timezone-aware "today" calculation - MUST MATCH _buildEkadashiCard LOGIC EXACTLY
     DateTime today;
     tz.TZDateTime? nowTz;
-    
+
     try {
       final location = tz.getLocation(_getIANATimezone(_currentTimezone));
       nowTz = tz.TZDateTime.now(location);
@@ -583,46 +624,56 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     bool found = false;
 
     for (int i = 0; i < _ekadashiList.length; i++) {
-        final ekadashi = _ekadashiList[i];
-        
-        // Calculate difference based on dates only (ignoring time)
-        // This MUST match the logic in _buildEkadashiCard to ensure consistency
-        final ekadashiDate = DateTime(ekadashi.date.year, ekadashi.date.month, ekadashi.date.day);
-        final daysUntil = ekadashiDate.difference(today).inDays;
-        
-        bool isParanaActive = false;
-        
-        // Check Parana logic if requested and we have current time (nowTz)
-        if (includeParana && daysUntil < 0 && nowTz != null && ekadashi.paranaEndIso.isNotEmpty) {
-           try {
-             // Parse paranaEndIso (e.g. "2026-02-14T08:52:00+05:30")
-             // We need to parse it carefully to compare with nowTz
-             final paranaEnd = tz.TZDateTime.parse(tz.getLocation(_getIANATimezone(_currentTimezone)), ekadashi.paranaEndIso);
-             
-             if (nowTz.isBefore(paranaEnd)) {
-               // Parana is still active
-               isParanaActive = true;
-             }
-           } catch (e) {
-             debugPrint('Error checking parana active: $e');
-           }
+      final ekadashi = _ekadashiList[i];
+
+      // Calculate difference based on dates only (ignoring time)
+      // This MUST match the logic in _buildEkadashiCard to ensure consistency
+      final ekadashiDate = DateTime(
+        ekadashi.date.year,
+        ekadashi.date.month,
+        ekadashi.date.day,
+      );
+      final daysUntil = ekadashiDate.difference(today).inDays;
+
+      bool isParanaActive = false;
+
+      // Check Parana logic if requested and we have current time (nowTz)
+      if (includeParana &&
+          daysUntil < 0 &&
+          nowTz != null &&
+          ekadashi.paranaEndIso.isNotEmpty) {
+        try {
+          // Parse paranaEndIso (e.g. "2026-02-14T08:52:00+05:30")
+          // We need to parse it carefully to compare with nowTz
+          final paranaEnd = tz.TZDateTime.parse(
+            tz.getLocation(_getIANATimezone(_currentTimezone)),
+            ekadashi.paranaEndIso,
+          );
+
+          if (nowTz.isBefore(paranaEnd)) {
+            // Parana is still active
+            isParanaActive = true;
+          }
+        } catch (e) {
+          debugPrint('Error checking parana active: $e');
         }
-        
-        // If daysUntil >= 0, it means Today (0) or Future (>0) - show it!
-        // OR if Parana is still active for a passed Ekadashi
-        if (daysUntil >= 0 || isParanaActive) {
-            indexToScroll = i;
-            found = true;
-            break;
-        }
+      }
+
+      // If daysUntil >= 0, it means Today (0) or Future (>0) - show it!
+      // OR if Parana is still active for a passed Ekadashi
+      if (daysUntil >= 0 || isParanaActive) {
+        indexToScroll = i;
+        found = true;
+        break;
+      }
     }
-    
+
     // Safety check: If list is not empty but nothing found (rare end-of-year edge case)
     // stay at last index.
     if (!found && _ekadashiList.isNotEmpty) {
       indexToScroll = _ekadashiList.length - 1;
     }
-    
+
     // Fix for Race Condition: Give the PageView a moment to verify layout before jumping
     Future.delayed(const Duration(milliseconds: 50), () {
       if (mounted && _pageController.hasClients) {
@@ -635,9 +686,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         } else {
           _pageController.jumpToPage(indexToScroll);
         }
-        
+
         if (mounted) {
-           setState(() => _currentPage = indexToScroll);
+          setState(() => _currentPage = indexToScroll);
         }
       }
     });
@@ -670,15 +721,22 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   Future<void> _scheduleNotifications() async {
     if (_ekadashiList.isEmpty) return;
 
-    final prefs = await SharedPreferences.getInstance();
-    final notificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
-    if (!notificationsEnabled) return;
+    final settingsService = NativeSettingsService();
+    final notificationSettings = await settingsService
+        .getNotificationSettings();
+    if (!notificationSettings.enabled) {
+      await NativeNotificationService().cancelAllNotifications();
+      await NotificationService().cancelAll();
+      return;
+    }
 
     // Check system notification permission before scheduling
     try {
       final status = await NativeSettingsService().checkAllPermissions();
       if (!status.hasNotificationPermission) {
         debugPrint('⏭️ Skipping scheduling - System notifications disabled');
+        await NativeNotificationService().cancelAllNotifications();
+        await NotificationService().cancelAll();
         return;
       }
     } catch (e) {
@@ -693,12 +751,16 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     // Use native notification service
     try {
       final nativeNotifService = NativeNotificationService();
-      final ekadashiData = _ekadashiList.map((e) => EkadashiNotificationData(
-        id: e.id,
-        name: e.name,
-        fastingStartTime: e.fastingStartIso,
-        paranaStartTime: e.paranaStartIso,
-      )).toList();
+      final ekadashiData = _ekadashiList
+          .map(
+            (e) => EkadashiNotificationData(
+              id: e.id,
+              name: e.name,
+              fastingStartTime: e.fastingStartIso,
+              paranaStartTime: e.paranaStartIso,
+            ),
+          )
+          .toList();
 
       await nativeNotifService.scheduleAllNotifications(
         ekadashis: ekadashiData,
@@ -707,9 +769,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     } catch (e) {
       // Fallback to old notification service
       debugPrint('Native notifications failed, using fallback: $e');
-      final remind1Day = prefs.getBool('remind_one_day_before') ?? true;
-      final remind2Days = prefs.getBool('remind_two_days_before') ?? true;
-      final remindOnDay = prefs.getBool('remind_on_day') ?? true;
+      final remind1Day = notificationSettings.remind1Day;
+      final remind2Days = notificationSettings.remind2Days;
+      final remindOnDay = notificationSettings.remindOnStart;
 
       await NotificationService().scheduleAllNotifications(
         _ekadashiList,
@@ -835,9 +897,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
-                child: _buildLocationWidget(lang, tealColor),
-              ),
+              Expanded(child: _buildLocationWidget(lang, tealColor)),
               const SizedBox(width: 20),
               _buildLanguageSelector(lang, tealColor),
             ],
@@ -849,17 +909,19 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           padding: const EdgeInsets.only(bottom: 8),
           child: Text(
             '${_currentPage + 1} / ${_ekadashiList.length}',
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.grey.shade500,
-            ),
+            style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
           ),
         ),
 
         // Card with navigation arrows
         Expanded(
           child: Padding(
-            padding: const EdgeInsets.only(left: 4, right: 4, top: 8, bottom: 8),
+            padding: const EdgeInsets.only(
+              left: 4,
+              right: 4,
+              top: 8,
+              bottom: 8,
+            ),
             child: Row(
               children: [
                 // Left arrow
@@ -869,11 +931,11 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                     onPressed: isFirstPage
                         ? null
                         : () {
-                      _pageController.previousPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
-                      );
-                    },
+                            _pageController.previousPage(
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
+                            );
+                          },
                     icon: const Icon(Icons.chevron_left, size: 36),
                     color: isFirstPage ? Colors.grey.shade600 : tealColor,
                     padding: EdgeInsets.zero,
@@ -903,11 +965,11 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                     onPressed: isLastPage
                         ? null
                         : () {
-                      _pageController.nextPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
-                      );
-                    },
+                            _pageController.nextPage(
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
+                            );
+                          },
                     icon: const Icon(Icons.chevron_right, size: 36),
                     color: isLastPage ? Colors.grey.shade600 : tealColor,
                     padding: EdgeInsets.zero,
@@ -930,10 +992,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           SizedBox(
             width: 14,
             height: 14,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: tealColor,
-            ),
+            child: CircularProgressIndicator(strokeWidth: 2, color: tealColor),
           ),
           const SizedBox(width: 8),
           Flexible(
@@ -1002,7 +1061,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             Flexible(
               child: Text(
                 '$_locationText • $_currentTimezone',
-                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -1033,7 +1095,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       itemBuilder: (context) => [
         const PopupMenuItem(
           value: 'en',
-          child: Text("English", style: TextStyle(fontWeight: FontWeight.normal)),
+          child: Text(
+            "English",
+            style: TextStyle(fontWeight: FontWeight.normal),
+          ),
         ),
         const PopupMenuItem(
           value: 'hi',
@@ -1052,7 +1117,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             displayLanguage,
             style: const TextStyle(
               fontSize: 14,
-              fontWeight: FontWeight.w500, // Consistent weight for all languages
+              fontWeight:
+                  FontWeight.w500, // Consistent weight for all languages
             ),
           ),
           const SizedBox(width: 6),
@@ -1064,22 +1130,26 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
   Widget _buildEkadashiCard(EkadashiDate ekadashi) {
     // Use timezone-aware "today" calculation
-  DateTime today;
-  try {
-    final location = tz.getLocation(_getIANATimezone(_currentTimezone));
-    final nowTz = tz.TZDateTime.now(location);
-    today = DateTime(nowTz.year, nowTz.month, nowTz.day);
-  } catch (e) {
-    // Fallback to local time if timezone is invalid
-    final now = DateTime.now();
-    today = DateTime(now.year, now.month, now.day);
-  }
+    DateTime today;
+    try {
+      final location = tz.getLocation(_getIANATimezone(_currentTimezone));
+      final nowTz = tz.TZDateTime.now(location);
+      today = DateTime(nowTz.year, nowTz.month, nowTz.day);
+    } catch (e) {
+      // Fallback to local time if timezone is invalid
+      final now = DateTime.now();
+      today = DateTime(now.year, now.month, now.day);
+    }
 
-  // Calculate difference based on dates only (ignoring time)
-  final ekadashiDate = DateTime(ekadashi.date.year, ekadashi.date.month, ekadashi.date.day);
-  final daysUntil = ekadashiDate.difference(today).inDays;
+    // Calculate difference based on dates only (ignoring time)
+    final ekadashiDate = DateTime(
+      ekadashi.date.year,
+      ekadashi.date.month,
+      ekadashi.date.day,
+    );
+    final daysUntil = ekadashiDate.difference(today).inDays;
 
-  const tealColor = Color(0xFF00A19B);
+    const tealColor = Color(0xFF00A19B);
     final lang = Provider.of<LanguageService>(context);
 
     String breakTime = ekadashi.fastBreakTime;
@@ -1106,7 +1176,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             spreadRadius: 1,
-          )
+          ),
         ],
       ),
       child: Padding(
@@ -1151,8 +1221,14 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      DateFormat('EEEE', lang.currentLocale.languageCode).format(ekadashi.date),
-                      style: TextStyle(fontSize: 16, color: Colors.grey.shade500),
+                      DateFormat(
+                        'EEEE',
+                        lang.currentLocale.languageCode,
+                      ).format(ekadashi.date),
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey.shade500,
+                      ),
                     ),
                     const SizedBox(height: 16),
 
@@ -1185,7 +1261,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                       alignment: Alignment.centerLeft,
                       child: Text(
                         DateFormat('MMM dd, yyyy').format(ekadashi.date),
-                        style: TextStyle(fontSize: 15, color: Colors.grey.shade500),
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: Colors.grey.shade500,
+                        ),
                       ),
                     ),
                     Align(
@@ -1216,10 +1295,13 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        DateFormat('MMM dd, yyyy').format(
-                          ekadashi.date.add(const Duration(days: 1)),
+                        DateFormat(
+                          'MMM dd, yyyy',
+                        ).format(ekadashi.date.add(const Duration(days: 1))),
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: Colors.grey.shade500,
                         ),
-                        style: TextStyle(fontSize: 15, color: Colors.grey.shade500),
                       ),
                     ),
                     Align(
@@ -1243,11 +1325,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                       style: TextStyle(
                         fontStyle: FontStyle.italic,
                         fontSize: 15,
-                        color: Theme.of(context)
-                            .textTheme
-                            .bodyMedium
-                            ?.color
-                            ?.withValues(alpha: 0.8),
+                        color: Theme.of(
+                          context,
+                        ).textTheme.bodyMedium?.color?.withValues(alpha: 0.8),
                         height: 1.4,
                       ),
                       textAlign: TextAlign.center,
@@ -1285,22 +1365,29 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                     ),
                     child: Text(
                       lang.translate('view_details'),
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
                     ),
                   ),
                 ),
                 Consumer<VratTrackerService>(
                   builder: (ctx, trackerService, _) {
-                    if (!trackerService.trackerEnabled) return const SizedBox.shrink();
+                    if (!trackerService.trackerEnabled) {
+                      return const SizedBox.shrink();
+                    }
                     final record = trackerService.getRecord(ekadashi.id);
-                    final isObserved = record?.status == ObservanceStatus.observed;
-                    final isPartial = record?.status == ObservanceStatus.partial;
+                    final isObserved =
+                        record?.status == ObservanceStatus.observed;
+                    final isPartial =
+                        record?.status == ObservanceStatus.partial;
                     final isMissed = record?.status == ObservanceStatus.missed;
                     final iconColor = isObserved
                         ? Colors.green
                         : (isPartial
-                            ? Colors.amber.shade700
-                            : (isMissed ? Colors.red.shade400 : tealColor));
+                              ? Colors.amber.shade700
+                              : (isMissed ? Colors.red.shade400 : tealColor));
 
                     return Padding(
                       padding: const EdgeInsets.only(left: 8),
@@ -1312,7 +1399,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                             allOccurrences: _ekadashiList,
                             currentTimezone: _currentTimezone,
                           );
-                          if (unlocks != null && unlocks.isNotEmpty && mounted) {
+                          if (unlocks != null &&
+                              unlocks.isNotEmpty &&
+                              mounted) {
                             for (final u in unlocks) {
                               await AchievementUnlockDialog.show(context, u);
                             }
@@ -1323,14 +1412,19 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 14,
+                          ),
                         ),
                         child: Icon(
                           isObserved
                               ? Icons.check_circle
                               : (isPartial
-                                  ? Icons.adjust
-                                  : (isMissed ? Icons.highlight_off : Icons.edit_calendar_outlined)),
+                                    ? Icons.adjust
+                                    : (isMissed
+                                          ? Icons.highlight_off
+                                          : Icons.edit_calendar_outlined)),
                           color: iconColor,
                           size: 20,
                         ),

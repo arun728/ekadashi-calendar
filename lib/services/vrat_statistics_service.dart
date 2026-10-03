@@ -25,13 +25,10 @@ class VratStatisticsService {
     final today = DateTime(now.year, now.month, now.day);
 
     // Filter to occurrences that have happened (on or before today)
-    final pastOccurrences = occurrences
-        .where((e) {
-          final eventDate = DateTime(e.date.year, e.date.month, e.date.day);
-          return !eventDate.isAfter(today);
-        })
-        .toList()
-      ..sort((a, b) => a.date.compareTo(b.date));
+    final pastOccurrences = occurrences.where((e) {
+      final eventDate = DateTime(e.date.year, e.date.month, e.date.day);
+      return !eventDate.isAfter(today);
+    }).toList()..sort((a, b) => a.date.compareTo(b.date));
 
     if (pastOccurrences.isEmpty) return 0;
 
@@ -55,7 +52,11 @@ class VratStatisticsService {
         // If we haven't started counting a streak yet (e.g. today's Ekadashi is ongoing and unrecorded),
         // we can allow checking the previous completed one.
         if (streak == 0 && i == pastOccurrences.length - 1) {
-          final eventDate = DateTime(occurrence.date.year, occurrence.date.month, occurrence.date.day);
+          final eventDate = DateTime(
+            occurrence.date.year,
+            occurrence.date.month,
+            occurrence.date.day,
+          );
           if (eventDate.isAtSameMomentAs(today)) {
             // Today's Ekadashi is in progress and not yet recorded; look back to previous
             continue;
@@ -110,7 +111,9 @@ class VratStatisticsService {
     required Map<int, VratHistory> historyByOccurrenceId,
   }) {
     // Filter occurrences for the requested year
-    final yearOccurrences = occurrences.where((e) => e.date.year == year).toList();
+    final yearOccurrences = occurrences
+        .where((e) => e.date.year == year)
+        .toList();
     final totalOccurrences = yearOccurrences.length;
 
     int observed = 0;
@@ -161,9 +164,9 @@ class VratStatisticsService {
         years.add(parsed.year);
       }
     }
-    if (years.isEmpty) {
-      years.add(DateTime.now().year);
-    }
+    // Keep the device's current year selectable even when the bundled calendar
+    // only contains older dates (or a history-only archive was just edited).
+    years.add(DateTime.now().year);
     final sorted = years.toList()..sort((a, b) => b.compareTo(a));
     return sorted;
   }

@@ -1,162 +1,133 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:ekadashi_calendar/main.dart';
+import '../support/app_harness.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-
-  // Mock SharedPreferences
-  setUp(() {
-    SharedPreferences.setMockInitialValues({
-      'has_launched': true,
-      'app_version': '1.0',
-    });
+  late AppHarness harness;
+  setUp(() async {
+    harness = AppHarness();
+    await harness.install();
   });
+  tearDown(() => harness.uninstall());
 
-  // Mock Native Channels
-  void mockChannels({bool locationDenied = false}) {
-    // Settings Channel
-    const settingsChannel = MethodChannel('com.ekadashi.settings');
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(settingsChannel, (MethodCall methodCall) async {
-      if (methodCall.method == 'checkAllPermissions') {
-        return {
-          'hasNotificationPermission': true,
-          'hasLocationPermission': !locationDenied,
-          'hasExactAlarmPermission': true,
-        };
-      }
-      if (methodCall.method == 'hasLocationPermission') return !locationDenied;
-      if (methodCall.method == 'getLocationSettings') {
-        return {'autoDetect': true, 'timezone': 'IST'};
-      }
-      return null;
-    });
+  testWidgets(
+    'GPS unavailable uses the US device timezone and retains navigation',
+    (tester) async {
+      harness.gpsAvailable = false;
+      harness.deviceTimezone = 'America/New_York';
+      await tester.pumpWidget(harness.app());
+      await tester.pumpAndSettle();
+      expect(find.text('Location Denied'), findsNothing);
+      final request = harness.notificationCalls.lastWhere(
+        (call) => call.method == 'scheduleAllNotifications',
+      );
+      final events = (request.arguments as Map)['ekadashis'] as List;
+      expect((events.first as Map)['fastingStart'], endsWith('-05:00'));
+      await tester.tap(find.byIcon(Icons.calendar_month));
+      await tester.pumpAndSettle();
+      expect(find.byIcon(Icons.settings), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
-    // Location Channel
-    const locationChannel = MethodChannel('com.ekadashi.location');
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(locationChannel, (MethodCall methodCall) async {
-      if (methodCall.method == 'hasLocationPermission') return !locationDenied;
-      if (methodCall.method == 'requestLocationPermission') return !locationDenied;
-      if (methodCall.method == 'shouldShowRequestRationale') return locationDenied;
-      if (methodCall.method == 'getCurrentLocation') {
-        if (locationDenied) return null;
-        return {
-          'success': true,
-          'city': 'Chennai',
-          'timezone': 'IST',
-          'latitude': 13.0,
-          'longitude': 80.0,
-        };
-      }
-      if (methodCall.method == 'getCachedLocation') {
-        return {
-          'success': true,
-          'city': 'Chennai',
-          'timezone': 'IST',
-        };
-      }
-      return null;
-    });
+  testWidgets(
+    'Denied notifications disable reminder controls without losing Settings',
+    (tester) async {
+      harness.notificationGranted = false;
+      await tester.pumpWidget(harness.app());
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.settings));
+      await tester.pumpAndSettle();
+      expect(find.text('Notifications disabled'), findsOneWidget);
+      final reminder = tester.widget<SwitchListTile>(
+        find.widgetWithText(SwitchListTile, '2 Days Before'),
+      );
+      expect(reminder.value, isFalse);
+      expect(reminder.onChanged, isNull);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
-    // Notification Channel
-    const notifChannel = MethodChannel('com.ekadashi.notifications');
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(notifChannel, (MethodCall methodCall) async {
-      if (methodCall.method == 'getSettings') {
-        return {'notifications_enabled': true};
-      }
-      return null;
-    });
+  testWidgets(
+    'Master reminder disable persists and sends native cancellation',
+    (tester) async {
+      await tester.pumpWidget(harness.app());
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.settings));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.widgetWithText(SwitchListTile, 'Enable Notifications'),
+      );
+      await tester.pumpAndSettle();
+      expect(harness.notificationsEnabled, isFalse);
+      expect(
+        harness.notificationCalls.where(
+          (call) => call.method == 'cancelAllNotifications',
+        ),
+        isNotEmpty,
+      );
+      expect(
+        tester
+            .widget<SwitchListTile>(
+              find.widgetWithText(SwitchListTile, '2 Days Before'),
+            )
+            .onChanged,
+        isNull,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
 
-    // Timezone Channel
-    const timezoneChannel = MethodChannel('flutter_timezone');
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(timezoneChannel, (MethodCall methodCall) async {
-      if (methodCall.method == 'getLocalTimezone') {
-        return 'Asia/Kolkata';
-      }
-      return null;
-    });
-
-    // Asset Channel (Mock rootBundle)
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMessageHandler('flutter/assets', (ByteData? message) async {
-      if (message == null) return null;
-      final String key = utf8.decode(message.buffer.asUint8List());
-      if (key == 'assets/ekadashi_data.json') {
-         const json = '''
-      {
-        "ekadashis": [
-          {
-            "id": 1,
-            "paksha": "Shukla",
-            "month": "Magha",
-            "name": {"en": "Jaya Ekadashi"},
-            "description": {"en": "Grants liberation."},
-            "timing": {
-              "IST": {
-                "date": "2026-01-29",
-                "fasting_start": "2026-01-29T06:40:00+05:30",
-                "parana_start": "2026-01-30T07:10:00+05:30",
-                "parana_end": "2026-01-30T10:00:00+05:30"
-              }
-            }
-          }
-        ]
-      }
-      ''';
-        return ByteData.view(Uint8List.fromList(utf8.encode(json)).buffer);
-      }
-      return null;
-    });
-  }
-
-  testWidgets('App loads and shows Home screen with Location', (WidgetTester tester) async {
-    mockChannels(locationDenied: false);
-
-    await tester.pumpWidget(const MyApp());
+  testWidgets('App loads Home with resolved city and schedules ISO timings', (
+    tester,
+  ) async {
+    await tester.pumpWidget(harness.app());
     await tester.pumpAndSettle();
-
-    // Verify Home Screen
-    expect(find.text('Ekadashi Calendar'), findsOneWidget);
+    expect(find.text('Chennai • IST'), findsOneWidget);
     expect(find.byIcon(Icons.home), findsOneWidget);
-    
-    // Verify Location Text (Chennai comes from mock)
-    expect(find.textContaining('Chennai'), findsOneWidget);
+    final request = harness.notificationCalls.lastWhere(
+      (c) => c.method == 'scheduleAllNotifications',
+    );
+    final events = (request.arguments as Map)['ekadashis'] as List;
+    expect(events, hasLength(24));
+    for (final event in events.cast<Map>()) {
+      expect(DateTime.tryParse(event['fastingStart'] as String), isNotNull);
+      expect(DateTime.tryParse(event['paranaStart'] as String), isNotNull);
+    }
+    expect(tester.takeException(), isNull);
   });
 
-  testWidgets('App handles Location Denied state', (WidgetTester tester) async {
-    mockChannels(locationDenied: true);
-
-    await tester.pumpWidget(const MyApp());
+  testWidgets('Location denial still leaves calendar and settings usable', (
+    tester,
+  ) async {
+    harness.locationGranted = false;
+    await tester.pumpWidget(harness.app());
     await tester.pumpAndSettle();
-
-    // Verify "Location Denied" text
     expect(find.text('Location Denied'), findsOneWidget);
-  });
-
-  testWidgets('Navigation to Calendar and Settings', (WidgetTester tester) async {
-    mockChannels(locationDenied: false);
-
-    await tester.pumpWidget(const MyApp());
-    await tester.pumpAndSettle();
-
-    // Tap Calendar
     await tester.tap(find.byIcon(Icons.calendar_month));
     await tester.pumpAndSettle();
-    
-    // Tap Settings
+    expect(find.text('Location Denied'), findsNothing);
     await tester.tap(find.byIcon(Icons.settings));
     await tester.pumpAndSettle();
-
-    // Verify Settings Screen content
     expect(find.text('Appearance'), findsOneWidget);
     expect(find.text('Dark Mode'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Bottom navigation preserves Home after Calendar and Settings', (
+    tester,
+  ) async {
+    await tester.pumpWidget(harness.app());
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.calendar_month));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.settings));
+    await tester.pumpAndSettle();
+    expect(find.text('Enable Notifications'), findsOneWidget);
+    await tester.tap(find.byIcon(Icons.home));
+    await tester.pumpAndSettle();
+    expect(find.text('Chennai • IST'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 }
-

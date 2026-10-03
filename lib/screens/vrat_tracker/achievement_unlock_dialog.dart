@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../models/vrat_tracker_models.dart';
 import '../../services/language_service.dart';
 
@@ -19,7 +20,7 @@ class AchievementUnlockDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const tealColor = Color(0xFF00A19B);
-    final lang = LanguageService(); // Or retrieved via context if inside tree
+    final lang = Provider.of<LanguageService>(context);
     final title = lang.translate(achievement.titleKey);
     final desc = lang.translate(achievement.descriptionKey);
 
@@ -59,10 +60,7 @@ class AchievementUnlockDialog extends StatelessWidget {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
 
@@ -72,7 +70,9 @@ class AchievementUnlockDialog extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
-                color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.75),
+                color: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.color?.withValues(alpha: 0.75),
                 height: 1.4,
               ),
             ),
@@ -84,8 +84,13 @@ class AchievementUnlockDialog extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: tealColor,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 10),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 28,
+                  vertical: 10,
+                ),
               ),
               child: const Text('Hari Om 🙏', style: TextStyle(fontSize: 15)),
             ),

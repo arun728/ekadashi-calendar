@@ -26,7 +26,8 @@ class VratTrackerScreen extends StatefulWidget {
   State<VratTrackerScreen> createState() => _VratTrackerScreenState();
 }
 
-class _VratTrackerScreenState extends State<VratTrackerScreen> with SingleTickerProviderStateMixin {
+class _VratTrackerScreenState extends State<VratTrackerScreen>
+    with SingleTickerProviderStateMixin {
   static const Color tealColor = Color(0xFF00A19B);
 
   late TabController _tabController;
@@ -44,11 +45,6 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> with SingleTicker
       if (!tracker.isInitialized) {
         tracker.init(occurrences: widget.ekadashiList);
       }
-      tracker.onAchievementUnlocked = (achievement) {
-        if (mounted) {
-          AchievementUnlockDialog.show(context, achievement);
-        }
-      };
     });
   }
 
@@ -135,7 +131,9 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> with SingleTicker
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
-                color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+                color: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
                 height: 1.4,
               ),
             ),
@@ -157,8 +155,13 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> with SingleTicker
               style: ElevatedButton.styleFrom(
                 backgroundColor: tealColor,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 14,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
           ],
@@ -171,8 +174,20 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> with SingleTicker
   Widget _buildOverviewTab(LanguageService lang, VratTrackerService tracker) {
     final currentStreak = tracker.getCurrentStreak(widget.ekadashiList);
     final longestStreak = tracker.getLongestStreak(widget.ekadashiList);
-    final yearStats = tracker.getAnnualStats(year: _selectedYear, occurrences: widget.ekadashiList);
-    final totalObserved = tracker.getAllRecords().where((h) => h.status == ObservanceStatus.observed).length;
+    final selectedYear = _coherentSelectedYear(
+      VratStatisticsService.getAvailableYears(
+        occurrences: widget.ekadashiList,
+        history: tracker.getAllRecords(),
+      ),
+    );
+    final yearStats = tracker.getAnnualStats(
+      year: selectedYear,
+      occurrences: widget.ekadashiList,
+    );
+    final totalObserved = tracker
+        .getAllRecords()
+        .where((h) => h.status == ObservanceStatus.observed)
+        .length;
 
     final nextMilestone = AchievementEvaluator.getNextMilestone(
       userAchievements: tracker.userAchievements,
@@ -213,9 +228,10 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> with SingleTicker
           children: [
             Expanded(
               child: _buildMetricCard(
-                title: '$_selectedYear ${lang.translate('annual_completion')}',
+                title: '$selectedYear ${lang.translate('annual_completion')}',
                 value: '${yearStats.completionPercentage.toStringAsFixed(0)}%',
-                subtitle: '${yearStats.observedCount} / ${yearStats.totalOccurrences}',
+                subtitle:
+                    '${yearStats.observedCount} / ${yearStats.totalOccurrences}',
                 icon: Icons.donut_large_outlined,
                 accentColor: tealColor,
               ),
@@ -243,14 +259,20 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> with SingleTicker
         // Quick Observance Card for Upcoming / Recent Ekadashis
         Text(
           lang.translate('record_observance'),
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: tealColor),
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: tealColor,
+          ),
         ),
         const SizedBox(height: 4),
         Text(
           lang.translate('tap_to_record_instruction'),
           style: TextStyle(
             fontSize: 12,
-            color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
+            color: Theme.of(
+              context,
+            ).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
           ),
         ),
         const SizedBox(height: 10),
@@ -273,10 +295,7 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> with SingleTicker
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: accentColor.withValues(alpha: 0.2)),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 8,
-          ),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 8),
         ],
       ),
       child: Column(
@@ -288,7 +307,11 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> with SingleTicker
               Icon(icon, color: accentColor, size: 22),
               Text(
                 value,
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: accentColor),
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: accentColor,
+                ),
               ),
             ],
           ),
@@ -304,7 +327,9 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> with SingleTicker
             subtitle,
             style: TextStyle(
               fontSize: 11,
-              color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.6),
+              color: Theme.of(
+                context,
+              ).textTheme.bodySmall?.color?.withValues(alpha: 0.6),
             ),
           ),
         ],
@@ -337,12 +362,20 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> with SingleTicker
               const SizedBox(width: 8),
               Text(
                 lang.translate('next_milestone'),
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: tealColor),
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: tealColor,
+                ),
               ),
               const Spacer(),
               Text(
                 '${milestone.currentProgress} / ${milestone.target}',
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: tealColor),
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: tealColor,
+                ),
               ),
             ],
           ),
@@ -366,22 +399,34 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> with SingleTicker
     );
   }
 
-  Widget _buildRecentEkadashiQuickLog(LanguageService lang, VratTrackerService tracker) {
+  Widget _buildRecentEkadashiQuickLog(
+    LanguageService lang,
+    VratTrackerService tracker,
+  ) {
     if (widget.ekadashiList.isEmpty) return const SizedBox.shrink();
 
     // Show upcoming or recent 3 Ekadashis
     final sorted = List<EkadashiDate>.from(widget.ekadashiList)
       ..sort((a, b) => a.date.compareTo(b.date));
 
-    final today = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+    final today = DateTime(
+      DateTime.now().year,
+      DateTime.now().month,
+      DateTime.now().day,
+    );
     // Find closest to today
-    final recent = sorted.where((e) {
-      final diff = e.date.difference(today).inDays;
-      return diff >= -30 && diff <= 30;
-    }).take(4).toList();
+    final recent = sorted
+        .where((e) {
+          final diff = e.date.difference(today).inDays;
+          return diff >= -30 && diff <= 30;
+        })
+        .take(4)
+        .toList();
 
     return Column(
-      children: recent.map((e) => _buildEkadashiListTile(lang, tracker, e)).toList(),
+      children: recent
+          .map((e) => _buildEkadashiListTile(lang, tracker, e))
+          .toList(),
     );
   }
 
@@ -391,9 +436,12 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> with SingleTicker
       occurrences: widget.ekadashiList,
       history: tracker.getAllRecords(),
     );
+    final selectedYear = _coherentSelectedYear(availableYears);
 
     // Filter occurrences by selected year
-    var filtered = widget.ekadashiList.where((e) => e.date.year == _selectedYear).toList();
+    var filtered = widget.ekadashiList
+        .where((e) => e.date.year == selectedYear)
+        .toList();
 
     // Filter by status if set
     if (_historyStatusFilter != null) {
@@ -415,10 +463,16 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> with SingleTicker
             children: [
               // Year Dropdown
               DropdownButton<int>(
-                value: _selectedYear,
+                value: selectedYear,
                 underline: const SizedBox.shrink(),
                 items: availableYears.map((y) {
-                  return DropdownMenuItem(value: y, child: Text('$y', style: const TextStyle(fontWeight: FontWeight.bold)));
+                  return DropdownMenuItem(
+                    value: y,
+                    child: Text(
+                      '$y',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  );
                 }).toList(),
                 onChanged: (y) {
                   if (y != null) setState(() => _selectedYear = y);
@@ -434,31 +488,46 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> with SingleTicker
                       FilterChip(
                         label: Text(lang.translate('filter_all')),
                         selected: _historyStatusFilter == null,
-                        onSelected: (_) => setState(() => _historyStatusFilter = null),
+                        onSelected: (_) =>
+                            setState(() => _historyStatusFilter = null),
                       ),
                       const SizedBox(width: 6),
                       FilterChip(
                         label: Text(lang.translate('observed')),
-                        selected: _historyStatusFilter == ObservanceStatus.observed,
-                        onSelected: (_) => setState(() => _historyStatusFilter = ObservanceStatus.observed),
+                        selected:
+                            _historyStatusFilter == ObservanceStatus.observed,
+                        onSelected: (_) => setState(
+                          () =>
+                              _historyStatusFilter = ObservanceStatus.observed,
+                        ),
                       ),
                       const SizedBox(width: 6),
                       FilterChip(
                         label: Text(lang.translate('partial')),
-                        selected: _historyStatusFilter == ObservanceStatus.partial,
-                        onSelected: (_) => setState(() => _historyStatusFilter = ObservanceStatus.partial),
+                        selected:
+                            _historyStatusFilter == ObservanceStatus.partial,
+                        onSelected: (_) => setState(
+                          () => _historyStatusFilter = ObservanceStatus.partial,
+                        ),
                       ),
                       const SizedBox(width: 6),
                       FilterChip(
                         label: Text(lang.translate('missed')),
-                        selected: _historyStatusFilter == ObservanceStatus.missed,
-                        onSelected: (_) => setState(() => _historyStatusFilter = ObservanceStatus.missed),
+                        selected:
+                            _historyStatusFilter == ObservanceStatus.missed,
+                        onSelected: (_) => setState(
+                          () => _historyStatusFilter = ObservanceStatus.missed,
+                        ),
                       ),
                       const SizedBox(width: 6),
                       FilterChip(
                         label: Text(lang.translate('unrecorded')),
-                        selected: _historyStatusFilter == ObservanceStatus.unrecorded,
-                        onSelected: (_) => setState(() => _historyStatusFilter = ObservanceStatus.unrecorded),
+                        selected:
+                            _historyStatusFilter == ObservanceStatus.unrecorded,
+                        onSelected: (_) => setState(
+                          () => _historyStatusFilter =
+                              ObservanceStatus.unrecorded,
+                        ),
                       ),
                     ],
                   ),
@@ -475,7 +544,9 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> with SingleTicker
               lang.translate('tap_to_record_instruction'),
               style: TextStyle(
                 fontSize: 12,
-                color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
+                color: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
               ),
             ),
           ),
@@ -485,18 +556,31 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> with SingleTicker
         // List of Ekadashis
         Expanded(
           child: filtered.isEmpty
-              ? Center(child: Text(lang.translate('no_ekadashi'), style: const TextStyle(color: Colors.grey)))
+              ? Center(
+                  child: Text(
+                    lang.translate('no_ekadashi'),
+                    style: const TextStyle(color: Colors.grey),
+                  ),
+                )
               : ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   itemCount: filtered.length,
-                  itemBuilder: (ctx, i) => _buildEkadashiListTile(lang, tracker, filtered[i]),
+                  itemBuilder: (ctx, i) =>
+                      _buildEkadashiListTile(lang, tracker, filtered[i]),
                 ),
         ),
       ],
     );
   }
 
-  Widget _buildEkadashiListTile(LanguageService lang, VratTrackerService tracker, EkadashiDate ekadashi) {
+  Widget _buildEkadashiListTile(
+    LanguageService lang,
+    VratTrackerService tracker,
+    EkadashiDate ekadashi,
+  ) {
     final record = tracker.getRecord(ekadashi.id);
     final status = record?.status ?? ObservanceStatus.unrecorded;
     final dateStr = DateFormat('MMM dd, yyyy').format(ekadashi.date);
@@ -528,7 +612,8 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> with SingleTicker
         break;
     }
 
-    final accessibilityLabel = '${ekadashi.name}, $dateStr, $statusLabel. ${lang.translate('tap_to_record_semantics')}';
+    final accessibilityLabel =
+        '${ekadashi.name}, $dateStr, $statusLabel. ${lang.translate('tap_to_record_semantics')}';
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 6),
@@ -562,7 +647,10 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> with SingleTicker
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: chipColor.withValues(alpha: 0.12),
-                    border: Border.all(color: chipColor.withValues(alpha: 0.35), width: 1.5),
+                    border: Border.all(
+                      color: chipColor.withValues(alpha: 0.35),
+                      width: 1.5,
+                    ),
                   ),
                   child: Icon(statusIcon, size: 18, color: chipColor),
                 ),
@@ -575,21 +663,30 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> with SingleTicker
                     children: [
                       Text(
                         ekadashi.name,
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         dateStr,
                         style: TextStyle(
                           fontSize: 13,
-                          color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
+                          color: Theme.of(
+                            context,
+                          ).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
                         ),
                       ),
                       if (record?.note != null && record!.note!.isNotEmpty) ...[
                         const SizedBox(height: 4),
                         Text(
                           '“${record.note!}”',
-                          style: const TextStyle(fontSize: 12, fontStyle: FontStyle.italic, color: Colors.grey),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontStyle: FontStyle.italic,
+                            color: Colors.grey,
+                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -605,11 +702,16 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> with SingleTicker
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: chipColor.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: chipColor.withValues(alpha: 0.35)),
+                        border: Border.all(
+                          color: chipColor.withValues(alpha: 0.35),
+                        ),
                       ),
                       child: Text(
                         statusLabel,
@@ -643,7 +745,11 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> with SingleTicker
       history: tracker.getAllRecords(),
     );
 
-    final stats = tracker.getAnnualStats(year: _selectedYear, occurrences: widget.ekadashiList);
+    final selectedYear = _coherentSelectedYear(availableYears);
+    final stats = tracker.getAnnualStats(
+      year: selectedYear,
+      occurrences: widget.ekadashiList,
+    );
     final currentStreak = tracker.getCurrentStreak(widget.ekadashiList);
     final longestStreak = tracker.getLongestStreak(widget.ekadashiList);
 
@@ -659,7 +765,7 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> with SingleTicker
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             DropdownButton<int>(
-              value: _selectedYear,
+              value: selectedYear,
               items: availableYears.map((y) {
                 return DropdownMenuItem(value: y, child: Text('$y'));
               }).toList(),
@@ -682,13 +788,20 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> with SingleTicker
           child: Column(
             children: [
               Text(
-                '$_selectedYear ${lang.translate('annual_completion')}',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                '$selectedYear ${lang.translate('annual_completion')}',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 16),
               Text(
                 '${stats.completionPercentage.toStringAsFixed(1)}%',
-                style: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: tealColor),
+                style: const TextStyle(
+                  fontSize: 36,
+                  fontWeight: FontWeight.bold,
+                  color: tealColor,
+                ),
               ),
               const SizedBox(height: 6),
               Text(
@@ -703,13 +816,37 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> with SingleTicker
         // Observance Breakdown Cards
         Row(
           children: [
-            Expanded(child: _buildBreakdownItem(lang.translate('observed'), '${stats.observedCount}', Colors.green)),
+            Expanded(
+              child: _buildBreakdownItem(
+                lang.translate('observed'),
+                '${stats.observedCount}',
+                Colors.green,
+              ),
+            ),
             const SizedBox(width: 8),
-            Expanded(child: _buildBreakdownItem(lang.translate('partial'), '${stats.partialCount}', Colors.amber.shade700)),
+            Expanded(
+              child: _buildBreakdownItem(
+                lang.translate('partial'),
+                '${stats.partialCount}',
+                Colors.amber.shade700,
+              ),
+            ),
             const SizedBox(width: 8),
-            Expanded(child: _buildBreakdownItem(lang.translate('missed'), '${stats.missedCount}', Colors.red.shade400)),
+            Expanded(
+              child: _buildBreakdownItem(
+                lang.translate('missed'),
+                '${stats.missedCount}',
+                Colors.red.shade400,
+              ),
+            ),
             const SizedBox(width: 8),
-            Expanded(child: _buildBreakdownItem(lang.translate('unrecorded'), '${stats.unrecordedCount}', Colors.grey)),
+            Expanded(
+              child: _buildBreakdownItem(
+                lang.translate('unrecorded'),
+                '${stats.unrecordedCount}',
+                Colors.grey,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 20),
@@ -723,14 +860,32 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> with SingleTicker
           ),
           child: Column(
             children: [
-              _buildStreakRow(lang.translate('current_streak'), currentStreak, Icons.local_fire_department, Colors.orange),
+              _buildStreakRow(
+                lang.translate('current_streak'),
+                currentStreak,
+                Icons.local_fire_department,
+                Colors.orange,
+              ),
               const Divider(),
-              _buildStreakRow(lang.translate('longest_streak'), longestStreak, Icons.military_tech, Colors.amber),
+              _buildStreakRow(
+                lang.translate('longest_streak'),
+                longestStreak,
+                Icons.military_tech,
+                Colors.amber,
+              ),
             ],
           ),
         ),
       ],
     );
+  }
+
+  int _coherentSelectedYear(List<int> availableYears) {
+    if (availableYears.contains(_selectedYear)) return _selectedYear;
+    if (availableYears.contains(DateTime.now().year)) {
+      return DateTime.now().year;
+    }
+    return availableYears.first;
   }
 
   Widget _buildBreakdownItem(String label, String count, Color color) {
@@ -743,9 +898,20 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> with SingleTicker
       ),
       child: Column(
         children: [
-          Text(count, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color)),
+          Text(
+            count,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
           const SizedBox(height: 4),
-          Text(label, style: TextStyle(fontSize: 10, color: color), textAlign: TextAlign.center),
+          Text(
+            label,
+            style: TextStyle(fontSize: 10, color: color),
+            textAlign: TextAlign.center,
+          ),
         ],
       ),
     );
@@ -757,13 +923,23 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> with SingleTicker
         Icon(icon, color: color, size: 24),
         const SizedBox(width: 12),
         Expanded(child: Text(title, style: const TextStyle(fontSize: 14))),
-        Text('$count', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color)),
+        Text(
+          '$count',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
       ],
     );
   }
 
   // ==================== 5. ACHIEVEMENTS TAB ====================
-  Widget _buildAchievementsTab(LanguageService lang, VratTrackerService tracker) {
+  Widget _buildAchievementsTab(
+    LanguageService lang,
+    VratTrackerService tracker,
+  ) {
     const achievements = AchievementEvaluator.allAchievements;
     final userMap = tracker.userAchievements;
 
@@ -790,7 +966,9 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> with SingleTicker
             color: Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: isUnlocked ? tealColor : Colors.grey.withValues(alpha: 0.2),
+              color: isUnlocked
+                  ? tealColor
+                  : Colors.grey.withValues(alpha: 0.2),
               width: isUnlocked ? 1.8 : 1,
             ),
             boxShadow: isUnlocked
@@ -799,7 +977,7 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> with SingleTicker
                       color: tealColor.withValues(alpha: 0.15),
                       blurRadius: 10,
                       spreadRadius: 1,
-                    )
+                    ),
                   ]
                 : null,
           ),
@@ -845,7 +1023,8 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> with SingleTicker
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 10,
-                    color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: isUnlocked ? 0.75 : 0.45),
+                    color: Theme.of(context).textTheme.bodySmall?.color
+                        ?.withValues(alpha: isUnlocked ? 0.75 : 0.45),
                     height: 1.3,
                   ),
                   maxLines: 3,
@@ -855,7 +1034,9 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> with SingleTicker
 
               // Status badge
               Text(
-                isUnlocked ? '✓ ${lang.translate('unlocked')}' : lang.translate('locked'),
+                isUnlocked
+                    ? '✓ ${lang.translate('unlocked')}'
+                    : lang.translate('locked'),
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
@@ -870,17 +1051,26 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> with SingleTicker
   }
 
   // ==================== 6. SETTINGS MODAL ====================
-  void _showTrackerSettings(BuildContext context, LanguageService lang, VratTrackerService tracker) {
+  void _showTrackerSettings(
+    BuildContext context,
+    LanguageService lang,
+    VratTrackerService tracker,
+  ) {
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (ctx) => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(lang.translate('vrat_tracker'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(
+              lang.translate('vrat_tracker'),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 12),
             Text(
               lang.translate('vrat_tracker_desc'),
@@ -889,9 +1079,15 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> with SingleTicker
             const SizedBox(height: 20),
             ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.power_settings_new, color: Colors.redAccent),
+              leading: const Icon(
+                Icons.power_settings_new,
+                color: Colors.redAccent,
+              ),
               title: Text(lang.translate('disable_vrat_tracker')),
-              subtitle: Text(lang.translate('tracker_disabled_msg'), style: const TextStyle(fontSize: 11)),
+              subtitle: Text(
+                lang.translate('tracker_disabled_msg'),
+                style: const TextStyle(fontSize: 11),
+              ),
               onTap: () async {
                 await tracker.disableTracker();
                 if (ctx.mounted) Navigator.of(ctx).pop();

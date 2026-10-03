@@ -6,9 +6,6 @@ import 'ekadashi_service.dart';
 import 'vrat_statistics_service.dart';
 import 'achievement_evaluator.dart';
 
-/// Callback signature when an achievement is unlocked
-typedef AchievementUnlockCallback = void Function(Achievement achievement);
-
 /// Central service for Vrat Tracking and Achievement management.
 /// Integrates Vrat Tracker, Vrat Statistics, and Achievement System as a single module.
 class VratTrackerService extends ChangeNotifier {
@@ -16,7 +13,8 @@ class VratTrackerService extends ChangeNotifier {
   static const String _prefEnabledAtKey = 'vrat_tracker_enabled_at';
   static const String _prefHistoryKey = 'vrat_tracker_history';
   static const String _prefAchievementsKey = 'vrat_tracker_user_achievements';
-  static const String _prefNotifiedAchievementsKey = 'vrat_tracker_notified_achievements';
+  static const String _prefNotifiedAchievementsKey =
+      'vrat_tracker_notified_achievements';
 
   bool _isInitialized = false;
   bool _trackerEnabled = false;
@@ -31,14 +29,12 @@ class VratTrackerService extends ChangeNotifier {
   // Track which achievements have already triggered a notification
   final Set<String> _notifiedAchievements = {};
 
-  // Optional unlock callback for UI notification banners
-  AchievementUnlockCallback? onAchievementUnlocked;
-
   bool get isInitialized => _isInitialized;
   bool get trackerEnabled => _trackerEnabled;
   DateTime? get trackingEnabledAt => _trackingEnabledAt;
   Map<int, VratHistory> get history => Map.unmodifiable(_historyByOccurrenceId);
-  Map<String, UserAchievement> get userAchievements => Map.unmodifiable(_userAchievements);
+  Map<String, UserAchievement> get userAchievements =>
+      Map.unmodifiable(_userAchievements);
 
   /// Load persisted tracker settings, history, and achievements
   Future<void> init({List<EkadashiDate>? occurrences}) async {
@@ -86,8 +82,8 @@ class VratTrackerService extends ChangeNotifier {
       }
 
       // 5. Evaluate achievements if occurrences provided
-      if (occurrences != null && occurrences.isNotEmpty) {
-        _evaluateAchievementsInternal(occurrences, triggerNotifications: false);
+      if (_trackerEnabled && occurrences != null && occurrences.isNotEmpty) {
+        _evaluateAchievementsInternal(occurrences);
       }
 
       _isInitialized = true;
@@ -106,10 +102,13 @@ class VratTrackerService extends ChangeNotifier {
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_prefEnabledKey, true);
-    await prefs.setString(_prefEnabledAtKey, _trackingEnabledAt!.toIso8601String());
+    await prefs.setString(
+      _prefEnabledAtKey,
+      _trackingEnabledAt!.toIso8601String(),
+    );
 
     if (occurrences != null && occurrences.isNotEmpty) {
-      _evaluateAchievementsInternal(occurrences, triggerNotifications: false);
+      _evaluateAchievementsInternal(occurrences);
     }
 
     notifyListeners();
@@ -143,11 +142,17 @@ class VratTrackerService extends ChangeNotifier {
     String? timezone,
     List<EkadashiDate>? occurrences,
   }) async {
+    // Keep the service boundary authoritative: UI controls can be bypassed by
+    // stale routes, accessibility actions, or future callers.
+    if (!_trackerEnabled || _isFutureDate(ekadashiDate)) return const [];
+
     final nowUtc = DateTime.now().toUtc().toIso8601String();
     final existing = _historyByOccurrenceId[ekadashiOccurrenceId];
 
     final updatedRecord = VratHistory(
-      id: existing?.id ?? 'vrat_${ekadashiOccurrenceId}_${DateTime.now().millisecondsSinceEpoch}',
+      id:
+          existing?.id ??
+          'vrat_${ekadashiOccurrenceId}_${DateTime.now().millisecondsSinceEpoch}',
       localProfileId: existing?.localProfileId ?? 'default',
       ekadashiOccurrenceId: ekadashiOccurrenceId,
       ekadashiDate: ekadashiDate,
@@ -167,7 +172,7 @@ class VratTrackerService extends ChangeNotifier {
     // Evaluate achievements
     List<Achievement> newlyUnlocked = [];
     if (occurrences != null && occurrences.isNotEmpty) {
-      newlyUnlocked = _evaluateAchievementsInternal(occurrences, triggerNotifications: true);
+      newlyUnlocked = _evaluateAchievementsInternal(occurrences);
     }
 
     // Persist changes
@@ -184,13 +189,16 @@ class VratTrackerService extends ChangeNotifier {
     required int ekadashiOccurrenceId,
     List<EkadashiDate>? occurrences,
   }) async {
-    if (!_historyByOccurrenceId.containsKey(ekadashiOccurrenceId)) return;
+    if (!_trackerEnabled ||
+        !_historyByOccurrenceId.containsKey(ekadashiOccurrenceId)) {
+      return;
+    }
 
     _historyByOccurrenceId.remove(ekadashiOccurrenceId);
 
     // Re-evaluate achievements after deletion
     if (occurrences != null && occurrences.isNotEmpty) {
-      _evaluateAchievementsInternal(occurrences, triggerNotifications: false);
+      _evaluateAchievementsInternal(occurrences);
     }
 
     await _persistHistory();
@@ -242,9 +250,8 @@ class VratTrackerService extends ChangeNotifier {
 
   /// Helper to evaluate achievements internally and manage one-time notifications
   List<Achievement> _evaluateAchievementsInternal(
-    List<EkadashiDate> occurrences, {
-    required bool triggerNotifications,
-  }) {
+    List<EkadashiDate> occurrences,
+  ) {
     final result = AchievementEvaluator.evaluate(
       history: getAllRecords(),
       occurrences: occurrences,
@@ -260,20 +267,28 @@ class VratTrackerService extends ChangeNotifier {
       if (!_notifiedAchievements.contains(ach.id)) {
         unnotifiedUnlocks.add(ach);
         _notifiedAchievements.add(ach.id);
-        if (triggerNotifications && onAchievementUnlocked != null) {
-          onAchievementUnlocked!(ach);
-        }
       }
     }
 
     return unnotifiedUnlocks;
   }
 
+  bool _isFutureDate(String date) {
+    final parsed = DateTime.tryParse(date.trim());
+    if (parsed == null) return false;
+    final eventDay = DateTime(parsed.year, parsed.month, parsed.day);
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    return eventDay.isAfter(today);
+  }
+
   /// Persist history to SharedPreferences
   Future<void> _persistHistory() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final list = _historyByOccurrenceId.values.map((v) => v.toJson()).toList();
+      final list = _historyByOccurrenceId.values
+          .map((v) => v.toJson())
+          .toList();
       await prefs.setString(_prefHistoryKey, json.encode(list));
     } catch (e) {
       debugPrint('⚠️ Error saving vrat history: $e');
@@ -286,7 +301,10 @@ class VratTrackerService extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       final list = _userAchievements.values.map((a) => a.toJson()).toList();
       await prefs.setString(_prefAchievementsKey, json.encode(list));
-      await prefs.setStringList(_prefNotifiedAchievementsKey, _notifiedAchievements.toList());
+      await prefs.setStringList(
+        _prefNotifiedAchievementsKey,
+        _notifiedAchievements.toList(),
+      );
     } catch (e) {
       debugPrint('⚠️ Error saving achievements: $e');
     }

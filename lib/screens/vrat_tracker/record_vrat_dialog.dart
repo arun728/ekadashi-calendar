@@ -57,14 +57,27 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
     final tracker = Provider.of<VratTrackerService>(context, listen: false);
     _existingRecord = tracker.getRecord(widget.ekadashi.id);
 
-    final today = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
-    final eventDate = DateTime(widget.ekadashi.date.year, widget.ekadashi.date.month, widget.ekadashi.date.day);
+    final today = DateTime(
+      DateTime.now().year,
+      DateTime.now().month,
+      DateTime.now().day,
+    );
+    final eventDate = DateTime(
+      widget.ekadashi.date.year,
+      widget.ekadashi.date.month,
+      widget.ekadashi.date.day,
+    );
     _isFutureEvent = eventDate.isAfter(today);
 
-    _status = _existingRecord?.status ??
-        (_isFutureEvent ? ObservanceStatus.unrecorded : ObservanceStatus.observed);
+    _status =
+        _existingRecord?.status ??
+        (_isFutureEvent
+            ? ObservanceStatus.unrecorded
+            : ObservanceStatus.observed);
     _fastingMethod = _existingRecord?.fastingMethod ?? FastingMethod.fullFast;
-    _otherMethodController = TextEditingController(text: _existingRecord?.fastingMethodOther ?? '');
+    _otherMethodController = TextEditingController(
+      text: _existingRecord?.fastingMethodOther ?? '',
+    );
     _noteController = TextEditingController(text: _existingRecord?.note ?? '');
   }
 
@@ -76,7 +89,7 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
   }
 
   void _onStatusChanged(ObservanceStatus newStatus) {
-    if (_isFutureEvent && newStatus == ObservanceStatus.observed) {
+    if (_isFutureEvent && newStatus != ObservanceStatus.unrecorded) {
       final lang = Provider.of<LanguageService>(context, listen: false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -93,6 +106,17 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
   }
 
   Future<void> _save() async {
+    if (_isFutureEvent) {
+      final lang = Provider.of<LanguageService>(context, listen: false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(lang.translate('cannot_record_future')),
+          backgroundColor: Colors.orange.shade800,
+        ),
+      );
+      return;
+    }
+
     final tracker = Provider.of<VratTrackerService>(context, listen: false);
     final dateStr = DateFormat('yyyy-MM-dd').format(widget.ekadashi.date);
 
@@ -101,13 +125,17 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
       ekadashiDate: dateStr,
       ekadashiName: widget.ekadashi.name,
       status: _status,
-      fastingMethod: _status == ObservanceStatus.observed || _status == ObservanceStatus.partial
+      fastingMethod:
+          _status == ObservanceStatus.observed ||
+              _status == ObservanceStatus.partial
           ? _fastingMethod
           : null,
       fastingMethodOther: _fastingMethod == FastingMethod.other
           ? _otherMethodController.text.trim()
           : null,
-      note: _noteController.text.trim().isNotEmpty ? _noteController.text.trim() : null,
+      note: _noteController.text.trim().isNotEmpty
+          ? _noteController.text.trim()
+          : null,
       timezone: widget.currentTimezone,
       occurrences: widget.allOccurrences,
     );
@@ -154,7 +182,9 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
   Widget build(BuildContext context) {
     final lang = Provider.of<LanguageService>(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final formattedDate = DateFormat('EEEE, d MMMM yyyy').format(widget.ekadashi.date);
+    final formattedDate = DateFormat(
+      'EEEE, d MMMM yyyy',
+    ).format(widget.ekadashi.date);
 
     return Container(
       decoration: BoxDecoration(
@@ -205,7 +235,9 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
                         formattedDate,
                         style: TextStyle(
                           fontSize: 13,
-                          color: isDark ? Colors.grey.shade400 : Colors.grey.shade700,
+                          color: isDark
+                              ? Colors.grey.shade400
+                              : Colors.grey.shade700,
                         ),
                       ),
                     ],
@@ -213,7 +245,10 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
                 ),
                 if (_existingRecord != null)
                   IconButton(
-                    icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                    icon: const Icon(
+                      Icons.delete_outline,
+                      color: Colors.redAccent,
+                    ),
                     tooltip: lang.translate('delete_record'),
                     onPressed: _delete,
                   ),
@@ -228,16 +263,25 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
                 decoration: BoxDecoration(
                   color: Colors.orange.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+                  border: Border.all(
+                    color: Colors.orange.withValues(alpha: 0.3),
+                  ),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.info_outline, size: 16, color: Colors.orange),
+                    const Icon(
+                      Icons.info_outline,
+                      size: 16,
+                      color: Colors.orange,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         lang.translate('cannot_record_future'),
-                        style: const TextStyle(fontSize: 12, color: Colors.orange),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.orange,
+                        ),
                       ),
                     ),
                   ],
@@ -249,7 +293,11 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
             // Status Selector Chips
             Text(
               lang.translate('status_active'),
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: tealColor),
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: tealColor,
+              ),
             ),
             const SizedBox(height: 8),
             Row(
@@ -279,21 +327,41 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
             const SizedBox(height: 20),
 
             // Fasting Method (if Observed or Partial)
-            if (_status == ObservanceStatus.observed || _status == ObservanceStatus.partial) ...[
+            if (_status == ObservanceStatus.observed ||
+                _status == ObservanceStatus.partial) ...[
               Text(
                 lang.translate('fasting_method'),
-                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: tealColor),
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: tealColor,
+                ),
               ),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  _buildMethodChip(FastingMethod.fullFast, lang.translate('method_full_fast')),
-                  _buildMethodChip(FastingMethod.waterOnly, lang.translate('method_water_only')),
-                  _buildMethodChip(FastingMethod.fruitsMilk, lang.translate('method_fruits_milk')),
-                  _buildMethodChip(FastingMethod.oneMeal, lang.translate('method_one_meal')),
-                  _buildMethodChip(FastingMethod.other, lang.translate('method_other')),
+                  _buildMethodChip(
+                    FastingMethod.fullFast,
+                    lang.translate('method_full_fast'),
+                  ),
+                  _buildMethodChip(
+                    FastingMethod.waterOnly,
+                    lang.translate('method_water_only'),
+                  ),
+                  _buildMethodChip(
+                    FastingMethod.fruitsMilk,
+                    lang.translate('method_fruits_milk'),
+                  ),
+                  _buildMethodChip(
+                    FastingMethod.oneMeal,
+                    lang.translate('method_one_meal'),
+                  ),
+                  _buildMethodChip(
+                    FastingMethod.other,
+                    lang.translate('method_other'),
+                  ),
                 ],
               ),
               if (_fastingMethod == FastingMethod.other) ...[
@@ -302,8 +370,13 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
                   controller: _otherMethodController,
                   decoration: InputDecoration(
                     hintText: lang.translate('method_other_hint'),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
                 ),
               ],
@@ -313,7 +386,11 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
             // Personal Notes Field
             Text(
               lang.translate('notes'),
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: tealColor),
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: tealColor,
+              ),
             ),
             const SizedBox(height: 8),
             TextField(
@@ -322,7 +399,9 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
               decoration: InputDecoration(
                 hintText: lang.translate('notes_hint'),
                 contentPadding: const EdgeInsets.all(12),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
             ),
             const SizedBox(height: 24),
@@ -334,13 +413,18 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
                 backgroundColor: tealColor,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               child: Text(
                 _existingRecord != null
                     ? lang.translate('edit_record')
                     : lang.translate('record_observance'),
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ],
@@ -368,14 +452,20 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
                 : Colors.grey.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
-              color: isSelected ? activeColor : Colors.grey.withValues(alpha: 0.2),
+              color: isSelected
+                  ? activeColor
+                  : Colors.grey.withValues(alpha: 0.2),
               width: isSelected ? 1.8 : 1,
             ),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 20, color: isSelected ? activeColor : Colors.grey),
+              Icon(
+                icon,
+                size: 20,
+                color: isSelected ? activeColor : Colors.grey,
+              ),
               const SizedBox(height: 4),
               Text(
                 label,

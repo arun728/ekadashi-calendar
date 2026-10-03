@@ -1,0 +1,99 @@
+name: Android regression and UI tests
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main, dev]
+permissions:
+  contents: read
+jobs:
+  flutter-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.38.5'
+          cache: true
+      - run: flutter pub get
+      # Existing v1 lint debt is reported; analyzer errors remain fatal.
+      - run: flutter analyze --no-fatal-infos --no-fatal-warnings
+      - run: flutter test --coverage --reporter expanded
+      - run: python3 tool/coverage_summary.py coverage/lcov.info
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: flutter-coverage-and-offscreen-ui
+          path: |
+            coverage/
+            build/ui-screenshots/offscreen/
+  android-tests:
+    needs: flutter-tests
+    # Keep collecting native/UI evidence while required Flutter gates are red.
+    if: always() && !cancelled()
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - api: 24
+            mode: granted
+          - api: 33
+            mode: granted
+          - api: 35
+            mode: granted
+          - api: 35
+            mode: denied
+          - api: 35
+            mode: gps-off
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - run: sdkmanager 'ndk;28.2.13676358'
+      - name: Bound Gradle memory on hosted runners
+        run: |
+          mkdir -p "$HOME/.gradle"
+          cat > "$HOME/.gradle/gradle.properties" <<'EOF'
+          org.gradle.jvmargs=-Xmx2G -XX:MaxMetaspaceSize=768m
+          org.gradle.workers.max=2
+          org.gradle.parallel=false
+          kotlin.compiler.execution.strategy=in-process
+          EOF
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.38.5'
+          cache: true
+      - run: flutter pub get
+      - run: flutter build apk --debug --target-platform android-x64
+      - name: Native JVM and WorkManager regression tests
+        id: native_tests
+        # Still collect emulator evidence if a native regression fails.
+        continue-on-error: true
+        run: cd android && ./gradlew app:testDebugUnitTest
+      - name: Enable KVM
+        run: sudo chmod 666 /dev/kvm
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ matrix.api }}
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          disable-animations: true
+          script: bash tool/android-all-integration.sh ${{ matrix.mode }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: android-api-${{ matrix.api }}-${{ matrix.mode }}
+          path: |
+            build/ui-screenshots/android/
+            build/android-evidence/
+            build/android-feature-evidence/
+            build/app/reports/tests/
+            build/app/test-results/
+      - name: Preserve failing native release gate
+        if: always() && steps.native_tests.outcome == 'failure'
+        run: exit 1

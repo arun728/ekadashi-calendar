@@ -24,11 +24,13 @@ class NotificationScheduler(private val context: Context) {
 
     companion object {
         private const val TAG = "NotificationScheduler"
-        private const val PREFS_NAME = "notification_prefs"
+        // Share the same preference file and keys as SettingsService. This
+        // keeps opt-out and reminder choices consistent across both channels.
+        private const val PREFS_NAME = "ekadashi_settings"
         private const val KEY_NOTIFICATIONS_ENABLED = "notifications_enabled"
-        private const val KEY_REMIND_2_DAYS = "remind_2_days"
-        private const val KEY_REMIND_1_DAY = "remind_1_day"
-        private const val KEY_REMIND_ON_START = "remind_on_start"
+        private const val KEY_REMIND_2_DAYS = "remind_two_days_before"
+        private const val KEY_REMIND_1_DAY = "remind_one_day_before"
+        private const val KEY_REMIND_ON_START = "remind_on_day"
         private const val KEY_REMIND_ON_PARANA = "remind_on_parana"
 
         // Work tags
@@ -120,6 +122,11 @@ class NotificationScheduler(private val context: Context) {
         paranaStartTime: String,
         texts: Map<String, String>
     ): Int {
+        if (!isNotificationsEnabled()) {
+            Log.d(TAG, "Skipping schedule: reminders are disabled")
+            return 0
+        }
+
         var scheduledCount = 0
 
         try {

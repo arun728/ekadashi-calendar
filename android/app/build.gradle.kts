@@ -28,6 +28,9 @@ android {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_17.toString()
     }
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
+    }
 
     signingConfigs {
         create("release") {
@@ -70,6 +73,14 @@ flutter {
 }
 
 dependencies {
+    // integration_test supplies Guava at runtime, which selects the empty
+    // listenablefuture artifact. Expose that existing API to Kotlin compilation
+    // without adding or changing a runtime dependency.
+    compileOnly("com.google.guava:guava:28.1-android")
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.robolectric:robolectric:4.14.1")
+    testImplementation("androidx.test:core:1.6.1")
+    testImplementation("androidx.work:work-testing:2.9.0")
     // Desugaring for Java 8+ time APIs
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 
