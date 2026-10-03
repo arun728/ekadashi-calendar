@@ -90,6 +90,22 @@ class CalendarScreenState extends State<CalendarScreen> {
     _checkSelectedDayEkadashi();
   }
 
+  void selectDate(DateTime targetDate) {
+    DateTime day;
+    if (targetDate.isBefore(_firstDay)) {
+      day = _firstDay;
+    } else if (targetDate.isAfter(_lastDay)) {
+      day = _lastDay;
+    } else {
+      day = targetDate;
+    }
+    setState(() {
+      _focusedDay = day;
+      _selectedDay = day;
+    });
+    _checkSelectedDayEkadashi();
+  }
+
   bool _isEkadashiDay(DateTime day) {
     final d = DateTime(day.year, day.month, day.day);
     for (var ekadashi in widget.ekadashiList) {
@@ -180,7 +196,7 @@ class CalendarScreenState extends State<CalendarScreen> {
             },
             calendarStyle: CalendarStyle(
               todayDecoration: BoxDecoration(
-                color: tealColor.withOpacity(0.5),
+                color: tealColor.withValues(alpha: 0.5),
                 shape: BoxShape.circle,
               ),
               selectedDecoration: const BoxDecoration(
@@ -230,7 +246,7 @@ class CalendarScreenState extends State<CalendarScreen> {
                       lang.translate('no_ekadashi'),
                       style: TextStyle(
                         fontSize: 15,
-                        color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.6),
+                        color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.6),
                       ),
                     ),
                   ),

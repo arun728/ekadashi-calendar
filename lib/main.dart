@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -13,12 +12,15 @@ import 'services/native_notification_service.dart';
 import 'services/native_settings_service.dart';
 import 'services/theme_service.dart';
 import 'services/language_service.dart';
+import 'services/native_widget_service.dart';
+import 'services/widget_sync_manager.dart';
 import 'screens/calendar_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/details_screen.dart';
 import 'screens/splash_screen.dart';
+import 'screens/global_search_screen.dart';
+import 'services/search_index_manager.dart';
 import 'package:timezone/timezone.dart' as tz;
-import 'package:timezone/data/latest.dart' as tz;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -97,6 +99,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   int _currentPage = 0;
   bool _isResuming = false;
   bool _isPermanentDenial = false;
+  Uri? _pendingDeepLinkUri;
 
   final PageController _pageController = PageController(viewportFraction: 1.0);
   final GlobalKey<CalendarScreenState> _calendarKey = GlobalKey();
@@ -105,9 +108,20 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+
+    // Module 13: Initialize widget deep link handling
+    NativeWidgetService().initializeDeepLinkListener((uri) {
+      handleDeepLink(uri);
+    });
+
     // Defer initialization to prevent freeze on process restoration
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeApp();
+      NativeWidgetService().getInitialDeepLink().then((uri) {
+        if (uri != null) {
+          handleDeepLink(uri);
+        }
+      });
     });
   }
 
@@ -467,6 +481,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         } else if (location.city != _locationText) {
           // Just city name changed
           setState(() => _locationText = location.city);
+          _updateHomeScreenWidgets();
         }
       }
     } catch (e) {
@@ -531,6 +546,24 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
         // Schedule notifications
         _scheduleNotifications();
+
+        // Synchronize Home Screen Widgets (Module 13)
+        _updateHomeScreenWidgets();
+
+        // Build/Refresh Search Index (Module 19)
+        SearchIndexManager().buildIndexFromEkadashis(
+          _ekadashiList,
+          languageCode: lang,
+        );
+
+        // Process deferred deep link if any arrived during cold start / loading
+        if (_pendingDeepLinkUri != null) {
+          final pending = _pendingDeepLinkUri!;
+          _pendingDeepLinkUri = null;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            handleDeepLink(pending);
+          });
+        }
       }
     } catch (e) {
       debugPrint('Error loading data: $e');
@@ -540,6 +573,72 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           _errorMessage = 'Failed to load data';
         });
       }
+    }
+  }
+
+  /// Update home screen widgets via WidgetSyncManager
+  Future<void> _updateHomeScreenWidgets() async {
+    if (!mounted || _ekadashiList.isEmpty) return;
+    try {
+      final lang = Provider.of<LanguageService>(context, listen: false);
+      await WidgetSyncManager().syncWidgetData(
+        ekadashiList: _ekadashiList,
+        timezone: _currentTimezone,
+        locationName: _locationText.isNotEmpty ? _locationText : 'Chennai',
+        languageService: lang,
+      );
+    } catch (e) {
+      debugPrint('⚠️ Error updating home screen widgets: $e');
+    }
+  }
+
+  /// Handle incoming widget deep links (e.g., ekadashi://dashboard, ekadashi://calendar?date=...)
+  void handleDeepLink(Uri uri) {
+    if (uri.scheme != 'ekadashi') {
+      debugPrint('⚠️ Ignored deep link with unrecognized scheme: ${uri.scheme}');
+      return;
+    }
+    debugPrint('🔗 Handling widget deep link: $uri');
+
+    // If data is still loading or list is empty, defer execution until _loadData completes
+    if (_isLoading || _ekadashiList.isEmpty) {
+      _pendingDeepLinkUri = uri;
+      debugPrint('⏳ Deferred deep link execution until data loading completes: $uri');
+      return;
+    }
+
+    if (uri.host == 'dashboard' || uri.host == 'today') {
+      final action = uri.queryParameters['action'];
+      setState(() => _currentIndex = 0);
+      if (action == 'parana') {
+        _scrollToNextEkadashi(animate: true, includeParana: true);
+      } else {
+        // Both dashboard and today open the relevant active/upcoming Ekadashi
+        _scrollToNextEkadashi(animate: true, includeParana: true);
+      }
+    } else if (uri.host == 'calendar') {
+      final dateStr = uri.queryParameters['date'];
+      setState(() => _currentIndex = 1);
+      if (dateStr != null && dateStr.isNotEmpty) {
+        final parsedDate = DateTime.tryParse(dateStr);
+        if (parsedDate != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _calendarKey.currentState?.selectDate(parsedDate);
+          });
+        } else {
+          debugPrint('⚠️ Malformed date parameter in calendar deep link: $dateStr. Remaining on calendar view.');
+        }
+      } else {
+        debugPrint('ℹ️ Calendar deep link with no date parameter. Remaining on calendar view.');
+      }
+    } else if (uri.host == 'search') {
+      setState(() => _currentIndex = 2);
+    } else if (uri.host == 'settings') {
+      setState(() => _currentIndex = 3);
+    } else {
+      debugPrint('⚠️ Unknown deep link host "${uri.host}". Safely falling back to Dashboard.');
+      setState(() => _currentIndex = 0);
+      _scrollToNextEkadashi(animate: true, includeParana: true);
     }
   }
 
@@ -575,7 +674,6 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     }
 
     int indexToScroll = 0;
-    bool found = false;
 
     for (int i = 0; i < _ekadashiList.length; i++) {
         final ekadashi = _ekadashiList[i];
@@ -607,7 +705,6 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         // OR if Parana is still active for a passed Ekadashi
         if (daysUntil >= 0 || isParanaActive) {
             indexToScroll = i;
-            found = true;
             break;
         }
     }
@@ -678,6 +775,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       // Continue with scheduling attempt on error
     }
 
+    if (!mounted) return;
     final lang = Provider.of<LanguageService>(context, listen: false);
     final texts = lang.localizedStrings;
 
@@ -716,29 +814,57 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     final lang = Provider.of<LanguageService>(context);
     const tealColor = Color(0xFF00A19B);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Scaffold(
-      appBar: AppBar(
+    PreferredSizeWidget? appBar;
+    if (_currentIndex == 0) {
+      appBar = AppBar(
         title: Text(lang.translate('app_title')),
         centerTitle: true,
-      ),
+      );
+    } else if (_currentIndex == 1) {
+      appBar = AppBar(
+        title: Text(lang.translate('calendar')),
+        centerTitle: true,
+      );
+    } else if (_currentIndex == 3) {
+      appBar = AppBar(
+        title: Text(lang.translate('settings')),
+        centerTitle: true,
+      );
+    }
+
+    return Scaffold(
+      appBar: appBar,
       body: _buildBody(lang, tealColor),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: _onBottomNavTapped,
+        type: BottomNavigationBarType.fixed,
         selectedItemColor: tealColor,
+        unselectedItemColor: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+        selectedFontSize: 12,
+        unselectedFontSize: 11,
         items: [
           BottomNavigationBarItem(
             icon: const Icon(Icons.home),
             label: lang.translate('home'),
+            tooltip: lang.translate('home'),
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.calendar_month),
             label: lang.translate('calendar'),
+            tooltip: lang.translate('calendar'),
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.search),
+            label: lang.translate('search'),
+            tooltip: lang.translate('search'),
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.settings),
             label: lang.translate('settings'),
+            tooltip: lang.translate('settings'),
           ),
         ],
       ),
@@ -789,6 +915,14 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           key: _calendarKey,
           ekadashiList: _ekadashiList,
           currentTimezone: _currentTimezone,
+        ),
+        GlobalSearchScreen(
+          ekadashiList: _ekadashiList,
+          currentTimezone: _currentTimezone,
+          showBackButton: false,
+          onBackToHome: () {
+            setState(() => _currentIndex = 0);
+          },
         ),
         const SettingsScreen(),
       ],
@@ -1084,7 +1218,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             spreadRadius: 1,
           )
@@ -1228,7 +1362,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                             .textTheme
                             .bodyMedium
                             ?.color
-                            ?.withOpacity(0.8),
+                            ?.withValues(alpha: 0.8),
                         height: 1.4,
                       ),
                       textAlign: TextAlign.center,
