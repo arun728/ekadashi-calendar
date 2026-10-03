@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+import 'widgets/glass_navigation_bar.dart';
 import 'data/calendar_entry_repository.dart';
 import 'services/native_widget_service.dart';
 import 'services/widget_sync_manager.dart';
@@ -854,40 +856,52 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     final lang = Provider.of<LanguageService>(context);
     const tealColor = Color(0xFF00A19B);
 
+    final glass = defaultTargetPlatform == TargetPlatform.android;
+    final keyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
+    final items = [
+      BottomNavigationBarItem(
+        icon: const Icon(Icons.home),
+        label: lang.translate('home'),
+      ),
+      BottomNavigationBarItem(
+        icon: const Icon(Icons.calendar_month),
+        label: lang.translate('calendar'),
+      ),
+      BottomNavigationBarItem(
+        icon: const Icon(Icons.spa_outlined),
+        activeIcon: const Icon(Icons.spa),
+        label: lang.translate('vrat'),
+      ),
+      BottomNavigationBarItem(
+        icon: const Icon(Icons.search),
+        label: lang.translate('search'),
+      ),
+      BottomNavigationBarItem(
+        icon: const Icon(Icons.settings),
+        label: lang.translate('settings'),
+      ),
+    ];
     return Scaffold(
+      extendBody: glass,
       appBar: _currentIndex == 3
           ? null
           : AppBar(title: Text(lang.translate('app_title')), centerTitle: true),
       body: _buildBody(lang, tealColor),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: _currentIndex,
-        onTap: _onBottomNavTapped,
-        selectedItemColor: tealColor,
-        items: [
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.home),
-            label: lang.translate('home'),
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.calendar_month),
-            label: lang.translate('calendar'),
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.spa_outlined),
-            activeIcon: const Icon(Icons.spa),
-            label: lang.translate('vrat'),
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.search),
-            label: lang.translate('search'),
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.settings),
-            label: lang.translate('settings'),
-          ),
-        ],
-      ),
+      bottomNavigationBar: glass
+          ? (keyboardOpen
+                ? null
+                : GlassNavigationBar(
+                    items: items,
+                    currentIndex: _currentIndex,
+                    onTap: _onBottomNavTapped,
+                  ))
+          : BottomNavigationBar(
+              type: BottomNavigationBarType.fixed,
+              currentIndex: _currentIndex,
+              onTap: _onBottomNavTapped,
+              selectedItemColor: tealColor,
+              items: items,
+            ),
     );
   }
 
@@ -930,22 +944,28 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     return IndexedStack(
       index: _currentIndex,
       children: [
-        _buildHomeContent(lang, tealColor),
+        SafeArea(top: false, child: _buildHomeContent(lang, tealColor)),
         CalendarScreen(
           key: _calendarKey,
           repository: context.read<CalendarEntryRepository?>(),
           ekadashiList: _ekadashiList,
           currentTimezone: _currentTimezone,
         ),
-        VratTrackerScreen(
-          ekadashiList: _ekadashiList,
-          currentTimezone: _currentTimezone,
+        SafeArea(
+          top: false,
+          child: VratTrackerScreen(
+            ekadashiList: _ekadashiList,
+            currentTimezone: _currentTimezone,
+          ),
         ),
-        GlobalSearchScreen(
-          ekadashiList: _ekadashiList,
-          currentTimezone: _currentTimezone,
-          showBackButton: false,
-          onBackToHome: () => _onBottomNavTapped(0),
+        SafeArea(
+          top: false,
+          child: GlobalSearchScreen(
+            ekadashiList: _ekadashiList,
+            currentTimezone: _currentTimezone,
+            showBackButton: false,
+            onBackToHome: () => _onBottomNavTapped(0),
+          ),
         ),
         const SettingsScreen(),
       ],
@@ -1293,7 +1313,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
                     // Date
                     Text(
-                      DateFormat('MMM dd, yyyy',lang.currentLocale.languageCode).format(ekadashi.date),
+                      DateFormat(
+                        'MMM dd, yyyy',
+                        lang.currentLocale.languageCode,
+                      ).format(ekadashi.date),
                       style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w300,
@@ -1340,7 +1363,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        DateFormat('MMM dd, yyyy',lang.currentLocale.languageCode).format(ekadashi.date),
+                        DateFormat(
+                          'MMM dd, yyyy',
+                          lang.currentLocale.languageCode,
+                        ).format(ekadashi.date),
                         style: TextStyle(
                           fontSize: 15,
                           color: Colors.grey.shade500,

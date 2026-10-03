@@ -76,6 +76,9 @@ void main() {
         await tester.tap(find.byIcon(Icons.search));
         await tester.pumpAndSettle();
         await capture('search');
+        await tester.tap(find.byIcon(Icons.spa_outlined));
+        await tester.pumpAndSettle();
+        await capture('vrat');
         await tester.tap(find.byIcon(Icons.settings));
         await tester.pumpAndSettle();
         expect(find.byType(SwitchListTile), findsWidgets);

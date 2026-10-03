@@ -576,7 +576,7 @@ class CalendarScreenState extends State<CalendarScreen> {
                     },
                   ),
                 // Add bottom padding to ensure content isn't cut off on very small screens
-                const SizedBox(height: 88),
+                SizedBox(height: 88 + MediaQuery.paddingOf(context).bottom),
               ],
             ),
           ),

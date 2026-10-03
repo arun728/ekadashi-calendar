@@ -175,7 +175,14 @@ void main() {
     expect(find.text('5 Ekadashis'), findsOneWidget);
 
     // Scroll to bottom of GridView to reveal remaining achievements
-    await tester.drag(find.byType(GridView), const Offset(0, -600));
+    await tester.scrollUntilVisible(
+      find.text('Consistent Observance'),
+      160,
+      scrollable: find.descendant(
+        of: find.byType(GridView),
+        matching: find.byType(Scrollable),
+      ),
+    );
     await tester.pumpAndSettle();
     expect(find.text('Consistent Observance'), findsOneWidget);
     expect(find.text('Full-Year Observance'), findsOneWidget);

@@ -264,7 +264,12 @@ class _SettingsScreenState extends State<SettingsScreen>
     }
 
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.fromLTRB(
+        16,
+        16,
+        16,
+        16 + MediaQuery.paddingOf(context).bottom,
+      ),
       children: [
         ListTile(
           leading: const Icon(Icons.widgets_outlined),

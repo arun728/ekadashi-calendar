@@ -88,6 +88,10 @@ void main() {
       );
       await binding.convertFlutterSurfaceToImage();
       await frames(tester);
+      expect(find.byKey(const Key('glass_navigation_bar')), findsOneWidget);
+      for (var i = 0; i < 5; i++) {
+        expect(find.byKey(Key('glass_tab_$i')).hitTestable(), findsOneWidget);
+      }
       await binding.takeScreenshot('v2_home_2026');
       final lang = tester
           .element(find.byType(MaterialApp).first)
@@ -156,6 +160,22 @@ void main() {
         await frames(tester);
         expect(find.byType(GlobalSearchScreen).hitTestable(), findsOneWidget);
         await binding.takeScreenshot('v2_search_$code');
+        await tester.tap(find.byIcon(Icons.settings));
+        await frames(tester);
+        await binding.takeScreenshot('glass_settings_dark_$code');
+        await tester.tap(find.byType(SwitchListTile).first);
+        await frames(tester);
+        await binding.takeScreenshot('glass_settings_light_$code');
+        await tester.tap(find.byType(SwitchListTile).first);
+        await frames(tester);
+        await tester.tap(find.byIcon(Icons.home));
+        await frames(tester);
+        await binding.takeScreenshot('glass_home_$code');
+        await tester.tap(find.byIcon(Icons.calendar_month));
+        await frames(tester);
+        await binding.takeScreenshot('glass_calendar_$code');
+        await tester.tap(find.byIcon(Icons.search));
+        await frames(tester);
       }
       await lang.changeLanguage('en');
       await frames(tester, count: 10);

@@ -14,3 +14,9 @@ Arun's instructions, updated 3 October 2026:
   does not authorize or perform a release.
 - Use the connected GitHub App. Never commit credentials or use tokens pasted
   into chat. Test scripts that clear app/launcher data require a dedicated emulator.
+
+## Glass UI prototype
+
+The separate `feature/android-glass-navigation` branch must not merge into `dev`
+or `main` before Samsung M52/Z Flip 5 physical-device testing and fresh explicit
+approval from Arun. Earlier v2 merge authorization does not cover this UI task.

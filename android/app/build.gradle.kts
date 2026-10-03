@@ -14,6 +14,8 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
+val glassPreview = providers.gradleProperty("glassPreview").orNull == "true"
+
 android {
     namespace = "com.applausestudios.ekadashi_calendar"
     compileSdk = flutter.compileSdkVersion
@@ -46,7 +48,11 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.applausestudios.ekadashi_calendar"
+        applicationId = if (glassPreview)
+            "com.applausestudios.ekadashi_calendar.glasspreview"
+        else "com.applausestudios.ekadashi_calendar"
+        manifestPlaceholders["appLabel"] = if (glassPreview)
+            "Ekadashi Glass Preview" else "Ekadashi Calendar"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.

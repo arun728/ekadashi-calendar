@@ -29,3 +29,9 @@ These rules record Arun's explicit instructions from 3 October 2026.
 
 See docs/INTEGRATION_POLICY.md, docs/TESTING.md and
  docs/UPGRADE_INTEGRATION_PLAN.md for the current review and proposed flow.
+
+## Glass UI prototype
+
+The separate `feature/android-glass-navigation` branch must not merge into `dev`
+or `main` before Samsung M52/Z Flip 5 physical-device testing and fresh explicit
+approval from Arun. Earlier v2 merge authorization does not cover this UI task.

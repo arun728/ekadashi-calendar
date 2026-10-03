@@ -104,3 +104,28 @@ jobs:
       - name: Preserve failing native release gate
         if: always() && steps.native_tests.outcome == 'failure'
         run: exit 1
+
+  glass-preview:
+    if: github.head_ref == 'feature/android-glass-navigation'
+    needs: flutter-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools'
+      - run: sdkmanager 'ndk;28.2.13676358'
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.38.5'
+          cache: true
+      - run: flutter pub get
+      - run: bash tool/build-glass-preview.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ekadashi-glass-preview-arm64
+          path: build/glass-preview/ekadashi-glass-preview-arm64.apk
