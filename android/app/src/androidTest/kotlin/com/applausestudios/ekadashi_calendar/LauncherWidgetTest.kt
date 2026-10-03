@@ -3,6 +3,9 @@ package com.applausestudios.ekadashi_calendar
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Intent
+import android.view.View
+import android.view.ViewGroup
+import io.flutter.embedding.android.FlutterView
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.uiautomator.*
@@ -34,6 +37,14 @@ class LauncherWidgetTest {
   assertTrue(device.takeScreenshot(File(output,"$name.png")))
  }
  private fun home(){device.pressHome();device.waitForIdle(1000)}
+ private fun flutterView(view:View):FlutterView? {
+  if(view is FlutterView) return view
+  if(view is ViewGroup) for(i in 0 until view.childCount) {
+   val found=flutterView(view.getChildAt(i))
+   if(found!=null) return found
+  }
+  return null
+ }
  private fun addWidget(label:String,receiver:String):Int {
   // A clean home page prevents overlap from obscuring screenshots or tap targets.
   home()
@@ -108,6 +119,17 @@ class LauncherWidgetTest {
   assertEquals("ekadashi",requireNotNull(activity).intent.data?.scheme)
   assertEquals(route,activity.intent.data?.host)
   instrumentation.removeMonitor(monitor)
+  // Activity creation precedes Flutter's first frame. Verify the destination
+  // actually renders before closing it; a splash screenshot is insufficient.
+  var flutterVisible=false
+  for(attempt in 0..60) {
+   instrumentation.runOnMainSync { flutterVisible=flutterView(activity.window.decorView)?.attachedFlutterEngine?.renderer?.isDisplayingFlutterUi==true }
+   if(flutterVisible) break
+   Thread.sleep(500)
+  }
+  assertTrue("Widget destination must draw Flutter UI",flutterVisible)
+  val searchLabel=Pattern.compile("(?s).*(Search|தேடல்|खोज|శోధన).*")
+  assertTrue("Widget destination must expose app navigation",device.wait(Until.hasObject(By.pkg(packageName).desc(searchLabel)),30000))
   device.waitForIdle(1000);capture("${receiver}_tap")
   instrumentation.runOnMainSync { activity.finish() }
   home()
