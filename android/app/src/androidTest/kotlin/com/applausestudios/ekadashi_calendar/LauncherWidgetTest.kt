@@ -55,15 +55,34 @@ class LauncherWidgetTest {
   home()
   assertTrue("Launcher home is ready",device.wait(Until.hasObject(By.res(launcher,"workspace")),30000))
   val width=device.displayWidth;val height=device.displayHeight
-  device.swipe(width/2,height/2,width/2,height/2,120)
-  // Clearing Launcher3 can reveal its first-use tutorial on compact screens.
-  val tutorial=device.findObject(By.res(launcher,"cling_dismiss_longpress_info"))
-  if(tutorial!=null) {
-   tutorial.click();device.waitForIdle(1000)
-   device.swipe(width/2,height/2,width/2,height/2,120)
+  // A visible workspace node can precede its first settled frame after pm clear.
+  // Retry only entering the picker; provider binding/render/tap checks stay strict.
+  var pickerReady=false
+  for(attempt in 0..2) {
+   home()
+   val workspace=device.wait(Until.findObject(By.res(launcher,"workspace")),30000)
+   assertNotNull("Launcher workspace",workspace)
+   device.waitForIdle(2000);Thread.sleep(1500)
+   requireNotNull(workspace).longClick()
+   val tutorial=device.findObject(By.res(launcher,"cling_dismiss_longpress_info"))
+   if(tutorial!=null) {
+    tutorial.click();device.waitForIdle(1000)
+    requireNotNull(device.findObject(By.res(launcher,"workspace"))).longClick()
+   }
+   val widgets=device.wait(Until.findObject(By.text(Pattern.compile("widgets",Pattern.CASE_INSENSITIVE))),10000)
+   if(widgets!=null) {
+    widgets.click()
+    // Never send picker swipes to the home screen or its all-apps drawer.
+    pickerReady=device.wait(Until.hasObject(By.res(Pattern.compile(Pattern.quote(launcher)+":id/.*(widgets_view|primary_widgets_list_view|widgets_list_view|widgets_search_bar_edit_text).*"))),10000)
+    if(pickerReady) break
+   }
+   device.pressBack()
   }
-  val widgets=device.wait(Until.findObject(By.text(Pattern.compile("widgets",Pattern.CASE_INSENSITIVE))),20000)
-  assertNotNull("Launcher widget menu",widgets);requireNotNull(widgets).click()
+  if(!pickerReady) {
+   capture("${receiver}_picker_setup_failed")
+   device.dumpWindowHierarchy(File(output,"${receiver}_picker_setup_failed.xml"))
+  }
+  assertTrue("Launcher widget picker is ready",pickerReady)
   // New Launcher3 versions expose a collapsed app group and do not mark the
   // picker container as scrollable. Find visible items first, then swipe.
   var expanded=false
