@@ -36,27 +36,48 @@ class LauncherWidgetTest {
  private fun home(){device.pressHome();device.waitForIdle(1000)}
  private fun addWidget(label:String,receiver:String):Int {
   // A clean home page prevents overlap from obscuring screenshots or tap targets.
-  device.executeShellCommand("pm clear com.android.launcher3")
   home()
+  assertTrue("Stock launcher is foreground",device.wait(Until.hasObject(By.pkg(Pattern.compile("com\\.(android\\.launcher3|google\\.android\\.apps\\.nexuslauncher)"))),30000))
+  val launcher=requireNotNull(device.currentPackageName)
+  assertTrue("Dedicated stock launcher only",launcher in listOf("com.android.launcher3","com.google.android.apps.nexuslauncher"))
+  device.executeShellCommand("pm clear $launcher")
+  home()
+  assertTrue("Launcher home is ready",device.wait(Until.hasObject(By.res(launcher,"workspace")),30000))
   val width=device.displayWidth;val height=device.displayHeight
   device.swipe(width/2,height/2,width/2,height/2,120)
+  // Clearing Launcher3 can reveal its first-use tutorial on compact screens.
+  val tutorial=device.findObject(By.res(launcher,"cling_dismiss_longpress_info"))
+  if(tutorial!=null) {
+   tutorial.click();device.waitForIdle(1000)
+   device.swipe(width/2,height/2,width/2,height/2,120)
+  }
   val widgets=device.wait(Until.findObject(By.text(Pattern.compile("widgets",Pattern.CASE_INSENSITIVE))),20000)
   assertNotNull("Launcher widget menu",widgets);requireNotNull(widgets).click()
   // New Launcher3 versions expose a collapsed app group and do not mark the
   // picker container as scrollable. Find visible items first, then swipe.
   var expanded=false
-  for(attempt in 0..12) {
-   if(device.hasObject(By.text(label))) break
-   val appGroup=device.findObject(By.text("Ekadashi Calendar"))
-   if(appGroup!=null && !expanded) { appGroup.click();expanded=true }
-   else { device.swipe(width/2,height*4/5,width/2,height/3,30) }
-   device.waitForIdle(1000)
+  val legacyScroll=UiScrollable(UiSelector().scrollable(true))
+  if(legacyScroll.exists()) {
+   legacyScroll.scrollIntoView(UiSelector().text(label))
+  } else {
+   for(attempt in 0..12) {
+    if(device.hasObject(By.text(label))) break
+    val appGroup=device.findObject(By.text("Ekadashi Calendar"))
+    if(appGroup!=null && !expanded) { appGroup.click();expanded=true }
+    else { device.swipe(width/2,height*4/5,width/2,height/3,30) }
+    device.waitForIdle(1000)
+   }
   }
   capture("${receiver}_picker")
   device.dumpWindowHierarchy(File(output,"${receiver}_picker.xml"))
   assertTrue("Find widget $label",device.hasObject(By.text(label)))
-  val objectToDrag=device.findObject(UiSelector().text(label))
-  assertTrue("Bind $label by dragging from the picker",objectToDrag.dragTo(width/2,height/2,100))
+  val labelObject=requireNotNull(device.findObject(By.text(label)))
+  var cell:UiObject2?=labelObject
+  while(cell!=null && !cell.className.endsWith("WidgetCell")) cell=cell.parent
+  val preview=cell?.findObject(By.res(launcher,"widget_preview_container"))
+  // Pixel Launcher attaches the long-press listener to the preview, not label.
+  val dragBounds=(preview ?: labelObject).visibleBounds
+  assertTrue("Bind $label by dragging its preview",device.drag(dragBounds.centerX(),dragBounds.centerY(),width/2,height/2,100))
   device.waitForIdle(1000);device.pressBack();device.waitForIdle(1000)
   val component=ComponentName(packageName,"$packageName.widget.provider.$receiver")
   var ids=manager.getAppWidgetIds(component)
