@@ -56,14 +56,14 @@ class DetailsScreen extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                       decoration: BoxDecoration(
-                        color: tealColor.withValues(alpha: 0.1),
+                        color: tealColor.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
                         timezone!,
                         style: TextStyle(
                           fontSize: 12,
-                          color: tealColor.withValues(alpha: 0.8),
+                          color: tealColor.withOpacity(0.8),
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -128,10 +128,10 @@ class DetailsScreen extends StatelessWidget {
               decoration: BoxDecoration(
                   color: Theme.of(context).cardColor,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: tealColor.withValues(alpha: 0.3)),
+                  border: Border.all(color: tealColor.withOpacity(0.3)),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
+                      color: Colors.black.withOpacity(0.05),
                       blurRadius: 10,
                     )
                   ]

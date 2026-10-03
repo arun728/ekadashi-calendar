@@ -50,8 +50,8 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: Color(0xFF121212),
+    return Scaffold(
+      backgroundColor: const Color(0xFF121212),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -61,8 +61,8 @@ class _SplashScreenState extends State<SplashScreen> {
               width: 100,
               child: Stack(
                 alignment: Alignment.center,
-                children: [
-                  Positioned(
+                children: const [
+                   Positioned(
                     top: 0,
                     child: Icon(Icons.wb_sunny_outlined, size: 40, color: Colors.orangeAccent),
                   ),
@@ -73,8 +73,8 @@ class _SplashScreenState extends State<SplashScreen> {
                 ],
               ),
             ),
-            SizedBox(height: 20),
-            Text(
+            const SizedBox(height: 20),
+            const Text(
               'Ekadashi Calendar',
               style: TextStyle(
                 color: Colors.white,
@@ -82,8 +82,8 @@ class _SplashScreenState extends State<SplashScreen> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 8),
-            Text(
+            const SizedBox(height: 8),
+            const Text(
               'Om Namo Narayana!',
               style: TextStyle(
                 color: Colors.white54,
@@ -91,8 +91,8 @@ class _SplashScreenState extends State<SplashScreen> {
                 fontStyle: FontStyle.italic,
               ),
             ),
-            SizedBox(height: 40),
-            CircularProgressIndicator(color: Color(0xFF00A19B)),
+            const SizedBox(height: 40),
+            const CircularProgressIndicator(color: Color(0xFF00A19B)),
           ],
         ),
       ),

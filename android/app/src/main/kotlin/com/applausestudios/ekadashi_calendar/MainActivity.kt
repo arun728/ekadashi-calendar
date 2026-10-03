@@ -25,7 +25,6 @@ class MainActivity: FlutterActivity() {
     private val LOCATION_CHANNEL = "com.ekadashi.location"
     private val NOTIFICATION_CHANNEL = "com.ekadashi.notifications"
     private val SETTINGS_CHANNEL = "com.ekadashi.settings"
-    private val WIDGET_CHANNEL = "com.ekadashi.widget"
 
     private val TAG = "EkadashiMain"
 
@@ -41,10 +40,6 @@ class MainActivity: FlutterActivity() {
     private var notificationScheduler: NotificationScheduler? = null
     private var settingsService: SettingsService? = null
 
-    // Deep link handling for Module 13 widgets
-    private var initialDeepLinkUri: String? = null
-    private var widgetChannel: MethodChannel? = null
-
     // Flag to prevent duplicate initialization
     private var servicesInitialized = false
 
@@ -52,22 +47,6 @@ class MainActivity: FlutterActivity() {
         // Handle the splash screen transition.
         installSplashScreen()
         super.onCreate(savedInstanceState)
-
-        // Capture initial widget deep link if opened via Intent.ACTION_VIEW
-        if (intent?.action == Intent.ACTION_VIEW) {
-            initialDeepLinkUri = intent?.dataString
-            Log.d(TAG, "Captured initial widget deep link: $initialDeepLinkUri")
-        }
-    }
-
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        setIntent(intent)
-        val uri = intent.dataString
-        if (uri != null) {
-            Log.d(TAG, "onNewIntent received widget deep link: $uri")
-            widgetChannel?.invokeMethod("onDeepLink", uri)
-        }
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -94,41 +73,6 @@ class MainActivity: FlutterActivity() {
         setupLocationChannel(flutterEngine)
         setupNotificationChannel(flutterEngine)
         setupSettingsChannel(flutterEngine)
-        setupWidgetChannel(flutterEngine)
-    }
-
-    private fun setupWidgetChannel(flutterEngine: FlutterEngine) {
-        val channel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, WIDGET_CHANNEL)
-        widgetChannel = channel
-        channel.setMethodCallHandler { call, result ->
-            when (call.method) {
-                "getInitialDeepLink" -> {
-                    val link = initialDeepLinkUri
-                    initialDeepLinkUri = null // Consume only once
-                    result.success(link)
-                }
-                "updateWidgetData" -> {
-                    val payloadJson = call.argument<String>("payloadJson")
-                    if (payloadJson != null) {
-                        try {
-                            val payload = com.applausestudios.ekadashi_calendar.widget.model.WidgetPayload.fromJsonString(payloadJson)
-                            val success = com.applausestudios.ekadashi_calendar.widget.refresh.WidgetRefreshManager.updateDataAndRefresh(applicationContext, payload)
-                            result.success(success)
-                        } catch (e: Exception) {
-                            Log.e(TAG, "Error updating widget data: ${e.message}", e)
-                            result.error("PARSE_ERROR", e.message, null)
-                        }
-                    } else {
-                        result.error("INVALID_ARGS", "payloadJson required", null)
-                    }
-                }
-                "forceWidgetRefresh" -> {
-                    com.applausestudios.ekadashi_calendar.widget.refresh.WidgetRefreshManager.refreshAllWidgets(applicationContext)
-                    result.success(true)
-                }
-                else -> result.notImplemented()
-            }
-        }
     }
 
     override fun onDestroy() {

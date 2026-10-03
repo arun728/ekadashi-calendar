@@ -1,20 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="ic_launcher_background">#00A19B</color>
-    <color name="widget_teal">#00A19B</color>
-    <color name="widget_amber">#F59E0B</color>
-    <color name="widget_gold">#F59E0B</color>
-    <color name="widget_gold_light">#FBBF24</color>
-    <color name="widget_green">#10B981</color>
-    <color name="widget_blue_accent">#38BDF8</color>
-    <color name="widget_bg">#090E1A</color>
-    <color name="widget_gradient_start">#0D1527</color>
-    <color name="widget_gradient_center">#0A0F1D</color>
-    <color name="widget_gradient_end">#030712</color>
-    <color name="widget_border">#2B3954</color>
-    <color name="widget_card_bg">#1E293B</color>
-    <color name="widget_card_border">#334155</color>
-    <color name="widget_text_primary">#FFFFFF</color>
-    <color name="widget_text_secondary">#CBD5E1</color>
-    <color name="widget_text_muted">#94A3B8</color>
 </resources>

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart' as fln;
@@ -59,14 +60,11 @@ class NotificationService {
       requestSoundPermission: false,
     );
 
-    try {
-      await flutterLocalNotificationsPlugin.initialize(
-        const fln.InitializationSettings(android: androidSettings, iOS: iosSettings),
-      );
-      debugPrint('✅ Notification service initialized (TZ: $_currentTimeZone)');
-    } catch (e) {
-      debugPrint('⚠️ FlutterLocalNotificationsPlugin initialize error: $e');
-    }
+    await flutterLocalNotificationsPlugin.initialize(
+      const fln.InitializationSettings(android: androidSettings, iOS: iosSettings),
+    );
+
+    debugPrint('✅ Notification service initialized (TZ: $_currentTimeZone)');
   }
 
   String _findTimezoneByOffset(int offsetMinutes) {

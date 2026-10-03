@@ -46,11 +46,6 @@ flutter:
   assets:
     - assets/ekadashi_data.json
     - assets/app_icon.png
-    - assets/images/
-    - assets/images/widget_lotus_deity.png
-    - assets/images/widget_card_banner.png
-    - assets/images/widget_card_watermark.png
-    - assets/images/widget_bg_lotus_watermark.png
 
 flutter_launcher_icons:
   android: true

@@ -38,74 +38,7 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-
-            <!-- Ekadashi Widget Deep Link Intent Filter -->
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="ekadashi" />
-            </intent-filter>
         </activity>
-
-
-        <!-- Card 1: Next Ekadashi (Small 2x2) -->
-        <receiver
-            android:name=".widget.provider.NextEkadashiWidgetReceiver"
-            android:label="@string/widget_a_title"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/ekadashi_widget_info" />
-        </receiver>
-
-        <!-- Card 2: Ekadashi Today (Medium 4x2) -->
-        <receiver
-            android:name=".widget.provider.EkadashiTodayWidgetReceiver"
-            android:label="@string/widget_b_title"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/widget_ekadashi_today_info" />
-        </receiver>
-
-        <!-- Card 3: Upcoming Ekadashis (Large 4x4) -->
-        <receiver
-            android:name=".widget.provider.UpcomingEkadashisWidgetReceiver"
-            android:label="@string/widget_c_title"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/widget_upcoming_ekadashis_info" />
-        </receiver>
- 
-         <!-- RemoteViewsService for Widget C scrollable upcoming list -->
-         <service
-             android:name=".widget.service.EkadashiListWidgetService"
-             android:permission="android.permission.BIND_REMOTEVIEWS"
-             android:exported="false" />
-
-        <!-- Time & Timezone Change BroadcastReceiver -->
-        <receiver
-            android:name=".widget.receiver.TimeChangeReceiver"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
-                <action android:name="android.intent.action.TIME_SET" />
-                <action android:name="android.intent.action.DATE_CHANGED" />
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
-            </intent-filter>
-        </receiver>
 
         <!-- Notification receivers -->
         <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" />
