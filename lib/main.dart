@@ -1377,6 +1377,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                       child: Text(
                         DateFormat(
                           'MMM dd, yyyy',
+                          lang.currentLocale.languageCode,
                         ).format(ekadashi.date.add(const Duration(days: 1))),
                         style: TextStyle(
                           fontSize: 15,

@@ -8,8 +8,8 @@ Telugu and custom/Google calendar integration. Main is outside this change.
 
 | Gate | Result |
 | --- | --- |
-| Flutter unit, regression, widget, acceptance and offscreen UI | 189 passed |
-| Instrumented Dart line coverage | 5,263 / 6,695 (78.61%) |
+| Flutter unit, regression, widget, acceptance and offscreen UI | 193 passed |
+| Instrumented Dart line coverage | 5,264 / 6,696 (78.61%) |
 | Flutter analyzer | No issues found |
 | Translation-tool Python tests | 5 passed |
 | Native JVM/Robolectric notification and widget tests | 31 passed (widget/preview SDK 28/35) |
@@ -38,6 +38,7 @@ coverage. Individual file coverage is available from `coverage/lcov.info` and
   five tabs remaining reachable after integration.
 - Every UI key/placeholder/native script across ta/hi/te, hardcoded screen Text
   audit, all five official content fields plus month/paksha in both year packs.
+  Home fasting and fast-breaking date labels are checked in all four locales.
   Four-language UI snapshots use complete Telugu/Tamil/Hindi test fonts.
   Flutter integration uses registered controlled text input to avoid stale native
   IME client IDs; native launcher tests use actual Android touch/accessibility.
