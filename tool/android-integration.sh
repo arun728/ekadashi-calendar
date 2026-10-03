@@ -5,13 +5,14 @@ package_name=com.applausestudios.ekadashi_calendar
 mode=${1:-granted}
 output_dir=build/android-evidence
 mkdir -p "$output_dir"
-adb wait-for-device
+timeout 120 adb wait-for-device
 api_level=$(adb shell getprop ro.build.version.sdk | tr -d '\r')
 if [[ "$mode" == denied ]] && (( api_level < 33 )); then
   echo 'The deterministic denied-permission fixture requires API33+; use the API35 CI matrix.' >&2
   exit 2
 fi
-adb install -r build/app/outputs/flutter-apk/app-debug.apk
+flutter build apk --debug --target-platform android-x64 --target=integration_test/android_app_test.dart --dart-define=TEST_PERMISSION_MODE="$mode"
+timeout 120 adb install --no-streaming -r build/app/outputs/flutter-apk/app-debug.apk
 adb shell pm grant "$package_name" android.permission.ACCESS_FINE_LOCATION
 adb shell pm grant "$package_name" android.permission.ACCESS_COARSE_LOCATION
 if (( api_level >= 33 )); then
@@ -37,7 +38,7 @@ fi
 adb logcat -c
 # Always capture diagnostics, including when assertions fail.
 trap 'adb logcat -d > "$output_dir/logcat.txt"; adb exec-out screencap -p > "$output_dir/final-screen.png"; adb shell dumpsys package "$package_name" > "$output_dir/package.txt"; adb shell getprop > "$output_dir/device.txt"' EXIT
-flutter drive --driver=test_driver/integration_test.dart --target=integration_test/android_app_test.dart --dart-define=TEST_PERMISSION_MODE="$mode" --keep-app-running -d emulator-5554
+bash tool/android-drive-installed.sh integration_test/android_app_test.dart "$output_dir"
 # Return from the actual Android launcher, then capture the restored activity.
 adb shell input keyevent KEYCODE_HOME
 adb shell am start -W -n "$package_name/.MainActivity" > "$output_dir/resume.txt"

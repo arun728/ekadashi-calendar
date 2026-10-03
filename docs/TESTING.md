@@ -11,7 +11,7 @@ Telugu and custom/Google calendar integration. Main is outside this change.
 | Flutter unit, regression, widget, acceptance and offscreen UI | 193 passed |
 | Instrumented Dart line coverage | 5,264 / 6,696 (78.61%) |
 | Flutter analyzer | No issues found |
-| Translation-tool Python tests | 5 passed |
+| Translation-tool and runner Python tests | 8 passed |
 | Native JVM/Robolectric notification and widget tests | 31 passed (widget/preview SDK 28/35) |
 | API 24 full app/multi-year/SQLite/Google reconciliation UI | Required; exact run result in PR validation/evidence |
 | API 24 real launcher: three widget providers, four locales, taps | Required; exact run result in PR validation/evidence |
@@ -42,6 +42,12 @@ coverage. Individual file coverage is available from `coverage/lcov.info` and
   Four-language UI snapshots use complete Telugu/Tamil/Hindi test fonts.
   Flutter integration uses registered controlled text input to avoid stale native
   IME client IDs; native launcher tests use actual Android touch/accessibility.
+  The Linux/GNU-timeout runner installs each test APK once with non-streaming ADB,
+  pre-grants permissions, starts its Dart isolate paused and attaches the standard
+  Flutter driver to that installed binary. Host runner tests verify connection,
+  failure propagation and port cleanup. Installation/VM/driver deadlines fail the
+  gate explicitly instead of hanging a job. Pixel picker groups are expanded
+  before scrolling regardless of their scrollable accessibility metadata.
 - Native picker previews use all four locale resource labels, contain no invented
   dates, and fit the small minimum width without letter-by-letter wrapping.
 - Native widget rollover through multiple expired entries, cross-year/offline

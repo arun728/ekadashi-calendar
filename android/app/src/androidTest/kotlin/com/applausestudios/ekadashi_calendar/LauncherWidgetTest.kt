@@ -84,10 +84,11 @@ class LauncherWidgetTest {
   }
   assertTrue("Launcher widget picker is ready",pickerReady)
   // New Launcher3 versions expose a collapsed app group and do not mark the
-  // picker container as scrollable. Find visible items first, then swipe.
+  // picker container consistently as scrollable. A Pixel list may report true
+  // while its app groups are still collapsed: expand the app group first.
   var expanded=false
   val legacyScroll=UiScrollable(UiSelector().scrollable(true))
-  if(legacyScroll.exists()) {
+  if(launcher=="com.android.launcher3" && legacyScroll.exists()) {
    legacyScroll.scrollIntoView(UiSelector().text(label))
   } else {
    for(attempt in 0..12) {
