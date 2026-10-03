@@ -36,13 +36,19 @@ class LauncherWidgetTest {
   device.swipe(width/2,height/2,width/2,height/2,120)
   val widgets=device.wait(Until.findObject(By.text(Pattern.compile("widgets",Pattern.CASE_INSENSITIVE))),20000)
   assertNotNull("Launcher widget menu",widgets);requireNotNull(widgets).click()
-  val scroll=UiScrollable(UiSelector().scrollable(true))
-  var found=scroll.scrollIntoView(UiSelector().text(label))
-  if(!found && scroll.scrollIntoView(UiSelector().text("Ekadashi Calendar"))) {
-   device.findObject(UiSelector().text("Ekadashi Calendar")).click()
-   found=scroll.scrollIntoView(UiSelector().text(label))
+  // New Launcher3 versions expose a collapsed app group and do not mark the
+  // picker container as scrollable. Find visible items first, then swipe.
+  var expanded=false
+  for(attempt in 0..12) {
+   if(device.hasObject(By.text(label))) break
+   val appGroup=device.findObject(By.text("Ekadashi Calendar"))
+   if(appGroup!=null && !expanded) { appGroup.click();expanded=true }
+   else { device.swipe(width/2,height*4/5,width/2,height/3,30) }
+   device.waitForIdle(1000)
   }
-  assertTrue("Find widget $label",found)
+  capture("${receiver}_picker")
+  device.dumpWindowHierarchy(File(output,"${receiver}_picker.xml"))
+  assertTrue("Find widget $label",device.hasObject(By.text(label)))
   val objectToDrag=device.findObject(UiSelector().text(label))
   assertTrue("Bind $label by dragging from the picker",objectToDrag.dragTo(width/2,height/2,100))
   device.waitForIdle(1000);device.pressBack();device.waitForIdle(1000)

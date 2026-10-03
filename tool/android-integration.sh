@@ -37,7 +37,7 @@ fi
 adb logcat -c
 # Always capture diagnostics, including when assertions fail.
 trap 'adb logcat -d > "$output_dir/logcat.txt"; adb exec-out screencap -p > "$output_dir/final-screen.png"; adb shell dumpsys package "$package_name" > "$output_dir/package.txt"; adb shell getprop > "$output_dir/device.txt"' EXIT
-flutter drive --driver=test_driver/integration_test.dart --target=integration_test/android_app_test.dart --dart-define=TEST_PERMISSION_MODE="$mode" -d emulator-5554
+flutter drive --driver=test_driver/integration_test.dart --target=integration_test/android_app_test.dart --dart-define=TEST_PERMISSION_MODE="$mode" --keep-app-running -d emulator-5554
 # Return from the actual Android launcher, then capture the restored activity.
 adb shell input keyevent KEYCODE_HOME
 adb shell am start -W -n "$package_name/.MainActivity" > "$output_dir/resume.txt"
