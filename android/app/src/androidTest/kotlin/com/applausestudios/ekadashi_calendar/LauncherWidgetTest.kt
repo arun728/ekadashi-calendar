@@ -12,6 +12,7 @@ import org.junit.Test
 import org.junit.Assert.*
 import org.junit.runner.RunWith
 import java.io.File
+import java.util.regex.Pattern
 
 /** Real stock-launcher binding/rendering/taps, using production providers and views.
  * Run after the Flutter integration run creates four locale fixtures in the durable databases directory.
@@ -33,10 +34,15 @@ class LauncherWidgetTest {
   home()
   val width=device.displayWidth;val height=device.displayHeight
   device.swipe(width/2,height/2,width/2,height/2,120)
-  val widgets=device.wait(Until.findObject(By.text("WIDGETS")),20000)
+  val widgets=device.wait(Until.findObject(By.text(Pattern.compile("widgets",Pattern.CASE_INSENSITIVE))),20000)
   assertNotNull("Launcher widget menu",widgets);requireNotNull(widgets).click()
   val scroll=UiScrollable(UiSelector().scrollable(true))
-  assertTrue("Find widget $label",scroll.scrollIntoView(UiSelector().text(label)))
+  var found=scroll.scrollIntoView(UiSelector().text(label))
+  if(!found && scroll.scrollIntoView(UiSelector().text("Ekadashi Calendar"))) {
+   device.findObject(UiSelector().text("Ekadashi Calendar")).click()
+   found=scroll.scrollIntoView(UiSelector().text(label))
+  }
+  assertTrue("Find widget $label",found)
   val objectToDrag=device.findObject(UiSelector().text(label))
   assertTrue("Bind $label by dragging from the picker",objectToDrag.dragTo(width/2,height/2,100))
   device.waitForIdle(1000);device.pressBack();device.waitForIdle(1000)

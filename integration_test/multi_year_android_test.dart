@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:sqflite/sqflite.dart' show getDatabasesPath;
+import 'package:table_calendar/table_calendar.dart';
 import 'package:ekadashi_calendar/screens/global_search_screen.dart';
 import 'package:ekadashi_calendar/services/widget_sync_manager.dart';
 import 'package:ekadashi_calendar/services/native_widget_service.dart';
@@ -191,6 +192,9 @@ void main() {
       await fixtureLang.changeLanguage('en');
       final fixtureTracker = VratTrackerService();
       await fixtureTracker.init(occurrences: years);
+      // Dispose the app-owned connection before opening the same SQLite path.
+      await tester.pumpWidget(const SizedBox.shrink());
+      await frames(tester);
       final repo = SqfliteCalendarEntryRepository();
       await repo.init();
       final google = AndroidTestGoogle();
@@ -238,9 +242,7 @@ void main() {
       final state = tester.state<CalendarScreenState>(
         find.byType(CalendarScreen),
       );
-      final calendar = find.byWidgetPredicate(
-        (w) => w.runtimeType.toString().startsWith('TableCalendar'),
-      );
+      final calendar = find.byWidgetPredicate((w) => w is TableCalendar);
       expect(calendar, findsOneWidget);
       state.selectDate(DateTime(2027, 1, 1));
       await frames(tester);

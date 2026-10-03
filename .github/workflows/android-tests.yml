@@ -56,6 +56,9 @@ jobs:
           distribution: temurin
           java-version: '17'
       - uses: android-actions/setup-android@v3
+        with:
+          # The old SDK "tools" package no longer exists in Google's repository.
+          packages: 'platform-tools'
       - run: sdkmanager 'ndk;28.2.13676358'
       - name: Bound Gradle memory on hosted runners
         run: |
