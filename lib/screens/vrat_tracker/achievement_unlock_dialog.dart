@@ -92,7 +92,10 @@ class AchievementUnlockDialog extends StatelessWidget {
                   vertical: 10,
                 ),
               ),
-              child: const Text('Hari Om 🙏', style: TextStyle(fontSize: 15)),
+              child: Text(
+                lang.translate('hari_om'),
+                style: const TextStyle(fontSize: 15),
+              ),
             ),
           ],
         ),

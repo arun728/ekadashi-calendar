@@ -11,6 +11,9 @@ dependencies:
   flutter:
     sdk: flutter
 
+  flutter_localizations:
+    sdk: flutter
+
   # Sharing
   share_plus: ^7.2.2
 
@@ -24,8 +27,17 @@ dependencies:
   timezone: ^0.9.2
   flutter_timezone: ^3.0.0
 
+  characters: ^1.4.0
+
   # UI
   table_calendar: ^3.2.0
+  sqflite: ^2.4.2
+  google_sign_in: ^6.2.2
+  googleapis: ^13.2.0
+  extension_google_sign_in_as_googleapis_auth: ^2.0.2
+  http: ^1.2.2
+  path: ^1.9.1
+  uuid: ^4.5.2
 
   # ============================================================
   # REMOVED DEPENDENCIES (v2.0 - replaced with native Kotlin)
@@ -42,13 +54,18 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
+  sqflite_common_ffi: 2.3.6
+  shared_preferences_platform_interface: ^2.4.2
   flutter_launcher_icons: ^0.13.1
 
 flutter:
+  generate: true
   uses-material-design: true
 
   assets:
     - assets/ekadashi_data.json
+    - assets/images/
+    - assets/calendar/
     - assets/app_icon.png
 
 flutter_launcher_icons:
@@ -58,3 +75,7 @@ flutter_launcher_icons:
   min_sdk_android: 21
   adaptive_icon_background: "#00A19B"
   adaptive_icon_foreground: "assets/icon/app_icon.png"
+
+# Use the system SQLite library for deterministic Linux tests (no native download).
+dependency_overrides:
+  sqlite3: 2.9.4

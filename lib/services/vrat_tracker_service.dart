@@ -5,13 +5,13 @@ import '../models/vrat_tracker_models.dart';
 import 'ekadashi_service.dart';
 import 'vrat_statistics_service.dart';
 import 'achievement_evaluator.dart';
+import '../data/tracker_history_store.dart';
 
 /// Central service for Vrat Tracking and Achievement management.
 /// Integrates Vrat Tracker, Vrat Statistics, and Achievement System as a single module.
 class VratTrackerService extends ChangeNotifier {
   static const String _prefEnabledKey = 'vrat_tracker_enabled';
   static const String _prefEnabledAtKey = 'vrat_tracker_enabled_at';
-  static const String _prefHistoryKey = 'vrat_tracker_history';
   static const String _prefAchievementsKey = 'vrat_tracker_user_achievements';
   static const String _prefNotifiedAchievementsKey =
       'vrat_tracker_notified_achievements';
@@ -21,7 +21,19 @@ class VratTrackerService extends ChangeNotifier {
   DateTime? _trackingEnabledAt;
 
   // History indexed by occurrenceId for duplicate prevention and fast lookups
-  final Map<int, VratHistory> _historyByOccurrenceId = {};
+  final Map<String, VratHistory> _historyByUid = {};
+  final TrackerHistoryStore _historyStore = TrackerHistoryStore();
+  Map<int, VratHistory> get _historyByOccurrenceId => {
+    for (final record in _historyByUid.values)
+      record.ekadashiOccurrenceId: record,
+  };
+  String? storageError;
+  Future<void> _pendingMutation = Future.value();
+  Future<T> _mutate<T>(Future<T> Function() action) {
+    final result = _pendingMutation.then((_) => action());
+    _pendingMutation = result.then<void>((_) {}, onError: (Object _) {});
+    return result;
+  }
 
   // Achievements indexed by achievementId
   final Map<String, UserAchievement> _userAchievements = {};
@@ -51,17 +63,8 @@ class VratTrackerService extends ChangeNotifier {
         _trackingEnabledAt = DateTime.tryParse(enabledAtStr);
       }
 
-      // 2. Load Vrat History
-      final historyJsonStr = prefs.getString(_prefHistoryKey);
-      if (historyJsonStr != null && historyJsonStr.isNotEmpty) {
-        final List<dynamic> decodedList = json.decode(historyJsonStr);
-        for (final item in decodedList) {
-          if (item is Map<String, dynamic>) {
-            final record = VratHistory.fromJson(item);
-            _historyByOccurrenceId[record.ekadashiOccurrenceId] = record;
-          }
-        }
-      }
+      final records = await _historyStore.load(prefs, occurrences ?? const []);
+      _historyByUid.addAll({for (final r in records) r.occurrenceUid!: r});
 
       // 3. Load User Achievements
       final achievementsJsonStr = prefs.getString(_prefAchievementsKey);
@@ -89,14 +92,17 @@ class VratTrackerService extends ChangeNotifier {
       _isInitialized = true;
       notifyListeners();
     } catch (e) {
-      debugPrint('⚠️ Error initializing VratTrackerService: $e');
-      _isInitialized = true;
+      debugPrint('Error initializing VratTrackerService: $e');
+      storageError = e.toString();
+      _trackerEnabled = false;
+      _isInitialized = false;
       notifyListeners();
     }
   }
 
   /// Enable Vrat Tracker (explicit opt-in)
   Future<void> enableTracker({List<EkadashiDate>? occurrences}) async {
+    if (storageError != null) return;
     _trackerEnabled = true;
     _trackingEnabledAt = DateTime.now().toUtc();
 
@@ -132,6 +138,37 @@ class VratTrackerService extends ChangeNotifier {
   /// - Protects against marking future occurrences as Observed.
   Future<List<Achievement>> recordVrat({
     required int ekadashiOccurrenceId,
+    String? occurrenceUid,
+    required String ekadashiDate,
+    required String ekadashiName,
+    required ObservanceStatus status,
+    FastingMethod? fastingMethod,
+    String? fastingMethodOther,
+    String? note,
+    String? tradition,
+    String? timezone,
+    List<EkadashiDate>? occurrences,
+  }) {
+    return _mutate(
+      () => _recordVrat(
+        ekadashiOccurrenceId: ekadashiOccurrenceId,
+        occurrenceUid: occurrenceUid,
+        ekadashiDate: ekadashiDate,
+        ekadashiName: ekadashiName,
+        status: status,
+        fastingMethod: fastingMethod,
+        fastingMethodOther: fastingMethodOther,
+        note: note,
+        tradition: tradition,
+        timezone: timezone,
+        occurrences: occurrences,
+      ),
+    );
+  }
+
+  Future<List<Achievement>> _recordVrat({
+    required int ekadashiOccurrenceId,
+    String? occurrenceUid,
     required String ekadashiDate,
     required String ekadashiName,
     required ObservanceStatus status,
@@ -147,7 +184,13 @@ class VratTrackerService extends ChangeNotifier {
     if (!_trackerEnabled || _isFutureDate(ekadashiDate)) return const [];
 
     final nowUtc = DateTime.now().toUtc().toIso8601String();
-    final existing = _historyByOccurrenceId[ekadashiOccurrenceId];
+    occurrenceUid ??=
+        occurrences
+            ?.where((e) => e.id == ekadashiOccurrenceId)
+            .firstOrNull
+            ?.occurrenceUid ??
+        'ekadashi:${DateTime.parse(ekadashiDate).year}:${ekadashiOccurrenceId.toString().padLeft(2, '0')}';
+    final existing = _historyByUid[occurrenceUid];
 
     final updatedRecord = VratHistory(
       id:
@@ -155,6 +198,8 @@ class VratTrackerService extends ChangeNotifier {
           'vrat_${ekadashiOccurrenceId}_${DateTime.now().millisecondsSinceEpoch}',
       localProfileId: existing?.localProfileId ?? 'default',
       ekadashiOccurrenceId: ekadashiOccurrenceId,
+      occurrenceUid: occurrenceUid,
+      locationContext: existing?.locationContext,
       ekadashiDate: ekadashiDate,
       ekadashiName: ekadashiName,
       status: status,
@@ -167,7 +212,10 @@ class VratTrackerService extends ChangeNotifier {
       timezone: timezone ?? existing?.timezone,
     );
 
-    _historyByOccurrenceId[ekadashiOccurrenceId] = updatedRecord;
+    final staged = {..._historyByUid, occurrenceUid: updatedRecord};
+    final prefs = await SharedPreferences.getInstance();
+    await _historyStore.save(prefs, staged.values.toList());
+    _historyByUid[occurrenceUid] = updatedRecord;
 
     // Evaluate achievements
     List<Achievement> newlyUnlocked = [];
@@ -175,8 +223,7 @@ class VratTrackerService extends ChangeNotifier {
       newlyUnlocked = _evaluateAchievementsInternal(occurrences);
     }
 
-    // Persist changes
-    await _persistHistory();
+    // History is durable before achievements or UI are published.
     await _persistAchievements();
 
     notifyListeners();
@@ -187,6 +234,21 @@ class VratTrackerService extends ChangeNotifier {
   /// Affects ONLY the vrat_history local store.
   Future<void> deleteVrat({
     required int ekadashiOccurrenceId,
+    String? occurrenceUid,
+    List<EkadashiDate>? occurrences,
+  }) {
+    return _mutate(
+      () => _deleteVrat(
+        ekadashiOccurrenceId: ekadashiOccurrenceId,
+        occurrenceUid: occurrenceUid,
+        occurrences: occurrences,
+      ),
+    );
+  }
+
+  Future<void> _deleteVrat({
+    required int ekadashiOccurrenceId,
+    String? occurrenceUid,
     List<EkadashiDate>? occurrences,
   }) async {
     if (!_trackerEnabled ||
@@ -194,14 +256,18 @@ class VratTrackerService extends ChangeNotifier {
       return;
     }
 
-    _historyByOccurrenceId.remove(ekadashiOccurrenceId);
+    occurrenceUid ??=
+        _historyByOccurrenceId[ekadashiOccurrenceId]?.occurrenceUid;
+    final staged = {..._historyByUid}..remove(occurrenceUid);
+    final prefs = await SharedPreferences.getInstance();
+    await _historyStore.save(prefs, staged.values.toList());
+    _historyByUid.remove(occurrenceUid);
 
     // Re-evaluate achievements after deletion
     if (occurrences != null && occurrences.isNotEmpty) {
       _evaluateAchievementsInternal(occurrences);
     }
 
-    await _persistHistory();
     await _persistAchievements();
 
     notifyListeners();
@@ -212,9 +278,11 @@ class VratTrackerService extends ChangeNotifier {
     return _historyByOccurrenceId[occurrenceId];
   }
 
+  VratHistory? getRecordByUid(String uid) => _historyByUid[uid];
+
   /// Get all history records sorted chronologically
   List<VratHistory> getAllRecords() {
-    final list = _historyByOccurrenceId.values.toList();
+    final list = _historyByUid.values.toList();
     list.sort((a, b) => a.ekadashiDate.compareTo(b.ekadashiDate));
     return list;
   }
@@ -275,24 +343,11 @@ class VratTrackerService extends ChangeNotifier {
 
   bool _isFutureDate(String date) {
     final parsed = DateTime.tryParse(date.trim());
-    if (parsed == null) return false;
+    if (parsed == null) return true;
     final eventDay = DateTime(parsed.year, parsed.month, parsed.day);
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     return eventDay.isAfter(today);
-  }
-
-  /// Persist history to SharedPreferences
-  Future<void> _persistHistory() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final list = _historyByOccurrenceId.values
-          .map((v) => v.toJson())
-          .toList();
-      await prefs.setString(_prefHistoryKey, json.encode(list));
-    } catch (e) {
-      debugPrint('⚠️ Error saving vrat history: $e');
-    }
   }
 
   /// Persist achievements to SharedPreferences

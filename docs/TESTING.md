@@ -1,90 +1,97 @@
-# Test and review status
+# Combined v2 testing
 
-The local merge candidate is based on `origin/dev` at `51abe88` and contains
-the PR #6 revert followed by PR #4's tracker/achievement changes. It also
-contains the fixes and test harness described below. GitHub currently shows
-PR #5 (widgets/search) merged, PR #6 (Ragul's revert) open and cleanly
-mergeable, and PR #4 open but conflicting against the current `dev` base.
-This candidate is local; no remote branch or pull request was changed.
+Base: dev `2952ac951f62cffa06b98b75411f2d7d0480acfd`. This candidate restores
+Search and the three PR #5 Android widgets alongside Vrat, 2026/2027 archives,
+Telugu and custom/Google calendar integration. Main is outside this change.
 
-## Results on this candidate
+## Gates
 
 | Gate | Result |
 | --- | --- |
-| Flutter unit, widget, acceptance and regression suite | 95 passed, 0 failed |
-| Instrumented Dart line coverage | 1,945 / 2,753 (70.65%) |
+| Flutter unit, regression, widget, acceptance and offscreen UI | 193 passed |
+| Instrumented Dart line coverage | 5,264 / 6,696 (78.61%) |
 | Flutter analyzer | No issues found |
-| Android native Robolectric tests | 13 passed, 0 failed |
-| Android API 24 tracker/achievement UI integration | Passed; 7 screenshots captured |
-| Android API 24 Home, Calendar, Settings and localization integration | Passed; screenshots and log captured |
-| Android debug APK build | Passed |
-| `git diff --check` | Passed |
+| Translation-tool and runner Python tests | 8 passed |
+| Native JVM/Robolectric notification and widget tests | 31 passed (widget/preview SDK 28/35) |
+| API 24 full app/multi-year/SQLite/Google reconciliation UI | Required; exact run result in PR validation/evidence |
+| API 24 real launcher: three widget providers, four locales, taps | Required; exact run result in PR validation/evidence |
+| Android debug APK / instrumentation build | Passed |
 
-Coverage counts executed/imported Dart source lines. It excludes Kotlin, Swift,
-and Dart files that the test run did not import; it is not whole-repository
-coverage. The API 24 emulator uses software rendering and is unusually slow.
-Its geocoder cannot resolve network locations, so the integration test uses its
-cached Chennai coordinates. The test still exercises the app and native
-notification channel. The simulator is useful for assertions and flow checks,
-not performance measurements.
+Coverage describes executed/imported Dart lines, includes generated localization
+code, and excludes Kotlin, Swift and unimported files. It is not whole-repository
+coverage. Individual file coverage is available from `coverage/lcov.info` and
+`tool/coverage_summary.py`; aggregate coverage is not proof of correctness.
 
-## Fixes made for the candidate
+## Automated scenarios
 
-- PR #4's record flow now closes the record sheet before presenting an unlocked
-  achievement, removing the competing-dialog race.
-- Tracker services reject writes and achievement progress changes when
-  tracking is disabled, reject future-date records, and preserve a coherent
-  year selection when statistics/history have no entries for the current year.
-- Achievement text reads the active app language.
-- Notification opt-out is read from the same native preferences used by
-  Android settings. Language changes no longer re-schedule notifications after
-  the user disables reminders; the native scheduler uses the shared preference
-  file and keys.
-- Android build tooling is checked in, so a clean checkout can invoke the
-  declared Gradle wrapper instead of depending on an untracked local Gradle
-  installation.
+- Immutable year-pack loading, invalid/missing data and retry, unique UIDs and
+  native reminder IDs, 2026 history/2027 recycled-ID migration, retained unknown
+  rows/backups, restart/idempotence, cross-year streaks and achievements.
+- Disabled/future observance rejection, concurrent tracker writes, corrupt and
+  failed storage, no false success/unlock, achievement dialog sequencing.
+- Google account/calendar/year isolation, pagination, canceled/deleted events,
+  empty snapshots, failed/partial fetch preserving cache, exclusive all-day and
+  midnight boundaries, custom entry persistence and sign-out cleanup.
+- Search Unicode, zero-match exclusion, exact/prefix/fuzzy ranking, one/two edits
+  and transpositions, strict short tokens, language/year/category filters,
+  explicit-submit-only recent history, asynchronous rebuild ordering and all
+  five tabs remaining reachable after integration.
+- Every UI key/placeholder/native script across ta/hi/te, hardcoded screen Text
+  audit, all five official content fields plus month/paksha in both year packs.
+  Home fasting and fast-breaking date labels are checked in all four locales.
+  Four-language UI snapshots use complete Telugu/Tamil/Hindi test fonts.
+  Flutter integration uses registered controlled text input to avoid stale native
+  IME client IDs; native launcher tests use actual Android touch/accessibility.
+  The Linux/GNU-timeout runner installs each test APK once with non-streaming ADB,
+  pre-grants permissions, starts its Dart isolate paused and attaches the standard
+  Flutter driver to that installed binary. Host runner tests verify connection,
+  failure propagation and port cleanup. Installation/VM/driver deadlines fail the
+  gate explicitly instead of hanging a job. Pixel picker groups are expanded
+  before scrolling regardless of their scrollable accessibility metadata.
+- Native picker previews use all four locale resource labels, contain no invented
+  dates, and fit the small minimum width without letter-by-letter wrapping.
+- Native widget rollover through multiple expired entries, cross-year/offline
+  timeline, no stale exhausted hero or duplicate list row, selected-location
+  timezone/date boundaries, exclusive Parana end, localized labels and links.
+- Native WorkManager reminder opt-out and two-year scheduling/cancellation.
 
-## Run the checks
+## Commands
 
 ```sh
 flutter pub get
-flutter analyze --no-fatal-infos --no-fatal-warnings
-flutter test --coverage --reporter expanded
+python3 tool/generate_localized_lookup.py
+flutter gen-l10n
+flutter analyze
+flutter test --coverage --concurrency=2 --reporter expanded
 python3 tool/coverage_summary.py coverage/lcov.info
-(cd android && ./gradlew app:testDebugUnitTest --console=plain)
-flutter build apk --debug --target-platform android-x64
+python3 -m unittest discover -s test/tool
+./android/gradlew -p android app:testDebugUnitTest --console=plain
+bash tool/android-feature-integration.sh integration_test/multi_year_android_test.dart
+bash tool/android-launcher-widgets.sh
 ```
 
-On an Android emulator named `emulator-5554` with Android SDK and Java 17:
+The Android scripts use a **dedicated test emulator** and alter app preferences,
+permissions and launcher data. The launcher script must follow the multi-year
+integration run, which writes four deterministic payload fixtures in the durable databases directory. It installs
+the normal `lib/main.dart` app before widget taps; widgets never launch the
+integration-test entrypoint. Keep-app-running preserves fixtures after Flutter
+integration. Screenshots/logs are collected under `build/ui-screenshots/`,
+`build/android-feature-evidence/` and `build/android-widget-evidence/`.
 
-```sh
-bash tool/android-feature-integration.sh integration_test/tracker_android_test.dart
-bash tool/android-feature-integration.sh integration_test/android_app_test.dart
-```
+## Release/device boundaries
 
-The integration driver saves screen captures in
-`build/ui-screenshots/android/` and device details/logs in
-`build/android-feature-evidence/`. These scripts change app state and emulator
-permissions; use a dedicated test emulator.
+The local emulator is API 24, 320×640 dp, software-rendered without KVM. Timings
+and frame-rate logs do not represent hardware performance. Robolectric covers
+SDK 28/35 widget behavior. CI adds real API 33/35 emulator and denied/GPS-off
+runs; configured jobs are not claimed passed until their results exist.
 
-## Remaining validation before a production release
+Google UI tests use fake authenticated responses and **real Android SQLite**.
+They verify full-year windows, cache deletion reconciliation and preservation of
+custom entries. Real OAuth consent and deleting an event on Google's servers
+must be validated with the configured account. Read-only year import is not
+background two-way sync.
 
-The combined candidate has passed its current automated gates on API 24. The
-configured CI workflow adds Android API 33/35 and denied-permission/GPS-off
-jobs, but has not run remotely. Samsung M52 and Z Flip 5 checks are still
-needed for Samsung background restrictions, real location/geocoding, and
-OEM-specific behavior. A Play Store v1-to-v2 upgrade and release-signed build
-also require a device. No iOS or launcher-widget validation is claimed.
-
-These limits do not block a controlled merge to `dev` for further testing;
-they do block treating this as release validation. The separate
-`feature/2027-telugu` redesign remains planning-only and is not included.
-
-## PR conflict finding
-
-GitHub shows PR #4 as conflicting because PR #5's widgets/search changes are
-still on `dev`; the open PR #6 is the revert of PR #5. The local candidate
-applies PR #6 first and then PR #4, which applies cleanly. This matches the
-intended integration order. The accidental feature merge was PR #5; PR #6 is
-Ragul's revert. Do not reintroduce PR #5's widgets/search change as part of
-this integration; it has separate unresolved acceptance issues.
+Samsung M52 and Z Flip 5 checks remain for OEM launcher rendering, Doze/battery
+restrictions, long background refresh, GPS/travel/folding and a release-signed
+upgrade from Play Store v1. Linguistic quality requires native-speaker review.
+No iOS build/widget result is claimed. Main needs separate release approval.

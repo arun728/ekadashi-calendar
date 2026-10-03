@@ -10,7 +10,7 @@ from fontTools.ttLib.scaleUpem import scale_upem
 root = Path(__file__).resolve().parent.parent / 'test/fonts'
 with TemporaryDirectory() as temporary:
     inputs = []
-    for name in ('Roboto-Regular.ttf', 'NotoSansTamil.ttf', 'NotoSansDevanagari.ttf'):
+    for name in ('Roboto-Regular.ttf', 'NotoSansTamil.ttf', 'NotoSansDevanagari.ttf', 'NotoSansTelugu.ttf'):
         font = TTFont(root / name)
         scale_upem(font, 1000)
         target = Path(temporary) / name

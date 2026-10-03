@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ஏகாதசி காலண்டர்</string>
+    <string name="widget_a_title">அடுத்த ஏகாதசி</string>
+    <string name="widget_b_title">இன்றைய ஏகாதசி</string>
+    <string name="widget_c_title">வரவிருக்கும் ஏகாதசிகள்</string>
+    <string name="widget_a_description">அடுத்த ஏகாதசி</string>
+    <string name="widget_b_description">இன்றைய ஏகாதசி</string>
+    <string name="widget_c_description">வரவிருக்கும் ஏகாதசிகள்</string>
+    <string name="widget_title">ஏகாதசி காலண்டர்</string>
+    <string name="widget_next_ekadashi">அடுத்த ஏகாதசி</string>
+    <string name="widget_fasting_active">விரதம் நடைபெறுகிறது</string>
+    <string name="widget_parana_available">விரதம் முடிக்கும் நேரம்</string>
+    <string name="widget_parana_completed">பாரணை முடிந்தது</string>
+    <string name="widget_open_app_to_refresh">நேரங்களைப் புதுப்பிக்க செயலியைத் திறக்கவும்</string>
+    <string name="widget_fasting_starts">விரதம் ஆரம்பம்</string>
+    <string name="widget_parana_window">விரதம் முடித்தல்</string>
+    <string name="widget_upcoming_ekadashis">வரவிருக்கும் ஏகாதசிகள்</string>
+    <string name="widget_today">இன்று</string>
+    <string name="widget_today_title">இன்றைய ஏகாதசி</string>
+    <string name="widget_parana_in">பாரணைக்கு மீதமுள்ளது</string>
+    <string name="widget_parana_ends">பாரணை முடிவுக்கு மீதமுள்ளது</string>
+    <string name="widget_starts_in">தொடங்க மீதமுள்ளது</string>
+    <string name="widget_notice">அறிவிப்பு</string>
+    <string name="widget_now">இப்போது</string>
+    <string name="widget_day_unit">நா</string>
+    <string name="widget_hour_unit">ம</string>
+    <string name="widget_minute_unit">நி</string>
+    <string name="widget_no_ekadashi">இந்த நாளில் ஏகாதசி இல்லை</string>
+    <string name="widget_paksha_krishna">கிருஷ்ண</string>
+    <string name="widget_paksha_shukla">சுக்ல</string>
+    <string name="widget_lunar_month_adhika">அதிக மாதம்</string>
+    <string name="widget_lunar_month_ashadha">ஆஷாடம்</string>
+    <string name="widget_lunar_month_ashwin">ஆஸ்வினம்</string>
+    <string name="widget_lunar_month_bhadrapada">பாத்ரபதம்</string>
+    <string name="widget_lunar_month_chaitra">சைத்ரம்</string>
+    <string name="widget_lunar_month_jyeshtha">ஜ்யேஷ்டம்</string>
+    <string name="widget_lunar_month_kartik">கார்த்திகை</string>
+    <string name="widget_lunar_month_magha">மாகம்</string>
+    <string name="widget_lunar_month_margashirsha">மார்கசீர்ஷம்</string>
+    <string name="widget_lunar_month_pausha">பௌஷம்</string>
+    <string name="widget_lunar_month_phalguna">பால்குனம்</string>
+    <string name="widget_lunar_month_shravana">சிராவணம்</string>
+    <string name="widget_lunar_month_vaishakha">வைசாகம்</string>
+</resources>

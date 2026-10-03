@@ -1,3 +1,9 @@
+import 'data/calendar_entry_repository.dart';
+import 'services/native_widget_service.dart';
+import 'services/widget_sync_manager.dart';
+import 'services/search_index_manager.dart';
+import 'screens/global_search_screen.dart';
+import 'l10n/generated/app_localizations.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -38,20 +44,25 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({super.key, this.calendarRepository});
+  final CalendarEntryRepository? calendarRepository;
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        Provider<CalendarEntryRepository?>(create: (_) => calendarRepository),
         ChangeNotifierProvider(create: (_) => ThemeService()..loadTheme()),
         ChangeNotifierProvider(create: (_) => LanguageService()),
         ChangeNotifierProvider(create: (_) => VratTrackerService()),
       ],
-      child: Consumer<ThemeService>(
-        builder: (context, themeService, child) {
+      child: Consumer2<ThemeService, LanguageService>(
+        builder: (context, themeService, lang, child) {
           return MaterialApp(
             title: 'Ekadashi Calendar',
+            locale: lang.currentLocale,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             debugShowCheckedModeBanner: false,
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
@@ -90,6 +101,7 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
+  Uri? _pendingDeepLink;
   int _currentIndex = 0;
   final EkadashiService _ekadashiService = EkadashiService();
   final NativeLocationService _locationService = NativeLocationService();
@@ -113,9 +125,13 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    NativeWidgetService().initializeDeepLinkListener(handleDeepLink);
     // Defer initialization to prevent freeze on process restoration
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeApp();
+      NativeWidgetService().getInitialDeepLink().then((uri) {
+        if (uri != null && mounted) handleDeepLink(uri);
+      });
     });
   }
 
@@ -132,6 +148,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    NativeWidgetService().clearDeepLinkListener();
     _pageController.dispose();
     super.dispose();
   }
@@ -568,6 +585,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
         // Schedule notifications
         _scheduleNotifications();
+        _syncSearchAndWidgets();
       }
     } catch (e) {
       debugPrint('Error loading data: $e');
@@ -694,6 +712,52 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     });
   }
 
+  void handleDeepLink(Uri uri) {
+    if (!mounted || uri.scheme != 'ekadashi') return;
+    if (_isLoading) {
+      _pendingDeepLink = uri;
+      return;
+    }
+    final tab = {
+      'dashboard': 0,
+      'today': 0,
+      'parana': 0,
+      'calendar': 1,
+      'vrat': 2,
+      'search': 3,
+      'settings': 4,
+    }[uri.host];
+    if (tab == null) return;
+    setState(() => _currentIndex = tab);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (tab == 0) _scrollToNextEkadashi(animate: false, includeParana: true);
+      if (tab == 1) {
+        final date = DateTime.tryParse(uri.queryParameters['date'] ?? '');
+        if (date != null) _calendarKey.currentState?.selectDate(date);
+      }
+    });
+  }
+
+  Future<void> _syncSearchAndWidgets() async {
+    if (!mounted || _ekadashiList.isEmpty) return;
+    final lang = context.read<LanguageService>();
+    await SearchIndexManager().initializeIndex(
+      ekadashiList: _ekadashiList,
+      language: lang.currentLocale.languageCode,
+    );
+    if (!mounted) return;
+    await WidgetSyncManager().syncWidgetData(
+      ekadashiList: _ekadashiList,
+      timezone: _currentTimezone,
+      locationName: _locationText,
+      languageService: lang,
+    );
+    final pending = _pendingDeepLink;
+    _pendingDeepLink = null;
+    if (pending != null && mounted) handleDeepLink(pending);
+  }
+
   /// Handle bottom navigation taps
   void _onBottomNavTapped(int index) {
     if (index == _currentIndex) {
@@ -755,6 +819,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           .map(
             (e) => EkadashiNotificationData(
               id: e.id,
+              occurrenceUid: e.occurrenceUid,
+              calendarYear: e.date.year,
               name: e.name,
               fastingStartTime: e.fastingStartIso,
               paranaStartTime: e.paranaStartIso,
@@ -789,10 +855,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     const tealColor = Color(0xFF00A19B);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(lang.translate('app_title')),
-        centerTitle: true,
-      ),
+      appBar: _currentIndex == 3
+          ? null
+          : AppBar(title: Text(lang.translate('app_title')), centerTitle: true),
       body: _buildBody(lang, tealColor),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
@@ -812,6 +877,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             icon: const Icon(Icons.spa_outlined),
             activeIcon: const Icon(Icons.spa),
             label: lang.translate('vrat'),
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.search),
+            label: lang.translate('search'),
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.settings),
@@ -851,7 +920,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             ElevatedButton(
               onPressed: () => _loadData(),
               style: ElevatedButton.styleFrom(backgroundColor: tealColor),
-              child: const Text('Retry'),
+              child: Text(lang.translate('retry')),
             ),
           ],
         ),
@@ -864,12 +933,19 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         _buildHomeContent(lang, tealColor),
         CalendarScreen(
           key: _calendarKey,
+          repository: context.read<CalendarEntryRepository?>(),
           ekadashiList: _ekadashiList,
           currentTimezone: _currentTimezone,
         ),
         VratTrackerScreen(
           ekadashiList: _ekadashiList,
           currentTimezone: _currentTimezone,
+        ),
+        GlobalSearchScreen(
+          ekadashiList: _ekadashiList,
+          currentTimezone: _currentTimezone,
+          showBackButton: false,
+          onBackToHome: () => _onBottomNavTapped(0),
         ),
         const SettingsScreen(),
       ],
@@ -1079,6 +1155,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   Widget _buildLanguageSelector(LanguageService lang, Color tealColor) {
     String displayLanguage;
     switch (lang.currentLocale.languageCode) {
+      case 'te':
+        displayLanguage = 'తెలుగు';
+        break;
       case 'ta':
         displayLanguage = 'தமிழ்';
         break;
@@ -1093,6 +1172,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       onSelected: (String newValue) => lang.changeLanguage(newValue),
       color: Theme.of(context).cardColor,
       itemBuilder: (context) => [
+        const PopupMenuItem(value: 'te', child: Text('తెలుగు')),
         const PopupMenuItem(
           value: 'en',
           child: Text(
@@ -1213,7 +1293,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
                     // Date
                     Text(
-                      DateFormat('MMM dd, yyyy').format(ekadashi.date),
+                      DateFormat('MMM dd, yyyy',lang.currentLocale.languageCode).format(ekadashi.date),
                       style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w300,
@@ -1260,7 +1340,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        DateFormat('MMM dd, yyyy').format(ekadashi.date),
+                        DateFormat('MMM dd, yyyy',lang.currentLocale.languageCode).format(ekadashi.date),
                         style: TextStyle(
                           fontSize: 15,
                           color: Colors.grey.shade500,
@@ -1297,6 +1377,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                       child: Text(
                         DateFormat(
                           'MMM dd, yyyy',
+                          lang.currentLocale.languageCode,
                         ).format(ekadashi.date.add(const Duration(days: 1))),
                         style: TextStyle(
                           fontSize: 15,

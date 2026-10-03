@@ -1,0 +1,26 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:ekadashi_calendar/main.dart';
+import 'package:ekadashi_calendar/screens/global_search_screen.dart';
+import 'package:ekadashi_calendar/screens/calendar_screen.dart';
+import 'package:ekadashi_calendar/screens/vrat_tracker/vrat_tracker_screen.dart';
+import 'package:ekadashi_calendar/services/search_index_manager.dart';
+import '../support/app_harness.dart';
+void main(){
+ TestWidgetsFlutterBinding.ensureInitialized();
+ late AppHarness harness;
+ setUp(() async {harness=AppHarness();await harness.install();});
+ tearDown(()=>harness.uninstall());
+ testWidgets('Search, Vrat and Settings all remain reachable; widget date opens correct archive year',(tester) async {
+  await tester.pumpWidget(harness.app());await tester.pumpAndSettle();
+  final nav=tester.widget<BottomNavigationBar>(find.byType(BottomNavigationBar));expect(nav.items,hasLength(5));
+  await tester.tap(find.byIcon(Icons.spa_outlined));await tester.pumpAndSettle();expect(find.byType(VratTrackerScreen).hitTestable(),findsOneWidget);
+  await tester.tap(find.byIcon(Icons.search));await tester.pumpAndSettle();expect(find.byType(GlobalSearchScreen).hitTestable(),findsOneWidget);
+  await tester.enterText(find.byType(TextField),'zzzznomatch9999');await tester.pump(const Duration(milliseconds:400));await tester.pumpAndSettle();expect(SearchIndexManager().search('zzzznomatch9999'),isEmpty);expect(find.textContaining('No results found'),findsOneWidget);
+  final dynamic state=tester.state(find.byType(MainScreen));state.handleDeepLink(Uri.parse('ekadashi://calendar?date=2027-01-07'));await tester.pumpAndSettle();
+  expect(find.byType(CalendarScreen).hitTestable(),findsOneWidget);expect(tester.widget<DropdownButton<int>>(find.byKey(const Key('calendar_year_selector'))).value,2027);
+  state.handleDeepLink(Uri.parse('ekadashi://search'));await tester.pumpAndSettle();expect(find.byType(GlobalSearchScreen).hitTestable(),findsOneWidget);
+  state.handleDeepLink(Uri.parse('http://settings'));await tester.pumpAndSettle();expect(find.byType(GlobalSearchScreen).hitTestable(),findsOneWidget);
+  expect(harness.widgetCalls.any((c)=>c.method=='updateWidgetData'),isTrue);expect(tester.takeException(),isNull);
+ });
+}

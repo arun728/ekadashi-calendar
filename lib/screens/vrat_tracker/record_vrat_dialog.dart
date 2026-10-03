@@ -55,7 +55,7 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
   void initState() {
     super.initState();
     final tracker = Provider.of<VratTrackerService>(context, listen: false);
-    _existingRecord = tracker.getRecord(widget.ekadashi.id);
+    _existingRecord = tracker.getRecordByUid(widget.ekadashi.occurrenceUid);
 
     final today = DateTime(
       DateTime.now().year,
@@ -120,28 +120,43 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
     final tracker = Provider.of<VratTrackerService>(context, listen: false);
     final dateStr = DateFormat('yyyy-MM-dd').format(widget.ekadashi.date);
 
-    final newlyUnlocked = await tracker.recordVrat(
-      ekadashiOccurrenceId: widget.ekadashi.id,
-      ekadashiDate: dateStr,
-      ekadashiName: widget.ekadashi.name,
-      status: _status,
-      fastingMethod:
-          _status == ObservanceStatus.observed ||
-              _status == ObservanceStatus.partial
-          ? _fastingMethod
-          : null,
-      fastingMethodOther: _fastingMethod == FastingMethod.other
-          ? _otherMethodController.text.trim()
-          : null,
-      note: _noteController.text.trim().isNotEmpty
-          ? _noteController.text.trim()
-          : null,
-      timezone: widget.currentTimezone,
-      occurrences: widget.allOccurrences,
-    );
+    try {
+      final newlyUnlocked = await tracker.recordVrat(
+        ekadashiOccurrenceId: widget.ekadashi.id,
+        occurrenceUid: widget.ekadashi.occurrenceUid,
+        ekadashiDate: dateStr,
+        ekadashiName: widget.ekadashi.name,
+        status: _status,
+        fastingMethod:
+            _status == ObservanceStatus.observed ||
+                _status == ObservanceStatus.partial
+            ? _fastingMethod
+            : null,
+        fastingMethodOther: _fastingMethod == FastingMethod.other
+            ? _otherMethodController.text.trim()
+            : null,
+        note: _noteController.text.trim().isNotEmpty
+            ? _noteController.text.trim()
+            : null,
+        timezone: widget.currentTimezone,
+        occurrences: widget.allOccurrences,
+      );
 
-    if (mounted) {
-      Navigator.of(context).pop(newlyUnlocked);
+      if (mounted) {
+        Navigator.of(context).pop(newlyUnlocked);
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              context.read<LanguageService>().translate(
+                'tracker_storage_failed',
+              ),
+            ),
+          ),
+        );
+      }
     }
   }
 
@@ -168,12 +183,21 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
 
     if (confirmed == true && mounted) {
       final tracker = Provider.of<VratTrackerService>(context, listen: false);
-      await tracker.deleteVrat(
-        ekadashiOccurrenceId: widget.ekadashi.id,
-        occurrences: widget.allOccurrences,
-      );
-      if (mounted) {
-        Navigator.of(context).pop(<Achievement>[]);
+      try {
+        await tracker.deleteVrat(
+          ekadashiOccurrenceId: widget.ekadashi.id,
+          occurrenceUid: widget.ekadashi.occurrenceUid,
+          occurrences: widget.allOccurrences,
+        );
+        if (mounted) {
+          Navigator.of(context).pop(<Achievement>[]);
+        }
+      } catch (_) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(lang.translate('tracker_storage_failed'))),
+          );
+        }
       }
     }
   }
@@ -184,6 +208,7 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final formattedDate = DateFormat(
       'EEEE, d MMMM yyyy',
+      lang.currentLocale.languageCode,
     ).format(widget.ekadashi.date);
 
     return Container(

@@ -19,69 +19,91 @@ void main() {
   void mockChannels() {
     const settingsChannel = MethodChannel('com.ekadashi.settings');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(settingsChannel, (MethodCall methodCall) async {
-      if (methodCall.method == 'checkAllPermissions') {
-        return {
-          'hasNotificationPermission': true,
-          'hasLocationPermission': true,
-          'hasExactAlarmPermission': true,
-        };
-      }
-      if (methodCall.method == 'hasLocationPermission') return true;
-      if (methodCall.method == 'getLocationSettings') {
-        return {'autoDetect': true, 'timezone': 'IST'};
-      }
-      return null;
-    });
+        .setMockMethodCallHandler(settingsChannel, (
+          MethodCall methodCall,
+        ) async {
+          if (methodCall.method == 'checkAllPermissions') {
+            return {
+              'hasNotificationPermission': true,
+              'hasLocationPermission': true,
+              'hasExactAlarmPermission': true,
+            };
+          }
+          if (methodCall.method == 'hasLocationPermission') return true;
+          if (methodCall.method == 'getLocationSettings') {
+            return {'autoDetect': true, 'timezone': 'IST'};
+          }
+          return null;
+        });
 
     const locationChannel = MethodChannel('com.ekadashi.location');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(locationChannel, (MethodCall methodCall) async {
-      if (methodCall.method == 'hasLocationPermission') return true;
-      if (methodCall.method == 'getCurrentLocation') {
-        return {
-          'success': true,
-          'city': 'Chennai',
-          'timezone': 'IST',
-          'latitude': 13.0,
-          'longitude': 80.0,
-        };
-      }
-      if (methodCall.method == 'getCachedLocation') {
-        return {'success': true, 'city': 'Chennai', 'timezone': 'IST'};
-      }
-      return null;
-    });
+        .setMockMethodCallHandler(locationChannel, (
+          MethodCall methodCall,
+        ) async {
+          if (methodCall.method == 'hasLocationPermission') return true;
+          if (methodCall.method == 'getCurrentLocation') {
+            return {
+              'success': true,
+              'city': 'Chennai',
+              'timezone': 'IST',
+              'latitude': 13.0,
+              'longitude': 80.0,
+            };
+          }
+          if (methodCall.method == 'getCachedLocation') {
+            return {'success': true, 'city': 'Chennai', 'timezone': 'IST'};
+          }
+          return null;
+        });
 
     const notifChannel = MethodChannel('com.ekadashi.notifications');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(notifChannel, (MethodCall methodCall) async {
-      if (methodCall.method == 'getSettings') {
-        return {'notifications_enabled': true};
-      }
-      return null;
-    });
+          if (methodCall.method == 'getSettings') {
+            return {'notifications_enabled': true};
+          }
+          return null;
+        });
 
     const timezoneChannel = MethodChannel('flutter_timezone');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(timezoneChannel, (MethodCall methodCall) async {
-      if (methodCall.method == 'getLocalTimezone') {
-        return 'Asia/Kolkata';
-      }
-      return null;
-    });
+        .setMockMethodCallHandler(timezoneChannel, (
+          MethodCall methodCall,
+        ) async {
+          if (methodCall.method == 'getLocalTimezone') {
+            return 'Asia/Kolkata';
+          }
+          return null;
+        });
 
     // Asset Channel (Mock rootBundle)
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMessageHandler('flutter/assets', (ByteData? message) async {
-      if (message == null) return null;
-      final String key = utf8.decode(message.buffer.asUint8List());
-      if (key == 'assets/ekadashi_data.json') {
-        const json = '''
+          if (message == null) return null;
+          final String key = utf8.decode(message.buffer.asUint8List());
+          if (key == 'assets/calendar/manifest.json') {
+            return ByteData.sublistView(
+              Uint8List.fromList(
+                utf8.encode(
+                  jsonEncode({
+                    'schema_version': 1,
+                    'packs': [
+                      {'year': 2026, 'asset': 'assets/calendar/2026.json'},
+                    ],
+                  }),
+                ),
+              ),
+            );
+          }
+          if (key == 'assets/calendar/2026.json') {
+            const json = '''
       {
+        "year": 2026, "schema_version": 1,
         "ekadashis": [
           {
-            "id": 1,
+            "id": 1, "legacy_id": 1, "notification_id": 1,
+            "occurrence_uid": "ekadashi:2026:01", "content_id": "jaya-ekadashi",
             "paksha": "Shukla",
             "month": "Magha",
             "name": {"en": "Jaya Ekadashi"},
@@ -98,13 +120,15 @@ void main() {
         ]
       }
       ''';
-        return ByteData.view(Uint8List.fromList(utf8.encode(json)).buffer);
-      }
-      return null;
-    });
+            return ByteData.view(Uint8List.fromList(utf8.encode(json)).buffer);
+          }
+          return null;
+        });
   }
 
-  testWidgets('Vrat Tracker navigation, opt-in activation, and tab switching', (WidgetTester tester) async {
+  testWidgets('Vrat Tracker navigation, opt-in activation, and tab switching', (
+    WidgetTester tester,
+  ) async {
     mockChannels();
 
     await tester.pumpWidget(const MyApp());
@@ -119,7 +143,10 @@ void main() {
 
     // 3. Verify Opt-In View is displayed
     expect(find.text('Enable Vrat Tracker'), findsOneWidget);
-    expect(find.text('Keep a private record of your Ekadashi observance.'), findsOneWidget);
+    expect(
+      find.text('Keep a private record of your Ekadashi observance.'),
+      findsOneWidget,
+    );
 
     // 4. Tap "Enable Vrat Tracker"
     await tester.tap(find.text('Enable Vrat Tracker'));

@@ -1,3 +1,8 @@
+> Historical pre-merge review of PR #4 and the PR #6 revert. Those changes were
+> subsequently merged into dev. The user wanted Search/widgets retained, so the
+> corrected combined v2 candidate restores PR #5 and adds the approved multi-year
+> integration. Current behavior and results: ../V2_IMPLEMENTATION.md and ../TESTING.md.
+
 # Local dev merge readiness
 
 **Recommendation:** the PR #4 + PR #6-revert candidate is ready for a reviewed

@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_medium_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_background"
+    android:orientation="vertical"
+    android:padding="13dp">
+
+    <!-- Top Row: Heading and Fasting Status Badge -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🕉️"
+            android:textSize="13sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:id="@+id/widget_medium_title"
+            android:text="@string/widget_today_title"
+            android:textColor="#FFFFFF"
+            android:textSize="@dimen/widget_text_title"
+            android:textStyle="bold"
+            android:shadowColor="#80000000"
+            android:shadowDx="0"
+            android:shadowDy="1"
+            android:shadowRadius="2" />
+
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <TextView
+            android:id="@+id/widget_medium_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/widget_badge_background"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp"
+            android:text="FASTING ACTIVE"
+            android:textColor="@color/widget_amber"
+            android:textSize="@dimen/widget_text_badge"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Ekadashi Name & Arrow -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/widget_medium_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="Aja Ekadashi"
+            android:textColor="#FFFFFF"
+            android:textSize="@dimen/widget_text_hero_name_medium"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:text="→"
+            android:textColor="@color/widget_gold"
+            android:textSize="@dimen/widget_text_chevron"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Date & Location -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="1dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/widget_medium_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="Date • Paksha"
+            android:textColor="@color/widget_text_secondary"
+            android:textSize="@dimen/widget_text_date_medium" />
+
+        <TextView
+            android:id="@+id/widget_medium_location"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="📍 Chennai • IST"
+            android:textColor="@color/widget_text_muted"
+            android:textSize="@dimen/widget_text_secondary" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <!-- Glass Timings & Status Card -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/widget_card_background"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="8dp">
+
+        <!-- Column 1: Fasting Start -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/widget_medium_fasting_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="FASTING START"
+                android:textColor="@color/widget_text_muted"
+                android:textSize="@dimen/widget_text_timing_label"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/widget_medium_fasting_time"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="05:48 AM"
+                android:textColor="#FFFFFF"
+                android:textSize="@dimen/widget_text_timing_value_medium"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Divider -->
+        <FrameLayout
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="6dp"
+            android:layout_marginRight="6dp"
+            android:background="#2638BDF8" />
+
+        <!-- Column 2: Parana Window -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.3"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/widget_medium_parana_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="PARANA WINDOW"
+                android:textColor="@color/widget_text_muted"
+                android:textSize="@dimen/widget_text_timing_label"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/widget_medium_parana_time"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="06:24 AM - 08:42 AM"
+                android:textColor="#FFFFFF"
+                android:textSize="@dimen/widget_text_timing_value"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Divider -->
+        <FrameLayout
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="6dp"
+            android:layout_marginRight="6dp"
+            android:background="#2638BDF8" />
+
+        <!-- Column 3: Countdown -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/widget_medium_countdown_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="STARTS IN"
+                android:textColor="@color/widget_text_muted"
+                android:textSize="@dimen/widget_text_countdown_label"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/widget_medium_countdown_value"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="2 days"
+                android:textColor="@color/widget_gold"
+                android:textSize="@dimen/widget_text_countdown_value_medium"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>

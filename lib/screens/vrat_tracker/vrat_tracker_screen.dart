@@ -446,7 +446,7 @@ class _VratTrackerScreenState extends State<VratTrackerScreen>
     // Filter by status if set
     if (_historyStatusFilter != null) {
       filtered = filtered.where((e) {
-        final record = tracker.getRecord(e.id);
+        final record = tracker.getRecordByUid(e.occurrenceUid);
         final status = record?.status ?? ObservanceStatus.unrecorded;
         return status == _historyStatusFilter;
       }).toList();
@@ -581,9 +581,9 @@ class _VratTrackerScreenState extends State<VratTrackerScreen>
     VratTrackerService tracker,
     EkadashiDate ekadashi,
   ) {
-    final record = tracker.getRecord(ekadashi.id);
+    final record = tracker.getRecordByUid(ekadashi.occurrenceUid);
     final status = record?.status ?? ObservanceStatus.unrecorded;
-    final dateStr = DateFormat('MMM dd, yyyy').format(ekadashi.date);
+    final dateStr = DateFormat('MMM dd, yyyy',lang.currentLocale.languageCode).format(ekadashi.date);
 
     Color chipColor;
     String statusLabel;

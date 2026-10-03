@@ -79,17 +79,26 @@ class AchievementEvaluator {
   static ({
     Map<String, UserAchievement> updatedAchievements,
     List<Achievement> newlyUnlocked,
-  }) evaluate({
+  })
+  evaluate({
     required List<VratHistory> history,
     required List<EkadashiDate> occurrences,
     required Map<String, UserAchievement> currentAchievements,
   }) {
     final Map<int, VratHistory> historyByOccId = {
-      for (final h in history) h.ekadashiOccurrenceId: h,
+      for (final e in occurrences)
+        for (final h in history)
+          if (h.occurrenceUid == e.occurrenceUid ||
+              (h.occurrenceUid == null &&
+                  h.ekadashiOccurrenceId == e.id &&
+                  DateTime.tryParse(h.ekadashiDate)?.year == e.date.year))
+            e.id: h,
     };
 
     // Calculate metrics
-    final totalObservedCount = history.where((h) => h.status == ObservanceStatus.observed).length;
+    final totalObservedCount = history
+        .where((h) => h.status == ObservanceStatus.observed)
+        .length;
     final longestStreak = VratStatisticsService.calculateLongestStreak(
       occurrences: occurrences,
       historyByOccurrenceId: historyByOccId,
@@ -160,14 +169,12 @@ class AchievementEvaluator {
       );
     }
 
-    return (
-      updatedAchievements: updated,
-      newlyUnlocked: newlyUnlocked,
-    );
+    return (updatedAchievements: updated, newlyUnlocked: newlyUnlocked);
   }
 
   /// Find the next unearned milestone to display on the dashboard
-  static ({Achievement achievement, int currentProgress, int target})? getNextMilestone({
+  static ({Achievement achievement, int currentProgress, int target})?
+  getNextMilestone({
     required Map<String, UserAchievement> userAchievements,
     required int totalObserved,
     required int longestStreak,

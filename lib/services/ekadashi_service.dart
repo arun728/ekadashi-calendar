@@ -1,11 +1,16 @@
-import 'dart:convert';
-import 'package:flutter/services.dart';
-import 'package:flutter/foundation.dart';
+import '../l10n/generated/app_localizations.dart';
+import '../l10n/localized_lookup.dart';
+import 'package:flutter/widgets.dart';
+import '../data/calendar_repository.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 
 /// Ekadashi date with timezone-aware timing
 class EkadashiDate {
   final int id;
+  final String occurrenceUid;
+  final int legacyId;
+  final String contentId;
+  final bool usesContentFallback;
   final String name;
   final DateTime date;
   final String fastStartTime;
@@ -24,6 +29,10 @@ class EkadashiDate {
 
   EkadashiDate({
     required this.id,
+    String? occurrenceUid,
+    int? legacyId,
+    this.contentId = '',
+    this.usesContentFallback = false,
     required this.name,
     required this.date,
     required this.fastStartTime,
@@ -37,7 +46,10 @@ class EkadashiDate {
     this.fastingStartIso = '',
     this.paranaStartIso = '',
     this.paranaEndIso = '',
-  });
+  }) : legacyId = legacyId ?? id,
+       occurrenceUid =
+           occurrenceUid ??
+           'ekadashi:${date.year}:${id.toString().padLeft(2, '0')}';
 }
 
 /// City information for selection
@@ -57,11 +69,20 @@ class CityInfo {
 
 /// Main Ekadashi data service with multi-timezone support
 class EkadashiService {
+  final Map<String,Map<String,String>> _termCache={};
+  String _calendarTerm(String value,String prefix,String code){
+    final supported=AppLocalizations.supportedLocales.contains(Locale(code))?code:'en';
+    final labels=_termCache.putIfAbsent(supported,()=>localizedLookup(lookupAppLocalizations(Locale(supported))));
+    return labels['$prefix${value.toLowerCase()}'] ?? value;
+  }
+
   static final EkadashiService _instance = EkadashiService._internal();
   factory EkadashiService() => _instance;
   EkadashiService._internal();
 
   // Raw data cache
+  final CalendarRepository _repository = CalendarRepository();
+  List<int> get availableYears => _repository.availableYears;
   Map<String, dynamic>? _rawData;
   bool _isDataLoaded = false;
 
@@ -69,50 +90,191 @@ class EkadashiService {
   final Map<String, Map<String, List<EkadashiDate>>> _cache = {};
 
   // Supported timezones
-  static const List<String> supportedTimezones = ['IST', 'EST', 'CST', 'MST', 'PST'];
+  static const List<String> supportedTimezones = [
+    'IST',
+    'EST',
+    'CST',
+    'MST',
+    'PST',
+  ];
 
   // City list by timezone
   static final Map<String, List<CityInfo>> citiesByTimezone = {
     'IST': [
-      CityInfo(id: 'chennai', name: 'Chennai', country: 'India', timezone: 'IST'),
+      CityInfo(
+        id: 'chennai',
+        name: 'Chennai',
+        country: 'India',
+        timezone: 'IST',
+      ),
       CityInfo(id: 'mumbai', name: 'Mumbai', country: 'India', timezone: 'IST'),
       CityInfo(id: 'delhi', name: 'Delhi', country: 'India', timezone: 'IST'),
-      CityInfo(id: 'kolkata', name: 'Kolkata', country: 'India', timezone: 'IST'),
-      CityInfo(id: 'bangalore', name: 'Bangalore', country: 'India', timezone: 'IST'),
-      CityInfo(id: 'hyderabad', name: 'Hyderabad', country: 'India', timezone: 'IST'),
+      CityInfo(
+        id: 'kolkata',
+        name: 'Kolkata',
+        country: 'India',
+        timezone: 'IST',
+      ),
+      CityInfo(
+        id: 'bangalore',
+        name: 'Bangalore',
+        country: 'India',
+        timezone: 'IST',
+      ),
+      CityInfo(
+        id: 'hyderabad',
+        name: 'Hyderabad',
+        country: 'India',
+        timezone: 'IST',
+      ),
       CityInfo(id: 'pune', name: 'Pune', country: 'India', timezone: 'IST'),
-      CityInfo(id: 'ahmedabad', name: 'Ahmedabad', country: 'India', timezone: 'IST'),
+      CityInfo(
+        id: 'ahmedabad',
+        name: 'Ahmedabad',
+        country: 'India',
+        timezone: 'IST',
+      ),
       CityInfo(id: 'jaipur', name: 'Jaipur', country: 'India', timezone: 'IST'),
-      CityInfo(id: 'lucknow', name: 'Lucknow', country: 'India', timezone: 'IST'),
+      CityInfo(
+        id: 'lucknow',
+        name: 'Lucknow',
+        country: 'India',
+        timezone: 'IST',
+      ),
     ],
     'EST': [
-      CityInfo(id: 'new_york', name: 'New York', country: 'United States', timezone: 'EST'),
-      CityInfo(id: 'boston', name: 'Boston', country: 'United States', timezone: 'EST'),
-      CityInfo(id: 'newark', name: 'Newark (NJ)', country: 'United States', timezone: 'EST'),
-      CityInfo(id: 'philadelphia', name: 'Philadelphia', country: 'United States', timezone: 'EST'),
-      CityInfo(id: 'atlanta', name: 'Atlanta', country: 'United States', timezone: 'EST'),
-      CityInfo(id: 'miami', name: 'Miami', country: 'United States', timezone: 'EST'),
-      CityInfo(id: 'washington_dc', name: 'Washington DC', country: 'United States', timezone: 'EST'),
+      CityInfo(
+        id: 'new_york',
+        name: 'New York',
+        country: 'United States',
+        timezone: 'EST',
+      ),
+      CityInfo(
+        id: 'boston',
+        name: 'Boston',
+        country: 'United States',
+        timezone: 'EST',
+      ),
+      CityInfo(
+        id: 'newark',
+        name: 'Newark (NJ)',
+        country: 'United States',
+        timezone: 'EST',
+      ),
+      CityInfo(
+        id: 'philadelphia',
+        name: 'Philadelphia',
+        country: 'United States',
+        timezone: 'EST',
+      ),
+      CityInfo(
+        id: 'atlanta',
+        name: 'Atlanta',
+        country: 'United States',
+        timezone: 'EST',
+      ),
+      CityInfo(
+        id: 'miami',
+        name: 'Miami',
+        country: 'United States',
+        timezone: 'EST',
+      ),
+      CityInfo(
+        id: 'washington_dc',
+        name: 'Washington DC',
+        country: 'United States',
+        timezone: 'EST',
+      ),
     ],
     'CST': [
-      CityInfo(id: 'chicago', name: 'Chicago', country: 'United States', timezone: 'CST'),
-      CityInfo(id: 'houston', name: 'Houston', country: 'United States', timezone: 'CST'),
-      CityInfo(id: 'dallas', name: 'Dallas', country: 'United States', timezone: 'CST'),
-      CityInfo(id: 'san_antonio', name: 'San Antonio', country: 'United States', timezone: 'CST'),
-      CityInfo(id: 'austin', name: 'Austin', country: 'United States', timezone: 'CST'),
+      CityInfo(
+        id: 'chicago',
+        name: 'Chicago',
+        country: 'United States',
+        timezone: 'CST',
+      ),
+      CityInfo(
+        id: 'houston',
+        name: 'Houston',
+        country: 'United States',
+        timezone: 'CST',
+      ),
+      CityInfo(
+        id: 'dallas',
+        name: 'Dallas',
+        country: 'United States',
+        timezone: 'CST',
+      ),
+      CityInfo(
+        id: 'san_antonio',
+        name: 'San Antonio',
+        country: 'United States',
+        timezone: 'CST',
+      ),
+      CityInfo(
+        id: 'austin',
+        name: 'Austin',
+        country: 'United States',
+        timezone: 'CST',
+      ),
     ],
     'MST': [
-      CityInfo(id: 'denver', name: 'Denver', country: 'United States', timezone: 'MST'),
-      CityInfo(id: 'phoenix', name: 'Phoenix', country: 'United States', timezone: 'MST'),
-      CityInfo(id: 'albuquerque', name: 'Albuquerque', country: 'United States', timezone: 'MST'),
-      CityInfo(id: 'salt_lake_city', name: 'Salt Lake City', country: 'United States', timezone: 'MST'),
+      CityInfo(
+        id: 'denver',
+        name: 'Denver',
+        country: 'United States',
+        timezone: 'MST',
+      ),
+      CityInfo(
+        id: 'phoenix',
+        name: 'Phoenix',
+        country: 'United States',
+        timezone: 'MST',
+      ),
+      CityInfo(
+        id: 'albuquerque',
+        name: 'Albuquerque',
+        country: 'United States',
+        timezone: 'MST',
+      ),
+      CityInfo(
+        id: 'salt_lake_city',
+        name: 'Salt Lake City',
+        country: 'United States',
+        timezone: 'MST',
+      ),
     ],
     'PST': [
-      CityInfo(id: 'los_angeles', name: 'Los Angeles', country: 'United States', timezone: 'PST'),
-      CityInfo(id: 'san_francisco', name: 'San Francisco', country: 'United States', timezone: 'PST'),
-      CityInfo(id: 'san_jose', name: 'San Jose', country: 'United States', timezone: 'PST'),
-      CityInfo(id: 'seattle', name: 'Seattle', country: 'United States', timezone: 'PST'),
-      CityInfo(id: 'portland', name: 'Portland', country: 'United States', timezone: 'PST'),
+      CityInfo(
+        id: 'los_angeles',
+        name: 'Los Angeles',
+        country: 'United States',
+        timezone: 'PST',
+      ),
+      CityInfo(
+        id: 'san_francisco',
+        name: 'San Francisco',
+        country: 'United States',
+        timezone: 'PST',
+      ),
+      CityInfo(
+        id: 'san_jose',
+        name: 'San Jose',
+        country: 'United States',
+        timezone: 'PST',
+      ),
+      CityInfo(
+        id: 'seattle',
+        name: 'Seattle',
+        country: 'United States',
+        timezone: 'PST',
+      ),
+      CityInfo(
+        id: 'portland',
+        name: 'Portland',
+        country: 'United States',
+        timezone: 'PST',
+      ),
     ],
   };
 
@@ -120,23 +282,17 @@ class EkadashiService {
   Future<void> initializeData() async {
     if (_isDataLoaded) return;
 
-    try {
-      final String response = await rootBundle.loadString('assets/ekadashi_data.json');
-      _rawData = json.decode(response);
-      _isDataLoaded = true;
-      debugPrint("✅ Ekadashi Data Initialized Successfully");
-    } catch (e) {
-      debugPrint("❌ Critical Error loading Ekadashi data: $e");
-      // Fallback to empty data
-      _rawData = {'ekadashis': []};
-      _isDataLoaded = true;
-    }
+    await _repository.load();
+    _rawData = _repository.combinedData();
+    _isDataLoaded = true;
+    debugPrint('Calendar years loaded: $availableYears');
   }
 
   /// Get Ekadashi list for a specific timezone and language
   List<EkadashiDate> getEkadashis({
     required String timezone,
     required String languageCode,
+    int? year,
   }) {
     if (!_isDataLoaded || _rawData == null) {
       debugPrint("WARNING: Data not loaded yet. Returning empty list.");
@@ -144,7 +300,7 @@ class EkadashiService {
     }
 
     // Check cache first
-    final cacheKey = '${timezone}_$languageCode';
+    final cacheKey = '${timezone}_${languageCode}_${year ?? 'all'}';
     if (_cache.containsKey(cacheKey)) {
       return _cache[cacheKey]![languageCode] ?? [];
     }
@@ -159,10 +315,13 @@ class EkadashiService {
         if (timing == null) continue;
 
         final names = ekadashiJson['name'] as Map<String, dynamic>? ?? {};
-        final descriptions = ekadashiJson['description'] as Map<String, dynamic>? ?? {};
+        final descriptions =
+            ekadashiJson['description'] as Map<String, dynamic>? ?? {};
         final stories = ekadashiJson['story'] as Map<String, dynamic>? ?? {};
-        final rules = ekadashiJson['fasting_rules'] as Map<String, dynamic>? ?? {};
-        final benefitsMap = ekadashiJson['benefits'] as Map<String, dynamic>? ?? {};
+        final rules =
+            ekadashiJson['fasting_rules'] as Map<String, dynamic>? ?? {};
+        final benefitsMap =
+            ekadashiJson['benefits'] as Map<String, dynamic>? ?? {};
 
         // Parse datetime strings
         final fastingStartIso = timing['fasting_start'] as String? ?? '';
@@ -171,28 +330,54 @@ class EkadashiService {
 
         // Parse date
         final dateStr = timing['date'] as String? ?? '';
-        final date = DateTime.tryParse(dateStr) ?? DateTime.now();
+        final date = DateTime.parse(dateStr);
+        if (year != null && date.year != year) continue;
 
         // Format display times
         final fastStartTime = _formatTimeFromIso(fastingStartIso);
         final fastBreakTime = _formatParanaWindow(paranaStartIso, paranaEndIso);
 
-        ekadashis.add(EkadashiDate(
-          id: ekadashiJson['id'] as int? ?? 0,
-          name: names[languageCode] as String? ?? names['en'] as String? ?? '',
-          date: date,
-          fastStartTime: fastStartTime,
-          fastBreakTime: fastBreakTime,
-          description: descriptions[languageCode] as String? ?? descriptions['en'] as String? ?? '',
-          story: stories[languageCode] as String? ?? stories['en'] as String? ?? 'Story coming soon...',
-          fastingRules: rules[languageCode] as String? ?? rules['en'] as String? ?? 'Standard Ekadashi fasting rules apply.',
-          benefits: benefitsMap[languageCode] as String? ?? benefitsMap['en'] as String? ?? 'Grants spiritual merit.',
-          paksha: ekadashiJson['paksha'] as String? ?? '',
-          month: ekadashiJson['month'] as String? ?? '',
-          fastingStartIso: fastingStartIso,
-          paranaStartIso: paranaStartIso,
-          paranaEndIso: paranaEndIso,
-        ));
+        ekadashis.add(
+          EkadashiDate(
+            id: ekadashiJson['id'] as int,
+            occurrenceUid: ekadashiJson['occurrence_uid'] as String,
+            legacyId: ekadashiJson['legacy_id'] as int,
+            contentId: ekadashiJson['content_id'] as String,
+            usesContentFallback: [
+              names,
+              descriptions,
+              stories,
+              rules,
+              benefitsMap,
+            ].any((m) => !m.containsKey(languageCode)),
+            name:
+                names[languageCode] as String? ?? names['en'] as String? ?? '',
+            date: date,
+            fastStartTime: fastStartTime,
+            fastBreakTime: fastBreakTime,
+            description:
+                descriptions[languageCode] as String? ??
+                descriptions['en'] as String? ??
+                '',
+            story:
+                stories[languageCode] as String? ??
+                stories['en'] as String? ??
+                'Story coming soon...',
+            fastingRules:
+                rules[languageCode] as String? ??
+                rules['en'] as String? ??
+                'Standard Ekadashi fasting rules apply.',
+            benefits:
+                benefitsMap[languageCode] as String? ??
+                benefitsMap['en'] as String? ??
+                'Grants spiritual merit.',
+            paksha: _calendarTerm(ekadashiJson['paksha'] as String? ?? '', 'paksha_', languageCode),
+            month: _calendarTerm(ekadashiJson['month'] as String? ?? '', 'lunar_month_', languageCode),
+            fastingStartIso: fastingStartIso,
+            paranaStartIso: paranaStartIso,
+            paranaEndIso: paranaEndIso,
+          ),
+        );
       } catch (e) {
         debugPrint("Error parsing Ekadashi: $e");
       }
@@ -311,8 +496,9 @@ class EkadashiService {
   /// Used as fallback when location permission is denied.
   Future<String> getDeviceAppTimezone() async {
     try {
-      final systemTimezone = await FlutterTimezone.getLocalTimezone()
-          .timeout(const Duration(milliseconds: 2000));
+      final systemTimezone = await FlutterTimezone.getLocalTimezone().timeout(
+        const Duration(milliseconds: 2000),
+      );
       debugPrint('📍 Device system timezone: $systemTimezone');
 
       // Map common system timezone IDs to our supported app timezones
@@ -320,25 +506,25 @@ class EkadashiService {
         // IST - India Standard Time
         'Asia/Kolkata': 'IST',
         'Asia/Calcutta': 'IST',
-        
+
         // EST - Eastern Standard Time
         'America/New_York': 'EST',
         'America/Detroit': 'EST',
         'America/Toronto': 'EST',
         'America/Indiana/Indianapolis': 'EST',
         'America/Kentucky/Louisville': 'EST',
-        
+
         // CST - Central Standard Time
         'America/Chicago': 'CST',
         'America/Winnipeg': 'CST',
         'America/Mexico_City': 'CST',
-        
+
         // MST - Mountain Standard Time
         'America/Denver': 'MST',
         'America/Edmonton': 'MST',
         'America/Phoenix': 'MST',
         'America/Boise': 'MST',
-        
+
         // PST - Pacific Standard Time
         'America/Los_Angeles': 'PST',
         'America/Vancouver': 'PST',
@@ -355,7 +541,7 @@ class EkadashiService {
       // Fallback: Check by prefix for broader US timezone matching
       if (systemTimezone.startsWith('America/')) {
         // Try to infer from common patterns
-        if (systemTimezone.contains('New_York') || 
+        if (systemTimezone.contains('New_York') ||
             systemTimezone.contains('Detroit') ||
             systemTimezone.contains('Toronto') ||
             systemTimezone.contains('Indiana') ||

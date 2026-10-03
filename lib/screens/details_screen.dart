@@ -12,11 +12,7 @@ class DetailsScreen extends StatelessWidget {
   final EkadashiDate ekadashi;
   final String? timezone;
 
-  const DetailsScreen({
-    super.key,
-    required this.ekadashi,
-    this.timezone,
-  });
+  const DetailsScreen({super.key, required this.ekadashi, this.timezone});
 
   @override
   Widget build(BuildContext context) {
@@ -42,15 +38,18 @@ class DetailsScreen extends StatelessWidget {
               child: Column(
                 children: [
                   Text(
-                    DateFormat('MMM dd, yyyy').format(ekadashi.date),
-                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w300),
+                    DateFormat('MMM dd, yyyy',lang.currentLocale.languageCode).format(ekadashi.date),
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w300,
+                    ),
                   ),
                   Text(
                     ekadashi.name,
                     style: const TextStyle(
-                        color: tealColor,
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold
+                      color: tealColor,
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -58,7 +57,10 @@ class DetailsScreen extends StatelessWidget {
                   if (timezone != null && timezone!.isNotEmpty) ...[
                     const SizedBox(height: 4),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: tealColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
@@ -78,10 +80,21 @@ class DetailsScreen extends StatelessWidget {
             ),
             const SizedBox(height: 30),
 
+            if (ekadashi.usesContentFallback) ...[
+              Text(
+                lang.translate('content_fallback'),
+                style: const TextStyle(fontStyle: FontStyle.italic),
+              ),
+              const SizedBox(height: 16),
+            ],
             // Significance Section
             Text(
               lang.translate('significance'),
-              style: const TextStyle(color: tealColor, fontSize: 20, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                color: tealColor,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
@@ -93,7 +106,11 @@ class DetailsScreen extends StatelessWidget {
             // Story Section
             Text(
               lang.translate('story_history'),
-              style: const TextStyle(color: tealColor, fontSize: 20, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                color: tealColor,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
@@ -105,7 +122,11 @@ class DetailsScreen extends StatelessWidget {
             // Rules Section
             Text(
               lang.translate('fasting_rules'),
-              style: const TextStyle(color: tealColor, fontSize: 20, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                color: tealColor,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
@@ -117,7 +138,11 @@ class DetailsScreen extends StatelessWidget {
             // Benefits Section
             Text(
               lang.translate('spiritual_benefits'),
-              style: const TextStyle(color: tealColor, fontSize: 20, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                color: tealColor,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
@@ -125,20 +150,19 @@ class DetailsScreen extends StatelessWidget {
               style: const TextStyle(fontSize: 16, height: 1.5),
             ),
             const SizedBox(height: 40), // Extra padding at the bottom
-
             // Timings Box
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                  color: Theme.of(context).cardColor,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: tealColor.withValues(alpha: 0.3)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 10,
-                    )
-                  ]
+                color: Theme.of(context).cardColor,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: tealColor.withValues(alpha: 0.3)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 10,
+                  ),
+                ],
               ),
               child: Column(
                 children: [
@@ -152,14 +176,23 @@ class DetailsScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                                lang.translate('start_fasting'),
-                                style: const TextStyle(color: tealColor, fontWeight: FontWeight.bold)
+                              lang.translate('start_fasting'),
+                              style: const TextStyle(
+                                color: tealColor,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             Text(
-                                DateFormat('MMM dd, yyyy').format(ekadashi.date),
-                                style: const TextStyle(fontSize: 13, color: Colors.grey)
+                              DateFormat('MMM dd, yyyy',lang.currentLocale.languageCode).format(ekadashi.date),
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: Colors.grey,
+                              ),
                             ),
-                            Text(ekadashi.fastStartTime, style: const TextStyle(fontSize: 18)),
+                            Text(
+                              ekadashi.fastStartTime,
+                              style: const TextStyle(fontSize: 18),
+                            ),
                           ],
                         ),
                       ),
@@ -176,14 +209,25 @@ class DetailsScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                                lang.translate('break_fasting'),
-                                style: const TextStyle(color: tealColor, fontWeight: FontWeight.bold)
+                              lang.translate('break_fasting'),
+                              style: const TextStyle(
+                                color: tealColor,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             Text(
-                                DateFormat('MMM dd, yyyy').format(ekadashi.date.add(const Duration(days: 1))),
-                                style: const TextStyle(fontSize: 13, color: Colors.grey)
+                              DateFormat('MMM dd, yyyy',lang.currentLocale.languageCode).format(
+                                ekadashi.date.add(const Duration(days: 1)),
+                              ),
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: Colors.grey,
+                              ),
                             ),
-                            Text(breakTime, style: const TextStyle(fontSize: 18)),
+                            Text(
+                              breakTime,
+                              style: const TextStyle(fontSize: 18),
+                            ),
                           ],
                         ),
                       ),
@@ -197,7 +241,9 @@ class DetailsScreen extends StatelessWidget {
             // Vrat Tracker Action Button (if enabled)
             Consumer<VratTrackerService>(
               builder: (ctx, trackerService, _) {
-                if (!trackerService.trackerEnabled) return const SizedBox.shrink();
+                if (!trackerService.trackerEnabled) {
+                  return const SizedBox.shrink();
+                }
                 final record = trackerService.getRecord(ekadashi.id);
                 final status = record?.status ?? ObservanceStatus.unrecorded;
 
@@ -236,12 +282,17 @@ class DetailsScreen extends StatelessWidget {
                       record != null
                           ? '${lang.translate('vrat')}: $statusLabel'
                           : lang.translate('record_vrat'),
-                      style: TextStyle(color: statusColor, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        color: statusColor,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     style: OutlinedButton.styleFrom(
                       side: BorderSide(color: statusColor, width: 1.5),
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                     onPressed: () async {
                       final occurrences = EkadashiService().getEkadashis(
@@ -254,7 +305,9 @@ class DetailsScreen extends StatelessWidget {
                         allOccurrences: occurrences,
                         currentTimezone: timezone ?? 'IST',
                       );
-                      if (unlocks != null && unlocks.isNotEmpty && context.mounted) {
+                      if (unlocks != null &&
+                          unlocks.isNotEmpty &&
+                          context.mounted) {
                         for (final u in unlocks) {
                           await AchievementUnlockDialog.show(context, u);
                         }
@@ -270,5 +323,4 @@ class DetailsScreen extends StatelessWidget {
       ),
     );
   }
-
 }

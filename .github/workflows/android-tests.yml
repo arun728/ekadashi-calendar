@@ -14,7 +14,10 @@ jobs:
         with:
           flutter-version: '3.38.5'
           cache: true
+      - run: sudo apt-get update && sudo apt-get install -y libsqlite3-dev
+      - run: python3 -m unittest discover -s test/tool
       - run: flutter pub get
+      - run: python3 tool/generate_localized_lookup.py && flutter gen-l10n
       # Existing v1 lint debt is reported; analyzer errors remain fatal.
       - run: flutter analyze --no-fatal-infos --no-fatal-warnings
       - run: flutter test --coverage --reporter expanded
@@ -53,6 +56,9 @@ jobs:
           distribution: temurin
           java-version: '17'
       - uses: android-actions/setup-android@v3
+        with:
+          # The old SDK "tools" package no longer exists in Google's repository.
+          packages: 'platform-tools'
       - run: sdkmanager 'ndk;28.2.13676358'
       - name: Bound Gradle memory on hosted runners
         run: |
@@ -92,6 +98,7 @@ jobs:
             build/ui-screenshots/android/
             build/android-evidence/
             build/android-feature-evidence/
+            build/android-widget-evidence/
             build/app/reports/tests/
             build/app/test-results/
       - name: Preserve failing native release gate
