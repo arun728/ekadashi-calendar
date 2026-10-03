@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "packs": [
+    {
+      "year": 2026,
+      "asset": "assets/calendar/2026.json"
+    },
+    {
+      "year": 2027,
+      "asset": "assets/calendar/2027.json"
+    }
+  ]
+}

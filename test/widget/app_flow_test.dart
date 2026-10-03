@@ -90,7 +90,11 @@ void main() {
       (c) => c.method == 'scheduleAllNotifications',
     );
     final events = (request.arguments as Map)['ekadashis'] as List;
-    expect(events, hasLength(24));
+    expect(events, hasLength(48));
+    expect(events.cast<Map>().map((e) => e['calendarYear']).toSet(), {
+      2026,
+      2027,
+    });
     for (final event in events.cast<Map>()) {
       expect(DateTime.tryParse(event['fastingStart'] as String), isNotNull);
       expect(DateTime.tryParse(event['paranaStart'] as String), isNotNull);

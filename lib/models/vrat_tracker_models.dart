@@ -43,6 +43,7 @@ class VratHistory {
   final String id;
   final String localProfileId;
   final int ekadashiOccurrenceId;
+  final String? occurrenceUid;
   final String ekadashiDate; // YYYY-MM-DD
   final String ekadashiName;
   final ObservanceStatus status;
@@ -59,6 +60,7 @@ class VratHistory {
     required this.id,
     this.localProfileId = 'default',
     required this.ekadashiOccurrenceId,
+    this.occurrenceUid,
     required this.ekadashiDate,
     required this.ekadashiName,
     required this.status,
@@ -76,6 +78,7 @@ class VratHistory {
     'id': id,
     'localProfileId': localProfileId,
     'ekadashiOccurrenceId': ekadashiOccurrenceId,
+    'occurrenceUid': occurrenceUid,
     'ekadashiDate': ekadashiDate,
     'ekadashiName': ekadashiName,
     'status': status.name,
@@ -94,14 +97,19 @@ class VratHistory {
       id: json['id'] as String? ?? '',
       localProfileId: json['localProfileId'] as String? ?? 'default',
       ekadashiOccurrenceId: json['ekadashiOccurrenceId'] as int? ?? 0,
+      occurrenceUid: json['occurrenceUid'] as String?,
       ekadashiDate: json['ekadashiDate'] as String? ?? '',
       ekadashiName: json['ekadashiName'] as String? ?? '',
       status: ObservanceStatus.fromString(json['status'] as String?),
       fastingMethod: FastingMethod.fromString(json['fastingMethod'] as String?),
       fastingMethodOther: json['fastingMethodOther'] as String?,
       note: json['note'] as String?,
-      recordedAtUTC: json['recordedAtUTC'] as String? ?? DateTime.now().toUtc().toIso8601String(),
-      updatedAtUTC: json['updatedAtUTC'] as String? ?? DateTime.now().toUtc().toIso8601String(),
+      recordedAtUTC:
+          json['recordedAtUTC'] as String? ??
+          DateTime.now().toUtc().toIso8601String(),
+      updatedAtUTC:
+          json['updatedAtUTC'] as String? ??
+          DateTime.now().toUtc().toIso8601String(),
       tradition: json['tradition'] as String?,
       timezone: json['timezone'] as String?,
       locationContext: json['locationContext'] as String?,
@@ -112,6 +120,7 @@ class VratHistory {
     String? id,
     String? localProfileId,
     int? ekadashiOccurrenceId,
+    String? occurrenceUid,
     String? ekadashiDate,
     String? ekadashiName,
     ObservanceStatus? status,
@@ -128,6 +137,7 @@ class VratHistory {
       id: id ?? this.id,
       localProfileId: localProfileId ?? this.localProfileId,
       ekadashiOccurrenceId: ekadashiOccurrenceId ?? this.ekadashiOccurrenceId,
+      occurrenceUid: occurrenceUid ?? this.occurrenceUid,
       ekadashiDate: ekadashiDate ?? this.ekadashiDate,
       ekadashiName: ekadashiName ?? this.ekadashiName,
       status: status ?? this.status,
@@ -204,7 +214,9 @@ class UserAchievement {
       progressValue: json['progressValue'] as int? ?? 0,
       isUnlocked: json['isUnlocked'] as bool? ?? false,
       unlockedAtUTC: json['unlockedAtUTC'] as String?,
-      lastEvaluatedAtUTC: json['lastEvaluatedAtUTC'] as String? ?? DateTime.now().toUtc().toIso8601String(),
+      lastEvaluatedAtUTC:
+          json['lastEvaluatedAtUTC'] as String? ??
+          DateTime.now().toUtc().toIso8601String(),
     );
   }
 

@@ -21,4 +21,4 @@ adb logcat -c
 trap 'adb logcat -d > "$output_dir/logcat.txt"; adb exec-out screencap -p > "$output_dir/final-screen.png"; adb shell getprop > "$output_dir/device.txt"; adb shell dumpsys package "$package_name" > "$output_dir/package.txt"' EXIT
 # Use the exact pre-granted binary; avoid rebuilding a different APK afterwards.
 flutter drive --driver=test_driver/integration_test.dart --target="$test_target" \
-  --use-application-binary="$apk_path" -d emulator-5554
+  --keep-app-running --use-application-binary="$apk_path" -d emulator-5554

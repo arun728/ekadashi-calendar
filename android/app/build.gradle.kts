@@ -47,6 +47,7 @@ android {
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.applausestudios.ekadashi_calendar"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
@@ -73,6 +74,12 @@ flutter {
 }
 
 dependencies {
+    // Match the runner used by instrumentation with the debug runtime (Flutter
+    // integration_test otherwise selects runner 1.2.0 by consistent resolution).
+    debugImplementation("androidx.test:runner:1.6.2")
+    androidTestImplementation("androidx.test:runner:1.6.2")
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
+    androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")
     // integration_test supplies Guava at runtime, which selects the empty
     // listenablefuture artifact. Expose that existing API to Kotlin compilation
     // without adding or changing a runtime dependency.

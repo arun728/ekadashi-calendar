@@ -1,3 +1,4 @@
+import 'memory_calendar_repository.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/material.dart';
@@ -24,10 +25,12 @@ class AppHarness {
   bool remindStart = true;
   bool remindParana = true;
   final List<MethodCall> notificationCalls = [];
+  final List<MethodCall> widgetCalls = [];
   final List<MethodCall> settingsCalls = [];
   final List<MethodCall> locationCalls = [];
 
   static const channels = [
+    'com.ekadashi.widget',
     'com.ekadashi.settings',
     'com.ekadashi.location',
     'com.ekadashi.notifications',
@@ -48,6 +51,13 @@ class AppHarness {
     });
     final messenger =
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(
+      const MethodChannel('com.ekadashi.widget'),
+      (call) async {
+        widgetCalls.add(call);
+        return call.method == 'getInitialDeepLink' ? null : true;
+      },
+    );
     messenger.setMockMethodCallHandler(
       const MethodChannel('com.ekadashi.settings'),
       (call) async {
@@ -154,7 +164,7 @@ class AppHarness {
     'longitude': 80.2707,
   };
 
-  Widget app() => const MyApp();
+  Widget app() => MyApp(calendarRepository: MemoryCalendarRepository());
 
   void uninstall() {
     final messenger =

@@ -6,11 +6,17 @@ These rules record Arun's explicit instructions from 3 October 2026.
   `main` is protected; do not assume direct push access.
 - Work on isolated branches for reviews, fixes and automated tests. Review
   concrete candidate commits and test evidence before requesting integration.
-- The tested integration pair is PR #4 (tracker/achievements) plus PR #6 (the
-  revert that removes the accidentally merged PR #5 widgets/search changes).
-  Do not restore PR #5 as part of this candidate. Dev integration needs
-  explicit approval. Main release integration needs a separate explicit
-  approval after complete release testing.
+- Restore and integrate Search and all three Android widgets from PR #5 alongside
+  the Vrat tracker, the 2026/2027 archive, Telugu and calendar changes. PR #6
+  reverted the feature and was not the desired final product state.
+- Arun explicitly authorized merging all requested changes to `dev` after all
+  unit, native, regression, integration and UI tests pass. Keep `main` untouched.
+- Follow TDD for functionality and UI fixes: demonstrate the failing behavior
+  before fixing it, then run the relevant regression and full-suite gates.
+- Google Calendar import covers the selected entire year and reconciles remote
+  deletions atomically. Failed/partial imports preserve previously cached events.
+- Audit every UI localization key, placeholders and unintended English fallback
+  in Tamil, Hindi and Telugu. Do not enable paid translation billing implicitly.
 - Run deterministic domain, regression, integration and UI tests automatically
   on Android emulators wherever practical; capture screenshots and logs. Reserve
   physical-device checks for OEM/hardware and real background reliability.

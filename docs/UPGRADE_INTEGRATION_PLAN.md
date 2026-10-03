@@ -1,7 +1,10 @@
 # Multi-year and 2027 feature integration proposal
 
-Discussion draft, 3 October 2026. No redesign has been implemented. Calculation
-engine work is deferred at Arun's request. Current PR testing remains first.
+Historical design proposal, 3 October 2026. Arun subsequently approved this
+implementation and the tested combined candidate for `dev`. The implemented
+behavior and current gates are recorded in `V2_IMPLEMENTATION.md` and `TESTING.md`.
+Calculation-engine work remains deferred. Statements below about future work,
+missing translations and awaiting permission describe the original assessment.
 
 ## Reviewed source and comparison
 

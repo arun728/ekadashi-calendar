@@ -28,7 +28,7 @@ void main() {
       await loader.load();
     }
   });
-  for (final locale in ['en', 'ta', 'hi']) {
+  for (final locale in ['en', 'ta', 'hi', 'te']) {
     testWidgets(
       '$locale Home, Calendar, Settings and Details render and navigate',
       (tester) async {
@@ -73,6 +73,9 @@ void main() {
         await tester.tap(find.byIcon(Icons.calendar_month));
         await tester.pumpAndSettle();
         await capture('calendar');
+        await tester.tap(find.byIcon(Icons.search));
+        await tester.pumpAndSettle();
+        await capture('search');
         await tester.tap(find.byIcon(Icons.settings));
         await tester.pumpAndSettle();
         expect(find.byType(SwitchListTile), findsWidgets);
@@ -101,7 +104,7 @@ void main() {
         await tester.pumpAndSettle();
         expect(find.text(language.translate('significance')), findsOneWidget);
         await capture('details');
-        await tester.pageBack();
+        await tester.tap(find.byType(BackButton));
         await tester.pumpAndSettle();
         expect(find.byIcon(Icons.calendar_month), findsOneWidget);
       },

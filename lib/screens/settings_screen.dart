@@ -1,3 +1,4 @@
+import 'widget_preview_screen.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -6,7 +7,11 @@ import '../services/theme_service.dart';
 import '../services/language_service.dart';
 import '../services/ekadashi_service.dart';
 import '../services/native_settings_service.dart';
-import '../services/native_notification_service.dart' show NativeNotificationService, EkadashiNotificationData, NotificationSettings;
+import '../services/native_notification_service.dart'
+    show
+        NativeNotificationService,
+        EkadashiNotificationData,
+        NotificationSettings;
 
 /// Settings Screen - Updated to use native Kotlin services for:
 /// - Permission handling (no freeze on return from system settings)
@@ -24,10 +29,12 @@ class SettingsScreen extends StatefulWidget {
   State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObserver {
+class _SettingsScreenState extends State<SettingsScreen>
+    with WidgetsBindingObserver {
   // Services
   final NativeSettingsService _settingsService = NativeSettingsService();
-  final NativeNotificationService _notificationService = NativeNotificationService();
+  final NativeNotificationService _notificationService =
+      NativeNotificationService();
   final EkadashiService _ekadashiService = EkadashiService();
 
   // State
@@ -115,15 +122,20 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     // 3. Auto-reschedule if we just gained permission
     if (!previousPermission && _permissionStatus.hasNotificationPermission) {
       if (_notificationSettings.enabled) {
-        debugPrint('SettingsScreen: Permission granted on resume - Auto rescheduling');
+        debugPrint(
+          'SettingsScreen: Permission granted on resume - Auto rescheduling',
+        );
         _rescheduleNotifications();
       }
     }
   }
 
   void _rescheduleNotifications() {
-    if (!_notificationSettings.enabled || !_permissionStatus.hasNotificationPermission) {
-      debugPrint('SettingsScreen: Reschedule aborted. Enabled=${_notificationSettings.enabled}, Perm=${_permissionStatus.hasNotificationPermission}');
+    if (!_notificationSettings.enabled ||
+        !_permissionStatus.hasNotificationPermission) {
+      debugPrint(
+        'SettingsScreen: Reschedule aborted. Enabled=${_notificationSettings.enabled}, Perm=${_permissionStatus.hasNotificationPermission}',
+      );
       _notificationService.cancelAllNotifications();
       return;
     }
@@ -131,28 +143,41 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     Future.microtask(() async {
       if (!mounted) return;
       try {
-        final langService = Provider.of<LanguageService>(context, listen: false);
+        final langService = Provider.of<LanguageService>(
+          context,
+          listen: false,
+        );
         final ekadashis = await _ekadashiService.getUpcomingEkadashis(
-            languageCode: langService.currentLocale.languageCode,
-            timezone: _currentTimezone
+          languageCode: langService.currentLocale.languageCode,
+          timezone: _currentTimezone,
         );
 
         // Convert to notification data format
-        final notificationData = ekadashis.map((e) => EkadashiNotificationData(
-          id: e.id,
-          name: e.name,
-          fastingStartTime: e.fastingStartIso.isNotEmpty ? e.fastingStartIso : e.fastStartTime,
-          paranaStartTime: e.paranaStartIso.isNotEmpty ? e.paranaStartIso : e.fastBreakTime,
-        )).toList();
+        final notificationData = ekadashis
+            .map(
+              (e) => EkadashiNotificationData(
+                id: e.id,
+                name: e.name,
+                fastingStartTime: e.fastingStartIso.isNotEmpty
+                    ? e.fastingStartIso
+                    : e.fastStartTime,
+                paranaStartTime: e.paranaStartIso.isNotEmpty
+                    ? e.paranaStartIso
+                    : e.fastBreakTime,
+              ),
+            )
+            .toList();
 
         // Update native notification service settings
-        await _notificationService.updateSettings(NotificationSettings(
-          enabled: _notificationSettings.enabled,
-          remind2Days: _notificationSettings.remind2Days,
-          remind1Day: _notificationSettings.remind1Day,
-          remindOnStart: _notificationSettings.remindOnStart,
-          remindOnParana: _notificationSettings.remindOnParana,
-        ));
+        await _notificationService.updateSettings(
+          NotificationSettings(
+            enabled: _notificationSettings.enabled,
+            remind2Days: _notificationSettings.remind2Days,
+            remind1Day: _notificationSettings.remind1Day,
+            remindOnStart: _notificationSettings.remindOnStart,
+            remindOnParana: _notificationSettings.remindOnParana,
+          ),
+        );
 
         // Schedule notifications
         await _notificationService.scheduleAllNotifications(
@@ -227,7 +252,8 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
   Widget build(BuildContext context) {
     final lang = Provider.of<LanguageService>(context);
 
-    final bool togglesEnabled = _permissionStatus.hasNotificationPermission &&
+    final bool togglesEnabled =
+        _permissionStatus.hasNotificationPermission &&
         _notificationSettings.enabled;
 
     // Show permissions section always on Android (since USE_EXACT_ALARM is auto-granted)
@@ -240,39 +266,68 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        ListTile(
+          leading: const Icon(Icons.widgets_outlined),
+          title: Text(lang.translate('widget_preview')),
+          subtitle: Text(lang.translate('widget_preview_desc')),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => WidgetPreviewScreen(
+                ekadashiList: _ekadashiService.getEkadashis(
+                  timezone: _currentTimezone,
+                  languageCode: lang.currentLocale.languageCode,
+                ),
+                currentTimezone: _currentTimezone,
+              ),
+            ),
+          ),
+        ),
         // ==================== APPEARANCE ====================
-        Text(lang.translate('appearance'),
-            style: const TextStyle(color: tealColor, fontWeight: FontWeight.bold)),
+        Text(
+          lang.translate('appearance'),
+          style: const TextStyle(color: tealColor, fontWeight: FontWeight.bold),
+        ),
         SwitchListTile(
           title: Text(lang.translate('dark_mode')),
           value: Provider.of<ThemeService>(context).isDarkMode,
           activeThumbColor: tealColor,
           onChanged: (value) {
-            Provider.of<ThemeService>(context, listen: false).toggleTheme(value);
+            Provider.of<ThemeService>(
+              context,
+              listen: false,
+            ).toggleTheme(value);
             _settingsService.setDarkMode(value);
           },
         ),
         const Divider(),
 
         // ==================== NOTIFICATIONS ====================
-        Text(lang.translate('notifications'),
-            style: const TextStyle(color: tealColor, fontWeight: FontWeight.bold)),
+        Text(
+          lang.translate('notifications'),
+          style: const TextStyle(color: tealColor, fontWeight: FontWeight.bold),
+        ),
 
         SwitchListTile(
           title: Text(lang.translate('enable_notifications')),
           subtitle: _permissionStatus.hasNotificationPermission
               ? (_notificationSettings.enabled
-              ? Text(
-              lang.translateWithArgs('reminders_active',
-                  [_notificationSettings.enabledCount.toString()]),
-              style: const TextStyle(fontSize: 12, color: Colors.grey)
-          )
-              : null)
+                    ? Text(
+                        lang.translateWithArgs('reminders_active', [
+                          _notificationSettings.enabledCount.toString(),
+                        ]),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
+                      )
+                    : null)
               : Text(
-              lang.translate('notifications_off'),
-              style: const TextStyle(fontSize: 12, color: Colors.orange)
-          ),
-          value: _notificationSettings.enabled && _permissionStatus.hasNotificationPermission,
+                  lang.translate('notifications_off'),
+                  style: const TextStyle(fontSize: 12, color: Colors.orange),
+                ),
+          value:
+              _notificationSettings.enabled &&
+              _permissionStatus.hasNotificationPermission,
           activeThumbColor: tealColor,
           onChanged: _toggleNotifications,
         ),
@@ -287,7 +342,8 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
             style: TextStyle(
               fontSize: 11,
               color: togglesEnabled && _notificationSettings.remind2Days
-                  ? Colors.green : Colors.grey,
+                  ? Colors.green
+                  : Colors.grey,
             ),
           ),
           value: _notificationSettings.remind2Days && togglesEnabled,
@@ -305,7 +361,8 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
             style: TextStyle(
               fontSize: 11,
               color: togglesEnabled && _notificationSettings.remind1Day
-                  ? Colors.green : Colors.grey,
+                  ? Colors.green
+                  : Colors.grey,
             ),
           ),
           value: _notificationSettings.remind1Day && togglesEnabled,
@@ -323,7 +380,8 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
             style: TextStyle(
               fontSize: 11,
               color: togglesEnabled && _notificationSettings.remindOnStart
-                  ? Colors.green : Colors.grey,
+                  ? Colors.green
+                  : Colors.grey,
             ),
           ),
           value: _notificationSettings.remindOnStart && togglesEnabled,
@@ -341,7 +399,8 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
             style: TextStyle(
               fontSize: 11,
               color: togglesEnabled && _notificationSettings.remindOnParana
-                  ? Colors.green : Colors.grey,
+                  ? Colors.green
+                  : Colors.grey,
             ),
           ),
           value: _notificationSettings.remindOnParana && togglesEnabled,
@@ -352,7 +411,10 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
         // Test notification button
         if (togglesEnabled)
           ListTile(
-            leading: const Icon(Icons.notifications_active_outlined, color: tealColor),
+            leading: const Icon(
+              Icons.notifications_active_outlined,
+              color: tealColor,
+            ),
             title: Text(lang.translate('test_notification')),
             subtitle: Text(
               lang.translate('test_notification_desc'),
@@ -360,7 +422,10 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
             ),
             onTap: () async {
               try {
-                final langService = Provider.of<LanguageService>(context, listen: false);
+                final langService = Provider.of<LanguageService>(
+                  context,
+                  listen: false,
+                );
                 // FIXED: Passing individual strings instead of Map to match method signature
                 await _notificationService.showTestNotification(
                   langService.translate('test_notif_title'),
@@ -385,8 +450,13 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
         if (showPermissionsSection) ...[
           const Divider(height: 32),
 
-          Text(lang.translate('permissions'),
-              style: const TextStyle(color: tealColor, fontWeight: FontWeight.bold)),
+          Text(
+            lang.translate('permissions'),
+            style: const TextStyle(
+              color: tealColor,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const SizedBox(height: 8),
 
           _buildPermissionRow(
@@ -403,12 +473,17 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
         const Divider(height: 32),
 
         // ==================== ABOUT ====================
-        Text(lang.translate('about'),
-            style: const TextStyle(color: tealColor, fontWeight: FontWeight.bold)),
+        Text(
+          lang.translate('about'),
+          style: const TextStyle(color: tealColor, fontWeight: FontWeight.bold),
+        ),
         ListTile(
           leading: const Icon(Icons.star_rate_rounded, color: tealColor),
           title: Text(lang.translate('rate_app')),
-          subtitle: Text(lang.translate('rate_app_desc'), style: const TextStyle(fontSize: 12, color: Colors.grey)),
+          subtitle: Text(
+            lang.translate('rate_app_desc'),
+            style: const TextStyle(fontSize: 12, color: Colors.grey),
+          ),
           onTap: () => _settingsService.openStoreListing(),
         ),
         ListTile(
@@ -475,7 +550,10 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
-              child: Text(buttonText, style: const TextStyle(color: tealColor, fontSize: 12)),
+              child: Text(
+                buttonText,
+                style: const TextStyle(color: tealColor, fontSize: 12),
+              ),
             ),
         ],
       ),
@@ -509,7 +587,10 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: Text(lang.translate('info_close'), style: const TextStyle(color: tealColor)),
+            child: Text(
+              lang.translate('info_close'),
+              style: const TextStyle(color: tealColor),
+            ),
           ),
         ],
       ),

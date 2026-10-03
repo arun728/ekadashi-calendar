@@ -12,10 +12,14 @@ void main() {
   setUpAll(() async {
     tzdata.initializeTimeZones();
     await service.initializeData();
-    rawEvents =
-        (jsonDecode(await rootBundle.loadString('assets/ekadashi_data.json'))
+    rawEvents = [
+      for (final year in [2026, 2027])
+        ...(jsonDecode(
+                  await rootBundle.loadString('assets/calendar/$year.json'),
+                )
                 as Map)['ekadashis']
-            as List;
+            as List,
+    ];
   });
   const zones = {
     'IST': 'Asia/Kolkata',
@@ -81,7 +85,7 @@ void main() {
         }
       },
     );
-    for (final lang in ['en', 'ta', 'hi']) {
+    for (final lang in ['en', 'ta', 'hi', 'te']) {
       test(
         '${zone.key}/$lang uses matching translated content without changing occurrence identity',
         () {
@@ -91,7 +95,7 @@ void main() {
           );
           for (final e in events) {
             final raw = rawEvents.cast<Map>().singleWhere(
-              (r) => r['id'] == e.id,
+              (r) => r['occurrence_uid'] == e.occurrenceUid,
             );
             expect(
               e.name,

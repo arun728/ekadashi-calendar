@@ -85,6 +85,16 @@ class NativeRegressionTest {
             start.plusDays(1).toString(), emptyMap()) }
         assertEquals(4, active().size)
     }
+    @Test fun adjacentYearsDoNotReplaceOrCancelEachOthersReminders() {
+        val start = ZonedDateTime.now().plusDays(10)
+        for (id in listOf(1, 2027001)) scheduler.scheduleEkadashiNotifications(id, "Test",
+            start.toString(), start.plusDays(1).toString(), emptyMap())
+        assertEquals(8, active().size)
+        scheduler.cancelEkadashiNotifications(2027001)
+        assertEquals(4, active().size)
+        assertTrue(active().all { "ekadashi_1" in it.tags })
+    }
+
     @Test fun cancelOneOccurrencePreservesAnother() {
         val start = ZonedDateTime.now().plusDays(10)
         for (id in listOf(7, 8)) scheduler.scheduleEkadashiNotifications(id, "Test",

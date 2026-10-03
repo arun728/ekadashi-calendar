@@ -1,3 +1,5 @@
+import 'package:provider/provider.dart';
+import '../services/language_service.dart';
 import 'package:flutter/material.dart';
 import '../main.dart';
 
@@ -14,7 +16,6 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-
   @override
   void initState() {
     super.initState();
@@ -38,33 +39,40 @@ class _SplashScreenState extends State<SplashScreen> {
 
     // Priority 3: Defer NotificationService init (fire-and-forget)
     NotificationService().init().then((_) {
-      debugPrint('NotificationService init completed (deferred) in ${stopwatch.elapsedMilliseconds}ms total');
+      debugPrint(
+        'NotificationService init completed (deferred) in ${stopwatch.elapsedMilliseconds}ms total',
+      );
     });
 
     if (mounted) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const MainScreen()),
-      );
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (_) => const MainScreen()));
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: Color(0xFF121212),
+    final lang = context.watch<LanguageService>();
+    return Scaffold(
+      backgroundColor: const Color(0xFF121212),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SizedBox(
+            const SizedBox(
               height: 100,
               width: 100,
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                   Positioned(
+                  Positioned(
                     top: 0,
-                    child: Icon(Icons.wb_sunny_outlined, size: 40, color: Colors.orangeAccent),
+                    child: Icon(
+                      Icons.wb_sunny_outlined,
+                      size: 40,
+                      color: Colors.orangeAccent,
+                    ),
                   ),
                   Positioned(
                     bottom: 0,
@@ -73,26 +81,26 @@ class _SplashScreenState extends State<SplashScreen> {
                 ],
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Text(
-              'Ekadashi Calendar',
-              style: TextStyle(
+              lang.translate('app_title'),
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
-              'Om Namo Narayana!',
-              style: TextStyle(
+              lang.translate('splash_mantra'),
+              style: const TextStyle(
                 color: Colors.white54,
                 fontSize: 14,
                 fontStyle: FontStyle.italic,
               ),
             ),
-            SizedBox(height: 40),
-            CircularProgressIndicator(color: Color(0xFF00A19B)),
+            const SizedBox(height: 40),
+            const CircularProgressIndicator(color: Color(0xFF00A19B)),
           ],
         ),
       ),

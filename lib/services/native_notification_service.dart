@@ -4,11 +4,14 @@ import 'package:flutter/services.dart';
 /// Native notification service using Kotlin WorkManager
 /// More reliable than AlarmManager - guarantees notification delivery
 class NativeNotificationService {
-  static final NativeNotificationService _instance = NativeNotificationService._internal();
+  static final NativeNotificationService _instance =
+      NativeNotificationService._internal();
   factory NativeNotificationService() => _instance;
   NativeNotificationService._internal();
 
-  static const MethodChannel _channel = MethodChannel('com.ekadashi.notifications');
+  static const MethodChannel _channel = MethodChannel(
+    'com.ekadashi.notifications',
+  );
 
   /// Schedule notifications for a single Ekadashi
   /// Returns the number of notifications scheduled
@@ -41,17 +44,23 @@ class NativeNotificationService {
     required Map<String, String> texts,
   }) async {
     try {
-      final ekadashiList = ekadashis.map((e) => {
-        'id': e.id,
-        'name': e.name,
-        'fastingStart': e.fastingStartTime,
-        'paranaStart': e.paranaStartTime,
-      }).toList();
+      final ekadashiList = ekadashis
+          .map(
+            (e) => {
+              'id': e.id,
+              if (e.occurrenceUid != null) 'occurrenceUid': e.occurrenceUid,
+              if (e.calendarYear != null) 'calendarYear': e.calendarYear,
+              'name': e.name,
+              'fastingStart': e.fastingStartTime,
+              'paranaStart': e.paranaStartTime,
+            },
+          )
+          .toList();
 
-      final result = await _channel.invokeMethod<int>('scheduleAllNotifications', {
-        'ekadashis': ekadashiList,
-        'texts': texts,
-      });
+      final result = await _channel.invokeMethod<int>(
+        'scheduleAllNotifications',
+        {'ekadashis': ekadashiList, 'texts': texts},
+      );
 
       debugPrint('✅ Scheduled ${result ?? 0} notifications');
       return result ?? 0;
@@ -145,7 +154,8 @@ class NativeNotificationService {
   /// Check if notifications are enabled
   Future<bool> isNotificationsEnabled() async {
     try {
-      return await _channel.invokeMethod<bool>('isNotificationsEnabled') ?? true;
+      return await _channel.invokeMethod<bool>('isNotificationsEnabled') ??
+          true;
     } catch (e) {
       debugPrint('isNotificationsEnabled error: $e');
       return true;
@@ -155,7 +165,9 @@ class NativeNotificationService {
   /// Set notifications enabled state
   Future<void> setNotificationsEnabled(bool enabled) async {
     try {
-      await _channel.invokeMethod('setNotificationsEnabled', {'enabled': enabled});
+      await _channel.invokeMethod('setNotificationsEnabled', {
+        'enabled': enabled,
+      });
     } catch (e) {
       debugPrint('setNotificationsEnabled error: $e');
     }
@@ -207,12 +219,16 @@ class NotificationSettings {
 /// Data class for scheduling Ekadashi notifications
 class EkadashiNotificationData {
   final int id;
+  final String? occurrenceUid;
+  final int? calendarYear;
   final String name;
   final String fastingStartTime;
   final String paranaStartTime;
 
   EkadashiNotificationData({
     required this.id,
+    this.occurrenceUid,
+    this.calendarYear,
     required this.name,
     required this.fastingStartTime,
     required this.paranaStartTime,
