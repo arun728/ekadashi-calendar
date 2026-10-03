@@ -303,12 +303,21 @@ class CalendarScreenState extends State<CalendarScreen> {
     final lang = Provider.of<LanguageService>(context);
     const tealColor = Color(0xFF00A19B);
 
+    // The parent extends its body behind floating navigation. A nested
+    // Scaffold does not reserve that virtual bottom padding for its FAB.
+    final navigationInset =
+        (MediaQuery.paddingOf(context).bottom -
+                MediaQuery.viewPaddingOf(context).bottom)
+            .clamp(0.0, double.infinity);
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        key: const Key('add_calendar_entry'),
-        tooltip: lang.translate('add_entry'),
-        onPressed: _repoReady ? () => _editEntry() : null,
-        child: const Icon(Icons.add),
+      floatingActionButton: Padding(
+        padding: EdgeInsets.only(bottom: navigationInset),
+        child: FloatingActionButton(
+          key: const Key('add_calendar_entry'),
+          tooltip: lang.translate('add_entry'),
+          onPressed: _repoReady ? () => _editEntry() : null,
+          child: const Icon(Icons.add),
+        ),
       ),
       body: CustomScrollView(
         slivers: [
@@ -360,10 +369,12 @@ class CalendarScreenState extends State<CalendarScreen> {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Row(
+              child: Wrap(
+                spacing: 16,
+                runSpacing: 4,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   Text(lang.translate('year')),
-                  const SizedBox(width: 16),
                   DropdownButton<int>(
                     key: const Key('calendar_year_selector'),
                     value: _selectedYear,

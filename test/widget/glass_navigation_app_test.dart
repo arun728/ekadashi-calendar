@@ -15,6 +15,39 @@ void main() {
     await harness.install();
   });
   tearDown(() => harness.uninstall());
+  for (final width in [320.0, 393.0]) {
+    for (final scale in [1.0, 2.0]) {
+      testWidgets(
+        'Calendar Add button stays above glass at ${width}dp, scale $scale',
+        (tester) async {
+          tester.view.physicalSize = Size(width, 844);
+          tester.view.devicePixelRatio = 1;
+          tester.platformDispatcher.textScaleFactorTestValue = scale;
+          addTearDown(tester.view.resetPhysicalSize);
+          addTearDown(tester.view.resetDevicePixelRatio);
+          addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+          await tester.pumpWidget(harness.app());
+          await tester.pumpAndSettle();
+          await tester.tap(find.byKey(const Key('glass_tab_1')));
+          await tester.pumpAndSettle();
+          final add = find.byKey(const Key('add_calendar_entry'));
+          final capsule = tester.getRect(
+            find.byKey(const Key('glass_capsule_surface')),
+          );
+          expect(
+            tester.getRect(add).bottom,
+            lessThanOrEqualTo(capsule.top - 8),
+          );
+          expect(add.hitTestable(), findsOneWidget);
+          expect(tester.widget<FloatingActionButton>(add).onPressed, isNotNull);
+          await tester.tap(add);
+          await tester.pumpAndSettle();
+          expect(find.byType(TextField), findsWidgets);
+          expect(tester.takeException(), isNull);
+        },
+      );
+    }
+  }
   testWidgets('iOS retains its existing navigation', (tester) async {
     debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
     try {

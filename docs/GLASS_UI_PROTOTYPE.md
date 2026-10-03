@@ -23,7 +23,10 @@ No data, search algorithm, calendar import or widget logic is changed.
 TDD evidence: the app tests first failed because the old bar lacked the capsule;
 29 component tests failed against a placeholder before implementation. Additional
 regressions cover app navigation, state retention, repeat taps, keyboard dismissal
-and the iOS fallback. The full inherited v2 suite and native/emulator CI remain
+and the iOS fallback. Screenshot review revealed that the nested Calendar
+Scaffold placed its Add button behind the capsule. Four new layout regressions
+first failed at narrow/normal widths and normal/large text; the FAB now reserves
+the parent navigation inset. The emulator flow also asserts its visible placement. The full inherited v2 suite and native/emulator CI remain
 required. Screenshots in `build/ui-screenshots/offscreen` are Flutter offscreen
 renders; `build/ui-screenshots/android` captures are real Android emulator runs.
 Do not treat either as Samsung hardware/performance validation.
@@ -50,3 +53,8 @@ Sources:
 Flutter can sample the actual Flutter backdrop. A Kotlin RenderEffect applies to
 an Android RenderNode; embedding native views adds composition and accessibility
 complexity without guaranteeing capture of Flutter content underneath.
+
+The enlarged-font Calendar layout cases also exposed existing narrow-screen
+Home location/language and Calendar year-row overflows. The Home header stacks
+its controls at large text on narrow widths; the year selector can wrap. These
+layout fixes preserve data and existing controls. Total new Flutter cases:36.

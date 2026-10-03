@@ -118,6 +118,15 @@ void main() {
       await binding.takeScreenshot('v2_history_2026');
       await tester.tap(find.byIcon(Icons.calendar_month));
       await frames(tester);
+      final addButton = find.byKey(const Key('add_calendar_entry'));
+      final capsule = tester.getRect(
+        find.byKey(const Key('glass_capsule_surface')),
+      );
+      expect(
+        tester.getRect(addButton).bottom,
+        lessThanOrEqualTo(capsule.top - 8),
+      );
+      expect(addButton.hitTestable(), findsOneWidget);
       await tester.tap(find.byKey(const Key('calendar_year_selector')));
       await frames(tester);
       await tester.tap(find.text('2027').last);

@@ -990,13 +990,31 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         // Header with location and language inline (v1.0 style)
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(child: _buildLocationWidget(lang, tealColor)),
-              const SizedBox(width: 20),
-              _buildLanguageSelector(lang, tealColor),
-            ],
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              if (constraints.maxWidth < 400 &&
+                  MediaQuery.textScalerOf(context).scale(14) > 20) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _buildLocationWidget(lang, tealColor),
+                    const SizedBox(height: 8),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: _buildLanguageSelector(lang, tealColor),
+                    ),
+                  ],
+                );
+              }
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(child: _buildLocationWidget(lang, tealColor)),
+                  const SizedBox(width: 20),
+                  _buildLanguageSelector(lang, tealColor),
+                ],
+              );
+            },
           ),
         ),
 
