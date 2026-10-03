@@ -26,7 +26,13 @@ class LauncherWidgetTest {
  private val packageName=context.packageName
  private val manager=AppWidgetManager.getInstance(context)
  private val output=File(context.getExternalFilesDir(null),"widget-evidence").apply { mkdirs() }
- private fun capture(name:String) { assertTrue(device.takeScreenshot(File(output,"$name.png"))) }
+ private fun capture(name:String) {
+  // Accessibility can expose updated RemoteViews before the launcher draws its
+  // frame (and the collection adapter updates separately). Capture settled UI.
+  device.waitForIdle(1000)
+  Thread.sleep(1000)
+  assertTrue(device.takeScreenshot(File(output,"$name.png")))
+ }
  private fun home(){device.pressHome();device.waitForIdle(1000)}
  private fun addWidget(label:String,receiver:String):Int {
   // A clean home page prevents overlap from obscuring screenshots or tap targets.
