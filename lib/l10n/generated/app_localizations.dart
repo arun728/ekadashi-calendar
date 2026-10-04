@@ -1683,7 +1683,7 @@ abstract class AppLocalizations {
   /// No description provided for @premium_benefits.
   ///
   /// In en, this message translates to:
-  /// **'Google Calendar sync and additional achievements. Dates, custom entries, Vrat records, streaks and all existing widgets stay free.'**
+  /// **'Google Calendar sync, advanced routines and Japa goals, additional achievements, and premium audio/learning tools. Dates, custom entries, Vrat records, basic practice and existing widgets stay free. Original audio collections are being prepared.'**
   String get premium_benefits;
 
   /// No description provided for @premium_free_achievements.
@@ -1853,6 +1853,432 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Typical year: 24 × 10 = 240 coins, plus a 60-coin full-year bonus = 300 coins. In a 26-Ekadashi year: 260 + 40 = 300.'**
   String get premium_reward_example;
+
+  /// No description provided for @devotion_today.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get devotion_today;
+
+  /// No description provided for @devotion_practice.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice'**
+  String get devotion_practice;
+
+  /// No description provided for @devotion_library.
+  ///
+  /// In en, this message translates to:
+  /// **'Library'**
+  String get devotion_library;
+
+  /// No description provided for @practice_routines.
+  ///
+  /// In en, this message translates to:
+  /// **'My routines'**
+  String get practice_routines;
+
+  /// No description provided for @practice_add_routine.
+  ///
+  /// In en, this message translates to:
+  /// **'Create routine'**
+  String get practice_add_routine;
+
+  /// No description provided for @practice_edit_routine.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit routine'**
+  String get practice_edit_routine;
+
+  /// No description provided for @practice_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Routine name'**
+  String get practice_title;
+
+  /// No description provided for @practice_steps.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your steps'**
+  String get practice_steps;
+
+  /// No description provided for @practice_chant.
+  ///
+  /// In en, this message translates to:
+  /// **'Chant'**
+  String get practice_chant;
+
+  /// No description provided for @practice_listen.
+  ///
+  /// In en, this message translates to:
+  /// **'Listen'**
+  String get practice_listen;
+
+  /// No description provided for @practice_read.
+  ///
+  /// In en, this message translates to:
+  /// **'Read'**
+  String get practice_read;
+
+  /// No description provided for @practice_reflect.
+  ///
+  /// In en, this message translates to:
+  /// **'Reflect'**
+  String get practice_reflect;
+
+  /// No description provided for @practice_save.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get practice_save;
+
+  /// No description provided for @practice_delete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get practice_delete;
+
+  /// No description provided for @practice_schedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekday schedule (Premium)'**
+  String get practice_schedule;
+
+  /// No description provided for @practice_reminder.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable reminder'**
+  String get practice_reminder;
+
+  /// No description provided for @practice_quiet_hours.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiet hours'**
+  String get practice_quiet_hours;
+
+  /// No description provided for @practice_quiet_explanation.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminders outside quiet hours only. Default: 10 pm–7 am.'**
+  String get practice_quiet_explanation;
+
+  /// No description provided for @practice_japa.
+  ///
+  /// In en, this message translates to:
+  /// **'Japa'**
+  String get practice_japa;
+
+  /// No description provided for @practice_start.
+  ///
+  /// In en, this message translates to:
+  /// **'Start chanting'**
+  String get practice_start;
+
+  /// No description provided for @practice_resume.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get practice_resume;
+
+  /// No description provided for @practice_pause.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get practice_pause;
+
+  /// No description provided for @practice_finish.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish session'**
+  String get practice_finish;
+
+  /// No description provided for @practice_count.
+  ///
+  /// In en, this message translates to:
+  /// **'Count'**
+  String get practice_count;
+
+  /// No description provided for @practice_goal.
+  ///
+  /// In en, this message translates to:
+  /// **'Chanting target'**
+  String get practice_goal;
+
+  /// No description provided for @practice_mala.
+  ///
+  /// In en, this message translates to:
+  /// **'Beads per mala'**
+  String get practice_mala;
+
+  /// No description provided for @practice_rounds.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed malas'**
+  String get practice_rounds;
+
+  /// No description provided for @practice_minutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Minutes'**
+  String get practice_minutes;
+
+  /// No description provided for @practice_streak.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice streak (days)'**
+  String get practice_streak;
+
+  /// No description provided for @practice_mantra.
+  ///
+  /// In en, this message translates to:
+  /// **'Mantra or personal goal name'**
+  String get practice_mantra;
+
+  /// No description provided for @practice_haptics.
+  ///
+  /// In en, this message translates to:
+  /// **'Vibrate on each completed mala'**
+  String get practice_haptics;
+
+  /// No description provided for @practice_saved_goals.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved goals'**
+  String get practice_saved_goals;
+
+  /// No description provided for @practice_save_goal.
+  ///
+  /// In en, this message translates to:
+  /// **'Save chanting goal (Premium)'**
+  String get practice_save_goal;
+
+  /// No description provided for @practice_history.
+  ///
+  /// In en, this message translates to:
+  /// **'Session history'**
+  String get practice_history;
+
+  /// No description provided for @practice_insights.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly insights'**
+  String get practice_insights;
+
+  /// No description provided for @practice_weekly_count.
+  ///
+  /// In en, this message translates to:
+  /// **'Chants in the last seven days'**
+  String get practice_weekly_count;
+
+  /// No description provided for @practice_vrat.
+  ///
+  /// In en, this message translates to:
+  /// **'Vrat journey'**
+  String get practice_vrat;
+
+  /// No description provided for @practice_free_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'One routine and basic Japa stay free. Premium adds schedules, saved goals and session insights.'**
+  String get practice_free_hint;
+
+  /// No description provided for @practice_empty.
+  ///
+  /// In en, this message translates to:
+  /// **'Start with a small daily practice.'**
+  String get practice_empty;
+
+  /// No description provided for @practice_error.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save practice. Your previous progress is safe; retry.'**
+  String get practice_error;
+
+  /// No description provided for @practice_invalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a name, valid target and at least one step.'**
+  String get practice_invalid;
+
+  /// No description provided for @practice_timer_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'The timer continues until paused. A count or one minute of practice contributes to your basic streak.'**
+  String get practice_timer_hint;
+
+  /// No description provided for @practice_reminder_denied.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow notifications in Settings to receive routine reminders.'**
+  String get practice_reminder_denied;
+
+  /// No description provided for @library_search.
+  ///
+  /// In en, this message translates to:
+  /// **'Search the library and calendar'**
+  String get library_search;
+
+  /// No description provided for @library_listen.
+  ///
+  /// In en, this message translates to:
+  /// **'Listen'**
+  String get library_listen;
+
+  /// No description provided for @library_learn.
+  ///
+  /// In en, this message translates to:
+  /// **'Learn'**
+  String get library_learn;
+
+  /// No description provided for @library_content_pending.
+  ///
+  /// In en, this message translates to:
+  /// **'Original devotional recordings are being prepared.'**
+  String get library_content_pending;
+
+  /// No description provided for @practice_today_shortcut.
+  ///
+  /// In en, this message translates to:
+  /// **'Your daily practice'**
+  String get practice_today_shortcut;
+
+  /// No description provided for @library_audio_error.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not play or download this recording. Please retry.'**
+  String get library_audio_error;
+
+  /// No description provided for @library_download.
+  ///
+  /// In en, this message translates to:
+  /// **'Download for offline listening'**
+  String get library_download;
+
+  /// No description provided for @library_remove_download.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove download'**
+  String get library_remove_download;
+
+  /// No description provided for @library_playlist.
+  ///
+  /// In en, this message translates to:
+  /// **'Playlist'**
+  String get library_playlist;
+
+  /// No description provided for @library_add_playlist.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to playlist (Premium)'**
+  String get library_add_playlist;
+
+  /// No description provided for @library_repeat.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeat cycles (Premium)'**
+  String get library_repeat;
+
+  /// No description provided for @library_sleep.
+  ///
+  /// In en, this message translates to:
+  /// **'Sleep timer (minutes, Premium)'**
+  String get library_sleep;
+
+  /// No description provided for @library_player.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio player'**
+  String get library_player;
+
+  /// No description provided for @library_play.
+  ///
+  /// In en, this message translates to:
+  /// **'Play'**
+  String get library_play;
+
+  /// No description provided for @library_pause.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get library_pause;
+
+  /// No description provided for @library_stop.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get library_stop;
+
+  /// No description provided for @library_transliteration.
+  ///
+  /// In en, this message translates to:
+  /// **'Transliteration (Premium)'**
+  String get library_transliteration;
+
+  /// No description provided for @library_bookmark.
+  ///
+  /// In en, this message translates to:
+  /// **'Bookmark line (Premium)'**
+  String get library_bookmark;
+
+  /// No description provided for @library_revision.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete revision (Premium)'**
+  String get library_revision;
+
+  /// No description provided for @library_due.
+  ///
+  /// In en, this message translates to:
+  /// **'Next revision'**
+  String get library_due;
+
+  /// No description provided for @library_pronunciation_pending.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviewed pronunciation recordings will be added when ready.'**
+  String get library_pronunciation_pending;
+
+  /// No description provided for @library_meaning.
+  ///
+  /// In en, this message translates to:
+  /// **'Meaning'**
+  String get library_meaning;
+
+  /// No description provided for @lesson_narayana.
+  ///
+  /// In en, this message translates to:
+  /// **'Invocation to Narayana'**
+  String get lesson_narayana;
+
+  /// No description provided for @lesson_shiva.
+  ///
+  /// In en, this message translates to:
+  /// **'Invocation to Shiva'**
+  String get lesson_shiva;
+
+  /// No description provided for @lesson_narayana_meaning.
+  ///
+  /// In en, this message translates to:
+  /// **'A salutation expressing reverence to Narayana.'**
+  String get lesson_narayana_meaning;
+
+  /// No description provided for @lesson_shiva_meaning.
+  ///
+  /// In en, this message translates to:
+  /// **'A salutation expressing reverence to Shiva.'**
+  String get lesson_shiva_meaning;
+
+  /// No description provided for @library_provenance.
+  ///
+  /// In en, this message translates to:
+  /// **'Content source and rights'**
+  String get library_provenance;
+
+  /// No description provided for @library_no_playlist.
+  ///
+  /// In en, this message translates to:
+  /// **'Add recordings to build a listening queue.'**
+  String get library_no_playlist;
 }
 
 class _AppLocalizationsDelegate

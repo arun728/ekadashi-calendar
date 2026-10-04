@@ -1,3 +1,4 @@
+import '../test/support/devotion_navigation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
@@ -46,7 +47,7 @@ void main() {
     }
     expect(find.byIcon(Icons.spa_outlined), findsOneWidget);
     debugPrint('Tracker UI: Home ready');
-    await tester.tap(find.byIcon(Icons.spa_outlined));
+    await openVrat(tester);
     await pumpUi(tester);
     final screen = find.byType(VratTrackerScreen);
     final context = tester.element(screen);

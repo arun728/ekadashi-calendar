@@ -26,8 +26,13 @@ import '../services/native_notification_service.dart'
 /// - Faster permission state updates
 /// - Added parana reminder option (Break Fasting Reminder)
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key, this.currentTimezone = 'IST'});
+  const SettingsScreen({
+    super.key,
+    this.currentTimezone = 'IST',
+    this.onNotificationsChanged,
+  });
   final String currentTimezone;
+  final VoidCallback? onNotificationsChanged;
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -212,6 +217,7 @@ class _SettingsScreenState extends State<SettingsScreen>
     }
 
     await _settingsService.updateNotificationSettings(newSettings);
+    widget.onNotificationsChanged?.call();
 
     if (value) {
       _rescheduleNotifications();

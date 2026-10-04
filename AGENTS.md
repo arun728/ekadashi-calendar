@@ -66,7 +66,7 @@ earned achievements, notification preferences and the existing glass appearance.
 Today retains next Ekadashi/parana and adds daily practice shortcuts. A compact
 audio player will sit above navigation and persist across screen changes.
 
-### Batch 1 — daily routines and Japa (approved; implementation pending)
+### Batch 1 — daily routines and Japa (implemented; local tests pass, Android CI pending)
 
 - Free: one simple local routine, a basic chanting counter/timer and basic
   practice streak. All existing free Ekadashi/Vrat/search/custom-calendar/widget
@@ -81,7 +81,7 @@ audio player will sit above navigation and persist across screen changes.
 - Scheduling respects timezone changes, notification consent and quiet hours;
   no background notification may start before the user enables it.
 
-### Batch 2 — devotional audio and stotra learning (approved; pending)
+### Batch 2 — devotional audio and stotra learning (infrastructure implemented; production audio pending)
 
 - Free: a small complete rights-cleared starter collection, selected texts/basic
   meanings and basic playback. No removal of currently free content.
@@ -127,3 +127,6 @@ backend/native gates. Run CI Android API24/33/35 plus notification-denied/GPS-of
 coverage, four languages, both themes, large text and screenshots before device
 testing. Record actual results; emulator fixtures do not prove real Play billing
 or production audio rights. No merge to dev without new explicit instruction.
+
+Implementation details and content boundaries: docs/DAILY_DEVOTION_PLAN.md.
+Exact test evidence: docs/review/daily-devotion-validation.md.

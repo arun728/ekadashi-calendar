@@ -1,3 +1,4 @@
+import '../support/devotion_navigation.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -29,7 +30,7 @@ void main() {
           addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
           await tester.pumpWidget(harness.app());
           await tester.pumpAndSettle();
-          await tester.tap(find.byKey(const Key('glass_tab_1')));
+          await tapAppTab(tester, 1);
           await tester.pumpAndSettle();
           final add = find.byKey(const Key('add_calendar_entry'));
           final capsule = tester.getRect(
@@ -62,7 +63,7 @@ void main() {
           addTearDown(tester.view.resetPadding);
           await tester.pumpWidget(harness.app());
           await tester.pumpAndSettle();
-          await tester.tap(find.byKey(const Key('glass_tab_1')));
+          await tapAppTab(tester, 1);
           await tester.pumpAndSettle();
           tester
               .state<CalendarScreenState>(find.byType(CalendarScreen))
@@ -113,32 +114,32 @@ void main() {
     for (var i = 0; i < 5; i++) {
       expect(find.byKey(Key('glass_tab_$i')).hitTestable(), findsOneWidget);
     }
-    await tester.tap(find.byKey(const Key('glass_tab_1')));
+    await tapAppTab(tester, 1);
     await tester.pumpAndSettle();
     expect(find.byType(CalendarScreen).hitTestable(), findsOneWidget);
     await tester.tap(find.byKey(const Key('calendar_year_selector')));
     await tester.pumpAndSettle();
     await tester.tap(find.text('2027').last);
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('glass_tab_2')));
+    await openVrat(tester);
     await tester.pumpAndSettle();
     expect(find.byType(VratTrackerScreen).hitTestable(), findsOneWidget);
-    await tester.tap(find.byKey(const Key('glass_tab_3')));
+    await openSearch(tester);
     await tester.pumpAndSettle();
     expect(find.byType(GlobalSearchScreen).hitTestable(), findsOneWidget);
     await tester.enterText(find.byType(TextField), 'parvsa');
     await tester.pump(const Duration(milliseconds: 450));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('glass_tab_4')));
+    await tapAppTab(tester, 4);
     await tester.pumpAndSettle();
     expect(find.text('Enable Notifications'), findsOneWidget);
-    await tester.tap(find.byKey(const Key('glass_tab_3')));
+    await openSearch(tester);
     await tester.pumpAndSettle();
     expect(
       tester.widget<TextField>(find.byType(TextField)).controller!.text,
       'parvsa',
     );
-    await tester.tap(find.byKey(const Key('glass_tab_1')));
+    await tapAppTab(tester, 1);
     await tester.pumpAndSettle();
     expect(
       tester
@@ -148,7 +149,7 @@ void main() {
           .value,
       2027,
     );
-    await tester.tap(find.byKey(const Key('glass_tab_1')));
+    await tapAppTab(tester, 1);
     await tester.pumpAndSettle();
     expect(
       tester
@@ -158,25 +159,29 @@ void main() {
           .value,
       [2026, 2027].contains(DateTime.now().year) ? DateTime.now().year : 2027,
     );
-    final dynamic state = tester.state(find.byType(MainScreen));
+    final dynamic state = tester.state(find.byType(MainScreen, skipOffstage: false));
     state.handleDeepLink(Uri.parse('ekadashi://search'));
     await tester.pumpAndSettle();
     expect(find.byType(GlobalSearchScreen).hitTestable(), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
   testWidgets(
-    'Keyboard editing hides the capsule and restores it after dismissal',
+    'Global search stays readable with keyboard and restores navigation on close',
     (tester) async {
       await tester.pumpWidget(harness.app());
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const Key('glass_tab_3')));
+      await openSearch(tester);
       await tester.pumpAndSettle();
       tester.view.viewInsets = const FakeViewPadding(bottom: 300);
       addTearDown(tester.view.resetViewInsets);
       await tester.pumpAndSettle();
-      expect(find.byKey(const Key('glass_navigation_bar')), findsNothing);
+      expect(
+        find.byKey(const Key('glass_navigation_bar')).hitTestable(),
+        findsNothing,
+      );
       expect(find.byType(TextField).hitTestable(), findsOneWidget);
       tester.view.resetViewInsets();
+      await returnToMain(tester);
       await tester.pumpAndSettle();
       expect(
         find.byKey(const Key('glass_tab_3')).hitTestable(),

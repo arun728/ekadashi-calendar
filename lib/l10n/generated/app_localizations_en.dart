@@ -838,7 +838,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premium_benefits =>
-      'Google Calendar sync and additional achievements. Dates, custom entries, Vrat records, streaks and all existing widgets stay free.';
+      'Google Calendar sync, advanced routines and Japa goals, additional achievements, and premium audio/learning tools. Dates, custom entries, Vrat records, basic practice and existing widgets stay free. Original audio collections are being prepared.';
 
   @override
   String get premium_free_achievements =>
@@ -935,4 +935,229 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get premium_reward_example =>
       'Typical year: 24 × 10 = 240 coins, plus a 60-coin full-year bonus = 300 coins. In a 26-Ekadashi year: 260 + 40 = 300.';
+
+  @override
+  String get devotion_today => 'Today';
+
+  @override
+  String get devotion_practice => 'Practice';
+
+  @override
+  String get devotion_library => 'Library';
+
+  @override
+  String get practice_routines => 'My routines';
+
+  @override
+  String get practice_add_routine => 'Create routine';
+
+  @override
+  String get practice_edit_routine => 'Edit routine';
+
+  @override
+  String get practice_title => 'Routine name';
+
+  @override
+  String get practice_steps => 'Choose your steps';
+
+  @override
+  String get practice_chant => 'Chant';
+
+  @override
+  String get practice_listen => 'Listen';
+
+  @override
+  String get practice_read => 'Read';
+
+  @override
+  String get practice_reflect => 'Reflect';
+
+  @override
+  String get practice_save => 'Save';
+
+  @override
+  String get practice_delete => 'Delete';
+
+  @override
+  String get practice_schedule => 'Weekday schedule (Premium)';
+
+  @override
+  String get practice_reminder => 'Enable reminder';
+
+  @override
+  String get practice_quiet_hours => 'Quiet hours';
+
+  @override
+  String get practice_quiet_explanation =>
+      'Reminders outside quiet hours only. Default: 10 pm–7 am.';
+
+  @override
+  String get practice_japa => 'Japa';
+
+  @override
+  String get practice_start => 'Start chanting';
+
+  @override
+  String get practice_resume => 'Resume';
+
+  @override
+  String get practice_pause => 'Pause';
+
+  @override
+  String get practice_finish => 'Finish session';
+
+  @override
+  String get practice_count => 'Count';
+
+  @override
+  String get practice_goal => 'Chanting target';
+
+  @override
+  String get practice_mala => 'Beads per mala';
+
+  @override
+  String get practice_rounds => 'Completed malas';
+
+  @override
+  String get practice_minutes => 'Minutes';
+
+  @override
+  String get practice_streak => 'Practice streak (days)';
+
+  @override
+  String get practice_mantra => 'Mantra or personal goal name';
+
+  @override
+  String get practice_haptics => 'Vibrate on each completed mala';
+
+  @override
+  String get practice_saved_goals => 'Saved goals';
+
+  @override
+  String get practice_save_goal => 'Save chanting goal (Premium)';
+
+  @override
+  String get practice_history => 'Session history';
+
+  @override
+  String get practice_insights => 'Weekly insights';
+
+  @override
+  String get practice_weekly_count => 'Chants in the last seven days';
+
+  @override
+  String get practice_vrat => 'Vrat journey';
+
+  @override
+  String get practice_free_hint =>
+      'One routine and basic Japa stay free. Premium adds schedules, saved goals and session insights.';
+
+  @override
+  String get practice_empty => 'Start with a small daily practice.';
+
+  @override
+  String get practice_error =>
+      'Could not save practice. Your previous progress is safe; retry.';
+
+  @override
+  String get practice_invalid =>
+      'Enter a name, valid target and at least one step.';
+
+  @override
+  String get practice_timer_hint =>
+      'The timer continues until paused. A count or one minute of practice contributes to your basic streak.';
+
+  @override
+  String get practice_reminder_denied =>
+      'Allow notifications in Settings to receive routine reminders.';
+
+  @override
+  String get library_search => 'Search the library and calendar';
+
+  @override
+  String get library_listen => 'Listen';
+
+  @override
+  String get library_learn => 'Learn';
+
+  @override
+  String get library_content_pending =>
+      'Original devotional recordings are being prepared.';
+
+  @override
+  String get practice_today_shortcut => 'Your daily practice';
+
+  @override
+  String get library_audio_error =>
+      'Could not play or download this recording. Please retry.';
+
+  @override
+  String get library_download => 'Download for offline listening';
+
+  @override
+  String get library_remove_download => 'Remove download';
+
+  @override
+  String get library_playlist => 'Playlist';
+
+  @override
+  String get library_add_playlist => 'Add to playlist (Premium)';
+
+  @override
+  String get library_repeat => 'Repeat cycles (Premium)';
+
+  @override
+  String get library_sleep => 'Sleep timer (minutes, Premium)';
+
+  @override
+  String get library_player => 'Audio player';
+
+  @override
+  String get library_play => 'Play';
+
+  @override
+  String get library_pause => 'Pause';
+
+  @override
+  String get library_stop => 'Stop';
+
+  @override
+  String get library_transliteration => 'Transliteration (Premium)';
+
+  @override
+  String get library_bookmark => 'Bookmark line (Premium)';
+
+  @override
+  String get library_revision => 'Complete revision (Premium)';
+
+  @override
+  String get library_due => 'Next revision';
+
+  @override
+  String get library_pronunciation_pending =>
+      'Reviewed pronunciation recordings will be added when ready.';
+
+  @override
+  String get library_meaning => 'Meaning';
+
+  @override
+  String get lesson_narayana => 'Invocation to Narayana';
+
+  @override
+  String get lesson_shiva => 'Invocation to Shiva';
+
+  @override
+  String get lesson_narayana_meaning =>
+      'A salutation expressing reverence to Narayana.';
+
+  @override
+  String get lesson_shiva_meaning =>
+      'A salutation expressing reverence to Shiva.';
+
+  @override
+  String get library_provenance => 'Content source and rights';
+
+  @override
+  String get library_no_playlist =>
+      'Add recordings to build a listening queue.';
 }

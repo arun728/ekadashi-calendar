@@ -134,7 +134,7 @@ jobs:
         run: exit 1
 
   glass-preview:
-    if: github.head_ref == 'feature/android-glass-navigation' || github.head_ref == 'feature/subscriptions-rewards'
+    if: github.head_ref == 'feature/android-glass-navigation' || github.head_ref == 'feature/subscriptions-rewards' || github.head_ref == 'feature/daily-devotion'
     needs: flutter-tests
     runs-on: ubuntu-latest
     steps:

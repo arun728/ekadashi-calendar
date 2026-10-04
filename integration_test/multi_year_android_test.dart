@@ -1,3 +1,4 @@
+import '../test/support/devotion_navigation.dart';
 import '../test/support/premium_fixture.dart';
 import 'package:ekadashi_calendar/services/premium_service.dart';
 import 'dart:io';
@@ -112,13 +113,13 @@ void main() {
       final restartedTracker = VratTrackerService();
       await restartedTracker.init(occurrences: years);
       expect(restartedTracker.getRecord(1)?.note, 'Archived private note');
-      await tester.tap(find.byIcon(Icons.spa_outlined));
+      await openVrat(tester);
       await frames(tester);
       await binding.takeScreenshot('v2_tracker_retained');
       await tester.tap(find.text('History'));
       await frames(tester);
       await binding.takeScreenshot('v2_history_2026');
-      await tester.tap(find.byIcon(Icons.calendar_month));
+      await tapAppTab(tester, 1);
       await frames(tester);
       final addButton = find.byKey(const Key('add_calendar_entry'));
       final capsule = tester.getRect(
@@ -148,7 +149,7 @@ void main() {
       await lang.changeLanguage('te');
       await frames(tester);
       await binding.takeScreenshot('v2_calendar_telugu_2027');
-      await tester.tap(find.byIcon(Icons.home));
+      await tapAppTab(tester, 0);
       await frames(tester);
       await binding.takeScreenshot('v2_home_telugu');
       expect(tester.takeException(), isNull);
@@ -174,15 +175,15 @@ void main() {
         await File(
           '$fixtureDirectory/widget-fixture-$code.json',
         ).writeAsString(jsonEncode(payload));
-        await tester.tap(find.byIcon(Icons.spa_outlined));
+        await openVrat(tester);
         await frames(tester);
         await binding.takeScreenshot('v2_vrat_$code');
         expect(find.text(lang.translate('vrat')), findsWidgets);
-        await tester.tap(find.byIcon(Icons.search));
+        await openSearch(tester);
         await frames(tester);
         expect(find.byType(GlobalSearchScreen).hitTestable(), findsOneWidget);
         await binding.takeScreenshot('v2_search_$code');
-        await tester.tap(find.byIcon(Icons.settings));
+        await tapAppTab(tester, 4);
         await frames(tester);
         await binding.takeScreenshot('glass_settings_dark_$code');
         await tester.tap(find.byType(SwitchListTile).first);
@@ -190,13 +191,13 @@ void main() {
         await binding.takeScreenshot('glass_settings_light_$code');
         await tester.tap(find.byType(SwitchListTile).first);
         await frames(tester);
-        await tester.tap(find.byIcon(Icons.home));
+        await tapAppTab(tester, 0);
         await frames(tester);
         await binding.takeScreenshot('glass_home_$code');
-        await tester.tap(find.byIcon(Icons.calendar_month));
+        await tapAppTab(tester, 1);
         await frames(tester);
         await binding.takeScreenshot('glass_calendar_$code');
-        await tester.tap(find.byIcon(Icons.search));
+        await openSearch(tester);
         await frames(tester);
       }
       await lang.changeLanguage('en');

@@ -19,6 +19,8 @@ class GlobalSearchScreen extends StatefulWidget {
   final String? currentTimezone;
   final bool showBackButton;
   final VoidCallback? onBackToHome;
+  final String initialQuery;
+  final ValueChanged<String>? onQueryChanged;
 
   const GlobalSearchScreen({
     super.key,
@@ -26,6 +28,8 @@ class GlobalSearchScreen extends StatefulWidget {
     this.currentTimezone,
     this.showBackButton = true,
     this.onBackToHome,
+    this.initialQuery = '',
+    this.onQueryChanged,
   });
 
   @override
@@ -58,6 +62,8 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
   @override
   void initState() {
     super.initState();
+    _searchController.text = widget.initialQuery;
+    _activeQuery = widget.initialQuery;
     _isOffline = _indexManager.isOffline;
     _loadRecentSearches();
   }
@@ -113,6 +119,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
   }
 
   void _onSearchChanged(String query) {
+    widget.onQueryChanged?.call(query);
     _debounceTimer?.cancel();
 
     if (query.trim().isEmpty) {
@@ -149,6 +156,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
     if (cleanQuery.isEmpty) return;
 
     _focusNode.unfocus();
+    widget.onQueryChanged?.call(cleanQuery);
     _searchController.text = cleanQuery;
     _searchController.selection = TextSelection.fromPosition(
       TextPosition(offset: cleanQuery.length),

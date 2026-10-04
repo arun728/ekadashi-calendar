@@ -838,7 +838,7 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get premium_benefits =>
-      'கூகுள் நாட்காட்டி ஒத்திசைவு மற்றும் கூடுதல் சாதனைகள். தேதிகள், தனிப்பட்ட பதிவுகள், விரதப் பதிவுகள், தொடர்கள் மற்றும் தற்போதைய விட்ஜெட்டுகள் இலவசம்.';
+      'கூகுள் நாட்காட்டி ஒத்திசைவு, மேம்பட்ட தினசரி பயிற்சி மற்றும் ஜப இலக்குகள், கூடுதல் சாதனைகள், பிரீமியம் ஒலி மற்றும் கற்றல் கருவிகள். தேதிகள், தனிப்பட்ட பதிவுகள், விரத வரலாறு, அடிப்படைப் பயிற்சி மற்றும் தற்போதைய விட்ஜெட்டுகள் இலவசம். அசல் ஒலித் தொகுப்புகள் தயாராகின்றன.';
 
   @override
   String get premium_free_achievements =>
@@ -937,4 +937,228 @@ class AppLocalizationsTa extends AppLocalizations {
   @override
   String get premium_reward_example =>
       'வழக்கமான ஆண்டு: 24 × 10 = 240 நாணயங்கள்; முழு ஆண்டு பலன் 60 சேர்த்து 300. 26 ஏகாதசிகள் உள்ள ஆண்டில்: 260 + 40 = 300.';
+
+  @override
+  String get devotion_today => 'இன்று';
+
+  @override
+  String get devotion_practice => 'பயிற்சி';
+
+  @override
+  String get devotion_library => 'தொகுப்பு';
+
+  @override
+  String get practice_routines => 'என் தினசரி பயிற்சிகள்';
+
+  @override
+  String get practice_add_routine => 'பயிற்சியை உருவாக்கு';
+
+  @override
+  String get practice_edit_routine => 'பயிற்சியைத் திருத்து';
+
+  @override
+  String get practice_title => 'பயிற்சியின் பெயர்';
+
+  @override
+  String get practice_steps => 'பயிற்சி படிகளைத் தேர்ந்தெடு';
+
+  @override
+  String get practice_chant => 'ஜபம்';
+
+  @override
+  String get practice_listen => 'கேளுங்கள்';
+
+  @override
+  String get practice_read => 'படியுங்கள்';
+
+  @override
+  String get practice_reflect => 'சிந்தியுங்கள்';
+
+  @override
+  String get practice_save => 'சேமி';
+
+  @override
+  String get practice_delete => 'நீக்கு';
+
+  @override
+  String get practice_schedule => 'வார நாள் அட்டவணை (பிரீமியம்)';
+
+  @override
+  String get practice_reminder => 'நினைவூட்டலை இயக்கு';
+
+  @override
+  String get practice_quiet_hours => 'அமைதி நேரம்';
+
+  @override
+  String get practice_quiet_explanation =>
+      'அமைதி நேரத்திற்கு வெளியே மட்டுமே நினைவூட்டல்கள். இயல்புநிலை: இரவு 10–காலை 7.';
+
+  @override
+  String get practice_japa => 'ஜபம்';
+
+  @override
+  String get practice_start => 'ஜபத்தைத் தொடங்கு';
+
+  @override
+  String get practice_resume => 'தொடரவும்';
+
+  @override
+  String get practice_pause => 'இடைநிறுத்து';
+
+  @override
+  String get practice_finish => 'அமர்வை முடி';
+
+  @override
+  String get practice_count => 'எண்ணிக்கை';
+
+  @override
+  String get practice_goal => 'ஜப இலக்கு';
+
+  @override
+  String get practice_mala => 'மாலையின் மணிகள்';
+
+  @override
+  String get practice_rounds => 'முடித்த மாலைகள்';
+
+  @override
+  String get practice_minutes => 'நிமிடங்கள்';
+
+  @override
+  String get practice_streak => 'தொடர் பயிற்சி (நாட்கள்)';
+
+  @override
+  String get practice_mantra => 'மந்திரம் அல்லது இலக்கின் பெயர்';
+
+  @override
+  String get practice_haptics => 'ஒவ்வொரு மாலை முடிவிலும் அதிர்வு';
+
+  @override
+  String get practice_saved_goals => 'சேமித்த இலக்குகள்';
+
+  @override
+  String get practice_save_goal => 'ஜப இலக்கைச் சேமி (பிரீமியம்)';
+
+  @override
+  String get practice_history => 'அமர்வு வரலாறு';
+
+  @override
+  String get practice_insights => 'வாராந்திர முன்னேற்றம்';
+
+  @override
+  String get practice_weekly_count => 'கடந்த ஏழு நாட்களின் ஜபங்கள்';
+
+  @override
+  String get practice_vrat => 'விரதப் பயணம்';
+
+  @override
+  String get practice_free_hint =>
+      'ஒரு பயிற்சியும் அடிப்படை ஜபமும் இலவசம். அட்டவணை, சேமித்த இலக்குகள், முன்னேற்றத்திற்கு பிரீமியம்.';
+
+  @override
+  String get practice_empty => 'சிறிய தினசரி பயிற்சியுடன் தொடங்குங்கள்.';
+
+  @override
+  String get practice_error =>
+      'பயிற்சியைச் சேமிக்க முடியவில்லை. முந்தைய முன்னேற்றம் பாதுகாப்பாக உள்ளது; மீண்டும் முயலுங்கள்.';
+
+  @override
+  String get practice_invalid =>
+      'பெயர், சரியான இலக்கு மற்றும் ஒரு படியை உள்ளிடவும்.';
+
+  @override
+  String get practice_timer_hint =>
+      'இடைநிறுத்தும் வரை நேரம் தொடரும். ஒரு ஜபம் அல்லது ஒரு நிமிடப் பயிற்சி தொடரில் சேரும்.';
+
+  @override
+  String get practice_reminder_denied =>
+      'நினைவூட்டல்களுக்கு அமைப்புகளில் அறிவிப்புகளை அனுமதிக்கவும்.';
+
+  @override
+  String get library_search => 'தொகுப்பிலும் நாட்காட்டியிலும் தேடு';
+
+  @override
+  String get library_listen => 'கேளுங்கள்';
+
+  @override
+  String get library_learn => 'கற்றுக்கொள்ளுங்கள்';
+
+  @override
+  String get library_content_pending => 'அசல் பக்திப் பதிவுகள் தயாராகின்றன.';
+
+  @override
+  String get practice_today_shortcut => 'உங்கள் தினசரி பயிற்சி';
+
+  @override
+  String get library_audio_error =>
+      'இந்தப் பதிவை இயக்கவோ பதிவிறக்கவோ முடியவில்லை. மீண்டும் முயலுங்கள்.';
+
+  @override
+  String get library_download => 'இணையமின்றிக் கேட்கப் பதிவிறக்கு';
+
+  @override
+  String get library_remove_download => 'பதிவிறக்கத்தை நீக்கு';
+
+  @override
+  String get library_playlist => 'பாடல் பட்டியல்';
+
+  @override
+  String get library_add_playlist => 'பட்டியலில் சேர் (பிரீமியம்)';
+
+  @override
+  String get library_repeat => 'மீண்டும் இயக்குதல் (பிரீமியம்)';
+
+  @override
+  String get library_sleep => 'நிறுத்தும் நேரம் (நிமிடங்கள், பிரீமியம்)';
+
+  @override
+  String get library_player => 'ஒலி இயக்கி';
+
+  @override
+  String get library_play => 'இயக்கு';
+
+  @override
+  String get library_pause => 'இடைநிறுத்து';
+
+  @override
+  String get library_stop => 'நிறுத்து';
+
+  @override
+  String get library_transliteration => 'ஒலிபெயர்ப்பு (பிரீமியம்)';
+
+  @override
+  String get library_bookmark => 'வரியைக் குறி (பிரீமியம்)';
+
+  @override
+  String get library_revision => 'மீள்பயிற்சியை முடி (பிரீமியம்)';
+
+  @override
+  String get library_due => 'அடுத்த மீள்பயிற்சி';
+
+  @override
+  String get library_pronunciation_pending =>
+      'சரிபார்க்கப்பட்ட உச்சரிப்புப் பதிவுகள் தயாரானதும் சேர்க்கப்படும்.';
+
+  @override
+  String get library_meaning => 'பொருள்';
+
+  @override
+  String get lesson_narayana => 'நாராயணனை வணங்குதல்';
+
+  @override
+  String get lesson_shiva => 'சிவனை வணங்குதல்';
+
+  @override
+  String get lesson_narayana_meaning =>
+      'நாராயணனுக்கு மரியாதையையும் வணக்கத்தையும் தெரிவிக்கும் மந்திரம்.';
+
+  @override
+  String get lesson_shiva_meaning =>
+      'சிவனுக்கு மரியாதையையும் வணக்கத்தையும் தெரிவிக்கும் மந்திரம்.';
+
+  @override
+  String get library_provenance => 'உள்ளடக்க மூலமும் உரிமைகளும்';
+
+  @override
+  String get library_no_playlist =>
+      'கேட்கும் பட்டியலுக்குப் பதிவுகளைச் சேருங்கள்.';
 }
