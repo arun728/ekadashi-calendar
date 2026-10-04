@@ -83,6 +83,13 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Five limbs'), findsOneWidget);
     expect(tester.takeException(), isNull);
+    await tester.drag(
+      find.byKey(const Key('panchang_scroll_view')),
+      const Offset(0, 1000),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Panchang'), findsOneWidget);
+    expect(tester.getTopLeft(find.text('Panchang')).dy, lessThan(70));
     await capture('premium');
     expect(tester.takeException(), isNull);
   });

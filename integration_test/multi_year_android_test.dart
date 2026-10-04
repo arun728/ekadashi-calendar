@@ -385,7 +385,26 @@ void main() {
       await tester.ensureVisible(find.text('Save'));
       await tester.tap(find.text('Save'));
       await frames(tester);
-      expect(find.text('My private reminder'), findsOneWidget);
+      expect(
+        (await repo.getForDay(
+          DateTime(2027, 1, 1),
+        )).map((entry) => entry.title),
+        contains('My private reminder'),
+        reason:
+            'Saving the custom entry should persist it for the selected day',
+      );
+      final savedReminder = find.text('My private reminder');
+      await tester.scrollUntilVisible(
+        savedReminder,
+        220,
+        scrollable: find
+            .descendant(
+              of: find.byType(CalendarScreen),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
+      expect(savedReminder, findsOneWidget);
       await binding.takeScreenshot('v2_custom_saved');
       await tester.pumpWidget(const SizedBox.shrink());
       await frames(tester);
