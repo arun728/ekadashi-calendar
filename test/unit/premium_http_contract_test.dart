@@ -1,10 +1,35 @@
 import 'dart:convert';
+import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:ekadashi_calendar/services/premium_http_backend.dart';
 
 void main() {
+  test('a stalled response body cannot leave verification hanging', () async {
+    final body = StreamController<List<int>>();
+    final backend = PremiumHttpBackend(
+      baseUrl: 'https://api.example.test',
+      identityToken: (_) async => 'test-id-token',
+      requestTimeout: const Duration(milliseconds: 10),
+      client: MockClient.streaming(
+        (_, _) async => http.StreamedResponse(body.stream, 200),
+      ),
+    );
+    final response = backend.session().then(
+      (_) => 'completed',
+      onError: (Object error) =>
+          error is TimeoutException ? 'timed-out' : 'other-error',
+    );
+    final outcome = await Future.any([
+      response,
+      Future.delayed(const Duration(milliseconds: 100), () => 'still-waiting'),
+    ]);
+    body.add(utf8.encode('{}'));
+    await body.close();
+    await response;
+    expect(outcome, 'timed-out');
+  });
   test(
     'HTTPS session and purchase requests use verified identity, expected account and no redirects',
     () async {

@@ -8,6 +8,7 @@ class PremiumHttpBackend implements PremiumBackend {
     http.Client? client,
     String? baseUrl,
     Future<String?> Function(bool interactive)? identityToken,
+    this.requestTimeout = const Duration(seconds: 20),
   }) : _client = client ?? http.Client(),
        base = baseUrl ?? const String.fromEnvironment('PREMIUM_API_URL'),
        _identityToken = identityToken ?? _googleToken,
@@ -15,6 +16,7 @@ class PremiumHttpBackend implements PremiumBackend {
            identityToken != null || AppGoogleIdentity.serverClientId.isNotEmpty;
   final http.Client _client;
   final String base;
+  final Duration requestTimeout;
   final Future<String?> Function(bool interactive) _identityToken;
   final bool _identityConfigured;
   static const privacyUrl = String.fromEnvironment('PREMIUM_PRIVACY_URL');
@@ -60,9 +62,10 @@ class PremiumHttpBackend implements PremiumBackend {
       if (expectedAccount != null) 'X-Expected-App-Account': expectedAccount,
     });
     if (body != null) request.body = jsonEncode(body);
-    final response = await http.Response.fromStream(
-      await _client.send(request).timeout(const Duration(seconds: 20)),
-    );
+    final response = await _client
+        .send(request)
+        .then(http.Response.fromStream)
+        .timeout(requestTimeout);
     if (response.statusCode == 409) {
       throw StateError('Reward conflict; retry requires review');
     }
