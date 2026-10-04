@@ -157,6 +157,26 @@ class _PremiumScreenState extends State<PremiumScreen> {
             primary: const Color(0xFF00A19B),
             onPrimary: Colors.white,
           ),
+          outlinedButtonTheme: OutlinedButtonThemeData(
+            style:
+                (Theme.of(context).outlinedButtonTheme.style ??
+                        const ButtonStyle())
+                    .copyWith(
+                      padding: const WidgetStatePropertyAll(
+                        EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      ),
+                    ),
+          ),
+          filledButtonTheme: FilledButtonThemeData(
+            style:
+                (Theme.of(context).filledButtonTheme.style ??
+                        const ButtonStyle())
+                    .copyWith(
+                      padding: const WidgetStatePropertyAll(
+                        EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      ),
+                    ),
+          ),
         ),
         child: Scaffold(
           appBar: AppBar(

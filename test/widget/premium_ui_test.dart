@@ -110,6 +110,21 @@ void main() {
             find.text(lang.translate('premium_reward_activate')),
           );
           await tester.pumpAndSettle();
+          final activationLabel = find.text(
+            lang.translate('premium_reward_activate'),
+          );
+          final activationButton = find.ancestor(
+            of: activationLabel,
+            matching: find.byType(OutlinedButton),
+          );
+          final buttonRect = tester.getRect(activationButton);
+          final labelRect = tester.getRect(activationLabel);
+          expect(
+            labelRect.top - buttonRect.top,
+            greaterThanOrEqualTo(8),
+            reason: 'Translated labels need vertical space inside the capsule',
+          );
+          expect(buttonRect.bottom - labelRect.bottom, greaterThanOrEqualTo(8));
           await tester.tap(
             find.text(lang.translate('premium_reward_activate')),
           );
