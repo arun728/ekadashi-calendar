@@ -93,6 +93,57 @@ void main() {
     expect(tester.widget<SwitchListTile>(themeSwitch).value, !original);
     expect(await native.isDarkMode(), !original);
     await binding.takeScreenshot('android_settings_theme');
+    // The Android-only guide/settings pair stays operable after the glass layout.
+    final settingsScroll = find
+        .descendant(
+          of: find.byType(ListView).hitTestable(),
+          matching: find.byType(Scrollable),
+        )
+        .first;
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('settings_permission_actions_tube')),
+      180,
+      scrollable: settingsScroll,
+    );
+    await pumpUi(tester);
+    for (final key in [
+      'permission_guide_action',
+      'permission_settings_action',
+    ]) {
+      expect(find.byKey(Key(key)).hitTestable(), findsOneWidget);
+      expect(
+        tester.getSize(find.byKey(Key(key))).shortestSide,
+        greaterThanOrEqualTo(48),
+      );
+    }
+    await binding.takeScreenshot('android_settings_actions');
+    await tester.tap(find.byKey(const Key('permission_guide_action')));
+    await pumpUi(tester);
+    expect(
+      find.text(
+        Provider.of<LanguageService>(
+          tester.element(find.byType(MaterialApp)),
+          listen: false,
+        ).translate('perm_guide_title'),
+      ),
+      findsOneWidget,
+    );
+    await binding.takeScreenshot('android_permissions_guide');
+    await tester.binding.handlePopRoute();
+    await pumpUi(tester);
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('settings_about_tube')),
+      180,
+      scrollable: settingsScroll,
+    );
+    await pumpUi(tester);
+    await binding.takeScreenshot('android_settings_about');
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('settings_appearance_tube')),
+      -180,
+      scrollable: settingsScroll,
+    );
+    await pumpUi(tester);
     // Master disable must cancel real WorkManager reminders.
     if (permissions.hasNotificationPermission) {
       final master = find.widgetWithText(

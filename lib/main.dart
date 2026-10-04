@@ -1,3 +1,4 @@
+import 'widgets/glass_tube.dart';
 import 'package:flutter/foundation.dart';
 import 'widgets/glass_navigation_bar.dart';
 import 'data/calendar_entry_repository.dart';
@@ -990,31 +991,35 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         // Header with location and language inline (v1.0 style)
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              if (constraints.maxWidth < 400 &&
-                  MediaQuery.textScalerOf(context).scale(14) > 20) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+          child: GlassTube(
+            key: const Key('home_options_tube'),
+            optionCount: 2,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                if (constraints.maxWidth < 400 &&
+                    MediaQuery.textScalerOf(context).scale(14) > 20) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _buildLocationWidget(lang, tealColor),
+                      const SizedBox(height: 8),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: _buildLanguageSelector(lang, tealColor),
+                      ),
+                    ],
+                  );
+                }
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildLocationWidget(lang, tealColor),
-                    const SizedBox(height: 8),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: _buildLanguageSelector(lang, tealColor),
-                    ),
+                    Expanded(child: _buildLocationWidget(lang, tealColor)),
+                    const SizedBox(width: 20),
+                    _buildLanguageSelector(lang, tealColor),
                   ],
                 );
-              }
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(child: _buildLocationWidget(lang, tealColor)),
-                  const SizedBox(width: 20),
-                  _buildLanguageSelector(lang, tealColor),
-                ],
-              );
-            },
+              },
+            ),
           ),
         ),
 
@@ -1464,100 +1469,117 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             const SizedBox(height: 16),
 
             // Action buttons: View Details and Record Vrat
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => DetailsScreen(
-                            ekadashi: ekadashi,
-                            timezone: _currentTimezone,
+            GlassOptionGroup(
+              key: const Key('home_card_actions_tube'),
+              optionCount: context.watch<VratTrackerService>().trackerEnabled
+                  ? 2
+                  : 1,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => DetailsScreen(
+                              ekadashi: ekadashi,
+                              timezone: _currentTimezone,
+                            ),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            context.watch<VratTrackerService>().trackerEnabled
+                            ? Colors.transparent
+                            : tealColor,
+                        foregroundColor:
+                            context.watch<VratTrackerService>().trackerEnabled
+                            ? GlassTubeColors.teal
+                            : Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        lang.translate('view_details'),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Consumer<VratTrackerService>(
+                    builder: (ctx, trackerService, _) {
+                      if (!trackerService.trackerEnabled) {
+                        return const SizedBox.shrink();
+                      }
+                      final record = trackerService.getRecord(ekadashi.id);
+                      final isObserved =
+                          record?.status == ObservanceStatus.observed;
+                      final isPartial =
+                          record?.status == ObservanceStatus.partial;
+                      final isMissed =
+                          record?.status == ObservanceStatus.missed;
+                      const iconColor = GlassTubeColors.teal;
+
+                      return Padding(
+                        padding: const EdgeInsets.only(left: 8),
+                        child: Tooltip(
+                          message: lang.translate(
+                            record == null ? 'record_vrat' : 'edit_record',
+                          ),
+                          child: OutlinedButton(
+                            onPressed: () async {
+                              final unlocks = await RecordVratDialog.show(
+                                context,
+                                ekadashi: ekadashi,
+                                allOccurrences: _ekadashiList,
+                                currentTimezone: _currentTimezone,
+                              );
+                              if (unlocks != null &&
+                                  unlocks.isNotEmpty &&
+                                  mounted) {
+                                for (final u in unlocks) {
+                                  await AchievementUnlockDialog.show(
+                                    context,
+                                    u,
+                                  );
+                                }
+                              }
+                            },
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide.none,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 14,
+                              ),
+                            ),
+                            child: Icon(
+                              isObserved
+                                  ? Icons.check_circle
+                                  : (isPartial
+                                        ? Icons.adjust
+                                        : (isMissed
+                                              ? Icons.highlight_off
+                                              : Icons.edit_calendar_outlined)),
+                              color: iconColor,
+                              size: 20,
+                            ),
                           ),
                         ),
                       );
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: tealColor,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: Text(
-                      lang.translate('view_details'),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
-                      ),
-                    ),
                   ),
-                ),
-                Consumer<VratTrackerService>(
-                  builder: (ctx, trackerService, _) {
-                    if (!trackerService.trackerEnabled) {
-                      return const SizedBox.shrink();
-                    }
-                    final record = trackerService.getRecord(ekadashi.id);
-                    final isObserved =
-                        record?.status == ObservanceStatus.observed;
-                    final isPartial =
-                        record?.status == ObservanceStatus.partial;
-                    final isMissed = record?.status == ObservanceStatus.missed;
-                    final iconColor = isObserved
-                        ? Colors.green
-                        : (isPartial
-                              ? Colors.amber.shade700
-                              : (isMissed ? Colors.red.shade400 : tealColor));
-
-                    return Padding(
-                      padding: const EdgeInsets.only(left: 8),
-                      child: OutlinedButton(
-                        onPressed: () async {
-                          final unlocks = await RecordVratDialog.show(
-                            context,
-                            ekadashi: ekadashi,
-                            allOccurrences: _ekadashiList,
-                            currentTimezone: _currentTimezone,
-                          );
-                          if (unlocks != null &&
-                              unlocks.isNotEmpty &&
-                              mounted) {
-                            for (final u in unlocks) {
-                              await AchievementUnlockDialog.show(context, u);
-                            }
-                          }
-                        },
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: iconColor, width: 1.5),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 14,
-                          ),
-                        ),
-                        child: Icon(
-                          isObserved
-                              ? Icons.check_circle
-                              : (isPartial
-                                    ? Icons.adjust
-                                    : (isMissed
-                                          ? Icons.highlight_off
-                                          : Icons.edit_calendar_outlined)),
-                          color: iconColor,
-                          size: 20,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),

@@ -1,3 +1,4 @@
+import '../../widgets/glass_tube.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -76,18 +77,69 @@ class _VratTrackerScreenState extends State<VratTrackerScreen>
             onPressed: () => _showTrackerSettings(context, lang, tracker),
           ),
         ],
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: tealColor,
-          labelColor: tealColor,
-          unselectedLabelColor: Colors.grey,
-          isScrollable: false,
-          tabs: [
-            Tab(text: lang.translate('overview')),
-            Tab(text: lang.translate('history')),
-            Tab(text: lang.translate('statistics')),
-            Tab(text: lang.translate('achievements')),
-          ],
+        bottom: PreferredSize(
+          preferredSize: Size.fromHeight(
+            60 + MediaQuery.textScalerOf(context).scale(12),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+            child: GlassTube(
+              key: const Key('vrat_tabs_tube'),
+              optionCount: 4,
+              child: TabBar(
+                controller: _tabController,
+                indicator: BoxDecoration(
+                  color: GlassTubeColors.optionSelection(context),
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                indicatorSize: TabBarIndicatorSize.tab,
+                indicatorPadding: const EdgeInsets.all(3),
+                dividerColor: Colors.transparent,
+                labelPadding: const EdgeInsets.symmetric(horizontal: 2),
+                labelStyle: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+                labelColor: tealColor,
+                unselectedLabelColor: GlassTubeColors.foreground(context),
+                isScrollable: false,
+                tabs: [
+                  Tab(
+                    child: Text(
+                      lang.translate('overview'),
+                      maxLines: 2,
+                      textAlign: TextAlign.center,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  Tab(
+                    child: Text(
+                      lang.translate('history'),
+                      maxLines: 2,
+                      textAlign: TextAlign.center,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  Tab(
+                    child: Text(
+                      lang.translate('statistics'),
+                      maxLines: 2,
+                      textAlign: TextAlign.center,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  Tab(
+                    child: Text(
+                      lang.translate('achievements'),
+                      maxLines: 2,
+                      textAlign: TextAlign.center,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
       body: TabBarView(
@@ -301,8 +353,10 @@ class _VratTrackerScreenState extends State<VratTrackerScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Wrap(
+            spacing: 8,
+            runSpacing: 4,
+            alignment: WrapAlignment.spaceBetween,
             children: [
               Icon(icon, color: accentColor, size: 22),
               Text(
@@ -356,7 +410,10 @@ class _VratTrackerScreenState extends State<VratTrackerScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          Wrap(
+            spacing: 8,
+            runSpacing: 4,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               const Icon(Icons.flag_outlined, size: 20, color: tealColor),
               const SizedBox(width: 8),
@@ -368,7 +425,7 @@ class _VratTrackerScreenState extends State<VratTrackerScreen>
                   color: tealColor,
                 ),
               ),
-              const Spacer(),
+
               Text(
                 '${milestone.currentProgress} / ${milestone.target}',
                 style: const TextStyle(
@@ -459,81 +516,89 @@ class _VratTrackerScreenState extends State<VratTrackerScreen>
         // Year & Status Filters
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-          child: Row(
-            children: [
-              // Year Dropdown
-              DropdownButton<int>(
-                value: selectedYear,
-                underline: const SizedBox.shrink(),
-                items: availableYears.map((y) {
-                  return DropdownMenuItem(
-                    value: y,
-                    child: Text(
-                      '$y',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  );
-                }).toList(),
-                onChanged: (y) {
-                  if (y != null) setState(() => _selectedYear = y);
-                },
-              ),
-              const SizedBox(width: 8),
-              // Status Filter Chips
-              Expanded(
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      FilterChip(
-                        label: Text(lang.translate('filter_all')),
-                        selected: _historyStatusFilter == null,
-                        onSelected: (_) =>
-                            setState(() => _historyStatusFilter = null),
+          child: GlassTube(
+            key: const Key('vrat_history_filters_tube'),
+            optionCount: 6,
+            child: Row(
+              children: [
+                // Year Dropdown
+                DropdownButton<int>(
+                  dropdownColor: Theme.of(context).colorScheme.surface,
+                  value: selectedYear,
+                  underline: const SizedBox.shrink(),
+                  items: availableYears.map((y) {
+                    return DropdownMenuItem(
+                      value: y,
+                      child: Text(
+                        '$y',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
-                      const SizedBox(width: 6),
-                      FilterChip(
-                        label: Text(lang.translate('observed')),
-                        selected:
-                            _historyStatusFilter == ObservanceStatus.observed,
-                        onSelected: (_) => setState(
-                          () =>
-                              _historyStatusFilter = ObservanceStatus.observed,
+                    );
+                  }).toList(),
+                  onChanged: (y) {
+                    if (y != null) setState(() => _selectedYear = y);
+                  },
+                ),
+                const SizedBox(width: 8),
+                // Status Filter Chips
+                Expanded(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        GlassFilterChip(
+                          label: Text(lang.translate('filter_all')),
+                          selected: _historyStatusFilter == null,
+                          onSelected: (_) =>
+                              setState(() => _historyStatusFilter = null),
                         ),
-                      ),
-                      const SizedBox(width: 6),
-                      FilterChip(
-                        label: Text(lang.translate('partial')),
-                        selected:
-                            _historyStatusFilter == ObservanceStatus.partial,
-                        onSelected: (_) => setState(
-                          () => _historyStatusFilter = ObservanceStatus.partial,
+                        const SizedBox(width: 6),
+                        GlassFilterChip(
+                          label: Text(lang.translate('observed')),
+                          selected:
+                              _historyStatusFilter == ObservanceStatus.observed,
+                          onSelected: (_) => setState(
+                            () => _historyStatusFilter =
+                                ObservanceStatus.observed,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 6),
-                      FilterChip(
-                        label: Text(lang.translate('missed')),
-                        selected:
-                            _historyStatusFilter == ObservanceStatus.missed,
-                        onSelected: (_) => setState(
-                          () => _historyStatusFilter = ObservanceStatus.missed,
+                        const SizedBox(width: 6),
+                        GlassFilterChip(
+                          label: Text(lang.translate('partial')),
+                          selected:
+                              _historyStatusFilter == ObservanceStatus.partial,
+                          onSelected: (_) => setState(
+                            () =>
+                                _historyStatusFilter = ObservanceStatus.partial,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 6),
-                      FilterChip(
-                        label: Text(lang.translate('unrecorded')),
-                        selected:
-                            _historyStatusFilter == ObservanceStatus.unrecorded,
-                        onSelected: (_) => setState(
-                          () => _historyStatusFilter =
+                        const SizedBox(width: 6),
+                        GlassFilterChip(
+                          label: Text(lang.translate('missed')),
+                          selected:
+                              _historyStatusFilter == ObservanceStatus.missed,
+                          onSelected: (_) => setState(
+                            () =>
+                                _historyStatusFilter = ObservanceStatus.missed,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        GlassFilterChip(
+                          label: Text(lang.translate('unrecorded')),
+                          selected:
+                              _historyStatusFilter ==
                               ObservanceStatus.unrecorded,
+                          onSelected: (_) => setState(
+                            () => _historyStatusFilter =
+                                ObservanceStatus.unrecorded,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         Padding(
@@ -583,7 +648,10 @@ class _VratTrackerScreenState extends State<VratTrackerScreen>
   ) {
     final record = tracker.getRecordByUid(ekadashi.occurrenceUid);
     final status = record?.status ?? ObservanceStatus.unrecorded;
-    final dateStr = DateFormat('MMM dd, yyyy',lang.currentLocale.languageCode).format(ekadashi.date);
+    final dateStr = DateFormat(
+      'MMM dd, yyyy',
+      lang.currentLocale.languageCode,
+    ).format(ekadashi.date);
 
     Color chipColor;
     String statusLabel;
@@ -697,38 +765,40 @@ class _VratTrackerScreenState extends State<VratTrackerScreen>
                 const SizedBox(width: 8),
 
                 // Right: Status Badge + Chevron (NO CHECKBOX)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: chipColor.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: chipColor.withValues(alpha: 0.35),
+                Flexible(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: chipColor.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: chipColor.withValues(alpha: 0.35),
+                          ),
+                        ),
+                        child: Text(
+                          statusLabel,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: chipColor,
+                          ),
                         ),
                       ),
-                      child: Text(
-                        statusLabel,
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: chipColor,
-                        ),
+                      const SizedBox(height: 4),
+                      Icon(
+                        Icons.chevron_right,
+                        size: 18,
+                        color: Colors.grey.shade400,
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Icon(
-                      Icons.chevron_right,
-                      size: 18,
-                      color: Colors.grey.shade400,
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -765,6 +835,7 @@ class _VratTrackerScreenState extends State<VratTrackerScreen>
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             DropdownButton<int>(
+              dropdownColor: Theme.of(context).colorScheme.surface,
               value: selectedYear,
               items: availableYears.map((y) {
                 return DropdownMenuItem(value: y, child: Text('$y'));

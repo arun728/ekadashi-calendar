@@ -83,6 +83,40 @@ void main() {
   }
 
   testWidgets(
+    'Glass month actions stay in selected year and preserve selected day',
+    (tester) async {
+      await open(tester);
+      final state = tester.state<CalendarScreenState>(
+        find.byType(CalendarScreen),
+      );
+      state.selectDate(DateTime(2027, 1, 15));
+      await tester.pumpAndSettle();
+      final previous = find.byKey(const Key('calendar_previous_month'));
+      final next = find.byKey(const Key('calendar_next_month'));
+      expect(tester.widget<IconButton>(previous).onPressed, isNull);
+      await tester.ensureVisible(next);
+      await tester.tap(next);
+      await tester.pumpAndSettle();
+      var calendar = tester.widget<TableCalendar>(
+        find.byWidgetPredicate((w) => w is TableCalendar),
+      );
+      expect(calendar.focusedDay.month, 2);
+      expect(calendar.focusedDay.year, 2027);
+      expect(calendar.selectedDayPredicate!(DateTime(2027, 1, 15)), isTrue);
+      state.selectDate(DateTime(2027, 12, 15));
+      await tester.pumpAndSettle();
+      expect(tester.widget<IconButton>(next).onPressed, isNull);
+      await tester.tap(previous);
+      await tester.pumpAndSettle();
+      calendar = tester.widget<TableCalendar>(
+        find.byWidgetPredicate((w) => w is TableCalendar),
+      );
+      expect(calendar.focusedDay.month, 11);
+      expect(calendar.focusedDay.year, 2027);
+      expect(tester.takeException(), isNull);
+    },
+  );
+  testWidgets(
     'Year selector changes bounds and Today resets to the current year',
     (tester) async {
       await open(tester);

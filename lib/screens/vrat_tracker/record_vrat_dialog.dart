@@ -1,3 +1,4 @@
+import '../../widgets/glass_tube.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -325,29 +326,30 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
               ),
             ),
             const SizedBox(height: 8),
-            Row(
-              children: [
-                _buildStatusChip(
-                  ObservanceStatus.observed,
-                  lang.translate('observed'),
-                  Icons.check_circle_outline,
-                  Colors.green,
-                ),
-                const SizedBox(width: 8),
-                _buildStatusChip(
-                  ObservanceStatus.partial,
-                  lang.translate('partial'),
-                  Icons.adjust,
-                  Colors.amber.shade700,
-                ),
-                const SizedBox(width: 8),
-                _buildStatusChip(
-                  ObservanceStatus.missed,
-                  lang.translate('missed'),
-                  Icons.highlight_off,
-                  Colors.red.shade400,
-                ),
-              ],
+            GlassTube(
+              key: const Key('vrat_record_status_tube'),
+              optionCount: 3,
+              child: Row(
+                children: [
+                  _buildStatusChip(
+                    ObservanceStatus.observed,
+                    lang.translate('observed'),
+                    Icons.check_circle_outline,
+                  ),
+                  const SizedBox(width: 8),
+                  _buildStatusChip(
+                    ObservanceStatus.partial,
+                    lang.translate('partial'),
+                    Icons.adjust,
+                  ),
+                  const SizedBox(width: 8),
+                  _buildStatusChip(
+                    ObservanceStatus.missed,
+                    lang.translate('missed'),
+                    Icons.highlight_off,
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 20),
 
@@ -363,31 +365,35 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
                 ),
               ),
               const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  _buildMethodChip(
-                    FastingMethod.fullFast,
-                    lang.translate('method_full_fast'),
-                  ),
-                  _buildMethodChip(
-                    FastingMethod.waterOnly,
-                    lang.translate('method_water_only'),
-                  ),
-                  _buildMethodChip(
-                    FastingMethod.fruitsMilk,
-                    lang.translate('method_fruits_milk'),
-                  ),
-                  _buildMethodChip(
-                    FastingMethod.oneMeal,
-                    lang.translate('method_one_meal'),
-                  ),
-                  _buildMethodChip(
-                    FastingMethod.other,
-                    lang.translate('method_other'),
-                  ),
-                ],
+              GlassTube(
+                key: const Key('vrat_fasting_method_tube'),
+                optionCount: 5,
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _buildMethodChip(
+                      FastingMethod.fullFast,
+                      lang.translate('method_full_fast'),
+                    ),
+                    _buildMethodChip(
+                      FastingMethod.waterOnly,
+                      lang.translate('method_water_only'),
+                    ),
+                    _buildMethodChip(
+                      FastingMethod.fruitsMilk,
+                      lang.translate('method_fruits_milk'),
+                    ),
+                    _buildMethodChip(
+                      FastingMethod.oneMeal,
+                      lang.translate('method_one_meal'),
+                    ),
+                    _buildMethodChip(
+                      FastingMethod.other,
+                      lang.translate('method_other'),
+                    ),
+                  ],
+                ),
               ),
               if (_fastingMethod == FastingMethod.other) ...[
                 const SizedBox(height: 10),
@@ -462,7 +468,6 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
     ObservanceStatus status,
     String label,
     IconData icon,
-    Color activeColor,
   ) {
     final isSelected = _status == status;
     return Expanded(
@@ -473,13 +478,11 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
             color: isSelected
-                ? activeColor.withValues(alpha: 0.15)
-                : Colors.grey.withValues(alpha: 0.08),
+                ? GlassTubeColors.optionSelection(context)
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
-              color: isSelected
-                  ? activeColor
-                  : Colors.grey.withValues(alpha: 0.2),
+              color: isSelected ? GlassTubeColors.teal : Colors.transparent,
               width: isSelected ? 1.8 : 1,
             ),
           ),
@@ -489,7 +492,9 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
               Icon(
                 icon,
                 size: 20,
-                color: isSelected ? activeColor : Colors.grey,
+                color: isSelected
+                    ? GlassTubeColors.teal
+                    : GlassTubeColors.foreground(context),
               ),
               const SizedBox(height: 4),
               Text(
@@ -497,7 +502,9 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  color: isSelected ? activeColor : Colors.grey.shade600,
+                  color: isSelected
+                      ? GlassTubeColors.teal
+                      : GlassTubeColors.foreground(context),
                 ),
               ),
             ],
@@ -512,7 +519,10 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
     return ChoiceChip(
       label: Text(label),
       selected: isSelected,
-      selectedColor: tealColor.withValues(alpha: 0.2),
+      selectedColor: GlassTubeColors.optionSelection(context),
+      backgroundColor: Colors.transparent,
+      side: BorderSide.none,
+      checkmarkColor: GlassTubeColors.teal,
       labelStyle: TextStyle(
         fontSize: 12,
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,

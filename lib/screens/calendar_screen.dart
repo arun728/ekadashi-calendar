@@ -1,3 +1,4 @@
+import '../widgets/glass_tube.dart';
 import 'dart:async';
 import '../models/calendar_entry.dart';
 import '../models/calendar_day_merge.dart';
@@ -57,6 +58,7 @@ class CalendarScreenState extends State<CalendarScreen> {
   bool _repoReady = false;
   bool _repoError = false;
   bool _syncing = false;
+  PageController? _monthPager;
 
   void selectDate(DateTime date) {
     if (!_years.contains(date.year)) return;
@@ -316,6 +318,8 @@ class CalendarScreenState extends State<CalendarScreen> {
           key: const Key('add_calendar_entry'),
           tooltip: lang.translate('add_entry'),
           onPressed: _repoReady ? () => _editEntry() : null,
+          backgroundColor: GlassTubeColors.teal,
+          foregroundColor: Colors.black,
           child: const Icon(Icons.add),
         ),
       ),
@@ -332,32 +336,51 @@ class CalendarScreenState extends State<CalendarScreen> {
               ),
             ),
           SliverToBoxAdapter(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                if (_syncing)
-                  const Padding(
-                    padding: EdgeInsets.all(12),
-                    child: SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                  )
-                else ...[
-                  IconButton(
-                    key: const Key('import_google_year'),
-                    tooltip: lang.translate('sync_google'),
-                    onPressed: _repoReady ? _syncYear : null,
-                    icon: const Icon(Icons.sync),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: GlassTube(
+                  key: const Key('calendar_actions_tube'),
+                  optionCount: 2,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      if (_syncing)
+                        const Padding(
+                          padding: EdgeInsets.all(12),
+                          child: SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
+                      ...[
+                        IconButton(
+                          key: const Key('import_google_year'),
+                          tooltip: lang.translate('sync_google'),
+                          onPressed: _repoReady && !_syncing ? _syncYear : null,
+                          icon: const Icon(
+                            Icons.sync,
+                            color: GlassTubeColors.teal,
+                          ),
+                        ),
+                        IconButton(
+                          tooltip: lang.translate('disconnect_google'),
+                          onPressed: _repoReady && !_syncing
+                              ? _disconnectGoogle
+                              : null,
+                          icon: const Icon(
+                            Icons.link_off,
+                            color: GlassTubeColors.teal,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
-                  IconButton(
-                    tooltip: lang.translate('disconnect_google'),
-                    onPressed: _repoReady ? _disconnectGoogle : null,
-                    icon: const Icon(Icons.link_off),
-                  ),
-                ],
-              ],
+                ),
+              ),
             ),
           ),
           SliverToBoxAdapter(
@@ -398,6 +421,55 @@ class CalendarScreenState extends State<CalendarScreen> {
             ),
           ),
           SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+              child: GlassTube(
+                key: const Key('calendar_month_tube'),
+                optionCount: 2,
+                child: Row(
+                  children: [
+                    IconButton(
+                      key: const Key('calendar_previous_month'),
+                      tooltip: MaterialLocalizations.of(
+                        context,
+                      ).previousMonthTooltip,
+                      color: GlassTubeColors.teal,
+                      onPressed: _isFirstMonth
+                          ? null
+                          : () => _monthPager?.previousPage(
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
+                            ),
+                      icon: const Icon(Icons.chevron_left),
+                    ),
+                    Expanded(
+                      child: Text(
+                        DateFormat.yMMMM(
+                          lang.currentLocale.languageCode,
+                        ).format(_focusedDay),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    IconButton(
+                      key: const Key('calendar_next_month'),
+                      tooltip: MaterialLocalizations.of(
+                        context,
+                      ).nextMonthTooltip,
+                      color: GlassTubeColors.teal,
+                      onPressed: _isLastMonth
+                          ? null
+                          : () => _monthPager?.nextPage(
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
+                            ),
+                      icon: const Icon(Icons.chevron_right),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(
             child: TableCalendar(
               key: ValueKey(_selectedYear),
               firstDay: _firstDay,
@@ -405,6 +477,8 @@ class CalendarScreenState extends State<CalendarScreen> {
               focusedDay: _focusedDay,
               locale: lang.currentLocale.languageCode,
               calendarFormat: CalendarFormat.month,
+              headerVisible: false,
+              onCalendarCreated: (controller) => _monthPager = controller,
               headerStyle: HeaderStyle(
                 formatButtonVisible: false,
                 titleCentered: true,
@@ -701,69 +775,38 @@ class CalendarScreenState extends State<CalendarScreen> {
               const SizedBox(height: 12),
 
               // Action buttons: View Details and Record Vrat (Requirement 17)
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => DetailsScreen(
-                              ekadashi: ekadashi,
-                              timezone: widget.currentTimezone,
-                            ),
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: tealColor,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: Text(
-                        lang.translate('view_details'),
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                  if (tracker.trackerEnabled) ...[
-                    const SizedBox(width: 8),
+              GlassOptionGroup(
+                key: const Key('calendar_card_actions_tube'),
+                optionCount: tracker.trackerEnabled ? 2 : 1,
+                child: Row(
+                  children: [
                     Expanded(
-                      child: OutlinedButton(
-                        onPressed: () async {
-                          final unlocks = await RecordVratDialog.show(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
                             context,
-                            ekadashi: ekadashi,
-                            allOccurrences: widget.ekadashiList,
-                            currentTimezone: widget.currentTimezone ?? 'IST',
+                            MaterialPageRoute(
+                              builder: (_) => DetailsScreen(
+                                ekadashi: ekadashi,
+                                timezone: widget.currentTimezone,
+                              ),
+                            ),
                           );
-                          if (unlocks != null &&
-                              unlocks.isNotEmpty &&
-                              mounted) {
-                            for (final u in unlocks) {
-                              await AchievementUnlockDialog.show(context, u);
-                            }
-                          }
                         },
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: statusColor ?? tealColor,
-                          side: BorderSide(color: statusColor ?? tealColor),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: tracker.trackerEnabled
+                              ? Colors.transparent
+                              : tealColor,
+                          foregroundColor: tracker.trackerEnabled
+                              ? GlassTubeColors.teal
+                              : Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
                         ),
                         child: Text(
-                          record != null
-                              ? lang.translate('edit_record')
-                              : lang.translate('record_vrat'),
+                          lang.translate('view_details'),
                           style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
@@ -771,8 +814,47 @@ class CalendarScreenState extends State<CalendarScreen> {
                         ),
                       ),
                     ),
+                    if (tracker.trackerEnabled) ...[
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () async {
+                            final unlocks = await RecordVratDialog.show(
+                              context,
+                              ekadashi: ekadashi,
+                              allOccurrences: widget.ekadashiList,
+                              currentTimezone: widget.currentTimezone ?? 'IST',
+                            );
+                            if (unlocks != null &&
+                                unlocks.isNotEmpty &&
+                                mounted) {
+                              for (final u in unlocks) {
+                                await AchievementUnlockDialog.show(context, u);
+                              }
+                            }
+                          },
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: statusColor ?? tealColor,
+                            side: BorderSide(color: statusColor ?? tealColor),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: Text(
+                            record != null
+                                ? lang.translate('edit_record')
+                                : lang.translate('record_vrat'),
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ],
           ),

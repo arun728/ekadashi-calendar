@@ -100,6 +100,29 @@ void main() {
       }
     }
   }
+  for (final brightness in [Brightness.light, Brightness.dark]) {
+    testWidgets('$brightness selection uses brand teal on black', (
+      tester,
+    ) async {
+      await open(tester, brightness: brightness);
+      final selected = find.descendant(
+        of: find.byKey(const Key('glass_tab_0')),
+        matching: find.byType(IconTheme),
+      );
+      expect(
+        tester.widget<IconTheme>(selected).data.color,
+        const Color(0xFF00A19B),
+      );
+      final pill = find.descendant(
+        of: find.byType(AnimatedAlign),
+        matching: find.byType(DecoratedBox),
+      );
+      expect(
+        (tester.widget<DecoratedBox>(pill).decoration as BoxDecoration).color,
+        Colors.black,
+      );
+    });
+  }
   testWidgets('Localized tab semantics expose selection and activation', (
     tester,
   ) async {

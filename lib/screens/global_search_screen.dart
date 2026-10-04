@@ -1,3 +1,4 @@
+import '../widgets/glass_tube.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -293,6 +294,12 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
     return Scaffold(
       backgroundColor: isDark ? const Color(0xFF121212) : Colors.grey.shade100,
       appBar: AppBar(
+        toolbarHeight:
+            56 +
+            (MediaQuery.textScalerOf(context).scale(15) - 15).clamp(
+              0,
+              double.infinity,
+            ),
         elevation: 0,
         backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         automaticallyImplyLeading: false,
@@ -340,71 +347,80 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
           _buildFilterChipRow(lang, isDark),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                Expanded(
-                  child: DropdownButton<int>(
-                    key: const Key('search_year_selector'),
-                    isExpanded: true,
-                    value: _selectedYear,
-                    hint: Text(lang.translate('year')),
-                    items: [
-                      DropdownMenuItem<int>(
-                        value: null,
-                        child: Text(lang.translate('filter_all')),
-                      ),
-                      for (final year
-                          in (widget.ekadashiList
-                              .map((e) => e.date.year)
-                              .toSet()
-                              .toList()
-                            ..sort()))
-                        DropdownMenuItem(value: year, child: Text('$year')),
-                    ],
-                    onChanged: (year) {
-                      setState(() => _selectedYear = year);
-                      if (_activeQuery.isNotEmpty) _executeSearch(_activeQuery);
-                    },
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: DropdownButton<String>(
-                    key: const Key('search_language_selector'),
-                    isExpanded: true,
-                    value: _contentLanguage ?? lang.currentLocale.languageCode,
-                    items: [
-                      for (final code in ['en', 'ta', 'hi', 'te'])
-                        DropdownMenuItem(
-                          value: code,
-                          child: Text(
-                            {
-                              'en': 'English',
-                              'ta': 'தமிழ்',
-                              'hi': 'हिन्दी',
-                              'te': 'తెలుగు',
-                            }[code]!,
-                          ),
+            child: GlassTube(
+              key: const Key('search_filters_tube'),
+              optionCount: 2,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: DropdownButton<int>(
+                      dropdownColor: Theme.of(context).colorScheme.surface,
+                      key: const Key('search_year_selector'),
+                      isExpanded: true,
+                      value: _selectedYear,
+                      hint: Text(lang.translate('year')),
+                      items: [
+                        DropdownMenuItem<int>(
+                          value: null,
+                          child: Text(lang.translate('filter_all')),
                         ),
-                    ],
-                    onChanged: (code) async {
-                      if (code == null) return;
-                      setState(() => _contentLanguage = code);
-                      final events = EkadashiService().getEkadashis(
-                        timezone: widget.currentTimezone ?? 'IST',
-                        languageCode: code,
-                      );
-                      await _indexManager.buildIndexFromEkadashis(
-                        events,
-                        languageCode: code,
-                      );
-                      if (mounted && _activeQuery.isNotEmpty) {
-                        _executeSearch(_activeQuery);
-                      }
-                    },
+                        for (final year
+                            in (widget.ekadashiList
+                                .map((e) => e.date.year)
+                                .toSet()
+                                .toList()
+                              ..sort()))
+                          DropdownMenuItem(value: year, child: Text('$year')),
+                      ],
+                      onChanged: (year) {
+                        setState(() => _selectedYear = year);
+                        if (_activeQuery.isNotEmpty) {
+                          _executeSearch(_activeQuery);
+                        }
+                      },
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: DropdownButton<String>(
+                      dropdownColor: Theme.of(context).colorScheme.surface,
+                      key: const Key('search_language_selector'),
+                      isExpanded: true,
+                      value:
+                          _contentLanguage ?? lang.currentLocale.languageCode,
+                      items: [
+                        for (final code in ['en', 'ta', 'hi', 'te'])
+                          DropdownMenuItem(
+                            value: code,
+                            child: Text(
+                              {
+                                'en': 'English',
+                                'ta': 'தமிழ்',
+                                'hi': 'हिन्दी',
+                                'te': 'తెలుగు',
+                              }[code]!,
+                            ),
+                          ),
+                      ],
+                      onChanged: (code) async {
+                        if (code == null) return;
+                        setState(() => _contentLanguage = code);
+                        final events = EkadashiService().getEkadashis(
+                          timezone: widget.currentTimezone ?? 'IST',
+                          languageCode: code,
+                        );
+                        await _indexManager.buildIndexFromEkadashis(
+                          events,
+                          languageCode: code,
+                        );
+                        if (mounted && _activeQuery.isNotEmpty) {
+                          _executeSearch(_activeQuery);
+                        }
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
 
@@ -417,7 +433,12 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
 
   Widget _buildSearchBar(bool isDark, LanguageService lang) {
     return Container(
-      height: 44,
+      height:
+          48 +
+          (MediaQuery.textScalerOf(context).scale(15) - 15).clamp(
+            0,
+            double.infinity,
+          ),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF2A2A2A) : Colors.grey.shade100,
         borderRadius: BorderRadius.circular(12),
@@ -445,27 +466,35 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
             onPressed: () => submitSearch(_searchController.text),
           ),
           suffixIcon: _searchController.text.isNotEmpty
-              ? Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.clear, size: 18),
-                      color: Colors.grey.shade500,
-                      onPressed: () {
-                        _searchController.clear();
-                        _onSearchChanged('');
-                      },
-                    ),
-                    IconButton(
-                      icon: const Icon(
-                        Icons.arrow_forward,
-                        size: 18,
-                        color: _tealColor,
+              ? GlassTube(
+                  key: const Key('search_submit_tube'),
+                  optionCount: 2,
+                  padding: EdgeInsets.zero,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        key: const Key('clear_search_query'),
+                        tooltip: lang.translate('clear_all'),
+                        icon: const Icon(Icons.clear, size: 18),
+                        color: Colors.grey.shade500,
+                        onPressed: () {
+                          _searchController.clear();
+                          _onSearchChanged('');
+                        },
                       ),
-                      tooltip: lang.translate('search'),
-                      onPressed: () => submitSearch(_searchController.text),
-                    ),
-                  ],
+                      IconButton(
+                        key: const Key('submit_search_query'),
+                        icon: const Icon(
+                          Icons.arrow_forward,
+                          size: 18,
+                          color: _tealColor,
+                        ),
+                        tooltip: lang.translate('search'),
+                        onPressed: () => submitSearch(_searchController.text),
+                      ),
+                    ],
+                  ),
                 )
               : null,
           border: InputBorder.none,
@@ -503,54 +532,26 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
   }
 
   Widget _buildFilterChipRow(LanguageService lang, bool isDark) {
-    const categories = SearchContentType.values;
-
-    return Container(
-      height: 50,
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        itemCount: categories.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
-        itemBuilder: (context, index) {
-          final cat = categories[index];
-          final isSelected = _selectedCategory == cat;
-
-          return FilterChip(
-            selected: isSelected,
-            showCheckmark: false,
-            avatar: Icon(
-              cat.icon,
-              size: 16,
-              color: isSelected
-                  ? Colors.white
-                  : (isDark ? Colors.grey.shade400 : Colors.grey.shade700),
-            ),
-            label: Text(
-              lang.translate(cat.localizationKey),
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                color: isSelected
-                    ? Colors.white
-                    : (isDark ? Colors.grey.shade300 : Colors.black87),
-              ),
-            ),
-            backgroundColor: isDark
-                ? const Color(0xFF2C2C2C)
-                : Colors.grey.shade200,
-            selectedColor: _tealColor,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-              side: BorderSide(
-                color: isSelected ? _tealColor : Colors.transparent,
-              ),
-            ),
-            onSelected: (_) => _onFilterSelected(cat),
-          );
-        },
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
+      child: GlassTube(
+        key: const Key('search_categories_tube'),
+        optionCount: SearchContentType.values.length,
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              for (final cat in SearchContentType.values)
+                GlassFilterChip(
+                  label: Text(lang.translate(cat.localizationKey)),
+                  selected: _selectedCategory == cat,
+                  showCheckmark: false,
+                  avatar: Icon(cat.icon, size: 16, color: GlassTubeColors.teal),
+                  onSelected: (_) => _onFilterSelected(cat),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -677,18 +678,22 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
             ),
           ),
           const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              for (final type in SearchContentType.values.where(
-                (t) => t != SearchContentType.all,
-              ))
-                _buildExploreChip(
-                  lang.translate(type.localizationKey),
-                  type.icon,
-                ),
-            ],
+          GlassTube(
+            key: const Key('search_explore_tube'),
+            optionCount: SearchContentType.values.length - 1,
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final type in SearchContentType.values.where(
+                  (t) => t != SearchContentType.all,
+                ))
+                  _buildExploreChip(
+                    lang.translate(type.localizationKey),
+                    type.icon,
+                  ),
+              ],
+            ),
           ),
         ],
       ),
@@ -699,13 +704,11 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
     return ActionChip(
       avatar: Icon(icon, size: 16, color: _tealColor),
       label: Text(label),
-      backgroundColor: Theme.of(context).brightness == Brightness.dark
-          ? const Color(0xFF1E1E1E)
-          : Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Colors.grey.withValues(alpha: 0.2)),
-      ),
+      backgroundColor: Colors.transparent,
+      surfaceTintColor: Colors.transparent,
+      side: BorderSide.none,
+      labelStyle: const TextStyle(fontSize: 12, color: GlassTubeColors.teal),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       onPressed: () {
         submitSearch(label);
       },
@@ -770,8 +773,10 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header Row: Category Badge + Online/Offline status
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Wrap(
+              spacing: 8,
+              runSpacing: 6,
+              alignment: WrapAlignment.spaceBetween,
               children: [
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -782,8 +787,8 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
                     color: item.contentType.badgeColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(6),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
+                  child: Wrap(
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       Icon(
                         item.contentType.icon,
@@ -792,7 +797,9 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        item.contentType.displayName.toUpperCase(),
+                        lang
+                            .translate(item.contentType.localizationKey)
+                            .toUpperCase(),
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,

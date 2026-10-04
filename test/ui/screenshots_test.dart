@@ -34,7 +34,12 @@ void main() {
       (tester) async {
         final harness = AppHarness();
         await tester.runAsync(
-          () => harness.install(preferences: {'language_code': locale}),
+          () => harness.install(
+            preferences: {
+              'language_code': locale,
+              'vrat_tracker_enabled': true,
+            },
+          ),
         );
         addTearDown(harness.uninstall);
         tester.view.physicalSize = const Size(390, 844);
@@ -76,18 +81,65 @@ void main() {
         await tester.tap(find.byIcon(Icons.search));
         await tester.pumpAndSettle();
         await capture('search');
-        await tester.tap(find.byIcon(Icons.spa_outlined));
+        await tester.enterText(find.byType(TextField), 'nirjla');
+        await tester.pump(const Duration(milliseconds: 450));
+        await tester.pumpAndSettle();
+        await capture('search_results');
+
+        await tester.tap(find.byKey(const Key('glass_tab_2')));
         await tester.pumpAndSettle();
         await capture('vrat');
-        await tester.tap(find.byIcon(Icons.settings));
+        await tester.tap(find.text(language.translate('history')));
+        await tester.pumpAndSettle();
+        await capture('vrat_history');
+        await tester.tap(find.byType(Card).first);
+        await tester.pumpAndSettle();
+        await capture('vrat_record');
+        await tester.binding.handlePopRoute();
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byKey(const Key('glass_tab_4')));
         await tester.pumpAndSettle();
         expect(find.byType(SwitchListTile), findsWidgets);
         await capture('settings_dark');
-        await tester.tap(find.byType(SwitchListTile).first);
+        await tester.scrollUntilVisible(
+          find.byKey(const Key('settings_about_tube')),
+          180,
+          scrollable: find
+              .descendant(
+                of: find.byType(ListView).hitTestable(),
+                matching: find.byType(Scrollable),
+              )
+              .first,
+        );
+        await tester.pumpAndSettle();
+        await capture('settings_about');
+        await tester.scrollUntilVisible(
+          find.byKey(const Key('settings_appearance_tube')),
+          -180,
+          scrollable: find
+              .descendant(
+                of: find.byType(ListView).hitTestable(),
+                matching: find.byType(Scrollable),
+              )
+              .first,
+        );
+
+        await tester.ensureVisible(
+          find.widgetWithText(SwitchListTile, language.translate('dark_mode')),
+        );
+        await tester.tap(
+          find.widgetWithText(SwitchListTile, language.translate('dark_mode')),
+        );
         await tester.pumpAndSettle();
         expect(
           tester
-              .widget<SwitchListTile>(find.byType(SwitchListTile).first)
+              .widget<SwitchListTile>(
+                find.widgetWithText(
+                  SwitchListTile,
+                  language.translate('dark_mode'),
+                ),
+              )
               .value,
           isFalse,
         );

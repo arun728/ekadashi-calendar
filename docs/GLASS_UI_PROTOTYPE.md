@@ -18,7 +18,7 @@ Only Android uses this navigation. iOS retains its existing bar. The IndexedStac
 deep links, query/year state and repeated Home/Calendar tab actions are retained.
 Home, Search and Vrat controls reserve safe space above the bar. Calendar and
 Settings can scroll content behind it and have sufficient trailing padding.
-No data, search algorithm, calendar import or widget logic is changed.
+Existing data, search algorithms, whole-year calendar imports and widget behavior are retained.
 
 TDD evidence: the app tests first failed because the old bar lacked the capsule;
 29 component tests failed against a placeholder before implementation. Additional
@@ -57,4 +57,34 @@ complexity without guaranteeing capture of Flutter content underneath.
 The enlarged-font Calendar layout cases also exposed existing narrow-screen
 Home location/language and Calendar year-row overflows. The Home header stacks
 its controls at large text on narrow widths; the year selector can wrap. These
-layout fixes preserve data and existing controls. Total new Flutter cases:36.
+layout fixes preserve data and existing controls.
+
+## Shared option tubes
+
+Home location/language and paired card actions, Calendar sync/disconnect,
+filters, month arrows and paired event actions, Search categories, year/language,
+clear/submit and exploration, Vrat sub-tabs/history/status/fasting methods, and
+related Settings controls use one shared clipped glass surface. A lone action is
+left separate. Only the bottom tab selection is black; other selections are a
+translucent teal wash. All control accents use the app teal #00A19B. Compact 12px
+chip labels retain system text scaling and 48dp targets. Search toolbar height
+scales with text so its clear/submit pair retains at least 48dp. Long options wrap or
+scroll horizontally; dropdown menus retain opaque surfaces for readability.
+
+New red/green tests cover all four languages and both themes across all five
+destinations, narrow 320dp layouts at 2x text scaling, 2/3/5-option activation and
+disabled controls, transparent chip canvases, bottom-only black selection and
+month bounds/selected-day preservation. Large-text failures exposed Search
+badge and Vrat statistics/milestone/history card rows; these now wrap or constrain
+text. Search result category labels now use the existing localized category key.
+
+A GPS-off CI run exposed an emulator attachment deadlock before tests: `am start
+-W` waited for a first frame while Dart was deliberately paused awaiting the
+integration driver. The launcher now starts without -W, then waits for the Dart
+VM service as before. A runner regression demonstrates the old failure. Driver
+assertion failures, missing VM service and timeouts still fail the gate.
+
+The Android-only permissions row has separate guide/settings icons in a two-icon
+tube, with localized tooltips and 48dp targets. Four direct component regressions
+first reproduced its 16dp info target and long-label overflow, then passed for
+English, Tamil, Hindi and Telugu at 320dp / 2x text scaling.
