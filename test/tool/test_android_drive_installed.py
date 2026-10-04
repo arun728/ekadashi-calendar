@@ -28,7 +28,7 @@ class InstalledAndroidDriverTests(unittest.TestCase):
             server = ThreadingHTTPServer(('127.0.0.1', 0), Handler)
             thread = Thread(target=server.serve_forever, daemon=True)
             thread.start()
-            adb = p / 'adb' 
+            adb = p / 'adb'
             adb.write_text('''#!/usr/bin/env python3
 import os,sys
 from pathlib import Path
