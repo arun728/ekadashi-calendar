@@ -63,4 +63,20 @@ void main() {
       expect(allowed.first.at.hour, 23);
     },
   );
+  test(
+    'native UTC alias schedules the selected weekday at local wall time',
+    () {
+      final zone = resolvePracticeTimeZone('Etc/UTC');
+      final events = planPracticeReminders(
+        [routine],
+        tz.TZDateTime(zone, 2026, 10, 4, 8),
+        premium: true,
+        permitted: true,
+      );
+      expect(events.first.at.weekday, DateTime.monday);
+      expect(events.first.at.hour, 9);
+      expect(events.first.at.timeZoneOffset, Duration.zero);
+      expect(resolvePracticeTimeZone('Asia/Calcutta').name, 'Asia/Kolkata');
+    },
+  );
 }

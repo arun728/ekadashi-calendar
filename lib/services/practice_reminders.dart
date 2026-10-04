@@ -11,6 +11,11 @@ import 'practice_service.dart';
 import 'premium_service.dart';
 import 'language_service.dart';
 
+tz.Location resolvePracticeTimeZone(String name) {
+  if (const ['UTC', 'Etc/UTC', 'GMT', 'Etc/GMT'].contains(name)) return tz.UTC;
+  return tz.getLocation(name == 'Asia/Calcutta' ? 'Asia/Kolkata' : name);
+}
+
 class PracticeReminder {
   const PracticeReminder(this.routine, this.at);
   final PracticeRoutine routine;
@@ -111,9 +116,7 @@ class PracticeReminders {
       return;
     }
     final name = await FlutterTimezone.getLocalTimezone();
-    final zone = tz.getLocation(
-      name == 'Asia/Calcutta' ? 'Asia/Kolkata' : name,
-    );
+    final zone = resolvePracticeTimeZone(name);
     final events = planPracticeReminders(
       practice.routines,
       tz.TZDateTime.now(zone),

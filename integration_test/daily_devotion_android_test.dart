@@ -1,3 +1,5 @@
+import 'package:ekadashi_calendar/services/native_settings_service.dart';
+import 'package:ekadashi_calendar/services/notification_service.dart';
 import 'dart:io';
 import 'dart:math' as math;
 import 'dart:typed_data';
@@ -80,13 +82,52 @@ void main() {
       final practice = ctx.read<PracticeService>();
       await practice.initialize();
       final language = ctx.read<LanguageService>();
+      final settings = NativeSettingsService();
+      final notificationPrefs = await settings.getNotificationSettings();
+      expect(
+        await settings.updateNotificationSettings(
+          notificationPrefs.copyWith(enabled: true),
+        ),
+        isTrue,
+      );
+      final permission = await settings.checkAllPermissions();
+      Future<List<int>> routineNotificationIds() async =>
+          (await NotificationService().flutterLocalNotificationsPlugin
+                  .pendingNotificationRequests())
+              .where((request) => request.id >= 1500000000)
+              .map((request) => request.id)
+              .toList();
       await practice.saveRoutine(
         const PracticeRoutine(
           id: 'ci-morning',
           title: 'CI practice fixture',
           steps: ['chant', 'read'],
+          weekdays: [DateTime.monday],
+          reminderMinute: 540,
         ),
       );
+      await frames(tester);
+      if (permission.hasNotificationPermission) {
+        for (
+          var i = 0;
+          i < 30 && (await routineNotificationIds()).isEmpty;
+          i++
+        ) {
+          await tester.pump(const Duration(milliseconds: 200));
+        }
+        expect(
+          await routineNotificationIds(),
+          isNotEmpty,
+          reason:
+              'Consented premium routine must register real native reminders',
+        );
+      } else {
+        expect(
+          await routineNotificationIds(),
+          isEmpty,
+          reason: 'Denied notification permission must leave no routine alerts',
+        );
+      }
       await binding.convertFlutterSurfaceToImage();
       for (final code in ['en', 'ta', 'hi', 'te']) {
         await language.changeLanguage(code);
@@ -156,6 +197,19 @@ void main() {
       await premium.connect();
       await frames(tester);
       expect(practice.sessions.single['count'], 1);
+      for (
+        var i = 0;
+        i < 30 && (await routineNotificationIds()).isNotEmpty;
+        i++
+      ) {
+        await tester.pump(const Duration(milliseconds: 200));
+      }
+      expect(
+        await routineNotificationIds(),
+        isEmpty,
+        reason:
+            'Premium expiry cancels routine alerts without deleting history',
+      );
       await audio.stop();
       audio.dismiss();
       await file.delete();

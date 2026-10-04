@@ -50,3 +50,13 @@ navigation. The import test waits for its enabled completion control, verifies
 actual SQLite records before/after deletion, and scrolls the event into view.
 No assertion was waived; storage assertions were strengthened. Corrected-run
 results belong to the exact follow-up commit and will be recorded in the PR.
+
+
+## Native UTC alias regression
+
+Native API24 logs reported `Etc/UTC`, absent from the packaged timezone lookup.
+The failing-first reminder test reproduced the unknown-location error. Practice
+now normalizes UTC/GMT aliases while retaining named-zone/DST behavior and the
+Calcutta/Kolkata alias. Native devotion integration additionally verifies actual
+routine notification registration when consented, no alerts when denied, and
+cancellation after premium expiry without deleting chanting history.
