@@ -25,8 +25,9 @@ TDD evidence: the app tests first failed because the old bar lacked the capsule;
 regressions cover app navigation, state retention, repeat taps, keyboard dismissal
 and the iOS fallback. Screenshot review revealed that the nested Calendar
 Scaffold placed its Add button behind the capsule. Four new layout regressions
-first failed at narrow/normal widths and normal/large text; the FAB now reserves
-the parent navigation inset. The emulator flow also asserts its visible placement. The full inherited v2 suite and native/emulator CI remain
+first failed at narrow/normal widths and normal/large text. The final design
+places Add in the top action tube so it cannot overlap navigation or date cells.
+The emulator flow also asserts its visible placement. The full inherited v2 suite and native/emulator CI remain
 required. Screenshots in `build/ui-screenshots/offscreen` are Flutter offscreen
 renders; `build/ui-screenshots/android` captures are real Android emulator runs.
 Do not treat either as Samsung hardware/performance validation.
@@ -61,7 +62,7 @@ layout fixes preserve data and existing controls.
 
 ## Shared option tubes
 
-Home location/language and paired card actions, Calendar sync/disconnect,
+Home location/language and paired card actions, Calendar Add/sync/disconnect,
 filters, month arrows and paired event actions, Search categories, year/language,
 clear/submit and exploration, Vrat sub-tabs/history/status/fasting methods, and
 related Settings controls use one shared clipped glass surface. A lone action is
@@ -99,3 +100,11 @@ Arun subsequently confirmed that passing automated gates and screenshot checks
 authorize this UI merge to dev. Physical Samsung checks remain release validation.
 Paid subscriptions/rewards belong on a later separate branch and require their
 own finalization, testing and approval before any dev merge.
+
+The corrected empty caption exposed the old floating Add button covering a date
+cell on short emulator screens. Four existing short-screen cases were strengthened
+to assert that Add never intersects the calendar grid; all four failed on the
+floating-button implementation. Add now joins sync/disconnect in a three-action
+header tube, retaining its key, localized tooltip, callback, 48dp target and
+storage-failure disabled state. This prevents date occlusion while retaining
+all calendar row sizes. Native integration also asserts grid/action separation.

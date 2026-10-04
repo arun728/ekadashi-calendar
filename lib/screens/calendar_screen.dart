@@ -305,24 +305,7 @@ class CalendarScreenState extends State<CalendarScreen> {
     final lang = Provider.of<LanguageService>(context);
     const tealColor = Color(0xFF00A19B);
 
-    // The parent extends its body behind floating navigation. A nested
-    // Scaffold does not reserve that virtual bottom padding for its FAB.
-    final navigationInset =
-        (MediaQuery.paddingOf(context).bottom -
-                MediaQuery.viewPaddingOf(context).bottom)
-            .clamp(0.0, double.infinity);
     return Scaffold(
-      floatingActionButton: Padding(
-        padding: EdgeInsets.only(bottom: navigationInset),
-        child: FloatingActionButton(
-          key: const Key('add_calendar_entry'),
-          tooltip: lang.translate('add_entry'),
-          onPressed: _repoReady ? () => _editEntry() : null,
-          backgroundColor: GlassTubeColors.teal,
-          foregroundColor: Colors.black,
-          child: const Icon(Icons.add),
-        ),
-      ),
       body: CustomScrollView(
         slivers: [
           if (_repoError)
@@ -342,11 +325,20 @@ class CalendarScreenState extends State<CalendarScreen> {
                 alignment: Alignment.centerRight,
                 child: GlassTube(
                   key: const Key('calendar_actions_tube'),
-                  optionCount: 2,
+                  optionCount: 3,
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
+                      IconButton(
+                        key: const Key('add_calendar_entry'),
+                        tooltip: lang.translate('add_entry'),
+                        onPressed: _repoReady ? () => _editEntry() : null,
+                        icon: const Icon(
+                          Icons.add,
+                          color: GlassTubeColors.teal,
+                        ),
+                      ),
                       if (_syncing)
                         const Padding(
                           padding: EdgeInsets.all(12),

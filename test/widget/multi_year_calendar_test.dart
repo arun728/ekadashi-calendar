@@ -223,7 +223,7 @@ void main() {
       );
       expect(
         tester
-            .widget<FloatingActionButton>(find.byType(FloatingActionButton))
+            .widget<IconButton>(find.byKey(const Key('add_calendar_entry')))
             .onPressed,
         isNull,
       );
@@ -232,7 +232,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(
         tester
-            .widget<FloatingActionButton>(find.byType(FloatingActionButton))
+            .widget<IconButton>(find.byKey(const Key('add_calendar_entry')))
             .onPressed,
         isNotNull,
       );

@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:table_calendar/table_calendar.dart';
 import 'package:ekadashi_calendar/main.dart';
 import 'package:ekadashi_calendar/screens/calendar_screen.dart';
 import 'package:ekadashi_calendar/screens/global_search_screen.dart';
@@ -39,7 +40,7 @@ void main() {
             lessThanOrEqualTo(capsule.top - 8),
           );
           expect(add.hitTestable(), findsOneWidget);
-          expect(tester.widget<FloatingActionButton>(add).onPressed, isNotNull);
+          expect(tester.widget<IconButton>(add).onPressed, isNotNull);
           await tester.tap(add);
           await tester.pumpAndSettle();
           expect(find.byType(TextField), findsWidgets);
@@ -74,6 +75,17 @@ void main() {
           expect(
             tester.getRect(empty).bottom,
             lessThanOrEqualTo(capsule.top - 8),
+          );
+          expect(
+            tester
+                .getRect(find.byKey(const Key('add_calendar_entry')))
+                .overlaps(
+                  tester.getRect(
+                    find.byWidgetPredicate((widget) => widget is TableCalendar),
+                  ),
+                ),
+            isFalse,
+            reason: 'Add must never cover calendar dates on short screens',
           );
           expect(tester.takeException(), isNull);
         },

@@ -127,6 +127,17 @@ void main() {
         lessThanOrEqualTo(capsule.top - 8),
       );
       expect(addButton.hitTestable(), findsOneWidget);
+      expect(
+        tester
+            .getRect(addButton)
+            .overlaps(
+              tester.getRect(
+                find.byWidgetPredicate((widget) => widget is TableCalendar),
+              ),
+            ),
+        isFalse,
+        reason: 'Calendar actions must not obscure date targets',
+      );
       await tester.tap(find.byKey(const Key('calendar_year_selector')));
       await frames(tester);
       await tester.tap(find.text('2027').last);
@@ -254,8 +265,8 @@ void main() {
           tester,
           () =>
               tester
-                  .widget<FloatingActionButton>(
-                    find.byType(FloatingActionButton),
+                  .widget<IconButton>(
+                    find.byKey(const Key('add_calendar_entry')),
                   )
                   .onPressed !=
               null,
