@@ -84,3 +84,10 @@ both attempt logs are retained. Native screenshot capture now actively pumps
 frames and has a named deadline instead of waiting indefinitely on a static UI.
 Local Python tooling: 19 tests passed; analyzer: no issues. A fresh complete
 emulator matrix must verify these changes before this PR is ready for review.
+
+Follow-up run 37206783854 passed seven of eight jobs, including API24, API33,
+notification-denied and GPS-off. API35-granted passed app assertions and all
+17 premium captures, but the emulator went offline as the classified transport
+retry started. A new reconnect regression failed with `adb: device offline`
+before the fix; each launch attempt now waits at most 120 seconds for Android
+to return before issuing commands. Twenty tooling tests pass after the fix.

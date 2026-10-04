@@ -11,7 +11,7 @@ import unittest
 ROOT = Path(__file__).resolve().parents[2]
 
 class InstalledAndroidDriverTests(unittest.TestCase):
-    def run_driver(self, *, vm=True, fail=False, stale=False, transport=False):
+    def run_driver(self, *, vm=True, fail=False, stale=False, transport=False, offline=False):
         with tempfile.TemporaryDirectory() as folder:
             p = Path(folder)
             log = p / 'calls'
@@ -34,7 +34,12 @@ import os,sys
 from pathlib import Path
 args=sys.argv[1:]
 with open(os.environ['CALLS'],'a') as f:f.write('adb '+ ' '.join(args)+'\\n')
-if args[:2]==['logcat','-d']:
+if args==['wait-for-device']:
+ Path(os.environ['CALLS']+'.online').write_text('1')
+elif args[:4]==['shell','am','force-stop','com.applausestudios.ekadashi_calendar'] and os.environ['OFFLINE']=='yes' and Path(os.environ['CALLS']+'.attempt').exists() and not Path(os.environ['CALLS']+'.online').exists():
+ print('adb: device offline',file=sys.stderr)
+ sys.exit(1)
+elif args[:2]==['logcat','-d']:
  if os.environ['VM']=='yes':print('I/flutter: The Dart VM service is listening on http://127.0.0.1:4567/test-token=/')
 elif args==['shell','pidof','com.applausestudios.ekadashi_calendar']:print('1234')
 elif args==['forward','tcp:0','tcp:4567']:print(os.environ['VM_PORT'])
@@ -48,6 +53,7 @@ if os.environ['TRANSPORT']=='yes':
  count=Path(os.environ['CALLS']+'.attempt')
  if not count.exists():
   count.write_text('1')
+  Path(os.environ['CALLS']+'.online').unlink(missing_ok=True)
   print('All tests passed!\\nDriverError: Service has disappeared')
   sys.exit(7)
 if os.environ['FAIL']=='yes':print('Some tests failed. TestFailure')
@@ -55,7 +61,7 @@ sys.exit(7 if os.environ['FAIL']=='yes' else 0)
 ''')
             adb.chmod(0o755)
             flutter.chmod(0o755)
-            env = dict(os.environ, PATH=f'{p}:'+os.environ['PATH'], CALLS=str(log), VM='yes' if vm else 'no', FAIL='yes' if fail else 'no', TRANSPORT='yes' if transport else 'no', VM_PORT=str(server.server_port), ANDROID_VM_WAIT_ATTEMPTS='1')
+            env = dict(os.environ, PATH=f'{p}:'+os.environ['PATH'], CALLS=str(log), VM='yes' if vm else 'no', FAIL='yes' if fail else 'no', TRANSPORT='yes' if transport else 'no', OFFLINE='yes' if offline else 'no', VM_PORT=str(server.server_port), ANDROID_VM_WAIT_ATTEMPTS='1')
             result = subprocess.run(['bash', str(ROOT/'tool/android-drive-installed.sh'), 'integration_test/example.dart', str(p)], env=env, capture_output=True, text=True, timeout=10)
             server.shutdown()
             server.server_close()
@@ -93,6 +99,12 @@ sys.exit(7 if os.environ['FAIL']=='yes' else 0)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(log.count('flutter drive'), 2)
         self.assertEqual(log.count('adb shell am force-stop'), 2)
+
+    def test_transport_retry_waits_for_offline_device_to_reconnect(self):
+        result, log = self.run_driver(transport=True, offline=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(log.count('flutter drive'), 2)
+        self.assertEqual(log.count('adb wait-for-device'), 2)
 
     def test_missing_vm_service_fails_before_calling_flutter(self):
         result, log = self.run_driver(vm=False)

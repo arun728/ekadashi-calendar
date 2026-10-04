@@ -17,6 +17,8 @@ cleanup_forward() {
 trap cleanup_forward EXIT
 
 for drive_attempt in 1 2; do
+  # A brief emulator disconnect must recover before any launch command.
+  timeout 120 adb wait-for-device
   timeout 30 adb shell am force-stop "$package_name"
   timeout 15 adb logcat -c
   # -W cannot complete while the entry isolate is paused waiting for the driver.
