@@ -308,8 +308,20 @@ void main() {
         event('Google event before deletion'),
         event('December event', start: '2027-12-31', end: '2028-01-01'),
       ];
+      final calendarScroll = find
+          .descendant(
+            of: find.byType(CalendarScreen),
+            matching: find.byType(Scrollable),
+          )
+          .first;
       Future<void> sync() async {
-        await tester.tap(find.byKey(const Key('import_google_year')));
+        final importButton = find.byKey(const Key('import_google_year'));
+        await tester.scrollUntilVisible(
+          importButton,
+          -220,
+          scrollable: calendarScroll,
+        );
+        await tester.tap(importButton);
         await frames(tester);
         await until(
           tester,
@@ -333,12 +345,6 @@ void main() {
         contains('Google event before deletion'),
         reason: 'The whole-year sync should persist the selected day event',
       );
-      final calendarScroll = find
-          .descendant(
-            of: find.byType(CalendarScreen),
-            matching: find.byType(Scrollable),
-          )
-          .first;
       await tester.scrollUntilVisible(
         find.text('Google event before deletion'),
         220,
