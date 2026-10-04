@@ -24,8 +24,8 @@ These rules record Arun's explicit instructions from 3 October 2026.
   upgrade. Review and discuss its multi-year implementation/test plan before
   implementing the redesign. Preserve older Ekadashi data, observance history,
   streaks, achievements and one-time notification markers across upgrades.
-- Calculation-engine work is deferred; focus on the current PRs and upgrade
-  planning first.
+- Calculation-engine work follows Daily Devotion batches 1 and 2; see the
+  approved plan below. Do not mix engine work into those batches.
 
 See docs/INTEGRATION_POLICY.md, docs/TESTING.md and
  docs/UPGRADE_INTEGRATION_PLAN.md for the current review and proposed flow.
@@ -48,3 +48,82 @@ three free achievement unlocks and additional achievements in premium. Preserve
 all history and existing earned badges. Rewards are non-cash premium-access
 credit, not cash refunds. Use Google Play billing and secure server verification;
 never grant purchases from a local flag or pending/unverified transaction.
+
+## Approved Daily Devotion plan (4 October 2026)
+
+Arun merged subscriptions/rewards PR9 into dev and explicitly approved the
+navigation and batches below. Implement on `feature/daily-devotion`, created
+from dev `23a81ce5b75f320482c33dae7e069868477219b9`. Earlier v2/UI merge
+permissions do not apply to this work. **Do not merge or push to dev or main.**
+Feature-branch commits, pushes and CI validation are authorized. Write/update
+this plan before implementation and keep completed/pending work accurate.
+
+Navigation: Today, Calendar, Practice, Library, Settings (five bottom tabs).
+Global search remains available through an app-bar action and Library search.
+Practice contains routines, Japa and the existing Vrat tracker. Library contains
+Listen and Learn. Preserve old widget/search/Vrat links, calendar state, history,
+earned achievements, notification preferences and the existing glass appearance.
+Today retains next Ekadashi/parana and adds daily practice shortcuts. A compact
+audio player will sit above navigation and persist across screen changes.
+
+### Batch 1 — daily routines and Japa (approved; implementation pending)
+
+- Free: one simple local routine, a basic chanting counter/timer and basic
+  practice streak. All existing free Ekadashi/Vrat/search/custom-calendar/widget
+  features remain free, including the first three earned achievements.
+- Premium: multiple routines, weekday scheduling/reminders, saved mantra goals,
+  configurable mala rounds/haptic cues, saved chanting session history and
+  weekly insights. Premium expiry must retain data and allow access to existing
+  personal history; gate creation/advanced actions rather than erase records.
+- Persist practice independently of Vrat and its reward wallet. Recover active
+  sessions across restart; avoid duplicate counting/completion on retries.
+  Chanting/app opens must not award fasting coins or change reward economics.
+- Scheduling respects timezone changes, notification consent and quiet hours;
+  no background notification may start before the user enables it.
+
+### Batch 2 — devotional audio and stotra learning (approved; pending)
+
+- Free: a small complete rights-cleared starter collection, selected texts/basic
+  meanings and basic playback. No removal of currently free content.
+- Premium: offline collections, playlists, repeat/108-cycle playback, sleep timer,
+  line-by-line original recitation, synchronized highlighting, pronunciation
+  practice, transliteration, bookmarks and spaced revision.
+- Document provenance/license, commercial/offline rights, performer permission,
+  translations and artwork for each production asset. Traditional text does
+  not clear a modern recording or translation. No scraped/stream-ripped songs,
+  noncommercial-license assets, cloned voices or unreviewed generated content.
+  Test audio fixtures must be clearly distinguished from production recordings.
+- Handle interruption/resume and concurrent chanting/playback. Content additions
+  need reviewed pronunciation and accurate en/ta/hi/te presentation.
+
+### Batch 3 — full Panchang (next, after batches 1 and 2)
+
+Arun requested a full engine covering Hindu festivals and occasions including
+Amavasya, Purnima/Pournami, Ekadashi, Dwadashi, Shivaratri and Pradosham.
+Clarify the requested "shiva nami" observance when defining its catalog.
+Use a licensed/compatible astronomical engine or independently reviewed
+calculations plus a separate regional/tradition-specific observance-rule layer.
+Define supported calendars/traditions, locations, leap-month rules, sunrise/DST
+handling and reference fixtures before implementation; do not claim all Hindu
+festivals from tithi calculations alone. Present daily Panchang in Today and
+date/festival details and filters in Calendar. Basic daily summary is planned
+free; multi-city comparison, advanced planning/reminders and printable schedules
+are proposed premium, to be finalized with Arun before engine implementation.
+
+Family profiles, festival preparation journeys, journals, cloud backup and extra
+widgets are later ideas, not part of approved batches 1 and 2.
+
+### Paid access and validation
+
+Reuse server-verified PremiumService for monthly INR99, yearly INR399 and lifetime
+INR999; do not add local premium flags or silently change existing prices.
+Google Calendar sync and achievements beyond the first three remain premium.
+Reward earning remains free: 300 fasting coins redeem six months of premium.
+Production billing/backend/legal/rights setup remains separately required.
+
+Use TDD: demonstrate meaningful failing tests, implement, then verify passing
+domain, persistence, widget, navigation and integration regressions. Preserve
+backend/native gates. Run CI Android API24/33/35 plus notification-denied/GPS-off
+coverage, four languages, both themes, large text and screenshots before device
+testing. Record actual results; emulator fixtures do not prove real Play billing
+or production audio rights. No merge to dev without new explicit instruction.
