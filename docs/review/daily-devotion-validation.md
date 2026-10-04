@@ -60,3 +60,27 @@ now normalizes UTC/GMT aliases while retaining named-zone/DST behavior and the
 Calcutta/Kolkata alias. Native devotion integration additionally verifies actual
 routine notification registration when consented, no alerts when denied, and
 cancellation after premium expiry without deleting chanting history.
+
+## Review screenshots and driver transport regression
+
+Current English dark-theme widget-rendered screenshots (390×844 logical pixels):
+
+| Practice | Library |
+| --- | --- |
+| ![Practice](images/daily-practice-en.png) | ![Library](images/daily-library-en.png) |
+
+These are offscreen app renders, not device captures. Library's Listen section
+shows its pending-recordings state; no production audio is claimed.
+
+Run 37203191415 passed hosted Flutter/backend/preview and API33-granted and
+API35-denied. Remaining failures were driver transport/result collection or
+premium-target timeouts. New VM-handshake contracts first failed six tests;
+verification now rejects stale entry points, dead services and remote endpoints.
+The shell runner reads VM logs for the current app PID and verifies the installed
+test entry point before attaching. One retry is permitted only for narrowly
+classified connection refusal before test start or result transport loss after
+all app tests pass. Assertions, crashes and running-test timeouts remain failures;
+both attempt logs are retained. Native screenshot capture now actively pumps
+frames and has a named deadline instead of waiting indefinitely on a static UI.
+Local Python tooling: 19 tests passed; analyzer: no issues. A fresh complete
+emulator matrix must verify these changes before this PR is ready for review.
