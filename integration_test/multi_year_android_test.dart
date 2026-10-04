@@ -88,6 +88,10 @@ void main() {
       );
       await binding.convertFlutterSurfaceToImage();
       await frames(tester);
+      expect(find.byKey(const Key('glass_navigation_bar')), findsOneWidget);
+      for (var i = 0; i < 5; i++) {
+        expect(find.byKey(Key('glass_tab_$i')).hitTestable(), findsOneWidget);
+      }
       await binding.takeScreenshot('v2_home_2026');
       final lang = tester
           .element(find.byType(MaterialApp).first)
@@ -114,6 +118,26 @@ void main() {
       await binding.takeScreenshot('v2_history_2026');
       await tester.tap(find.byIcon(Icons.calendar_month));
       await frames(tester);
+      final addButton = find.byKey(const Key('add_calendar_entry'));
+      final capsule = tester.getRect(
+        find.byKey(const Key('glass_capsule_surface')),
+      );
+      expect(
+        tester.getRect(addButton).bottom,
+        lessThanOrEqualTo(capsule.top - 8),
+      );
+      expect(addButton.hitTestable(), findsOneWidget);
+      expect(
+        tester
+            .getRect(addButton)
+            .overlaps(
+              tester.getRect(
+                find.byWidgetPredicate((widget) => widget is TableCalendar),
+              ),
+            ),
+        isFalse,
+        reason: 'Calendar actions must not obscure date targets',
+      );
       await tester.tap(find.byKey(const Key('calendar_year_selector')));
       await frames(tester);
       await tester.tap(find.text('2027').last);
@@ -156,6 +180,22 @@ void main() {
         await frames(tester);
         expect(find.byType(GlobalSearchScreen).hitTestable(), findsOneWidget);
         await binding.takeScreenshot('v2_search_$code');
+        await tester.tap(find.byIcon(Icons.settings));
+        await frames(tester);
+        await binding.takeScreenshot('glass_settings_dark_$code');
+        await tester.tap(find.byType(SwitchListTile).first);
+        await frames(tester);
+        await binding.takeScreenshot('glass_settings_light_$code');
+        await tester.tap(find.byType(SwitchListTile).first);
+        await frames(tester);
+        await tester.tap(find.byIcon(Icons.home));
+        await frames(tester);
+        await binding.takeScreenshot('glass_home_$code');
+        await tester.tap(find.byIcon(Icons.calendar_month));
+        await frames(tester);
+        await binding.takeScreenshot('glass_calendar_$code');
+        await tester.tap(find.byIcon(Icons.search));
+        await frames(tester);
       }
       await lang.changeLanguage('en');
       await frames(tester, count: 10);
@@ -225,8 +265,8 @@ void main() {
           tester,
           () =>
               tester
-                  .widget<FloatingActionButton>(
-                    find.byType(FloatingActionButton),
+                  .widget<IconButton>(
+                    find.byKey(const Key('add_calendar_entry')),
                   )
                   .onPressed !=
               null,

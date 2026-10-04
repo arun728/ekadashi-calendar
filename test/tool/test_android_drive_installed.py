@@ -43,6 +43,12 @@ sys.exit(7 if os.environ['FAIL']=='yes' else 0)
         self.assertNotIn(' install ', log)
         self.assertIn('forward --remove tcp:3456', log)
 
+    def test_paused_vm_launch_does_not_wait_for_a_rendered_frame(self):
+        result, log = self.run_driver()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn('adb shell am start -n ', log)
+        self.assertNotIn('am start -W', log)
+
     def test_driver_failure_is_preserved_and_forward_is_cleaned(self):
         result, log = self.run_driver(fail=True)
         self.assertEqual(result.returncode, 7)

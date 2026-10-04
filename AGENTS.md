@@ -29,3 +29,22 @@ These rules record Arun's explicit instructions from 3 October 2026.
 
 See docs/INTEGRATION_POLICY.md, docs/TESTING.md and
  docs/UPGRADE_INTEGRATION_PLAN.md for the current review and proposed flow.
+
+## Glass UI prototype and monetization (updated 4 October 2026)
+
+Arun explicitly confirmed that all passing automated tests and screenshot/layout
+checks are sufficient to merge `feature/android-glass-navigation` into `dev`.
+This supersedes the earlier requirement for physical-device testing before that
+UI dev merge. Samsung M52/Z Flip 5 checks remain release validation. Keep main
+untouched.
+
+After that validated UI merge, develop paid subscriptions and fasting rewards
+on a separate branch. Do not merge paid/reward work to dev until Arun finalizes
+and tests it and gives new explicit approval. Monthly INR99 / annual INR399 are
+subscriptions; lifetime INR999 is a non-consumable purchase. Google Calendar
+sync is paid; custom entries and core Ekadashi features remain free. Remove
+Vrat enable/disable: recording/history/streaks/statistics are always free, with
+three free achievement unlocks and additional achievements in premium. Preserve
+all history and existing earned badges. Rewards are non-cash premium-access
+credit, not cash refunds. Use Google Play billing and secure server verification;
+never grant purchases from a local flag or pending/unverified transaction.

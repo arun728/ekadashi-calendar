@@ -10,7 +10,9 @@ attempts=${ANDROID_VM_WAIT_ATTEMPTS:-90}
 [[ "$attempts" =~ ^[0-9]+$ ]] && (( attempts >= 1 && attempts <= 300 ))
 timeout 30 adb shell am force-stop "$package_name"
 timeout 15 adb logcat -c
-timeout 60 adb shell am start -W -n "$package_name/.MainActivity" \
+# Start paused without -W: Android's first-frame wait cannot complete until the
+# integration driver resumes Dart. Poll the VM service below for readiness.
+timeout 60 adb shell am start -n "$package_name/.MainActivity" \
   --ez enable-checked-mode true --ez verify-entry-points true --ez start-paused true \
   > "$output_dir/driver-launch.txt"
 endpoint=''

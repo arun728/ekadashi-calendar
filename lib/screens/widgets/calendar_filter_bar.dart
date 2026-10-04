@@ -1,3 +1,4 @@
+import '../../widgets/glass_tube.dart';
 import 'package:provider/provider.dart';
 import '../../services/language_service.dart';
 import 'package:flutter/material.dart';
@@ -38,32 +39,29 @@ class CalendarFilterBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final lang = context.watch<LanguageService>();
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
+    return Padding(
       padding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
-      child: Row(
-        children: CalendarDayMerge.filterOrder.map((f) {
-          final isSelected = selected == f;
-          final c = colorFor(f);
-          return Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: FilterChip(
-              label: Text(lang.translate(_labels[f]!)),
-              selected: isSelected,
-              onSelected: (_) => onChanged(f),
-              selectedColor: c.withValues(alpha: 0.25),
-              checkmarkColor: c,
-              visualDensity: VisualDensity.compact,
-              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              labelStyle: TextStyle(
-                color: isSelected ? c : null,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                fontSize: 13,
-              ),
-              side: BorderSide(color: c.withValues(alpha: 0.6)),
-            ),
-          );
-        }).toList(),
+      child: GlassTube(
+        key: const Key('calendar_filters_tube'),
+        optionCount: 4,
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+
+          child: Row(
+            children: CalendarDayMerge.filterOrder.map((f) {
+              final isSelected = selected == f;
+
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: GlassFilterChip(
+                  label: Text(lang.translate(_labels[f]!)),
+                  selected: isSelected,
+                  onSelected: (_) => onChanged(f),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
       ),
     );
   }
