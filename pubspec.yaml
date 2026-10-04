@@ -41,6 +41,10 @@ dependencies:
   in_app_purchase: 3.3.1
   in_app_purchase_android: 0.5.0
   url_launcher: ^6.3.2
+  just_audio: 0.10.5
+  audio_session: 0.2.2
+  path_provider: ^2.1.5
+  crypto: ^3.0.6
 
   # ============================================================
   # REMOVED DEPENDENCIES (v2.0 - replaced with native Kotlin)
@@ -70,6 +74,7 @@ flutter:
     - assets/ekadashi_data.json
     - assets/images/
     - assets/calendar/
+    - assets/devotion/
     - assets/app_icon.png
 
 flutter_launcher_icons:

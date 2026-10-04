@@ -837,7 +837,7 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get premium_benefits =>
-      'గూగుల్ క్యాలెండర్ సమకాలీకరణ మరియు అదనపు విజయాలు. తేదీలు, వ్యక్తిగత నమోదులు, వ్రత నమోదులు, వరుసలు మరియు ప్రస్తుత విడ్జెట్‌లు ఉచితం.';
+      'గూగుల్ క్యాలెండర్ సమకాలీకరణ, మెరుగైన దినచర్యలు మరియు జప లక్ష్యాలు, అదనపు విజయాలు, ప్రీమియం ఆడియో మరియు అభ్యాస సాధనాలు. తేదీలు, వ్యక్తిగత నమోదులు, వ్రత చరిత్ర, సాధారణ సాధన, ప్రస్తుత విడ్జెట్‌లు ఉచితం. సొంత ఆడియో సేకరణలు సిద్ధమవుతున్నాయి.';
 
   @override
   String get premium_free_achievements =>
@@ -934,4 +934,227 @@ class AppLocalizationsTe extends AppLocalizations {
   @override
   String get premium_reward_example =>
       'సాధారణ సంవత్సరం: 24 × 10 = 240 నాణేలు, పూర్తి సంవత్సరం బోనస్ 60 కలిపి 300. 26 ఏకాదశులు ఉన్న సంవత్సరంలో: 260 + 40 = 300.';
+
+  @override
+  String get devotion_today => 'ఈరోజు';
+
+  @override
+  String get devotion_practice => 'సాధన';
+
+  @override
+  String get devotion_library => 'గ్రంథాలయం';
+
+  @override
+  String get practice_routines => 'నా దినచర్యలు';
+
+  @override
+  String get practice_add_routine => 'దినచర్య సృష్టించండి';
+
+  @override
+  String get practice_edit_routine => 'దినచర్య సవరించండి';
+
+  @override
+  String get practice_title => 'దినచర్య పేరు';
+
+  @override
+  String get practice_steps => 'దశలను ఎంచుకోండి';
+
+  @override
+  String get practice_chant => 'జపం';
+
+  @override
+  String get practice_listen => 'వినండి';
+
+  @override
+  String get practice_read => 'చదవండి';
+
+  @override
+  String get practice_reflect => 'ఆత్మపరిశీలన';
+
+  @override
+  String get practice_save => 'భద్రపరచండి';
+
+  @override
+  String get practice_delete => 'తొలగించండి';
+
+  @override
+  String get practice_schedule => 'వారపు ప్రణాళిక (ప్రీమియం)';
+
+  @override
+  String get practice_reminder => 'గుర్తుచేయడాన్ని ప్రారంభించండి';
+
+  @override
+  String get practice_quiet_hours => 'నిశ్శబ్ద సమయం';
+
+  @override
+  String get practice_quiet_explanation =>
+      'నిశ్శబ్ద సమయం వెలుపల మాత్రమే గుర్తుచేయడం. సాధారణంగా రాత్రి 10–ఉదయం 7.';
+
+  @override
+  String get practice_japa => 'జపం';
+
+  @override
+  String get practice_start => 'జపం ప్రారంభించండి';
+
+  @override
+  String get practice_resume => 'కొనసాగించండి';
+
+  @override
+  String get practice_pause => 'విరామం';
+
+  @override
+  String get practice_finish => 'సాధన ముగించండి';
+
+  @override
+  String get practice_count => 'సంఖ్య';
+
+  @override
+  String get practice_goal => 'జప లక్ష్యం';
+
+  @override
+  String get practice_mala => 'మాలలో పూసలు';
+
+  @override
+  String get practice_rounds => 'పూర్తయిన మాలలు';
+
+  @override
+  String get practice_minutes => 'నిమిషాలు';
+
+  @override
+  String get practice_streak => 'వరుస సాధన (రోజులు)';
+
+  @override
+  String get practice_mantra => 'మంత్రం లేదా లక్ష్యం పేరు';
+
+  @override
+  String get practice_haptics => 'ప్రతి మాల పూర్తయినప్పుడు కంపనం';
+
+  @override
+  String get practice_saved_goals => 'భద్రపరచిన లక్ష్యాలు';
+
+  @override
+  String get practice_save_goal => 'జప లక్ష్యం భద్రపరచండి (ప్రీమియం)';
+
+  @override
+  String get practice_history => 'సాధన చరిత్ర';
+
+  @override
+  String get practice_insights => 'వారపు పురోగతి';
+
+  @override
+  String get practice_weekly_count => 'గత ఏడు రోజుల జపాలు';
+
+  @override
+  String get practice_vrat => 'వ్రత ప్రయాణం';
+
+  @override
+  String get practice_free_hint =>
+      'ఒక దినచర్య, సాధారణ జపం ఉచితం. ప్రణాళికలు, లక్ష్యాలు, పురోగతి ప్రీమియంలో ఉంటాయి.';
+
+  @override
+  String get practice_empty => 'చిన్న రోజువారీ సాధనతో ప్రారంభించండి.';
+
+  @override
+  String get practice_error =>
+      'సాధన భద్రపరచలేకపోయాం. గత పురోగతి సురక్షితం; మళ్లీ ప్రయత్నించండి.';
+
+  @override
+  String get practice_invalid => 'పేరు, సరైన లక్ష్యం, కనీసం ఒక దశ ఇవ్వండి.';
+
+  @override
+  String get practice_timer_hint =>
+      'విరామం వరకు సమయం కొనసాగుతుంది. ఒక జపం లేదా ఒక నిమిషం సాధన వరుసలో చేరుతుంది.';
+
+  @override
+  String get practice_reminder_denied =>
+      'గుర్తుచేయడానికి సెట్టింగ్స్‌లో నోటిఫికేషన్లను అనుమతించండి.';
+
+  @override
+  String get library_search => 'గ్రంథాలయం, క్యాలెండర్‌లో వెతకండి';
+
+  @override
+  String get library_listen => 'వినండి';
+
+  @override
+  String get library_learn => 'నేర్చుకోండి';
+
+  @override
+  String get library_content_pending =>
+      'సొంత భక్తి రికార్డింగ్‌లు సిద్ధమవుతున్నాయి.';
+
+  @override
+  String get practice_today_shortcut => 'మీ రోజువారీ సాధన';
+
+  @override
+  String get library_audio_error =>
+      'రికార్డింగ్ ప్లే లేదా డౌన్‌లోడ్ కాలేదు. మళ్లీ ప్రయత్నించండి.';
+
+  @override
+  String get library_download => 'ఆఫ్‌లైన్ వినడానికి డౌన్‌లోడ్';
+
+  @override
+  String get library_remove_download => 'డౌన్‌లోడ్ తొలగించండి';
+
+  @override
+  String get library_playlist => 'ప్లేలిస్ట్';
+
+  @override
+  String get library_add_playlist => 'ప్లేలిస్ట్‌లో చేర్చండి (ప్రీమియం)';
+
+  @override
+  String get library_repeat => 'పునరావృతాలు (ప్రీమియం)';
+
+  @override
+  String get library_sleep => 'స్లీప్ టైమర్ (నిమిషాలు, ప్రీమియం)';
+
+  @override
+  String get library_player => 'ఆడియో ప్లేయర్';
+
+  @override
+  String get library_play => 'ప్లే';
+
+  @override
+  String get library_pause => 'విరామం';
+
+  @override
+  String get library_stop => 'ఆపండి';
+
+  @override
+  String get library_transliteration => 'లిప్యంతరీకరణ (ప్రీమియం)';
+
+  @override
+  String get library_bookmark => 'పంక్తి గుర్తు పెట్టండి (ప్రీమియం)';
+
+  @override
+  String get library_revision => 'పునశ్చరణ పూర్తి (ప్రీమియం)';
+
+  @override
+  String get library_due => 'తదుపరి పునశ్చరణ';
+
+  @override
+  String get library_pronunciation_pending =>
+      'సమీక్షించిన ఉచ్చారణ రికార్డింగ్‌లు సిద్ధమైనప్పుడు చేర్చబడతాయి.';
+
+  @override
+  String get library_meaning => 'అర్థం';
+
+  @override
+  String get lesson_narayana => 'నారాయణ వందనం';
+
+  @override
+  String get lesson_shiva => 'శివ వందనం';
+
+  @override
+  String get lesson_narayana_meaning =>
+      'నారాయణునికి గౌరవం, నమస్కారం తెలియజేసే మంత్రం.';
+
+  @override
+  String get lesson_shiva_meaning =>
+      'శివునికి గౌరవం, నమస్కారం తెలియజేసే మంత్రం.';
+
+  @override
+  String get library_provenance => 'విషయ మూలం, హక్కులు';
+
+  @override
+  String get library_no_playlist => 'వినే జాబితాకు రికార్డింగ్‌లు చేర్చండి.';
 }

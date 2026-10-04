@@ -1,3 +1,4 @@
+import '../support/devotion_navigation.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -138,7 +139,7 @@ void main() {
     expect(find.byIcon(Icons.spa_outlined), findsOneWidget);
 
     // 2. Navigate to Vrat Tracker tab
-    await tester.tap(find.byIcon(Icons.spa_outlined));
+    await openVrat(tester);
     await tester.pumpAndSettle();
 
     expect(find.text('Enable Vrat Tracker'), findsNothing);

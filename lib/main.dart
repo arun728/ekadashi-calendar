@@ -1,3 +1,12 @@
+import 'widgets/devotion_theme.dart';
+import 'services/devotion_audio_service.dart';
+import 'services/devotion_learning_service.dart';
+import 'services/devotion_downloads.dart';
+import 'widgets/devotion_audio_player.dart';
+import 'services/practice_service.dart';
+import 'services/practice_reminders.dart';
+import 'screens/practice_screen.dart';
+import 'screens/devotion_library_screen.dart';
 import 'dart:io';
 import 'services/premium_service.dart';
 import 'services/premium_http_backend.dart';
@@ -52,8 +61,9 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key, this.calendarRepository});
+  const MyApp({super.key, this.calendarRepository, this.premiumBackend});
   final CalendarEntryRepository? calendarRepository;
+  final PremiumBackend? premiumBackend;
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +73,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ThemeService()..loadTheme()),
         ChangeNotifierProvider(create: (_) => LanguageService()),
         ChangeNotifierProvider(
-          create: (_) => PremiumService(backend: PremiumHttpBackend()),
+          create: (_) =>
+              PremiumService(backend: premiumBackend ?? PremiumHttpBackend()),
         ),
         ChangeNotifierProvider(
           create: (ctx) =>
@@ -76,6 +87,28 @@ class MyApp extends StatelessWidget {
             if (Platform.isAndroid) Future.microtask(billing.initialize);
             return billing;
           },
+        ),
+        ChangeNotifierProvider(
+          create: (ctx) => DevotionAudioService(
+            premium: () => ctx.read<PremiumService>().isPremium,
+            driver: JustAudioDriver(),
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (ctx) => DevotionLearningService(
+            premium: () => ctx.read<PremiumService>().isPremium,
+          )..initialize().catchError((_) {}),
+        ),
+        Provider<DevotionDownloads>(
+          create: (ctx) => DevotionDownloads(
+            premium: () => ctx.read<PremiumService>().isPremium,
+          ),
+          dispose: (_, downloads) => downloads.dispose(),
+        ),
+        ChangeNotifierProvider(
+          create: (ctx) => PracticeService(
+            premium: () => ctx.read<PremiumService>().isPremium,
+          )..initialize().catchError((_) {}),
         ),
         ChangeNotifierProvider(
           create: (ctx) => VratTrackerService(
@@ -130,6 +163,10 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   Uri? _pendingDeepLink;
   int _currentIndex = 0;
+  PracticeReminders? _practiceReminders;
+  String _searchQuery = '';
+  bool _searchOpen = false;
+  bool _libraryLearn = false;
   final EkadashiService _ekadashiService = EkadashiService();
   final NativeLocationService _locationService = NativeLocationService();
   String _currentLangCode = '';
@@ -140,6 +177,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     if (!mounted) return;
     final premium = _premium;
     if (premium == null) return;
+    context.read<DevotionAudioService?>()?.entitlementChanged().catchError(
+      (_) {},
+    );
     if (premium.isPremium != _lastPremium) {
       _lastPremium = premium.isPremium;
       if (_rewardTracker?.isInitialized == true && _ekadashiList.isNotEmpty) {
@@ -200,6 +240,15 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    final practice = context.read<PracticeService?>();
+    if (practice != null && _practiceReminders == null) {
+      _practiceReminders = PracticeReminders(
+        practice,
+        context.read<PremiumService>(),
+        context.read<LanguageService>(),
+      );
+      Future.microtask(() => _practiceReminders?.reconcile(force: true));
+    }
     _premium ??= context.read<PremiumService?>()
       ?..addListener(_refreshPremiumFeatures);
     _rewardTracker ??= context.read<VratTrackerService?>()
@@ -217,6 +266,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     NativeWidgetService().clearDeepLinkListener();
     _premium?.removeListener(_refreshPremiumFeatures);
     _rewardTracker?.removeListener(_syncRewardHistory);
+    _practiceReminders?.dispose();
     _pageController.dispose();
     super.dispose();
   }
@@ -224,6 +274,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
+      _practiceReminders?.reconcile(force: true);
       if (_premium?.connected == true) _premium!.connect(interactive: false);
       // Wait for the first frame to render (ensure engine is attached)
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -787,15 +838,26 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       _pendingDeepLink = uri;
       return;
     }
+    Navigator.of(context).popUntil((route) => route.isFirst);
     final tab = {
       'dashboard': 0,
       'today': 0,
       'parana': 0,
       'calendar': 1,
       'vrat': 2,
+      'practice': 2,
+      'library': 3,
       'search': 3,
       'settings': 4,
     }[uri.host];
+    if (uri.host == 'search') {
+      _openSearch();
+      return;
+    }
+    if (uri.host == 'vrat') {
+      _openVrat();
+      return;
+    }
     if (tab == null) return;
     setState(() => _currentIndex = tab);
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -928,7 +990,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     final items = [
       BottomNavigationBarItem(
         icon: const Icon(Icons.home),
-        label: lang.translate('home'),
+        label: lang.translate('devotion_today'),
       ),
       BottomNavigationBarItem(
         icon: const Icon(Icons.calendar_month),
@@ -937,11 +999,11 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       BottomNavigationBarItem(
         icon: const Icon(Icons.spa_outlined),
         activeIcon: const Icon(Icons.spa),
-        label: lang.translate('vrat'),
+        label: lang.translate('devotion_practice'),
       ),
       BottomNavigationBarItem(
-        icon: const Icon(Icons.search),
-        label: lang.translate('search'),
+        icon: const Icon(Icons.library_books_outlined),
+        label: lang.translate('devotion_library'),
       ),
       BottomNavigationBarItem(
         icon: const Icon(Icons.settings),
@@ -950,25 +1012,84 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     ];
     return Scaffold(
       extendBody: glass,
-      appBar: _currentIndex == 3
-          ? null
-          : AppBar(title: Text(lang.translate('app_title')), centerTitle: true),
-      body: _buildBody(lang, tealColor),
-      bottomNavigationBar: glass
-          ? (keyboardOpen
-                ? null
-                : GlassNavigationBar(
-                    items: items,
-                    currentIndex: _currentIndex,
-                    onTap: _onBottomNavTapped,
-                  ))
-          : BottomNavigationBar(
-              type: BottomNavigationBarType.fixed,
-              currentIndex: _currentIndex,
-              onTap: _onBottomNavTapped,
-              selectedItemColor: tealColor,
-              items: items,
+      appBar: AppBar(
+        title: Text(lang.translate('app_title')),
+        centerTitle: true,
+        actions: [
+          if (_currentIndex == 0)
+            IconButton(
+              key: const Key('today_practice'),
+              tooltip: lang.translate('practice_today_shortcut'),
+              icon: const Icon(Icons.self_improvement),
+              onPressed: () => setState(() => _currentIndex = 2),
             ),
+          IconButton(
+            key: const Key('global_search'),
+            tooltip: lang.translate('search'),
+            icon: const Icon(Icons.search),
+            onPressed: _openSearch,
+          ),
+        ],
+      ),
+      body: _buildBody(lang, tealColor),
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const DevotionMiniPlayer(),
+          glass
+              ? (keyboardOpen
+                    ? const SizedBox.shrink()
+                    : GlassNavigationBar(
+                        items: items,
+                        currentIndex: _currentIndex,
+                        onTap: _onBottomNavTapped,
+                      ))
+              : BottomNavigationBar(
+                  type: BottomNavigationBarType.fixed,
+                  currentIndex: _currentIndex,
+                  onTap: _onBottomNavTapped,
+                  selectedItemColor: tealColor,
+                  items: items,
+                ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _openSearch() async {
+    if (_searchOpen) return;
+    _searchOpen = true;
+    try {
+      await Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => GlobalSearchScreen(
+            ekadashiList: _ekadashiList,
+            currentTimezone: _currentTimezone,
+            initialQuery: _searchQuery,
+            onQueryChanged: (query) => _searchQuery = query,
+            showBackButton: true,
+            onBackToHome: () => Navigator.of(context).pop(),
+          ),
+        ),
+      );
+    } finally {
+      _searchOpen = false;
+    }
+  }
+
+  void _openVrat() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => Scaffold(
+          appBar: AppBar(
+            title: Text(context.read<LanguageService>().translate('vrat')),
+          ),
+          body: VratTrackerScreen(
+            ekadashiList: _ekadashiList,
+            currentTimezone: _currentTimezone,
+          ),
+        ),
+      ),
     );
   }
 
@@ -1010,32 +1131,49 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
     return IndexedStack(
       index: _currentIndex,
-      children: [
-        SafeArea(top: false, child: _buildHomeContent(lang, tealColor)),
-        CalendarScreen(
-          key: _calendarKey,
-          repository: context.read<CalendarEntryRepository?>(),
-          ekadashiList: _ekadashiList,
-          currentTimezone: _currentTimezone,
-        ),
-        SafeArea(
-          top: false,
-          child: VratTrackerScreen(
-            ekadashiList: _ekadashiList,
-            currentTimezone: _currentTimezone,
-          ),
-        ),
-        SafeArea(
-          top: false,
-          child: GlobalSearchScreen(
-            ekadashiList: _ekadashiList,
-            currentTimezone: _currentTimezone,
-            showBackButton: false,
-            onBackToHome: () => _onBottomNavTapped(0),
-          ),
-        ),
-        SettingsScreen(currentTimezone: _currentTimezone),
-      ],
+      children:
+          [
+                SafeArea(top: false, child: _buildHomeContent(lang, tealColor)),
+                CalendarScreen(
+                  key: _calendarKey,
+                  repository: context.read<CalendarEntryRepository?>(),
+                  ekadashiList: _ekadashiList,
+                  currentTimezone: _currentTimezone,
+                ),
+                SafeArea(
+                  top: false,
+                  child: DevotionTheme(
+                    child: PracticeScreen(
+                      openVrat: _openVrat,
+                      openLibrary: (learn) => setState(() {
+                        _libraryLearn = learn;
+                        _currentIndex = 3;
+                      }),
+                    ),
+                  ),
+                ),
+                SafeArea(
+                  top: false,
+                  child: DevotionTheme(
+                    child: DevotionLibraryScreen(
+                      openSearch: _openSearch,
+                      learn: _libraryLearn,
+                    ),
+                  ),
+                ),
+                SettingsScreen(
+                  currentTimezone: _currentTimezone,
+                  onNotificationsChanged: () =>
+                      _practiceReminders?.reconcile(force: true),
+                ),
+              ].indexed
+              .map(
+                (entry) => TickerMode(
+                  enabled: entry.$1 == _currentIndex,
+                  child: entry.$2,
+                ),
+              )
+              .toList(),
     );
   }
 

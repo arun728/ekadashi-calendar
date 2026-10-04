@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
@@ -8,6 +10,37 @@ import 'package:ekadashi_calendar/screens/premium_screen.dart';
 import 'package:ekadashi_calendar/services/language_service.dart';
 import 'package:ekadashi_calendar/services/premium_service.dart';
 import '../test/support/premium_fixture.dart';
+
+// Native screenshot capture needs a new frame even when the screen is static.
+// Keep producing frames and fail with a named deadline instead of hanging CI.
+Future<void> capturePremiumScreenshot(
+  WidgetTester tester,
+  IntegrationTestWidgetsFlutterBinding binding,
+  String name,
+) async {
+  debugPrint('Premium screenshot start: $name');
+  var complete = false;
+  final capture = binding.takeScreenshot(name);
+  unawaited(
+    capture.then<void>(
+      (_) => complete = true,
+      onError: (Object error, StackTrace stack) {
+        complete = true;
+      },
+    ),
+  );
+  for (var frame = 0; frame < 150 && !complete; frame++) {
+    await tester
+        .pump(const Duration(milliseconds: 200))
+        .timeout(const Duration(seconds: 5));
+  }
+  await capture.timeout(
+    const Duration(seconds: 5),
+    onTimeout: () =>
+        throw TimeoutException('Screenshot did not complete: $name'),
+  );
+  debugPrint('Premium screenshot complete: $name');
+}
 
 void main() {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -34,7 +67,11 @@ void main() {
       expect(find.byType(PremiumScreen), findsOneWidget);
       await binding.convertFlutterSurfaceToImage();
       await tester.pump();
-      await binding.takeScreenshot('premium_real_unconfigured_free_gate');
+      await capturePremiumScreenshot(
+        tester,
+        binding,
+        'premium_real_unconfigured_free_gate',
+      );
       await tester.tap(find.byKey(const Key('premium_close')));
       await tester.pump(const Duration(seconds: 1));
       final context = tester.element(find.byType(app.MainScreen));
@@ -80,19 +117,29 @@ void main() {
         ) {
           await tester.pump(const Duration(seconds: 1));
         }
-        await binding.takeScreenshot(
+        await capturePremiumScreenshot(
+          tester,
+          binding,
           'premium_fixture_${locale}_before_validation',
         );
         expect(find.text(lang.translate('premium_benefits')), findsOneWidget);
         expect(find.textContaining('₹99'), findsWidgets);
-        await binding.takeScreenshot('premium_fixture_${locale}_plans');
+        await capturePremiumScreenshot(
+          tester,
+          binding,
+          'premium_fixture_${locale}_plans',
+        );
         await tester.scrollUntilVisible(
           find.text(lang.translate('premium_continue_free')),
           200,
           scrollable: find.byType(Scrollable).first,
         );
         await tester.pump();
-        await binding.takeScreenshot('premium_fixture_${locale}_free_exit');
+        await capturePremiumScreenshot(
+          tester,
+          binding,
+          'premium_fixture_${locale}_free_exit',
+        );
         await tester.scrollUntilVisible(
           find.text(lang.translate('premium_reward_activate')),
           200,
@@ -102,7 +149,11 @@ void main() {
           find.text(lang.translate('premium_reward_activate')),
         );
         await tester.pump();
-        await binding.takeScreenshot('premium_fixture_${locale}_rewards');
+        await capturePremiumScreenshot(
+          tester,
+          binding,
+          'premium_fixture_${locale}_rewards',
+        );
         expect(tester.takeException(), isNull);
         await tester.tap(find.byKey(const Key('premium_close')));
         await tester.pump(const Duration(milliseconds: 500));

@@ -1,3 +1,4 @@
+import '../support/devotion_navigation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
@@ -39,7 +40,7 @@ void main() {
               .element(find.byType(MaterialApp))
               .read<LanguageService>();
           expect(find.byKey(const Key('home_options_tube')), findsOneWidget);
-          await tester.tap(find.byKey(const Key('glass_tab_1')));
+          await tapAppTab(tester, 1);
           await tester.pumpAndSettle();
           for (final key in [
             'calendar_actions_tube',
@@ -48,7 +49,7 @@ void main() {
           ]) {
             expect(find.byKey(Key(key)).hitTestable(), findsOneWidget);
           }
-          await tester.tap(find.byKey(const Key('glass_tab_3')));
+          await openSearch(tester);
           await tester.pumpAndSettle();
           expect(
             find.byKey(const Key('search_categories_tube')),
@@ -63,7 +64,7 @@ void main() {
             tester.getSize(find.byKey(const Key('search_submit_tube'))).height,
             greaterThanOrEqualTo(48),
           );
-          await tester.tap(find.byKey(const Key('glass_tab_2')));
+          await openVrat(tester);
           await tester.pumpAndSettle();
           expect(find.byKey(const Key('vrat_tabs_tube')), findsOneWidget);
           await tester.tap(find.text(lang.translate('history')));
@@ -85,7 +86,7 @@ void main() {
           expect(tester.takeException(), isNull);
           await tester.binding.handlePopRoute();
           await tester.pumpAndSettle();
-          await tester.tap(find.byKey(const Key('glass_tab_4')));
+          await tapAppTab(tester, 4);
           await tester.pumpAndSettle();
           await tester.scrollUntilVisible(
             find.byKey(const Key('settings_notifications_tube')),

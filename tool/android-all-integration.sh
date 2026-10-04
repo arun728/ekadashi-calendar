@@ -17,4 +17,5 @@ if [[ "$mode" == granted ]]; then
     fi
   done
 fi
+bash tool/android-feature-integration.sh integration_test/daily_devotion_android_test.dart "$mode" || result=$?
 exit "$result"

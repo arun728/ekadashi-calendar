@@ -832,7 +832,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get premium_benefits =>
-      'गूगल कैलेंडर सिंक और अतिरिक्त उपलब्धियाँ। तिथियाँ, निजी प्रविष्टियाँ, व्रत रिकॉर्ड, क्रम और सभी मौजूदा विजेट मुफ़्त हैं।';
+      'गूगल कैलेंडर सिंक, उन्नत अभ्यास क्रम और जप लक्ष्य, अतिरिक्त उपलब्धियाँ तथा प्रीमियम ऑडियो और सीखने के साधन। तिथियाँ, निजी प्रविष्टियाँ, व्रत रिकॉर्ड, सामान्य अभ्यास और मौजूदा विजेट मुफ्त हैं। मौलिक ऑडियो संग्रह तैयार किए जा रहे हैं।';
 
   @override
   String get premium_free_achievements =>
@@ -929,4 +929,227 @@ class AppLocalizationsHi extends AppLocalizations {
   @override
   String get premium_reward_example =>
       'सामान्य वर्ष: 24 × 10 = 240 सिक्के, पूरे वर्ष का बोनस 60 जोड़कर 300। 26 एकादशी वाले वर्ष में: 260 + 40 = 300।';
+
+  @override
+  String get devotion_today => 'आज';
+
+  @override
+  String get devotion_practice => 'साधना';
+
+  @override
+  String get devotion_library => 'संग्रह';
+
+  @override
+  String get practice_routines => 'मेरे अभ्यास क्रम';
+
+  @override
+  String get practice_add_routine => 'अभ्यास क्रम बनाएँ';
+
+  @override
+  String get practice_edit_routine => 'अभ्यास क्रम बदलें';
+
+  @override
+  String get practice_title => 'अभ्यास का नाम';
+
+  @override
+  String get practice_steps => 'अपने चरण चुनें';
+
+  @override
+  String get practice_chant => 'जप';
+
+  @override
+  String get practice_listen => 'सुनें';
+
+  @override
+  String get practice_read => 'पढ़ें';
+
+  @override
+  String get practice_reflect => 'चिंतन करें';
+
+  @override
+  String get practice_save => 'सहेजें';
+
+  @override
+  String get practice_delete => 'हटाएँ';
+
+  @override
+  String get practice_schedule => 'साप्ताहिक समय-सारणी (प्रीमियम)';
+
+  @override
+  String get practice_reminder => 'रिमाइंडर चालू करें';
+
+  @override
+  String get practice_quiet_hours => 'शांत समय';
+
+  @override
+  String get practice_quiet_explanation =>
+      'शांत समय के बाहर ही रिमाइंडर। सामान्य समय: रात 10–सुबह 7।';
+
+  @override
+  String get practice_japa => 'जप';
+
+  @override
+  String get practice_start => 'जप शुरू करें';
+
+  @override
+  String get practice_resume => 'जारी रखें';
+
+  @override
+  String get practice_pause => 'विराम दें';
+
+  @override
+  String get practice_finish => 'सत्र पूरा करें';
+
+  @override
+  String get practice_count => 'गिनती';
+
+  @override
+  String get practice_goal => 'जप लक्ष्य';
+
+  @override
+  String get practice_mala => 'माला में मनके';
+
+  @override
+  String get practice_rounds => 'पूरी मालाएँ';
+
+  @override
+  String get practice_minutes => 'मिनट';
+
+  @override
+  String get practice_streak => 'लगातार साधना (दिन)';
+
+  @override
+  String get practice_mantra => 'मंत्र या व्यक्तिगत लक्ष्य का नाम';
+
+  @override
+  String get practice_haptics => 'हर पूरी माला पर कंपन';
+
+  @override
+  String get practice_saved_goals => 'सहेजे लक्ष्य';
+
+  @override
+  String get practice_save_goal => 'जप लक्ष्य सहेजें (प्रीमियम)';
+
+  @override
+  String get practice_history => 'सत्र इतिहास';
+
+  @override
+  String get practice_insights => 'साप्ताहिक प्रगति';
+
+  @override
+  String get practice_weekly_count => 'पिछले सात दिनों के जप';
+
+  @override
+  String get practice_vrat => 'व्रत यात्रा';
+
+  @override
+  String get practice_free_hint =>
+      'एक अभ्यास क्रम और सामान्य जप मुफ्त हैं। समय-सारणी, सहेजे लक्ष्य और प्रगति प्रीमियम में हैं।';
+
+  @override
+  String get practice_empty => 'छोटे दैनिक अभ्यास से शुरू करें।';
+
+  @override
+  String get practice_error =>
+      'साधना सहेजी नहीं गई। पिछली प्रगति सुरक्षित है; फिर कोशिश करें।';
+
+  @override
+  String get practice_invalid => 'नाम, सही लक्ष्य और कम से कम एक चरण चुनें।';
+
+  @override
+  String get practice_timer_hint =>
+      'विराम तक समय चलता है। एक जप या एक मिनट का अभ्यास साधना क्रम में जुड़ता है।';
+
+  @override
+  String get practice_reminder_denied =>
+      'अभ्यास रिमाइंडर के लिए सेटिंग्स में सूचनाएँ अनुमति दें।';
+
+  @override
+  String get library_search => 'संग्रह और कैलेंडर खोजें';
+
+  @override
+  String get library_listen => 'सुनें';
+
+  @override
+  String get library_learn => 'सीखें';
+
+  @override
+  String get library_content_pending =>
+      'मौलिक भक्ति रिकॉर्डिंग तैयार की जा रही हैं।';
+
+  @override
+  String get practice_today_shortcut => 'आपकी दैनिक साधना';
+
+  @override
+  String get library_audio_error =>
+      'रिकॉर्डिंग चल नहीं सकी या डाउनलोड नहीं हुई। फिर कोशिश करें।';
+
+  @override
+  String get library_download => 'ऑफलाइन सुनने के लिए डाउनलोड करें';
+
+  @override
+  String get library_remove_download => 'डाउनलोड हटाएँ';
+
+  @override
+  String get library_playlist => 'प्लेलिस्ट';
+
+  @override
+  String get library_add_playlist => 'प्लेलिस्ट में जोड़ें (प्रीमियम)';
+
+  @override
+  String get library_repeat => 'दोहराव (प्रीमियम)';
+
+  @override
+  String get library_sleep => 'स्लीप टाइमर (मिनट, प्रीमियम)';
+
+  @override
+  String get library_player => 'ऑडियो प्लेयर';
+
+  @override
+  String get library_play => 'चलाएँ';
+
+  @override
+  String get library_pause => 'विराम';
+
+  @override
+  String get library_stop => 'रोकें';
+
+  @override
+  String get library_transliteration => 'लिप्यंतरण (प्रीमियम)';
+
+  @override
+  String get library_bookmark => 'पंक्ति बुकमार्क करें (प्रीमियम)';
+
+  @override
+  String get library_revision => 'पुनरावृत्ति पूरी करें (प्रीमियम)';
+
+  @override
+  String get library_due => 'अगली पुनरावृत्ति';
+
+  @override
+  String get library_pronunciation_pending =>
+      'समीक्षित उच्चारण रिकॉर्डिंग तैयार होने पर जोड़ी जाएँगी।';
+
+  @override
+  String get library_meaning => 'अर्थ';
+
+  @override
+  String get lesson_narayana => 'नारायण वंदना';
+
+  @override
+  String get lesson_shiva => 'शिव वंदना';
+
+  @override
+  String get lesson_narayana_meaning =>
+      'नारायण के प्रति आदर और नमस्कार व्यक्त करने वाला मंत्र।';
+
+  @override
+  String get lesson_shiva_meaning =>
+      'शिव के प्रति आदर और नमस्कार व्यक्त करने वाला मंत्र।';
+
+  @override
+  String get library_provenance => 'सामग्री स्रोत और अधिकार';
+
+  @override
+  String get library_no_playlist => 'सुनने की सूची में रिकॉर्डिंग जोड़ें।';
 }

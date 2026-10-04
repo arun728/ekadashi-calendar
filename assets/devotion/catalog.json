@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "tracks": [],
+  "lessons": [
+    {
+      "id": "narayana-mantra",
+      "titleKey": "lesson_narayana",
+      "premium": false,
+      "provenance": "Traditional Sanskrit invocation; original app transliteration and explanations. No third-party recording or modern translation is included.",
+      "lines": [{"text": "ॐ नमो नारायणाय", "transliteration": "Om namo Nārāyaṇāya", "meaningKey": "lesson_narayana_meaning"}]
+    },
+    {
+      "id": "shiva-mantra",
+      "titleKey": "lesson_shiva",
+      "premium": false,
+      "provenance": "Traditional Sanskrit invocation; original app transliteration and explanations. No third-party recording or modern translation is included.",
+      "lines": [{"text": "ॐ नमः शिवाय", "transliteration": "Om namaḥ Śivāya", "meaningKey": "lesson_shiva_meaning"}]
+    }
+  ]
+}

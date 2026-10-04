@@ -1,3 +1,4 @@
+import '../support/devotion_navigation.dart';
 import 'package:ekadashi_calendar/widgets/glass_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -25,10 +26,10 @@ void main() {
         find.byType(GlassNavigationBar),
       );
       expect(nav.items, hasLength(5));
-      await tester.tap(find.byIcon(Icons.spa_outlined));
+      await openVrat(tester);
       await tester.pumpAndSettle();
       expect(find.byType(VratTrackerScreen).hitTestable(), findsOneWidget);
-      await tester.tap(find.byIcon(Icons.search));
+      await openSearch(tester);
       await tester.pumpAndSettle();
       expect(find.byType(GlobalSearchScreen).hitTestable(), findsOneWidget);
       await tester.enterText(find.byType(TextField), 'zzzznomatch9999');
@@ -36,7 +37,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(SearchIndexManager().search('zzzznomatch9999'), isEmpty);
       expect(find.textContaining('No results found'), findsOneWidget);
-      final dynamic state = tester.state(find.byType(MainScreen));
+      final dynamic state = tester.state(find.byType(MainScreen, skipOffstage: false));
       state.handleDeepLink(Uri.parse('ekadashi://calendar?date=2027-01-07'));
       await tester.pumpAndSettle();
       expect(find.byType(CalendarScreen).hitTestable(), findsOneWidget);

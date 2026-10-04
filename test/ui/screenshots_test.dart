@@ -1,3 +1,4 @@
+import '../support/devotion_navigation.dart';
 import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
@@ -75,10 +76,10 @@ void main() {
         }
 
         await capture('home');
-        await tester.tap(find.byIcon(Icons.calendar_month));
+        await tapAppTab(tester, 1);
         await tester.pumpAndSettle();
         await capture('calendar');
-        await tester.tap(find.byIcon(Icons.search));
+        await openSearch(tester);
         await tester.pumpAndSettle();
         await capture('search');
         await tester.enterText(find.byType(TextField), 'nirjla');
@@ -86,7 +87,13 @@ void main() {
         await tester.pumpAndSettle();
         await capture('search_results');
 
-        await tester.tap(find.byKey(const Key('glass_tab_2')));
+        await tapAppTab(tester, 2);
+        await tester.pumpAndSettle();
+        await capture('daily_practice');
+        await tapAppTab(tester, 3);
+        await tester.pumpAndSettle();
+        await capture('daily_library');
+        await openVrat(tester);
         await tester.pumpAndSettle();
         await capture('vrat');
         await tester.tap(find.text(language.translate('history')));
@@ -98,7 +105,7 @@ void main() {
         await tester.binding.handlePopRoute();
         await tester.pumpAndSettle();
 
-        await tester.tap(find.byKey(const Key('glass_tab_4')));
+        await tapAppTab(tester, 4);
         await tester.pumpAndSettle();
         expect(find.byType(SwitchListTile), findsWidgets);
         await capture('settings_dark');
@@ -144,7 +151,7 @@ void main() {
           isFalse,
         );
         await capture('settings_light');
-        await tester.tap(find.byIcon(Icons.home));
+        await tapAppTab(tester, 0);
         await tester.pumpAndSettle();
         final button = find
             .widgetWithText(ElevatedButton, language.translate('view_details'))
