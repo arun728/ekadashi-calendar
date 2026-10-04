@@ -78,13 +78,23 @@ void main() {
         await tester.tap(find.byIcon(Icons.calendar_month));
         await tester.pumpAndSettle();
         await capture('calendar');
-        await tester.tap(find.byIcon(Icons.search));
+        await tester.tap(find.byKey(const Key('open_global_search')));
         await tester.pumpAndSettle();
         await capture('search');
         await tester.enterText(find.byType(TextField), 'nirjla');
         await tester.pump(const Duration(milliseconds: 450));
         await tester.pumpAndSettle();
         await capture('search_results');
+        await tester.tap(find.byIcon(Icons.arrow_back).first);
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byKey(const Key('glass_tab_3')));
+        await tester.pumpAndSettle();
+        expect(
+          find.byKey(const Key('panchang_daily_overview')),
+          findsOneWidget,
+        );
+        await capture('panchang_free');
 
         await tester.tap(find.byKey(const Key('glass_tab_2')));
         await tester.pumpAndSettle();

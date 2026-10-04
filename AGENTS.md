@@ -24,8 +24,8 @@ These rules record Arun's explicit instructions from 3 October 2026.
   upgrade. Review and discuss its multi-year implementation/test plan before
   implementing the redesign. Preserve older Ekadashi data, observance history,
   streaks, achievements and one-time notification markers across upgrades.
-- Calculation-engine work is deferred; focus on the current PRs and upgrade
-  planning first.
+- Calculation-engine work was previously deferred. The active, newer Panchang
+  authorization below supersedes that deferral and any earlier branch plan.
 
 See docs/INTEGRATION_POLICY.md, docs/TESTING.md and
  docs/UPGRADE_INTEGRATION_PLAN.md for the current review and proposed flow.
@@ -48,3 +48,37 @@ three free achievement unlocks and additional achievements in premium. Preserve
 all history and existing earned badges. Rewards are non-cash premium-access
 credit, not cash refunds. Use Google Play billing and secure server verification;
 never grant purchases from a local flag or pending/unverified transaction.
+
+## Panchang engine (approved 4 October 2026)
+
+Arun explicitly authorized a new Panchang implementation on a clean branch from
+`dev`. The active branch is `feature/panchang-engine`; do not merge it to `dev`
+or `main`. Implement only in this branch and open a PR against `dev`, ready for
+review after the requested automated checks pass.
+
+- Navigation keeps five bottom tabs: Today, Calendar, Vrat, Panchang, Settings.
+  Panchang replaces the old Search tab; preserve the Vrat tracker. Move Search
+  to a search action in the top app bar and preserve `ekadashi://search` links.
+- Panchang calculations and labels are English-only and use Indian Standard
+  Time (UTC+05:30) with a selectable, curated Indian city for coordinates.
+  Never use the device timezone or offer non-Indian cities for Panchang.
+- Build a deterministic, offline calculation engine. Do not scrape Drik
+  Panchang or copy its text, event database, visual assets, or branding. Public
+  Panchang listings may inform feature coverage; cite astronomical references
+  and validate calculations against independent published ephemeris/phase data.
+- Keep astronomical primitives separate from named observance rules. Explain
+  the selected sunrise/sunset/night rule and month convention in documentation;
+  make regional/Smarta/Vaishnava differences explicit and extensible. Do not
+  claim universal coverage where rule profiles are not reviewed. Existing
+  Ekadashi fasting/parana data remains authoritative for the current Vrat UI.
+- Panchang's detailed limbs, timings, city-aware observances and browseable
+  calendar are premium. Retain a useful free daily preview and use the existing
+  server-verified premium entitlement/paywall. Do not gate existing Vrat
+  recording/history or the established Ekadashi calendar.
+- Follow TDD: first commit/record failing engine and navigation/widget tests,
+  then implement. Run analyzer, all existing Flutter tests, UI screenshots,
+  Android CI/emulator checks available in this repo, and report unavailable
+  checks honestly. Do not merge or mark any other branch ready.
+
+See `docs/PANCHANG_PLAN.md` for research references, the first-release rule
+scope, and calculation/UX boundaries.

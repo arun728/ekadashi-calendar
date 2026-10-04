@@ -5,6 +5,7 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:ekadashi_calendar/main.dart';
 import 'package:ekadashi_calendar/screens/calendar_screen.dart';
 import 'package:ekadashi_calendar/screens/global_search_screen.dart';
+import 'package:ekadashi_calendar/screens/panchang_screen.dart';
 import 'package:ekadashi_calendar/screens/vrat_tracker/vrat_tracker_screen.dart';
 import '../support/app_harness.dart';
 
@@ -98,7 +99,10 @@ void main() {
       await tester.pumpWidget(harness.app());
       await tester.pumpAndSettle();
       expect(find.byType(BottomNavigationBar), findsOneWidget);
-      expect(find.byKey(const Key('glass_navigation_bar')), findsNothing);
+      expect(
+        find.byKey(const Key('glass_navigation_bar')).hitTestable(),
+        findsNothing,
+      );
       expect(tester.takeException(), isNull);
     } finally {
       debugDefaultTargetPlatformOverride = null;
@@ -125,19 +129,25 @@ void main() {
     expect(find.byType(VratTrackerScreen).hitTestable(), findsOneWidget);
     await tester.tap(find.byKey(const Key('glass_tab_3')));
     await tester.pumpAndSettle();
+    expect(find.byType(PanchangScreen).hitTestable(), findsOneWidget);
+    await tester.tap(find.byKey(const Key('open_global_search')));
+    await tester.pumpAndSettle();
     expect(find.byType(GlobalSearchScreen).hitTestable(), findsOneWidget);
     await tester.enterText(find.byType(TextField), 'parvsa');
     await tester.pump(const Duration(milliseconds: 450));
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<TextField>(find.byType(TextField)).controller!.text,
+      'parvsa',
+    );
+    await tester.tap(find.byIcon(Icons.arrow_back).first);
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('glass_tab_4')));
     await tester.pumpAndSettle();
     expect(find.text('Enable Notifications'), findsOneWidget);
     await tester.tap(find.byKey(const Key('glass_tab_3')));
     await tester.pumpAndSettle();
-    expect(
-      tester.widget<TextField>(find.byType(TextField)).controller!.text,
-      'parvsa',
-    );
+    expect(find.byType(PanchangScreen).hitTestable(), findsOneWidget);
     await tester.tap(find.byKey(const Key('glass_tab_1')));
     await tester.pumpAndSettle();
     expect(
@@ -169,7 +179,7 @@ void main() {
     (tester) async {
       await tester.pumpWidget(harness.app());
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const Key('glass_tab_3')));
+      await tester.tap(find.byKey(const Key('open_global_search')));
       await tester.pumpAndSettle();
       tester.view.viewInsets = const FakeViewPadding(bottom: 300);
       addTearDown(tester.view.resetViewInsets);
@@ -177,6 +187,8 @@ void main() {
       expect(find.byKey(const Key('glass_navigation_bar')), findsNothing);
       expect(find.byType(TextField).hitTestable(), findsOneWidget);
       tester.view.resetViewInsets();
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.arrow_back).first);
       await tester.pumpAndSettle();
       expect(
         find.byKey(const Key('glass_tab_3')).hitTestable(),

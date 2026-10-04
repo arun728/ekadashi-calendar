@@ -25,10 +25,11 @@ void main() {
         find.byType(GlassNavigationBar),
       );
       expect(nav.items, hasLength(5));
+      final dynamic state = tester.state(find.byType(MainScreen));
       await tester.tap(find.byIcon(Icons.spa_outlined));
       await tester.pumpAndSettle();
       expect(find.byType(VratTrackerScreen).hitTestable(), findsOneWidget);
-      await tester.tap(find.byIcon(Icons.search));
+      await tester.tap(find.byKey(const Key('open_global_search')));
       await tester.pumpAndSettle();
       expect(find.byType(GlobalSearchScreen).hitTestable(), findsOneWidget);
       await tester.enterText(find.byType(TextField), 'zzzznomatch9999');
@@ -36,7 +37,6 @@ void main() {
       await tester.pumpAndSettle();
       expect(SearchIndexManager().search('zzzznomatch9999'), isEmpty);
       expect(find.textContaining('No results found'), findsOneWidget);
-      final dynamic state = tester.state(find.byType(MainScreen));
       state.handleDeepLink(Uri.parse('ekadashi://calendar?date=2027-01-07'));
       await tester.pumpAndSettle();
       expect(find.byType(CalendarScreen).hitTestable(), findsOneWidget);

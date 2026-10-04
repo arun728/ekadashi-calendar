@@ -11,6 +11,7 @@ import 'services/native_widget_service.dart';
 import 'services/widget_sync_manager.dart';
 import 'services/search_index_manager.dart';
 import 'screens/global_search_screen.dart';
+import 'screens/panchang_screen.dart';
 import 'l10n/generated/app_localizations.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
@@ -179,6 +180,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   int _currentPage = 0;
   bool _isResuming = false;
   bool _isPermanentDenial = false;
+  bool _searchOpen = false;
+  bool _premiumSessionStarted = false;
 
   final PageController _pageController = PageController(viewportFraction: 1.0);
   final GlobalKey<CalendarScreenState> _calendarKey = GlobalKey();
@@ -202,6 +205,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     super.didChangeDependencies();
     _premium ??= context.read<PremiumService?>()
       ?..addListener(_refreshPremiumFeatures);
+    if (!_premiumSessionStarted && _premium != null) {
+      _premiumSessionStarted = true;
+      Future.microtask(() => _premium?.connect(interactive: false));
+    }
     _rewardTracker ??= context.read<VratTrackerService?>()
       ?..addListener(_syncRewardHistory);
     final langService = Provider.of<LanguageService>(context);
@@ -787,16 +794,23 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       _pendingDeepLink = uri;
       return;
     }
+    if (uri.host == 'search') {
+      _openSearch();
+      return;
+    }
     final tab = {
       'dashboard': 0,
       'today': 0,
       'parana': 0,
       'calendar': 1,
       'vrat': 2,
-      'search': 3,
+      'panchang': 3,
       'settings': 4,
     }[uri.host];
     if (tab == null) return;
+    if (_searchOpen && Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    }
     setState(() => _currentIndex = tab);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -806,6 +820,23 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         if (date != null) _calendarKey.currentState?.selectDate(date);
       }
     });
+  }
+
+  Future<void> _openSearch() async {
+    if (!mounted || _searchOpen) return;
+    _searchOpen = true;
+    try {
+      await Navigator.of(context).push<void>(
+        MaterialPageRoute<void>(
+          builder: (_) => GlobalSearchScreen(
+            ekadashiList: _ekadashiList,
+            currentTimezone: _currentTimezone,
+          ),
+        ),
+      );
+    } finally {
+      _searchOpen = false;
+    }
   }
 
   Future<void> _syncSearchAndWidgets() async {
@@ -939,9 +970,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         activeIcon: const Icon(Icons.spa),
         label: lang.translate('vrat'),
       ),
-      BottomNavigationBarItem(
-        icon: const Icon(Icons.search),
-        label: lang.translate('search'),
+      const BottomNavigationBarItem(
+        icon: Icon(Icons.auto_awesome_outlined),
+        activeIcon: Icon(Icons.auto_awesome),
+        label: 'Panchang',
       ),
       BottomNavigationBarItem(
         icon: const Icon(Icons.settings),
@@ -950,9 +982,19 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     ];
     return Scaffold(
       extendBody: glass,
-      appBar: _currentIndex == 3
-          ? null
-          : AppBar(title: Text(lang.translate('app_title')), centerTitle: true),
+      appBar: AppBar(
+        title: Text(lang.translate('app_title')),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            key: const Key('open_global_search'),
+            tooltip: lang.translate('search'),
+            icon: const Icon(Icons.search),
+            onPressed: _openSearch,
+          ),
+          const SizedBox(width: 4),
+        ],
+      ),
       body: _buildBody(lang, tealColor),
       bottomNavigationBar: glass
           ? (keyboardOpen
@@ -1025,15 +1067,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             currentTimezone: _currentTimezone,
           ),
         ),
-        SafeArea(
-          top: false,
-          child: GlobalSearchScreen(
-            ekadashiList: _ekadashiList,
-            currentTimezone: _currentTimezone,
-            showBackButton: false,
-            onBackToHome: () => _onBottomNavTapped(0),
-          ),
-        ),
+        const PanchangScreen(),
         SettingsScreen(currentTimezone: _currentTimezone),
       ],
     );
