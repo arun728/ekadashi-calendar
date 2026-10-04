@@ -220,6 +220,15 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
     await _loadRecentSearches();
   }
 
+  void _handleBack() {
+    _focusNode.unfocus();
+    if (Navigator.canPop(context)) {
+      Navigator.pop(context);
+    } else {
+      widget.onBackToHome?.call();
+    }
+  }
+
   void _handleDownload(SearchResult item) async {
     final success = await _indexManager.downloadContent(item.id);
     if (!mounted) return;
@@ -305,13 +314,15 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
         automaticallyImplyLeading: false,
         leading: (widget.showBackButton && Navigator.canPop(context))
             ? IconButton(
+                key: const Key('global_search_back'),
                 icon: const Icon(Icons.arrow_back),
-                onPressed: () => Navigator.pop(context),
+                onPressed: _handleBack,
               )
             : (widget.onBackToHome != null
                   ? IconButton(
+                      key: const Key('global_search_back'),
                       icon: const Icon(Icons.arrow_back),
-                      onPressed: widget.onBackToHome,
+                      onPressed: _handleBack,
                     )
                   : null),
         title: _buildSearchBar(isDark, lang),

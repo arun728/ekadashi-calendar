@@ -61,4 +61,27 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets('closing focused Search restores the app navigation', (
+    tester,
+  ) async {
+    await tester.pumpWidget(harness.app());
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('open_global_search')));
+    await tester.pumpAndSettle();
+    expect(find.byType(GlobalSearchScreen), findsOneWidget);
+
+    final searchField = find.byType(TextField).first;
+    final focusNode = tester.widget<TextField>(searchField).focusNode!;
+    await tester.showKeyboard(searchField);
+    expect(focusNode.hasFocus, isTrue);
+
+    await tester.tap(find.byKey(const Key('global_search_back')));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(GlobalSearchScreen), findsNothing);
+    expect(focusNode.hasFocus, isFalse);
+    expect(find.byKey(const Key('glass_navigation_bar')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }

@@ -186,6 +186,10 @@ void main() {
     (tester) async {
       await open(tester);
       await year2027(tester);
+      tester
+          .state<CalendarScreenState>(find.byType(CalendarScreen))
+          .selectDate(DateTime(2027, 1, 1));
+      await tester.pumpAndSettle();
       google.events = [
         event('Deleted in Google'),
         event('Keep December', start: '2027-12-31', end: '2028-01-01'),
@@ -194,9 +198,33 @@ void main() {
       expect(google.min, DateTime(2027));
       expect(google.max, DateTime(2028));
       expect(repo.entries, hasLength(2));
+      final importedEvent = find.text('Deleted in Google');
+      await tester.scrollUntilVisible(
+        importedEvent,
+        220,
+        scrollable: find
+            .descendant(
+              of: find.byType(CalendarScreen),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
+      expect(importedEvent, findsOneWidget);
       google.events = [
         event('Keep December', start: '2027-12-31', end: '2028-01-01'),
       ];
+      final importButton = find.byKey(const Key('import_google_year'));
+      final calendarViewport = find.byType(CustomScrollView).first;
+      for (
+        var attempt = 0;
+        attempt < 20 && importButton.evaluate().isEmpty;
+        attempt++
+      ) {
+        await tester.drag(calendarViewport, const Offset(0, 500));
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      expect(importButton, findsOneWidget);
+      await tester.ensureVisible(importButton);
       await import(tester);
       expect(repo.entries.values.map((e) => e.title), ['Keep December']);
       expect(find.text('Deleted in Google'), findsNothing);

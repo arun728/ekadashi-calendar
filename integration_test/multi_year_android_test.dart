@@ -186,8 +186,12 @@ void main() {
         await frames(tester);
         expect(find.byType(GlobalSearchScreen).hitTestable(), findsOneWidget);
         await binding.takeScreenshot('v2_search_$code');
-        await tester.tap(find.byIcon(Icons.arrow_back).first);
+        await tester.tap(find.byKey(const Key('global_search_back')));
         await frames(tester);
+        await until(
+          tester,
+          () => find.byIcon(Icons.settings).evaluate().isNotEmpty,
+        );
         await tester.tap(find.byIcon(Icons.settings));
         await frames(tester);
         await binding.takeScreenshot('glass_settings_dark_$code');
@@ -308,19 +312,19 @@ void main() {
         event('Google event before deletion'),
         event('December event', start: '2027-12-31', end: '2028-01-01'),
       ];
-      final calendarScroll = find
-          .descendant(
-            of: find.byType(CalendarScreen),
-            matching: find.byType(Scrollable),
-          )
-          .first;
       Future<void> sync() async {
         final importButton = find.byKey(const Key('import_google_year'));
-        await tester.scrollUntilVisible(
-          importButton,
-          -220,
-          scrollable: calendarScroll,
-        );
+        final calendarViewport = find.byType(CustomScrollView).first;
+        for (
+          var attempt = 0;
+          attempt < 20 && importButton.evaluate().isEmpty;
+          attempt++
+        ) {
+          await tester.drag(calendarViewport, const Offset(0, 500));
+          await tester.pump(const Duration(milliseconds: 100));
+        }
+        expect(importButton, findsOneWidget);
+        await tester.ensureVisible(importButton);
         await tester.tap(importButton);
         await frames(tester);
         await until(
@@ -348,7 +352,12 @@ void main() {
       await tester.scrollUntilVisible(
         find.text('Google event before deletion'),
         220,
-        scrollable: calendarScroll,
+        scrollable: find
+            .descendant(
+              of: find.byType(CalendarScreen),
+              matching: find.byType(Scrollable),
+            )
+            .first,
       );
       await frames(tester);
       expect(find.text('Google event before deletion'), findsOneWidget);
