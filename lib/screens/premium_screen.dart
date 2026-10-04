@@ -10,13 +10,23 @@ import '../services/play_billing_service.dart';
 import '../services/reward_wallet_service.dart';
 import '../services/vrat_tracker_service.dart';
 
-Future<void> openPremium(BuildContext context) => Navigator.of(
-  context,
-).push(MaterialPageRoute<void>(builder: (_) => const PremiumScreen()));
+Future<void> openPremium(
+  BuildContext context, {
+  String currentTimezone = 'IST',
+}) => Navigator.of(context).push(
+  MaterialPageRoute<void>(
+    builder: (_) => PremiumScreen(currentTimezone: currentTimezone),
+  ),
+);
 
 class PremiumScreen extends StatefulWidget {
-  const PremiumScreen({super.key, this.billingOverride});
+  const PremiumScreen({
+    super.key,
+    this.billingOverride,
+    this.currentTimezone = 'IST',
+  });
   final PlayBillingService? billingOverride;
+  final String currentTimezone;
   @override
   State<PremiumScreen> createState() => _PremiumScreenState();
 }
@@ -123,7 +133,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
     await wallet.sync(account, {
       for (final r in tracker?.getAllRecords() ?? [])
         if (r.occurrenceUid != null) r.occurrenceUid!: r.status.key,
-    }, 'IST');
+    }, widget.currentTimezone);
     await wallet.refresh();
   }
 

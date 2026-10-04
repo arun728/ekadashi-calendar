@@ -1034,7 +1034,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             onBackToHome: () => _onBottomNavTapped(0),
           ),
         ),
-        const SettingsScreen(),
+        SettingsScreen(currentTimezone: _currentTimezone),
       ],
     );
   }

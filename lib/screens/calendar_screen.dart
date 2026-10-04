@@ -168,7 +168,10 @@ class CalendarScreenState extends State<CalendarScreen> {
   Future<void> _syncYear() async {
     if (_syncing || !_repoReady) return;
     if (context.read<PremiumService?>()?.isPremium != true) {
-      await openPremium(context);
+      await openPremium(
+        context,
+        currentTimezone: widget.currentTimezone ?? 'IST',
+      );
       return;
     }
     final year = _selectedYear;

@@ -964,7 +964,8 @@ class _VratTrackerScreenState extends State<VratTrackerScreen>
         ),
         if (!premium)
           TextButton(
-            onPressed: () => openPremium(context),
+            onPressed: () =>
+                openPremium(context, currentTimezone: widget.currentTimezone),
             child: Text(lang.translate('premium_more_achievements')),
           ),
         Expanded(
