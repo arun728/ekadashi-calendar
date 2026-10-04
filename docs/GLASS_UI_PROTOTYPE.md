@@ -1,7 +1,8 @@
 # Android glass navigation prototype
 
 Branch: `feature/android-glass-navigation`, based on dev after validated PR #7.
-**Do not merge before Samsung M52/Z Flip 5 device testing and fresh Arun approval.**
+**PR #8 merged to dev after all automated gates and screenshot checks passed,
+as explicitly authorized by Arun. Samsung checks remain release validation.**
 Main remains outside scope. This is a Flutter approximation of the supplied iOS
 App Store navigation reference, not Apple's Liquid Glass implementation.
 
@@ -44,7 +45,7 @@ On both Samsung phones check all five destinations, selected/repeated taps, all
 four languages, light/dark themes, font enlargement, TalkBack, keyboard open/close,
 gesture/three-button navigation and scrolling to final Calendar/Settings controls.
 On Z Flip 5 also check folding/resume. Review blur readability, animation smoothness
-and battery/rendering behavior. These results and fresh approval gate integration.
+and battery/rendering behavior. These results remain required for release validation.
 
 Sources:
 - https://api.flutter.dev/flutter/widgets/BackdropFilter-class.html

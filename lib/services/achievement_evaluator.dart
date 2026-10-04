@@ -84,7 +84,12 @@ class AchievementEvaluator {
     required List<VratHistory> history,
     required List<EkadashiDate> occurrences,
     required Map<String, UserAchievement> currentAchievements,
+    int? newUnlockLimit,
   }) {
+    if (newUnlockLimit != null && newUnlockLimit < 0) {
+      throw ArgumentError.value(newUnlockLimit, 'newUnlockLimit');
+    }
+    var remainingUnlocks = newUnlockLimit ?? allAchievements.length;
     final Map<int, VratHistory> historyByOccId = {
       for (final e in occurrences)
         for (final h in history)
@@ -150,12 +155,16 @@ class AchievementEvaluator {
           break;
       }
 
-      final isNowUnlocked = wasUnlocked || meetsCondition;
+      // Progress remains free. Access limits affect only new badge unlocks;
+      // earned badges are never removed on expiry or a corrected observance.
+      final isNowUnlocked =
+          wasUnlocked || (meetsCondition && remainingUnlocks > 0);
       final String? unlockedTime = wasUnlocked
           ? existing?.unlockedAtUTC
           : (isNowUnlocked ? nowUtc : null);
 
       if (!wasUnlocked && isNowUnlocked) {
+        remainingUnlocks--;
         newlyUnlocked.add(achievement);
       }
 

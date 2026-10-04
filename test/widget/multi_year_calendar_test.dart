@@ -1,3 +1,7 @@
+import 'package:ekadashi_calendar/screens/premium_screen.dart';
+import 'package:ekadashi_calendar/services/play_billing_service.dart';
+import '../support/premium_fixture.dart';
+import 'package:ekadashi_calendar/services/premium_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -40,10 +44,20 @@ void main() {
     google = UiGoogle();
     language = LanguageService();
   });
-  Future<void> open(WidgetTester tester) async {
+  Future<void> open(WidgetTester tester, {bool paid = true}) async {
+    final premium = PremiumService(
+      backend: PremiumFixture()..premium = paid,
+      startLeaseTimer: false,
+    );
+    await premium.connect();
+    addTearDown(premium.dispose);
     await tester.pumpWidget(
       MultiProvider(
         providers: [
+          ChangeNotifierProvider.value(value: premium),
+          ChangeNotifierProvider<PlayBillingService>(
+            create: (_) => FixtureBilling(premium),
+          ),
           ChangeNotifierProvider.value(value: language),
           ChangeNotifierProvider(create: (_) => VratTrackerService()),
         ],
@@ -81,6 +95,23 @@ void main() {
     await tester.tap(find.text('Import selected'));
     await tester.pumpAndSettle();
   }
+
+  testWidgets(
+    'Free calendar opens premium for Google sync and keeps custom entry free',
+    (tester) async {
+      await open(tester, paid: false);
+      await tester.tap(find.byKey(const Key('import_google_year')));
+      await tester.pumpAndSettle();
+      expect(find.byType(PremiumScreen), findsOneWidget);
+      expect(google.min, isNull);
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('add_calendar_entry')));
+      await tester.pumpAndSettle();
+      expect(find.byType(TextField), findsWidgets);
+      expect(find.byType(PremiumScreen), findsNothing);
+    },
+  );
 
   testWidgets(
     'Glass month actions stay in selected year and preserve selected day',

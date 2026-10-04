@@ -1,3 +1,5 @@
+import '../test/support/premium_fixture.dart';
+import 'package:ekadashi_calendar/services/premium_service.dart';
 import 'dart:io';
 import 'package:sqflite/sqflite.dart' show getDatabasesPath;
 import 'package:table_calendar/table_calendar.dart';
@@ -242,6 +244,12 @@ void main() {
         await tester.pumpWidget(
           MultiProvider(
             providers: [
+              ChangeNotifierProvider(
+                create: (_) => PremiumService(
+                  backend: PremiumFixture(),
+                  startLeaseTimer: false,
+                )..connect(),
+              ),
               ChangeNotifierProvider.value(value: fixtureLang),
               ChangeNotifierProvider.value(value: fixtureTracker),
             ],

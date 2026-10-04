@@ -1,3 +1,8 @@
+import 'dart:io';
+import 'services/premium_service.dart';
+import 'services/premium_http_backend.dart';
+import 'services/play_billing_service.dart';
+import 'services/reward_wallet_service.dart';
 import 'widgets/glass_tube.dart';
 import 'package:flutter/foundation.dart';
 import 'widgets/glass_navigation_bar.dart';
@@ -57,7 +62,26 @@ class MyApp extends StatelessWidget {
         Provider<CalendarEntryRepository?>(create: (_) => calendarRepository),
         ChangeNotifierProvider(create: (_) => ThemeService()..loadTheme()),
         ChangeNotifierProvider(create: (_) => LanguageService()),
-        ChangeNotifierProvider(create: (_) => VratTrackerService()),
+        ChangeNotifierProvider(
+          create: (_) => PremiumService(backend: PremiumHttpBackend()),
+        ),
+        ChangeNotifierProvider(
+          create: (ctx) =>
+              RewardWalletService(ctx.read<PremiumService>().backend),
+        ),
+        ChangeNotifierProvider(
+          lazy: false,
+          create: (ctx) {
+            final billing = PlayBillingService(ctx.read<PremiumService>());
+            if (Platform.isAndroid) Future.microtask(billing.initialize);
+            return billing;
+          },
+        ),
+        ChangeNotifierProvider(
+          create: (ctx) => VratTrackerService(
+            premiumAchievements: () => ctx.read<PremiumService>().isPremium,
+          ),
+        ),
       ],
       child: Consumer2<ThemeService, LanguageService>(
         builder: (context, themeService, lang, child) {
@@ -109,6 +133,41 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   final EkadashiService _ekadashiService = EkadashiService();
   final NativeLocationService _locationService = NativeLocationService();
   String _currentLangCode = '';
+  PremiumService? _premium;
+  VratTrackerService? _rewardTracker;
+  bool _lastPremium = false;
+  void _refreshPremiumFeatures() {
+    if (!mounted) return;
+    final premium = _premium;
+    if (premium == null) return;
+    if (premium.isPremium != _lastPremium) {
+      _lastPremium = premium.isPremium;
+      if (_rewardTracker?.isInitialized == true && _ekadashiList.isNotEmpty) {
+        _rewardTracker!
+            .refreshAchievements(_ekadashiList)
+            .then((unlocked) async {
+              for (final achievement in unlocked) {
+                if (!mounted) return;
+                await AchievementUnlockDialog.show(context, achievement);
+              }
+            })
+            .catchError((_) {});
+      }
+    }
+    _syncRewardHistory();
+  }
+
+  void _syncRewardHistory() {
+    if (!mounted ||
+        _premium?.accountId == null ||
+        _rewardTracker?.isInitialized != true) {
+      return;
+    }
+    context.read<RewardWalletService?>()?.sync(_premium!.accountId!, {
+      for (final r in _rewardTracker!.getAllRecords())
+        if (r.occurrenceUid != null) r.occurrenceUid!: r.status.key,
+    }, _currentTimezone);
+  }
 
   List<EkadashiDate> _ekadashiList = [];
   bool _isLoading = true;
@@ -141,6 +200,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    _premium ??= context.read<PremiumService?>()
+      ?..addListener(_refreshPremiumFeatures);
+    _rewardTracker ??= context.read<VratTrackerService?>()
+      ?..addListener(_syncRewardHistory);
     final langService = Provider.of<LanguageService>(context);
     if (_currentLangCode != langService.currentLocale.languageCode) {
       _currentLangCode = langService.currentLocale.languageCode;
@@ -152,6 +215,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     NativeWidgetService().clearDeepLinkListener();
+    _premium?.removeListener(_refreshPremiumFeatures);
+    _rewardTracker?.removeListener(_syncRewardHistory);
     _pageController.dispose();
     super.dispose();
   }
@@ -159,6 +224,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
+      if (_premium?.connected == true) _premium!.connect(interactive: false);
       // Wait for the first frame to render (ensure engine is attached)
       WidgetsBinding.instance.addPostFrameCallback((_) {
         // Add a small safety buffer for low-end devices/heavy restoration

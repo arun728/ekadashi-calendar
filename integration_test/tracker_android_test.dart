@@ -21,7 +21,7 @@ Future<void> pumpUi(WidgetTester tester, {int frames = 6}) async {
 
 void main() {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
-  testWidgets('Android tracker opt-in, tabs and first-record acceptance', (
+  testWidgets('Android free tracker, tabs and first-record acceptance', (
     tester,
   ) async {
     // Dedicated emulator only. Reset just the test-owned app preferences.
@@ -52,13 +52,12 @@ void main() {
     final context = tester.element(screen);
     final tracker = context.read<VratTrackerService>();
     final lang = context.read<LanguageService>();
-    expect(tracker.trackerEnabled, isFalse);
+    expect(tracker.trackerEnabled, isTrue);
+    expect(find.text(lang.translate('enable_vrat_tracker')), findsNothing);
+    expect(find.text(lang.translate('disable_vrat_tracker')), findsNothing);
     await binding.convertFlutterSurfaceToImage();
     await pumpUi(tester);
-    await binding.takeScreenshot('pr4_tracker_opt_in');
-    await tester.tap(find.text(lang.translate('enable_vrat_tracker')));
-    await pumpUi(tester);
-    expect(tracker.trackerEnabled, isTrue);
+    await binding.takeScreenshot('free_vrat_initial');
     await binding.takeScreenshot('pr4_tracker_overview');
     for (final tab in ['history', 'statistics', 'achievements']) {
       await tester.tap(find.widgetWithText(Tab, lang.translate(tab)));

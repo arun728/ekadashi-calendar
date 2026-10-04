@@ -36,39 +36,39 @@ void main() {
   test('Future observances must be rejected at service boundary', () async {
     final s = VratTrackerService();
     await s.init();
-    await s.enableTracker();
+
     final e = occurrence(1, DateTime.now().add(const Duration(days: 100)));
     await record(s, e, [e]);
     expect(s.getRecord(1), isNull);
   });
   test(
-    'Disabled tracker must reject writes and stop achievement progress',
+    'Legacy opt-out cannot block free recording or achievement progress',
     () async {
       final s = VratTrackerService();
       await s.init();
-      await s.enableTracker();
-      await s.disableTracker();
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('vrat_tracker_enabled', false);
       final e = occurrence(1, DateTime(2026, 1, 1));
       await record(s, e, [e]);
-      expect(s.getAllRecords(), isEmpty);
-      expect(s.userAchievements['first_vrat']?.isUnlocked, isNot(true));
+      expect(s.getAllRecords(), hasLength(1));
+      expect(s.userAchievements['first_vrat']?.isUnlocked, isTrue);
     },
   );
-  test('Disabled tracker preserves records from deletion', () async {
+  test('Free tracker permits deleting personal records', () async {
     final s = VratTrackerService();
     await s.init();
-    await s.enableTracker();
+
     final past = occurrence(1, DateTime(2026, 1, 1));
     await record(s, past, [past]);
-    await s.disableTracker();
     await s.deleteVrat(ekadashiOccurrenceId: past.id, occurrences: [past]);
-    expect(s.getRecord(past.id), isNotNull);
+    expect(s.getRecord(past.id), isNull);
   });
   testWidgets('First achievement save closes the record sheet', (tester) async {
     final s = VratTrackerService();
     final e = occurrence(1, DateTime(2026, 1, 1));
     await s.init(occurrences: [e]);
-    await s.enableTracker();
+
     await tester.pumpWidget(
       MultiProvider(
         providers: [
@@ -103,7 +103,7 @@ void main() {
     final s = VratTrackerService();
     final e = occurrence(1, DateTime(DateTime.now().year - 1, 1, 1));
     await s.init(occurrences: [e]);
-    await s.enableTracker();
+
     await tester.pumpWidget(
       MultiProvider(
         providers: [

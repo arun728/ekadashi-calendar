@@ -1673,6 +1673,186 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No offline results found. Save content for offline access.'**
   String get no_offline_results;
+
+  /// No description provided for @premium_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Ekadashi Premium'**
+  String get premium_title;
+
+  /// No description provided for @premium_benefits.
+  ///
+  /// In en, this message translates to:
+  /// **'Google Calendar sync and additional achievements. Dates, custom entries, Vrat records, streaks and all existing widgets stay free.'**
+  String get premium_benefits;
+
+  /// No description provided for @premium_free_achievements.
+  ///
+  /// In en, this message translates to:
+  /// **'Your first three earned achievements are free. All recording and streaks remain free.'**
+  String get premium_free_achievements;
+
+  /// No description provided for @premium_monthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get premium_monthly;
+
+  /// No description provided for @premium_yearly.
+  ///
+  /// In en, this message translates to:
+  /// **'Yearly'**
+  String get premium_yearly;
+
+  /// No description provided for @premium_lifetime.
+  ///
+  /// In en, this message translates to:
+  /// **'Lifetime'**
+  String get premium_lifetime;
+
+  /// No description provided for @premium_monthly_terms.
+  ///
+  /// In en, this message translates to:
+  /// **'Full price charged each month. Automatically renews until canceled in Google Play.'**
+  String get premium_monthly_terms;
+
+  /// No description provided for @premium_yearly_terms.
+  ///
+  /// In en, this message translates to:
+  /// **'Full price charged each year. Automatically renews until canceled in Google Play.'**
+  String get premium_yearly_terms;
+
+  /// No description provided for @premium_lifetime_terms.
+  ///
+  /// In en, this message translates to:
+  /// **'One payment, no renewal. Manage or cancel an existing subscription before buying lifetime to avoid duplicate charges.'**
+  String get premium_lifetime_terms;
+
+  /// No description provided for @premium_sign_in.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in securely with Google'**
+  String get premium_sign_in;
+
+  /// No description provided for @premium_continue_free.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue free'**
+  String get premium_continue_free;
+
+  /// No description provided for @premium_restore.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore purchases'**
+  String get premium_restore;
+
+  /// No description provided for @premium_manage.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage subscription in Google Play'**
+  String get premium_manage;
+
+  /// No description provided for @premium_active.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium access active'**
+  String get premium_active;
+
+  /// No description provided for @premium_unavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchases are unavailable. Free features still work.'**
+  String get premium_unavailable;
+
+  /// No description provided for @premium_verification_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchase verification is pending. Try Restore purchases; access is granted only after verification.'**
+  String get premium_verification_failed;
+
+  /// No description provided for @premium_pending.
+  ///
+  /// In en, this message translates to:
+  /// **'Awaiting payment confirmation'**
+  String get premium_pending;
+
+  /// No description provided for @premium_wallet.
+  ///
+  /// In en, this message translates to:
+  /// **'Fasting rewards'**
+  String get premium_wallet;
+
+  /// No description provided for @premium_reward_rules.
+  ///
+  /// In en, this message translates to:
+  /// **'Earn 10 coins per completed Ekadashi. Completing every Ekadashi in a supported year adds a bonus to reach 300 coins. Redeem 300 coins for six months of premium access. Rewards require no purchase and are self-reported. Coins have no cash value, cannot be bought or transferred, and cannot be refunded as money. Correcting or deleting completion reverses its coins.'**
+  String get premium_reward_rules;
+
+  /// No description provided for @premium_reward_consent.
+  ///
+  /// In en, this message translates to:
+  /// **'Activate cloud rewards? Only the occurrence identifier and completion status are uploaded. Notes and fasting details remain on your phone.'**
+  String get premium_reward_consent;
+
+  /// No description provided for @premium_reward_activate.
+  ///
+  /// In en, this message translates to:
+  /// **'Activate rewards'**
+  String get premium_reward_activate;
+
+  /// No description provided for @premium_reward_sync_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Rewards could not sync. Your private Vrat records are safe. Retry after connecting; conflicting edits may require support.'**
+  String get premium_reward_sync_failed;
+
+  /// No description provided for @premium_redeem.
+  ///
+  /// In en, this message translates to:
+  /// **'Redeem 300 coins for six months'**
+  String get premium_redeem;
+
+  /// No description provided for @premium_redemption_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Credit could not be redeemed. Manage any paused subscription, or retry later. Pending credit is reserved and is never charged twice.'**
+  String get premium_redemption_failed;
+
+  /// No description provided for @premium_delete_account.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete cloud account'**
+  String get premium_delete_account;
+
+  /// No description provided for @premium_delete_warning.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete cloud rewards and account data? Local Vrat history remains on your phone. This does not cancel Google Play subscriptions; manage them first.'**
+  String get premium_delete_warning;
+
+  /// No description provided for @premium_terms.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy and reward terms'**
+  String get premium_terms;
+
+  /// No description provided for @premium_coins.
+  ///
+  /// In en, this message translates to:
+  /// **'Coins'**
+  String get premium_coins;
+
+  /// No description provided for @premium_more_achievements.
+  ///
+  /// In en, this message translates to:
+  /// **'More achievements with Premium'**
+  String get premium_more_achievements;
+
+  /// No description provided for @premium_reward_example.
+  ///
+  /// In en, this message translates to:
+  /// **'Typical year: 24 × 10 = 240 coins, plus a 60-coin full-year bonus = 300 coins. In a 26-Ekadashi year: 260 + 40 = 300.'**
+  String get premium_reward_example;
 }
 
 class _AppLocalizationsDelegate

@@ -33,20 +33,19 @@ void main() {
       SharedPreferences.setMockInitialValues({});
     });
 
-    test('Tracker is disabled by default (Opt-In Requirement)', () async {
+    test('Tracker is available free by default', () async {
       final service = VratTrackerService();
       await service.init();
 
-      expect(service.trackerEnabled, isFalse);
-      expect(service.trackingEnabledAt, isNull);
+      expect(service.trackerEnabled, isTrue);
+      expect(service.trackingEnabledAt, isNotNull);
       expect(service.getAllRecords(), isEmpty);
     });
 
-    test('Enabling tracker sets trackingEnabledAt timestamp', () async {
+    test('Initialization sets trackingEnabledAt timestamp', () async {
       final service = VratTrackerService();
       await service.init();
 
-      await service.enableTracker();
 
       expect(service.trackerEnabled, isTrue);
       expect(service.trackingEnabledAt, isNotNull);
@@ -54,11 +53,11 @@ void main() {
       expect(service.getAllRecords(), isEmpty);
     });
 
-    test('Disabling tracker keeps existing history and earned achievements intact', () async {
+    test('Legacy opt-out keeps free tracking, history and earned achievements intact', () async {
       final service = VratTrackerService();
       final mockOccurrences = generateMockEkadashis();
       await service.init(occurrences: mockOccurrences);
-      await service.enableTracker(occurrences: mockOccurrences);
+
 
       // Record an observance
       await service.recordVrat(
@@ -74,9 +73,13 @@ void main() {
       final firstVratAch = service.userAchievements['first_vrat'];
       expect(firstVratAch?.isUnlocked, isTrue);
 
-      // Disable tracker
-      await service.disableTracker();
-      expect(service.trackerEnabled, isFalse);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('vrat_tracker_enabled', false);
+      final upgraded = VratTrackerService();
+      await upgraded.init(occurrences: mockOccurrences);
+      expect(upgraded.trackerEnabled, isTrue);
+      expect(upgraded.getAllRecords(), hasLength(1));
+      expect(upgraded.userAchievements['first_vrat']?.isUnlocked, isTrue);
 
       // Verify records and achievements are NOT deleted
       expect(service.getAllRecords().length, 1);
@@ -93,7 +96,7 @@ void main() {
       service = VratTrackerService();
       mockOccurrences = generateMockEkadashis();
       await service.init(occurrences: mockOccurrences);
-      await service.enableTracker(occurrences: mockOccurrences);
+
     });
 
     test('Records an observance with fasting method and optional note', () async {
