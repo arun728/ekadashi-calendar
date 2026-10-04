@@ -326,6 +326,25 @@ void main() {
       await sync();
       expect(google.min, DateTime(2027));
       expect(google.max, DateTime(2028));
+      expect(
+        (await repo.getForDay(
+          DateTime(2027, 1, 1),
+        )).map((entry) => entry.title),
+        contains('Google event before deletion'),
+        reason: 'The whole-year sync should persist the selected day event',
+      );
+      final calendarScroll = find
+          .descendant(
+            of: find.byType(CalendarScreen),
+            matching: find.byType(Scrollable),
+          )
+          .first;
+      await tester.scrollUntilVisible(
+        find.text('Google event before deletion'),
+        220,
+        scrollable: calendarScroll,
+      );
+      await frames(tester);
       expect(find.text('Google event before deletion'), findsOneWidget);
       await binding.takeScreenshot('v2_google_before_delete');
       google.events = [
