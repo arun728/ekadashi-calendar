@@ -156,6 +156,28 @@ class GooglePublisher:
             return normalize_lifetime(payload, account, self.clock())
         raise PurchaseRejected("purchase_product_mismatch")
 
+    def resolve_account(self, token, product):
+        # Account discovery is from Google, never the notification body. The
+        # resulting receipt is fully verified again before fulfillment.
+        path = quote(token, safe="")
+        if product == SUBSCRIPTION:
+            payload = self._request("GET", "/purchases/subscriptionsv2/tokens/" + path)
+            account = payload.get("externalAccountIdentifiers", {}).get(
+                "obfuscatedExternalAccountId"
+            )
+        elif product == LIFETIME:
+            payload = self._request("GET", "/purchases/products/" + LIFETIME + "/tokens/" + path)
+            account = payload.get("obfuscatedExternalAccountId")
+        else:
+            raise PurchaseRejected("purchase_product_mismatch")
+        if (
+            not isinstance(account, str)
+            or len(account) != 64
+            or any(c not in "0123456789abcdef" for c in account)
+        ):
+            raise PurchaseRejected("purchase_account_mismatch")
+        return account
+
     def acknowledge(self, token, product):
         kind = "subscriptions" if product == SUBSCRIPTION else "products"
         self._request(

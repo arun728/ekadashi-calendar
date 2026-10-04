@@ -104,7 +104,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(PremiumScreen), findsOneWidget);
       expect(google.min, isNull);
-      await tester.pageBack();
+      await tester.tap(find.byKey(const Key('premium_close')));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('add_calendar_entry')));
       await tester.pumpAndSettle();

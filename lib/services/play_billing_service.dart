@@ -13,6 +13,11 @@ class PremiumPlan {
 
 class PlayBillingService extends ChangeNotifier {
   PlayBillingService(this.premium, {InAppPurchase? store}) : _store = store;
+  bool _disposed = false;
+  void _notify() {
+    if (!_disposed) notifyListeners();
+  }
+
   static const subscription = 'ekadashi_premium';
   static const lifetime = 'ekadashi_premium_lifetime';
   final PremiumService premium;
@@ -24,10 +29,11 @@ class PlayBillingService extends ChangeNotifier {
   bool pending = false;
   Future<void>? _processing;
   Future<void> initialize() async {
+    if (_disposed) return;
     if (premium.backend is PremiumHttpBackend &&
         !(premium.backend as PremiumHttpBackend).configured) {
       error = 'premium_unavailable';
-      notifyListeners();
+      _notify();
       return;
     }
     _subscription ??= store.purchaseStream.listen(
@@ -36,17 +42,18 @@ class PlayBillingService extends ChangeNotifier {
             .then((_) => _process(values))
             .catchError((_) {
               error = 'premium_verification_failed';
-              notifyListeners();
+              _notify();
             });
       },
       onError: (_) {
         error = 'premium_unavailable';
-        notifyListeners();
+        _notify();
       },
     );
     try {
       if (!await store.isAvailable()) throw StateError('Store unavailable');
       final result = await store.queryProductDetails({subscription, lifetime});
+      if (_disposed) return;
       if (result.error != null) throw StateError('Store unavailable');
       plans.clear();
       for (final product in result.productDetails) {
@@ -75,7 +82,7 @@ class PlayBillingService extends ChangeNotifier {
     } catch (_) {
       error = 'premium_unavailable';
     }
-    notifyListeners();
+    _notify();
   }
 
   Future<void> _process(List<PurchaseDetails> values) async {
@@ -107,7 +114,7 @@ class PlayBillingService extends ChangeNotifier {
           error = verified ? null : 'premium_verification_failed';
       }
     }
-    notifyListeners();
+    _notify();
   }
 
   Future<void> buy(PremiumPlan plan) async {
@@ -139,7 +146,7 @@ class PlayBillingService extends ChangeNotifier {
     } catch (_) {
       error = 'premium_unavailable';
     }
-    notifyListeners();
+    _notify();
   }
 
   Future<void> restore() async {
@@ -150,12 +157,13 @@ class PlayBillingService extends ChangeNotifier {
       }
     } catch (_) {
       error = 'premium_unavailable';
-      notifyListeners();
+      _notify();
     }
   }
 
   @override
   void dispose() {
+    _disposed = true;
     _subscription?.cancel();
     super.dispose();
   }

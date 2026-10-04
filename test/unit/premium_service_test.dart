@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ekadashi_calendar/services/premium_service.dart';
 
@@ -27,6 +28,13 @@ class Backend implements PremiumBackend {
   Future<Map<String, dynamic>> redeem(String key) async => {};
   @override
   Future<void> deleteAccount() async {}
+}
+
+class DelayedBackend extends Backend {
+  final response = Completer<Map<String, dynamic>>();
+  @override
+  Future<Map<String, dynamic>> session({bool interactive = true}) =>
+      response.future;
 }
 
 void main() {
@@ -78,6 +86,19 @@ void main() {
       await s.connect();
       expect(s.isPremium, isFalse);
       s.dispose();
+    },
+  );
+  test(
+    'closing premium during verification does not notify or grant after disposal',
+    () async {
+      final backend = DelayedBackend();
+      final service = PremiumService(backend: backend);
+      final request = service.connect();
+      service.dispose();
+      backend.response.complete({'accountId': 'account', ...backend.result});
+      await request;
+      expect(service.isPremium, isFalse);
+      expect(service.accountId, isNull);
     },
   );
 }

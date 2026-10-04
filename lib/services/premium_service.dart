@@ -20,6 +20,11 @@ class PremiumService extends ChangeNotifier {
     _watch.start();
     _elapsed = elapsedMillis ?? (() => _watch.elapsedMilliseconds);
   }
+  bool _disposed = false;
+  void _notify() {
+    if (!_disposed) notifyListeners();
+  }
+
   final PremiumBackend backend;
   final bool startLeaseTimer;
   final Stopwatch _watch = Stopwatch();
@@ -50,7 +55,7 @@ class PremiumService extends ChangeNotifier {
       _expires = _elapsed() + duration;
       if (duration > 0 && startLeaseTimer) {
         _expiryTimer = Timer(Duration(milliseconds: duration), () {
-          notifyListeners();
+          _notify();
           if (connected) connect(interactive: false);
         });
       }
@@ -58,12 +63,13 @@ class PremiumService extends ChangeNotifier {
   }
 
   Future<void> connect({bool interactive = true}) async {
-    if (busy) return;
+    if (busy || _disposed) return;
     busy = true;
     error = null;
-    notifyListeners();
+    _notify();
     try {
       final value = await backend.session(interactive: interactive);
+      if (_disposed) return;
       accountId = value['accountId'] as String;
       _accept(value);
     } catch (_) {
@@ -71,38 +77,40 @@ class PremiumService extends ChangeNotifier {
       error = 'premium_unavailable';
     }
     busy = false;
-    notifyListeners();
+    _notify();
   }
 
   Future<bool> verify(String token, String product) async {
     try {
       final value = await backend.verify(token, product);
+      if (_disposed) return value['acknowledged'] == true;
       _accept(value);
       error = null;
-      notifyListeners();
+      _notify();
       return value['acknowledged'] == true;
     } catch (_) {
       _expires = 0;
       error = 'premium_verification_failed';
-      notifyListeners();
+      _notify();
       return false;
     }
   }
 
   Future<void> redeem(String key) async {
-    if (busy) return;
+    if (busy || _disposed) return;
     busy = true;
     error = null;
-    notifyListeners();
+    _notify();
     try {
       final response = await backend.redeem(key);
+      if (_disposed) return;
       redemptionState = response['state'] as String?;
       _accept(response);
     } catch (_) {
       error = 'premium_redemption_failed';
     }
     busy = false;
-    notifyListeners();
+    _notify();
   }
 
   Future<void> deleteAccount() async {
@@ -116,11 +124,13 @@ class PremiumService extends ChangeNotifier {
     autoRenew = false;
     lifetime = false;
     _expiryTimer?.cancel();
-    notifyListeners();
+    _notify();
   }
 
   @override
   void dispose() {
+    _disposed = true;
+    _expires = 0;
     _expiryTimer?.cancel();
     _watch.stop();
     super.dispose();

@@ -16,7 +16,7 @@ from sqlalchemy import create_engine, delete, select, update
 
 from . import database as db
 from .fulfillment import BillingService, token_hash
-from .play import GooglePublisher, PublisherUnavailable, PurchaseRejected
+from .play import LIFETIME, SUBSCRIPTION, GooglePublisher, PublisherUnavailable, PurchaseRejected
 from .rewards import Catalog, RewardConflict, RewardsService, lock_account
 
 
@@ -165,6 +165,16 @@ def create_app(billing, rewards, authenticate, authenticate_push):
                     ).scalar_one_or_none()
                 if account:
                     run(lambda: billing.refresh(account))
+                else:
+                    product = (
+                        SUBSCRIPTION
+                        if "subscriptionNotification" in payload
+                        else LIFETIME
+                        if "oneTimeProductNotification" in payload
+                        else None
+                    )
+                    if product:
+                        run(lambda: billing.discover(note["purchaseToken"], product))
             elif "testNotification" not in payload:
                 raise ValueError()
         except (KeyError, ValueError, TypeError):

@@ -29,9 +29,15 @@ void main() {
     }
   });
   for (final locale in ['en', 'ta', 'hi', 'te']) {
-    for (final scale in [1.0, 2.0]) {
+    for (final variant in [
+      (1.0, Brightness.dark),
+      (2.0, Brightness.dark),
+      (1.0, Brightness.light),
+      (2.0, Brightness.light),
+    ]) {
+      final (scale, brightness) = variant;
       testWidgets(
-        '$locale transparent plans, free exit and narrow ${scale}x layout',
+        '$locale ${brightness.name} transparent plans, free exit and narrow ${scale}x layout',
         (tester) async {
           SharedPreferences.setMockInitialValues({});
           final lang = LanguageService();
@@ -55,7 +61,9 @@ void main() {
                 ChangeNotifierProvider.value(value: premium),
               ],
               child: MaterialApp(
-                theme: AppTheme.darkTheme,
+                theme: brightness == Brightness.dark
+                    ? AppTheme.darkTheme
+                    : AppTheme.lightTheme,
                 home: RepaintBoundary(
                   key: key,
                   child: PremiumScreen(billingOverride: store),
@@ -78,7 +86,7 @@ void main() {
               final dir = Directory('build/ui-screenshots/offscreen/premium');
               await dir.create(recursive: true);
               await File(
-                '${dir.path}/${locale}_${scale}_$suffix.png',
+                '${dir.path}/${locale}_${scale}_${brightness.name}_$suffix.png',
               ).writeAsBytes(bytes.buffer.asUint8List());
               image.dispose();
             });

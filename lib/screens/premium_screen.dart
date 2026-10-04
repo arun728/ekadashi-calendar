@@ -90,6 +90,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
     return await showDialog<bool>(
           context: context,
           builder: (ctx) => AlertDialog(
+            scrollable: true,
             content: Text(lang.translate(key)),
             actions: [
               TextButton(

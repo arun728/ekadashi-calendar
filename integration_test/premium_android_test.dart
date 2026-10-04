@@ -35,7 +35,7 @@ void main() {
       await binding.convertFlutterSurfaceToImage();
       await tester.pump();
       await binding.takeScreenshot('premium_real_unconfigured_free_gate');
-      await tester.pageBack();
+      await tester.tap(find.byKey(const Key('premium_close')));
       await tester.pump(const Duration(seconds: 1));
       final context = tester.element(find.byType(app.MainScreen));
       final lang = context.read<LanguageService>();
@@ -71,7 +71,7 @@ void main() {
         await tester.pump();
         await binding.takeScreenshot('premium_fixture_${locale}_rewards');
         expect(tester.takeException(), isNull);
-        await tester.pageBack();
+        await tester.tap(find.byKey(const Key('premium_close')));
         await tester.pump(const Duration(milliseconds: 500));
         fixture.dispose();
       }

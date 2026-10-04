@@ -1,3 +1,5 @@
+import 'package:in_app_purchase_android/billing_client_wrappers.dart';
+import 'package:in_app_purchase_android/in_app_purchase_android.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -9,6 +11,7 @@ import '../support/premium_fixture.dart';
 
 class Store extends InAppPurchasePlatform {
   final updates = StreamController<List<PurchaseDetails>>.broadcast();
+  List<ProductDetails>? catalog;
   int completions = 0, bought = 0;
   PurchaseParam? param;
   @override
@@ -19,16 +22,18 @@ class Store extends InAppPurchasePlatform {
   Future<ProductDetailsResponse> queryProductDetails(
     Set<String> identifiers,
   ) async => ProductDetailsResponse(
-    productDetails: [
-      ProductDetails(
-        id: PlayBillingService.lifetime,
-        title: 'Lifetime',
-        description: 'Lifetime',
-        price: '₹999',
-        rawPrice: 999,
-        currencyCode: 'INR',
-      ),
-    ],
+    productDetails:
+        catalog ??
+        [
+          ProductDetails(
+            id: PlayBillingService.lifetime,
+            title: 'Lifetime',
+            description: 'Lifetime',
+            price: '₹999',
+            rawPrice: 999,
+            currencyCode: 'INR',
+          ),
+        ],
     notFoundIDs: [],
   );
   @override
@@ -119,6 +124,61 @@ void main() {
       premium.autoRenew = true;
       await billing.buy(billing.plans.single);
       expect(store.bought, 1);
+      billing.dispose();
+      premium.dispose();
+      await store.updates.close();
+    },
+  );
+  test(
+    'monthly/yearly select base-plan offer tokens and omit introductory offers',
+    () async {
+      final store = Store();
+      InAppPurchasePlatform.instance = store;
+      final offers = [
+        for (final pair in [
+          ('yearly', null, 'year-token'),
+          ('monthly', 'intro', 'intro-token'),
+          ('monthly', null, 'month-token'),
+        ])
+          SubscriptionOfferDetailsWrapper(
+            basePlanId: pair.$1,
+            offerId: pair.$2,
+            offerIdToken: pair.$3,
+            offerTags: const [],
+            pricingPhases: const [
+              PricingPhaseWrapper(
+                billingCycleCount: 0,
+                billingPeriod: 'P1M',
+                formattedPrice: '₹99',
+                priceAmountMicros: 99000000,
+                priceCurrencyCode: 'INR',
+                recurrenceMode: RecurrenceMode.infiniteRecurring,
+              ),
+            ],
+          ),
+      ];
+      store.catalog = GooglePlayProductDetails.fromProductDetails(
+        ProductDetailsWrapper(
+          description: 'Premium',
+          name: 'Premium',
+          productId: PlayBillingService.subscription,
+          productType: ProductType.subs,
+          title: 'Premium',
+          subscriptionOfferDetails: offers,
+        ),
+      );
+      final premium = PremiumService(backend: PremiumFixture());
+      await premium.connect();
+      final billing = PlayBillingService(premium);
+      await billing.initialize();
+      expect(billing.plans.map((p) => p.id), ['monthly', 'yearly']);
+      await billing.buy(billing.plans.first);
+      expect(
+        (store.param as GooglePlayPurchaseParam).offerToken,
+        'month-token',
+      );
+      await billing.buy(billing.plans.last);
+      expect((store.param as GooglePlayPurchaseParam).offerToken, 'year-token');
       billing.dispose();
       premium.dispose();
       await store.updates.close();

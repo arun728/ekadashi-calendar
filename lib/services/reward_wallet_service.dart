@@ -8,6 +8,11 @@ import 'premium_service.dart';
 /// A new device never interprets absent local history as cloud deletion.
 class RewardWalletService extends ChangeNotifier {
   RewardWalletService(this.backend);
+  bool _disposed = false;
+  void _notify() {
+    if (!_disposed) notifyListeners();
+  }
+
   final PremiumBackend backend;
   int coins = 0;
   String? error;
@@ -43,7 +48,7 @@ class RewardWalletService extends ChangeNotifier {
     final p = await SharedPreferences.getInstance();
     await p.remove(_key(account));
     coins = 0;
-    notifyListeners();
+    _notify();
   }
 
   Future<void> refresh() async {
@@ -53,7 +58,7 @@ class RewardWalletService extends ChangeNotifier {
     } catch (_) {
       error = 'premium_unavailable';
     }
-    notifyListeners();
+    _notify();
   }
 
   Future<void> sync(
@@ -65,7 +70,7 @@ class RewardWalletService extends ChangeNotifier {
     final next = _tail.then((_) => _sync(account, copy, context));
     _tail = next.catchError((_) {
       error = 'premium_reward_sync_failed';
-      notifyListeners();
+      _notify();
     });
     return _tail;
   }
@@ -79,7 +84,7 @@ class RewardWalletService extends ChangeNotifier {
     var value = _read(p, account);
     if (value['consent'] != true) return;
     busy = true;
-    notifyListeners();
+    _notify();
     try {
       // Drain exact persisted mutations first, including after an interrupted
       // successful server call. Do not replace mutation keys after a timeout.
@@ -124,6 +129,12 @@ class RewardWalletService extends ChangeNotifier {
       error = 'premium_reward_sync_failed';
     }
     busy = false;
-    notifyListeners();
+    _notify();
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
   }
 }

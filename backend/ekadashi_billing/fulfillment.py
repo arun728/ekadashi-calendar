@@ -106,6 +106,25 @@ class BillingService:
                 acknowledged = False
         return {**self.entitlement(account), "acknowledged": acknowledged}
 
+    def discover(self, token, product):
+        if not token or len(token) > 4096:
+            raise PurchaseRejected("invalid_purchase")
+        account = self.publisher.resolve_account(token, product)
+        with self.engine.connect() as c:
+            existing = (
+                c.execute(
+                    select(db.accounts).where(
+                        db.accounts.c.id == account, db.accounts.c.deleted_at.is_(None)
+                    )
+                )
+                .mappings()
+                .first()
+            )
+        if existing:
+            return self.verify(account, token, product)
+        # A notification cannot create a new app account or bypass sign-in.
+        return None
+
     def refresh(self, account):
         with self.engine.connect() as c:
             rows = (

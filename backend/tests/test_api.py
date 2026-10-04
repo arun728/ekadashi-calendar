@@ -1,3 +1,6 @@
+import base64
+import json
+
 import pytest
 from cryptography.fernet import Fernet
 from fastapi.testclient import TestClient
@@ -8,6 +11,11 @@ from ekadashi_billing.play import LIFETIME, VerifiedPurchase
 
 
 class Publisher:
+    package = "com.applausestudios.ekadashi_calendar"
+
+    def resolve_account(self, token, product):
+        return "account"
+
     def verify(self, token, product, account):
         return VerifiedPurchase(LIFETIME, "PURCHASED", True, lifetime=True)
 
@@ -82,6 +90,23 @@ def test_rtdn_cannot_trust_notification_for_grant(client):
         ).status_code
         == 422
     )
+
+
+def test_rtdn_discovers_verified_receipt_when_client_verification_was_interrupted(client):
+    # Account exists from authenticated checkout preparation. Pub/Sub is signed;
+    # entitlement must come from fresh Publisher verification, never this body.
+    assert client.get("/v1/session", headers=HEADERS).status_code == 200
+    payload = {
+        "packageName": "com.applausestudios.ekadashi_calendar",
+        "oneTimeProductNotification": {"sku": LIFETIME, "purchaseToken": "new-from-play"},
+    }
+    result = client.post(
+        "/v1/play/rtdn",
+        headers={"Authorization": "Bearer signed-pubsub-token"},
+        json={"message": {"data": base64.b64encode(json.dumps(payload).encode()).decode()}},
+    )
+    assert result.status_code == 200
+    assert client.get("/v1/session", headers=HEADERS).json()["premium"] is True
 
 
 def test_delete_removes_cloud_history_but_does_not_recreate_rewards(client):
