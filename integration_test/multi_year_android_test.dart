@@ -95,6 +95,10 @@ void main() {
         expect(find.byKey(Key('glass_tab_$i')).hitTestable(), findsOneWidget);
       }
       await binding.takeScreenshot('v2_home_2026');
+      await tester.tap(find.byKey(const Key('glass_tab_3')));
+      await frames(tester);
+      expect(find.byKey(const Key('panchang_daily_overview')), findsOneWidget);
+      await binding.takeScreenshot('v2_panchang_free');
       final lang = tester
           .element(find.byType(MaterialApp).first)
           .read<LanguageService>();
@@ -182,6 +186,8 @@ void main() {
         await frames(tester);
         expect(find.byType(GlobalSearchScreen).hitTestable(), findsOneWidget);
         await binding.takeScreenshot('v2_search_$code');
+        await tester.tap(find.byIcon(Icons.arrow_back).first);
+        await frames(tester);
         await tester.tap(find.byIcon(Icons.settings));
         await frames(tester);
         await binding.takeScreenshot('glass_settings_dark_$code');
@@ -196,9 +202,9 @@ void main() {
         await tester.tap(find.byIcon(Icons.calendar_month));
         await frames(tester);
         await binding.takeScreenshot('glass_calendar_$code');
-        await tester.tap(find.byIcon(Icons.search));
-        await frames(tester);
       }
+      await tester.tap(find.byIcon(Icons.search));
+      await frames(tester);
       await lang.changeLanguage('en');
       await frames(tester, count: 10);
       // IntegrationTest defaults to real IME clients. Register controlled input
