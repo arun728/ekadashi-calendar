@@ -23,11 +23,17 @@ class Backend implements PremiumBackend {
     'observances': {},
   };
   @override
-  Future<Map<String, dynamic>> record(Map<String, dynamic> body) async => {};
+  Future<Map<String, dynamic>> record(
+    Map<String, dynamic> body, {
+    String? expectedAccount,
+  }) async => {};
   @override
-  Future<Map<String, dynamic>> redeem(String key) async => {};
+  Future<Map<String, dynamic>> redeem(
+    String key, {
+    String? expectedAccount,
+  }) async => {};
   @override
-  Future<void> deleteAccount() async {}
+  Future<void> deleteAccount({String? expectedAccount}) async {}
 }
 
 class DelayedBackend extends Backend {
@@ -35,6 +41,20 @@ class DelayedBackend extends Backend {
   @override
   Future<Map<String, dynamic>> session({bool interactive = true}) =>
       response.future;
+}
+
+class SwitchBackend extends Backend {
+  final verification = Completer<Map<String, dynamic>>();
+  @override
+  Future<Map<String, dynamic>> verify(String token, String product) =>
+      verification.future;
+}
+
+class DelayedRedeemBackend extends Backend {
+  final redemption = Completer<Map<String, dynamic>>();
+  @override
+  Future<Map<String, dynamic>> redeem(String key, {String? expectedAccount}) =>
+      redemption.future;
 }
 
 void main() {
@@ -99,6 +119,51 @@ void main() {
       await request;
       expect(service.isPremium, isFalse);
       expect(service.accountId, isNull);
+    },
+  );
+  test(
+    'old-account verification cannot grant premium after an account switch',
+    () async {
+      final backend = SwitchBackend();
+      backend.result['premium'] = false;
+      final service = PremiumService(backend: backend);
+      await service.connect();
+      final old = service.verify('old-token', 'ekadashi_premium');
+      service.reset();
+      backend.result['accountId'] = 'new-account';
+      await service.connect();
+      backend.verification.complete({
+        'premium': true,
+        'acknowledged': true,
+        'serverTime': '2026-10-04T00:00:00Z',
+        'validUntil': '2027-10-04T00:00:00Z',
+      });
+      await old;
+      expect(service.accountId, 'new-account');
+      expect(service.isPremium, isFalse);
+      service.dispose();
+    },
+  );
+  test(
+    'old-account redemption response cannot grant after account switch',
+    () async {
+      final backend = DelayedRedeemBackend();
+      backend.result['premium'] = false;
+      final service = PremiumService(backend: backend);
+      await service.connect();
+      final old = service.redeem('old-redemption');
+      service.reset();
+      backend.result['accountId'] = 'new-account';
+      await service.connect();
+      backend.redemption.complete({
+        'state': 'completed',
+        'premium': true,
+        'serverTime': '2026-10-04T00:00:00Z',
+        'validUntil': '2027-10-04T00:00:00Z',
+      });
+      await old;
+      expect(service.isPremium, isFalse);
+      service.dispose();
     },
   );
 }

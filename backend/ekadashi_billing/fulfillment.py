@@ -49,7 +49,7 @@ class BillingService:
         key = token_hash(token)
         try:
             with self.engine.begin() as c:
-                lock_account(c, account)
+                lock_account(c, account, allow_deleted=True)
                 old = (
                     c.execute(
                         select(db.receipts).where(db.receipts.c.token_hash == key).with_for_update()
@@ -157,7 +157,7 @@ class BillingService:
     def entitlement(self, account):
         now = self.clock()
         with self.engine.begin() as c:
-            lock_account(c, account)
+            lock_account(c, account, allow_deleted=True)
             receipts = (
                 c.execute(select(db.receipts).where(db.receipts.c.account_id == account))
                 .mappings()

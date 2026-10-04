@@ -28,7 +28,7 @@ the production package. Notifications only trigger fresh Play API verification.
 The API does not accept a client-selected account, entitlement flag or price.
 All user routes require a Google ID token for the configured web client audience.
 
-Rewards are private/off by default. Only occurrence UID and observed status
+Rewards are private/off by default. Only occurrence UID, observed status, selected calendar region and sync metadata
 leave the device after consent. Coins are transactional, account-bound and
 non-cash: 10 per completed past occurrence, full-year bonus to 300 (24→240+60;
 26→260+40), 300→six calendar months. Corrections reverse earnings. Previously
@@ -59,3 +59,8 @@ Before release, exercise a Play internal track with license testers: each base
 plan/lifetime, cancel/pending/restore, renewal/grace/hold/refund/revoke, account
 switching, RTDN, acknowledgement retry and full bonus redemption. Fake emulator
 screens prove layout and app gates, not actual purchases or Google approval.
+
+A verified Play purchase can be restored after deleting the cloud rewards account;
+it never recreates old reward/history data or removes the anti-replay block.
+Cloud rewards re-enrollment waits for the bounded 180-day deletion marker purge.
+Newly restored, necessary billing receipts remain valid after that purge.

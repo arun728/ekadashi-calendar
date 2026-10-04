@@ -66,7 +66,7 @@ class Catalog:
         return self.dates[uid][context] <= now.astimezone(ZoneInfo(CONTEXTS[context])).date()
 
 
-def lock_account(conn, account):
+def lock_account(conn, account, *, allow_deleted=False):
     # Creation and every subsequent mutation serialize on one account row.
     dialect_insert = pg_insert if conn.dialect.name == "postgresql" else sqlite_insert
     conn.execute(
@@ -79,7 +79,7 @@ def lock_account(conn, account):
         .mappings()
         .one()
     )
-    if row["deleted_at"] is not None:
+    if row["deleted_at"] is not None and not allow_deleted:
         raise RewardConflict("account_deleted")
     return row
 

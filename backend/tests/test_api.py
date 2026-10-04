@@ -80,6 +80,16 @@ def test_end_to_end_verify_and_wallet(client):
     assert client.get("/v1/wallet", headers=HEADERS).json()["coins"] == 10
 
 
+def test_other_account_queue_cannot_upload_after_identity_switch(client):
+    result = client.post(
+        "/v1/observances",
+        headers={**HEADERS, "X-Expected-App-Account": "previous-account"},
+        json={"uid": "ekadashi:2025:01", "status": "observed", "mutationKey": "private-previous"},
+    )
+    assert result.status_code == 409
+    assert client.get("/v1/wallet", headers=HEADERS).json()["coins"] == 0
+
+
 def test_rtdn_cannot_trust_notification_for_grant(client):
     assert client.post("/v1/play/rtdn", json={"message": {"data": "evil"}}).status_code == 401
     assert (
@@ -121,4 +131,20 @@ def test_delete_removes_cloud_history_but_does_not_recreate_rewards(client):
         },
     )
     assert client.delete("/v1/account", headers=HEADERS).status_code == 204
+    assert client.get("/v1/wallet", headers=HEADERS).status_code == 409
+
+
+def test_lifetime_restore_after_cloud_deletion_preserves_purchase_without_rewards_replay(client):
+    client.post(
+        "/v1/purchases/verify",
+        headers=HEADERS,
+        json={"productId": LIFETIME, "purchaseToken": "permanent-purchase"},
+    )
+    assert client.delete("/v1/account", headers=HEADERS).status_code == 204
+    restored = client.post(
+        "/v1/purchases/verify",
+        headers=HEADERS,
+        json={"productId": LIFETIME, "purchaseToken": "permanent-purchase"},
+    )
+    assert restored.status_code == 200 and restored.json()["premium"] is True
     assert client.get("/v1/wallet", headers=HEADERS).status_code == 409

@@ -207,6 +207,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
                               !premium.connected ||
                                   premium.busy ||
                                   billing.pending ||
+                                  premium.isPremium ||
                                   premium.autoRenew ||
                                   premium.lifetime
                               ? null

@@ -5,9 +5,12 @@ abstract interface class PremiumBackend {
   Future<Map<String, dynamic>> session({bool interactive = true});
   Future<Map<String, dynamic>> verify(String token, String product);
   Future<Map<String, dynamic>> wallet();
-  Future<Map<String, dynamic>> record(Map<String, dynamic> body);
-  Future<Map<String, dynamic>> redeem(String key);
-  Future<void> deleteAccount();
+  Future<Map<String, dynamic>> record(
+    Map<String, dynamic> body, {
+    String? expectedAccount,
+  });
+  Future<Map<String, dynamic>> redeem(String key, {String? expectedAccount});
+  Future<void> deleteAccount({String? expectedAccount});
 }
 
 /// Paid access is a short verified server lease, never a persisted local flag.
@@ -31,6 +34,7 @@ class PremiumService extends ChangeNotifier {
   late final int Function() _elapsed;
   Timer? _expiryTimer;
   int _expires = 0;
+  int _accountEpoch = 0;
   String? accountId;
   String? error;
   bool busy = false;
@@ -64,15 +68,19 @@ class PremiumService extends ChangeNotifier {
 
   Future<void> connect({bool interactive = true}) async {
     if (busy || _disposed) return;
+    final epoch = _accountEpoch;
     busy = true;
     error = null;
     _notify();
     try {
       final value = await backend.session(interactive: interactive);
-      if (_disposed) return;
-      accountId = value['accountId'] as String;
+      if (_disposed || epoch != _accountEpoch) return;
+      final nextAccount = value['accountId'] as String;
       _accept(value);
+      if (nextAccount != accountId) _accountEpoch++;
+      accountId = nextAccount;
     } catch (_) {
+      if (_disposed || epoch != _accountEpoch) return;
       _expires = 0;
       error = 'premium_unavailable';
     }
@@ -81,14 +89,18 @@ class PremiumService extends ChangeNotifier {
   }
 
   Future<bool> verify(String token, String product) async {
+    final epoch = _accountEpoch;
     try {
       final value = await backend.verify(token, product);
-      if (_disposed) return value['acknowledged'] == true;
+      if (_disposed || epoch != _accountEpoch) {
+        return value['acknowledged'] == true;
+      }
       _accept(value);
       error = null;
       _notify();
       return value['acknowledged'] == true;
     } catch (_) {
+      if (_disposed || epoch != _accountEpoch) return false;
       _expires = 0;
       error = 'premium_verification_failed';
       _notify();
@@ -98,15 +110,18 @@ class PremiumService extends ChangeNotifier {
 
   Future<void> redeem(String key) async {
     if (busy || _disposed) return;
+    final epoch = _accountEpoch;
+    final account = accountId;
     busy = true;
     error = null;
     _notify();
     try {
-      final response = await backend.redeem(key);
-      if (_disposed) return;
+      final response = await backend.redeem(key, expectedAccount: account);
+      if (_disposed || epoch != _accountEpoch) return;
       redemptionState = response['state'] as String?;
       _accept(response);
     } catch (_) {
+      if (_disposed || epoch != _accountEpoch) return;
       error = 'premium_redemption_failed';
     }
     busy = false;
@@ -114,11 +129,14 @@ class PremiumService extends ChangeNotifier {
   }
 
   Future<void> deleteAccount() async {
-    await backend.deleteAccount();
-    reset();
+    final epoch = _accountEpoch;
+    await backend.deleteAccount(expectedAccount: accountId);
+    if (epoch == _accountEpoch && !_disposed) reset();
   }
 
   void reset() {
+    _accountEpoch++;
+    busy = false;
     accountId = null;
     _expires = 0;
     autoRenew = false;

@@ -900,7 +900,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premium_reward_consent =>
-      'Activate cloud rewards? Only the occurrence identifier and completion status are uploaded. Notes and fasting details remain on your phone.';
+      'Activate cloud rewards? Completion identifiers, status and your selected calendar region are uploaded with sync metadata. Notes and fasting details remain on your phone.';
 
   @override
   String get premium_reward_activate => 'Activate rewards';

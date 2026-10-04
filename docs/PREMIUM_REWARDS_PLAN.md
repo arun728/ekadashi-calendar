@@ -169,7 +169,7 @@ upgrade; never claw them back on downgrade. Continue progress calculation free.
 ## Account privacy and deletion
 
 Vrat remains local/private by default. Wallet activation explicitly signs in and
-consents to sending only stable occurrence UID, observed status and mutation
+consents to sending stable occurrence UID, observed status, calendar variant and mutation
 identity, not notes/method/tradition/location text. Account deletion must be
 available in-app and on a public web resource; deleting cloud rewards must not
 silently erase local private Vrat history. Explain that deleting an account does

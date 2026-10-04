@@ -6,7 +6,7 @@ from test_fulfillment import Publisher
 
 from ekadashi_billing import database as db
 from ekadashi_billing.fulfillment import BillingService
-from ekadashi_billing.play import SUBSCRIPTION
+from ekadashi_billing.play import LIFETIME, SUBSCRIPTION, VerifiedPurchase
 from ekadashi_billing.worker import run_once
 
 
@@ -41,3 +41,20 @@ def test_deleted_receipt_retention_is_bounded_and_skips_refresh(engine, clock):
     with engine.connect() as c:
         assert list(c.execute(select(db.accounts.c.id)).scalars()) == ["recent"]
         assert list(c.execute(select(db.receipts.c.account_id)).scalars()) == ["recent"]
+
+
+def test_restore_after_cloud_delete_is_retained_after_old_marker_purge(engine, clock):
+    publisher = Publisher(clock)
+    publisher.value = VerifiedPurchase(LIFETIME, "PURCHASED", True, lifetime=True)
+    billing = BillingService(engine, publisher, clock, Fernet.generate_key())
+    billing.verify("account", "lifetime", LIFETIME)
+    with engine.begin() as c:
+        c.execute(
+            update(db.accounts)
+            .where(db.accounts.c.id == "account")
+            .values(deleted_at=clock() - timedelta(days=181))
+        )
+    assert run_once(billing) == 0
+    assert billing.entitlement("account")["premium"] is True
+    with engine.connect() as c:
+        assert c.execute(select(db.accounts.c.deleted_at)).scalar_one() is None

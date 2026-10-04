@@ -24,11 +24,17 @@ class PremiumFixture implements PremiumBackend {
     'observances': {},
   };
   @override
-  Future<Map<String, dynamic>> record(Map<String, dynamic> body) async => {};
+  Future<Map<String, dynamic>> record(
+    Map<String, dynamic> body, {
+    String? expectedAccount,
+  }) async => {};
   @override
-  Future<Map<String, dynamic>> redeem(String key) async => session();
+  Future<Map<String, dynamic>> redeem(
+    String key, {
+    String? expectedAccount,
+  }) async => session();
   @override
-  Future<void> deleteAccount() async {}
+  Future<void> deleteAccount({String? expectedAccount}) async {}
 }
 
 class FixtureBilling extends PlayBillingService {

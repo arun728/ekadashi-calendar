@@ -114,7 +114,9 @@ void main() {
     () async {
       final store = Store();
       InAppPurchasePlatform.instance = store;
-      final premium = PremiumService(backend: PremiumFixture());
+      final premium = PremiumService(
+        backend: PremiumFixture()..premium = false,
+      );
       await premium.connect();
       final billing = PlayBillingService(premium);
       await billing.initialize();
@@ -167,7 +169,9 @@ void main() {
           subscriptionOfferDetails: offers,
         ),
       );
-      final premium = PremiumService(backend: PremiumFixture());
+      final premium = PremiumService(
+        backend: PremiumFixture()..premium = false,
+      );
       await premium.connect();
       final billing = PlayBillingService(premium);
       await billing.initialize();
@@ -179,6 +183,24 @@ void main() {
       );
       await billing.buy(billing.plans.last);
       expect((store.param as GooglePlayPurchaseParam).offerToken, 'year-token');
+      billing.dispose();
+      premium.dispose();
+      await store.updates.close();
+    },
+  );
+  test(
+    'active canceled or earned premium never opens a duplicate checkout',
+    () async {
+      final store = Store();
+      InAppPurchasePlatform.instance = store;
+      final premium = PremiumService(backend: PremiumFixture());
+      await premium.connect();
+      expect(premium.isPremium, isTrue);
+      expect(premium.autoRenew, isFalse);
+      final billing = PlayBillingService(premium);
+      await billing.initialize();
+      await billing.buy(billing.plans.single);
+      expect(store.bought, 0);
       billing.dispose();
       premium.dispose();
       await store.updates.close();

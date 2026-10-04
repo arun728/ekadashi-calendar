@@ -4,11 +4,19 @@ import 'google_identity.dart';
 import 'premium_service.dart';
 
 class PremiumHttpBackend implements PremiumBackend {
-  PremiumHttpBackend({http.Client? client, String? baseUrl})
-    : _client = client ?? http.Client(),
-      base = baseUrl ?? const String.fromEnvironment('PREMIUM_API_URL');
+  PremiumHttpBackend({
+    http.Client? client,
+    String? baseUrl,
+    Future<String?> Function(bool interactive)? identityToken,
+  }) : _client = client ?? http.Client(),
+       base = baseUrl ?? const String.fromEnvironment('PREMIUM_API_URL'),
+       _identityToken = identityToken ?? _googleToken,
+       _identityConfigured =
+           identityToken != null || AppGoogleIdentity.serverClientId.isNotEmpty;
   final http.Client _client;
   final String base;
+  final Future<String?> Function(bool interactive) _identityToken;
+  final bool _identityConfigured;
   static const privacyUrl = String.fromEnvironment('PREMIUM_PRIVACY_URL');
   static const termsUrl = String.fromEnvironment('PREMIUM_TERMS_URL');
   static const deletionUrl = String.fromEnvironment('PREMIUM_DELETION_URL');
@@ -17,38 +25,39 @@ class PremiumHttpBackend implements PremiumBackend {
       (Uri.tryParse(value)?.host.isNotEmpty ?? false);
   bool get configured =>
       validHttps(base) &&
-      AppGoogleIdentity.serverClientId.isNotEmpty &&
+      _identityConfigured &&
       validHttps(privacyUrl) &&
       validHttps(termsUrl) &&
       validHttps(deletionUrl);
-  Future<Map<String, dynamic>> _request(
-    String method,
-    String path, [
-    Map<String, dynamic>? body,
-    bool interactive = false,
-  ]) async {
-    final uri = Uri.tryParse(base);
-    if (uri == null ||
-        uri.scheme != 'https' ||
-        uri.host.isEmpty ||
-        AppGoogleIdentity.serverClientId.isEmpty) {
-      throw StateError('Premium not configured');
-    }
+  static Future<String?> _googleToken(bool interactive) async {
     final signIn = AppGoogleIdentity.signIn;
     final user =
         signIn.currentUser ??
         await signIn.signInSilently() ??
         (interactive ? await signIn.signIn() : null);
-    if (user == null) throw StateError('Sign-in required');
-    final token = (await user.authentication).idToken;
+    return user == null ? null : (await user.authentication).idToken;
+  }
+
+  Future<Map<String, dynamic>> _request(
+    String method,
+    String path, [
+    Map<String, dynamic>? body,
+    bool interactive = false,
+    String? expectedAccount,
+  ]) async {
+    if (!validHttps(base) || !_identityConfigured) {
+      throw StateError('Premium not configured');
+    }
+    final token = await _identityToken(interactive);
     if (token == null) throw StateError('Verified identity required');
     final request = http.Request(
       method,
       Uri.parse('${base.replaceFirst(RegExp(r"/+$"), "")}$path'),
-    );
+    )..followRedirects = false;
     request.headers.addAll({
       'Authorization': 'Bearer $token',
       'Content-Type': 'application/json',
+      if (expectedAccount != null) 'X-Expected-App-Account': expectedAccount,
     });
     if (body != null) request.body = jsonEncode(body);
     final response = await http.Response.fromStream(
@@ -77,13 +86,21 @@ class PremiumHttpBackend implements PremiumBackend {
   @override
   Future<Map<String, dynamic>> wallet() => _request('GET', '/v1/wallet');
   @override
-  Future<Map<String, dynamic>> record(Map<String, dynamic> body) =>
-      _request('POST', '/v1/observances', body);
+  Future<Map<String, dynamic>> record(
+    Map<String, dynamic> body, {
+    String? expectedAccount,
+  }) => _request('POST', '/v1/observances', body, false, expectedAccount);
   @override
-  Future<Map<String, dynamic>> redeem(String key) =>
-      _request('POST', '/v1/rewards/redeem', {'mutationKey': key});
+  Future<Map<String, dynamic>> redeem(String key, {String? expectedAccount}) =>
+      _request(
+        'POST',
+        '/v1/rewards/redeem',
+        {'mutationKey': key},
+        false,
+        expectedAccount,
+      );
   @override
-  Future<void> deleteAccount() async {
-    await _request('DELETE', '/v1/account');
+  Future<void> deleteAccount({String? expectedAccount}) async {
+    await _request('DELETE', '/v1/account', null, false, expectedAccount);
   }
 }

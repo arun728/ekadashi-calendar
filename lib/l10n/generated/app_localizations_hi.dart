@@ -894,7 +894,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get premium_reward_consent =>
-      'क्लाउड पुरस्कार सक्रिय करें? केवल एकादशी पहचान और पूरा होने की स्थिति भेजी जाती है। नोट और व्रत विवरण आपके फ़ोन पर रहते हैं।';
+      'क्लाउड पुरस्कार सक्रिय करें? पूरा होने की पहचान, स्थिति, चुना हुआ कैलेंडर क्षेत्र और सिंक विवरण भेजे जाते हैं। नोट और व्रत विवरण आपके फ़ोन पर रहते हैं।';
 
   @override
   String get premium_reward_activate => 'पुरस्कार सक्रिय करें';

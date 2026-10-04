@@ -49,9 +49,17 @@ def create_app(billing, rewards, authenticate, authenticate_push):
             raise HTTPException(401, "authentication_required")
         return value[7:]
 
-    def identity(authorization: str | None = Header(default=None)):
+    def identity(
+        authorization: str | None = Header(default=None),
+        expected_account: str | None = Header(
+            default=None, alias="X-Expected-App-Account", max_length=128
+        ),
+    ):
         try:
-            return authenticate(bearer(authorization))
+            account = authenticate(bearer(authorization))
+            if expected_account is not None and not hmac.compare_digest(expected_account, account):
+                raise HTTPException(409, "identity_changed")
+            return account
         except (ValueError, TypeError):
             raise HTTPException(401, "invalid_identity") from None
 
@@ -84,7 +92,13 @@ def create_app(billing, rewards, authenticate, authenticate_push):
         return run(lambda: rewards.wallet(account))
 
     @app.post("/v1/observances")
-    def record(body: Observance, account=Depends(identity)):
+    def record(
+        body: Observance,
+        account=Depends(identity),
+        expected_account: str | None = Header(default=None, alias="X-Expected-App-Account"),
+    ):
+        if expected_account is not None and not hmac.compare_digest(expected_account, account):
+            raise HTTPException(409, "identity_changed")
         return run(
             lambda: rewards.record(
                 account,

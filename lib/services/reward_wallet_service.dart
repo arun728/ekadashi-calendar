@@ -56,7 +56,7 @@ class RewardWalletService extends ChangeNotifier {
       coins = (await backend.wallet())['coins'] as int;
       error = null;
     } catch (_) {
-      error = 'premium_unavailable';
+      error = 'premium_reward_sync_failed';
     }
     _notify();
   }
@@ -93,7 +93,7 @@ class RewardWalletService extends ChangeNotifier {
         final owned = value['owned'] as Map<String, dynamic>;
         while (queue.isNotEmpty) {
           final body = Map<String, dynamic>.from(queue.first as Map);
-          final response = await backend.record(body);
+          final response = await backend.record(body, expectedAccount: account);
           final info = (response['observances'] as Map)[body['uid']] as Map;
           owned[body['uid'] as String] = {
             'status': body['status'],

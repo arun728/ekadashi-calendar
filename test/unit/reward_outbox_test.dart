@@ -7,7 +7,10 @@ class RewardBackend extends Backend {
   final calls = <Map<String, dynamic>>[];
   bool fail = false;
   @override
-  Future<Map<String, dynamic>> record(Map<String, dynamic> body) async {
+  Future<Map<String, dynamic>> record(
+    Map<String, dynamic> body, {
+    String? expectedAccount,
+  }) async {
     calls.add(Map.of(body));
     if (fail) throw StateError('offline');
     return {

@@ -121,6 +121,7 @@ class PlayBillingService extends ChangeNotifier {
     if (!premium.connected ||
         premium.accountId == null ||
         pending ||
+        premium.isPremium ||
         premium.autoRenew ||
         premium.lifetime) {
       return;

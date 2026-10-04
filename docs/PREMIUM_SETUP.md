@@ -12,8 +12,54 @@ non-consumable product `ekadashi_premium_lifetime` (India INR999). Set country
 availability and localized descriptions. The app displays prices returned by
 Play, not hard-coded charge amounts. No introductory offers are selected until
 complete intro/renewal disclosures are implemented. Existing renewing customers
-manage/change plans in Play; duplicate/lifetime purchases are blocked while an
-auto-renewing plan exists. Lifetime is not consumed and never auto-renews.
+manage/change plans in Play; new checkout is blocked while verified premium is
+active, including canceled subscriptions and earned access credit. Lifetime is
+not consumed and never auto-renews.
+
+## What Arun needs to provide for real checkout
+
+An Android developer account allows app publishing. It does not automatically
+create products, activate a merchant payments profile, host a verification API,
+or give that API access to purchase records. The production app package remains
+`com.applausestudios.ekadashi_calendar`; the separate `.glasspreview` APK cannot
+validate purchases for the production app's products.
+
+1. In this app's Play Console **Monetize with Play** area, finish the payments
+   profile and activate the product IDs/base plans listed above. Confirm INR
+   pricing, tax display and enabled countries; send the non-secret IDs/statuses
+   or screenshots. Do not create three subscription IDs: monthly/yearly are
+   two base plans of `ekadashi_premium`; lifetime is a separate one-time product.
+2. Identify the existing Google Cloud/Firebase project, or create one. This
+   backend needs HTTPS compute, persistent PostgreSQL, Secret Manager, Pub/Sub,
+   and a scheduled worker. Firebase alone does not replace the PostgreSQL ledger.
+   Hosting/database charges are separate from Play transaction fees; choose
+   the budget and region before deploying production resources.
+3. Enable Android Publisher API and grant a backend service account the
+   necessary app-scoped order/subscription permissions in Play Console. Use
+   workload identity/managed credentials. Never paste service-account private
+   keys, passwords or Play tokens into chat or commit them to the app.
+4. Provide the public OAuth **web client ID** for ID-token sign-in. Confirm the
+   Android OAuth client uses the production package and the **Play app-signing**
+   certificate fingerprints, not only the upload/debug certificate. The existing
+   Calendar OAuth project can be reused if its configuration matches.
+5. Provide HTTPS privacy, premium/reward terms and account-deletion page URLs,
+   support contact, and accurate Play Data safety declarations. Connect the
+   external deletion request page to a working authenticated/support flow.
+6. Add tester Google accounts under **license testing** and to an **internal
+   testing** track, upload a release-signed production-package AAB with a new
+   version code, and share its opt-in link. Install from Play with the tester
+   account and select Google's test payment instruments; do not use real cards
+   for this QA. Track access alone does not make purchases free.
+
+After configuration, build with the public defines below and deploy the server
+with managed secrets. Test real monthly/yearly/lifetime checkout, pending/cancel,
+acknowledgement, restore/reinstall/account switch, renewal/grace/hold, refund/revoke,
+RTDN and retries on the internal track. Use Play Billing Lab/license-test tools
+for subscription lifecycle cases where supported. Validate the six-calendar-month
+reward deferral against the Publisher API separately; accelerated test renewals
+do not prove production calendar timing. Run the same release-signed flows on
+Samsung M52 and Z Flip5, including retaining local Vrat history across an upgrade.
+Only then finalize this draft branch and request integration/release approval.
 
 Build with HTTPS `PREMIUM_API_URL`, OAuth `GOOGLE_WEB_CLIENT_ID`, and hosted
 `PREMIUM_PRIVACY_URL`, `PREMIUM_TERMS_URL`, `PREMIUM_DELETION_URL` dart-defines.
@@ -36,7 +82,7 @@ additional badges require verified premium. Existing earned badges and records
 survive downgrade and upgrade. Google sync alone is gated; disconnect, cached
 imports, custom entries, years/search/reminders and existing widgets remain free.
 
-Reward activation separately consents to UID/status upload, with no private notes,
+Reward activation separately consents to UID/status/calendar-region and sync-metadata upload, with no private notes,
 method or tradition. A durable per-account outbox uses stable mutation keys and
 last-owned server versions. Missing records on another device cannot erase cloud
 history, and stale corrections do not overwrite newer edits. Conflicting/future
@@ -82,3 +128,8 @@ Panchang planning once its source/calculation accuracy is validated. Essential
 Ekadashi dates, reminders, fasting records and a basic chanting counter stay free.
 Build one useful premium bundle, not a paywall for every basic interaction.
 Recurring calendar service supplies ongoing value; achievements complement it.
+
+A verified Play purchase can be restored after deleting the cloud rewards account;
+it never recreates old reward/history data or removes the anti-replay block.
+Cloud rewards re-enrollment waits for the bounded 180-day deletion marker purge.
+Newly restored, necessary billing receipts remain valid after that purge.

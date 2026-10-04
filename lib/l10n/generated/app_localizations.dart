@@ -1791,7 +1791,7 @@ abstract class AppLocalizations {
   /// No description provided for @premium_reward_consent.
   ///
   /// In en, this message translates to:
-  /// **'Activate cloud rewards? Only the occurrence identifier and completion status are uploaded. Notes and fasting details remain on your phone.'**
+  /// **'Activate cloud rewards? Completion identifiers, status and your selected calendar region are uploaded with sync metadata. Notes and fasting details remain on your phone.'**
   String get premium_reward_consent;
 
   /// No description provided for @premium_reward_activate.

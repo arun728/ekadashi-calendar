@@ -3,7 +3,7 @@
 import os
 from datetime import datetime, timedelta, timezone
 
-from sqlalchemy import create_engine, delete, select
+from sqlalchemy import create_engine, delete, func, select, update
 
 from . import database as db
 from .fulfillment import BillingService
@@ -32,8 +32,24 @@ def run_once(billing):
             c.execute(select(db.accounts.c.id).where(db.accounts.c.deleted_at < cutoff)).scalars()
         )
         for account in deleted:
-            c.execute(delete(db.receipts).where(db.receipts.c.account_id == account))
-            c.execute(delete(db.accounts).where(db.accounts.c.id == account))
+            c.execute(
+                delete(db.receipts).where(
+                    db.receipts.c.account_id == account, db.receipts.c.state == "ACCOUNT_DELETED"
+                )
+            )
+            restored = c.execute(
+                select(func.count())
+                .select_from(db.receipts)
+                .where(db.receipts.c.account_id == account)
+            ).scalar_one()
+            if restored:
+                # A fresh authenticated restore is new, necessary billing data;
+                # erase the old deletion marker, never the valid purchase.
+                c.execute(
+                    update(db.accounts).where(db.accounts.c.id == account).values(deleted_at=None)
+                )
+            else:
+                c.execute(delete(db.accounts).where(db.accounts.c.id == account))
     failed = 0
     for account in accounts:
         try:
