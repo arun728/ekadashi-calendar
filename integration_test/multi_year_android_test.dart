@@ -376,6 +376,11 @@ void main() {
       );
       await binding.takeScreenshot('v2_google_after_delete');
       debugPrint('Android full-year Google deletion reconciliation verified');
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('add_calendar_entry')),
+        -100,
+        scrollable: find.byType(Scrollable).first,
+      );
       await tester.tap(find.byKey(const Key('add_calendar_entry')));
       await frames(tester);
       tester.testTextInput.register();

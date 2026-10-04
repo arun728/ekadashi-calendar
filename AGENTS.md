@@ -66,7 +66,7 @@ earned achievements, notification preferences and the existing glass appearance.
 Today retains next Ekadashi/parana and adds daily practice shortcuts. A compact
 audio player will sit above navigation and persist across screen changes.
 
-### Batch 1 — daily routines and Japa (implemented; local tests pass, Android CI pending)
+### Batch 1 — daily routines and Japa (implemented; current validation evidence is recorded in draft PR #10)
 
 - Free: one simple local routine, a basic chanting counter/timer and basic
   practice streak. All existing free Ekadashi/Vrat/search/custom-calendar/widget
