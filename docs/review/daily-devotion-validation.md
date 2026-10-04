@@ -33,3 +33,20 @@ notification denial and GPS off, including the real native audio plugin with a
 synthetic test signal. Exact commit/run links and artifact interpretation will
 be recorded in the draft PR after actual results exist. No merge is authorized.
 No physical-device testing or production-audio clearance is claimed.
+
+
+## First Android run and corrections
+
+Run 37196548932 at 33a4929 passed hosted Flutter/backend, preview build, and the
+new native daily-practice/audio target on all five emulator scenarios. The
+notification-denied and GPS-off jobs passed entirely. Granted jobs failed the
+existing multi-year target: native keyboard insets outlived Search route exit
+(API33/35), and the imported Google entry was not rendered in the viewport on
+API24 when asserted.
+
+A new delayed-insets test reproduced the missing-tab failure before the helper
+fix. Navigation now explicitly dismisses the IME and waits for visible root
+navigation. The import test waits for its enabled completion control, verifies
+actual SQLite records before/after deletion, and scrolls the event into view.
+No assertion was waived; storage assertions were strengthened. Corrected-run
+results belong to the exact follow-up commit and will be recorded in the PR.

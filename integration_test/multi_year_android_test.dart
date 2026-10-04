@@ -1,3 +1,5 @@
+import 'package:flutter/services.dart';
+import 'package:ekadashi_calendar/screens/widgets/day_entries_list.dart';
 import '../test/support/devotion_navigation.dart';
 import '../test/support/premium_fixture.dart';
 import 'package:ekadashi_calendar/services/premium_service.dart';
@@ -229,6 +231,10 @@ void main() {
         'zzzznomatch9999',
       );
       debugPrint("Android Search typo and no-match UI verified");
+      tester.testTextInput.unregister();
+      FocusManager.instance.primaryFocus?.unfocus();
+      await SystemChannels.textInput.invokeMethod<void>('TextInput.hide');
+      await frames(tester);
       // Real Android SQLite + app screens, deterministic fake Google account.
       // OAuth consent and a real Google deletion remain an account/device check.
       final fixtureLang = LanguageService();
@@ -304,6 +310,11 @@ void main() {
         event('December event', start: '2027-12-31', end: '2028-01-01'),
       ];
       Future<void> sync() async {
+        await tester.scrollUntilVisible(
+          find.byKey(const Key('import_google_year')),
+          -100,
+          scrollable: find.byType(Scrollable).first,
+        );
         await tester.tap(find.byKey(const Key('import_google_year')));
         await frames(tester);
         await until(
@@ -314,19 +325,50 @@ void main() {
         await frames(tester);
         await until(
           tester,
-          () => find.byType(CircularProgressIndicator).evaluate().isEmpty,
+          () =>
+              tester
+                  .widget<IconButton>(
+                    find.byKey(const Key('import_google_year')),
+                  )
+                  .onPressed !=
+              null,
         );
       }
 
       await sync();
       expect(google.min, DateTime(2027));
       expect(google.max, DateTime(2028));
-      expect(find.text('Google event before deletion'), findsOneWidget);
+      expect(
+        (await repo.getAll()).where(
+          (e) => e.title == 'Google event before deletion',
+        ),
+        hasLength(1),
+      );
+      await tester.scrollUntilVisible(
+        find.text('Google event before deletion'),
+        100,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(
+        find.text('Google event before deletion').hitTestable(),
+        findsOneWidget,
+      );
       await binding.takeScreenshot('v2_google_before_delete');
       google.events = [
         event('December event', start: '2027-12-31', end: '2028-01-01'),
       ];
       await sync();
+      expect(
+        (await repo.getAll()).where(
+          (e) => e.title == 'Google event before deletion',
+        ),
+        isEmpty,
+      );
+      await tester.scrollUntilVisible(
+        find.byType(DayEntriesList),
+        100,
+        scrollable: find.byType(Scrollable).first,
+      );
       expect(find.text('Google event before deletion'), findsNothing);
       expect(
         (await repo.getAll()).where((e) => e.title == 'December event'),
@@ -336,6 +378,7 @@ void main() {
       debugPrint('Android full-year Google deletion reconciliation verified');
       await tester.tap(find.byKey(const Key('add_calendar_entry')));
       await frames(tester);
+      tester.testTextInput.register();
       await tester.enterText(
         find.byType(TextField).first,
         'My private reminder',
@@ -345,8 +388,17 @@ void main() {
       await binding.takeScreenshot('v2_custom_editor');
       await tester.ensureVisible(find.text('Save'));
       await tester.tap(find.text('Save'));
+      await until(tester, () => find.byType(TextField).evaluate().isEmpty);
+      tester.testTextInput.unregister();
+      FocusManager.instance.primaryFocus?.unfocus();
+      await SystemChannels.textInput.invokeMethod<void>('TextInput.hide');
       await frames(tester);
-      expect(find.text('My private reminder'), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.text('My private reminder'),
+        100,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.text('My private reminder').hitTestable(), findsOneWidget);
       await binding.takeScreenshot('v2_custom_saved');
       await tester.pumpWidget(const SizedBox.shrink());
       await frames(tester);
