@@ -1,3 +1,4 @@
+import 'google_identity.dart';
 import 'google_calendar_api_reader.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -11,7 +12,7 @@ class GoogleAuthGatewayAndroid implements GoogleAuthGateway {
   GoogleAuthGatewayAndroid({GoogleSignIn? signIn})
     : _signIn =
           signIn ??
-          GoogleSignIn(scopes: const [gcal.CalendarApi.calendarReadonlyScope]);
+          AppGoogleIdentity.signIn;
 
   final GoogleSignIn _signIn;
   gcal.CalendarApi? _api;
@@ -33,6 +34,7 @@ class GoogleAuthGatewayAndroid implements GoogleAuthGateway {
     try {
       final account = await _signIn.signIn();
       if (account == null) return false;
+      if (!await _signIn.requestScopes([gcal.CalendarApi.calendarReadonlyScope])) return false;
       await _ensureApi();
       return true;
     } catch (e) {
@@ -53,6 +55,9 @@ class GoogleAuthGatewayAndroid implements GoogleAuthGateway {
   Future<void> _ensureApi() async {
     final account = await accountId();
     if (_api != null && _apiAccount == account) return;
+    if (!await _signIn.requestScopes([gcal.CalendarApi.calendarReadonlyScope])) {
+      throw StateError('Calendar permission required');
+    }
     _client?.close();
     final client = await _signIn.authenticatedClient();
     if (client == null) {

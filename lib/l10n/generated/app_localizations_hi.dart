@@ -826,4 +826,107 @@ class AppLocalizationsHi extends AppLocalizations {
   @override
   String get no_offline_results =>
       'कोई ऑफ़लाइन परिणाम नहीं। ऑफ़लाइन पढ़ने के लिए सामग्री सहेजें।';
+
+  @override
+  String get premium_title => 'एकादशी प्रीमियम';
+
+  @override
+  String get premium_benefits =>
+      'गूगल कैलेंडर सिंक और अतिरिक्त उपलब्धियाँ। तिथियाँ, निजी प्रविष्टियाँ, व्रत रिकॉर्ड, क्रम और सभी मौजूदा विजेट मुफ़्त हैं।';
+
+  @override
+  String get premium_free_achievements =>
+      'पहली तीन अर्जित उपलब्धियाँ मुफ़्त हैं। सभी व्रत रिकॉर्ड और क्रम मुफ़्त हैं।';
+
+  @override
+  String get premium_monthly => 'मासिक';
+
+  @override
+  String get premium_yearly => 'वार्षिक';
+
+  @override
+  String get premium_lifetime => 'आजीवन';
+
+  @override
+  String get premium_monthly_terms =>
+      'हर महीने पूरा शुल्क लगेगा। गूगल प्ले में रद्द करने तक अपने आप नवीनीकरण होगा।';
+
+  @override
+  String get premium_yearly_terms =>
+      'हर वर्ष पूरा शुल्क लगेगा। गूगल प्ले में रद्द करने तक अपने आप नवीनीकरण होगा।';
+
+  @override
+  String get premium_lifetime_terms =>
+      'एक बार भुगतान, नवीनीकरण नहीं। दोहरे शुल्क से बचने के लिए आजीवन योजना खरीदने से पहले मौजूदा सदस्यता प्रबंधित या रद्द करें।';
+
+  @override
+  String get premium_sign_in => 'गूगल से सुरक्षित साइन इन करें';
+
+  @override
+  String get premium_continue_free => 'मुफ़्त जारी रखें';
+
+  @override
+  String get premium_restore => 'खरीदारियाँ बहाल करें';
+
+  @override
+  String get premium_manage => 'गूगल प्ले में सदस्यता प्रबंधित करें';
+
+  @override
+  String get premium_active => 'प्रीमियम सुविधा सक्रिय है';
+
+  @override
+  String get premium_unavailable =>
+      'खरीदारी उपलब्ध नहीं है। मुफ़्त सुविधाएँ काम करती रहेंगी।';
+
+  @override
+  String get premium_verification_failed =>
+      'खरीदारी का सत्यापन लंबित है। खरीदारियाँ बहाल करें; सत्यापन के बाद ही सुविधा मिलेगी।';
+
+  @override
+  String get premium_pending => 'भुगतान की पुष्टि की प्रतीक्षा है';
+
+  @override
+  String get premium_wallet => 'व्रत पुरस्कार';
+
+  @override
+  String get premium_reward_rules =>
+      'हर पूर्ण एकादशी पर 10 सिक्के कमाएँ। समर्थित वर्ष की सभी एकादशी पूरी करने पर बोनस से कुल 300 सिक्के मिलते हैं। 300 सिक्कों से छह महीने प्रीमियम सुविधा पाएँ। खरीदारी आवश्यक नहीं; पुरस्कार आपके अपने रिकॉर्ड पर आधारित हैं। सिक्कों का नकद मूल्य नहीं; खरीदना, भेजना या पैसे वापस लेना संभव नहीं। पूरा होने का रिकॉर्ड बदलने या मिटाने पर उसके सिक्के वापस घटते हैं।';
+
+  @override
+  String get premium_reward_consent =>
+      'क्लाउड पुरस्कार सक्रिय करें? पूरा होने की पहचान, स्थिति, चुना हुआ कैलेंडर क्षेत्र और सिंक विवरण भेजे जाते हैं। नोट और व्रत विवरण आपके फ़ोन पर रहते हैं।';
+
+  @override
+  String get premium_reward_activate => 'पुरस्कार सक्रिय करें';
+
+  @override
+  String get premium_reward_sync_failed =>
+      'पुरस्कार सिंक नहीं हो सके। निजी व्रत रिकॉर्ड सुरक्षित हैं। जुड़ने के बाद फिर प्रयास करें; विरोधी बदलावों के लिए सहायता लग सकती है।';
+
+  @override
+  String get premium_redeem => 'छह महीने के लिए 300 सिक्के भुनाएँ';
+
+  @override
+  String get premium_redemption_failed =>
+      'क्रेडिट नहीं भुना सके। रुकी सदस्यता प्रबंधित करें या बाद में फिर प्रयास करें। लंबित क्रेडिट सुरक्षित रखा जाता है और दो बार नहीं कटता।';
+
+  @override
+  String get premium_delete_account => 'क्लाउड खाता मिटाएँ';
+
+  @override
+  String get premium_delete_warning =>
+      'क्लाउड पुरस्कार और खाता डेटा मिटाएँ? स्थानीय व्रत इतिहास फ़ोन पर रहेगा। इससे गूगल प्ले सदस्यता रद्द नहीं होती; पहले उसे प्रबंधित करें।';
+
+  @override
+  String get premium_terms => 'गोपनीयता और पुरस्कार शर्तें';
+
+  @override
+  String get premium_coins => 'सिक्के';
+
+  @override
+  String get premium_more_achievements => 'प्रीमियम के साथ और उपलब्धियाँ';
+
+  @override
+  String get premium_reward_example =>
+      'सामान्य वर्ष: 24 × 10 = 240 सिक्के, पूरे वर्ष का बोनस 60 जोड़कर 300। 26 एकादशी वाले वर्ष में: 260 + 40 = 300।';
 }

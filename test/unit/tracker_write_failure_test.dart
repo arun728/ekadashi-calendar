@@ -21,7 +21,7 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       final tracker = VratTrackerService();
       await tracker.init();
-      await tracker.enableTracker();
+
       final original = SharedPreferencesStorePlatform.instance;
       SharedPreferencesStorePlatform.instance = FailingHistoryStore();
       addTearDown(() {
@@ -45,7 +45,7 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       final tracker = VratTrackerService();
       await tracker.init();
-      await tracker.enableTracker();
+
       await Future.wait([
         for (final id in [1, 2])
           tracker.recordVrat(

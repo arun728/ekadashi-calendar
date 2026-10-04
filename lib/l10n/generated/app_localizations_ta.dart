@@ -832,4 +832,109 @@ class AppLocalizationsTa extends AppLocalizations {
   @override
   String get no_offline_results =>
       'இணையமற்ற முடிவுகள் இல்லை. இணையமின்றி படிக்க உள்ளடக்கத்தைச் சேமிக்கவும்.';
+
+  @override
+  String get premium_title => 'ஏகாதசி பிரீமியம்';
+
+  @override
+  String get premium_benefits =>
+      'கூகுள் நாட்காட்டி ஒத்திசைவு மற்றும் கூடுதல் சாதனைகள். தேதிகள், தனிப்பட்ட பதிவுகள், விரதப் பதிவுகள், தொடர்கள் மற்றும் தற்போதைய விட்ஜெட்டுகள் இலவசம்.';
+
+  @override
+  String get premium_free_achievements =>
+      'முதலில் பெறும் மூன்று சாதனைகள் இலவசம். அனைத்து விரதப் பதிவுகளும் தொடர்களும் இலவசம்.';
+
+  @override
+  String get premium_monthly => 'மாதந்தோறும்';
+
+  @override
+  String get premium_yearly => 'ஆண்டுதோறும்';
+
+  @override
+  String get premium_lifetime => 'வாழ்நாள்';
+
+  @override
+  String get premium_monthly_terms =>
+      'முழுக் கட்டணம் ஒவ்வொரு மாதமும் வசூலிக்கப்படும். கூகுள் பிளேயில் ரத்து செய்யும் வரை தானாகப் புதுப்பிக்கப்படும்.';
+
+  @override
+  String get premium_yearly_terms =>
+      'முழுக் கட்டணம் ஒவ்வொரு ஆண்டும் வசூலிக்கப்படும். கூகுள் பிளேயில் ரத்து செய்யும் வரை தானாகப் புதுப்பிக்கப்படும்.';
+
+  @override
+  String get premium_lifetime_terms =>
+      'ஒரே கட்டணம்; புதுப்பித்தல் இல்லை. இரட்டைக் கட்டணத்தைத் தவிர்க்க வாழ்நாள் திட்டத்திற்கு முன் தற்போதைய சந்தாவை நிர்வகிக்கவும் அல்லது ரத்து செய்யவும்.';
+
+  @override
+  String get premium_sign_in => 'கூகுள் மூலம் பாதுகாப்பாக உள்நுழையவும்';
+
+  @override
+  String get premium_continue_free => 'இலவசமாகத் தொடரவும்';
+
+  @override
+  String get premium_restore => 'வாங்கியவற்றை மீட்டெடுக்கவும்';
+
+  @override
+  String get premium_manage => 'கூகுள் பிளேயில் சந்தாவை நிர்வகிக்கவும்';
+
+  @override
+  String get premium_active => 'பிரீமியம் அணுகல் செயலில் உள்ளது';
+
+  @override
+  String get premium_unavailable =>
+      'வாங்கும் வசதி தற்போது இல்லை. இலவச அம்சங்களைப் பயன்படுத்தலாம்.';
+
+  @override
+  String get premium_verification_failed =>
+      'வாங்கியதைச் சரிபார்ப்பது நிலுவையில் உள்ளது. மீட்டெடுக்க முயலவும்; சரிபார்த்த பிறகே அணுகல் கிடைக்கும்.';
+
+  @override
+  String get premium_pending =>
+      'பணம் செலுத்திய உறுதிப்படுத்தலுக்காகக் காத்திருக்கிறது';
+
+  @override
+  String get premium_wallet => 'விரதப் பலன்கள்';
+
+  @override
+  String get premium_reward_rules =>
+      'நிறைவு செய்த ஒவ்வொரு ஏகாதசிக்கும் 10 நாணயங்கள். ஆதரிக்கப்படும் ஆண்டின் அனைத்து ஏகாதசிகளையும் முடித்தால் கூடுதல் பலனுடன் மொத்தம் 300 நாணயங்கள் கிடைக்கும். 300 நாணயங்களுக்கு ஆறு மாத பிரீமியம் அணுகல். வாங்க வேண்டிய அவசியமில்லை; பயனர் பதிவுகளின் அடிப்படையில் பலன்கள். நாணயங்களுக்கு பண மதிப்பில்லை; வாங்கவோ மாற்றவோ பணமாகத் திரும்பப் பெறவோ முடியாது. பதிவை மாற்றுவது அல்லது நீக்குவது அதன் நாணயங்களைத் திரும்பக் குறைக்கும்.';
+
+  @override
+  String get premium_reward_consent =>
+      'மேகக் கணக்குப் பலன்களைச் செயல்படுத்தவா? நிறைவு அடையாளங்கள், நிலை, தேர்ந்தெடுத்த நாட்காட்டி பகுதி மற்றும் ஒத்திசைவு விவரங்கள் பதிவேற்றப்படும். குறிப்புகளும் விரத விவரங்களும் கைபேசியிலேயே இருக்கும்.';
+
+  @override
+  String get premium_reward_activate => 'பலன்களைச் செயல்படுத்தவும்';
+
+  @override
+  String get premium_reward_sync_failed =>
+      'பலன்களை ஒத்திசைக்க முடியவில்லை. தனிப்பட்ட விரதப் பதிவுகள் பாதுகாப்பாக உள்ளன. இணைத்த பின் மீண்டும் முயலவும்; முரண்படும் மாற்றங்களுக்கு உதவி தேவைப்படலாம்.';
+
+  @override
+  String get premium_redeem =>
+      'ஆறு மாதங்களுக்கு 300 நாணயங்களைப் பயன்படுத்தவும்';
+
+  @override
+  String get premium_redemption_failed =>
+      'பலனைப் பயன்படுத்த முடியவில்லை. இடைநிறுத்தப்பட்ட சந்தாவை நிர்வகிக்கவும் அல்லது பிறகு முயலவும். நிலுவைப் பலன் ஒதுக்கி வைக்கப்படும்; இருமுறை கழிக்கப்படாது.';
+
+  @override
+  String get premium_delete_account => 'மேகக் கணக்கை நீக்கவும்';
+
+  @override
+  String get premium_delete_warning =>
+      'மேகக் கணக்கையும் பலன் தரவையும் நீக்கவா? உள்ளூர் விரத வரலாறு கைபேசியில் இருக்கும். இது கூகுள் பிளே சந்தாவை ரத்து செய்யாது; முதலில் அதை நிர்வகிக்கவும்.';
+
+  @override
+  String get premium_terms => 'தனியுரிமை மற்றும் பலன் விதிகள்';
+
+  @override
+  String get premium_coins => 'நாணயங்கள்';
+
+  @override
+  String get premium_more_achievements => 'பிரீமியத்துடன் கூடுதல் சாதனைகள்';
+
+  @override
+  String get premium_reward_example =>
+      'வழக்கமான ஆண்டு: 24 × 10 = 240 நாணயங்கள்; முழு ஆண்டு பலன் 60 சேர்த்து 300. 26 ஏகாதசிகள் உள்ள ஆண்டில்: 260 + 40 = 300.';
 }

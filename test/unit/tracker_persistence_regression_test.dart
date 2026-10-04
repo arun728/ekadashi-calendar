@@ -179,7 +179,7 @@ void main() {
     () async {
       final first = VratTrackerService();
       await first.init(occurrences: events());
-      await first.enableTracker(occurrences: events());
+
       final firstUnlocks = await first.recordVrat(
         ekadashiOccurrenceId: 1,
         ekadashiDate: '2026-01-01',
@@ -202,10 +202,11 @@ void main() {
       );
       expect(recreated.getAllRecords(), hasLength(1));
       expect(repeatedUnlocks, isEmpty);
-      await recreated.disableTracker();
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('vrat_tracker_enabled', false);
       final disabled = VratTrackerService();
       await disabled.init(occurrences: events());
-      expect(disabled.trackerEnabled, isFalse);
+      expect(disabled.trackerEnabled, isTrue);
       expect(disabled.getRecord(1)!.note, 'Edited');
       expect(disabled.userAchievements['first_vrat']!.isUnlocked, isTrue);
     },
@@ -215,7 +216,7 @@ void main() {
     () async {
       final service = VratTrackerService();
       await service.init(occurrences: events());
-      await service.enableTracker(occurrences: events());
+
       await service.recordVrat(
         ekadashiOccurrenceId: 1,
         ekadashiDate: '2026-01-01',

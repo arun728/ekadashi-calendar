@@ -6,11 +6,11 @@ import 'package:ekadashi_calendar/data/tracker_history_store.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  test('Opt-in cannot overwrite a corrupt history store', () async {
+  test('Free availability cannot overwrite a corrupt history store', () async {
     SharedPreferences.setMockInitialValues({TrackerHistoryStore.key: 'broken'});
     final tracker = VratTrackerService();
     await tracker.init();
-    await tracker.enableTracker();
+
     await tracker.recordVrat(
       ekadashiOccurrenceId: 1,
       ekadashiDate: '2026-01-01',

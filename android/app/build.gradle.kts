@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -27,9 +29,6 @@ android {
         isCoreLibraryDesugaringEnabled = true
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
-    }
     testOptions {
         unitTests.isIncludeAndroidResources = true
     }
@@ -73,6 +72,12 @@ android {
         }
     }
 
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = JvmTarget.fromTarget(JavaVersion.VERSION_17.toString())
+    }
 }
 
 flutter {

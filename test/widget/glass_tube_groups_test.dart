@@ -87,6 +87,11 @@ void main() {
           await tester.pumpAndSettle();
           await tester.tap(find.byKey(const Key('glass_tab_4')));
           await tester.pumpAndSettle();
+          await tester.scrollUntilVisible(
+            find.byKey(const Key('settings_notifications_tube')),
+            200,
+            scrollable: find.byType(Scrollable).last,
+          );
           expect(
             find.byKey(const Key('settings_notifications_tube')),
             findsOneWidget,

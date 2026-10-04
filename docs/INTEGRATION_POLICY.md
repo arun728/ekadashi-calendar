@@ -17,6 +17,17 @@ Arun's instructions, updated 3 October 2026:
 
 ## Glass UI prototype
 
-The separate `feature/android-glass-navigation` branch must not merge into `dev`
-or `main` before Samsung M52/Z Flip 5 physical-device testing and fresh explicit
-approval from Arun. Earlier v2 merge authorization does not cover this UI task.
+Arun explicitly authorized merging `feature/android-glass-navigation` into dev
+after automated tests and screenshot checks pass, and confirmed those gates are
+sufficient. PR #8 merged after all seven CI14 jobs passed. Samsung physical-device
+checks remain release validation. Main stays untouched.
+
+## Paid features and rewards
+
+Develop on `feature/subscriptions-rewards`, based on the validated UI dev merge.
+Do not merge this paid/reward work into dev until Arun finalizes, tests and gives
+new explicit permission. Vrat recording/history/streaks/statistics stay free and
+always available. The first three earned achievements are free; additional
+unlocks are premium, and existing earned badges are preserved. Google Calendar
+sync is paid, custom entries and all current widgets remain free. Use Play billing
+and server-verified entitlements; fasting coins provide non-cash premium credit.

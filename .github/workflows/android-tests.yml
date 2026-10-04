@@ -6,6 +6,34 @@ on:
 permissions:
   contents: read
 jobs:
+  billing-backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: ekadashi_test
+          POSTGRES_PASSWORD: local-ci-only
+          POSTGRES_DB: ekadashi_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U ekadashi_test"
+          --health-interval 10s --health-timeout 5s --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r backend/requirements-test.txt ruff==0.16.10
+      - run: ruff check backend && ruff format --check backend
+      - run: python -m pytest backend/tests -q --junitxml=build/billing-backend-tests.xml
+        env:
+          EKADASHI_TEST_DATABASE_URL: postgresql+psycopg://ekadashi_test:local-ci-only@localhost:5432/ekadashi_test
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: billing-postgresql-tests
+          path: build/billing-backend-tests.xml
   flutter-tests:
     runs-on: ubuntu-latest
     steps:
@@ -30,7 +58,7 @@ jobs:
             coverage/
             build/ui-screenshots/offscreen/
   android-tests:
-    needs: flutter-tests
+    needs: [flutter-tests, billing-backend]
     # Keep collecting native/UI evidence while required Flutter gates are red.
     if: always() && !cancelled()
     runs-on: ubuntu-latest
@@ -106,7 +134,7 @@ jobs:
         run: exit 1
 
   glass-preview:
-    if: github.head_ref == 'feature/android-glass-navigation'
+    if: github.head_ref == 'feature/android-glass-navigation' || github.head_ref == 'feature/subscriptions-rewards'
     needs: flutter-tests
     runs-on: ubuntu-latest
     steps:

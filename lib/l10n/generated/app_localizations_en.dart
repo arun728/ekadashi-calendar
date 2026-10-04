@@ -832,4 +832,107 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get no_offline_results =>
       'No offline results found. Save content for offline access.';
+
+  @override
+  String get premium_title => 'Ekadashi Premium';
+
+  @override
+  String get premium_benefits =>
+      'Google Calendar sync and additional achievements. Dates, custom entries, Vrat records, streaks and all existing widgets stay free.';
+
+  @override
+  String get premium_free_achievements =>
+      'Your first three earned achievements are free. All recording and streaks remain free.';
+
+  @override
+  String get premium_monthly => 'Monthly';
+
+  @override
+  String get premium_yearly => 'Yearly';
+
+  @override
+  String get premium_lifetime => 'Lifetime';
+
+  @override
+  String get premium_monthly_terms =>
+      'Full price charged each month. Automatically renews until canceled in Google Play.';
+
+  @override
+  String get premium_yearly_terms =>
+      'Full price charged each year. Automatically renews until canceled in Google Play.';
+
+  @override
+  String get premium_lifetime_terms =>
+      'One payment, no renewal. Manage or cancel an existing subscription before buying lifetime to avoid duplicate charges.';
+
+  @override
+  String get premium_sign_in => 'Sign in securely with Google';
+
+  @override
+  String get premium_continue_free => 'Continue free';
+
+  @override
+  String get premium_restore => 'Restore purchases';
+
+  @override
+  String get premium_manage => 'Manage subscription in Google Play';
+
+  @override
+  String get premium_active => 'Premium access active';
+
+  @override
+  String get premium_unavailable =>
+      'Purchases are unavailable. Free features still work.';
+
+  @override
+  String get premium_verification_failed =>
+      'Purchase verification is pending. Try Restore purchases; access is granted only after verification.';
+
+  @override
+  String get premium_pending => 'Awaiting payment confirmation';
+
+  @override
+  String get premium_wallet => 'Fasting rewards';
+
+  @override
+  String get premium_reward_rules =>
+      'Earn 10 coins per completed Ekadashi. Completing every Ekadashi in a supported year adds a bonus to reach 300 coins. Redeem 300 coins for six months of premium access. Rewards require no purchase and are self-reported. Coins have no cash value, cannot be bought or transferred, and cannot be refunded as money. Correcting or deleting completion reverses its coins.';
+
+  @override
+  String get premium_reward_consent =>
+      'Activate cloud rewards? Completion identifiers, status and your selected calendar region are uploaded with sync metadata. Notes and fasting details remain on your phone.';
+
+  @override
+  String get premium_reward_activate => 'Activate rewards';
+
+  @override
+  String get premium_reward_sync_failed =>
+      'Rewards could not sync. Your private Vrat records are safe. Retry after connecting; conflicting edits may require support.';
+
+  @override
+  String get premium_redeem => 'Redeem 300 coins for six months';
+
+  @override
+  String get premium_redemption_failed =>
+      'Credit could not be redeemed. Manage any paused subscription, or retry later. Pending credit is reserved and is never charged twice.';
+
+  @override
+  String get premium_delete_account => 'Delete cloud account';
+
+  @override
+  String get premium_delete_warning =>
+      'Delete cloud rewards and account data? Local Vrat history remains on your phone. This does not cancel Google Play subscriptions; manage them first.';
+
+  @override
+  String get premium_terms => 'Privacy and reward terms';
+
+  @override
+  String get premium_coins => 'Coins';
+
+  @override
+  String get premium_more_achievements => 'More achievements with Premium';
+
+  @override
+  String get premium_reward_example =>
+      'Typical year: 24 × 10 = 240 coins, plus a 60-coin full-year bonus = 300 coins. In a 26-Ekadashi year: 260 + 40 = 300.';
 }

@@ -1,3 +1,5 @@
+import '../premium_screen.dart';
+import '../../services/premium_service.dart';
 import '../../widgets/glass_tube.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -60,9 +62,22 @@ class _VratTrackerScreenState extends State<VratTrackerScreen>
     final lang = Provider.of<LanguageService>(context);
     final tracker = Provider.of<VratTrackerService>(context);
 
-    // 1. OPT-IN SCREEN: When tracker is disabled
-    if (!tracker.trackerEnabled) {
-      return _buildOptInView(lang, tracker);
+    if (tracker.storageError != null) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              lang.translate('tracker_storage_failed'),
+              textAlign: TextAlign.center,
+            ),
+            TextButton(
+              onPressed: () => tracker.init(occurrences: widget.ekadashiList),
+              child: Text(lang.translate('retry')),
+            ),
+          ],
+        ),
+      );
     }
 
     // 2. ACTIVE TRACKER DASHBOARD
@@ -70,13 +85,6 @@ class _VratTrackerScreenState extends State<VratTrackerScreen>
       appBar: AppBar(
         title: Text(lang.translate('vrat_tracker')),
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.tune),
-            tooltip: lang.translate('settings'),
-            onPressed: () => _showTrackerSettings(context, lang, tracker),
-          ),
-        ],
         bottom: PreferredSize(
           preferredSize: Size.fromHeight(
             60 + MediaQuery.textScalerOf(context).scale(12),
@@ -150,74 +158,6 @@ class _VratTrackerScreenState extends State<VratTrackerScreen>
           _buildStatisticsTab(lang, tracker),
           _buildAchievementsTab(lang, tracker),
         ],
-      ),
-    );
-  }
-
-  // ==================== 1. OPT-IN VIEW ====================
-  Widget _buildOptInView(LanguageService lang, VratTrackerService tracker) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: tealColor.withValues(alpha: 0.12),
-              ),
-              child: const Icon(Icons.spa, size: 40, color: tealColor),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              lang.translate('vrat_tracker'),
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              lang.translate('vrat_tracker_desc'),
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
-                height: 1.4,
-              ),
-            ),
-            const SizedBox(height: 32),
-            ElevatedButton.icon(
-              onPressed: () async {
-                await tracker.enableTracker(occurrences: widget.ekadashiList);
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(lang.translate('tracker_enabled_msg')),
-                      duration: const Duration(seconds: 2),
-                    ),
-                  );
-                }
-              },
-              icon: const Icon(Icons.check),
-              label: Text(lang.translate('enable_vrat_tracker')),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: tealColor,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 14,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -1014,159 +954,138 @@ class _VratTrackerScreenState extends State<VratTrackerScreen>
     const achievements = AchievementEvaluator.allAchievements;
     final userMap = tracker.userAchievements;
 
-    return GridView.builder(
-      padding: const EdgeInsets.all(16),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: 0.82,
-      ),
-      itemCount: achievements.length,
-      itemBuilder: (ctx, i) {
-        final ach = achievements[i];
-        final userAch = userMap[ach.id];
-        final isUnlocked = userAch?.isUnlocked ?? false;
-
-        final title = lang.translate(ach.titleKey);
-        final desc = lang.translate(ach.descriptionKey);
-
-        return Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: Theme.of(context).cardColor,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isUnlocked
-                  ? tealColor
-                  : Colors.grey.withValues(alpha: 0.2),
-              width: isUnlocked ? 1.8 : 1,
-            ),
-            boxShadow: isUnlocked
-                ? [
-                    BoxShadow(
-                      color: tealColor.withValues(alpha: 0.15),
-                      blurRadius: 10,
-                      spreadRadius: 1,
-                    ),
-                  ]
-                : null,
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Badge Icon
-              Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: isUnlocked
-                      ? tealColor.withValues(alpha: 0.15)
-                      : Colors.grey.withValues(alpha: 0.08),
-                ),
-                child: Icon(
-                  isUnlocked ? ach.icon : Icons.lock_outline,
-                  size: 26,
-                  color: isUnlocked ? tealColor : Colors.grey.shade400,
-                ),
-              ),
-              const SizedBox(height: 10),
-
-              // Title
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                  color: isUnlocked ? null : Colors.grey,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 4),
-
-              // Description
-              Expanded(
-                child: Text(
-                  desc,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: Theme.of(context).textTheme.bodySmall?.color
-                        ?.withValues(alpha: isUnlocked ? 0.75 : 0.45),
-                    height: 1.3,
-                  ),
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-
-              // Status badge
-              Text(
-                isUnlocked
-                    ? '✓ ${lang.translate('unlocked')}'
-                    : lang.translate('locked'),
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: isUnlocked ? tealColor : Colors.grey,
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  // ==================== 6. SETTINGS MODAL ====================
-  void _showTrackerSettings(
-    BuildContext context,
-    LanguageService lang,
-    VratTrackerService tracker,
-  ) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              lang.translate('vrat_tracker'),
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              lang.translate('vrat_tracker_desc'),
-              style: const TextStyle(fontSize: 13, color: Colors.grey),
-            ),
-            const SizedBox(height: 20),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(
-                Icons.power_settings_new,
-                color: Colors.redAccent,
-              ),
-              title: Text(lang.translate('disable_vrat_tracker')),
-              subtitle: Text(
-                lang.translate('tracker_disabled_msg'),
-                style: const TextStyle(fontSize: 11),
-              ),
-              onTap: () async {
-                await tracker.disableTracker();
-                if (ctx.mounted) Navigator.of(ctx).pop();
-              },
-            ),
-          ],
+    final premium = context.watch<PremiumService?>()?.isPremium == true;
+    final freeUsed = userMap.values.where((a) => a.isUnlocked).length;
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+          child: Text(lang.translate('premium_free_achievements')),
         ),
-      ),
+        if (!premium)
+          TextButton(
+            onPressed: () =>
+                openPremium(context, currentTimezone: widget.currentTimezone),
+            child: Text(lang.translate('premium_more_achievements')),
+          ),
+        Expanded(
+          child: GridView.builder(
+            padding: const EdgeInsets.all(16),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount:
+                  MediaQuery.sizeOf(context).width < 350 ||
+                      MediaQuery.textScalerOf(context).scale(12) > 18
+                  ? 1
+                  : 2,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 0.82,
+            ),
+            itemCount: achievements.length,
+            itemBuilder: (ctx, i) {
+              final ach = achievements[i];
+              final userAch = userMap[ach.id];
+              final isUnlocked = userAch?.isUnlocked ?? false;
+              final paidLocked =
+                  !premium &&
+                  !isUnlocked &&
+                  freeUsed >= VratTrackerService.freeAchievementLimit;
+
+              final title = lang.translate(ach.titleKey);
+              final desc = lang.translate(ach.descriptionKey);
+
+              return Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardColor,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: isUnlocked
+                        ? tealColor
+                        : Colors.grey.withValues(alpha: 0.2),
+                    width: isUnlocked ? 1.8 : 1,
+                  ),
+                  boxShadow: isUnlocked
+                      ? [
+                          BoxShadow(
+                            color: tealColor.withValues(alpha: 0.15),
+                            blurRadius: 10,
+                            spreadRadius: 1,
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Badge Icon
+                    Container(
+                      width: 52,
+                      height: 52,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: isUnlocked
+                            ? tealColor.withValues(alpha: 0.15)
+                            : Colors.grey.withValues(alpha: 0.08),
+                      ),
+                      child: Icon(
+                        isUnlocked ? ach.icon : Icons.lock_outline,
+                        size: 26,
+                        color: isUnlocked ? tealColor : Colors.grey.shade400,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+
+                    // Title
+                    Text(
+                      title,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: isUnlocked ? null : Colors.grey,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+
+                    // Description
+                    Expanded(
+                      child: Text(
+                        desc,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: Theme.of(context).textTheme.bodySmall?.color
+                              ?.withValues(alpha: isUnlocked ? 0.75 : 0.45),
+                          height: 1.3,
+                        ),
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+
+                    // Status badge
+                    Text(
+                      isUnlocked
+                          ? '✓ ${lang.translate('unlocked')}'
+                          : lang.translate(
+                              paidLocked ? 'premium_title' : 'locked',
+                            ),
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: isUnlocked ? tealColor : Colors.grey,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }

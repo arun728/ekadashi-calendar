@@ -12,7 +12,7 @@ void main() {
     SharedPreferences.setMockInitialValues({
       'has_launched': true,
       'app_version': '1.0',
-      'vrat_tracker_enabled': false, // Ensure opt-in initial state
+      'vrat_tracker_enabled': false, // Legacy opt-out preference
     });
   });
 
@@ -126,7 +126,7 @@ void main() {
         });
   }
 
-  testWidgets('Vrat Tracker navigation, opt-in activation, and tab switching', (
+  testWidgets('Free Vrat Tracker navigation and tab switching', (
     WidgetTester tester,
   ) async {
     mockChannels();
@@ -141,16 +141,8 @@ void main() {
     await tester.tap(find.byIcon(Icons.spa_outlined));
     await tester.pumpAndSettle();
 
-    // 3. Verify Opt-In View is displayed
-    expect(find.text('Enable Vrat Tracker'), findsOneWidget);
-    expect(
-      find.text('Keep a private record of your Ekadashi observance.'),
-      findsOneWidget,
-    );
-
-    // 4. Tap "Enable Vrat Tracker"
-    await tester.tap(find.text('Enable Vrat Tracker'));
-    await tester.pumpAndSettle();
+    expect(find.text('Enable Vrat Tracker'), findsNothing);
+    expect(find.text('Disable Vrat Tracker'), findsNothing);
 
     // 5. Verify Dashboard is displayed with metrics
     expect(find.text('Current Streak'), findsOneWidget);

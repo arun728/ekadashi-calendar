@@ -1,3 +1,5 @@
+import 'premium_screen.dart';
+import '../services/premium_service.dart';
 import '../widgets/glass_tube.dart';
 import 'dart:async';
 import '../models/calendar_entry.dart';
@@ -165,6 +167,13 @@ class CalendarScreenState extends State<CalendarScreen> {
 
   Future<void> _syncYear() async {
     if (_syncing || !_repoReady) return;
+    if (context.read<PremiumService?>()?.isPremium != true) {
+      await openPremium(
+        context,
+        currentTimezone: widget.currentTimezone ?? 'IST',
+      );
+      return;
+    }
     final year = _selectedYear;
     setState(() => _syncing = true);
     try {
@@ -213,6 +222,7 @@ class CalendarScreenState extends State<CalendarScreen> {
     setState(() => _syncing = true);
     try {
       await _google.signOut();
+      if (mounted) context.read<PremiumService?>()?.reset();
       await _reloadEntries();
     } catch (_) {
       _showMessage('google_sync_failed');

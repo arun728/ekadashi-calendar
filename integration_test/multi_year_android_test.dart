@@ -1,3 +1,5 @@
+import '../test/support/premium_fixture.dart';
+import 'package:ekadashi_calendar/services/premium_service.dart';
 import 'dart:io';
 import 'package:sqflite/sqflite.dart' show getDatabasesPath;
 import 'package:table_calendar/table_calendar.dart';
@@ -238,10 +240,20 @@ void main() {
       final repo = SqfliteCalendarEntryRepository();
       await repo.init();
       final google = AndroidTestGoogle();
+      // Verification is asynchronous: a lazy provider initialized on the first
+      // sync tap otherwise correctly opens the free user's paywall.
+      final fixturePremium = PremiumService(
+        backend: PremiumFixture(),
+        startLeaseTimer: false,
+      );
+      await fixturePremium.connect();
+      expect(fixturePremium.isPremium, isTrue);
+      addTearDown(fixturePremium.dispose);
       Future<void> openCalendar() async {
         await tester.pumpWidget(
           MultiProvider(
             providers: [
+              ChangeNotifierProvider.value(value: fixturePremium),
               ChangeNotifierProvider.value(value: fixtureLang),
               ChangeNotifierProvider.value(value: fixtureTracker),
             ],

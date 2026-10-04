@@ -1,3 +1,4 @@
+import 'premium_screen.dart';
 import 'widgets/settings_permission_actions.dart';
 import '../widgets/glass_tube.dart';
 import 'widget_preview_screen.dart';
@@ -25,7 +26,8 @@ import '../services/native_notification_service.dart'
 /// - Faster permission state updates
 /// - Added parana reminder option (Break Fasting Reminder)
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
+  const SettingsScreen({super.key, this.currentTimezone = 'IST'});
+  final String currentTimezone;
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -273,6 +275,15 @@ class _SettingsScreenState extends State<SettingsScreen>
         16 + MediaQuery.paddingOf(context).bottom,
       ),
       children: [
+        Card(
+          child: ListTile(
+            leading: const Icon(Icons.workspace_premium, color: tealColor),
+            title: Text(lang.translate('premium_title')),
+            subtitle: Text(lang.translate('premium_free_achievements')),
+            onTap: () =>
+                openPremium(context, currentTimezone: widget.currentTimezone),
+          ),
+        ),
         GlassTube(
           key: const Key('settings_appearance_tube'),
           optionCount: 2,

@@ -10,7 +10,23 @@ import '../data/tracker_history_store.dart';
 /// Central service for Vrat Tracking and Achievement management.
 /// Integrates Vrat Tracker, Vrat Statistics, and Achievement System as a single module.
 class VratTrackerService extends ChangeNotifier {
-  static const String _prefEnabledKey = 'vrat_tracker_enabled';
+  VratTrackerService({bool Function()? premiumAchievements})
+    : _premiumAchievements = premiumAchievements ?? (() => false);
+  final bool Function() _premiumAchievements;
+  static const freeAchievementLimit = 3;
+
+  Future<List<Achievement>> refreshAchievements(
+    List<EkadashiDate> occurrences,
+  ) {
+    return _mutate(() async {
+      if (!_trackerEnabled) return const <Achievement>[];
+      final unlocked = _evaluateAchievementsInternal(occurrences);
+      await _persistAchievements();
+      notifyListeners();
+      return unlocked;
+    });
+  }
+
   static const String _prefEnabledAtKey = 'vrat_tracker_enabled_at';
   static const String _prefAchievementsKey = 'vrat_tracker_user_achievements';
   static const String _prefNotifiedAchievementsKey =
@@ -55,9 +71,8 @@ class VratTrackerService extends ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
 
-      // 1. Tracker is disabled by default (Opt-in requirement)
-      _trackerEnabled = prefs.getBool(_prefEnabledKey) ?? false;
-
+      // Availability is free, independent of the legacy opt-in preference.
+      // Only a storage failure can block writes, to protect private history.
       final enabledAtStr = prefs.getString(_prefEnabledAtKey);
       if (enabledAtStr != null && enabledAtStr.isNotEmpty) {
         _trackingEnabledAt = DateTime.tryParse(enabledAtStr);
@@ -84,8 +99,18 @@ class VratTrackerService extends ChangeNotifier {
         _notifiedAchievements.addAll(notifiedList);
       }
 
+      _trackingEnabledAt ??= DateTime.now().toUtc();
+      if (!prefs.containsKey(_prefEnabledAtKey)) {
+        await prefs.setString(
+          _prefEnabledAtKey,
+          _trackingEnabledAt!.toIso8601String(),
+        );
+      }
+      _trackerEnabled = true;
+      storageError = null;
+
       // 5. Evaluate achievements if occurrences provided
-      if (_trackerEnabled && occurrences != null && occurrences.isNotEmpty) {
+      if (occurrences != null && occurrences.isNotEmpty) {
         _evaluateAchievementsInternal(occurrences);
       }
 
@@ -98,37 +123,6 @@ class VratTrackerService extends ChangeNotifier {
       _isInitialized = false;
       notifyListeners();
     }
-  }
-
-  /// Enable Vrat Tracker (explicit opt-in)
-  Future<void> enableTracker({List<EkadashiDate>? occurrences}) async {
-    if (storageError != null) return;
-    _trackerEnabled = true;
-    _trackingEnabledAt = DateTime.now().toUtc();
-
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_prefEnabledKey, true);
-    await prefs.setString(
-      _prefEnabledAtKey,
-      _trackingEnabledAt!.toIso8601String(),
-    );
-
-    if (occurrences != null && occurrences.isNotEmpty) {
-      _evaluateAchievementsInternal(occurrences);
-    }
-
-    notifyListeners();
-  }
-
-  /// Disable Vrat Tracker.
-  /// Does NOT delete existing Vrat history or earned achievements.
-  Future<void> disableTracker() async {
-    _trackerEnabled = false;
-
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_prefEnabledKey, false);
-
-    notifyListeners();
   }
 
   /// Record an Ekadashi observance.
@@ -324,6 +318,11 @@ class VratTrackerService extends ChangeNotifier {
       history: getAllRecords(),
       occurrences: occurrences,
       currentAchievements: _userAchievements,
+      newUnlockLimit: _premiumAchievements()
+          ? null
+          : (freeAchievementLimit -
+                    _userAchievements.values.where((a) => a.isUnlocked).length)
+                .clamp(0, freeAchievementLimit),
     );
 
     _userAchievements.clear();

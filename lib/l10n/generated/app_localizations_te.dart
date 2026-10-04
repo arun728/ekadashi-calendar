@@ -831,4 +831,107 @@ class AppLocalizationsTe extends AppLocalizations {
   @override
   String get no_offline_results =>
       'ఆఫ్‌లైన్ ఫలితాలు లేవు. ఆఫ్‌లైన్ పఠనం కోసం విషయాలను సేవ్ చేయండి.';
+
+  @override
+  String get premium_title => 'ఏకాదశి ప్రీమియం';
+
+  @override
+  String get premium_benefits =>
+      'గూగుల్ క్యాలెండర్ సమకాలీకరణ మరియు అదనపు విజయాలు. తేదీలు, వ్యక్తిగత నమోదులు, వ్రత నమోదులు, వరుసలు మరియు ప్రస్తుత విడ్జెట్‌లు ఉచితం.';
+
+  @override
+  String get premium_free_achievements =>
+      'మొదట సాధించిన మూడు విజయాలు ఉచితం. అన్ని వ్రత నమోదులు మరియు వరుసలు ఉచితం.';
+
+  @override
+  String get premium_monthly => 'నెలవారీ';
+
+  @override
+  String get premium_yearly => 'వార్షిక';
+
+  @override
+  String get premium_lifetime => 'జీవితకాలం';
+
+  @override
+  String get premium_monthly_terms =>
+      'ప్రతి నెల పూర్తి రుసుము వసూలు అవుతుంది. గూగుల్ ప్లేలో రద్దు చేసే వరకు స్వయంచాలకంగా పునరుద్ధరించబడుతుంది.';
+
+  @override
+  String get premium_yearly_terms =>
+      'ప్రతి సంవత్సరం పూర్తి రుసుము వసూలు అవుతుంది. గూగుల్ ప్లేలో రద్దు చేసే వరకు స్వయంచాలకంగా పునరుద్ధరించబడుతుంది.';
+
+  @override
+  String get premium_lifetime_terms =>
+      'ఒకసారి చెల్లింపు, పునరుద్ధరణ లేదు. రెట్టింపు ఛార్జీలను నివారించేందుకు జీవితకాల ప్రణాళిక కొనే ముందు ప్రస్తుత సభ్యత్వాన్ని నిర్వహించండి లేదా రద్దు చేయండి.';
+
+  @override
+  String get premium_sign_in => 'గూగుల్‌తో సురక్షితంగా ప్రవేశించండి';
+
+  @override
+  String get premium_continue_free => 'ఉచితంగా కొనసాగించండి';
+
+  @override
+  String get premium_restore => 'కొనుగోళ్లను పునరుద్ధరించండి';
+
+  @override
+  String get premium_manage => 'గూగుల్ ప్లేలో సభ్యత్వాన్ని నిర్వహించండి';
+
+  @override
+  String get premium_active => 'ప్రీమియం సదుపాయం అందుబాటులో ఉంది';
+
+  @override
+  String get premium_unavailable =>
+      'కొనుగోళ్లు అందుబాటులో లేవు. ఉచిత సదుపాయాలు పనిచేస్తాయి.';
+
+  @override
+  String get premium_verification_failed =>
+      'కొనుగోలు ధృవీకరణ పెండింగ్‌లో ఉంది. కొనుగోళ్ల పునరుద్ధరణ ప్రయత్నించండి; ధృవీకరణ తర్వాతే సదుపాయం లభిస్తుంది.';
+
+  @override
+  String get premium_pending => 'చెల్లింపు నిర్ధారణ కోసం వేచి ఉంది';
+
+  @override
+  String get premium_wallet => 'వ్రత బహుమతులు';
+
+  @override
+  String get premium_reward_rules =>
+      'పూర్తిచేసిన ప్రతి ఏకాదశికి 10 నాణేలు పొందండి. మద్దతు ఉన్న సంవత్సరంలోని అన్ని ఏకాదశులను పూర్తిచేస్తే బోనస్‌తో మొత్తం 300 నాణేలు వస్తాయి. 300 నాణేలతో ఆరు నెలల ప్రీమియం సదుపాయం పొందండి. కొనుగోలు అవసరం లేదు; మీ స్వీయ నమోదుల ఆధారంగా బహుమతులు ఉంటాయి. నాణేలకు నగదు విలువ లేదు; కొనడం, బదిలీ చేయడం లేదా డబ్బుగా తిరిగి పొందడం వీలుకాదు. పూర్తి నమోదును మార్చినా తొలగించినా దాని నాణేలు తగ్గుతాయి.';
+
+  @override
+  String get premium_reward_consent =>
+      'క్లౌడ్ బహుమతులను ప్రారంభించాలా? పూర్తి గుర్తింపులు, స్థితి, ఎంచుకున్న క్యాలెండర్ ప్రాంతం మరియు సమకాలీకరణ వివరాలు పంపబడతాయి. గమనికలు మరియు వ్రత వివరాలు మీ ఫోన్‌లోనే ఉంటాయి.';
+
+  @override
+  String get premium_reward_activate => 'బహుమతులను ప్రారంభించండి';
+
+  @override
+  String get premium_reward_sync_failed =>
+      'బహుమతులు సమకాలీకరించబడలేదు. మీ వ్యక్తిగత వ్రత నమోదులు సురక్షితంగా ఉన్నాయి. కనెక్ట్ అయిన తర్వాత మళ్లీ ప్రయత్నించండి; విరుద్ధ మార్పులకు సహాయం అవసరం కావచ్చు.';
+
+  @override
+  String get premium_redeem => 'ఆరు నెలలకు 300 నాణేలు వినియోగించండి';
+
+  @override
+  String get premium_redemption_failed =>
+      'క్రెడిట్‌ను వినియోగించలేకపోయాము. నిలిపిన సభ్యత్వాన్ని నిర్వహించండి లేదా తర్వాత ప్రయత్నించండి. పెండింగ్ క్రెడిట్ నిల్వ చేయబడుతుంది; రెండుసార్లు తగ్గదు.';
+
+  @override
+  String get premium_delete_account => 'క్లౌడ్ ఖాతాను తొలగించండి';
+
+  @override
+  String get premium_delete_warning =>
+      'క్లౌడ్ బహుమతులు మరియు ఖాతా డేటాను తొలగించాలా? స్థానిక వ్రత చరిత్ర ఫోన్‌లో ఉంటుంది. ఇది గూగుల్ ప్లే సభ్యత్వాలను రద్దు చేయదు; ముందుగా వాటిని నిర్వహించండి.';
+
+  @override
+  String get premium_terms => 'గోప్యత మరియు బహుమతి నిబంధనలు';
+
+  @override
+  String get premium_coins => 'నాణేలు';
+
+  @override
+  String get premium_more_achievements => 'ప్రీమియంతో మరిన్ని విజయాలు';
+
+  @override
+  String get premium_reward_example =>
+      'సాధారణ సంవత్సరం: 24 × 10 = 240 నాణేలు, పూర్తి సంవత్సరం బోనస్ 60 కలిపి 300. 26 ఏకాదశులు ఉన్న సంవత్సరంలో: 260 + 40 = 300.';
 }
