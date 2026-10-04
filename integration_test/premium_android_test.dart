@@ -47,11 +47,44 @@ void main() {
         if (!context.mounted) break;
         Navigator.of(context).push(
           MaterialPageRoute<void>(
-            builder: (_) => PremiumScreen(billingOverride: fixture),
+            builder: (_) => PremiumScreen(
+              key: ValueKey('premium_fixture_$locale'),
+              billingOverride: fixture,
+            ),
           ),
         );
-        await tester.pump(const Duration(seconds: 1));
+        for (
+          var i = 0;
+          i < 30 &&
+              find
+                  .byKey(ValueKey('premium_fixture_$locale'))
+                  .evaluate()
+                  .isEmpty;
+          i++
+        ) {
+          await tester.pump(const Duration(seconds: 1));
+        }
+        expect(find.byKey(ValueKey('premium_fixture_$locale')), findsOneWidget);
+        final scrollable = find
+            .descendant(
+              of: find.byKey(ValueKey('premium_fixture_$locale')),
+              matching: find.byType(Scrollable),
+            )
+            .first;
+        tester.state<ScrollableState>(scrollable).position.jumpTo(0);
+        for (
+          var i = 0;
+          i < 30 &&
+              find.text(lang.translate('premium_benefits')).evaluate().isEmpty;
+          i++
+        ) {
+          await tester.pump(const Duration(seconds: 1));
+        }
+        await binding.takeScreenshot(
+          'premium_fixture_${locale}_before_validation',
+        );
         expect(find.text(lang.translate('premium_benefits')), findsOneWidget);
+        expect(find.textContaining('₹99'), findsWidgets);
         await binding.takeScreenshot('premium_fixture_${locale}_plans');
         await tester.scrollUntilVisible(
           find.text(lang.translate('premium_continue_free')),
