@@ -469,6 +469,23 @@ class CalendarScreenState extends State<CalendarScreen> {
               ),
             ),
           ),
+          // Keep the selected-day status visible before the grid on short screens.
+          if (_selectedEkadashi == null && _filter == CalendarFilter.ekadashi)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                child: Text(
+                  lang.translate('no_ekadashi'),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.color?.withValues(alpha: 0.6),
+                  ),
+                ),
+              ),
+            ),
           SliverToBoxAdapter(
             child: TableCalendar(
               key: ValueKey(_selectedYear),
@@ -618,22 +635,7 @@ class CalendarScreenState extends State<CalendarScreen> {
                 if (_selectedEkadashi != null &&
                     (_filter == CalendarFilter.all ||
                         _filter == CalendarFilter.ekadashi))
-                  _buildSimpleEkadashiCard(_selectedEkadashi!)
-                else if (_filter == CalendarFilter.ekadashi)
-                  SizedBox(
-                    height: 160,
-                    child: Center(
-                      child: Text(
-                        lang.translate('no_ekadashi'),
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: Theme.of(
-                            context,
-                          ).textTheme.bodyMedium?.color?.withValues(alpha: 0.6),
-                        ),
-                      ),
-                    ),
-                  ),
+                  _buildSimpleEkadashiCard(_selectedEkadashi!),
                 if (_filter != CalendarFilter.ekadashi)
                   DayEntriesList(
                     items: CalendarDayMerge.merge(

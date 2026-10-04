@@ -88,3 +88,14 @@ The Android-only permissions row has separate guide/settings icons in a two-icon
 tube, with localized tooltips and 48dp targets. Four direct component regressions
 first reproduced its 16dp info target and long-label overflow, then passed for
 English, Tamil, Hindi and Telugu at 320dp / 2x text scaling.
+
+Final emulator screenshot review found that the fixed 160dp empty-day footer
+placed its message behind the floating bar on short phones. Four red/green
+geometry regressions cover 720/732dp heights and five/six-week months. The
+selected-day empty status now appears above the grid, below the month controls;
+calendar rows and all action targets retain their existing sizes.
+
+Arun subsequently confirmed that passing automated gates and screenshot checks
+authorize this UI merge to dev. Physical Samsung checks remain release validation.
+Paid subscriptions/rewards belong on a later separate branch and require their
+own finalization, testing and approval before any dev merge.

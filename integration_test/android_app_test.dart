@@ -82,6 +82,17 @@ void main() {
     await pumpUi(tester);
     await tester.tap(find.byIcon(Icons.calendar_month));
     await pumpUi(tester);
+    final emptyDay = find.text('No Ekadashi on this day');
+    if (emptyDay.evaluate().isNotEmpty &&
+        find.byKey(const Key('glass_capsule_surface')).evaluate().isNotEmpty) {
+      expect(
+        tester.getRect(emptyDay).bottom,
+        lessThanOrEqualTo(
+          tester.getRect(find.byKey(const Key('glass_capsule_surface'))).top -
+              8,
+        ),
+      );
+    }
     await binding.takeScreenshot('android_calendar');
     await tester.tap(find.byIcon(Icons.settings));
     await pumpUi(tester);

@@ -48,6 +48,38 @@ void main() {
       );
     }
   }
+  for (final month in [8, 10]) {
+    for (final height in [720.0, 732.0]) {
+      testWidgets(
+        'Calendar empty day is readable above glass on a short ${height}dp screen, month $month',
+        (tester) async {
+          tester.view.physicalSize = Size(411, height);
+          tester.view.devicePixelRatio = 1;
+          tester.view.padding = const FakeViewPadding(top: 24, bottom: 24);
+          addTearDown(tester.view.resetPhysicalSize);
+          addTearDown(tester.view.resetDevicePixelRatio);
+          addTearDown(tester.view.resetPadding);
+          await tester.pumpWidget(harness.app());
+          await tester.pumpAndSettle();
+          await tester.tap(find.byKey(const Key('glass_tab_1')));
+          await tester.pumpAndSettle();
+          tester
+              .state<CalendarScreenState>(find.byType(CalendarScreen))
+              .selectDate(DateTime(2026, month, month == 8 ? 1 : 4));
+          await tester.pumpAndSettle();
+          final empty = find.text('No Ekadashi on this day');
+          final capsule = tester.getRect(
+            find.byKey(const Key('glass_capsule_surface')),
+          );
+          expect(
+            tester.getRect(empty).bottom,
+            lessThanOrEqualTo(capsule.top - 8),
+          );
+          expect(tester.takeException(), isNull);
+        },
+      );
+    }
+  }
   testWidgets('iOS retains its existing navigation', (tester) async {
     debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
     try {
