@@ -6,6 +6,8 @@ import '../../models/vrat_tracker_models.dart';
 import '../../services/ekadashi_service.dart';
 import '../../services/language_service.dart';
 import '../../services/vrat_tracker_service.dart';
+import '../../services/premium_service.dart';
+import '../premium_screen.dart';
 
 /// Modal bottom sheet for recording, editing, or deleting an Ekadashi observance.
 class RecordVratDialog extends StatefulWidget {
@@ -119,6 +121,23 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
     }
 
     final tracker = Provider.of<VratTrackerService>(context, listen: false);
+    final premium = context.read<PremiumService?>();
+    if (_status != ObservanceStatus.unrecorded &&
+        tracker.needsPremiumToRecord(
+          widget.ekadashi.occurrenceUid,
+          premium: premium?.isPremium == true,
+        )) {
+      final lang = context.read<LanguageService>();
+      final messenger = ScaffoldMessenger.of(context);
+      await openPremium(context, currentTimezone: widget.currentTimezone);
+      if (!mounted) return;
+      if (premium?.isPremium != true) {
+        messenger.showSnackBar(
+          SnackBar(content: Text(lang.translate('vrat_free_limit_reached'))),
+        );
+        return;
+      }
+    }
     final dateStr = DateFormat('yyyy-MM-dd').format(widget.ekadashi.date);
 
     try {

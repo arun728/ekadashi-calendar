@@ -31,12 +31,16 @@ class CalendarScreen extends StatefulWidget {
   final CalendarEntryRepository? repository;
   final GoogleCalendarService? googleService;
 
+  /// Overrides "now" in tests; the free Google import is the current month.
+  final DateTime Function()? clock;
+
   const CalendarScreen({
     super.key,
     required this.ekadashiList,
     this.currentTimezone,
     this.repository,
     this.googleService,
+    this.clock,
   });
 
   @override
@@ -85,7 +89,7 @@ class CalendarScreenState extends State<CalendarScreen> {
         );
     _initRepo();
     // Ensure focused day is within valid range
-    final now = DateTime.now();
+    final now = _now();
     _selectedYear = _years.contains(now.year)
         ? now.year
         : (_years.isEmpty ? now.year : _years.last);
@@ -151,7 +155,7 @@ class CalendarScreenState extends State<CalendarScreen> {
     }
   }
 
-  void _showMessage(String key, {List<String>? args}) {
+  void _showMessage(String key, {List<String>? args, bool upsell = false}) {
     if (!mounted) return;
     final lang = context.read<LanguageService>();
     ScaffoldMessenger.of(context).showSnackBar(
@@ -161,23 +165,53 @@ class CalendarScreenState extends State<CalendarScreen> {
               ? lang.translate(key)
               : lang.translateWithArgs(key, args),
         ),
+        action: upsell
+            ? SnackBarAction(
+                label: lang.translate('premium_title'),
+                onPressed: () => openPremium(
+                  context,
+                  currentTimezone: widget.currentTimezone ?? 'IST',
+                ),
+              )
+            : null,
       ),
     );
   }
 
+  DateTime _now() => (widget.clock ?? DateTime.now)();
+
+  /// Free users import the current month; premium imports the whole year.
   Future<void> _syncYear() async {
     if (_syncing || !_repoReady) return;
-    if (context.read<PremiumService?>()?.isPremium != true) {
+    final year = _selectedYear;
+    final now = _now();
+    var premium = context.read<PremiumService?>()?.isPremium == true;
+    if (!premium && year != now.year) {
       await openPremium(
         context,
         currentTimezone: widget.currentTimezone ?? 'IST',
       );
-      return;
+      if (!mounted) return;
+      premium = context.read<PremiumService?>()?.isPremium == true;
+      // Continue straight into the import after a successful purchase.
+      if (!premium) return;
     }
-    final year = _selectedYear;
+    final timeMin = premium
+        ? DateTime(year, 1, 1)
+        : DateTime(now.year, now.month);
+    final timeMax = premium
+        ? DateTime(year + 1, 1, 1)
+        : DateTime(now.year, now.month + 1);
     setState(() => _syncing = true);
     try {
-      if (!await _google.isSignedIn() && !await _google.signIn()) {
+      final bool signedIn;
+      try {
+        signedIn = await _google.isSignedIn() || await _google.signIn();
+      } catch (_) {
+        _showMessage('google_sign_in_failed');
+        return;
+      }
+      if (!signedIn) {
         _showMessage('sign_in_cancelled');
         return;
       }
@@ -199,17 +233,21 @@ class CalendarScreenState extends State<CalendarScreen> {
       // Capture the selected year before authentication: changing a tab or year
       // while a request runs cannot silently change the requested import range.
       final count = await _google.syncImport(
-        timeMin: DateTime(year, 1, 1),
-        timeMax: DateTime(year + 1, 1, 1),
+        timeMin: timeMin,
+        timeMax: timeMax,
         calendarIds: chosen,
       );
       await GoogleCalendarPrefs.saveSelectedIds(account, chosen);
       await _reloadEntries();
       if (mounted) setState(() => _filter = CalendarFilter.google);
-      _showMessage(
-        count == 0 ? 'no_google_events' : 'imported_google_events',
-        args: ['$count'],
-      );
+      if (!premium) {
+        _showMessage('google_month_imported_free', upsell: true);
+      } else {
+        _showMessage(
+          count == 0 ? 'no_google_events' : 'imported_google_events',
+          args: ['$count'],
+        );
+      }
     } catch (_) {
       _showMessage('google_sync_failed');
     } finally {
@@ -221,8 +259,8 @@ class CalendarScreenState extends State<CalendarScreen> {
     if (_syncing || !_repoReady) return;
     setState(() => _syncing = true);
     try {
+      // Premium belongs to the Google Play purchase, not this Google sign-in.
       await _google.signOut();
-      if (mounted) context.read<PremiumService?>()?.reset();
       await _reloadEntries();
     } catch (_) {
       _showMessage('google_sync_failed');
@@ -369,6 +407,7 @@ class CalendarScreenState extends State<CalendarScreen> {
                           ),
                         ),
                         IconButton(
+                          key: const Key('disconnect_google'),
                           tooltip: lang.translate('disconnect_google'),
                           onPressed: _repoReady && !_syncing
                               ? _disconnectGoogle

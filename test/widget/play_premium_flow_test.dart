@@ -75,14 +75,21 @@ void main() {
     final monthly = find.widgetWithText(FilledButton, 'Monthly · ₹99');
     expect(monthly, findsOneWidget);
     expect(tester.widget<FilledButton>(monthly).onPressed, isNotNull);
-    expect(find.textContaining('₹499'), findsWidgets);
-    expect(find.textContaining('₹999'), findsWidgets);
     for (final feature in [
       'premium_feature_calendar',
       'premium_feature_vrat',
       'premium_feature_panchang',
     ]) {
       expect(find.text(lang.translate(feature)), findsOneWidget);
+    }
+    for (final label in ['Yearly · ₹499', 'Lifetime · ₹999']) {
+      final button = find.widgetWithText(FilledButton, label);
+      await tester.scrollUntilVisible(
+        button,
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(tester.widget<FilledButton>(button).onPressed, isNotNull);
     }
   });
 
@@ -122,13 +129,19 @@ void main() {
     return auth;
   }
 
+  // The sync spinner animates while the picker is open, so avoid settling.
+  Future<void> tapImport(WidgetTester tester) async {
+    await tester.tap(find.byKey(const Key('import_google_year')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+  }
+
   testWidgets('Free Calendar imports the current month without a paywall', (
     tester,
   ) async {
     final premium = freeUser(PremiumFixture());
     final google = await pumpCalendar(tester, premium);
-    await tester.tap(find.byKey(const Key('import_google_year')));
-    await tester.pumpAndSettle();
+    await tapImport(tester);
     expect(find.byType(PremiumScreen), findsNothing);
     await tester.tap(find.text('Import selected'));
     await tester.pumpAndSettle();
@@ -155,7 +168,8 @@ void main() {
     expect(google.min, isNull);
     premium.applyOwned({PremiumService.subscriptionId}); // Play purchase.
     await tester.tap(find.byKey(const Key('premium_close')));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
     await tester.tap(find.text('Import selected'));
     await tester.pumpAndSettle();
     expect(google.min, DateTime(2027, 1, 1));
@@ -169,8 +183,7 @@ void main() {
     addTearDown(premium.dispose);
     await premium.refresh();
     final google = await pumpCalendar(tester, premium);
-    await tester.tap(find.byKey(const Key('import_google_year')));
-    await tester.pumpAndSettle();
+    await tapImport(tester);
     await tester.tap(find.text('Import selected'));
     await tester.pumpAndSettle();
     expect(google.min, DateTime(2026, 1, 1));
@@ -327,6 +340,8 @@ void main() {
         ),
       ),
     );
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const Key('panchang_unlock_button')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('panchang_unlock_button')));
     await tester.pumpAndSettle();

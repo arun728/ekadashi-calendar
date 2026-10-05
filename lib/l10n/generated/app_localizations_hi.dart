@@ -832,11 +832,11 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get premium_benefits =>
-      'गूगल कैलेंडर सिंक और अतिरिक्त उपलब्धियाँ। तिथियाँ, निजी प्रविष्टियाँ, व्रत रिकॉर्ड, क्रम और सभी मौजूदा विजेट मुफ़्त हैं।';
+      'एकादशी प्रीमियम से सब कुछ अनलॉक करें। एकादशी तिथियाँ, रिमाइंडर, विजेट, निजी प्रविष्टियाँ और आपका सहेजा व्रत इतिहास मुफ़्त रहेगा।';
 
   @override
   String get premium_free_achievements =>
-      'पहली तीन अर्जित उपलब्धियाँ मुफ़्त हैं। सभी व्रत रिकॉर्ड और क्रम मुफ़्त हैं।';
+      'आपकी पहली तीन व्रत प्रविष्टियाँ और पहली तीन उपलब्धियाँ मुफ़्त हैं। बाकी प्रीमियम में खुलती हैं।';
 
   @override
   String get premium_monthly => 'मासिक';
@@ -876,7 +876,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get premium_unavailable =>
-      'खरीदारी उपलब्ध नहीं है। मुफ़्त सुविधाएँ काम करती रहेंगी।';
+      'अभी खरीदारी उपलब्ध नहीं है। ऐप Google Play से इंस्टॉल करके फिर प्रयास करें। मुफ़्त सुविधाएँ काम करती रहेंगी।';
 
   @override
   String get premium_verification_failed =>
@@ -929,4 +929,34 @@ class AppLocalizationsHi extends AppLocalizations {
   @override
   String get premium_reward_example =>
       'सामान्य वर्ष: 24 × 10 = 240 सिक्के, पूरे वर्ष का बोनस 60 जोड़कर 300। 26 एकादशी वाले वर्ष में: 260 + 40 = 300।';
+
+  @override
+  String get premium_feature_calendar =>
+      'पूरे साल के लिए Google कैलेंडर आयात (इस महीने का मुफ़्त)';
+
+  @override
+  String get premium_feature_vrat =>
+      'असीमित व्रत प्रविष्टियाँ (पहली तीन मुफ़्त) और सभी उपलब्धियाँ';
+
+  @override
+  String get premium_feature_panchang =>
+      'पूर्ण दैनिक पंचांग: पाँचों अंग, शहर के अनुसार समय और पर्व';
+
+  @override
+  String get terms_of_service => 'सेवा की शर्तें';
+
+  @override
+  String get privacy_policy => 'गोपनीयता नीति';
+
+  @override
+  String get google_month_imported_free =>
+      'इस महीने के Google इवेंट मुफ़्त में आयात हो गए। पूरे साल के आयात के लिए प्रीमियम लें।';
+
+  @override
+  String get google_sign_in_failed =>
+      'Google साइन इन विफल रहा। अपना कनेक्शन जाँचें और फिर प्रयास करें।';
+
+  @override
+  String get vrat_free_limit_reached =>
+      'आपने तीन मुफ़्त व्रत प्रविष्टियाँ उपयोग कर ली हैं। आगे दर्ज करने के लिए प्रीमियम लें।';
 }

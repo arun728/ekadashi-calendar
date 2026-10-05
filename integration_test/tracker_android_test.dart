@@ -9,6 +9,8 @@ import 'package:ekadashi_calendar/services/vrat_tracker_service.dart';
 import 'package:ekadashi_calendar/screens/vrat_tracker/achievement_unlock_dialog.dart';
 import 'package:ekadashi_calendar/screens/vrat_tracker/record_vrat_dialog.dart';
 import 'package:ekadashi_calendar/screens/vrat_tracker/vrat_tracker_screen.dart';
+import 'package:ekadashi_calendar/screens/premium_screen.dart';
+import 'package:ekadashi_calendar/models/vrat_tracker_models.dart';
 
 Future<void> pumpUi(WidgetTester tester, {int frames = 6}) async {
   // The Home screen can retain an indeterminate location indicator while a
@@ -94,6 +96,51 @@ void main() {
     );
     expect(find.byType(AchievementUnlockDialog), findsOneWidget);
     expect(find.text(lang.translate('achievement_unlocked')), findsOneWidget);
+    Navigator.of(tester.element(find.byType(AchievementUnlockDialog))).pop();
+    await pumpUi(tester);
+
+    // Free tier: three Vrat entries; the fourth new entry opens the paywall.
+    final pastEvents = occurrences
+        .where((event) => event.date.isBefore(today) && event.id != past.id)
+        .toList();
+    for (final event in pastEvents.take(2)) {
+      await tracker.recordVrat(
+        ekadashiOccurrenceId: event.id,
+        occurrenceUid: event.occurrenceUid,
+        ekadashiDate: event.date.toIso8601String().substring(0, 10),
+        ekadashiName: event.name,
+        status: ObservanceStatus.observed,
+      );
+    }
+    expect(tracker.recordedEntryCount, VratTrackerService.freeEntryLimit);
+    final fourth = pastEvents[2];
+    if (!context.mounted) return;
+    RecordVratDialog.show(
+      context,
+      ekadashi: fourth,
+      allOccurrences: occurrences,
+      currentTimezone: 'IST',
+    );
+    await pumpUi(tester);
+    final saveFourth = find.widgetWithText(
+      ElevatedButton,
+      lang.translate('record_observance'),
+    );
+    await tester.ensureVisible(saveFourth);
+    await pumpUi(tester);
+    await tester.tap(saveFourth);
+    await pumpUi(tester, frames: 12);
+    expect(find.byType(PremiumScreen), findsOneWidget);
+    await binding.takeScreenshot('free_vrat_limit_paywall');
+    await tester.tap(find.byKey(const Key('premium_close')));
+    await pumpUi(tester);
+    expect(tracker.getRecordByUid(fourth.occurrenceUid), isNull);
+    expect(
+      find.text(lang.translate('vrat_free_limit_reached')),
+      findsOneWidget,
+    );
+    await binding.takeScreenshot('free_vrat_limit_message');
+    debugPrint('Tracker UI: fourth free entry gated by premium');
     expect(tester.takeException(), isNull);
   });
 }

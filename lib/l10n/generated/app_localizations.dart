@@ -1683,13 +1683,13 @@ abstract class AppLocalizations {
   /// No description provided for @premium_benefits.
   ///
   /// In en, this message translates to:
-  /// **'Google Calendar sync and additional achievements. Dates, custom entries, Vrat records, streaks and all existing widgets stay free.'**
+  /// **'Unlock everything in Ekadashi Premium. Ekadashi dates, reminders, widgets, custom entries and your saved Vrat history stay free.'**
   String get premium_benefits;
 
   /// No description provided for @premium_free_achievements.
   ///
   /// In en, this message translates to:
-  /// **'Your first three earned achievements are free. All recording and streaks remain free.'**
+  /// **'Your first three Vrat entries and first three achievements are free. Premium unlocks the rest.'**
   String get premium_free_achievements;
 
   /// No description provided for @premium_monthly.
@@ -1761,7 +1761,7 @@ abstract class AppLocalizations {
   /// No description provided for @premium_unavailable.
   ///
   /// In en, this message translates to:
-  /// **'Purchases are unavailable. Free features still work.'**
+  /// **'Purchases are unavailable right now. Install the app from Google Play and try again. Free features still work.'**
   String get premium_unavailable;
 
   /// No description provided for @premium_verification_failed.
@@ -1853,6 +1853,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Typical year: 24 × 10 = 240 coins, plus a 60-coin full-year bonus = 300 coins. In a 26-Ekadashi year: 260 + 40 = 300.'**
   String get premium_reward_example;
+
+  /// No description provided for @premium_feature_calendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Google Calendar import for the whole year (this month is free)'**
+  String get premium_feature_calendar;
+
+  /// No description provided for @premium_feature_vrat.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlimited Vrat entries (the first three are free) and all achievements'**
+  String get premium_feature_vrat;
+
+  /// No description provided for @premium_feature_panchang.
+  ///
+  /// In en, this message translates to:
+  /// **'Full daily Panchang: all five limbs, city timings and observances'**
+  String get premium_feature_panchang;
+
+  /// No description provided for @terms_of_service.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms of service'**
+  String get terms_of_service;
+
+  /// No description provided for @privacy_policy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy policy'**
+  String get privacy_policy;
+
+  /// No description provided for @google_month_imported_free.
+  ///
+  /// In en, this message translates to:
+  /// **'This month\'s Google events were imported free. Get Premium to import the whole year.'**
+  String get google_month_imported_free;
+
+  /// No description provided for @google_sign_in_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Google sign-in failed. Check your connection and try again.'**
+  String get google_sign_in_failed;
+
+  /// No description provided for @vrat_free_limit_reached.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve used your three free Vrat entries. Get Premium to keep recording.'**
+  String get vrat_free_limit_reached;
 }
 
 class _AppLocalizationsDelegate

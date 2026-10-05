@@ -293,4 +293,12 @@ Map<String, String> localizedLookup(AppLocalizations l) => {
   'premium_coins': l.premium_coins,
   'premium_more_achievements': l.premium_more_achievements,
   'premium_reward_example': l.premium_reward_example,
+  'premium_feature_calendar': l.premium_feature_calendar,
+  'premium_feature_vrat': l.premium_feature_vrat,
+  'premium_feature_panchang': l.premium_feature_panchang,
+  'terms_of_service': l.terms_of_service,
+  'privacy_policy': l.privacy_policy,
+  'google_month_imported_free': l.google_month_imported_free,
+  'google_sign_in_failed': l.google_sign_in_failed,
+  'vrat_free_limit_reached': l.vrat_free_limit_reached,
 };

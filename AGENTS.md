@@ -82,3 +82,29 @@ review after the requested automated checks pass.
 
 See `docs/PANCHANG_PLAN.md` for research references, the first-release rule
 scope, and calculation/UX boundaries.
+
+## Play-only premium for v2 (approved 5 October 2026)
+
+Arun explicitly changed the monetization rules above. This section supersedes
+the earlier server-verification, rewards and "Vrat always free" instructions.
+Work lives on `feature/play-premium-paywall` (branched from
+`feature/panchang-engine`, same five tabs); open a PR to `dev`, mark it ready
+for review, and do not merge it to `dev` or `main`.
+
+- No backend for v2. Premium comes only from Google Play Billing's owned
+  purchases on the device (`queryPastPurchases` + purchase stream), never from
+  a persisted local flag or a pending purchase. Acknowledge completed purchases.
+  The paywall needs no Google sign-in. Google sign-in is only for Calendar
+  import, and disconnecting Google must not affect premium.
+- Products (prices are set in Play Console, never hard-coded): subscription
+  `ekadashi_premium` with base plans `monthly` (INR99) and `yearly` (INR499);
+  one-time `ekadashi_premium_lifetime` (INR999).
+- Hide fasting rewards/coins from the app for now (no wallet, redemption or
+  cloud account UI). The `backend/` service is dormant and not used by v2.
+- Free vs premium (three premium features for v2):
+  1. Google Calendar import (import only): the current month is free; any
+     other month/year range (the whole selected year) is premium.
+  2. Vrat: the first three recorded entries are free; recording a fourth new
+     entry needs premium. Existing entries stay editable and all history,
+     streaks, statistics and earned badges are preserved.
+  3. Panchang's full details stay premium; the daily preview stays free.

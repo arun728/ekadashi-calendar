@@ -838,11 +838,11 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get premium_benefits =>
-      'கூகுள் நாட்காட்டி ஒத்திசைவு மற்றும் கூடுதல் சாதனைகள். தேதிகள், தனிப்பட்ட பதிவுகள், விரதப் பதிவுகள், தொடர்கள் மற்றும் தற்போதைய விட்ஜெட்டுகள் இலவசம்.';
+      'ஏகாதசி பிரீமியம் மூலம் அனைத்தையும் திறக்கவும். ஏகாதசி தேதிகள், நினைவூட்டல்கள், விட்ஜெட்டுகள், தனிப்பட்ட பதிவுகள் மற்றும் சேமித்த விரத வரலாறு இலவசமாகவே இருக்கும்.';
 
   @override
   String get premium_free_achievements =>
-      'முதலில் பெறும் மூன்று சாதனைகள் இலவசம். அனைத்து விரதப் பதிவுகளும் தொடர்களும் இலவசம்.';
+      'உங்கள் முதல் மூன்று விரதப் பதிவுகளும் முதல் மூன்று சாதனைகளும் இலவசம். மற்றவை பிரீமியத்தில் திறக்கும்.';
 
   @override
   String get premium_monthly => 'மாதந்தோறும்';
@@ -882,7 +882,7 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get premium_unavailable =>
-      'வாங்கும் வசதி தற்போது இல்லை. இலவச அம்சங்களைப் பயன்படுத்தலாம்.';
+      'தற்போது வாங்க முடியவில்லை. Google Play-இலிருந்து செயலியை நிறுவி மீண்டும் முயலவும். இலவச அம்சங்கள் தொடர்ந்து செயல்படும்.';
 
   @override
   String get premium_verification_failed =>
@@ -937,4 +937,34 @@ class AppLocalizationsTa extends AppLocalizations {
   @override
   String get premium_reward_example =>
       'வழக்கமான ஆண்டு: 24 × 10 = 240 நாணயங்கள்; முழு ஆண்டு பலன் 60 சேர்த்து 300. 26 ஏகாதசிகள் உள்ள ஆண்டில்: 260 + 40 = 300.';
+
+  @override
+  String get premium_feature_calendar =>
+      'முழு ஆண்டுக்கான Google நாள்காட்டி இறக்குமதி (இந்த மாதம் இலவசம்)';
+
+  @override
+  String get premium_feature_vrat =>
+      'வரம்பற்ற விரதப் பதிவுகள் (முதல் மூன்று இலவசம்) மற்றும் அனைத்து சாதனைகளும்';
+
+  @override
+  String get premium_feature_panchang =>
+      'முழு தினசரி பஞ்சாங்கம்: ஐந்து அங்கங்கள், நகர நேரங்கள் மற்றும் விழாக்கள்';
+
+  @override
+  String get terms_of_service => 'சேவை விதிமுறைகள்';
+
+  @override
+  String get privacy_policy => 'தனியுரிமைக் கொள்கை';
+
+  @override
+  String get google_month_imported_free =>
+      'இந்த மாத Google நிகழ்வுகள் இலவசமாக இறக்குமதி செய்யப்பட்டன. முழு ஆண்டுக்கு பிரீமியம் பெறவும்.';
+
+  @override
+  String get google_sign_in_failed =>
+      'Google உள்நுழைவு தோல்வியடைந்தது. இணைப்பைச் சரிபார்த்து மீண்டும் முயலவும்.';
+
+  @override
+  String get vrat_free_limit_reached =>
+      'மூன்று இலவச விரதப் பதிவுகளையும் பயன்படுத்திவிட்டீர்கள். தொடர்ந்து பதிவு செய்ய பிரீமியம் பெறவும்.';
 }

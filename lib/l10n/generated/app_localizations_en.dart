@@ -838,11 +838,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premium_benefits =>
-      'Google Calendar sync and additional achievements. Dates, custom entries, Vrat records, streaks and all existing widgets stay free.';
+      'Unlock everything in Ekadashi Premium. Ekadashi dates, reminders, widgets, custom entries and your saved Vrat history stay free.';
 
   @override
   String get premium_free_achievements =>
-      'Your first three earned achievements are free. All recording and streaks remain free.';
+      'Your first three Vrat entries and first three achievements are free. Premium unlocks the rest.';
 
   @override
   String get premium_monthly => 'Monthly';
@@ -882,7 +882,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premium_unavailable =>
-      'Purchases are unavailable. Free features still work.';
+      'Purchases are unavailable right now. Install the app from Google Play and try again. Free features still work.';
 
   @override
   String get premium_verification_failed =>
@@ -935,4 +935,34 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get premium_reward_example =>
       'Typical year: 24 × 10 = 240 coins, plus a 60-coin full-year bonus = 300 coins. In a 26-Ekadashi year: 260 + 40 = 300.';
+
+  @override
+  String get premium_feature_calendar =>
+      'Google Calendar import for the whole year (this month is free)';
+
+  @override
+  String get premium_feature_vrat =>
+      'Unlimited Vrat entries (the first three are free) and all achievements';
+
+  @override
+  String get premium_feature_panchang =>
+      'Full daily Panchang: all five limbs, city timings and observances';
+
+  @override
+  String get terms_of_service => 'Terms of service';
+
+  @override
+  String get privacy_policy => 'Privacy policy';
+
+  @override
+  String get google_month_imported_free =>
+      'This month\'s Google events were imported free. Get Premium to import the whole year.';
+
+  @override
+  String get google_sign_in_failed =>
+      'Google sign-in failed. Check your connection and try again.';
+
+  @override
+  String get vrat_free_limit_reached =>
+      'You\'ve used your three free Vrat entries. Get Premium to keep recording.';
 }

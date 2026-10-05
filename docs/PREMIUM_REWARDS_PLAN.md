@@ -1,3 +1,5 @@
+> **Superseded for v2 (5 October 2026):** premium is Google Play only with no server, rewards are hidden, and yearly is INR499. See `docs/PREMIUM_SETUP.md` and AGENTS.md. This plan is kept for a possible later rewards release.
+
 # Ekadashi premium and fasting rewards — implementation contract
 
 Research date: 4 October 2026. Implementation must start on a separate branch

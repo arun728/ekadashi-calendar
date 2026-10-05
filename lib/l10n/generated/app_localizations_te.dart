@@ -837,11 +837,11 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get premium_benefits =>
-      'గూగుల్ క్యాలెండర్ సమకాలీకరణ మరియు అదనపు విజయాలు. తేదీలు, వ్యక్తిగత నమోదులు, వ్రత నమోదులు, వరుసలు మరియు ప్రస్తుత విడ్జెట్‌లు ఉచితం.';
+      'ఏకాదశి ప్రీమియంతో అన్నింటినీ అన్‌లాక్ చేయండి. ఏకాదశి తేదీలు, రిమైండర్లు, విడ్జెట్లు, వ్యక్తిగత ఎంట్రీలు మరియు సేవ్ చేసిన వ్రత చరిత్ర ఉచితంగానే ఉంటాయి.';
 
   @override
   String get premium_free_achievements =>
-      'మొదట సాధించిన మూడు విజయాలు ఉచితం. అన్ని వ్రత నమోదులు మరియు వరుసలు ఉచితం.';
+      'మీ మొదటి మూడు వ్రత ఎంట్రీలు మరియు మొదటి మూడు విజయాలు ఉచితం. మిగిలినవి ప్రీమియంలో అన్‌లాక్ అవుతాయి.';
 
   @override
   String get premium_monthly => 'నెలవారీ';
@@ -881,7 +881,7 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get premium_unavailable =>
-      'కొనుగోళ్లు అందుబాటులో లేవు. ఉచిత సదుపాయాలు పనిచేస్తాయి.';
+      'ప్రస్తుతం కొనుగోళ్లు అందుబాటులో లేవు. Google Play నుండి యాప్‌ను ఇన్‌స్టాల్ చేసి మళ్లీ ప్రయత్నించండి. ఉచిత ఫీచర్లు పనిచేస్తాయి.';
 
   @override
   String get premium_verification_failed =>
@@ -934,4 +934,34 @@ class AppLocalizationsTe extends AppLocalizations {
   @override
   String get premium_reward_example =>
       'సాధారణ సంవత్సరం: 24 × 10 = 240 నాణేలు, పూర్తి సంవత్సరం బోనస్ 60 కలిపి 300. 26 ఏకాదశులు ఉన్న సంవత్సరంలో: 260 + 40 = 300.';
+
+  @override
+  String get premium_feature_calendar =>
+      'సంవత్సరం మొత్తానికి Google క్యాలెండర్ దిగుమతి (ఈ నెల ఉచితం)';
+
+  @override
+  String get premium_feature_vrat =>
+      'అపరిమిత వ్రత ఎంట్రీలు (మొదటి మూడు ఉచితం) మరియు అన్ని విజయాలు';
+
+  @override
+  String get premium_feature_panchang =>
+      'పూర్తి రోజువారీ పంచాంగం: ఐదు అంగాలు, నగర సమయాలు మరియు పండుగలు';
+
+  @override
+  String get terms_of_service => 'సేవా నిబంధనలు';
+
+  @override
+  String get privacy_policy => 'గోప్యతా విధానం';
+
+  @override
+  String get google_month_imported_free =>
+      'ఈ నెల Google ఈవెంట్లు ఉచితంగా దిగుమతి అయ్యాయి. సంవత్సరం మొత్తానికి ప్రీమియం పొందండి.';
+
+  @override
+  String get google_sign_in_failed =>
+      'Google సైన్ ఇన్ విఫలమైంది. కనెక్షన్ తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.';
+
+  @override
+  String get vrat_free_limit_reached =>
+      'మీరు మూడు ఉచిత వ్రత ఎంట్రీలను ఉపయోగించారు. రికార్డ్ చేయడం కొనసాగించడానికి ప్రీమియం పొందండి.';
 }

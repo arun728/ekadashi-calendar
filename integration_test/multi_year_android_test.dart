@@ -15,6 +15,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ekadashi_calendar/main.dart' as app;
 import 'package:ekadashi_calendar/screens/calendar_screen.dart';
+import 'package:ekadashi_calendar/screens/premium_screen.dart';
 import 'package:ekadashi_calendar/models/vrat_tracker_models.dart';
 import 'package:ekadashi_calendar/services/ekadashi_service.dart';
 import 'package:ekadashi_calendar/services/language_service.dart';
@@ -252,9 +253,11 @@ void main() {
       final google = AndroidTestGoogle();
       // Verification is asynchronous: a lazy provider initialized on the first
       // sync tap otherwise correctly opens the free user's paywall.
-      final fixturePremium = PremiumService(entitlements: PremiumFixture());
+      // Starts on the free tier; a Play purchase is simulated further down.
+      final fixtureSource = PremiumFixture()..premium = false;
+      final fixturePremium = PremiumService(entitlements: fixtureSource);
       await fixturePremium.refresh();
-      expect(fixturePremium.isPremium, isTrue);
+      expect(fixturePremium.isPremium, isFalse);
       addTearDown(fixturePremium.dispose);
       Future<void> openCalendar() async {
         await tester.pumpWidget(
@@ -293,6 +296,58 @@ void main() {
       }
 
       await openCalendar();
+      // Free: the current month imports without a paywall.
+      final now = DateTime.now();
+      google.events = [
+        event(
+          'Free month event',
+          start: DateTime(
+            now.year,
+            now.month,
+            1,
+          ).toIso8601String().substring(0, 10),
+          end: DateTime(
+            now.year,
+            now.month,
+            2,
+          ).toIso8601String().substring(0, 10),
+        ),
+      ];
+      final freeImport = find.byKey(const Key('import_google_year'));
+      for (
+        var attempt = 0;
+        attempt < 20 && freeImport.evaluate().isEmpty;
+        attempt++
+      ) {
+        await tester.drag(
+          find.byType(CustomScrollView).first,
+          const Offset(0, 500),
+        );
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      await tester.ensureVisible(freeImport);
+      await tester.tap(freeImport);
+      await frames(tester);
+      expect(find.byType(PremiumScreen), findsNothing);
+      await until(
+        tester,
+        () => find.text('Import selected').evaluate().isNotEmpty,
+      );
+      await tester.tap(find.text('Import selected'));
+      await frames(tester);
+      await until(
+        tester,
+        () => find.byType(CircularProgressIndicator).evaluate().isEmpty,
+      );
+      expect(google.min, DateTime(now.year, now.month));
+      expect(google.max, DateTime(now.year, now.month + 1));
+      expect(
+        find.text(fixtureLang.translate('google_month_imported_free')),
+        findsOneWidget,
+      );
+      await binding.takeScreenshot('v2_google_free_month');
+      debugPrint('Android free current-month Google import verified');
+      google.min = null;
       await tester.tap(find.byKey(const Key('calendar_year_selector')));
       await frames(tester);
       await tester.tap(find.text('2027').last);
@@ -305,6 +360,33 @@ void main() {
       expect(calendar, findsOneWidget);
       state.selectDate(DateTime(2027, 1, 1));
       await frames(tester);
+      // Free: another year opens the paywall; then simulate a Play purchase.
+      final paidImport = find.byKey(const Key('import_google_year'));
+      await tester.ensureVisible(paidImport);
+      await tester.tap(paidImport);
+      await frames(tester);
+      await until(
+        tester,
+        () => find.byType(PremiumScreen).evaluate().isNotEmpty,
+      );
+      expect(google.min, isNull);
+      await binding.takeScreenshot('v2_google_full_year_paywall');
+      fixtureSource.premium = true;
+      await fixturePremium.refresh();
+      expect(fixturePremium.isPremium, isTrue);
+      await tester.tap(find.byKey(const Key('premium_close')));
+      await frames(tester);
+      // The purchase continues straight into the whole-year import.
+      await until(
+        tester,
+        () => find.text('Import selected').evaluate().isNotEmpty,
+      );
+      Navigator.of(tester.element(find.text('Import selected'))).pop();
+      await frames(tester);
+      await until(
+        tester,
+        () => find.byType(CircularProgressIndicator).evaluate().isEmpty,
+      );
       google.events = [
         event('Google event before deletion'),
         event('December event', start: '2027-12-31', end: '2028-01-01'),

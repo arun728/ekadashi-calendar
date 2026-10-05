@@ -1,10 +1,10 @@
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:googleapis/calendar/v3.dart' as gcal;
 
-/// One shared native sign-in session; calendar permission requested separately.
+/// Google sign-in is used only for read-only Google Calendar import. Premium
+/// access comes from Google Play and never requires this sign-in.
 class AppGoogleIdentity {
-  static const serverClientId = String.fromEnvironment('GOOGLE_WEB_CLIENT_ID');
   static final GoogleSignIn signIn = GoogleSignIn(
-    scopes: const ['email'],
-    serverClientId: serverClientId.isEmpty ? null : serverClientId,
+    scopes: const [gcal.CalendarApi.calendarReadonlyScope],
   );
 }

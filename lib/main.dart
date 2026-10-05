@@ -1,8 +1,6 @@
 import 'dart:io';
 import 'services/premium_service.dart';
-import 'services/premium_http_backend.dart';
 import 'services/play_billing_service.dart';
-import 'services/reward_wallet_service.dart';
 import 'widgets/glass_tube.dart';
 import 'package:flutter/foundation.dart';
 import 'widgets/glass_navigation_bar.dart';
@@ -64,11 +62,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ThemeService()..loadTheme()),
         ChangeNotifierProvider(create: (_) => LanguageService()),
         ChangeNotifierProvider(
-          create: (_) => PremiumService(backend: PremiumHttpBackend()),
-        ),
-        ChangeNotifierProvider(
-          create: (ctx) =>
-              RewardWalletService(ctx.read<PremiumService>().backend),
+          create: (_) => PremiumService(entitlements: PlayStoreEntitlements()),
         ),
         ChangeNotifierProvider(
           lazy: false,
@@ -135,7 +129,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   final NativeLocationService _locationService = NativeLocationService();
   String _currentLangCode = '';
   PremiumService? _premium;
-  VratTrackerService? _rewardTracker;
+  VratTrackerService? _achievementTracker;
   bool _lastPremium = false;
   void _refreshPremiumFeatures() {
     if (!mounted) return;
@@ -143,8 +137,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     if (premium == null) return;
     if (premium.isPremium != _lastPremium) {
       _lastPremium = premium.isPremium;
-      if (_rewardTracker?.isInitialized == true && _ekadashiList.isNotEmpty) {
-        _rewardTracker!
+      if (_achievementTracker?.isInitialized == true &&
+          _ekadashiList.isNotEmpty) {
+        _achievementTracker!
             .refreshAchievements(_ekadashiList)
             .then((unlocked) async {
               for (final achievement in unlocked) {
@@ -155,19 +150,6 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             .catchError((_) {});
       }
     }
-    _syncRewardHistory();
-  }
-
-  void _syncRewardHistory() {
-    if (!mounted ||
-        _premium?.accountId == null ||
-        _rewardTracker?.isInitialized != true) {
-      return;
-    }
-    context.read<RewardWalletService?>()?.sync(_premium!.accountId!, {
-      for (final r in _rewardTracker!.getAllRecords())
-        if (r.occurrenceUid != null) r.occurrenceUid!: r.status.key,
-    }, _currentTimezone);
   }
 
   List<EkadashiDate> _ekadashiList = [];
@@ -207,10 +189,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       ?..addListener(_refreshPremiumFeatures);
     if (!_premiumSessionStarted && _premium != null) {
       _premiumSessionStarted = true;
-      Future.microtask(() => _premium?.connect(interactive: false));
+      // Premium is read from Google Play's owned purchases (Android only).
+      if (Platform.isAndroid) Future.microtask(() => _premium?.refresh());
     }
-    _rewardTracker ??= context.read<VratTrackerService?>()
-      ?..addListener(_syncRewardHistory);
+    _achievementTracker ??= context.read<VratTrackerService?>();
     final langService = Provider.of<LanguageService>(context);
     if (_currentLangCode != langService.currentLocale.languageCode) {
       _currentLangCode = langService.currentLocale.languageCode;
@@ -223,7 +205,6 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
     NativeWidgetService().clearDeepLinkListener();
     _premium?.removeListener(_refreshPremiumFeatures);
-    _rewardTracker?.removeListener(_syncRewardHistory);
     _pageController.dispose();
     super.dispose();
   }
@@ -231,7 +212,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      if (_premium?.connected == true) _premium!.connect(interactive: false);
+      // Pick up renewals, cancellations and refunds made in Google Play.
+      if (Platform.isAndroid) _premium?.refresh();
       // Wait for the first frame to render (ensure engine is attached)
       WidgetsBinding.instance.addPostFrameCallback((_) {
         // Add a small safety buffer for low-end devices/heavy restoration

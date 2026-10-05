@@ -1,7 +1,7 @@
-import 'premium_http_backend.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:in_app_purchase_android/billing_client_wrappers.dart';
 import 'package:in_app_purchase_android/in_app_purchase_android.dart';
 import 'premium_service.dart';
 
@@ -11,6 +11,62 @@ class PremiumPlan {
   final ProductDetails product;
 }
 
+/// True only for purchases Google Play reports as PURCHASED. The Android
+/// plugin labels every restored purchase "restored", including pending ones,
+/// so the Play purchase state is checked directly when it is available.
+bool isCompletedPlayPurchase(PurchaseDetails purchase) {
+  if (purchase is GooglePlayPurchaseDetails) {
+    return purchase.billingClientPurchase.purchaseState ==
+        PurchaseStateWrapper.purchased;
+  }
+  return purchase.status == PurchaseStatus.purchased ||
+      purchase.status == PurchaseStatus.restored;
+}
+
+/// Reads owned purchases from Google Play Billing on this device and
+/// acknowledges any completed purchase Play still holds unacknowledged
+/// (Play refunds purchases left unacknowledged for three days).
+class PlayStoreEntitlements implements PlayEntitlementSource {
+  PlayStoreEntitlements({
+    Future<List<PurchaseDetails>> Function()? query,
+    Future<void> Function(PurchaseDetails purchase)? acknowledge,
+  }) : _query = query ?? _queryPlay,
+       // Resolve the store lazily: creating it connects to Play Billing.
+       _acknowledge =
+           acknowledge ??
+           ((purchase) => InAppPurchase.instance.completePurchase(purchase));
+
+  final Future<List<PurchaseDetails>> Function() _query;
+  final Future<void> Function(PurchaseDetails purchase) _acknowledge;
+
+  static Future<List<PurchaseDetails>> _queryPlay() async {
+    final addition = InAppPurchase.instance
+        .getPlatformAddition<InAppPurchaseAndroidPlatformAddition>();
+    final response = await addition.queryPastPurchases();
+    if (response.error != null) {
+      throw StateError('Google Play purchases unavailable');
+    }
+    return response.pastPurchases;
+  }
+
+  @override
+  Future<Set<String>> ownedProducts() async {
+    final owned = <String>{};
+    for (final purchase in await _query()) {
+      if (!{
+            PremiumService.subscriptionId,
+            PremiumService.lifetimeId,
+          }.contains(purchase.productID) ||
+          !isCompletedPlayPurchase(purchase)) {
+        continue;
+      }
+      owned.add(purchase.productID);
+      if (purchase.pendingCompletePurchase) await _acknowledge(purchase);
+    }
+    return owned;
+  }
+}
+
 class PlayBillingService extends ChangeNotifier {
   PlayBillingService(this.premium, {InAppPurchase? store}) : _store = store;
   bool _disposed = false;
@@ -18,8 +74,8 @@ class PlayBillingService extends ChangeNotifier {
     if (!_disposed) notifyListeners();
   }
 
-  static const subscription = 'ekadashi_premium';
-  static const lifetime = 'ekadashi_premium_lifetime';
+  static const subscription = PremiumService.subscriptionId;
+  static const lifetime = PremiumService.lifetimeId;
   final PremiumService premium;
   InAppPurchase? _store;
   InAppPurchase get store => _store ??= InAppPurchase.instance;
@@ -30,18 +86,12 @@ class PlayBillingService extends ChangeNotifier {
   Future<void>? _processing;
   Future<void> initialize() async {
     if (_disposed) return;
-    if (premium.backend is PremiumHttpBackend &&
-        !(premium.backend as PremiumHttpBackend).configured) {
-      error = 'premium_unavailable';
-      _notify();
-      return;
-    }
     _subscription ??= store.purchaseStream.listen(
       (values) {
         _processing = (_processing ?? Future<void>.value())
             .then((_) => _process(values))
             .catchError((_) {
-              error = 'premium_verification_failed';
+              error = 'premium_unavailable';
               _notify();
             });
       },
@@ -101,31 +151,23 @@ class PlayBillingService extends ChangeNotifier {
           break;
         case PurchaseStatus.purchased:
         case PurchaseStatus.restored:
+          if (!isCompletedPlayPurchase(purchase)) {
+            pending = true;
+            break;
+          }
           pending = false;
-          // A purchase remains unacknowledged locally until server verification
-          // succeeds. Server/restore retries fulfill it durably.
-          final verified = await premium.verify(
-            purchase.verificationData.serverVerificationData,
-            purchase.productID,
-          );
-          if (verified && purchase.pendingCompletePurchase) {
+          premium.grant(purchase.productID);
+          if (purchase.pendingCompletePurchase) {
             await store.completePurchase(purchase);
           }
-          error = verified ? null : 'premium_verification_failed';
+          error = null;
       }
     }
     _notify();
   }
 
   Future<void> buy(PremiumPlan plan) async {
-    if (!premium.connected ||
-        premium.accountId == null ||
-        pending ||
-        premium.isPremium ||
-        premium.autoRenew ||
-        premium.lifetime) {
-      return;
-    }
+    if (pending || premium.isPremium) return;
     try {
       final product = plan.product;
       String? offer;
@@ -138,7 +180,6 @@ class PlayBillingService extends ChangeNotifier {
       }
       final param = GooglePlayPurchaseParam(
         productDetails: product,
-        applicationUserName: premium.accountId,
         offerToken: offer,
       );
       if (!await store.buyNonConsumable(purchaseParam: param)) {
@@ -150,16 +191,11 @@ class PlayBillingService extends ChangeNotifier {
     _notify();
   }
 
+  /// Restores from Google Play's owned purchases; no account sign-in needed.
   Future<void> restore() async {
-    try {
-      await premium.connect();
-      if (premium.connected) {
-        await store.restorePurchases(applicationUserName: premium.accountId);
-      }
-    } catch (_) {
-      error = 'premium_unavailable';
-      _notify();
-    }
+    await premium.refresh();
+    error = premium.error;
+    _notify();
   }
 
   @override

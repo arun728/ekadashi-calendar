@@ -1,6 +1,5 @@
 import 'google_identity.dart';
 import 'google_calendar_api_reader.dart';
-import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
 import 'package:extension_google_sign_in_as_googleapis_auth/extension_google_sign_in_as_googleapis_auth.dart';
@@ -10,9 +9,7 @@ import 'google_calendar_service.dart';
 
 class GoogleAuthGatewayAndroid implements GoogleAuthGateway {
   GoogleAuthGatewayAndroid({GoogleSignIn? signIn})
-    : _signIn =
-          signIn ??
-          AppGoogleIdentity.signIn;
+    : _signIn = signIn ?? AppGoogleIdentity.signIn;
 
   final GoogleSignIn _signIn;
   gcal.CalendarApi? _api;
@@ -29,18 +26,19 @@ class GoogleAuthGatewayAndroid implements GoogleAuthGateway {
     return account != null;
   }
 
+  /// Returns false when the user cancels. Configuration, network or Play
+  /// services failures are rethrown so the UI can say sign-in failed.
   @override
   Future<bool> signIn() async {
-    try {
-      final account = await _signIn.signIn();
-      if (account == null) return false;
-      if (!await _signIn.requestScopes([gcal.CalendarApi.calendarReadonlyScope])) return false;
-      await _ensureApi();
-      return true;
-    } catch (e) {
-      debugPrint('Google sign-in failed: $e');
+    final account = await _signIn.signIn();
+    if (account == null) return false;
+    if (!await _signIn.requestScopes([
+      gcal.CalendarApi.calendarReadonlyScope,
+    ])) {
       return false;
     }
+    await _ensureApi();
+    return true;
   }
 
   @override
@@ -55,7 +53,9 @@ class GoogleAuthGatewayAndroid implements GoogleAuthGateway {
   Future<void> _ensureApi() async {
     final account = await accountId();
     if (_api != null && _apiAccount == account) return;
-    if (!await _signIn.requestScopes([gcal.CalendarApi.calendarReadonlyScope])) {
+    if (!await _signIn.requestScopes([
+      gcal.CalendarApi.calendarReadonlyScope,
+    ])) {
       throw StateError('Calendar permission required');
     }
     _client?.close();
