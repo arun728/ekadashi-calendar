@@ -84,27 +84,52 @@ tiny record per account in Cloud Firestore on Firebase's free Spark plan (no
 card needed; free quota is 50,000 reads and 20,000 writes per day). It uses
 the same Google sign-in, so users see no extra screen or permission.
 
-1. https://console.firebase.google.com → **Add project** → choose the
-   existing Google Cloud project `ekadashi-calendar-505210` → keep the free
-   Spark plan.
-2. **Build → Authentication → Get started → Sign-in method → Google →
-   Enable**. Open the Google provider and copy the **Web client ID**.
-3. **Build → Firestore Database → Create database** (production mode, region
-   `asia-south1`). Open **Rules**, paste `firebase/firestore.rules` from this
-   repo and **Publish**.
-4. **Project settings → General**: copy the **Web API key**. Under
-   *Your apps*, add the Android app `com.applausestudios.ekadashi_calendar`
-   with the same SHA-1 fingerprints as the OAuth Android client.
-5. Build the release with:
-   `--dart-define=FIREBASE_API_KEY=<web API key>`
-   `--dart-define=FIREBASE_PROJECT_ID=ekadashi-calendar-505210`
-   `--dart-define=GOOGLE_WEB_CLIENT_ID=<web client ID>`
-   These are not secrets, but keep the API key restricted to the Identity
-   Toolkit and Cloud Firestore APIs and the Android app in Google Cloud →
-   Credentials.
+### Status: configured on 5 October 2026
 
-Without these settings the app still works and relies on the phone's own
-record only.
+- Firebase added to `ekadashi-calendar-505210` (Spark, no billing).
+- Firestore database `(default)` in `asia-south1`, rules from
+  `firebase/firestore.rules` published. Verified with the Rules test API: an
+  account can read and create only its own record, once; updates, deletes,
+  listing, other accounts and signed-out requests are denied. A signed-out
+  request to the live database returns 403.
+- Authentication: Google provider enabled; Firebase created the web client
+  below.
+- Android app `com.applausestudios.ekadashi_calendar` registered
+  (`1:827853182968:android:135de93e4c5110290fa80d`); web config
+  `1:827853182968:web:e827522098e5f8f40fa80d`.
+- The web API key ("Browser key (auto created by Firebase)") is restricted
+  to the Identity Toolkit, Secure Token and Cloud Firestore APIs.
+
+Public build values (not secrets; Android apps ship them):
+
+| Setting | Value |
+|---|---|
+| `FIREBASE_API_KEY` | `AIzaSyACQgEzjZxdO_m2WgrGhm9PNeKGEHI7z0I` |
+| `FIREBASE_PROJECT_ID` | `ekadashi-calendar-505210` |
+| `GOOGLE_WEB_CLIENT_ID` | `827853182968-sb9tdckeqgsufpv1rh86204ipq18nd10.apps.googleusercontent.com` |
+
+Release build:
+
+```
+flutter build appbundle --release \
+  --dart-define=FIREBASE_API_KEY=AIzaSyACQgEzjZxdO_m2WgrGhm9PNeKGEHI7z0I \
+  --dart-define=FIREBASE_PROJECT_ID=ekadashi-calendar-505210 \
+  --dart-define=GOOGLE_WEB_CLIENT_ID=827853182968-sb9tdckeqgsufpv1rh86204ipq18nd10.apps.googleusercontent.com
+```
+
+The web client ID makes Google sign-in return an ID token for Firebase. It
+lives in the same project as the existing Calendar OAuth Android client, so
+the Android client's package and SHA-1 fingerprints (including the Play
+app-signing key) must be registered there for sign-in to work in release.
+Adding the same SHA-1s to the Firebase Android app (Project settings → Your
+apps) is optional for this REST flow.
+
+To redo the setup elsewhere: add Firebase to the project, enable
+Authentication → Google, create Firestore in `asia-south1`, publish
+`firebase/firestore.rules`, and copy the web API key and web client ID.
+
+Without these build settings the app still works and relies on the phone's
+own record only.
 
 ## Code map
 
