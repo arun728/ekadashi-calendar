@@ -89,6 +89,24 @@ class VmServiceTests(unittest.TestCase):
             may_retry_transport("All tests passed!\nConnection refused")
         )
 
+    def test_paused_test_isolate_disconnect_retries_before_test_progress(self):
+        self.assertTrue(
+            may_retry_transport(
+                "VMServiceFlutterDriver: Isolate found with number: 123\n"
+                "Unhandled exception:\n"
+                "getIsolate: (112) Service has disappeared\n"
+                "#0 VMServiceFlutterDriver.connect"
+            )
+        )
+
+    def test_isolate_disconnect_after_test_progress_never_retries(self):
+        self.assertFalse(
+            may_retry_transport(
+                "00:00 +0: Panchang screen loads\n"
+                "getIsolate: (112) Service has disappeared"
+            )
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

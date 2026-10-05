@@ -79,7 +79,7 @@ PY
   fi
   cleanup_forward
   if (( drive_attempt == 1 )) && python3 tool/android_vm_service.py retry "$drive_log"; then
-    echo 'Test assertions passed but result transport closed; relaunching once to verify them again.'
+    echo 'Known one-off VM transport loss; relaunching once and requiring the full test suite to pass.'
   else
     exit "$drive_result"
   fi

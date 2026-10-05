@@ -47,7 +47,7 @@ def verify_vm_service(base_url: str, target: str) -> bool:
 
 
 def may_retry_transport(log: str) -> bool:
-    """Only retry after the test suite passed and the result channel vanished."""
+    """Retry only a known VM transport loss, never a test or app failure."""
     failures = (
         "Some tests failed",
         "TestFailure",
@@ -59,11 +59,20 @@ def may_retry_transport(log: str) -> bool:
     )
     if any(marker in log for marker in failures):
         return False
-    return (
+    if (
         "All tests passed" in log
         and "DriverError: Failed to fulfill RequestData" in log
         and "Service has disappeared" in log
-    )
+    ):
+        return True
+
+    # On slow emulators flutter drive can connect to the paused test isolate,
+    # then lose it before the test framework starts. Permit one complete rerun
+    # only for this exact handshake failure and only before any test progress.
+    if "getIsolate: (112) Service has disappeared" not in log:
+        return False
+    test_progress = re.search(r"(?m)^\s*\d{2}:\d{2} \+\d+:", log)
+    return not test_progress
 
 
 if __name__ == "__main__":

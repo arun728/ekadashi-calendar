@@ -3,6 +3,7 @@ package com.applausestudios.ekadashi_calendar
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Intent
+import android.os.SystemClock
 import android.view.View
 import android.view.ViewGroup
 import io.flutter.embedding.android.FlutterView
@@ -37,6 +38,26 @@ class LauncherWidgetTest {
   assertTrue(device.takeScreenshot(File(output,"$name.png")))
  }
  private fun home(){device.pressHome();device.waitForIdle(1000)}
+ private fun launcherHomeReady(launcher:String):Boolean {
+  val workspace=By.res(launcher,"workspace")
+  val deadline=SystemClock.uptimeMillis()+60000
+  val intent=Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
+   .setPackage(launcher)
+   .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+  while(SystemClock.uptimeMillis()<deadline) {
+   // Clearing Launcher3 data can restart it into setup on slower API 33 images.
+   // Re-enter its HOME activity within a fixed deadline; widget checks remain strict.
+   context.startActivity(intent)
+   device.waitForIdle(1500)
+   val remaining=deadline-SystemClock.uptimeMillis()
+   if(remaining<=0) break
+   if(device.wait(Until.hasObject(workspace),minOf(10000L,remaining))) return true
+   val tutorial=device.findObject(By.res(launcher,"cling_dismiss_longpress_info"))
+   if(tutorial!=null) { tutorial.click();device.waitForIdle(1000) }
+   else { device.pressHome();device.waitForIdle(1000) }
+  }
+  return device.hasObject(workspace)
+ }
  private fun flutterView(view:View):FlutterView? {
   if(view is FlutterView) return view
   if(view is ViewGroup) for(i in 0 until view.childCount) {
@@ -52,8 +73,12 @@ class LauncherWidgetTest {
   val launcher=requireNotNull(device.currentPackageName)
   assertTrue("Dedicated stock launcher only",launcher in listOf("com.android.launcher3","com.google.android.apps.nexuslauncher"))
   device.executeShellCommand("pm clear $launcher")
-  home()
-  assertTrue("Launcher home is ready",device.wait(Until.hasObject(By.res(launcher,"workspace")),30000))
+  val homeReady=launcherHomeReady(launcher)
+  if(!homeReady) {
+   capture("${receiver}_launcher_setup_failed")
+   device.dumpWindowHierarchy(File(output,"${receiver}_launcher_setup_failed.xml"))
+  }
+  assertTrue("Launcher home is ready",homeReady)
   val width=device.displayWidth;val height=device.displayHeight
   // A visible workspace node can precede its first settled frame after pm clear.
   // Retry only entering the picker; provider binding/render/tap checks stay strict.
