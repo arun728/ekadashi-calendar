@@ -107,7 +107,7 @@ jobs:
         id: native_tests
         # Still collect emulator evidence if a native regression fails.
         continue-on-error: true
-        run: cd android && ./gradlew app:testDebugUnitTest
+        run: cd android && ./gradlew app:testDebugUnitTest --stacktrace
       - name: Enable KVM
         run: sudo chmod 666 /dev/kvm
       - uses: reactivecircus/android-emulator-runner@v2

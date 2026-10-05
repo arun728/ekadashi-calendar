@@ -55,6 +55,10 @@ void main() {
   testWidgets(
     'Multi-year archive, Telugu, SQLite persistence and whole-year Google deletion',
     (tester) async {
+      // Register before the location editor's first text entry as well as
+      // Search. Native IME callbacks can otherwise outlive the closed dialog.
+      tester.testTextInput.register();
+      addTearDown(tester.testTextInput.unregister);
       final prefs = await SharedPreferences.getInstance();
       await prefs.clear();
       await prefs.setBool('has_launched', true);
@@ -116,6 +120,14 @@ void main() {
       }
       await tester.tap(find.text('Save location'));
       await frames(tester);
+      await until(
+        tester,
+        () => find
+            .byKey(const Key('glass_tab_5'))
+            .hitTestable()
+            .evaluate()
+            .isNotEmpty,
+      );
       expect(find.text('America/New_York · English'), findsOneWidget);
       expect(
         prefs.getString('panchang_location'),
@@ -239,10 +251,6 @@ void main() {
       await frames(tester);
       await lang.changeLanguage('en');
       await frames(tester, count: 10);
-      // IntegrationTest defaults to real IME clients. Register controlled input
-      // so repeated tester.enterText calls track the current TextInput client.
-      tester.testTextInput.register();
-      addTearDown(tester.testTextInput.unregister);
       await tester.enterText(find.byType(TextField), 'nirjla');
       await tester.pump(const Duration(milliseconds: 400));
       await tester.tap(find.byIcon(Icons.arrow_forward).first);
