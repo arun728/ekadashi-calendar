@@ -11,10 +11,9 @@ void main() {
 
   Future<PremiumService> premiumService(bool active) async {
     final service = PremiumService(
-      backend: PremiumFixture()..premium = active,
-      startLeaseTimer: false,
+      entitlements: PremiumFixture()..premium = active,
     );
-    if (active) await service.connect();
+    if (active) await service.refresh();
     return service;
   }
 

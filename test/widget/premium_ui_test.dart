@@ -10,26 +10,7 @@ import 'package:ekadashi_calendar/services/premium_service.dart';
 import 'package:ekadashi_calendar/services/language_service.dart';
 import 'package:ekadashi_calendar/services/theme_service.dart';
 import 'package:ekadashi_calendar/screens/premium_screen.dart';
-import 'package:ekadashi_calendar/services/vrat_tracker_service.dart';
-import 'package:ekadashi_calendar/models/vrat_tracker_models.dart';
 import '../support/premium_fixture.dart';
-
-class RegionRewardBackend extends PremiumFixture {
-  final claims = <Map<String, dynamic>>[];
-  @override
-  Future<Map<String, dynamic>> record(
-    Map<String, dynamic> body, {
-    String? expectedAccount,
-  }) async {
-    claims.add(Map.of(body));
-    return {
-      'coins': 10,
-      'observances': {
-        body['uid']: {'version': 1},
-      },
-    };
-  }
-}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -47,64 +28,6 @@ void main() {
       await loader.load();
     }
   });
-  for (final region in ['IST', 'EST', 'CST', 'MST', 'PST']) {
-    testWidgets('$region reward activation uses the selected calendar region', (
-      tester,
-    ) async {
-      SharedPreferences.setMockInitialValues({});
-      final tracker = VratTrackerService();
-      await tracker.init();
-      await tracker.recordVrat(
-        ekadashiOccurrenceId: 1,
-        occurrenceUid: 'ekadashi:2026:01',
-        ekadashiDate: '2026-01-01',
-        ekadashiName: 'First event',
-        status: ObservanceStatus.observed,
-      );
-      final lang = LanguageService();
-      await lang.changeLanguage('en');
-      final backend = RegionRewardBackend()..premium = false;
-      final premium = PremiumService(backend: backend);
-      await premium.connect();
-      final store = FixtureBilling(premium);
-      addTearDown(tracker.dispose);
-      addTearDown(premium.dispose);
-      addTearDown(store.dispose);
-      await tester.pumpWidget(
-        MultiProvider(
-          providers: [
-            ChangeNotifierProvider.value(value: lang),
-            ChangeNotifierProvider.value(value: premium),
-            ChangeNotifierProvider.value(value: tracker),
-          ],
-          child: MaterialApp(
-            home: PremiumScreen(
-              billingOverride: store,
-              currentTimezone: region,
-            ),
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
-      await tester.scrollUntilVisible(
-        find.text(lang.translate('premium_reward_activate')),
-        250,
-        scrollable: find.byType(Scrollable).first,
-      );
-      await tester.tap(find.text(lang.translate('premium_reward_activate')));
-      await tester.pumpAndSettle();
-      final dialog = find.byType(AlertDialog);
-      await tester.tap(
-        find.descendant(
-          of: dialog,
-          matching: find.text(lang.translate('premium_reward_activate')),
-        ),
-      );
-      await tester.pumpAndSettle();
-      expect(backend.claims.single['context'], region);
-      expect(tester.takeException(), isNull);
-    });
-  }
   for (final locale in ['en', 'ta', 'hi', 'te']) {
     for (final variant in [
       (1.0, Brightness.dark),
@@ -120,7 +43,7 @@ void main() {
           final lang = LanguageService();
           await lang.changeLanguage(locale);
           final backend = PremiumFixture()..premium = false;
-          final premium = PremiumService(backend: backend);
+          final premium = PremiumService(entitlements: backend);
           final store = FixtureBilling(premium);
           addTearDown(premium.dispose);
           addTearDown(store.dispose);
@@ -177,41 +100,30 @@ void main() {
           );
           expect(find.text(lang.translate('premium_manage')), findsOneWidget);
           await capture('free_exit');
-          await tester.scrollUntilVisible(
+          // Rewards are hidden for v2; the paywall must not show them.
+          expect(
             find.text(lang.translate('premium_reward_activate')),
-            250,
-            scrollable: find.byType(Scrollable).first,
+            findsNothing,
           );
-          await capture('rewards');
-          await tester.ensureVisible(
-            find.text(lang.translate('premium_reward_activate')),
-          );
+          expect(find.text(lang.translate('premium_wallet')), findsNothing);
+          final restoreLabel = find.text(lang.translate('premium_restore'));
+          await tester.ensureVisible(restoreLabel);
           await tester.pumpAndSettle();
-          final activationLabel = find.text(
-            lang.translate('premium_reward_activate'),
+          final continueLabel = find.text(
+            lang.translate('premium_continue_free'),
           );
-          final activationButton = find.ancestor(
-            of: activationLabel,
+          final continueButton = find.ancestor(
+            of: continueLabel,
             matching: find.byType(OutlinedButton),
           );
-          final buttonRect = tester.getRect(activationButton);
-          final labelRect = tester.getRect(activationLabel);
+          final buttonRect = tester.getRect(continueButton);
+          final labelRect = tester.getRect(continueLabel);
           expect(
             labelRect.top - buttonRect.top,
             greaterThanOrEqualTo(8),
             reason: 'Translated labels need vertical space inside the capsule',
           );
           expect(buttonRect.bottom - labelRect.bottom, greaterThanOrEqualTo(8));
-          await tester.tap(
-            find.text(lang.translate('premium_reward_activate')),
-          );
-          await tester.pumpAndSettle();
-          expect(
-            find.text(lang.translate('premium_reward_consent')),
-            findsWidgets,
-          );
-          expect(find.byType(AlertDialog), findsOneWidget);
-          expect(find.text('confirm'), findsNothing);
           expect(tester.takeException(), isNull);
         },
       );

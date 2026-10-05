@@ -252,11 +252,8 @@ void main() {
       final google = AndroidTestGoogle();
       // Verification is asynchronous: a lazy provider initialized on the first
       // sync tap otherwise correctly opens the free user's paywall.
-      final fixturePremium = PremiumService(
-        backend: PremiumFixture(),
-        startLeaseTimer: false,
-      );
-      await fixturePremium.connect();
+      final fixturePremium = PremiumService(entitlements: PremiumFixture());
+      await fixturePremium.refresh();
       expect(fixturePremium.isPremium, isTrue);
       addTearDown(fixturePremium.dispose);
       Future<void> openCalendar() async {

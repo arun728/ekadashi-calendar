@@ -46,10 +46,9 @@ void main() {
   });
   Future<void> open(WidgetTester tester, {bool paid = true}) async {
     final premium = PremiumService(
-      backend: PremiumFixture()..premium = paid,
-      startLeaseTimer: false,
+      entitlements: PremiumFixture()..premium = paid,
     );
-    await premium.connect();
+    await premium.refresh();
     addTearDown(premium.dispose);
     await tester.pumpWidget(
       MultiProvider(
@@ -70,6 +69,7 @@ void main() {
               languageCode: 'en',
             ),
             repository: repo,
+            clock: () => DateTime(2026, 10, 5),
             googleService: GoogleCalendarService(
               auth: google,
               repository: repo,
@@ -97,9 +97,10 @@ void main() {
   }
 
   testWidgets(
-    'Free calendar opens premium for Google sync and keeps custom entry free',
+    'Free calendar opens premium for a full other-year sync and keeps custom entry free',
     (tester) async {
       await open(tester, paid: false);
+      await year2027(tester);
       await tester.tap(find.byKey(const Key('import_google_year')));
       await tester.pumpAndSettle();
       expect(find.byType(PremiumScreen), findsOneWidget);

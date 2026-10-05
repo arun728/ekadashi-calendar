@@ -38,7 +38,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     final boundaryKey = GlobalKey();
     final backend = PremiumFixture()..premium = false;
-    final premium = PremiumService(backend: backend, startLeaseTimer: false);
+    final premium = PremiumService(entitlements: backend);
     addTearDown(premium.dispose);
 
     Future<void> capture(String name) async {
@@ -79,7 +79,7 @@ void main() {
     await capture('free');
 
     backend.premium = true;
-    await premium.connect();
+    await premium.refresh();
     await tester.pumpAndSettle();
     expect(find.text('Five limbs'), findsOneWidget);
     expect(tester.takeException(), isNull);

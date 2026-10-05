@@ -37,9 +37,8 @@ Future<void> capturePremiumScreenshot(
   }
   await capture.timeout(
     const Duration(seconds: 5),
-    onTimeout: () => throw TimeoutException(
-      'Screenshot did not complete: $name',
-    ),
+    onTimeout: () =>
+        throw TimeoutException('Screenshot did not complete: $name'),
   );
   debugPrint('Premium screenshot complete: $name');
 }
@@ -47,7 +46,7 @@ Future<void> capturePremiumScreenshot(
 void main() {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
   testWidgets(
-    'Android free sync gate, four-language premium fixture layouts and free return',
+    'Android Panchang premium gate, four-language paywall layouts and free return',
     (tester) async {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('has_launched', true);
@@ -63,22 +62,24 @@ void main() {
         await tester.pump(const Duration(seconds: 1));
       }
       expect(find.byKey(const Key('glass_tab_1')), findsOneWidget);
-      debugPrint('Premium Android flow: opening Calendar');
-      await tester.tap(find.byKey(const Key('glass_tab_1')));
+      debugPrint('Premium Android flow: opening Panchang');
+      await tester.tap(find.byKey(const Key('glass_tab_3')));
       await tester.pump(const Duration(seconds: 2));
-      await tester.tap(find.byKey(const Key('import_google_year')));
+      final unlock = find.byKey(const Key('panchang_unlock_button'));
+      await tester.ensureVisible(unlock);
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.tap(unlock);
       await tester.pump(const Duration(seconds: 1));
       expect(find.byType(PremiumScreen), findsOneWidget);
-      debugPrint('Premium Android flow: free sync gate opened');
-      await binding
-          .convertFlutterSurfaceToImage()
-          .timeout(const Duration(seconds: 15));
-      await tester.pump().timeout(const Duration(seconds: 15));
-      await capturePremiumScreenshot(
-        tester,
-        binding,
-        'premium_real_unconfigured_free_gate',
+      debugPrint('Premium Android flow: free Panchang gate opened');
+      // Play-only premium: no Google sign-in and no rewards on the paywall.
+      expect(find.text('Sign in securely with Google'), findsNothing);
+      expect(find.text('Fasting rewards'), findsNothing);
+      await binding.convertFlutterSurfaceToImage().timeout(
+        const Duration(seconds: 15),
       );
+      await tester.pump().timeout(const Duration(seconds: 15));
+      await capturePremiumScreenshot(tester, binding, 'premium_real_free_gate');
       await tester.tap(find.byKey(const Key('premium_close')));
       await tester.pump(const Duration(seconds: 1));
       final context = tester.element(find.byType(app.MainScreen));
@@ -147,20 +148,6 @@ void main() {
           tester,
           binding,
           'premium_fixture_${locale}_free_exit',
-        );
-        await tester.scrollUntilVisible(
-          find.text(lang.translate('premium_reward_activate')),
-          200,
-          scrollable: find.byType(Scrollable).first,
-        );
-        await tester.ensureVisible(
-          find.text(lang.translate('premium_reward_activate')),
-        );
-        await tester.pump();
-        await capturePremiumScreenshot(
-          tester,
-          binding,
-          'premium_fixture_${locale}_rewards',
         );
         expect(tester.takeException(), isNull);
         await tester.tap(find.byKey(const Key('premium_close')));

@@ -49,11 +49,18 @@ class Store extends InAppPurchasePlatform {
   }
 
   @override
-  Future<void> restorePurchases({String? applicationUserName}) async {}
-  Future<void> emit(PurchaseStatus status) async {
+  Future<void> restorePurchases({String? applicationUserName}) async {
+    restores++;
+  }
+
+  int restores = 0;
+  Future<void> emit(
+    PurchaseStatus status, {
+    String product = PlayBillingService.lifetime,
+  }) async {
     updates.add([
       PurchaseDetails(
-        productID: PlayBillingService.lifetime,
+        productID: product,
         verificationData: PurchaseVerificationData(
           localVerificationData: 'local-not-trusted',
           serverVerificationData: 'server-receipt',
@@ -67,14 +74,24 @@ class Store extends InAppPurchasePlatform {
   }
 }
 
-class VerifyFixture extends PremiumFixture {
-  bool valid = false;
-  @override
-  Future<Map<String, dynamic>> verify(String token, String product) async {
-    if (!valid) throw StateError('verification failed');
-    return super.verify(token, product);
-  }
-}
+GooglePlayPurchaseDetails playPurchase(
+  String product,
+  PurchaseStateWrapper state, {
+  bool acknowledged = false,
+}) => GooglePlayPurchaseDetails.fromPurchase(
+  PurchaseWrapper(
+    orderId: 'order',
+    packageName: 'com.applausestudios.ekadashi_calendar',
+    purchaseTime: 0,
+    purchaseToken: 'token-$product',
+    signature: 'signature',
+    products: [product],
+    isAutoRenewing: product == PlayBillingService.subscription,
+    originalJson: '{}',
+    isAcknowledged: acknowledged,
+    purchaseState: state,
+  ),
+).single;
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -83,13 +100,15 @@ void main() {
     InAppPurchase.instance;
     debugDefaultTargetPlatformOverride = null;
   });
+
   test(
-    'pending, canceled and failed verification never grant or acknowledge',
+    'pending, canceled and failed purchases never grant or acknowledge',
     () async {
       final store = Store();
       InAppPurchasePlatform.instance = store;
-      final backend = VerifyFixture();
-      final premium = PremiumService(backend: backend);
+      final premium = PremiumService(
+        entitlements: PremiumFixture()..premium = false,
+      );
       final billing = PlayBillingService(premium);
       await billing.initialize();
       await store.emit(PurchaseStatus.pending);
@@ -97,40 +116,87 @@ void main() {
       expect(premium.isPremium, isFalse);
       await store.emit(PurchaseStatus.canceled);
       expect(billing.pending, isFalse);
-      await store.emit(PurchaseStatus.purchased);
+      await store.emit(PurchaseStatus.error);
       expect(premium.isPremium, isFalse);
       expect(store.completions, 0);
-      backend.valid = true;
-      await store.emit(PurchaseStatus.restored);
-      expect(premium.isPremium, isTrue);
-      expect(store.completions, 1);
       billing.dispose();
       premium.dispose();
       await store.updates.close();
     },
   );
+
   test(
-    'checkout uses nonconsumable and obfuscated server account; duplicate renewing purchase blocked',
+    'a completed Google Play purchase unlocks and is acknowledged',
     () async {
       final store = Store();
       InAppPurchasePlatform.instance = store;
       final premium = PremiumService(
-        backend: PremiumFixture()..premium = false,
+        entitlements: PremiumFixture()..premium = false,
       );
-      await premium.connect();
       final billing = PlayBillingService(premium);
       await billing.initialize();
-      await billing.buy(billing.plans.single);
-      expect(store.bought, 1);
-      expect(store.param!.applicationUserName, 'test-only-account');
-      premium.autoRenew = true;
-      await billing.buy(billing.plans.single);
-      expect(store.bought, 1);
+      await store.emit(PurchaseStatus.purchased);
+      expect(premium.isPremium, isTrue);
+      expect(premium.lifetime, isTrue);
+      expect(store.completions, 1);
+      expect(billing.error, isNull);
       billing.dispose();
       premium.dispose();
       await store.updates.close();
     },
   );
+
+  test('purchases of other products are ignored', () async {
+    final store = Store();
+    InAppPurchasePlatform.instance = store;
+    final premium = PremiumService(
+      entitlements: PremiumFixture()..premium = false,
+    );
+    final billing = PlayBillingService(premium);
+    await billing.initialize();
+    await store.emit(PurchaseStatus.purchased, product: 'other_product');
+    expect(premium.isPremium, isFalse);
+    expect(store.completions, 0);
+    billing.dispose();
+    premium.dispose();
+    await store.updates.close();
+  });
+
+  test('checkout needs no Google sign-in; duplicates are blocked', () async {
+    final store = Store();
+    InAppPurchasePlatform.instance = store;
+    final premium = PremiumService(
+      entitlements: PremiumFixture()..premium = false,
+    );
+    final billing = PlayBillingService(premium);
+    await billing.initialize();
+    await billing.buy(billing.plans.single);
+    expect(store.bought, 1);
+    expect(store.param!.applicationUserName, isNull);
+    premium.applyOwned({PremiumService.subscriptionId});
+    await billing.buy(billing.plans.single);
+    expect(store.bought, 1);
+    billing.dispose();
+    premium.dispose();
+    await store.updates.close();
+  });
+
+  test('restore re-reads what Google Play owns', () async {
+    final store = Store();
+    InAppPurchasePlatform.instance = store;
+    final source = PremiumFixture()..premium = false;
+    final premium = PremiumService(entitlements: source);
+    final billing = PlayBillingService(premium);
+    await billing.initialize();
+    source.premium = true;
+    await billing.restore();
+    expect(premium.isPremium, isTrue);
+    expect(source.queries, 1);
+    billing.dispose();
+    premium.dispose();
+    await store.updates.close();
+  });
+
   test(
     'monthly/yearly select base-plan offer tokens and omit introductory offers',
     () async {
@@ -170,9 +236,8 @@ void main() {
         ),
       );
       final premium = PremiumService(
-        backend: PremiumFixture()..premium = false,
+        entitlements: PremiumFixture()..premium = false,
       );
-      await premium.connect();
       final billing = PlayBillingService(premium);
       await billing.initialize();
       expect(billing.plans.map((p) => p.id), ['monthly', 'yearly']);
@@ -188,22 +253,70 @@ void main() {
       await store.updates.close();
     },
   );
-  test(
-    'active canceled or earned premium never opens a duplicate checkout',
-    () async {
-      final store = Store();
-      InAppPurchasePlatform.instance = store;
-      final premium = PremiumService(backend: PremiumFixture());
-      await premium.connect();
-      expect(premium.isPremium, isTrue);
-      expect(premium.autoRenew, isFalse);
-      final billing = PlayBillingService(premium);
-      await billing.initialize();
-      await billing.buy(billing.plans.single);
-      expect(store.bought, 0);
-      billing.dispose();
-      premium.dispose();
-      await store.updates.close();
-    },
-  );
+
+  group('owned purchases from Google Play', () {
+    test(
+      'only PURCHASED premium products count and are acknowledged',
+      () async {
+        final acknowledged = <String>[];
+        final source = PlayStoreEntitlements(
+          query: () async => [
+            playPurchase(
+              PlayBillingService.subscription,
+              PurchaseStateWrapper.pending,
+            ),
+            playPurchase('other_product', PurchaseStateWrapper.purchased),
+            playPurchase(
+              PlayBillingService.lifetime,
+              PurchaseStateWrapper.purchased,
+            ),
+          ],
+          acknowledge: (p) async => acknowledged.add(p.productID),
+        );
+        expect(await source.ownedProducts(), {PlayBillingService.lifetime});
+        expect(acknowledged, [PlayBillingService.lifetime]);
+      },
+    );
+
+    test('already acknowledged purchases are not acknowledged again', () async {
+      var acknowledgements = 0;
+      final source = PlayStoreEntitlements(
+        query: () async => [
+          playPurchase(
+            PlayBillingService.subscription,
+            PurchaseStateWrapper.purchased,
+            acknowledged: true,
+          ),
+        ],
+        acknowledge: (_) async => acknowledgements++,
+      );
+      expect(await source.ownedProducts(), {PlayBillingService.subscription});
+      expect(acknowledgements, 0);
+    });
+
+    test(
+      'a pending Play purchase reported as restored does not unlock',
+      () async {
+        final store = Store();
+        InAppPurchasePlatform.instance = store;
+        final premium = PremiumService(
+          entitlements: PremiumFixture()..premium = false,
+        );
+        final billing = PlayBillingService(premium);
+        await billing.initialize();
+        store.updates.add([
+          playPurchase(
+            PlayBillingService.subscription,
+            PurchaseStateWrapper.pending,
+          )..status = PurchaseStatus.restored,
+        ]);
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+        expect(premium.isPremium, isFalse);
+        expect(store.completions, 0);
+        billing.dispose();
+        premium.dispose();
+        await store.updates.close();
+      },
+    );
+  });
 }
