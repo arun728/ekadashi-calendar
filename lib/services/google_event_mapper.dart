@@ -21,7 +21,11 @@ class GoogleEventMapper {
     final endAt = DateTime.parse(
       (allDay ? end['date'] : end['dateTime']) as String,
     );
-    if (!endAt.isAfter(startAt)) {
+    // Google allows zero-length timed events (end == start, e.g. reminders).
+    // Anything else not ending after it starts is malformed and aborts the
+    // import, which keeps the previously cached events.
+    final zeroLengthTimed = !allDay && endAt.isAtSameMomentAs(startAt);
+    if (!endAt.isAfter(startAt) && !zeroLengthTimed) {
       throw const FormatException('Invalid Google event interval');
     }
     final identity = base64Url.encode(
