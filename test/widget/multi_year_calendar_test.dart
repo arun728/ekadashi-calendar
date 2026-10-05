@@ -97,8 +97,11 @@ void main() {
   }
 
   testWidgets(
-    'Free calendar opens premium for a full other-year sync and keeps custom entry free',
+    'Free calendar opens premium after the free sync and keeps custom entry free',
     (tester) async {
+      SharedPreferences.setMockInitialValues({
+        CalendarScreen.freeSyncUsedKey: true,
+      });
       await open(tester, paid: false);
       await year2027(tester);
       await tester.tap(find.byKey(const Key('import_google_year')));

@@ -31,8 +31,11 @@ class CalendarScreen extends StatefulWidget {
   final CalendarEntryRepository? repository;
   final GoogleCalendarService? googleService;
 
-  /// Overrides "now" in tests; the free Google import is the current month.
+  /// Overrides "now" in tests.
   final DateTime Function()? clock;
+
+  /// Set after a free user's one free Google Calendar sync.
+  static const freeSyncUsedKey = 'google_free_sync_used';
 
   const CalendarScreen({
     super.key,
