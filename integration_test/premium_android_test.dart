@@ -77,9 +77,17 @@ void main() {
             )
             .first,
       );
+      // Centre it so the floating glass navigation bar cannot cover the tap.
+      await Scrollable.ensureVisible(tester.element(unlock), alignment: 0.5);
       await tester.pump(const Duration(milliseconds: 500));
       await tester.tap(unlock);
-      await tester.pump(const Duration(seconds: 1));
+      for (
+        var i = 0;
+        i < 20 && find.byType(PremiumScreen).evaluate().isEmpty;
+        i++
+      ) {
+        await tester.pump(const Duration(milliseconds: 500));
+      }
       expect(find.byType(PremiumScreen), findsOneWidget);
       debugPrint('Premium Android flow: free Panchang gate opened');
       // Play-only premium: no Google sign-in and no rewards on the paywall.

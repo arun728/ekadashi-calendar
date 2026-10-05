@@ -484,6 +484,9 @@ void main() {
         reason:
             'Saving the custom entry should persist it for the selected day',
       );
+      // The editor sheet (with the same text in its field) may still be
+      // closing on a slow emulator; wait until only the list entry remains.
+      await until(tester, () => find.byType(TextField).evaluate().isEmpty);
       final savedReminder = find.text('My private reminder');
       await tester.scrollUntilVisible(
         savedReminder,
