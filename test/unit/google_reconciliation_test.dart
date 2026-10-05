@@ -22,12 +22,9 @@ class FakeGoogle extends GoogleAuthGateway {
     account = null;
   }
 
-  /// The free-sync marker stored in this Google account (Drive app data).
-  DateTime? freeSyncMarker;
   @override
-  Future<bool> freeSyncUsed() async => freeSyncMarker != null;
-  @override
-  Future<void> markFreeSyncUsed(DateTime month) async => freeSyncMarker = month;
+  Future<String?> idToken() async =>
+      account == null ? null : 'google-id-token-$account';
 
   @override
   Future<List<GoogleCalendarInfo>> listCalendars() async => [];

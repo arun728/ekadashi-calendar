@@ -1,4 +1,5 @@
 import '../test/support/premium_fixture.dart';
+import '../test/support/fake_free_sync_registry.dart';
 import 'package:ekadashi_calendar/services/premium_service.dart';
 import 'dart:io';
 import 'package:sqflite/sqflite.dart' show getDatabasesPath;
@@ -257,6 +258,7 @@ void main() {
       // Deterministic "today" for the Calendar: March 2027. The simulated
       // purchase below is a January 2027 subscription (Jan–Dec 2027).
       final calendarNow = DateTime(2027, 3, 1);
+      final freeSyncRegistry = FakeFreeSyncRegistry();
       final fixtureSource = PremiumFixture()
         ..premium = false
         ..purchasedAt = DateTime(2027, 1, 10);
@@ -280,6 +282,7 @@ void main() {
                 ekadashiList: years,
                 repository: repo,
                 clock: () => calendarNow,
+                freeSyncRegistry: freeSyncRegistry,
                 googleService: GoogleCalendarService(
                   auth: google,
                   repository: repo,
@@ -351,8 +354,8 @@ void main() {
         find.text(fixtureLang.translate('google_free_sync_used')),
         findsOneWidget,
       );
-      // Recorded in the Google account, so a reinstall cannot reuse it.
-      expect(google.freeSyncMarker, DateTime(now.year, now.month));
+      // Recorded for the Google account, so a reinstall cannot reuse it.
+      expect(freeSyncRegistry.recorded, DateTime(now.year, now.month));
       await binding.takeScreenshot('v2_google_free_month');
       debugPrint('Android free current-month Google import verified');
       google.min = null;

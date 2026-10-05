@@ -123,4 +123,43 @@ void main() {
       service.dispose();
     });
   });
+
+  group('lifetime and lapse', () {
+    test('lifetime syncs every calendar year the app has', () {
+      final service = PremiumService(entitlements: PremiumFixture());
+      service.applyOwned(
+        {PremiumService.lifetimeId},
+        purchasedAt: {PremiumService.lifetimeId: DateTime(2026, 11, 20)},
+      );
+      final window = service.syncWindow(
+        DateTime(2026, 11, 21),
+        calendarYears: (first: 2026, last: 2027),
+      )!;
+      expect(window.start, DateTime(2026, 1, 1));
+      expect(window.end, DateTime(2028, 1, 1));
+      service.dispose();
+    });
+
+    test('lapsed only once Google Play confirms nothing is owned', () async {
+      final source = PremiumFixture();
+      final service = PremiumService(entitlements: source);
+      expect(service.lapsed, isFalse, reason: 'Not checked with Play yet');
+      await service.refresh();
+      expect(service.lapsed, isFalse);
+      source.fail = true;
+      await service.refresh();
+      expect(service.isPremium, isFalse);
+      expect(
+        service.lapsed,
+        isFalse,
+        reason: 'Play unavailable is not a lapse',
+      );
+      source
+        ..fail = false
+        ..premium = false;
+      await service.refresh();
+      expect(service.lapsed, isTrue);
+      service.dispose();
+    });
+  });
 }
