@@ -44,9 +44,15 @@ class LauncherWidgetTest {
   val intent=Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
    .setPackage(launcher)
    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+  var attempt=0
   while(SystemClock.uptimeMillis()<deadline) {
    // Clearing Launcher3 data can restart it into setup on slower API 33 images.
    // Re-enter its HOME activity within a fixed deadline; widget checks remain strict.
+   // On API 33 the system can restart HOME while `pm clear` still has the
+   // package frozen ("Package ... is currently frozen"); the failed start leaves
+   // a stale process record and later HOME starts never spawn the launcher.
+   // A force-stop discards that record so the next start launches it cleanly.
+   if(attempt++>0) { device.executeShellCommand("am force-stop $launcher");SystemClock.sleep(1000) }
    context.startActivity(intent)
    device.waitForIdle(1500)
    val remaining=deadline-SystemClock.uptimeMillis()
@@ -73,6 +79,8 @@ class LauncherWidgetTest {
   val launcher=requireNotNull(device.currentPackageName)
   assertTrue("Dedicated stock launcher only",launcher in listOf("com.android.launcher3","com.google.android.apps.nexuslauncher"))
   device.executeShellCommand("pm clear $launcher")
+  // Let the package unfreeze before the first HOME start (see launcherHomeReady).
+  SystemClock.sleep(2000)
   val homeReady=launcherHomeReady(launcher)
   if(!homeReady) {
    capture("${receiver}_launcher_setup_failed")
