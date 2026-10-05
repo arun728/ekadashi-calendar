@@ -4,9 +4,9 @@ import 'package:ekadashi_calendar/services/premium_service.dart';
 import '../support/premium_fixture.dart';
 
 class DelayedSource implements PlayEntitlementSource {
-  final response = Completer<Set<String>>();
+  final response = Completer<Map<String, DateTime?>>();
   @override
-  Future<Set<String>> ownedProducts() => response.future;
+  Future<Map<String, DateTime?>> ownedProducts() => response.future;
 }
 
 void main() {
@@ -68,8 +68,59 @@ void main() {
     final service = PremiumService(entitlements: source);
     final request = service.refresh();
     service.dispose();
-    source.response.complete({PremiumService.lifetimeId});
+    source.response.complete({PremiumService.lifetimeId: null});
     await request;
     expect(service.isPremium, isFalse);
+  });
+
+  group('subscription year', () {
+    ({DateTime start, DateTime end}) year(DateTime? bought, DateTime now) =>
+        PremiumService.subscriptionYear(bought, now);
+
+    test('an annual plan bought in November covers until next October', () {
+      final window = year(DateTime(2026, 11, 20), DateTime(2026, 11, 21));
+      expect(window.start, DateTime(2026, 11));
+      expect(window.end, DateTime(2027, 11));
+    });
+
+    test('later in the same subscription year the window is unchanged', () {
+      final window = year(DateTime(2026, 11, 20), DateTime(2027, 9, 30));
+      expect(window.start, DateTime(2026, 11));
+      expect(window.end, DateTime(2027, 11));
+    });
+
+    test('after renewal the next subscription year is used', () {
+      final window = year(DateTime(2026, 11, 20), DateTime(2027, 11, 2));
+      expect(window.start, DateTime(2027, 11));
+      expect(window.end, DateTime(2028, 11));
+    });
+
+    test('without a purchase date it starts this month', () {
+      final window = year(null, DateTime(2026, 10, 5));
+      expect(window.start, DateTime(2026, 10));
+      expect(window.end, DateTime(2027, 10));
+    });
+
+    test('the service uses the purchase date Google Play reports', () async {
+      final service = PremiumService(
+        entitlements: PremiumFixture()..purchasedAt = DateTime(2026, 11, 20),
+      );
+      await service.refresh();
+      expect(service.purchasedAt, DateTime(2026, 11, 20));
+      expect(
+        service.syncWindow(DateTime(2027, 2, 1))!.start,
+        DateTime(2026, 11),
+      );
+      service.dispose();
+    });
+
+    test('free users have no premium sync window', () async {
+      final service = PremiumService(
+        entitlements: PremiumFixture()..premium = false,
+      );
+      await service.refresh();
+      expect(service.syncWindow(DateTime(2026, 10, 5)), isNull);
+      service.dispose();
+    });
   });
 }

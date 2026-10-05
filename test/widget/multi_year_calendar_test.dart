@@ -44,9 +44,16 @@ void main() {
     google = UiGoogle();
     language = LanguageService();
   });
-  Future<void> open(WidgetTester tester, {bool paid = true}) async {
+  Future<void> open(
+    WidgetTester tester, {
+    bool paid = true,
+    DateTime? now,
+    DateTime? purchasedAt,
+  }) async {
     final premium = PremiumService(
-      entitlements: PremiumFixture()..premium = paid,
+      entitlements: PremiumFixture()
+        ..premium = paid
+        ..purchasedAt = purchasedAt,
     );
     await premium.refresh();
     addTearDown(premium.dispose);
@@ -69,7 +76,7 @@ void main() {
               languageCode: 'en',
             ),
             repository: repo,
-            clock: () => DateTime(2026, 10, 5),
+            clock: () => now ?? DateTime(2026, 10, 5),
             googleService: GoogleCalendarService(
               auth: google,
               repository: repo,
@@ -186,9 +193,14 @@ void main() {
     },
   );
   testWidgets(
-    'UI import uses selected whole year and reflects a deleted Google event',
+    'UI import uses the subscription year and reflects a deleted Google event',
     (tester) async {
-      await open(tester);
+      // A January 2027 subscription syncs January to December 2027.
+      await open(
+        tester,
+        now: DateTime(2027, 3, 1),
+        purchasedAt: DateTime(2027, 1, 10),
+      );
       await year2027(tester);
       tester
           .state<CalendarScreenState>(find.byType(CalendarScreen))

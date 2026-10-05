@@ -82,7 +82,7 @@ GooglePlayPurchaseDetails playPurchase(
   PurchaseWrapper(
     orderId: 'order',
     packageName: 'com.applausestudios.ekadashi_calendar',
-    purchaseTime: 0,
+    purchaseTime: DateTime(2026, 11, 20).millisecondsSinceEpoch,
     purchaseToken: 'token-$product',
     signature: 'signature',
     products: [product],
@@ -273,7 +273,9 @@ void main() {
           ],
           acknowledge: (p) async => acknowledged.add(p.productID),
         );
-        expect(await source.ownedProducts(), {PlayBillingService.lifetime});
+        expect(await source.ownedProducts(), {
+          PlayBillingService.lifetime: DateTime(2026, 11, 20),
+        });
         expect(acknowledged, [PlayBillingService.lifetime]);
       },
     );
@@ -290,7 +292,9 @@ void main() {
         ],
         acknowledge: (_) async => acknowledgements++,
       );
-      expect(await source.ownedProducts(), {PlayBillingService.subscription});
+      expect(await source.ownedProducts(), {
+        PlayBillingService.subscription: DateTime(2026, 11, 20),
+      });
       expect(acknowledgements, 0);
     });
 

@@ -8,13 +8,16 @@ class PremiumFixture implements PlayEntitlementSource {
   bool lifetime = false;
   bool fail = false;
   int queries = 0;
+
+  /// When Google Play says the owned product was bought.
+  DateTime? purchasedAt;
   @override
-  Future<Set<String>> ownedProducts() async {
+  Future<Map<String, DateTime?>> ownedProducts() async {
     queries++;
     if (fail) throw StateError('Google Play unavailable');
     return {
-      if (premium) PremiumService.subscriptionId,
-      if (lifetime) PremiumService.lifetimeId,
+      if (premium) PremiumService.subscriptionId: purchasedAt,
+      if (lifetime) PremiumService.lifetimeId: purchasedAt,
     };
   }
 }

@@ -97,6 +97,7 @@ void main() {
     WidgetTester tester,
     PremiumService premium, {
     UiGoogle? google,
+    DateTime? now,
   }) async {
     final repo = MemoryCalendarRepository();
     final auth = google ?? UiGoogle();
@@ -119,7 +120,7 @@ void main() {
               languageCode: 'en',
             ),
             repository: repo,
-            clock: () => today,
+            clock: () => now ?? today,
             googleService: GoogleCalendarService(auth: auth, repository: repo),
           ),
         ),
@@ -156,12 +157,29 @@ void main() {
     expect(google.max, DateTime(2026, 11, 1));
     expect(find.text(lang.translate('google_free_sync_used')), findsOneWidget);
     expect(await freeSyncUsed(), isTrue);
+    // Recorded in the Google account too, so a reinstall cannot reuse it.
+    expect(google.freeSyncMarker, DateTime(2026, 10));
     // The free sync is used: the next sync, even of the same month, is paid.
     google.min = null;
     await tester.tap(find.byKey(const Key('import_google_year')));
     await tester.pumpAndSettle();
     expect(find.byType(PremiumScreen), findsOneWidget);
     expect(google.min, isNull);
+  });
+
+  testWidgets('After a reinstall the Google account still has no free sync', (
+    tester,
+  ) async {
+    // Fresh install: no local flag, but this Google account used it before.
+    final premium = freeUser(PremiumFixture());
+    final google = UiGoogle()..freeSyncMarker = DateTime(2026, 9);
+    await pumpCalendar(tester, premium, google: google);
+    await tapImport(tester);
+    await tester.pumpAndSettle();
+    expect(find.byType(PremiumScreen), findsOneWidget);
+    expect(find.text('Import selected'), findsNothing);
+    expect(google.min, isNull);
+    expect(await freeSyncUsed(), isTrue);
   });
 
   testWidgets('The free sync imports whichever month is being viewed', (
@@ -179,39 +197,89 @@ void main() {
     expect(google.max, DateTime(2027, 4, 1));
   });
 
-  testWidgets('Dismissing the calendar picker keeps the free sync', (
-    tester,
-  ) async {
+  testWidgets('Closing the picker or the Calendar and retrying keeps the '
+      'free sync', (tester) async {
     final premium = freeUser(PremiumFixture());
-    final google = await pumpCalendar(tester, premium);
+    final google = UiGoogle();
+    await pumpCalendar(tester, premium, google: google);
     await tapImport(tester);
     Navigator.of(tester.element(find.text('Import selected'))).pop();
     await tester.pumpAndSettle();
     expect(google.min, isNull);
+    // Leave the Calendar entirely and come back.
+    await tester.pumpWidget(const SizedBox.shrink());
+    await pumpCalendar(tester, premium, google: google);
     expect(await freeSyncUsed(), isNot(isTrue));
+    expect(google.freeSyncMarker, isNull);
     await tapImport(tester);
     expect(find.byType(PremiumScreen), findsNothing);
-    expect(find.text('Import selected'), findsOneWidget);
+    await importSelected(tester);
+    expect(google.min, DateTime(2026, 10, 1));
+  });
+
+  testWidgets('A failed free import keeps the free sync', (tester) async {
+    final premium = freeUser(PremiumFixture());
+    final google = UiGoogle()..fail = true;
+    await pumpCalendar(tester, premium, google: google);
+    await tapImport(tester);
+    await importSelected(tester);
+    expect(find.text(lang.translate('google_sync_failed')), findsOneWidget);
+    expect(await freeSyncUsed(), isNot(isTrue));
+    expect(google.freeSyncMarker, isNull);
   });
 
   testWidgets('After the free sync, buying premium continues into the '
-      'whole-year import', (tester) async {
+      'subscription-year import', (tester) async {
     SharedPreferences.setMockInitialValues({
       CalendarScreen.freeSyncUsedKey: true,
     });
-    final premium = freeUser(PremiumFixture());
+    final source = PremiumFixture();
+    final premium = freeUser(source);
     final google = await pumpCalendar(tester, premium);
     await tester.tap(find.byKey(const Key('import_google_year')));
     await tester.pumpAndSettle();
     expect(find.byType(PremiumScreen), findsOneWidget);
     expect(google.min, isNull);
-    premium.applyOwned({PremiumService.subscriptionId}); // Play purchase.
+    // Play purchase made today.
+    premium.applyOwned(
+      {PremiumService.subscriptionId},
+      purchasedAt: {PremiumService.subscriptionId: today},
+    );
     await tester.tap(find.byKey(const Key('premium_close')));
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
     await importSelected(tester);
-    expect(google.min, DateTime(2026, 1, 1));
-    expect(google.max, DateTime(2027, 1, 1));
+    expect(google.min, DateTime(2026, 10, 1));
+    expect(google.max, DateTime(2027, 10, 1));
+  });
+
+  testWidgets('An annual plan bought in November syncs until next October', (
+    tester,
+  ) async {
+    final premium = PremiumService(
+      entitlements: PremiumFixture()..purchasedAt = DateTime(2026, 11, 20),
+    );
+    addTearDown(premium.dispose);
+    await premium.refresh();
+    final google = await pumpCalendar(
+      tester,
+      premium,
+      now: DateTime(2026, 11, 21),
+    );
+    await tapImport(tester);
+    await importSelected(tester);
+    expect(google.min, DateTime(2026, 11, 1));
+    expect(google.max, DateTime(2027, 11, 1));
+    expect(
+      find.text(
+        lang.translateWithArgs('imported_google_range', [
+          '0',
+          'Nov 2026',
+          'Oct 2027',
+        ]),
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('A cancelled or expired subscription stops syncing', (
@@ -220,14 +288,15 @@ void main() {
     SharedPreferences.setMockInitialValues({
       CalendarScreen.freeSyncUsedKey: true,
     });
-    final source = PremiumFixture();
+    final source = PremiumFixture()..purchasedAt = DateTime(2026, 9, 10);
     final premium = PremiumService(entitlements: source);
     addTearDown(premium.dispose);
     await premium.refresh();
     final google = await pumpCalendar(tester, premium);
     await tapImport(tester);
     await importSelected(tester);
-    expect(google.min, DateTime(2026, 1, 1));
+    expect(google.min, DateTime(2026, 9, 1));
+    expect(google.max, DateTime(2027, 9, 1));
     // The monthly plan was cancelled and its paid month ended: Google Play
     // no longer reports it as owned.
     source.premium = false;
@@ -237,20 +306,6 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(PremiumScreen), findsOneWidget);
     expect(google.min, isNull);
-  });
-
-  testWidgets('Premium Calendar imports the whole selected year', (
-    tester,
-  ) async {
-    final premium = PremiumService(entitlements: PremiumFixture());
-    addTearDown(premium.dispose);
-    await premium.refresh();
-    final google = await pumpCalendar(tester, premium);
-    await tapImport(tester);
-    await tester.tap(find.text('Import selected'));
-    await tester.pumpAndSettle();
-    expect(google.min, DateTime(2026, 1, 1));
-    expect(google.max, DateTime(2027, 1, 1));
   });
 
   testWidgets('Calendar reports a Google sign-in failure, not a cancel', (

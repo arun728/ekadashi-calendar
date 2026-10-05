@@ -254,7 +254,12 @@ void main() {
       // Verification is asynchronous: a lazy provider initialized on the first
       // sync tap otherwise correctly opens the free user's paywall.
       // Starts on the free tier; a Play purchase is simulated further down.
-      final fixtureSource = PremiumFixture()..premium = false;
+      // Deterministic "today" for the Calendar: March 2027. The simulated
+      // purchase below is a January 2027 subscription (Jan–Dec 2027).
+      final calendarNow = DateTime(2027, 3, 1);
+      final fixtureSource = PremiumFixture()
+        ..premium = false
+        ..purchasedAt = DateTime(2027, 1, 10);
       final fixturePremium = PremiumService(entitlements: fixtureSource);
       await fixturePremium.refresh();
       expect(fixturePremium.isPremium, isFalse);
@@ -274,6 +279,7 @@ void main() {
               home: CalendarScreen(
                 ekadashiList: years,
                 repository: repo,
+                clock: () => calendarNow,
                 googleService: GoogleCalendarService(
                   auth: google,
                   repository: repo,
@@ -297,7 +303,7 @@ void main() {
 
       await openCalendar();
       // Free: one free sync, of the month on screen (the current month).
-      final now = DateTime.now();
+      final now = calendarNow;
       google.events = [
         event(
           'Free month event',
@@ -345,6 +351,8 @@ void main() {
         find.text(fixtureLang.translate('google_free_sync_used')),
         findsOneWidget,
       );
+      // Recorded in the Google account, so a reinstall cannot reuse it.
+      expect(google.freeSyncMarker, DateTime(now.year, now.month));
       await binding.takeScreenshot('v2_google_free_month');
       debugPrint('Android free current-month Google import verified');
       google.min = null;
