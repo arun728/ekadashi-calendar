@@ -934,4 +934,7 @@ class AppLocalizationsTe extends AppLocalizations {
   @override
   String get premium_reward_example =>
       'సాధారణ సంవత్సరం: 24 × 10 = 240 నాణేలు, పూర్తి సంవత్సరం బోనస్ 60 కలిపి 300. 26 ఏకాదశులు ఉన్న సంవత్సరంలో: 260 + 40 = 300.';
+
+  @override
+  String get more => 'మరిన్ని';
 }

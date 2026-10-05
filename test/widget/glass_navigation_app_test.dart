@@ -108,13 +108,13 @@ void main() {
       debugDefaultTargetPlatformOverride = null;
     }
   });
-  testWidgets('Floating glass capsule keeps five tabs and their app state', (
+  testWidgets('Floating glass capsule keeps six tabs and their app state', (
     tester,
   ) async {
     await tester.pumpWidget(harness.app());
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('glass_navigation_bar')), findsOneWidget);
-    for (var i = 0; i < 5; i++) {
+    for (var i = 0; i < 6; i++) {
       expect(find.byKey(Key('glass_tab_$i')).hitTestable(), findsOneWidget);
     }
     await tester.tap(find.byKey(const Key('glass_tab_1')));
@@ -142,6 +142,9 @@ void main() {
     );
     await tester.tap(find.byIcon(Icons.arrow_back).first);
     await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('glass_tab_5')));
+    await tester.pumpAndSettle();
+    expect(find.text('Panchang tools'), findsOneWidget);
     await tester.tap(find.byKey(const Key('glass_tab_4')));
     await tester.pumpAndSettle();
     expect(find.text('Enable Notifications'), findsOneWidget);

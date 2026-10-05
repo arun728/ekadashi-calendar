@@ -91,14 +91,42 @@ void main() {
       await binding.convertFlutterSurfaceToImage();
       await frames(tester);
       expect(find.byKey(const Key('glass_navigation_bar')), findsOneWidget);
-      for (var i = 0; i < 5; i++) {
+      for (var i = 0; i < 6; i++) {
         expect(find.byKey(Key('glass_tab_$i')).hitTestable(), findsOneWidget);
       }
       await binding.takeScreenshot('v2_home_2026');
       await tester.tap(find.byKey(const Key('glass_tab_3')));
       await frames(tester);
       expect(find.byKey(const Key('panchang_daily_overview')), findsOneWidget);
+      for (final label in ['Daily', 'Muhurta', 'Ekadashi', 'Rashi']) {
+        expect(find.widgetWithText(Tab, label), findsOneWidget);
+      }
       await binding.takeScreenshot('v2_panchang_free');
+      await tester.tap(find.byKey(const Key('panchang_edit_location')));
+      await frames(tester);
+      for (final entry in {
+        'location_name': 'New York',
+        'location_latitude': '40.7128',
+        'location_longitude': '-74.006',
+        'location_timezone': 'America/New_York',
+      }.entries) {
+        final field = find.byKey(Key(entry.key));
+        await tester.ensureVisible(field);
+        await tester.enterText(field, entry.value);
+      }
+      await tester.tap(find.text('Save location'));
+      await frames(tester);
+      expect(find.text('America/New_York · English'), findsOneWidget);
+      expect(
+        prefs.getString('panchang_location'),
+        contains('America/New_York'),
+      );
+      await binding.takeScreenshot('v2_panchang_worldwide');
+      await tester.tap(find.byKey(const Key('glass_tab_5')));
+      await frames(tester);
+      expect(find.text('Festival finder'), findsOneWidget);
+      expect(find.text('Smarta and Vaishnava'), findsOneWidget);
+      await binding.takeScreenshot('v2_more');
       final lang = tester
           .element(find.byType(MaterialApp).first)
           .read<LanguageService>();
@@ -116,7 +144,7 @@ void main() {
       final restartedTracker = VratTrackerService();
       await restartedTracker.init(occurrences: years);
       expect(restartedTracker.getRecord(1)?.note, 'Archived private note');
-      await tester.tap(find.byIcon(Icons.spa_outlined));
+      await tester.tap(find.byKey(const Key('glass_tab_2')));
       await frames(tester);
       await binding.takeScreenshot('v2_tracker_retained');
       await tester.tap(find.text('History'));

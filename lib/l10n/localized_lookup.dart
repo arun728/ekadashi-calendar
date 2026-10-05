@@ -293,4 +293,5 @@ Map<String, String> localizedLookup(AppLocalizations l) => {
   'premium_coins': l.premium_coins,
   'premium_more_achievements': l.premium_more_achievements,
   'premium_reward_example': l.premium_reward_example,
+  'more': l.more,
 };

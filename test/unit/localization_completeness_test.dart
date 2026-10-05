@@ -52,7 +52,12 @@ void main() {
     final expression = RegExp(r"Text\(\s*'([^'\n]+)'");
     // Panchang is intentionally English-only for this release, as approved in
     // AGENTS.md. Remove this exception when the feature is localized.
-    const englishOnlyScreenFiles = {'lib/screens/panchang_screen.dart'};
+    const englishOnlyScreenFiles = {
+      'lib/screens/panchang_screen.dart',
+      'lib/screens/panchang_location_dialog.dart',
+      'lib/screens/panchang_month_panels.dart',
+      'lib/screens/more_screen.dart',
+    };
     for (final file in [
       File('lib/main.dart'),
       ...Directory('lib/screens')

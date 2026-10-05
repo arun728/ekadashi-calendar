@@ -12,6 +12,7 @@ import 'services/widget_sync_manager.dart';
 import 'services/search_index_manager.dart';
 import 'screens/global_search_screen.dart';
 import 'screens/panchang_screen.dart';
+import 'screens/more_screen.dart';
 import 'l10n/generated/app_localizations.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
@@ -805,6 +806,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       'calendar': 1,
       'vrat': 2,
       'panchang': 3,
+      'more': 5,
       'settings': 4,
     }[uri.host];
     if (tab == null) return;
@@ -979,6 +981,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         icon: const Icon(Icons.settings),
         label: lang.translate('settings'),
       ),
+      BottomNavigationBarItem(
+        icon: const Icon(Icons.more_horiz),
+        label: lang.translate('more'),
+      ),
     ];
     return Scaffold(
       extendBody: glass,
@@ -1069,6 +1075,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         ),
         const PanchangScreen(),
         SettingsScreen(currentTimezone: _currentTimezone),
+        const MoreScreen(),
       ],
     );
   }

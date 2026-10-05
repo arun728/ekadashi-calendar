@@ -88,6 +88,29 @@ class PanchangPeriod {
 
 class PanchangDay {
   const PanchangDay({
+    this.sunRashiEndsAtUtc,
+    this.moonRashiEndsAtUtc,
+    this.padaEndsAtUtc,
+    this.lagna = const [],
+    this.anandadiYoga = '',
+    this.shakaYear = 0,
+    this.vikramaYear = 0,
+    this.hora = const [],
+    this.additionalPeriods = const [],
+    this.specialYogas = const [],
+    this.nakshatraPada = 1,
+    this.ayanamsa = 0,
+    this.isAdhikaMonth = false,
+    this.ritu = '',
+    this.ayana = '',
+    this.moonsetUtc,
+    this.nextSunriseUtc,
+    this.sunRashi = '',
+    this.moonRashi = '',
+    this.abhijit,
+    this.brahmaMuhurta,
+    this.choghadiya = const [],
+    this.limbTimeline = const {},
     required this.date,
     required this.city,
     required this.sunriseUtc,
@@ -106,7 +129,31 @@ class PanchangDay {
     required this.observances,
   });
 
-  /// Calendar date in IST. The UTC constructor prevents host-local shifts.
+  final DateTime? sunRashiEndsAtUtc;
+  final DateTime? moonRashiEndsAtUtc;
+  final DateTime? padaEndsAtUtc;
+  final List<PanchangPeriod> lagna;
+  final String anandadiYoga;
+  final int shakaYear;
+  final int vikramaYear;
+  final List<PanchangPeriod> hora;
+  final List<PanchangPeriod> additionalPeriods;
+  final List<String> specialYogas;
+  final int nakshatraPada;
+  final double ayanamsa;
+  final bool isAdhikaMonth;
+  final String ritu;
+  final String ayana;
+  final DateTime? moonsetUtc;
+  final DateTime? nextSunriseUtc;
+  final String sunRashi;
+  final String moonRashi;
+  final PanchangPeriod? abhijit;
+  final PanchangPeriod? brahmaMuhurta;
+  final List<PanchangPeriod> choghadiya;
+  final Map<String, List<PanchangLimb>> limbTimeline;
+
+  /// Calendar date in the selected location. The UTC constructor prevents host-local shifts.
   final DateTime date;
   final PanchangCity city;
   final DateTime? sunriseUtc;
@@ -130,4 +177,20 @@ class PanchangDay {
       sunsetUtc == null ? null : istWallClock(sunsetUtc!);
   DateTime? get moonriseIst =>
       moonriseUtc == null ? null : istWallClock(moonriseUtc!);
+}
+
+/// Includes a date marker for events outside the selected civil day and an
+/// abbreviation/offset so repeated DST wall times remain distinguishable.
+String formatPanchangTime(DateTime? instant, PanchangCity city, DateTime date) {
+  if (instant == null) return '—';
+  final local = city.wallClock(instant);
+  final day = DateTime.utc(local.year, local.month, local.day);
+  final selected = DateTime.utc(date.year, date.month, date.day);
+  final delta = day.difference(selected).inDays;
+  final suffix = delta == 0 ? '' : ' (${delta > 0 ? '+' : ''}$delta day)';
+  final hour = local.hour % 12 == 0 ? 12 : local.hour % 12;
+  final offset = local.timeZoneOffset.inMinutes;
+  final offsetText =
+      '${offset < 0 ? '-' : '+'}${(offset.abs() ~/ 60).toString().padLeft(2, '0')}:${(offset.abs() % 60).toString().padLeft(2, '0')}';
+  return '$hour:${local.minute.toString().padLeft(2, '0')} ${local.hour < 12 ? 'AM' : 'PM'} ${local.timeZoneName} (UTC$offsetText)$suffix';
 }

@@ -1,5 +1,13 @@
 # Panchang engine and tab
 
+> **Active extension (5 October 2026):** The user requested a new branch from
+> PR #11 with worldwide date/location calculation, fuller Drik-style daily
+> coverage, Smarta and Vaishnava Ekadashi, Daily/Muhurta/Ekadashi/Rashi subtabs,
+> and More tools. This supersedes the IST/eight-city and five-tab restrictions
+> below. See [PANCHANG_RESEARCH.md](PANCHANG_RESEARCH.md) for the implemented
+> profile, references, validation design and remaining parity gaps. The rest
+> of this document records the original PR #11 scope.
+
 Approved 4 October 2026 for `feature/panchang-engine`, from `dev`. This
 document scopes the first release and records research before implementation.
 The feature is English-only, fixed to IST (UTC+05:30), and offline. It does not

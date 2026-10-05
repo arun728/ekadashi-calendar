@@ -82,3 +82,15 @@ review after the requested automated checks pass.
 
 See `docs/PANCHANG_PLAN.md` for research references, the first-release rule
 scope, and calculation/UX boundaries.
+
+## Panchang worldwide extension (5 October 2026)
+
+The user's newer instructions authorize `feature/panchang-location-details`
+branched from PR #11 `feature/panchang-engine`, overriding the earlier
+single-branch, IST/eight-city and five-tab constraints for this extension.
+Build fuller Drik-style daily coverage, arbitrary location/date calculation,
+Smarta and Vaishnava fasting, Daily/Muhurta/Ekadashi/Rashi subtabs, and More for
+secondary tools. Preserve the existing Calendar. Keep 2026/2027 validation and
+the published Ekadashi schedule until a separately validated migration. Do not
+claim full parity or superior accuracy without evidence. Do not merge to dev
+or main. See docs/PANCHANG_RESEARCH.md.

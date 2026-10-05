@@ -1853,6 +1853,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Typical year: 24 × 10 = 240 coins, plus a 60-coin full-year bonus = 300 coins. In a 26-Ekadashi year: 260 + 40 = 300.'**
   String get premium_reward_example;
+
+  /// No description provided for @more.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get more;
 }
 
 class _AppLocalizationsDelegate

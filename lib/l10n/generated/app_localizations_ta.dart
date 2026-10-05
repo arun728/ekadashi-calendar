@@ -937,4 +937,7 @@ class AppLocalizationsTa extends AppLocalizations {
   @override
   String get premium_reward_example =>
       'வழக்கமான ஆண்டு: 24 × 10 = 240 நாணயங்கள்; முழு ஆண்டு பலன் 60 சேர்த்து 300. 26 ஏகாதசிகள் உள்ள ஆண்டில்: 260 + 40 = 300.';
+
+  @override
+  String get more => 'மேலும்';
 }

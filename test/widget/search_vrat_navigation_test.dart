@@ -24,7 +24,7 @@ void main() {
       final nav = tester.widget<GlassNavigationBar>(
         find.byType(GlassNavigationBar),
       );
-      expect(nav.items, hasLength(5));
+      expect(nav.items, hasLength(6));
       final dynamic state = tester.state(find.byType(MainScreen));
       await tester.tap(find.byIcon(Icons.spa_outlined));
       await tester.pumpAndSettle();

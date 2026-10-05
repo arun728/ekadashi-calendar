@@ -12,6 +12,50 @@ class AstronomyCalculator {
   static double julianDay(DateTime instant) =>
       instant.toUtc().millisecondsSinceEpoch / 86400000 + 2440587.5;
 
+  /// TT = UT + Delta T. NASA/Espenak-Meeus polynomial estimates; UTC is
+  /// treated as UT1 (sub-second difference), never as terrestrial time.
+  /// Source: eclipse.gsfc.nasa.gov/SEcat5/deltatpoly.html.
+  static double terrestrialJulianDay(DateTime instant) {
+    final utc = instant.toUtc();
+    final y = utc.year + (utc.month - 0.5) / 12;
+    double seconds;
+    if (y >= 2005 && y < 2050) {
+      final t = y - 2000;
+      seconds = 62.92 + .32217 * t + .005589 * t * t;
+    } else if (y >= 1986 && y < 2005) {
+      final t = y - 2000;
+      seconds =
+          63.86 +
+          .3345 * t -
+          .060374 * t * t +
+          .0017275 * math.pow(t, 3) +
+          .000651814 * math.pow(t, 4) +
+          .00002373599 * math.pow(t, 5);
+    } else if (y >= 1961 && y < 1986) {
+      final t = y - 1975;
+      seconds = 45.45 + 1.067 * t - t * t / 260 - math.pow(t, 3) / 718;
+    } else if (y >= 1941 && y < 1961) {
+      final t = y - 1950;
+      seconds = 29.07 + .407 * t - t * t / 233 + math.pow(t, 3) / 2547;
+    } else if (y >= 1920 && y < 1941) {
+      final t = y - 1920;
+      seconds =
+          21.20 + .84493 * t - .076100 * t * t + .0020936 * math.pow(t, 3);
+    } else if (y >= 1900 && y < 1920) {
+      final t = y - 1900;
+      seconds =
+          -2.79 +
+          1.494119 * t -
+          .0598939 * t * t +
+          .0061966 * math.pow(t, 3) -
+          .000197 * math.pow(t, 4);
+    } else {
+      final u = (y - 1820) / 100;
+      seconds = -20 + 32 * u * u - (y < 2150 ? .5628 * (2150 - y) : 0);
+    }
+    return julianDay(instant) + seconds / 86400;
+  }
+
   static DateTime fromJulianDay(double jd) =>
       DateTime.fromMillisecondsSinceEpoch(
         ((jd - 2440587.5) * 86400000).round(),
@@ -26,7 +70,7 @@ class AstronomyCalculator {
   }
 
   static double sunLongitude(DateTime instant) {
-    final t = (julianDay(instant) - _j2000) / 36525;
+    final t = (terrestrialJulianDay(instant) - _j2000) / 36525;
     final l0 = 280.46646 + 36000.76983 * t + 0.0003032 * t * t;
     final m = normalize(357.52911 + 35999.05029 * t - 0.0001537 * t * t);
     final c =
@@ -55,10 +99,26 @@ class AstronomyCalculator {
     return 23.85675 + years * (50.290966 / 3600);
   }
 
+  /// Apparent tropical positions refer to the true equinox. Remove nutation
+  /// along with the mean Lahiri offset when forming sidereal longitudes.
+  static double apparentLahiriAyanamsa(DateTime instant) {
+    final t = (terrestrialJulianDay(instant) - _j2000) / 36525;
+    final omega = 125.04 - 1934.136 * t;
+    final sun = 280.4665 + 36000.7698 * t;
+    final moon = 218.3165 + 481267.8813 * t;
+    final nutation =
+        (-17.20 * _sin(omega) -
+            1.32 * _sin(2 * sun) -
+            .23 * _sin(2 * moon) +
+            .21 * _sin(2 * omega)) /
+        3600;
+    return lahiriAyanamsa(instant) + nutation;
+  }
+
   static ({double rightAscension, double declination}) sunEquatorial(
     DateTime instant,
   ) {
-    final t = (julianDay(instant) - _j2000) / 36525;
+    final t = (terrestrialJulianDay(instant) - _j2000) / 36525;
     final lambda = sunLongitude(instant) * _rad;
     final omega = (125.04 - 1934.136 * t) * _rad;
     final epsilon =
@@ -75,7 +135,7 @@ class AstronomyCalculator {
     DateTime instant,
   ) {
     final position = _moonPosition(instant);
-    final t = (julianDay(instant) - _j2000) / 36525;
+    final t = (terrestrialJulianDay(instant) - _j2000) / 36525;
     final omega = (125.04 - 1934.136 * t) * _rad;
     final epsilon =
         (23.439291 - 0.0130042 * t + 0.00256 * math.cos(omega)) * _rad;
@@ -102,6 +162,27 @@ class AstronomyCalculator {
           360.98564736629 * (jd - _j2000) +
           0.000387933 * t * t -
           t * t * t / 38710000,
+    );
+  }
+
+  /// Tropical ecliptic longitude of the eastern horizon intersection.
+  /// Uses local sidereal time and mean obliquity (Meeus coordinate geometry).
+  static double ascendantLongitude(
+    DateTime instant,
+    double latitude,
+    double longitude,
+  ) {
+    final theta = (siderealDegrees(instant) + longitude) * _rad;
+    final t = (terrestrialJulianDay(instant) - _j2000) / 36525;
+    final epsilon = (23.439291 - .0130042 * t) * _rad;
+    return normalize(
+      math.atan2(
+                -math.cos(theta),
+                math.sin(epsilon) * math.tan(latitude * _rad) +
+                    math.cos(epsilon) * math.sin(theta),
+              ) *
+              _deg +
+          180,
     );
   }
 
@@ -137,7 +218,7 @@ class AstronomyCalculator {
   static ({double longitude, double latitude, double distanceKm}) _moonPosition(
     DateTime instant,
   ) {
-    final jd = julianDay(instant);
+    final jd = terrestrialJulianDay(instant);
     final t = (jd - _j2000) / 36525;
     final lPrime = normalize(
       218.3164477 +

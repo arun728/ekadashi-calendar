@@ -929,4 +929,7 @@ class AppLocalizationsHi extends AppLocalizations {
   @override
   String get premium_reward_example =>
       'सामान्य वर्ष: 24 × 10 = 240 सिक्के, पूरे वर्ष का बोनस 60 जोड़कर 300। 26 एकादशी वाले वर्ष में: 260 + 40 = 300।';
+
+  @override
+  String get more => 'और';
 }

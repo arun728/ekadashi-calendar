@@ -2,13 +2,12 @@ import 'astronomy_calculator.dart';
 import 'panchang_city.dart';
 import 'panchang_models.dart';
 
-/// Offline Panchang calculator for Indian civil dates and a fixed IST clock.
+/// Offline Panchang calculator for explicit civil dates and location timezones.
 /// The argument is a calendar date; its fields are used as-is, regardless of
 /// the host device timezone.
 class PanchangEngine {
   const PanchangEngine();
 
-  static const _istOffset = Duration(hours: 5, minutes: 30);
   static const _tithis = [
     'Pratipada',
     'Dvitiya',
@@ -122,9 +121,10 @@ class PanchangEngine {
     DateTime date, {
     PanchangCity city = PanchangCity.newDelhi,
   }) {
+    city.validate();
     final calendarDate = DateTime.utc(date.year, date.month, date.day);
-    final startUtc = calendarDate.subtract(_istOffset);
-    final endUtc = startUtc.add(const Duration(days: 1));
+    final startUtc = startFor(calendarDate, city: city);
+    final endUtc = endFor(calendarDate, city: city);
     final sunrise = _findCrossing(
       startUtc,
       endUtc,
@@ -133,7 +133,7 @@ class PanchangEngine {
       targetAltitude: -0.833,
       rising: true,
     );
-    final sunset = _findCrossing(
+    var sunset = _findCrossing(
       startUtc,
       endUtc,
       city,
@@ -141,16 +141,36 @@ class PanchangEngine {
       targetAltitude: -0.833,
       rising: false,
     );
+    if (sunrise != null && sunset != null && sunset.isBefore(sunrise)) {
+      sunset = _findCrossing(
+        sunrise,
+        city.midnight(calendarDate, dayOffset: 2),
+        city,
+        moon: false,
+        targetAltitude: -0.833,
+        rising: false,
+      );
+    }
     final moonrise = _findCrossing(
       startUtc,
       endUtc,
       city,
       moon: true,
-      targetAltitude: 0.125,
+      targetAltitude: -0.833,
       rising: true,
     );
-    final localSunrise = sunrise ?? startUtc.add(const Duration(hours: 6));
-    final localSunset = sunset ?? startUtc.add(const Duration(hours: 18));
+    final moonset = _findCrossing(
+      startUtc,
+      endUtc,
+      city,
+      moon: true,
+      targetAltitude: -0.833,
+      rising: false,
+    );
+    final hasSolarDay =
+        sunrise != null && sunset != null && sunset.isAfter(sunrise);
+    final localSunrise = sunrise ?? city.dateAtHour(calendarDate, 6);
+    final localSunset = sunset ?? city.dateAtHour(calendarDate, 18);
     final madhyahna = localSunrise.add(
       localSunset.difference(localSunrise) ~/ 2,
     );
@@ -162,7 +182,7 @@ class PanchangEngine {
     );
     final nightEnd = _findCrossing(
       localSunset,
-      endUtc.add(const Duration(hours: 12)),
+      city.midnight(calendarDate, dayOffset: 2),
       city,
       moon: false,
       targetAltitude: -0.833,
@@ -177,43 +197,47 @@ class PanchangEngine {
     final yoga = _yogaAt(localSunrise);
     final karana = _karanaAt(localSunrise);
     final month = _monthFor(localSunrise);
-    final purnimantaIndex = tithi.paksha == 'Krishna'
+    final purnimantaIndex = tithi.paksha == 'Krishna' && !month.adhika
         ? (month.index + 1) % 12
         : month.index;
-    final purnimanta = _lunarMonths[purnimantaIndex];
+    final purnimanta =
+        '${month.adhika ? "Adhika " : ""}${_lunarMonths[purnimantaIndex]}';
     final rahukala = _dayPeriod(
       localSunrise,
       localSunset,
       weekday: calendarDate.weekday,
-      segmentByWeekday: const [8, 2, 7, 5, 6, 4, 3],
+      segmentByWeekday: const [2, 7, 5, 6, 4, 3, 8],
       name: 'Rahu Kalam',
     );
     final yamaganda = _dayPeriod(
       localSunrise,
       localSunset,
       weekday: calendarDate.weekday,
-      segmentByWeekday: const [5, 4, 3, 2, 1, 7, 6],
+      segmentByWeekday: const [4, 3, 2, 1, 7, 6, 5],
       name: 'Yamaganda',
     );
     final gulika = _dayPeriod(
       localSunrise,
       localSunset,
       weekday: calendarDate.weekday,
-      segmentByWeekday: const [7, 6, 5, 4, 3, 2, 1],
+      segmentByWeekday: const [6, 5, 4, 3, 2, 1, 7],
       name: 'Gulika Kalam',
     );
-    final events = _observances(
-      date: calendarDate,
-      sunrise: localSunrise,
-      madhyahna: madhyahna,
-      aparahna: aparahna,
-      sunset: localSunset,
-      moonrise: moonrise,
-      nishita: nishita,
-      tithi: tithi,
-      monthAmanta: month.name,
-      monthPurnimanta: purnimanta,
-    );
+    final events = !hasSolarDay || nightEnd == null
+        ? <PanchangObservance>[]
+        : _observances(
+            city: city,
+            date: calendarDate,
+            sunrise: localSunrise,
+            madhyahna: madhyahna,
+            aparahna: aparahna,
+            sunset: localSunset,
+            moonrise: moonrise,
+            nishita: nishita,
+            tithi: tithi,
+            monthAmanta: month.name,
+            monthPurnimanta: purnimanta,
+          );
 
     return PanchangDay(
       date: calendarDate,
@@ -221,6 +245,108 @@ class PanchangEngine {
       sunriseUtc: sunrise,
       sunsetUtc: sunset,
       moonriseUtc: moonrise,
+      moonsetUtc: moonset,
+      sunRashiEndsAtUtc: _nextBoundary(
+        localSunrise,
+        _siderealSun(localSunrise),
+        30,
+        _siderealSun,
+      ),
+      moonRashiEndsAtUtc: _nextBoundary(
+        localSunrise,
+        _siderealMoon(localSunrise),
+        30,
+        _siderealMoon,
+      ),
+      padaEndsAtUtc: _nextBoundary(
+        localSunrise,
+        _siderealMoon(localSunrise),
+        360 / 108,
+        _siderealMoon,
+      ),
+      isAdhikaMonth: month.adhika,
+      shakaYear:
+          calendarDate.year -
+          (calendarDate.month <= 4 && month.index >= 9 ? 1 : 0) -
+          78,
+      vikramaYear:
+          calendarDate.year -
+          (calendarDate.month <= 4 && month.index >= 9 ? 1 : 0) +
+          57,
+      anandadiYoga: _anandadi(localSunrise, calendarDate.weekday),
+      lagna: !hasSolarDay || nightEnd == null || city.latitude.abs() >= 66
+          ? const []
+          : _lagna(localSunrise, nightEnd, city),
+      nakshatraPada:
+          ((_siderealMoon(localSunrise) % (360 / 27)) / (360 / 108)).floor() +
+          1,
+      ayanamsa: AstronomyCalculator.lahiriAyanamsa(localSunrise),
+      ritu: const [
+        'Vasanta',
+        'Grishma',
+        'Varsha',
+        'Sharad',
+        'Hemanta',
+        'Shishira',
+      ][month.index ~/ 2],
+      ayana:
+          (AstronomyCalculator.sunLongitude(localSunrise) >= 270 ||
+              AstronomyCalculator.sunLongitude(localSunrise) < 90)
+          ? 'Uttarayana (tropical)'
+          : 'Dakshinayana (tropical)',
+      hora: !hasSolarDay || nightEnd == null
+          ? const []
+          : _hora(localSunrise, localSunset, nightEnd, calendarDate.weekday),
+      additionalPeriods: !hasSolarDay || nightEnd == null
+          ? const []
+          : _additionalPeriods(
+              localSunrise,
+              localSunset,
+              nightEnd,
+              calendarDate.weekday,
+            ),
+      specialYogas: _specialYogas(localSunrise, calendarDate.weekday),
+      nextSunriseUtc: nightEnd,
+      sunRashi: _rashi(
+        AstronomyCalculator.normalize(
+          AstronomyCalculator.sunLongitude(localSunrise) -
+              AstronomyCalculator.apparentLahiriAyanamsa(localSunrise),
+        ),
+      ),
+      moonRashi: _rashi(_siderealMoon(localSunrise)),
+      abhijit: !hasSolarDay || calendarDate.weekday == DateTime.wednesday
+          ? null
+          : PanchangPeriod(
+              name: 'Abhijit Muhurta',
+              startUtc: madhyahna.subtract(
+                localSunset.difference(localSunrise) ~/ 30,
+              ),
+              endUtc: madhyahna.add(localSunset.difference(localSunrise) ~/ 30),
+            ),
+      brahmaMuhurta: !hasSolarDay
+          ? null
+          : PanchangPeriod(
+              name: 'Brahma Muhurta',
+              startUtc: localSunrise.subtract(const Duration(minutes: 96)),
+              endUtc: localSunrise.subtract(const Duration(minutes: 48)),
+            ),
+      choghadiya: !hasSolarDay || nightEnd == null
+          ? const []
+          : _choghadiya(
+              localSunrise,
+              localSunset,
+              nightEnd,
+              calendarDate.weekday,
+            ),
+      limbTimeline: Map.unmodifiable({
+        for (final entry in {
+          'Tithi': _tithiAt,
+          'Nakshatra': _nakshatraAt,
+          'Yoga': _yogaAt,
+          'Karana': _karanaAt,
+        }.entries)
+          entry.key: _timeline(localSunrise, nightEnd ?? endUtc, entry.value),
+      }),
       tithi: tithi,
       nakshatra: nakshatra,
       yoga: yoga,
@@ -228,11 +354,341 @@ class PanchangEngine {
       vara: _varas[calendarDate.weekday],
       amantaMonth: month.name,
       purnimantaMonth: purnimanta,
-      rahukala: rahukala,
-      yamaganda: yamaganda,
-      gulika: gulika,
+      rahukala: hasSolarDay ? rahukala : null,
+      yamaganda: hasSolarDay ? yamaganda : null,
+      gulika: hasSolarDay ? gulika : null,
       observances: events,
     );
+  }
+
+  PanchangLimb tithiAt(DateTime utc) => _tithiAt(utc.toUtc());
+  PanchangLimb nakshatraAt(DateTime utc) => _nakshatraAt(utc.toUtc());
+  DateTime tithiStart(DateTime utc) => _previousBoundary(utc, 12, _elongation);
+
+  DateTime _previousBoundary(
+    DateTime utc,
+    double width,
+    double Function(DateTime) angleAt,
+  ) {
+    final index = (angleAt(utc) / width).floor();
+    var right = utc;
+    for (var i = 1; i <= 48; i++) {
+      var left = utc.subtract(Duration(hours: i));
+      if ((angleAt(left) / width).floor() == index) continue;
+      for (var k = 0; k < 24; k++) {
+        final middle = left.add(right.difference(left) ~/ 2);
+        if ((angleAt(middle) / width).floor() == index) {
+          right = middle;
+        } else {
+          left = middle;
+        }
+      }
+      return right;
+    }
+    throw StateError('Unable to bracket angular boundary');
+  }
+
+  String _anandadi(DateTime instant, int weekday) {
+    const names = [
+      'Ananda',
+      'Kaladanda',
+      'Dhumra',
+      'Prajapati',
+      'Saumya',
+      'Dhwanksha',
+      'Dhwaja',
+      'Srivatsa',
+      'Vajra',
+      'Mudgara',
+      'Chhatra',
+      'Mitra',
+      'Manasa',
+      'Padma',
+      'Lumbaka',
+      'Utpata',
+      'Mrityu',
+      'Kana',
+      'Siddhi',
+      'Shubha',
+      'Amrita',
+      'Musala',
+      'Gada',
+      'Matanga',
+      'Rakshasa',
+      'Chara',
+      'Sthira',
+      'Vardhamana',
+    ];
+    final longitude = _siderealMoon(instant);
+    final nak = (longitude / (360 / 27)).floor();
+    // The traditional 28-star cycle includes Abhijit between Uttara Ashadha
+    // and Shravana, occupying 276°40′ through 280°53′20″.
+    final extended = longitude >= 276 + 2 / 3 && longitude < 280 + 8 / 9
+        ? 21
+        : nak >= 21
+        ? nak + 1
+        : nak;
+    const starts = [4, 7, 12, 16, 20, 24, 0];
+    return names[(extended - starts[weekday - 1] + 28) % 28];
+  }
+
+  List<PanchangPeriod> _lagna(DateTime start, DateTime end, PanchangCity city) {
+    double angle(DateTime instant) => AstronomyCalculator.normalize(
+      AstronomyCalculator.ascendantLongitude(
+            instant,
+            city.latitude,
+            city.longitude,
+          ) -
+          AstronomyCalculator.lahiriAyanamsa(instant),
+    );
+    final result = <PanchangPeriod>[];
+    var cursor = start;
+    for (var i = 0; i < 16 && cursor.isBefore(end); i++) {
+      final value = angle(cursor);
+      final boundary = _nextBoundary(cursor, value, 30, angle);
+      if (boundary == null || !boundary.isAfter(cursor)) break;
+      final stop = boundary.isBefore(end) ? boundary : end;
+      result.add(
+        PanchangPeriod(name: _rashi(value), startUtc: cursor, endUtc: stop),
+      );
+      cursor = stop;
+    }
+    return List.unmodifiable(result);
+  }
+
+  List<PanchangPeriod> _hora(
+    DateTime sunrise,
+    DateTime sunset,
+    DateTime nextSunrise,
+    int weekday,
+  ) {
+    const planets = [
+      'Saturn',
+      'Jupiter',
+      'Mars',
+      'Sun',
+      'Venus',
+      'Mercury',
+      'Moon',
+    ];
+    const firstByWeekday = [6, 2, 5, 1, 4, 0, 3];
+    final result = <PanchangPeriod>[];
+    for (var half = 0; half < 2; half++) {
+      final start = half == 0 ? sunrise : sunset;
+      final end = half == 0 ? sunset : nextSunrise;
+      DateTime boundary(int i) => start.add(
+        Duration(
+          microseconds: (end.difference(start).inMicroseconds * i / 12).round(),
+        ),
+      );
+      for (var i = 0; i < 12; i++) {
+        result.add(
+          PanchangPeriod(
+            name: planets[(firstByWeekday[weekday - 1] + half * 12 + i) % 7],
+            startUtc: boundary(i),
+            endUtc: boundary(i + 1),
+          ),
+        );
+      }
+    }
+    return List.unmodifiable(result);
+  }
+
+  List<PanchangPeriod> _additionalPeriods(
+    DateTime sunrise,
+    DateTime sunset,
+    DateTime nextSunrise,
+    int weekday,
+  ) {
+    final result = <PanchangPeriod>[];
+    // Monday-first one-based fifteenths of daylight. Tuesday also has the
+    // seventh fifteenth of night. Traditional muhurta table, not clock hours.
+    const dur = [
+      [9, 12],
+      [4],
+      [8],
+      [6, 12],
+      [4, 9],
+      [1, 2],
+      [14],
+    ];
+    void addPart(
+      String name,
+      DateTime start,
+      Duration length,
+      double offset,
+      double width,
+      double denominator,
+    ) {
+      final a = start.add(
+        Duration(
+          microseconds: (length.inMicroseconds * offset / denominator).round(),
+        ),
+      );
+      final b = start.add(
+        Duration(
+          microseconds: (length.inMicroseconds * (offset + width) / denominator)
+              .round(),
+        ),
+      );
+      if (b.isAfter(sunrise) && a.isBefore(nextSunrise)) {
+        result.add(
+          PanchangPeriod(
+            name: name,
+            startUtc: a.isBefore(sunrise) ? sunrise : a,
+            endUtc: b.isAfter(nextSunrise) ? nextSunrise : b,
+          ),
+        );
+      }
+    }
+
+    for (final part in dur[weekday - 1]) {
+      addPart(
+        'Dur Muhurta',
+        sunrise,
+        sunset.difference(sunrise),
+        part - 1.0,
+        1,
+        15,
+      );
+    }
+    if (weekday == DateTime.tuesday) {
+      addPart('Dur Muhurta', sunset, nextSunrise.difference(sunset), 6, 1, 15);
+    }
+    // Ghati offsets within the actual nakshatra duration (60 ghatis).
+    const varjya = [
+      50,
+      24,
+      30,
+      40,
+      14,
+      21,
+      30,
+      20,
+      32,
+      30,
+      20,
+      18,
+      21,
+      20,
+      14,
+      14,
+      10,
+      14,
+      20,
+      24,
+      20,
+      10,
+      10,
+      18,
+      16,
+      24,
+      30,
+    ];
+    const amrita = [
+      42,
+      48,
+      54,
+      52,
+      38,
+      35,
+      54,
+      44,
+      56,
+      54,
+      44,
+      42,
+      45,
+      44,
+      38,
+      38,
+      34,
+      38,
+      44,
+      48,
+      44,
+      34,
+      34,
+      42,
+      40,
+      48,
+      54,
+    ];
+    var cursor = sunrise;
+    for (var count = 0; count < 4 && cursor.isBefore(nextSunrise); count++) {
+      final limb = _nakshatraAt(cursor);
+      final start = _previousBoundary(cursor, 360 / 27, _siderealMoon);
+      final end = limb.endsAtUtc;
+      if (end == null) break;
+      final duration = end.difference(start);
+      addPart(
+        'Varjyam',
+        start,
+        duration,
+        varjya[limb.index - 1].toDouble(),
+        4,
+        60,
+      );
+      addPart(
+        'Amrit Kalam',
+        start,
+        duration,
+        amrita[limb.index - 1].toDouble(),
+        4,
+        60,
+      );
+      if (limb.index == 19) addPart('Varjyam', start, duration, 56, 4, 60);
+      cursor = end.add(const Duration(seconds: 1));
+    }
+    result.sort((a, b) => a.startUtc.compareTo(b.startUtc));
+    return List.unmodifiable(result);
+  }
+
+  List<String> _specialYogas(DateTime instant, int weekday) {
+    final nak = _nakshatraAt(instant).index;
+    final moon = _siderealMoon(instant);
+    final tithi = _tithiAt(instant).index;
+    final karana = _karanaAt(instant);
+    // These labels explicitly describe the sample instant, not all-day windows.
+    const sarvartha = [
+      [4, 5, 8, 17, 22],
+      [1, 9, 26, 3],
+      [3, 4, 5, 13, 17],
+      [1, 7, 8, 17, 27],
+      [1, 7, 17, 22, 27],
+      [4, 15, 22],
+      [1, 8, 12, 13, 19, 21, 26],
+    ];
+    final solarNak = (_siderealSun(instant) / (360 / 27)).floor() + 1;
+    return List.unmodifiable([
+      if (nak == const [5, 1, 17, 8, 27, 4, 13][weekday - 1])
+        'Amrita Siddhi Yoga',
+      if ([4, 6, 9, 10, 13, 20].contains((nak - solarNak + 27) % 27 + 1))
+        'Ravi Yoga',
+      if (moon >= 300) 'Panchaka',
+      if ([1, 9, 10, 18, 19, 27].contains(nak)) 'Ganda Moola',
+      if (moon >= 210 && moon < 240) 'Vinchudo',
+      if (karana.name == 'Vishti') 'Bhadra',
+      if (sarvartha[weekday - 1].contains(nak)) 'Sarvartha Siddhi Yoga',
+      if (weekday == DateTime.sunday && nak == 8) 'Ravi Pushya Yoga',
+      if (weekday == DateTime.thursday && nak == 8) 'Guru Pushya Yoga',
+      if ([2, 7, 12].contains((tithi - 1) % 15 + 1) &&
+          [
+            DateTime.sunday,
+            DateTime.tuesday,
+            DateTime.saturday,
+          ].contains(weekday) &&
+          [5, 14, 23].contains(nak))
+        'Dwipushkara Yoga',
+      if ([2, 7, 12].contains((tithi - 1) % 15 + 1) &&
+          [
+            DateTime.sunday,
+            DateTime.tuesday,
+            DateTime.saturday,
+          ].contains(weekday) &&
+          [3, 7, 12, 16, 21, 25].contains(nak))
+        'Tripushkara Yoga',
+    ]);
   }
 
   PanchangLimb _tithiAt(DateTime utc) {
@@ -298,13 +754,14 @@ class PanchangEngine {
     final startIndex = (startAngle / width).floor();
     final remainder = startAngle - startIndex * width;
     final distance = width - remainder;
-    final limit = start.add(const Duration(hours: 40));
+    final limit = start.add(Duration(hours: width >= 30 ? 35 * 24 : 40));
+    const step = Duration(minutes: 10);
     var low = start;
     DateTime? high;
     for (
-      var probe = start.add(const Duration(minutes: 10));
+      var probe = start.add(step);
       !probe.isAfter(limit);
-      probe = probe.add(const Duration(minutes: 10))
+      probe = probe.add(step)
     ) {
       final progress = AstronomyCalculator.normalize(
         angleAt(probe) - startAngle,
@@ -336,28 +793,46 @@ class PanchangEngine {
         AstronomyCalculator.sunLongitude(utc),
   );
 
+  double _siderealSun(DateTime utc) => AstronomyCalculator.normalize(
+    AstronomyCalculator.sunLongitude(utc) -
+        AstronomyCalculator.apparentLahiriAyanamsa(utc),
+  );
+
   double _siderealMoon(DateTime utc) => AstronomyCalculator.normalize(
     AstronomyCalculator.moonLongitude(utc) -
-        AstronomyCalculator.lahiriAyanamsa(utc),
+        AstronomyCalculator.apparentLahiriAyanamsa(utc),
   );
 
   double _yogaAngle(DateTime utc) => AstronomyCalculator.normalize(
     AstronomyCalculator.moonLongitude(utc) +
         AstronomyCalculator.sunLongitude(utc) -
-        2 * AstronomyCalculator.lahiriAyanamsa(utc),
+        2 * AstronomyCalculator.apparentLahiriAyanamsa(utc),
   );
 
-  ({int index, String name}) _monthFor(DateTime utc) {
+  ({int index, String name, bool adhika}) _monthFor(DateTime utc) {
     // Amanta months run from new moon to new moon. Walk back to the preceding
     // conjunction, then apply the traditional one-sign month-name offset.
     final newMoon = _previousNewMoon(utc);
     final siderealSun = AstronomyCalculator.normalize(
       AstronomyCalculator.sunLongitude(newMoon) -
-          AstronomyCalculator.lahiriAyanamsa(newMoon),
+          AstronomyCalculator.apparentLahiriAyanamsa(newMoon),
     );
     // The month follows the sidereal solar sign at the preceding new moon.
     final index = ((siderealSun / 30).floor() + 1) % 12;
-    return (index: index, name: _lunarMonths[index]);
+    final nextNewMoon = _previousNewMoon(newMoon.add(const Duration(days: 32)));
+    final nextSign =
+        (AstronomyCalculator.normalize(
+                  AstronomyCalculator.sunLongitude(nextNewMoon) -
+                      AstronomyCalculator.apparentLahiriAyanamsa(nextNewMoon),
+                ) /
+                30)
+            .floor();
+    final adhika = nextSign == (siderealSun / 30).floor();
+    return (
+      index: index,
+      name: '${adhika ? "Adhika " : ""}${_lunarMonths[index]}',
+      adhika: adhika,
+    );
   }
 
   DateTime _previousNewMoon(DateTime instant) {
@@ -454,6 +929,7 @@ class PanchangEngine {
   }
 
   List<PanchangObservance> _observances({
+    required PanchangCity city,
     required DateTime date,
     required DateTime sunrise,
     required DateTime madhyahna,
@@ -663,12 +1139,15 @@ class PanchangEngine {
       );
     }
 
-    final ingress = _solarIngress(startFor(date), endFor(date));
+    final ingress = _solarIngress(
+      startFor(date, city: city),
+      endFor(date, city: city),
+    );
     if (ingress != null) {
       final sign =
           (AstronomyCalculator.normalize(
                     AstronomyCalculator.sunLongitude(ingress) -
-                        AstronomyCalculator.lahiriAyanamsa(ingress),
+                        AstronomyCalculator.apparentLahiriAyanamsa(ingress),
                   ) /
                   30)
               .floor();
@@ -696,7 +1175,8 @@ class PanchangEngine {
         'sankranti-$sign',
         festivalName,
         major: true,
-        note: 'Sidereal solar ingress at ${formatIstTime(ingress)} IST.',
+        note:
+            'Sidereal solar ingress at ${formatPanchangTime(ingress, city, date)}.',
       );
       if (sign == 9) add('pongal', 'Pongal');
     }
@@ -708,14 +1188,92 @@ class PanchangEngine {
     return List.unmodifiable(items);
   }
 
-  DateTime startFor(DateTime date) =>
-      DateTime.utc(date.year, date.month, date.day).subtract(_istOffset);
-  DateTime endFor(DateTime date) => startFor(date).add(const Duration(days: 1));
+  DateTime startFor(
+    DateTime date, {
+    PanchangCity city = PanchangCity.newDelhi,
+  }) => city.midnight(date);
+  DateTime endFor(DateTime date, {PanchangCity city = PanchangCity.newDelhi}) =>
+      city.midnight(date, dayOffset: 1);
+
+  static String _rashi(double angle) => const [
+    'Mesha',
+    'Vrishabha',
+    'Mithuna',
+    'Karka',
+    'Simha',
+    'Kanya',
+    'Tula',
+    'Vrischika',
+    'Dhanu',
+    'Makara',
+    'Kumbha',
+    'Meena',
+  ][(angle / 30).floor() % 12];
+
+  List<PanchangLimb> _timeline(
+    DateTime start,
+    DateTime end,
+    PanchangLimb Function(DateTime) at,
+  ) {
+    final result = <PanchangLimb>[];
+    var cursor = start;
+    while (cursor.isBefore(end) && result.length < 8) {
+      final limb = at(cursor);
+      result.add(limb);
+      final next = limb.endsAtUtc;
+      if (next == null || !next.isAfter(cursor)) break;
+      cursor = next.add(const Duration(seconds: 1));
+    }
+    return List.unmodifiable(result);
+  }
+
+  List<PanchangPeriod> _choghadiya(
+    DateTime sunrise,
+    DateTime sunset,
+    DateTime nextSunrise,
+    int weekday,
+  ) {
+    // Sunday-first starting indices in the repeating planetary sequence.
+    const names = ['Udveg', 'Chal', 'Labh', 'Amrit', 'Kaal', 'Shubh', 'Rog'];
+    const dayStarts = [0, 3, 6, 2, 5, 1, 4];
+    const nightStarts = [0, 2, 4, 6, 1, 3, 5];
+    const nightNames = [
+      'Shubh',
+      'Amrit',
+      'Chal',
+      'Rog',
+      'Kaal',
+      'Labh',
+      'Udveg',
+    ];
+    final result = <PanchangPeriod>[];
+    for (var night = 0; night < 2; night++) {
+      final start = night == 0 ? sunrise : sunset;
+      final end = night == 0 ? sunset : nextSunrise;
+      final first = (night == 0 ? dayStarts : nightStarts)[weekday % 7];
+      DateTime boundary(int i) => start.add(
+        Duration(
+          microseconds: (end.difference(start).inMicroseconds * i / 8).round(),
+        ),
+      );
+      for (var i = 0; i < 8; i++) {
+        final name = (night == 0 ? names : nightNames)[(first + i) % 7];
+        result.add(
+          PanchangPeriod(
+            name: '${night == 0 ? 'Day' : 'Night'} · $name',
+            startUtc: boundary(i),
+            endUtc: boundary(i + 1),
+          ),
+        );
+      }
+    }
+    return List.unmodifiable(result);
+  }
 
   DateTime? _solarIngress(DateTime start, DateTime end) {
     double sidereal(DateTime instant) => AstronomyCalculator.normalize(
       AstronomyCalculator.sunLongitude(instant) -
-          AstronomyCalculator.lahiriAyanamsa(instant),
+          AstronomyCalculator.apparentLahiriAyanamsa(instant),
     );
     var low = start;
     var lowAngle = sidereal(low);

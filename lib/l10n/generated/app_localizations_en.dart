@@ -935,4 +935,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get premium_reward_example =>
       'Typical year: 24 × 10 = 240 coins, plus a 60-coin full-year bonus = 300 coins. In a 26-Ekadashi year: 260 + 40 = 300.';
+
+  @override
+  String get more => 'More';
 }

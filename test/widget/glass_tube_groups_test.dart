@@ -14,7 +14,7 @@ void main() {
     ]) {
       final (dark, width, scale) = variant;
       testWidgets(
-        '$locale grouped tubes across five tabs, dark=$dark width=$width scale=$scale',
+        '$locale grouped tubes across six tabs, dark=$dark width=$width scale=$scale',
         (tester) async {
           final harness = AppHarness();
           await tester.runAsync(
@@ -50,6 +50,16 @@ void main() {
           }
           await tester.tap(find.byKey(const Key('glass_tab_3')));
           await tester.pumpAndSettle();
+          await tester.scrollUntilVisible(
+            find.byKey(const Key('panchang_daily_overview')),
+            200,
+            scrollable: find
+                .descendant(
+                  of: find.byKey(const Key('panchang_scroll_view')),
+                  matching: find.byType(Scrollable),
+                )
+                .first,
+          );
           expect(
             find.byKey(const Key('panchang_daily_overview')),
             findsOneWidget,
