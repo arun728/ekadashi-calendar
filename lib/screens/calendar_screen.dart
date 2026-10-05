@@ -322,6 +322,8 @@ class CalendarScreenState extends State<CalendarScreen> {
       premium = true;
     }
     setState(() => _syncing = true);
+    // Names the step a failed sync stopped at in the device log.
+    var stage = 'sign_in';
     try {
       final bool signedIn;
       try {
@@ -335,6 +337,7 @@ class CalendarScreenState extends State<CalendarScreen> {
         return;
       }
       String? googleIdToken;
+      stage = 'free_sync_registry';
       if (!premium && _registry != null) {
         googleIdToken = await _google.auth.idToken();
         if (googleIdToken == null) throw StateError('No Google ID token');
@@ -359,6 +362,7 @@ class CalendarScreenState extends State<CalendarScreen> {
                   : (first: _years.first, last: _years.last),
             )!
           : (start: month, end: DateTime(month.year, month.month + 1));
+      stage = 'list_calendars';
       final account = await _google.auth.accountId();
       if (account == null) throw StateError('No Google account');
       final calendars = await _google.listCalendars();
@@ -376,6 +380,7 @@ class CalendarScreenState extends State<CalendarScreen> {
       if (chosen == null || chosen.isEmpty) return;
       // The window was fixed before the picker: changing the month or year
       // while a request runs cannot silently change the import range.
+      stage = 'import';
       final count = await _google.syncImport(
         timeMin: window.start,
         timeMax: window.end,
@@ -416,7 +421,8 @@ class CalendarScreenState extends State<CalendarScreen> {
           ],
         );
       }
-    } catch (_) {
+    } catch (error) {
+      debugPrint('Google Calendar sync failed at $stage: $error');
       _showMessage('google_sync_failed');
     } finally {
       if (mounted) setState(() => _syncing = false);
