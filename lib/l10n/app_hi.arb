@@ -190,6 +190,7 @@
   "no_google_calendars": "कोई Google कैलेंडर नहीं मिला",
   "no_google_events": "इस वर्ष चयनित कैलेंडर में कोई कार्यक्रम नहीं",
   "imported_google_events": "{value0} Google कार्यक्रम आयात किए गए",
+  "imported_google_range": "{value0} Google इवेंट आयात किए गए ({value1} – {value2})",
   "@imported_google_events": {
     "placeholders": {
       "value0": {
@@ -320,7 +321,7 @@
   "premium_coins": "सिक्के",
   "premium_more_achievements": "प्रीमियम के साथ और उपलब्धियाँ",
   "premium_reward_example": "सामान्य वर्ष: 24 × 10 = 240 सिक्के, पूरे वर्ष का बोनस 60 जोड़कर 300। 26 एकादशी वाले वर्ष में: 260 + 40 = 300।",
-  "premium_feature_calendar": "पूरे साल के लिए Google कैलेंडर सिंक (एक महीने का सिंक मुफ़्त)",
+  "premium_feature_calendar": "आपके पूरे सदस्यता वर्ष के लिए Google कैलेंडर सिंक (एक महीने का सिंक मुफ़्त)",
   "premium_feature_vrat": "असीमित व्रत प्रविष्टियाँ (पहली तीन मुफ़्त) और सभी उपलब्धियाँ",
   "premium_feature_panchang": "पूर्ण दैनिक पंचांग: पाँचों अंग, शहर के अनुसार समय और पर्व",
   "terms_of_service": "सेवा की शर्तें",

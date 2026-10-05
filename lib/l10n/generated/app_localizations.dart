@@ -1158,6 +1158,12 @@ abstract class AppLocalizations {
   /// **'Imported {value0} Google events'**
   String imported_google_events(String value0);
 
+  /// No description provided for @imported_google_range.
+  ///
+  /// In en, this message translates to:
+  /// **'Imported {value0} Google events ({value1} – {value2})'**
+  String imported_google_range(String value0, String value1, String value2);
+
   /// No description provided for @google_sync_failed.
   ///
   /// In en, this message translates to:
@@ -1857,7 +1863,7 @@ abstract class AppLocalizations {
   /// No description provided for @premium_feature_calendar.
   ///
   /// In en, this message translates to:
-  /// **'Google Calendar sync for the whole year (one free month sync)'**
+  /// **'Google Calendar sync for your whole subscription year (one free month sync)'**
   String get premium_feature_calendar;
 
   /// No description provided for @premium_feature_vrat.

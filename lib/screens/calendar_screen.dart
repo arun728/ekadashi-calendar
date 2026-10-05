@@ -184,30 +184,38 @@ class CalendarScreenState extends State<CalendarScreen> {
 
   DateTime _now() => (widget.clock ?? DateTime.now)();
 
-  /// Premium (an active Play subscription or lifetime purchase, checked at
-  /// every sync) imports the whole selected year. Free users get one sync
-  /// ever, of the month being viewed; after that, syncing needs premium.
+  bool _isPremium() => context.read<PremiumService?>()?.isPremium == true;
+
+  /// Opens the paywall; true when the user now has premium.
+  Future<bool> _unlockPremium() async {
+    await openPremium(
+      context,
+      currentTimezone: widget.currentTimezone ?? 'IST',
+    );
+    return mounted && _isPremium();
+  }
+
+  /// Premium (an active Play subscription or lifetime purchase, re-checked
+  /// with Google Play at every sync) imports the whole subscription year.
+  /// Free users get one sync ever, of the month being viewed; it is recorded
+  /// on the phone and in the Google account, and is only used up by a
+  /// successful import.
   Future<void> _syncYear() async {
     if (_syncing || !_repoReady) return;
-    final year = _selectedYear;
     final month = DateTime(_focusedDay.year, _focusedDay.month);
-    var premium = context.read<PremiumService?>()?.isPremium == true;
+    final premiumService = context.read<PremiumService?>();
+    final languageCode = context
+        .read<LanguageService>()
+        .currentLocale
+        .languageCode;
     final prefs = await SharedPreferences.getInstance();
     if (!mounted) return;
+    var premium = _isPremium();
     if (!premium && prefs.getBool(CalendarScreen.freeSyncUsedKey) == true) {
-      await openPremium(
-        context,
-        currentTimezone: widget.currentTimezone ?? 'IST',
-      );
-      if (!mounted) return;
-      premium = context.read<PremiumService?>()?.isPremium == true;
       // Continue straight into the import after a successful purchase.
-      if (!premium) return;
+      if (!await _unlockPremium()) return;
+      premium = true;
     }
-    final timeMin = premium ? DateTime(year, 1, 1) : month;
-    final timeMax = premium
-        ? DateTime(year + 1, 1, 1)
-        : DateTime(month.year, month.month + 1);
     setState(() => _syncing = true);
     try {
       final bool signedIn;
@@ -221,6 +229,19 @@ class CalendarScreenState extends State<CalendarScreen> {
         _showMessage('sign_in_cancelled');
         return;
       }
+      if (!premium && await _google.auth.freeSyncUsed()) {
+        // This Google account used its free sync before (e.g. before a
+        // reinstall or on another phone).
+        await prefs.setBool(CalendarScreen.freeSyncUsedKey, true);
+        if (!mounted) return;
+        setState(() => _syncing = false);
+        if (!await _unlockPremium()) return;
+        premium = true;
+        setState(() => _syncing = true);
+      }
+      final window = premium
+          ? premiumService!.syncWindow(_now())!
+          : (start: month, end: DateTime(month.year, month.month + 1));
       final account = await _google.auth.accountId();
       if (account == null) throw StateError('No Google account');
       final calendars = await _google.listCalendars();
@@ -236,11 +257,11 @@ class CalendarScreenState extends State<CalendarScreen> {
         initiallySelected: saved,
       );
       if (chosen == null || chosen.isEmpty) return;
-      // Capture the selected year before authentication: changing a tab or year
-      // while a request runs cannot silently change the requested import range.
+      // The window was fixed before the picker: changing the month or year
+      // while a request runs cannot silently change the import range.
       final count = await _google.syncImport(
-        timeMin: timeMin,
-        timeMax: timeMax,
+        timeMin: window.start,
+        timeMax: window.end,
         calendarIds: chosen,
       );
       await GoogleCalendarPrefs.saveSelectedIds(account, chosen);
@@ -248,11 +269,21 @@ class CalendarScreenState extends State<CalendarScreen> {
       if (mounted) setState(() => _filter = CalendarFilter.google);
       if (!premium) {
         await prefs.setBool(CalendarScreen.freeSyncUsedKey, true);
+        try {
+          await _google.auth.markFreeSyncUsed(month);
+        } catch (_) {
+          // The phone still remembers it; the account marker is best effort.
+        }
         _showMessage('google_free_sync_used', upsell: true);
       } else {
+        final format = DateFormat.yMMM(languageCode);
         _showMessage(
-          count == 0 ? 'no_google_events' : 'imported_google_events',
-          args: ['$count'],
+          'imported_google_range',
+          args: [
+            '$count',
+            format.format(window.start),
+            format.format(DateTime(window.end.year, window.end.month - 1)),
+          ],
         );
       }
     } catch (_) {

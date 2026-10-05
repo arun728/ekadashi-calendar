@@ -567,6 +567,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String imported_google_range(String value0, String value1, String value2) {
+    return 'Imported $value0 Google events ($value1 – $value2)';
+  }
+
+  @override
   String get google_sync_failed =>
       'Calendar import failed. Previous entries were kept. Please try again.';
 
@@ -938,7 +943,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premium_feature_calendar =>
-      'Google Calendar sync for the whole year (one free month sync)';
+      'Google Calendar sync for your whole subscription year (one free month sync)';
 
   @override
   String get premium_feature_vrat =>

@@ -34,6 +34,7 @@ Ekadashi Calendar ("the App") is committed to protecting your privacy. This app 
 - **What we access:** If you choose "Import from Google Calendar" and sign in with Google, the app requests read-only access (`https://www.googleapis.com/auth/calendar.readonly`) to list your calendars and read the events in the calendars you select, for the date range you import.
 - **Why:** Only to show your own Google Calendar events alongside Ekadashi dates inside the app.
 - **Storage:** Imported events are stored only on your device. They are never sent to the developer or any other server, and the app never creates, edits or deletes events in your Google Calendar.
+- **Free sync marker:** with the `https://www.googleapis.com/auth/drive.appdata` permission, the app saves one small file (the month of your free sync) in its own hidden app-data folder in your Google Drive, so the one free sync is not offered again after a reinstall. The app cannot see any of your other Drive files. You can delete this data in Google Drive → Settings → Manage apps.
 - **Removal:** "Disconnect Google" in the Calendar screen signs out and deletes imported events from the app. You can also revoke access at https://myaccount.google.com/permissions.
 - **Limited Use:** Ekadashi Calendar's use and transfer of information received from Google APIs adheres to the [Google API Services User Data Policy](https://developers.google.com/terms/api-services-user-data-policy), including the Limited Use requirements. Google user data is not used for advertising, is not sold, and is not read by humans.
 

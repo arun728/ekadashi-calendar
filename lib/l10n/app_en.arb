@@ -197,6 +197,20 @@
       }
     }
   },
+  "imported_google_range": "Imported {value0} Google events ({value1} – {value2})",
+  "@imported_google_range": {
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      },
+      "value1": {
+        "type": "String"
+      },
+      "value2": {
+        "type": "String"
+      }
+    }
+  },
   "google_sync_failed": "Calendar import failed. Previous entries were kept. Please try again.",
   "storage_failed": "Calendar storage is unavailable. Please try again.",
   "retry": "Try again",
@@ -320,7 +334,7 @@
   "premium_coins": "Coins",
   "premium_more_achievements": "More achievements with Premium",
   "premium_reward_example": "Typical year: 24 × 10 = 240 coins, plus a 60-coin full-year bonus = 300 coins. In a 26-Ekadashi year: 260 + 40 = 300.",
-  "premium_feature_calendar": "Google Calendar sync for the whole year (one free month sync)",
+  "premium_feature_calendar": "Google Calendar sync for your whole subscription year (one free month sync)",
   "premium_feature_vrat": "Unlimited Vrat entries (the first three are free) and all achievements",
   "premium_feature_panchang": "Full daily Panchang: all five limbs, city timings and observances",
   "terms_of_service": "Terms of service",

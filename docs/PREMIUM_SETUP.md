@@ -10,7 +10,7 @@ Google Calendar import. Fasting rewards are hidden; `backend/` is dormant.
 | Feature | Free | Premium |
 |---|---|---|
 | Ekadashi dates, reminders, widgets, search, custom entries | Yes | Yes |
-| Google Calendar import (import only) | One sync ever, of the month on screen | Whole selected year, any time while the subscription is active |
+| Google Calendar import (import only) | One sync ever, of the month on screen (kept in the Google account, survives reinstall) | The subscription year (12 months from the purchase month), any time while the subscription is active |
 | Vrat entries | First 3 new entries (editing always free) | Unlimited + all achievements |
 | Panchang | Daily preview | Full limbs, timings, observances, browsing |
 
@@ -60,9 +60,12 @@ Google Cloud Console → **Google Auth Platform**.
    privacy policy URL (`https://arun728.github.io/ekadashi-calendar/privacy-policy`),
    terms URL, and the authorized domain. Verify domain ownership in Google
    Search Console.
-3. **Data access**: add only `.../auth/calendar.readonly` (a *sensitive*
-   scope; no paid security assessment is needed, that is only for
-   *restricted* scopes).
+3. **Data access**: add `.../auth/calendar.readonly` (a *sensitive* scope;
+   no paid security assessment is needed, that is only for *restricted*
+   scopes) and `.../auth/drive.appdata` (*non-sensitive*: the app's own
+   hidden Drive folder, used only to remember that the account used its one
+   free sync). Also enable the **Google Drive API** under APIs & Services →
+   Library.
 4. **Audience → Publish app** (moves from Testing to In production).
 5. **Verification Center**: submit for verification with a scope
    justification and an unlisted YouTube video showing sign-in, the consent
@@ -81,14 +84,16 @@ requests per day); one import uses only a few requests.
 - `lib/services/play_billing_service.dart`: products, checkout, purchase
   stream, acknowledgement and `PlayStoreEntitlements` (owned purchases).
 - `lib/screens/premium_screen.dart`: paywall.
-- `lib/screens/calendar_screen.dart`: the one free sync (flag `google_free_sync_used`) and premium whole-year sync.
+- `lib/screens/calendar_screen.dart`: the one free sync and the premium subscription-year sync.
+- `lib/services/google_auth_gateway_android.dart`: the free-sync marker in the Drive app-data folder.
 - `lib/services/vrat_tracker_service.dart` and
   `lib/screens/vrat_tracker/record_vrat_dialog.dart`: three free entries.
 
 ## Known trade-offs
 
-The one free sync is remembered on the device, so reinstalling the app or
-clearing its data gives another free month sync.
+The one free sync is remembered on the phone and in the user's Google
+account, so reinstalling does not give another one. A different Google
+account gets its own free sync (the same as a per-account free trial).
 
 Without a server, premium trusts Google Play on the device. A modified APK on
 a rooted phone can fake ownership. That is accepted for v2; adding local

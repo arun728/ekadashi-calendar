@@ -563,6 +563,11 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
+  String imported_google_range(String value0, String value1, String value2) {
+    return '$value0 Google इवेंट आयात किए गए ($value1 – $value2)';
+  }
+
+  @override
   String get google_sync_failed =>
       'कैलेंडर आयात विफल। पिछली प्रविष्टियाँ सुरक्षित हैं। फिर प्रयास करें।';
 
@@ -932,7 +937,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get premium_feature_calendar =>
-      'पूरे साल के लिए Google कैलेंडर सिंक (एक महीने का सिंक मुफ़्त)';
+      'आपके पूरे सदस्यता वर्ष के लिए Google कैलेंडर सिंक (एक महीने का सिंक मुफ़्त)';
 
   @override
   String get premium_feature_vrat =>

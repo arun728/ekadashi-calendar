@@ -60,3 +60,17 @@ The free sync imports whichever month is being viewed [E]
 After the free sync, buying premium continues into the whole-year import [E]
 A cancelled or expired subscription stops syncing [E]
 ```
+
+## Follow-up: subscription year and reinstall-proof free sync (5 October 2026)
+
+Arun asked for premium to sync the subscription year (an annual plan bought in
+November covers until next October) and for the single free sync to survive a
+reinstall. Commit `test: specify subscription-year sync...` failed to compile
+against the calendar-year code, for example:
+
+```
+test/unit/premium_service_test.dart:78:24: Error: Member not found: 'PremiumService.subscriptionYear'.
+test/widget/play_premium_flow_test.dart:246:7: Error: No named parameter with the name 'purchasedAt'.
+```
+
+After the change: 336 Flutter tests pass and the analyzer is clean.

@@ -23,6 +23,13 @@ abstract class GoogleAuthGateway {
   Future<bool> isSignedIn();
   Future<bool> signIn();
   Future<void> signOut();
+
+  /// Whether this Google account already used its one free sync. Stored in
+  /// the account (not the phone) so reinstalling the app cannot reset it.
+  Future<bool> freeSyncUsed();
+
+  /// Records the free sync of [month] in this Google account.
+  Future<void> markFreeSyncUsed(DateTime month);
   Future<List<GoogleCalendarInfo>> listCalendars();
   Future<List<Map<String, dynamic>>> fetchEvents({
     required DateTime timeMin,

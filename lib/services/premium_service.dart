@@ -2,9 +2,10 @@ import 'package:flutter/foundation.dart';
 
 /// What Google Play Billing reports as currently owned on this device.
 abstract interface class PlayEntitlementSource {
-  /// Product IDs in the PURCHASED state: an active (or grace-period)
-  /// subscription or the lifetime product. Throws when Play is unavailable.
-  Future<Set<String>> ownedProducts();
+  /// Product IDs in the PURCHASED state (an active or grace-period
+  /// subscription, or the lifetime product) mapped to the purchase time Play
+  /// reports, when known. Throws when Play is unavailable.
+  Future<Map<String, DateTime?>> ownedProducts();
 }
 
 /// Premium access comes only from Google Play's purchase record. It is never
@@ -22,26 +23,62 @@ class PremiumService extends ChangeNotifier {
   bool busy = false;
   String? error;
 
+  /// When the active premium product was bought, as reported by Google Play.
+  DateTime? purchasedAt;
+
   bool get isPremium => subscribed || lifetime;
+
+  /// The 12-month subscription year containing [now], anchored on the month
+  /// of [purchasedAt] (a plan bought in November runs November to October).
+  /// Without a purchase date it starts in the current month.
+  static ({DateTime start, DateTime end}) subscriptionYear(
+    DateTime? purchasedAt,
+    DateTime now,
+  ) {
+    final anchor = purchasedAt ?? now;
+    final months = (now.year - anchor.year) * 12 + now.month - anchor.month;
+    final years = months < 0 ? 0 : months ~/ 12;
+    final start = DateTime(anchor.year + years, anchor.month);
+    return (start: start, end: DateTime(start.year + 1, start.month));
+  }
+
+  /// The Google Calendar range premium may sync now, or null when free.
+  ({DateTime start, DateTime end})? syncWindow(DateTime now) =>
+      isPremium ? subscriptionYear(purchasedAt, now) : null;
 
   void _notify() {
     if (!_disposed) notifyListeners();
   }
 
   /// Applies Play's complete owned-product list, revoking anything missing.
-  void applyOwned(Set<String> owned) {
+  void applyOwned(
+    Set<String> owned, {
+    Map<String, DateTime?> purchasedAt = const {},
+  }) {
     if (_disposed) return;
     subscribed = owned.contains(subscriptionId);
     lifetime = owned.contains(lifetimeId);
+    // The subscription's year governs syncing while it is active.
+    this.purchasedAt = subscribed
+        ? purchasedAt[subscriptionId]
+        : lifetime
+        ? purchasedAt[lifetimeId]
+        : null;
     error = null;
     _notify();
   }
 
   /// Adds one completed purchase reported by the Play purchase stream.
-  void grant(String productId) {
+  void grant(String productId, {DateTime? purchasedAt}) {
     if (_disposed) return;
-    if (productId == subscriptionId) subscribed = true;
-    if (productId == lifetimeId) lifetime = true;
+    if (productId == subscriptionId) {
+      subscribed = true;
+      this.purchasedAt = purchasedAt;
+    }
+    if (productId == lifetimeId) {
+      lifetime = true;
+      if (!subscribed) this.purchasedAt = purchasedAt;
+    }
     error = null;
     _notify();
   }
@@ -55,12 +92,13 @@ class PremiumService extends ChangeNotifier {
       final owned = await entitlements.ownedProducts();
       if (_disposed) return;
       busy = false;
-      applyOwned(owned);
+      applyOwned(owned.keys.toSet(), purchasedAt: owned);
     } catch (_) {
       if (_disposed) return;
       busy = false;
       subscribed = false;
       lifetime = false;
+      purchasedAt = null;
       error = 'premium_unavailable';
       _notify();
     }

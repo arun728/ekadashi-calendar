@@ -23,6 +23,18 @@ bool isCompletedPlayPurchase(PurchaseDetails purchase) {
       purchase.status == PurchaseStatus.restored;
 }
 
+/// When Google Play says [purchase] was made (for a subscription, the
+/// original purchase; renewals keep it), or null when unknown.
+DateTime? playPurchaseTime(PurchaseDetails purchase) {
+  if (purchase is GooglePlayPurchaseDetails) {
+    return DateTime.fromMillisecondsSinceEpoch(
+      purchase.billingClientPurchase.purchaseTime,
+    );
+  }
+  final millis = int.tryParse(purchase.transactionDate ?? '');
+  return millis == null ? null : DateTime.fromMillisecondsSinceEpoch(millis);
+}
+
 /// Reads owned purchases from Google Play Billing on this device and
 /// acknowledges any completed purchase Play still holds unacknowledged
 /// (Play refunds purchases left unacknowledged for three days).
@@ -50,8 +62,8 @@ class PlayStoreEntitlements implements PlayEntitlementSource {
   }
 
   @override
-  Future<Set<String>> ownedProducts() async {
-    final owned = <String>{};
+  Future<Map<String, DateTime?>> ownedProducts() async {
+    final owned = <String, DateTime?>{};
     for (final purchase in await _query()) {
       if (!{
             PremiumService.subscriptionId,
@@ -60,7 +72,7 @@ class PlayStoreEntitlements implements PlayEntitlementSource {
           !isCompletedPlayPurchase(purchase)) {
         continue;
       }
-      owned.add(purchase.productID);
+      owned[purchase.productID] = playPurchaseTime(purchase);
       if (purchase.pendingCompletePurchase) await _acknowledge(purchase);
     }
     return owned;
@@ -156,7 +168,10 @@ class PlayBillingService extends ChangeNotifier {
             break;
           }
           pending = false;
-          premium.grant(purchase.productID);
+          premium.grant(
+            purchase.productID,
+            purchasedAt: playPurchaseTime(purchase),
+          );
           if (purchase.pendingCompletePurchase) {
             await store.completePurchase(purchase);
           }

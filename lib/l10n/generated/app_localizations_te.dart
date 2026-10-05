@@ -567,6 +567,11 @@ class AppLocalizationsTe extends AppLocalizations {
   }
 
   @override
+  String imported_google_range(String value0, String value1, String value2) {
+    return '$value0 Google ఈవెంట్లు దిగుమతి అయ్యాయి ($value1 – $value2)';
+  }
+
+  @override
   String get google_sync_failed =>
       'క్యాలెండర్ దిగుమతి విఫలమైంది. పాత నమోదులు భద్రంగా ఉన్నాయి. మళ్లీ ప్రయత్నించండి.';
 
@@ -937,7 +942,7 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get premium_feature_calendar =>
-      'సంవత్సరం మొత్తానికి Google క్యాలెండర్ సింక్ (ఒక నెల సింక్ ఉచితం)';
+      'మీ పూర్తి సబ్‌స్క్రిప్షన్ సంవత్సరానికి Google క్యాలెండర్ సింక్ (ఒక నెల సింక్ ఉచితం)';
 
   @override
   String get premium_feature_vrat =>

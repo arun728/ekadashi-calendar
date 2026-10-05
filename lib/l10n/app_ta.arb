@@ -190,6 +190,7 @@
   "no_google_calendars": "Google நாள்காட்டிகள் இல்லை",
   "no_google_events": "இந்த ஆண்டிற்கு தேர்ந்தெடுத்த நாள்காட்டிகளில் நிகழ்வுகள் இல்லை",
   "imported_google_events": "{value0} Google நிகழ்வுகள் இறக்குமதி செய்யப்பட்டன",
+  "imported_google_range": "{value0} Google நிகழ்வுகள் இறக்குமதி செய்யப்பட்டன ({value1} – {value2})",
   "@imported_google_events": {
     "placeholders": {
       "value0": {
@@ -320,7 +321,7 @@
   "premium_coins": "நாணயங்கள்",
   "premium_more_achievements": "பிரீமியத்துடன் கூடுதல் சாதனைகள்",
   "premium_reward_example": "வழக்கமான ஆண்டு: 24 × 10 = 240 நாணயங்கள்; முழு ஆண்டு பலன் 60 சேர்த்து 300. 26 ஏகாதசிகள் உள்ள ஆண்டில்: 260 + 40 = 300.",
-  "premium_feature_calendar": "முழு ஆண்டுக்கான Google நாள்காட்டி ஒத்திசைவு (ஒரு மாத ஒத்திசைவு இலவசம்)",
+  "premium_feature_calendar": "உங்கள் முழு சந்தா ஆண்டுக்கான Google நாள்காட்டி ஒத்திசைவு (ஒரு மாத ஒத்திசைவு இலவசம்)",
   "premium_feature_vrat": "வரம்பற்ற விரதப் பதிவுகள் (முதல் மூன்று இலவசம்) மற்றும் அனைத்து சாதனைகளும்",
   "premium_feature_panchang": "முழு தினசரி பஞ்சாங்கம்: ஐந்து அங்கங்கள், நகர நேரங்கள் மற்றும் விழாக்கள்",
   "terms_of_service": "சேவை விதிமுறைகள்",

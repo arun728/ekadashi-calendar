@@ -566,6 +566,11 @@ class AppLocalizationsTa extends AppLocalizations {
   }
 
   @override
+  String imported_google_range(String value0, String value1, String value2) {
+    return '$value0 Google நிகழ்வுகள் இறக்குமதி செய்யப்பட்டன ($value1 – $value2)';
+  }
+
+  @override
   String get google_sync_failed =>
       'நாள்காட்டி இறக்குமதி தோல்வி. முந்தைய பதிவுகள் பாதுகாக்கப்பட்டன. மீண்டும் முயலவும்.';
 
@@ -940,7 +945,7 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get premium_feature_calendar =>
-      'முழு ஆண்டுக்கான Google நாள்காட்டி ஒத்திசைவு (ஒரு மாத ஒத்திசைவு இலவசம்)';
+      'உங்கள் முழு சந்தா ஆண்டுக்கான Google நாள்காட்டி ஒத்திசைவு (ஒரு மாத ஒத்திசைவு இலவசம்)';
 
   @override
   String get premium_feature_vrat =>

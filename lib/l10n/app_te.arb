@@ -190,6 +190,7 @@
   "no_google_calendars": "Google క్యాలెండర్లు కనుగొనబడలేదు",
   "no_google_events": "ఈ సంవత్సరానికి ఎంచుకున్న క్యాలెండర్లలో ఈవెంట్లు లేవు",
   "imported_google_events": "{value0} Google ఈవెంట్లు దిగుమతి అయ్యాయి",
+  "imported_google_range": "{value0} Google ఈవెంట్లు దిగుమతి అయ్యాయి ({value1} – {value2})",
   "@imported_google_events": {
     "placeholders": {
       "value0": {
@@ -320,7 +321,7 @@
   "premium_coins": "నాణేలు",
   "premium_more_achievements": "ప్రీమియంతో మరిన్ని విజయాలు",
   "premium_reward_example": "సాధారణ సంవత్సరం: 24 × 10 = 240 నాణేలు, పూర్తి సంవత్సరం బోనస్ 60 కలిపి 300. 26 ఏకాదశులు ఉన్న సంవత్సరంలో: 260 + 40 = 300.",
-  "premium_feature_calendar": "సంవత్సరం మొత్తానికి Google క్యాలెండర్ సింక్ (ఒక నెల సింక్ ఉచితం)",
+  "premium_feature_calendar": "మీ పూర్తి సబ్‌స్క్రిప్షన్ సంవత్సరానికి Google క్యాలెండర్ సింక్ (ఒక నెల సింక్ ఉచితం)",
   "premium_feature_vrat": "అపరిమిత వ్రత ఎంట్రీలు (మొదటి మూడు ఉచితం) మరియు అన్ని విజయాలు",
   "premium_feature_panchang": "పూర్తి రోజువారీ పంచాంగం: ఐదు అంగాలు, నగర సమయాలు మరియు పండుగలు",
   "terms_of_service": "సేవా నిబంధనలు",
