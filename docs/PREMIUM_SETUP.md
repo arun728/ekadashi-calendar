@@ -56,6 +56,13 @@ Google Cloud Console → **Google Auth Platform**.
    - your upload key / local debug key (`cd android && ./gradlew signingReport`).
    A preview build with another package (`.glasspreview`) needs its own
    Android client, otherwise sign-in fails with `DEVELOPER_ERROR (10)`.
+
+   Registered on 5 October 2026 (one Android client per fingerprint):
+   | Client | SHA-1 |
+   |---|---|
+   | Ekadashi Android (Play signing) | `B4:19:86:19:52:8F:55:34:19:9C:66:1C:AD:D7:93:1E:5C:66:F3:89` |
+   | Ekadashi Android (upload key) | `6B:58:0D:79:BB:BE:13:29:64:F8:36:6A:02:E3:2A:64:D6:83:13:A7` |
+   | Ekadashi Android debug | local debug key |
 2. **Branding**: app name, support email, logo, application home page,
    privacy policy URL (`https://arun728.github.io/ekadashi-calendar/privacy-policy`),
    terms URL, and the authorized domain. Verify domain ownership in Google
