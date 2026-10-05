@@ -937,7 +937,7 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get premium_feature_calendar =>
-      'సంవత్సరం మొత్తానికి Google క్యాలెండర్ దిగుమతి (ఈ నెల ఉచితం)';
+      'సంవత్సరం మొత్తానికి Google క్యాలెండర్ సింక్ (ఒక నెల సింక్ ఉచితం)';
 
   @override
   String get premium_feature_vrat =>
@@ -954,8 +954,8 @@ class AppLocalizationsTe extends AppLocalizations {
   String get privacy_policy => 'గోప్యతా విధానం';
 
   @override
-  String get google_month_imported_free =>
-      'ఈ నెల Google ఈవెంట్లు ఉచితంగా దిగుమతి అయ్యాయి. సంవత్సరం మొత్తానికి ప్రీమియం పొందండి.';
+  String get google_free_sync_used =>
+      'మీ ఒక్క ఉచిత Google క్యాలెండర్ సింక్ పూర్తయింది. సంవత్సరం మొత్తాన్ని ఎప్పుడైనా సింక్ చేయడానికి ప్రీమియం పొందండి.';
 
   @override
   String get google_sign_in_failed =>

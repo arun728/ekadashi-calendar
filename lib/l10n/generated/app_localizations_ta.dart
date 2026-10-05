@@ -940,7 +940,7 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get premium_feature_calendar =>
-      'முழு ஆண்டுக்கான Google நாள்காட்டி இறக்குமதி (இந்த மாதம் இலவசம்)';
+      'முழு ஆண்டுக்கான Google நாள்காட்டி ஒத்திசைவு (ஒரு மாத ஒத்திசைவு இலவசம்)';
 
   @override
   String get premium_feature_vrat =>
@@ -957,8 +957,8 @@ class AppLocalizationsTa extends AppLocalizations {
   String get privacy_policy => 'தனியுரிமைக் கொள்கை';
 
   @override
-  String get google_month_imported_free =>
-      'இந்த மாத Google நிகழ்வுகள் இலவசமாக இறக்குமதி செய்யப்பட்டன. முழு ஆண்டுக்கு பிரீமியம் பெறவும்.';
+  String get google_free_sync_used =>
+      'உங்கள் ஒரு இலவச Google நாள்காட்டி ஒத்திசைவு முடிந்தது. முழு ஆண்டையும் எப்போதும் ஒத்திசைக்க பிரீமியம் பெறவும்.';
 
   @override
   String get google_sign_in_failed =>

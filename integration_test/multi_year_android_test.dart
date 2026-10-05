@@ -296,7 +296,7 @@ void main() {
       }
 
       await openCalendar();
-      // Free: the current month imports without a paywall.
+      // Free: one free sync, of the month on screen (the current month).
       final now = DateTime.now();
       google.events = [
         event(
@@ -342,7 +342,7 @@ void main() {
       expect(google.min, DateTime(now.year, now.month));
       expect(google.max, DateTime(now.year, now.month + 1));
       expect(
-        find.text(fixtureLang.translate('google_month_imported_free')),
+        find.text(fixtureLang.translate('google_free_sync_used')),
         findsOneWidget,
       );
       await binding.takeScreenshot('v2_google_free_month');
@@ -360,7 +360,8 @@ void main() {
       expect(calendar, findsOneWidget);
       state.selectDate(DateTime(2027, 1, 1));
       await frames(tester);
-      // Free: another year opens the paywall; then simulate a Play purchase.
+      // The free sync is used: the next sync opens the paywall; then simulate
+      // a Play purchase.
       final paidImport = find.byKey(const Key('import_google_year'));
       await tester.ensureVisible(paidImport);
       await tester.tap(paidImport);

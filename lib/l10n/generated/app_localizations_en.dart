@@ -938,7 +938,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premium_feature_calendar =>
-      'Google Calendar import for the whole year (this month is free)';
+      'Google Calendar sync for the whole year (one free month sync)';
 
   @override
   String get premium_feature_vrat =>
@@ -955,8 +955,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get privacy_policy => 'Privacy policy';
 
   @override
-  String get google_month_imported_free =>
-      'This month\'s Google events were imported free. Get Premium to import the whole year.';
+  String get google_free_sync_used =>
+      'Your one free Google Calendar sync is done. Get Premium to sync the whole year anytime.';
 
   @override
   String get google_sign_in_failed =>

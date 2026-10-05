@@ -386,6 +386,11 @@ void main() {
   testWidgets('Panchang unlock returns to the full Panchang after purchase', (
     tester,
   ) async {
+    // Pixel 2 portrait, as on the CI emulator.
+    tester.view.physicalSize = const Size(1080, 1920);
+    tester.view.devicePixelRatio = 2.625;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
     final premium = freeUser(PremiumFixture());
     final billing = FixtureBilling(premium);
     addTearDown(billing.dispose);
@@ -404,7 +409,18 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.byKey(const Key('panchang_unlock_button')));
+    final unlock = find.byKey(const Key('panchang_unlock_button'));
+    expect(unlock, findsNothing, reason: 'Below the fold on a phone');
+    await tester.scrollUntilVisible(
+      unlock,
+      300,
+      scrollable: find
+          .descendant(
+            of: find.byKey(const Key('panchang_scroll_view')),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('panchang_unlock_button')));
     await tester.pumpAndSettle();

@@ -932,7 +932,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get premium_feature_calendar =>
-      'पूरे साल के लिए Google कैलेंडर आयात (इस महीने का मुफ़्त)';
+      'पूरे साल के लिए Google कैलेंडर सिंक (एक महीने का सिंक मुफ़्त)';
 
   @override
   String get premium_feature_vrat =>
@@ -949,8 +949,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String get privacy_policy => 'गोपनीयता नीति';
 
   @override
-  String get google_month_imported_free =>
-      'इस महीने के Google इवेंट मुफ़्त में आयात हो गए। पूरे साल के आयात के लिए प्रीमियम लें।';
+  String get google_free_sync_used =>
+      'आपका एक मुफ़्त Google कैलेंडर सिंक पूरा हुआ। पूरे साल को कभी भी सिंक करने के लिए प्रीमियम लें।';
 
   @override
   String get google_sign_in_failed =>

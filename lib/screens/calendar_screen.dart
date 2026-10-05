@@ -16,6 +16,7 @@ import 'widgets/google_calendar_picker_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/ekadashi_service.dart';
 import '../services/language_service.dart';
 import 'package:intl/intl.dart';
@@ -183,13 +184,17 @@ class CalendarScreenState extends State<CalendarScreen> {
 
   DateTime _now() => (widget.clock ?? DateTime.now)();
 
-  /// Free users import the current month; premium imports the whole year.
+  /// Premium (an active Play subscription or lifetime purchase, checked at
+  /// every sync) imports the whole selected year. Free users get one sync
+  /// ever, of the month being viewed; after that, syncing needs premium.
   Future<void> _syncYear() async {
     if (_syncing || !_repoReady) return;
     final year = _selectedYear;
-    final now = _now();
+    final month = DateTime(_focusedDay.year, _focusedDay.month);
     var premium = context.read<PremiumService?>()?.isPremium == true;
-    if (!premium && year != now.year) {
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    if (!premium && prefs.getBool(CalendarScreen.freeSyncUsedKey) == true) {
       await openPremium(
         context,
         currentTimezone: widget.currentTimezone ?? 'IST',
@@ -199,12 +204,10 @@ class CalendarScreenState extends State<CalendarScreen> {
       // Continue straight into the import after a successful purchase.
       if (!premium) return;
     }
-    final timeMin = premium
-        ? DateTime(year, 1, 1)
-        : DateTime(now.year, now.month);
+    final timeMin = premium ? DateTime(year, 1, 1) : month;
     final timeMax = premium
         ? DateTime(year + 1, 1, 1)
-        : DateTime(now.year, now.month + 1);
+        : DateTime(month.year, month.month + 1);
     setState(() => _syncing = true);
     try {
       final bool signedIn;
@@ -244,7 +247,8 @@ class CalendarScreenState extends State<CalendarScreen> {
       await _reloadEntries();
       if (mounted) setState(() => _filter = CalendarFilter.google);
       if (!premium) {
-        _showMessage('google_month_imported_free', upsell: true);
+        await prefs.setBool(CalendarScreen.freeSyncUsedKey, true);
+        _showMessage('google_free_sync_used', upsell: true);
       } else {
         _showMessage(
           count == 0 ? 'no_google_events' : 'imported_google_events',

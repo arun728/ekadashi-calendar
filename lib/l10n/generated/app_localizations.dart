@@ -1857,7 +1857,7 @@ abstract class AppLocalizations {
   /// No description provided for @premium_feature_calendar.
   ///
   /// In en, this message translates to:
-  /// **'Google Calendar import for the whole year (this month is free)'**
+  /// **'Google Calendar sync for the whole year (one free month sync)'**
   String get premium_feature_calendar;
 
   /// No description provided for @premium_feature_vrat.
@@ -1884,11 +1884,11 @@ abstract class AppLocalizations {
   /// **'Privacy policy'**
   String get privacy_policy;
 
-  /// No description provided for @google_month_imported_free.
+  /// No description provided for @google_free_sync_used.
   ///
   /// In en, this message translates to:
-  /// **'This month\'s Google events were imported free. Get Premium to import the whole year.'**
-  String get google_month_imported_free;
+  /// **'Your one free Google Calendar sync is done. Get Premium to sync the whole year anytime.'**
+  String get google_free_sync_used;
 
   /// No description provided for @google_sign_in_failed.
   ///

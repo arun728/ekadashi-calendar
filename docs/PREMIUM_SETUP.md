@@ -10,7 +10,7 @@ Google Calendar import. Fasting rewards are hidden; `backend/` is dormant.
 | Feature | Free | Premium |
 |---|---|---|
 | Ekadashi dates, reminders, widgets, search, custom entries | Yes | Yes |
-| Google Calendar import (import only) | Current month | Whole selected year |
+| Google Calendar import (import only) | One sync ever, of the month on screen | Whole selected year, any time while the subscription is active |
 | Vrat entries | First 3 new entries (editing always free) | Unlimited + all achievements |
 | Panchang | Daily preview | Full limbs, timings, observances, browsing |
 
@@ -81,11 +81,14 @@ requests per day); one import uses only a few requests.
 - `lib/services/play_billing_service.dart`: products, checkout, purchase
   stream, acknowledgement and `PlayStoreEntitlements` (owned purchases).
 - `lib/screens/premium_screen.dart`: paywall.
-- `lib/screens/calendar_screen.dart`: free current-month import.
+- `lib/screens/calendar_screen.dart`: the one free sync (flag `google_free_sync_used`) and premium whole-year sync.
 - `lib/services/vrat_tracker_service.dart` and
   `lib/screens/vrat_tracker/record_vrat_dialog.dart`: three free entries.
 
-## Known trade-off
+## Known trade-offs
+
+The one free sync is remembered on the device, so reinstalling the app or
+clearing its data gives another free month sync.
 
 Without a server, premium trusts Google Play on the device. A modified APK on
 a rooted phone can fake ownership. That is accepted for v2; adding local

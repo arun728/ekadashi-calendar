@@ -46,3 +46,17 @@ sign-in/rewards.
 
 Not covered by automation: real Play checkout (needs Play Console products and
 an internal-testing install) and real Google OAuth consent.
+
+## Follow-up: one free Google sync ever (5 October 2026)
+
+Arun clarified that free users get a single Google sync (of the month being
+viewed), and every later sync needs an active Play subscription or lifetime
+purchase. Commit `test: specify one free Google sync ever...` added tests that
+failed against the per-month logic:
+
+```
+Free Calendar gets one free sync, of the month on screen [E]
+The free sync imports whichever month is being viewed [E]
+After the free sync, buying premium continues into the whole-year import [E]
+A cancelled or expired subscription stops syncing [E]
+```

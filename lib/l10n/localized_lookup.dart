@@ -298,7 +298,7 @@ Map<String, String> localizedLookup(AppLocalizations l) => {
   'premium_feature_panchang': l.premium_feature_panchang,
   'terms_of_service': l.terms_of_service,
   'privacy_policy': l.privacy_policy,
-  'google_month_imported_free': l.google_month_imported_free,
+  'google_free_sync_used': l.google_free_sync_used,
   'google_sign_in_failed': l.google_sign_in_failed,
   'vrat_free_limit_reached': l.vrat_free_limit_reached,
 };

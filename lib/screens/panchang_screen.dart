@@ -647,11 +647,14 @@ class _PanchangScreenState extends State<PanchangScreen> {
             children: [
               Icon(Icons.stars_rounded, color: colors.primary),
               const SizedBox(width: 8),
-              Text(
-                'Full Panchang · Premium',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+              // Wraps at large text sizes instead of overflowing on phones.
+              Expanded(
+                child: Text(
+                  'Full Panchang · Premium',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
             ],
           ),

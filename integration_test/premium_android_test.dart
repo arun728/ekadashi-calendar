@@ -65,8 +65,18 @@ void main() {
       debugPrint('Premium Android flow: opening Panchang');
       await tester.tap(find.byKey(const Key('glass_tab_3')));
       await tester.pump(const Duration(seconds: 2));
+      // The unlock card is below the fold in Panchang's lazy list.
       final unlock = find.byKey(const Key('panchang_unlock_button'));
-      await tester.ensureVisible(unlock);
+      await tester.scrollUntilVisible(
+        unlock,
+        300,
+        scrollable: find
+            .descendant(
+              of: find.byKey(const Key('panchang_scroll_view')),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
       await tester.pump(const Duration(milliseconds: 500));
       await tester.tap(unlock);
       await tester.pump(const Duration(seconds: 1));

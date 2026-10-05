@@ -320,12 +320,12 @@
   "premium_coins": "Coins",
   "premium_more_achievements": "More achievements with Premium",
   "premium_reward_example": "Typical year: 24 × 10 = 240 coins, plus a 60-coin full-year bonus = 300 coins. In a 26-Ekadashi year: 260 + 40 = 300.",
-  "premium_feature_calendar": "Google Calendar import for the whole year (this month is free)",
+  "premium_feature_calendar": "Google Calendar sync for the whole year (one free month sync)",
   "premium_feature_vrat": "Unlimited Vrat entries (the first three are free) and all achievements",
   "premium_feature_panchang": "Full daily Panchang: all five limbs, city timings and observances",
   "terms_of_service": "Terms of service",
   "privacy_policy": "Privacy policy",
-  "google_month_imported_free": "This month's Google events were imported free. Get Premium to import the whole year.",
+  "google_free_sync_used": "Your one free Google Calendar sync is done. Get Premium to sync the whole year anytime.",
   "google_sign_in_failed": "Google sign-in failed. Check your connection and try again.",
   "vrat_free_limit_reached": "You've used your three free Vrat entries. Get Premium to keep recording."
 }
