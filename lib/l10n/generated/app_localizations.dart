@@ -1907,6 +1907,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You\'ve used your three free Vrat entries. Get Premium to keep recording.'**
   String get vrat_free_limit_reached;
+
+  /// No description provided for @google_premium_events_removed.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Premium has ended, so the Google events it synced were removed. Renew to sync again.'**
+  String get google_premium_events_removed;
 }
 
 class _AppLocalizationsDelegate

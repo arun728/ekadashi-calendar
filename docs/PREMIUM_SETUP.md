@@ -10,7 +10,7 @@ Google Calendar import. Fasting rewards are hidden; `backend/` is dormant.
 | Feature | Free | Premium |
 |---|---|---|
 | Ekadashi dates, reminders, widgets, search, custom entries | Yes | Yes |
-| Google Calendar import (import only) | One sync ever, of the month on screen (kept in the Google account, survives reinstall) | The subscription year (12 months from the purchase month), any time while the subscription is active |
+| Google Calendar import (import only) | One sync ever per Google account, of the month on screen | Subscriptions: the subscription year (12 months from the purchase month); lifetime: every calendar year in the app. Premium-synced events are removed when a subscription ends |
 | Vrat entries | First 3 new entries (editing always free) | Unlimited + all achievements |
 | Panchang | Daily preview | Full limbs, timings, observances, browsing |
 
@@ -60,12 +60,9 @@ Google Cloud Console → **Google Auth Platform**.
    privacy policy URL (`https://arun728.github.io/ekadashi-calendar/privacy-policy`),
    terms URL, and the authorized domain. Verify domain ownership in Google
    Search Console.
-3. **Data access**: add `.../auth/calendar.readonly` (a *sensitive* scope;
-   no paid security assessment is needed, that is only for *restricted*
-   scopes) and `.../auth/drive.appdata` (*non-sensitive*: the app's own
-   hidden Drive folder, used only to remember that the account used its one
-   free sync). Also enable the **Google Drive API** under APIs & Services →
-   Library.
+3. **Data access**: add only `.../auth/calendar.readonly` (a *sensitive*
+   scope; no paid security assessment is needed, that is only for
+   *restricted* scopes).
 4. **Audience → Publish app** (moves from Testing to In production).
 5. **Verification Center**: submit for verification with a scope
    justification and an unlisted YouTube video showing sign-in, the consent
@@ -78,6 +75,37 @@ warning and sensitive-scope sign-ins are capped at 100 users in total.
 The Google Calendar API itself is free (default quota is about one million
 requests per day); one import uses only a few requests.
 
+## 4. Free-sync registry (free Firebase, one free sync per Google account)
+
+The phone remembers the free sync (Android Auto Backup restores it after a
+reinstall when the user's backup is on). To make it strictly once per Google
+account, even after a reinstall or on another phone, the app also keeps one
+tiny record per account in Cloud Firestore on Firebase's free Spark plan (no
+card needed; free quota is 50,000 reads and 20,000 writes per day). It uses
+the same Google sign-in, so users see no extra screen or permission.
+
+1. https://console.firebase.google.com → **Add project** → choose the
+   existing Google Cloud project `ekadashi-calendar-505210` → keep the free
+   Spark plan.
+2. **Build → Authentication → Get started → Sign-in method → Google →
+   Enable**. Open the Google provider and copy the **Web client ID**.
+3. **Build → Firestore Database → Create database** (production mode, region
+   `asia-south1`). Open **Rules**, paste `firebase/firestore.rules` from this
+   repo and **Publish**.
+4. **Project settings → General**: copy the **Web API key**. Under
+   *Your apps*, add the Android app `com.applausestudios.ekadashi_calendar`
+   with the same SHA-1 fingerprints as the OAuth Android client.
+5. Build the release with:
+   `--dart-define=FIREBASE_API_KEY=<web API key>`
+   `--dart-define=FIREBASE_PROJECT_ID=ekadashi-calendar-505210`
+   `--dart-define=GOOGLE_WEB_CLIENT_ID=<web client ID>`
+   These are not secrets, but keep the API key restricted to the Identity
+   Toolkit and Cloud Firestore APIs and the Android app in Google Cloud →
+   Credentials.
+
+Without these settings the app still works and relies on the phone's own
+record only.
+
 ## Code map
 
 - `lib/services/premium_service.dart`: entitlement state from Play.
@@ -85,15 +113,16 @@ requests per day); one import uses only a few requests.
   stream, acknowledgement and `PlayStoreEntitlements` (owned purchases).
 - `lib/screens/premium_screen.dart`: paywall.
 - `lib/screens/calendar_screen.dart`: the one free sync and the premium subscription-year sync.
-- `lib/services/google_auth_gateway_android.dart`: the free-sync marker in the Drive app-data folder.
+- `lib/services/free_sync_registry.dart` and `firebase/firestore.rules`: the per-account free-sync record.
 - `lib/services/vrat_tracker_service.dart` and
   `lib/screens/vrat_tracker/record_vrat_dialog.dart`: three free entries.
 
 ## Known trade-offs
 
-The one free sync is remembered on the phone and in the user's Google
-account, so reinstalling does not give another one. A different Google
-account gets its own free sync (the same as a per-account free trial).
+Without the Firebase registry, the free sync relies on the phone (and
+Android Auto Backup), so a reinstall without a backup could offer it again.
+With the registry it is once per Google account; another Google account gets
+its own free sync, like a per-account free trial.
 
 Without a server, premium trusts Google Play on the device. A modified APK on
 a rooted phone can fake ownership. That is accepted for v2; adding local

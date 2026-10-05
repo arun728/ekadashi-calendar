@@ -14,7 +14,7 @@ Ekadashi Calendar provides Hindu fasting dates and times for spiritual observanc
 - Ekadashi Premium is offered as a monthly or yearly auto-renewing subscription, or as a one-time lifetime purchase. Prices are shown in Google Play before you confirm and may vary by country.
 - Subscriptions renew automatically until cancelled. Cancel or change plans any time in Google Play (Profile → Payments & subscriptions → Subscriptions). Access continues until the end of the paid period.
 - Refunds are handled under Google Play's refund policy.
-- Premium currently includes: Google Calendar import of your whole subscription year (12 months from the month you subscribe) while the subscription is active; one free single-month sync per Google account is included, unlimited Vrat entries (the first three are free) with all achievements, and the full daily Panchang. Ekadashi dates, reminders, widgets and your saved history remain free.
+- Premium currently includes: Google Calendar import of your whole subscription year (12 months from the month you subscribe) while the subscription is active, or every calendar year in the app with the lifetime purchase; one free single-month sync per Google account is included. Events imported with Premium are removed when a subscription ends, unlimited Vrat entries (the first three are free) with all achievements, and the full daily Panchang. Ekadashi dates, reminders, widgets and your saved history remain free.
 
 ## No Warranty
 The app is provided "as is" without warranties of any kind. While we strive for accuracy in fasting times, users should verify with local Panchang if needed for strict observance.

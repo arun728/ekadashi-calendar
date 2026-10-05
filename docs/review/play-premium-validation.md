@@ -74,3 +74,17 @@ test/widget/play_premium_flow_test.dart:246:7: Error: No named parameter with th
 ```
 
 After the change: 336 Flutter tests pass and the analyzer is clean.
+
+## Follow-up: no Drive, lapse removal and lifetime range (5 October 2026)
+
+Arun asked to drop the Google Drive marker, remove Premium-synced events when
+a subscription ends, and give lifetime every calendar year. Commit
+`test: specify free-sync record without Drive...` failed to compile against
+the Drive implementation, for example:
+
+```
+test/unit/premium_service_test.dart:136:9: Error: No named parameter with the name 'calendarYears'.
+test/support/fake_free_sync_registry.dart:4:39: Error: Type 'FreeSyncRegistry' not found.
+```
+
+After the change: 346 Flutter tests pass and the analyzer is clean.

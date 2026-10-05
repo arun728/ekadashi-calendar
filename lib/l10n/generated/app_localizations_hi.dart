@@ -964,4 +964,8 @@ class AppLocalizationsHi extends AppLocalizations {
   @override
   String get vrat_free_limit_reached =>
       'आपने तीन मुफ़्त व्रत प्रविष्टियाँ उपयोग कर ली हैं। आगे दर्ज करने के लिए प्रीमियम लें।';
+
+  @override
+  String get google_premium_events_removed =>
+      'आपका प्रीमियम समाप्त हो गया है, इसलिए उससे सिंक किए गए Google इवेंट हटा दिए गए। फिर से सिंक करने के लिए नवीनीकरण करें।';
 }

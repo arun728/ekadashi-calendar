@@ -28,6 +28,13 @@ class PremiumService extends ChangeNotifier {
 
   bool get isPremium => subscribed || lifetime;
 
+  bool _confirmedByPlay = false;
+
+  /// Google Play answered and reports no premium product owned (a
+  /// subscription ended or a purchase was refunded). False while Play has not
+  /// answered or is unreachable, so being offline never counts as a lapse.
+  bool get lapsed => _confirmedByPlay && !isPremium;
+
   /// The 12-month subscription year containing [now], anchored on the month
   /// of [purchasedAt] (a plan bought in November runs November to October).
   /// Without a purchase date it starts in the current month.
@@ -43,8 +50,21 @@ class PremiumService extends ChangeNotifier {
   }
 
   /// The Google Calendar range premium may sync now, or null when free.
-  ({DateTime start, DateTime end})? syncWindow(DateTime now) =>
-      isPremium ? subscriptionYear(purchasedAt, now) : null;
+  /// Lifetime covers every calendar year the app has data for
+  /// ([calendarYears]); subscriptions cover the current subscription year.
+  ({DateTime start, DateTime end})? syncWindow(
+    DateTime now, {
+    ({int first, int last})? calendarYears,
+  }) {
+    if (!isPremium) return null;
+    if (lifetime && calendarYears != null) {
+      return (
+        start: DateTime(calendarYears.first),
+        end: DateTime(calendarYears.last + 1),
+      );
+    }
+    return subscriptionYear(purchasedAt, now);
+  }
 
   void _notify() {
     if (!_disposed) notifyListeners();
@@ -58,6 +78,7 @@ class PremiumService extends ChangeNotifier {
     if (_disposed) return;
     subscribed = owned.contains(subscriptionId);
     lifetime = owned.contains(lifetimeId);
+    _confirmedByPlay = true;
     // The subscription's year governs syncing while it is active.
     this.purchasedAt = subscribed
         ? purchasedAt[subscriptionId]
@@ -96,6 +117,7 @@ class PremiumService extends ChangeNotifier {
     } catch (_) {
       if (_disposed) return;
       busy = false;
+      _confirmedByPlay = false;
       subscribed = false;
       lifetime = false;
       purchasedAt = null;

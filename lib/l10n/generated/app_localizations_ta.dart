@@ -972,4 +972,8 @@ class AppLocalizationsTa extends AppLocalizations {
   @override
   String get vrat_free_limit_reached =>
       'மூன்று இலவச விரதப் பதிவுகளையும் பயன்படுத்திவிட்டீர்கள். தொடர்ந்து பதிவு செய்ய பிரீமியம் பெறவும்.';
+
+  @override
+  String get google_premium_events_removed =>
+      'உங்கள் பிரீமியம் முடிந்தது, எனவே அதன் மூலம் ஒத்திசைத்த Google நிகழ்வுகள் நீக்கப்பட்டன. மீண்டும் ஒத்திசைக்க புதுப்பிக்கவும்.';
 }

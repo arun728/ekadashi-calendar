@@ -970,4 +970,8 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get vrat_free_limit_reached =>
       'You\'ve used your three free Vrat entries. Get Premium to keep recording.';
+
+  @override
+  String get google_premium_events_removed =>
+      'Your Premium has ended, so the Google events it synced were removed. Renew to sync again.';
 }

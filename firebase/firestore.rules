@@ -1,0 +1,18 @@
+rules_version = '2';
+
+// One free Google Calendar sync per Google account (Ekadashi Calendar v2).
+// Each signed-in account may read and create only its own record, once.
+// Records are never updated or deleted by the app.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /freeGoogleSyncs/{uid} {
+      allow get: if request.auth != null && request.auth.uid == uid;
+      allow create: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['month', 'createdAt'])
+        && request.resource.data.month is string
+        && request.resource.data.month.size() == 7;
+      allow list, update, delete: if false;
+    }
+  }
+}

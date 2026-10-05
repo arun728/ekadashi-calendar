@@ -9,6 +9,8 @@ import '../data/sqflite_calendar_entry_repository.dart';
 import '../services/google_calendar_service.dart';
 import '../services/google_auth_gateway_android.dart';
 import '../services/google_calendar_prefs.dart';
+import '../services/free_sync_registry.dart';
+import 'dart:convert';
 import 'widgets/calendar_filter_bar.dart';
 import 'widgets/day_entries_list.dart';
 import 'widgets/add_edit_entry_sheet.dart';
@@ -35,8 +37,20 @@ class CalendarScreen extends StatefulWidget {
   /// Overrides "now" in tests.
   final DateTime Function()? clock;
 
-  /// Set after a free user's one free Google Calendar sync.
+  /// Per-Google-account record of the free sync; defaults to the free
+  /// Firestore registry when it is configured at build time.
+  final FreeSyncRegistry? freeSyncRegistry;
+
+  /// Set after a free user's one free Google Calendar sync (Android Auto
+  /// Backup restores it after a reinstall).
   static const freeSyncUsedKey = 'google_free_sync_used';
+
+  /// The month ("yyyy-MM") of the free sync; its events stay after a lapse.
+  static const freeSyncMonthKey = 'google_free_sync_month';
+
+  /// What Premium synced (account, calendars and range), so it can be removed
+  /// when Google Play confirms the subscription has ended.
+  static const premiumSyncKey = 'google_premium_sync_v1';
 
   const CalendarScreen({
     super.key,
@@ -45,6 +59,7 @@ class CalendarScreen extends StatefulWidget {
     this.repository,
     this.googleService,
     this.clock,
+    this.freeSyncRegistry,
   });
 
   @override
@@ -69,6 +84,20 @@ class CalendarScreenState extends State<CalendarScreen> {
   bool _repoError = false;
   bool _syncing = false;
   PageController? _monthPager;
+  late final FreeSyncRegistry? _registry =
+      widget.freeSyncRegistry ?? FirestoreFreeSyncRegistry.fromEnvironment();
+  PremiumService? _premium;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _premium ??= context.read<PremiumService?>()
+      ?..addListener(_onPremiumChanged);
+  }
+
+  void _onPremiumChanged() {
+    if (_repoReady) _removeLapsedPremiumSync();
+  }
 
   void selectDate(DateTime date) {
     if (!_years.contains(date.year)) return;
@@ -112,6 +141,7 @@ class CalendarScreenState extends State<CalendarScreen> {
 
   @override
   void dispose() {
+    _premium?.removeListener(_onPremiumChanged);
     if (widget.repository == null) {
       unawaited(_repo.close().catchError((Object _) {}));
     }
@@ -121,6 +151,7 @@ class CalendarScreenState extends State<CalendarScreen> {
   Future<void> _initRepo() async {
     try {
       await _repo.init();
+      await _removeLapsedPremiumSync(notify: false);
       await _reloadEntries();
       if (mounted) {
         setState(() {
@@ -136,6 +167,77 @@ class CalendarScreenState extends State<CalendarScreen> {
         });
       }
     }
+  }
+
+  /// Once Google Play confirms premium has ended, removes the Google events
+  /// that Premium synced. Events of the one free month stay.
+  Future<void> _removeLapsedPremiumSync({bool notify = true}) async {
+    if (_premium?.lapsed != true) return;
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(CalendarScreen.premiumSyncKey);
+    if (raw == null) return;
+    final record = jsonDecode(raw) as Map<String, dynamic>;
+    final account = record['account'] as String;
+    final calendars = (record['calendars'] as List).cast<String>();
+    final start = DateTime.parse(record['start'] as String);
+    final end = DateTime.parse(record['end'] as String);
+    var ranges = [(start, end)];
+    final freeMonth = prefs.getString(CalendarScreen.freeSyncMonthKey);
+    if (freeMonth != null) {
+      final keepStart = DateTime.parse('$freeMonth-01');
+      final keepEnd = DateTime(keepStart.year, keepStart.month + 1);
+      if (start.isBefore(keepEnd) && end.isAfter(keepStart)) {
+        ranges = [
+          if (start.isBefore(keepStart)) (start, keepStart),
+          if (end.isAfter(keepEnd)) (keepEnd, end),
+        ];
+      }
+    }
+    for (final (from, to) in ranges) {
+      await _repo.replaceGoogleWindow(
+        accountId: account,
+        calendarIds: calendars,
+        timeMin: from,
+        timeMax: to,
+        entries: const [],
+      );
+    }
+    await prefs.remove(CalendarScreen.premiumSyncKey);
+    if (notify) {
+      await _reloadEntries();
+      _showMessage('google_premium_events_removed');
+    }
+  }
+
+  /// Merges a premium sync into the record used for removal after a lapse.
+  Future<void> _rememberPremiumSync(
+    SharedPreferences prefs,
+    String account,
+    List<String> calendars,
+    DateTime start,
+    DateTime end,
+  ) async {
+    final raw = prefs.getString(CalendarScreen.premiumSyncKey);
+    final old = raw == null ? null : jsonDecode(raw) as Map<String, dynamic>;
+    if (old != null && old['account'] == account) {
+      final oldStart = DateTime.parse(old['start'] as String);
+      final oldEnd = DateTime.parse(old['end'] as String);
+      if (oldStart.isBefore(start)) start = oldStart;
+      if (oldEnd.isAfter(end)) end = oldEnd;
+      calendars = {
+        ...(old['calendars'] as List).cast<String>(),
+        ...calendars,
+      }.toList();
+    }
+    await prefs.setString(
+      CalendarScreen.premiumSyncKey,
+      jsonEncode({
+        'account': account,
+        'calendars': calendars,
+        'start': start.toIso8601String(),
+        'end': end.toIso8601String(),
+      }),
+    );
   }
 
   Future<void> _reloadEntries() async {
@@ -162,24 +264,27 @@ class CalendarScreenState extends State<CalendarScreen> {
   void _showMessage(String key, {List<String>? args, bool upsell = false}) {
     if (!mounted) return;
     final lang = context.read<LanguageService>();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          args == null
-              ? lang.translate(key)
-              : lang.translateWithArgs(key, args),
+    // The newest Calendar status replaces any message still showing.
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            args == null
+                ? lang.translate(key)
+                : lang.translateWithArgs(key, args),
+          ),
+          action: upsell
+              ? SnackBarAction(
+                  label: lang.translate('premium_title'),
+                  onPressed: () => openPremium(
+                    context,
+                    currentTimezone: widget.currentTimezone ?? 'IST',
+                  ),
+                )
+              : null,
         ),
-        action: upsell
-            ? SnackBarAction(
-                label: lang.translate('premium_title'),
-                onPressed: () => openPremium(
-                  context,
-                  currentTimezone: widget.currentTimezone ?? 'IST',
-                ),
-              )
-            : null,
-      ),
-    );
+      );
   }
 
   DateTime _now() => (widget.clock ?? DateTime.now)();
@@ -229,7 +334,14 @@ class CalendarScreenState extends State<CalendarScreen> {
         _showMessage('sign_in_cancelled');
         return;
       }
-      if (!premium && await _google.auth.freeSyncUsed()) {
+      String? googleIdToken;
+      if (!premium && _registry != null) {
+        googleIdToken = await _google.auth.idToken();
+        if (googleIdToken == null) throw StateError('No Google ID token');
+      }
+      if (!premium &&
+          googleIdToken != null &&
+          await _registry!.isUsed(googleIdToken)) {
         // This Google account used its free sync before (e.g. before a
         // reinstall or on another phone).
         await prefs.setBool(CalendarScreen.freeSyncUsedKey, true);
@@ -240,7 +352,12 @@ class CalendarScreenState extends State<CalendarScreen> {
         setState(() => _syncing = true);
       }
       final window = premium
-          ? premiumService!.syncWindow(_now())!
+          ? premiumService!.syncWindow(
+              _now(),
+              calendarYears: _years.isEmpty
+                  ? null
+                  : (first: _years.first, last: _years.last),
+            )!
           : (start: month, end: DateTime(month.year, month.month + 1));
       final account = await _google.auth.accountId();
       if (account == null) throw StateError('No Google account');
@@ -269,13 +386,26 @@ class CalendarScreenState extends State<CalendarScreen> {
       if (mounted) setState(() => _filter = CalendarFilter.google);
       if (!premium) {
         await prefs.setBool(CalendarScreen.freeSyncUsedKey, true);
-        try {
-          await _google.auth.markFreeSyncUsed(month);
-        } catch (_) {
-          // The phone still remembers it; the account marker is best effort.
+        await prefs.setString(
+          CalendarScreen.freeSyncMonthKey,
+          month.toIso8601String().substring(0, 7),
+        );
+        if (googleIdToken != null) {
+          try {
+            await _registry!.record(googleIdToken, month);
+          } catch (_) {
+            // Best effort: this phone already remembers the free sync.
+          }
         }
         _showMessage('google_free_sync_used', upsell: true);
       } else {
+        await _rememberPremiumSync(
+          prefs,
+          account,
+          chosen,
+          window.start,
+          window.end,
+        );
         final format = DateFormat.yMMM(languageCode);
         _showMessage(
           'imported_google_range',

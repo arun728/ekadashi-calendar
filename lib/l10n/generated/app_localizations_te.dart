@@ -969,4 +969,8 @@ class AppLocalizationsTe extends AppLocalizations {
   @override
   String get vrat_free_limit_reached =>
       'మీరు మూడు ఉచిత వ్రత ఎంట్రీలను ఉపయోగించారు. రికార్డ్ చేయడం కొనసాగించడానికి ప్రీమియం పొందండి.';
+
+  @override
+  String get google_premium_events_removed =>
+      'మీ ప్రీమియం ముగిసింది, కాబట్టి దానితో సింక్ చేసిన Google ఈవెంట్లు తొలగించబడ్డాయి. మళ్లీ సింక్ చేయడానికి పునరుద్ధరించండి.';
 }

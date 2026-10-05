@@ -104,14 +104,17 @@ for review, and do not merge it to `dev` or `main`.
 - Free vs premium (three premium features for v2):
   1. Google Calendar import (import only): free users get exactly one sync,
      of the month being viewed (normally the current month). It is recorded
-     on the phone and in the user's Google account (Drive app-data folder,
-     non-sensitive `drive.appdata` scope), so a reinstall cannot reuse it;
-     closing the picker or Calendar, or a failed import, keeps it available.
-     Every later sync needs premium, re-checked with Google Play at each
-     sync, and imports the subscription year (12 months from the purchase
-     month, e.g. November to October; it rolls to the next year on renewal).
-     A cancelled or expired subscription stops syncing until the user pays
-     again; already imported events stay on the device.
+     on the phone (restored by Android Auto Backup) and, per Google account,
+     in a free Firestore (Firebase Spark) registry signed in with the same
+     Google ID token (no Google Drive, no extra consent), so a reinstall or
+     another phone cannot reuse it. Closing the picker or Calendar, or a
+     failed import, keeps it; an unreachable registry hands nothing out.
+     Later syncs need premium, re-checked with Google Play at each sync:
+     subscriptions (monthly or yearly) import the subscription year (12
+     months from the purchase month, rolling on renewal); lifetime imports
+     every calendar year the app has data for. When Google Play confirms a
+     subscription has ended (never on a Play/network error), the Google
+     events Premium synced are removed; the free month's events stay.
   2. Vrat: the first three recorded entries are free; recording a fourth new
      entry needs premium. Existing entries stay editable and all history,
      streaks, statistics and earned badges are preserved.
