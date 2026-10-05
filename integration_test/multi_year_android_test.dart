@@ -350,16 +350,19 @@ void main() {
       ];
       Future<void> sync() async {
         final importButton = find.byKey(const Key('import_google_year'));
-        final calendarViewport = find.byType(CustomScrollView).first;
-        for (
-          var attempt = 0;
-          attempt < 20 && importButton.evaluate().isEmpty;
-          attempt++
-        ) {
-          await tester.drag(calendarViewport, const Offset(0, 500));
-          await tester.pump(const Duration(milliseconds: 100));
-        }
-        expect(importButton, findsOneWidget);
+        // TableCalendar also handles vertical drags. Reset the outer viewport
+        // explicitly after capturing the event row, then use the real toolbar.
+        final scrollable = tester.state<ScrollableState>(
+          find
+              .descendant(
+                of: find.byType(CustomScrollView).first,
+                matching: find.byType(Scrollable),
+              )
+              .first,
+        );
+        scrollable.position.jumpTo(scrollable.position.minScrollExtent);
+        await frames(tester);
+        expect(importButton.hitTestable(), findsOneWidget);
         await tester.ensureVisible(importButton);
         await tester.tap(importButton);
         await frames(tester);

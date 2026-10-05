@@ -2,7 +2,7 @@ name: Android regression and UI tests
 on:
   workflow_dispatch:
   pull_request:
-    branches: [main, dev]
+    branches: [main, dev, feature/panchang-engine]
 permissions:
   contents: read
 jobs:
