@@ -77,8 +77,9 @@ void main() {
             )
             .first,
       );
-      // Centre it so the floating glass navigation bar cannot cover the tap.
-      await Scrollable.ensureVisible(tester.element(unlock), alignment: 0.5);
+      // Bring it near the top: the floating glass navigation bar and bottom
+      // overlays (such as a location snackbar) cannot cover the tap there.
+      await Scrollable.ensureVisible(tester.element(unlock), alignment: 0.15);
       await tester.pump(const Duration(milliseconds: 500));
       await tester.tap(unlock);
       for (

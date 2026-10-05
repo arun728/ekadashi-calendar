@@ -487,9 +487,11 @@ void main() {
       // The editor sheet (with the same text in its field) may still be
       // closing on a slow emulator; wait until only the list entry remains.
       await until(tester, () => find.byType(TextField).evaluate().isEmpty);
+      // The title can show twice (e.g. a day marker and the entry list); any
+      // visible copy proves the saved entry is listed.
       final savedReminder = find.text('My private reminder');
       await tester.scrollUntilVisible(
-        savedReminder,
+        savedReminder.first,
         220,
         scrollable: find
             .descendant(
@@ -498,7 +500,7 @@ void main() {
             )
             .first,
       );
-      expect(savedReminder, findsOneWidget);
+      expect(savedReminder, findsWidgets);
       await binding.takeScreenshot('v2_custom_saved');
       await tester.pumpWidget(const SizedBox.shrink());
       await frames(tester);
