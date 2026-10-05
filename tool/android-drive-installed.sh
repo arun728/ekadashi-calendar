@@ -17,7 +17,7 @@ cleanup_forward() {
 }
 trap cleanup_forward EXIT
 
-for drive_attempt in 1 2; do
+for drive_attempt in 1 2 3; do
   # A short emulator disconnect after Flutter's VM transport closes is recoverable.
   timeout 120 adb wait-for-device
   timeout 30 adb shell am force-stop "$package_name"
@@ -78,8 +78,8 @@ PY
     drive_result=${PIPESTATUS[0]}
   fi
   cleanup_forward
-  if (( drive_attempt == 1 )) && python3 tool/android_vm_service.py retry "$drive_log"; then
-    echo 'Known one-off VM transport loss; relaunching once and requiring the full test suite to pass.'
+  if (( drive_attempt < 3 )) && python3 tool/android_vm_service.py retry "$drive_log"; then
+    echo 'Known pre-test or result-channel VM transport loss; making one bounded fresh attempt and requiring the full test suite to pass.'
   else
     exit "$drive_result"
   fi

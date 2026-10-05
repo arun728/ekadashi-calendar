@@ -107,6 +107,23 @@ class VmServiceTests(unittest.TestCase):
             )
         )
 
+    def test_vm_socket_refusal_retries_before_test_progress(self):
+        self.assertTrue(
+            may_retry_transport(
+                "Exception attempting to connect to the VM Service: "
+                "SocketException: Connection refused"
+            )
+        )
+
+    def test_vm_socket_refusal_after_test_progress_never_retries(self):
+        self.assertFalse(
+            may_retry_transport(
+                "00:00 +0: Panchang screen loads\n"
+                "Exception attempting to connect to the VM Service: "
+                "SocketException: Connection refused"
+            )
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

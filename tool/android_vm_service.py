@@ -66,13 +66,19 @@ def may_retry_transport(log: str) -> bool:
     ):
         return True
 
-    # On slow emulators flutter drive can connect to the paused test isolate,
-    # then lose it before the test framework starts. Permit one complete rerun
-    # only for this exact handshake failure and only before any test progress.
-    if "getIsolate: (112) Service has disappeared" not in log:
-        return False
     test_progress = re.search(r"(?m)^\s*\d{2}:\d{2} \+\d+:", log)
-    return not test_progress
+    if test_progress:
+        return False
+
+    # Slow emulators can lose the paused isolate during the driver handshake,
+    # either on getIsolate or while opening its forwarded VM-service socket.
+    # Retry only these exact transport errors and only before test progress.
+    lost_isolate = "getIsolate: (112) Service has disappeared" in log
+    refused_vm_socket = (
+        "Exception attempting to connect to the VM Service:" in log
+        and "Connection refused" in log
+    )
+    return lost_isolate or refused_vm_socket
 
 
 if __name__ == "__main__":

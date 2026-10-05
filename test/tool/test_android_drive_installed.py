@@ -22,6 +22,7 @@ class InstalledAndroidDriverTests(unittest.TestCase):
         stale=False,
         transport=False,
         early_transport=False,
+        chained_transport=False,
         offline=False,
     ):
         with tempfile.TemporaryDirectory() as folder:
@@ -81,6 +82,18 @@ if os.environ['EARLY_TRANSPORT']=='yes':
   print('VMServiceFlutterDriver: Isolate found with number: 123')
   print('Unhandled exception:\\ngetIsolate: (112) Service has disappeared')
   sys.exit(1)
+if os.environ['CHAINED_TRANSPORT']=='yes':
+ marker=Path(os.environ['CALLS']+'.attempt')
+ count=int(marker.read_text()) if marker.exists() else 0
+ marker.write_text(str(count+1))
+ if count==0:
+  print('01:16 +2: All tests passed!')
+  print('DriverError: Failed to fulfill RequestData')
+  print('Service has disappeared')
+  sys.exit(7)
+ if count==1:
+  print('Exception attempting to connect to the VM Service: Connection refused')
+  sys.exit(1)
 if os.environ['TRANSPORT']=='yes':
  marker=Path(os.environ['CALLS']+'.attempt')
  if not marker.exists():
@@ -102,6 +115,7 @@ sys.exit(7 if os.environ['FAIL']=='yes' else 0)
                 FAIL="yes" if fail else "no",
                 TRANSPORT="yes" if transport else "no",
                 EARLY_TRANSPORT="yes" if early_transport else "no",
+                CHAINED_TRANSPORT="yes" if chained_transport else "no",
                 OFFLINE="yes" if offline else "no",
                 VM_PORT=str(server.server_port),
                 ANDROID_VM_WAIT_ATTEMPTS="1",
@@ -169,6 +183,12 @@ sys.exit(7 if os.environ['FAIL']=='yes' else 0)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(log.count("flutter drive"), 2)
         self.assertEqual(log.count("adb shell am force-stop"), 2)
+
+    def test_result_loss_then_refusal_gets_one_more_full_attempt(self):
+        result, log = self.run_driver(chained_transport=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(log.count("flutter drive"), 3)
+        self.assertEqual(log.count("adb shell am force-stop"), 3)
 
     def test_missing_vm_service_fails_before_running_flutter(self):
         result, log = self.run_driver(vm=False)
