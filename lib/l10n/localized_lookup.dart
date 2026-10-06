@@ -326,4 +326,5 @@ Map<String, String> localizedLookup(AppLocalizations l) => {
   'google_sign_in_failed': l.google_sign_in_failed,
   'vrat_free_limit_reached': l.vrat_free_limit_reached,
   'google_premium_events_removed': l.google_premium_events_removed,
+  'more': l.more,
 };

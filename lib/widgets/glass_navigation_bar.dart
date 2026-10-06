@@ -8,8 +8,8 @@ class GlassNavigationBar extends StatelessWidget {
     required this.items,
     required this.currentIndex,
     required this.onTap,
-  }) : assert(items.length == 5),
-       assert(currentIndex >= 0 && currentIndex < 5);
+  }) : assert(items.length >= 2),
+       assert(currentIndex >= 0 && currentIndex < items.length);
   final List<BottomNavigationBarItem> items;
   final int currentIndex;
   final ValueChanged<int> onTap;
@@ -27,13 +27,19 @@ class GlassNavigationBar extends StatelessWidget {
       key: const Key('glass_navigation_bar'),
       top: false,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(12, 6, 12, 12),
+        // Six destinations need 288dp of touch area plus the tube's padding.
+        padding: EdgeInsets.fromLTRB(
+          media.size.width < 340 ? 10 : 12,
+          6,
+          media.size.width < 340 ? 10 : 12,
+          12,
+        ),
         child: Align(
           heightFactor: 1,
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 600),
             child: GlassTube(
-              optionCount: 5,
+              optionCount: items.length,
               radius: 44,
               shadow: true,
               surfaceKey: const Key('glass_capsule_surface'),
@@ -43,7 +49,10 @@ class GlassNavigationBar extends StatelessWidget {
                   children: [
                     Positioned.fill(
                       child: AnimatedAlign(
-                        alignment: Alignment(-1 + currentIndex * .5, 0),
+                        alignment: Alignment(
+                          -1 + currentIndex * 2 / (items.length - 1),
+                          0,
+                        ),
                         duration: duration,
                         curve: Curves.easeOutCubic,
                         child: FractionallySizedBox(

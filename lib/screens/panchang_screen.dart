@@ -6,17 +6,21 @@ import '../services/panchang/panchang_engine.dart';
 import '../services/panchang/panchang_models.dart';
 import '../services/premium_service.dart';
 import 'premium_screen.dart';
+import 'panchang_location_dialog.dart';
+import 'panchang_month_panels.dart';
+import '../services/panchang/calculated_ekadashi.dart';
+import '../services/panchang/panchang_location_store.dart';
 
 class PanchangScreen extends StatefulWidget {
   const PanchangScreen({
     super.key,
     this.initialDate,
-    this.initialCity = PanchangCity.newDelhi,
+    this.initialCity,
     this.engine = const PanchangEngine(),
   });
 
   final DateTime? initialDate;
-  final PanchangCity initialCity;
+  final PanchangCity? initialCity;
   final PanchangEngine engine;
 
   @override
@@ -27,14 +31,41 @@ class _PanchangScreenState extends State<PanchangScreen> {
   late DateTime _date;
   late PanchangCity _city;
   late PanchangDay _day;
+  final _locationStore = PanchangLocationStore();
+  bool _locationChanged = false;
+  int _section = 0;
+  EkadashiTradition _tradition = EkadashiTradition.smarta;
+  final _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
+    _city = widget.initialCity ?? PanchangCity.newDelhi;
     final now = widget.initialDate ?? _today();
     _date = DateTime.utc(now.year, now.month, now.day);
-    _city = widget.initialCity;
     _recalculate();
+    if (widget.initialCity == null) _restoreLocation();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickDate() async {
+    final date = await showDatePicker(
+      context: context,
+      initialDate: _date,
+      firstDate: DateTime(1900),
+      lastDate: DateTime(2100, 12, 31),
+    );
+    if (date != null && mounted) {
+      setState(() {
+        _date = DateTime.utc(date.year, date.month, date.day);
+        _recalculate();
+      });
+    }
   }
 
   void _recalculate() {
@@ -48,18 +79,52 @@ class _PanchangScreenState extends State<PanchangScreen> {
     });
   }
 
-  void _changeCity(PanchangCity? city) {
-    if (city == null || city == _city) return;
+  Future<void> _restoreLocation() async {
+    final city = await _locationStore.load();
+    if (!mounted || city == null || _locationChanged) return;
     setState(() {
       _city = city;
+      if (widget.initialDate == null) _date = _today();
       _recalculate();
     });
   }
 
-  DateTime _today() {
-    final nowIst = DateTime.now().toUtc().add(istOffset);
-    return DateTime.utc(nowIst.year, nowIst.month, nowIst.day);
+  Future<void> _changeCity(PanchangCity? city) async {
+    if (city == null || city == _city) return;
+    _locationChanged = true;
+    final wasToday = _date == _today();
+    setState(() {
+      _city = city;
+      if (wasToday) _date = _today();
+      _recalculate();
+    });
+    try {
+      await _locationStore.save(city);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Location changed, but could not be saved.'),
+          ),
+        );
+      }
+    }
   }
+
+  Future<void> _editLocation() async {
+    final city = await showDialog<PanchangCity>(
+      context: context,
+      builder: (_) => PanchangLocationDialog(city: _city),
+    );
+    if (mounted) await _changeCity(city);
+  }
+
+  DateTime _today() {
+    final now = _city.wallClock(DateTime.now());
+    return DateTime.utc(now.year, now.month, now.day);
+  }
+
+  String _time(DateTime? instant) => formatPanchangTime(instant, _city, _date);
 
   @override
   Widget build(BuildContext context) {
@@ -67,36 +132,78 @@ class _PanchangScreenState extends State<PanchangScreen> {
       (service) => service?.isPremium ?? false,
     );
     final colors = Theme.of(context).colorScheme;
-    return SafeArea(
-      top: false,
-      child: CustomScrollView(
-        key: const Key('panchang_scroll_view'),
-        slivers: [
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-            sliver: SliverList.list(
-              children: [
-                _buildHeader(context, colors),
-                const SizedBox(height: 20),
-                _buildHero(context, colors),
-                const SizedBox(height: 18),
-                if (premium) ...[
-                  _buildLimbGrid(context, colors),
-                  const SizedBox(height: 16),
-                  _buildTimingPanel(context, colors),
-                  const SizedBox(height: 16),
-                  _buildObservances(context, colors),
-                  const SizedBox(height: 16),
-                  _buildTraditionNote(context, colors),
-                ] else ...[
-                  _buildFreeObservancePreview(context, colors),
-                  const SizedBox(height: 16),
-                  _buildUpgradeCard(context, colors),
-                ],
+    return DefaultTabController(
+      length: 4,
+      child: SafeArea(
+        top: false,
+        child: Column(
+          children: [
+            TabBar(
+              isScrollable: true,
+              tabAlignment: TabAlignment.start,
+              onTap: (index) {
+                setState(() => _section = index);
+                if (_scrollController.hasClients) _scrollController.jumpTo(0);
+              },
+              tabs: const [
+                Tab(text: 'Daily'),
+                Tab(text: 'Muhurta'),
+                Tab(text: 'Ekadashi'),
+                Tab(text: 'Rashi'),
               ],
             ),
-          ),
-        ],
+            Expanded(
+              child: CustomScrollView(
+                controller: _scrollController,
+                key: const Key('panchang_scroll_view'),
+                slivers: [
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                    sliver: SliverList.list(
+                      children: [
+                        _buildHeader(context, colors),
+                        const SizedBox(height: 20),
+                        if (_section == 0) ...[
+                          _buildHero(context, colors),
+                          const SizedBox(height: 18),
+                          if (premium) ...[
+                            _buildLimbGrid(context, colors),
+                            const SizedBox(height: 16),
+                            _buildExtendedDetails(context),
+                            const SizedBox(height: 16),
+                            _buildObservances(context, colors),
+                            const SizedBox(height: 16),
+                            _buildTraditionNote(context, colors),
+                          ] else ...[
+                            _buildFreeObservancePreview(context, colors),
+                            const SizedBox(height: 16),
+                            _buildUpgradeCard(context, colors),
+                          ],
+                        ] else if (_section == 2) ...[
+                          PanchangEkadashiPanel(
+                            date: _date,
+                            city: _city,
+                            tradition: _tradition,
+                            onTraditionChanged: (value) =>
+                                setState(() => _tradition = value),
+                          ),
+                        ] else if (!premium) ...[
+                          _buildUpgradeCard(context, colors),
+                        ] else if (_section == 1) ...[
+                          _buildTimingPanel(context, colors),
+                          const SizedBox(height: 16),
+                          _buildMuhurtaDetails(context),
+                        ] else ...[
+                          _buildRashiDetails(context),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -133,7 +240,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
           isExpanded: true,
           isDense: true,
           items: [
-            for (final city in PanchangCity.supported)
+            for (final city in {...PanchangCity.supported, _city})
               DropdownMenuItem(
                 value: city,
                 child: Text(city.label, overflow: TextOverflow.ellipsis),
@@ -171,12 +278,18 @@ class _PanchangScreenState extends State<PanchangScreen> {
         ),
         const SizedBox(height: 8),
         Text(
-          'IST · English',
+          '${_city.timezoneLabel} · English',
           style: Theme.of(context).textTheme.labelLarge?.copyWith(
             color: colors.primary,
             letterSpacing: .35,
             fontWeight: FontWeight.w600,
           ),
+        ),
+        TextButton.icon(
+          key: const Key('panchang_edit_location'),
+          onPressed: _editLocation,
+          icon: const Icon(Icons.edit_location_alt_outlined),
+          label: const Text('Search city / use location'),
         ),
         const SizedBox(height: 15),
         Container(
@@ -197,12 +310,15 @@ class _PanchangScreenState extends State<PanchangScreen> {
               Expanded(
                 child: Column(
                   children: [
-                    Text(
-                      dateLabel,
-                      key: const Key('panchang_selected_date'),
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w600,
+                    InkWell(
+                      onTap: _pickDate,
+                      child: Text(
+                        dateLabel,
+                        key: const Key('panchang_selected_date'),
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                     if (!isToday)
@@ -269,7 +385,9 @@ class _PanchangScreenState extends State<PanchangScreen> {
                   constraints.maxWidth < 340 ||
                   MediaQuery.textScalerOf(context).scale(14) > 17.5;
               final labelText = Text(
-                'TITHI AT SUNRISE',
+                _day.sunriseUtc == null
+                    ? 'TITHI AT 06:00 · NO SUNRISE'
+                    : 'TITHI AT SUNRISE',
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
                   letterSpacing: 1.25,
                   fontWeight: FontWeight.w700,
@@ -324,7 +442,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
           Text(
             _day.tithi.endsAtUtc == null
                 ? 'Tithi transition unavailable'
-                : 'Changes at ${formatIstTime(_day.tithi.endsAtUtc)} IST',
+                : 'Changes at ${_time(_day.tithi.endsAtUtc)}',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: colors.onPrimaryContainer.withValues(alpha: .8),
             ),
@@ -338,13 +456,13 @@ class _PanchangScreenState extends State<PanchangScreen> {
                 context,
                 icon: Icons.wb_sunny_outlined,
                 label: 'Sunrise',
-                value: formatIstTime(_day.sunriseUtc),
+                value: _time(_day.sunriseUtc),
               ),
               _sunPill(
                 context,
                 icon: Icons.wb_twilight,
                 label: 'Sunset',
-                value: formatIstTime(_day.sunsetUtc),
+                value: _time(_day.sunsetUtc),
               ),
             ],
           ),
@@ -397,7 +515,13 @@ class _PanchangScreenState extends State<PanchangScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _sectionTitle(context, 'Five limbs', 'Panchang at local sunrise'),
+        _sectionTitle(
+          context,
+          'Five limbs',
+          _day.sunriseUtc == null
+              ? 'No sunrise: limbs sampled at 06:00 local time'
+              : 'Panchang at local sunrise',
+        ),
         const SizedBox(height: 11),
         LayoutBuilder(
           builder: (context, constraints) {
@@ -462,7 +586,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
         if (end != null) ...[
           const SizedBox(height: 4),
           Text(
-            'Until ${formatIstTime(end)} IST',
+            'Until ${_time(end)}',
             style: Theme.of(
               context,
             ).textTheme.bodySmall?.copyWith(color: colors.onSurfaceVariant),
@@ -480,33 +604,39 @@ class _PanchangScreenState extends State<PanchangScreen> {
         children: [
           _sectionTitle(context, 'Daily timings', _city.label),
           const SizedBox(height: 14),
-          Row(
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(
-                Icons.brightness_3_outlined,
-                size: 18,
-                color: colors.primary,
-              ),
-              const SizedBox(width: 9),
-              const Expanded(child: Text('Lunar month labels')),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
+              Row(
                 children: [
-                  Text('Amanta · ${_day.amantaMonth}'),
-                  const SizedBox(height: 2),
-                  Text(
-                    'Purnimanta · ${_day.purnimantaMonth}',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: colors.onSurfaceVariant,
-                    ),
+                  Icon(
+                    Icons.brightness_3_outlined,
+                    size: 18,
+                    color: colors.primary,
                   ),
+                  const SizedBox(width: 9),
+                  const Expanded(child: Text('Lunar month labels')),
                 ],
+              ),
+              const SizedBox(height: 6),
+              Text('Amanta · ${_day.amantaMonth}'),
+              const SizedBox(height: 2),
+              Text(
+                'Purnimanta · ${_day.purnimantaMonth}',
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: colors.onSurfaceVariant),
               ),
             ],
           ),
           const Divider(height: 24),
-          for (final period in [_day.rahukala, _day.yamaganda, _day.gulika])
+          for (final period in [
+            _day.rahukala,
+            _day.yamaganda,
+            _day.gulika,
+            _day.abhijit,
+            _day.brahmaMuhurta,
+          ])
             if (period != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: 10),
@@ -515,10 +645,11 @@ class _PanchangScreenState extends State<PanchangScreen> {
                     Icon(Icons.schedule, size: 17, color: colors.primary),
                     const SizedBox(width: 9),
                     Expanded(child: Text(period.name)),
-                    Text(
-                      '${formatIstTime(period.startUtc)} – ${formatIstTime(period.endUtc)}',
-                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
+                    Flexible(
+                      child: Text(
+                        '${_time(period.startUtc)} – ${_time(period.endUtc)}',
+                        style: Theme.of(context).textTheme.labelMedium
+                            ?.copyWith(fontWeight: FontWeight.w600),
                       ),
                     ),
                   ],
@@ -530,13 +661,145 @@ class _PanchangScreenState extends State<PanchangScreen> {
               const Icon(Icons.nightlight_outlined, size: 18),
               const SizedBox(width: 9),
               const Expanded(child: Text('Moonrise')),
-              Text(formatIstTime(_day.moonriseUtc)),
+              Flexible(child: Text(_time(_day.moonriseUtc))),
             ],
           ),
         ],
       ),
     );
   }
+
+  Widget _buildExtendedDetails(BuildContext context) => _surfacePanel(
+    context,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _sectionTitle(context, 'Detailed Panchang', _city.timezoneLabel),
+        const SizedBox(height: 12),
+        Text('Moonset · ${_time(_day.moonsetUtc)}'),
+        Text('Surya Rashi · ${_day.sunRashi}'),
+        Text('Chandra Rashi · ${_day.moonRashi}'),
+        Text('Nakshatra Pada · ${_day.nakshatraPada}'),
+        Text('Lahiri Ayanamsa · ${_day.ayanamsa.toStringAsFixed(4)}°'),
+        Text('Ritu · ${_day.ritu}'),
+        Text('Ayana · ${_day.ayana}'),
+        Text(
+          'Shaka · ${_day.shakaYear} / Vikrama · ${_day.vikramaYear} (Chaitra start)',
+        ),
+        Text('Anandadi Yoga · ${_day.anandadiYoga}'),
+        Text('Amanta · ${_day.amantaMonth}'),
+        Text('Purnimanta · ${_day.purnimantaMonth}'),
+        Text(
+          'At sunrise · ${_day.specialYogas.isEmpty ? "No listed special yoga" : _day.specialYogas.join(" · ")}',
+        ),
+        if (_day.sunriseUtc == null || _day.sunsetUtc == null)
+          const Text(
+            'No complete solar day at this location. Sunrise-based periods and observances are unavailable.',
+          ),
+        const Divider(),
+        const Text('Limb transitions · sunrise to next sunrise'),
+        for (final entry in _day.limbTimeline.entries)
+          for (final limb in entry.value)
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Text(
+                '${entry.key} · ${limb.paksha ?? ''} ${limb.name} — until ${_time(limb.endsAtUtc)}',
+              ),
+            ),
+        const Divider(),
+      ],
+    ),
+  );
+
+  Widget _buildRashiDetails(BuildContext context) => _surfacePanel(
+    context,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _sectionTitle(
+          context,
+          'Rashi and Nakshatra',
+          'Sidereal positions at local sunrise · Lahiri',
+        ),
+        const SizedBox(height: 16),
+        Text(
+          'Surya Rashi · ${_day.sunRashi}',
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        Text('Changes at ${_time(_day.sunRashiEndsAtUtc)}'),
+        const Divider(height: 28),
+        Text(
+          'Chandra Rashi · ${_day.moonRashi}',
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        Text('Changes at ${_time(_day.moonRashiEndsAtUtc)}'),
+        const Divider(height: 28),
+        Text(
+          'Nakshatra · ${_day.nakshatra.name}',
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        Text('Pada ${_day.nakshatraPada} · until ${_time(_day.padaEndsAtUtc)}'),
+        Text('Nakshatra ends at ${_time(_day.nakshatra.endsAtUtc)}'),
+        const Divider(height: 28),
+        Text('Lahiri Ayanamsa · ${_day.ayanamsa.toStringAsFixed(4)}°'),
+        Text('Ritu · ${_day.ritu}'),
+        Text('Ayana · ${_day.ayana}'),
+        const SizedBox(height: 12),
+        const Text(
+          'These are the Sun and Moon positions for the selected day. A personal Janma Rashi requires birth date, time and location.',
+        ),
+      ],
+    ),
+  );
+
+  Widget _buildMuhurtaDetails(BuildContext context) => _surfacePanel(
+    context,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _sectionTitle(
+          context,
+          'Additional periods',
+          'Local sunrise to next sunrise',
+        ),
+        if (_day.additionalPeriods.isEmpty)
+          const Text('No periods available for this solar day.'),
+        for (final period in _day.additionalPeriods) _periodText(period),
+        const Divider(),
+        _sectionTitle(
+          context,
+          'Day and night Choghadiya',
+          'Amrit, Shubh, Labh: favourable · Chal: neutral · Rog, Kaal, Udveg: unfavourable',
+        ),
+        for (final period in _day.choghadiya) _periodText(period),
+        const Divider(),
+        _sectionTitle(
+          context,
+          'Hora',
+          'Planetary hours · twelve by day and twelve by night',
+        ),
+        for (final period in _day.hora) _periodText(period),
+        const Divider(),
+        _sectionTitle(
+          context,
+          'Udaya Lagna',
+          'Sidereal ascendant · local horizon',
+        ),
+        if (_day.lagna.isEmpty)
+          const Text(
+            'Lagna periods unavailable for this location or solar day.',
+          ),
+        for (final period in _day.lagna) _periodText(period),
+      ],
+    ),
+  );
+
+  Widget _periodText(PanchangPeriod period) => Padding(
+    padding: const EdgeInsets.only(top: 10),
+    child: Text(
+      '${period.name}\n${_time(period.startUtc)} – ${_time(period.endUtc)}',
+    ),
+  );
 
   Widget _buildObservances(BuildContext context, ColorScheme colors) {
     final events = _day.observances;
@@ -647,7 +910,6 @@ class _PanchangScreenState extends State<PanchangScreen> {
             children: [
               Icon(Icons.stars_rounded, color: colors.primary),
               const SizedBox(width: 8),
-              // Wraps at large text sizes instead of overflowing on phones.
               Expanded(
                 child: Text(
                   'Full Panchang · Premium',

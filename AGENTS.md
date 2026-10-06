@@ -119,3 +119,28 @@ for review, and do not merge it to `dev` or `main`.
      entry needs premium. Existing entries stay editable and all history,
      streaks, statistics and earned badges are preserved.
   3. Panchang's full details stay premium; the daily preview stays free.
+
+## Panchang worldwide extension (5 October 2026)
+
+The user's newer instructions authorize `feature/panchang-location-details`
+branched from PR #11 `feature/panchang-engine`, overriding the earlier
+single-branch, IST/eight-city and five-tab constraints for this extension.
+Build fuller Drik-style daily coverage, arbitrary location/date calculation,
+Smarta and Vaishnava fasting, Daily/Muhurta/Ekadashi/Rashi subtabs, and More for
+secondary tools. Preserve the existing Calendar. Keep 2026/2027 validation and
+the published Ekadashi schedule until a separately validated migration. Do not
+claim full parity or superior accuracy without evidence. Do not merge to dev
+or main. See docs/PANCHANG_RESEARCH.md.
+
+## Integration of PR #12 into PR #13 (approved 6 October 2026)
+
+Arun approved `integration/panchang-premium`, branched from
+`feature/play-premium-paywall` (PR #13) with `feature/panchang-location-details`
+(PR #12) merged in. Conflicts resolve in favour of PR #13 behaviour and its
+paywall. Keep five bottom tabs (Today, Calendar, Vrat, Panchang, Settings): PR
+#12's More tab (festival finder, guides, calculation notes) lives inside
+Panchang and `ekadashi://more` opens Panchang. Keep worldwide locations. The
+published Ekadashi dates stay authoritative. Today's vrat and festival names
+are free; full Panchang details, Muhurta, Rashi and the festival finder are
+premium. Open one PR to `dev`; do not merge it without Arun's approval and do
+not run CI without explicit permission.

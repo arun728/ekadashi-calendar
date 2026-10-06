@@ -57,6 +57,10 @@ void main() {
   testWidgets(
     'Multi-year archive, Telugu, SQLite persistence and whole-year Google deletion',
     (tester) async {
+      // Register before the location editor's first text entry as well as
+      // Search. Native IME callbacks can otherwise outlive the closed dialog.
+      tester.testTextInput.register();
+      addTearDown(tester.testTextInput.unregister);
       final prefs = await SharedPreferences.getInstance();
       await prefs.clear();
       await prefs.setBool('has_launched', true);
@@ -93,14 +97,50 @@ void main() {
       await binding.convertFlutterSurfaceToImage();
       await frames(tester);
       expect(find.byKey(const Key('glass_navigation_bar')), findsOneWidget);
-      for (var i = 0; i < 5; i++) {
+      for (var i = 0; i < 6; i++) {
         expect(find.byKey(Key('glass_tab_$i')).hitTestable(), findsOneWidget);
       }
       await binding.takeScreenshot('v2_home_2026');
       await tester.tap(find.byKey(const Key('glass_tab_3')));
       await frames(tester);
       expect(find.byKey(const Key('panchang_daily_overview')), findsOneWidget);
+      for (final label in ['Daily', 'Muhurta', 'Ekadashi', 'Rashi']) {
+        expect(find.widgetWithText(Tab, label), findsOneWidget);
+      }
       await binding.takeScreenshot('v2_panchang_free');
+      await tester.tap(find.byKey(const Key('panchang_edit_location')));
+      await frames(tester);
+      for (final entry in {
+        'location_name': 'New York',
+        'location_latitude': '40.7128',
+        'location_longitude': '-74.006',
+        'location_timezone': 'America/New_York',
+      }.entries) {
+        final field = find.byKey(Key(entry.key));
+        await tester.ensureVisible(field);
+        await tester.enterText(field, entry.value);
+      }
+      await tester.tap(find.text('Save location'));
+      await frames(tester);
+      await until(
+        tester,
+        () => find
+            .byKey(const Key('glass_tab_5'))
+            .hitTestable()
+            .evaluate()
+            .isNotEmpty,
+      );
+      expect(find.text('America/New_York · English'), findsOneWidget);
+      expect(
+        prefs.getString('panchang_location'),
+        contains('America/New_York'),
+      );
+      await binding.takeScreenshot('v2_panchang_worldwide');
+      await tester.tap(find.byKey(const Key('glass_tab_5')));
+      await frames(tester);
+      expect(find.text('Festival finder'), findsOneWidget);
+      expect(find.text('Smarta and Vaishnava'), findsOneWidget);
+      await binding.takeScreenshot('v2_more');
       final lang = tester
           .element(find.byType(MaterialApp).first)
           .read<LanguageService>();
@@ -118,7 +158,7 @@ void main() {
       final restartedTracker = VratTrackerService();
       await restartedTracker.init(occurrences: years);
       expect(restartedTracker.getRecord(1)?.note, 'Archived private note');
-      await tester.tap(find.byIcon(Icons.spa_outlined));
+      await tester.tap(find.byKey(const Key('glass_tab_2')));
       await frames(tester);
       await binding.takeScreenshot('v2_tracker_retained');
       await tester.tap(find.text('History'));
@@ -213,10 +253,6 @@ void main() {
       await frames(tester);
       await lang.changeLanguage('en');
       await frames(tester, count: 10);
-      // IntegrationTest defaults to real IME clients. Register controlled input
-      // so repeated tester.enterText calls track the current TextInput client.
-      tester.testTextInput.register();
-      addTearDown(tester.testTextInput.unregister);
       await tester.enterText(find.byType(TextField), 'nirjla');
       await tester.pump(const Duration(milliseconds: 400));
       await tester.tap(find.byIcon(Icons.arrow_forward).first);
@@ -405,16 +441,19 @@ void main() {
       ];
       Future<void> sync() async {
         final importButton = find.byKey(const Key('import_google_year'));
-        final calendarViewport = find.byType(CustomScrollView).first;
-        for (
-          var attempt = 0;
-          attempt < 20 && importButton.evaluate().isEmpty;
-          attempt++
-        ) {
-          await tester.drag(calendarViewport, const Offset(0, 500));
-          await tester.pump(const Duration(milliseconds: 100));
-        }
-        expect(importButton, findsOneWidget);
+        // TableCalendar also handles vertical drags. Reset the outer viewport
+        // explicitly after capturing the event row, then use the real toolbar.
+        final scrollable = tester.state<ScrollableState>(
+          find
+              .descendant(
+                of: find.byType(CustomScrollView).first,
+                matching: find.byType(Scrollable),
+              )
+              .first,
+        );
+        scrollable.position.jumpTo(scrollable.position.minScrollExtent);
+        await frames(tester);
+        expect(importButton.hitTestable(), findsOneWidget);
         await tester.ensureVisible(importButton);
         await tester.tap(importButton);
         await frames(tester);

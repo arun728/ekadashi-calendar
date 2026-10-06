@@ -1051,4 +1051,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get google_premium_events_removed =>
       'Your Premium has ended, so the Google events it synced were removed. Renew to sync again.';
+
+  @override
+  String get more => 'More';
 }

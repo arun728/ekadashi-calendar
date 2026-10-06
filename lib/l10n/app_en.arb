@@ -365,5 +365,6 @@
   "google_free_sync_used": "Free sync used. Upgrade to sync the whole year.",
   "google_sign_in_failed": "Google sign-in failed. Check your connection and try again.",
   "vrat_free_limit_reached": "You've used your three free Vrat entries. Get Premium to keep recording.",
-  "google_premium_events_removed": "Your Premium has ended, so the Google events it synced were removed. Renew to sync again."
+  "google_premium_events_removed": "Your Premium has ended, so the Google events it synced were removed. Renew to sync again.",
+  "more": "More"
 }

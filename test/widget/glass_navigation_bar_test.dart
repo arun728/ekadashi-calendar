@@ -22,6 +22,7 @@ List<BottomNavigationBarItem> items(String locale) {
       icon: const Icon(Icons.settings),
       label: l.settings,
     ),
+    BottomNavigationBarItem(icon: const Icon(Icons.more_horiz), label: l.more),
   ];
 }
 
@@ -86,7 +87,7 @@ void main() {
           expect(capsule.width, lessThanOrEqualTo(600));
           expect(capsule.bottom, lessThanOrEqualTo(844 - 24 - 12));
           expect(capsule.left, closeTo(width - capsule.right, 0.5));
-          for (var i = 0; i < 5; i++) {
+          for (var i = 0; i < 6; i++) {
             final tab = find.byKey(Key('glass_tab_$i'));
             expect(tab.hitTestable(), findsOneWidget);
             final rect = tester.getRect(tab);
@@ -132,7 +133,7 @@ void main() {
       var tapped = -1;
       await open(tester, locale: 'te', selected: 2, onTap: (i) => tapped = i);
       final destinations = items('te');
-      for (var i = 0; i < 5; i++) {
+      for (var i = 0; i < 6; i++) {
         final node = tester.getSemantics(find.byKey(Key('glass_tab_$i')));
         expect(node.getSemanticsData().label, destinations[i].label);
         expect(node.getSemanticsData().flagsCollection.isButton, isTrue);

@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:ekadashi_calendar/screens/panchang_screen.dart';
+import 'package:ekadashi_calendar/services/panchang/panchang_city.dart';
 import 'package:ekadashi_calendar/services/premium_service.dart';
 import 'package:ekadashi_calendar/services/theme_service.dart';
 import '../support/premium_fixture.dart';
@@ -92,5 +93,65 @@ void main() {
     expect(tester.getTopLeft(find.text('Panchang')).dy, lessThan(70));
     await capture('premium');
     expect(tester.takeException(), isNull);
+  });
+  testWidgets('2027 worldwide Panchang subtabs render screenshots', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final backend = PremiumFixture()..premium = true;
+    final premium = PremiumService(entitlements: backend);
+    addTearDown(premium.dispose);
+    await premium.refresh();
+    final boundaryKey = GlobalKey();
+    await tester.pumpWidget(
+      ChangeNotifierProvider<PremiumService>.value(
+        value: premium,
+        child: MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: RepaintBoundary(
+            key: boundaryKey,
+            child: Scaffold(
+              body: PanchangScreen(
+                initialDate: DateTime.utc(2027, 1, 3),
+                initialCity: PanchangCity.newYork,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    for (final tab in ['Daily', 'Muhurta', 'Rashi', 'Ekadashi']) {
+      await tester.tap(find.widgetWithText(Tab, tab));
+      await tester.pump();
+      if (tab == 'Ekadashi') {
+        for (var attempt = 0; attempt < 50; attempt++) {
+          await tester.runAsync(
+            () => Future<void>.delayed(const Duration(milliseconds: 100)),
+          );
+          await tester.pump();
+          if (find.byType(CircularProgressIndicator).evaluate().isEmpty) break;
+        }
+        expect(find.byType(CircularProgressIndicator), findsNothing);
+        expect(find.textContaining('Saphala Ekadashi'), findsOneWidget);
+      }
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      await tester.runAsync(() async {
+        final boundary =
+            boundaryKey.currentContext!.findRenderObject()!
+                as RenderRepaintBoundary;
+        final image = await boundary.toImage(pixelRatio: 2);
+        final bytes = (await image.toByteData(format: ui.ImageByteFormat.png))!;
+        final directory = Directory('build/ui-screenshots/offscreen');
+        await directory.create(recursive: true);
+        await File(
+          '${directory.path}/panchang_2027_${tab.toLowerCase()}.png',
+        ).writeAsBytes(bytes.buffer.asUint8List());
+        image.dispose();
+      });
+    }
   });
 }

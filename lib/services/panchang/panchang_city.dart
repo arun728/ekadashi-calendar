@@ -1,17 +1,70 @@
-/// A supported Indian observance location. Panchang calculations always use
-/// IST; coordinates only determine local sunrise, sunset and moonrise.
+import 'package:timezone/data/latest_all.dart' as tzdata;
+import 'package:timezone/timezone.dart' as tz;
+
+/// Explicit coordinates and IANA timezone; never uses the host timezone.
 class PanchangCity {
   const PanchangCity({
     required this.id,
     required this.label,
     required this.latitude,
     required this.longitude,
+    this.timeZoneId = 'Asia/Kolkata',
+    this.searchTerms = '',
   });
 
   final String id;
   final String label;
   final double latitude;
   final double longitude;
+
+  final String timeZoneId;
+  final String searchTerms;
+  static Map<String, tz.Location>? _zones;
+
+  tz.Location get zone {
+    if (_zones == null) {
+      // Notification scheduling also uses package:timezone. Preserve its local
+      // zone and retain our own complete catalog if another service reloads it.
+      tz.Location previousLocal;
+      try {
+        previousLocal = tz.local;
+      } catch (_) {
+        previousLocal = tz.UTC;
+      }
+      tzdata.initializeTimeZones();
+      _zones = Map.unmodifiable(tz.timeZoneDatabase.locations);
+      tz.setLocalLocation(previousLocal);
+    }
+    if (!timeZoneId.contains('/') && timeZoneId != 'UTC') {
+      throw ArgumentError('Use an IANA timezone such as Asia/Kolkata');
+    }
+    try {
+      return _zones![timeZoneId] ??
+          (throw ArgumentError('Unknown timezone: $timeZoneId'));
+    } catch (_) {
+      throw ArgumentError('Unknown timezone: $timeZoneId');
+    }
+  }
+
+  void validate() {
+    if (!latitude.isFinite ||
+        latitude.abs() > 90 ||
+        !longitude.isFinite ||
+        longitude.abs() > 180 ||
+        label.trim().isEmpty) {
+      throw ArgumentError('Invalid location coordinates or name');
+    }
+    zone;
+  }
+
+  DateTime wallClock(DateTime instant) =>
+      tz.TZDateTime.from(instant.toUtc(), zone);
+  DateTime midnight(DateTime date, {int dayOffset = 0}) =>
+      tz.TZDateTime(zone, date.year, date.month, date.day + dayOffset).toUtc();
+  DateTime dateAtHour(DateTime date, int hour) =>
+      tz.TZDateTime(zone, date.year, date.month, date.day, hour).toUtc();
+
+  String get timezoneLabel => timeZoneId == 'Asia/Kolkata' ? 'IST' : timeZoneId;
 
   static const newDelhi = PanchangCity(
     id: 'new-delhi',
@@ -62,6 +115,28 @@ class PanchangCity {
     longitude: 82.9739,
   );
 
+  static const london = PanchangCity(
+    id: 'london',
+    label: 'London',
+    latitude: 51.5074,
+    longitude: -0.1278,
+    timeZoneId: 'Europe/London',
+  );
+  static const newYork = PanchangCity(
+    id: 'new-york',
+    label: 'New York',
+    latitude: 40.7128,
+    longitude: -74.006,
+    timeZoneId: 'America/New_York',
+  );
+  static const sydney = PanchangCity(
+    id: 'sydney',
+    label: 'Sydney',
+    latitude: -33.8688,
+    longitude: 151.2093,
+    timeZoneId: 'Australia/Sydney',
+  );
+
   static const supported = <PanchangCity>[
     newDelhi,
     mumbai,
@@ -71,11 +146,20 @@ class PanchangCity {
     hyderabad,
     pune,
     varanasi,
+    london,
+    newYork,
+    sydney,
   ];
 
   @override
-  bool operator ==(Object other) => other is PanchangCity && other.id == id;
+  bool operator ==(Object other) =>
+      other is PanchangCity &&
+      other.id == id &&
+      other.latitude == latitude &&
+      other.longitude == longitude &&
+      other.timeZoneId == timeZoneId &&
+      other.label == label;
 
   @override
-  int get hashCode => id.hashCode;
+  int get hashCode => Object.hash(id, latitude, longitude, timeZoneId, label);
 }

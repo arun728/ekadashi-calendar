@@ -1054,4 +1054,7 @@ class AppLocalizationsTa extends AppLocalizations {
   @override
   String get google_premium_events_removed =>
       'உங்கள் பிரீமியம் முடிந்தது, எனவே அதன் மூலம் ஒத்திசைத்த Google நிகழ்வுகள் நீக்கப்பட்டன. மீண்டும் ஒத்திசைக்க புதுப்பிக்கவும்.';
+
+  @override
+  String get more => 'மேலும்';
 }

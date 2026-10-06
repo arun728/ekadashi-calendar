@@ -1,0 +1,2379 @@
+{
+  "source": "gaurabda 0.8.4",
+  "url": "https://github.com/gopa810/gaurabda-calendar",
+  "profiles": {
+    "2026": {
+      "new-delhi": [
+        {
+          "date": "2026-01-14",
+          "name": "Sat-tila Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 7.249953315311867,
+            "endTime": 10.756701726888288,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2026-01-29",
+          "name": "Bhaimi Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 7.173671598923956,
+            "endTime": 10.775122059254343,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2026-02-13",
+          "name": "Vijaya Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 7.008244018056109,
+            "endTime": 10.730472272935192,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2026-02-27",
+          "name": "Amalaki vrata Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.792469656611756,
+            "endTime": 10.640930832135615,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2026-03-15",
+          "name": "Papamocani Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.501038486149592,
+            "endTime": 9.726715978235006,
+            "startReason": 4,
+            "endReason": 5
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2026-03-29",
+          "name": "Kamada Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.23115623621155,
+            "endTime": 7.203240282833576,
+            "startReason": 4,
+            "endReason": 5
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2026-04-13",
+          "name": "Varuthini Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.95949799194932,
+            "endTime": 10.225220068758874,
+            "startReason": 2,
+            "endReason": 1
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2026-04-27",
+          "name": "Mohini Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 5.721573162874658,
+            "endTime": 10.117215909632659,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2026-05-13",
+          "name": "Apara Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 5.519522962095073,
+            "endTime": 10.036442703427042,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2026-05-27",
+          "name": "Padmini Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 5.412824025182839,
+            "endTime": 7.9900792725384235,
+            "startReason": 4,
+            "endReason": 5
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2026-06-11",
+          "name": "Parama Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 5.379580613883071,
+            "endTime": 10.027201819653422,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2026-06-25",
+          "name": "Pandava Nirjala Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 5.419488427542385,
+            "endTime": 10.073088839590003,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2026-07-11",
+          "name": "Yogini Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 5.527723059282309,
+            "endTime": 10.139404333412717,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2026-07-25",
+          "name": "Sayana Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 5.652173032820316,
+            "endTime": 10.190386502281017,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2026-08-09",
+          "name": "Kamika Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 5.792498576278108,
+            "endTime": 8.040347088128328,
+            "startReason": 4,
+            "endReason": 5
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2026-08-23",
+          "name": "Pavitraropana Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 10.84037720784545,
+            "endTime": -1.0,
+            "startReason": 2,
+            "endReason": 0
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2026-09-07",
+          "name": "Annada Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.042760466453386,
+            "endTime": 10.22192507414288,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2026-09-22",
+          "name": "Parsva Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.165043337879119,
+            "endTime": 10.203683377045442,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2026-10-06",
+          "name": "Indira Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.2865709330335875,
+            "endTime": 10.193684283979014,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2026-10-22",
+          "name": "Pasankusa Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.446382265689559,
+            "endTime": 10.207945004333627,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2026-11-05",
+          "name": "Rama Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.610035998966106,
+            "endTime": 10.254577835484723,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2026-11-21",
+          "name": "Utthana Ekadasi",
+          "type": 256,
+          "parana": {
+            "startTime": 6.818197785656457,
+            "endTime": 10.351609930895075,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2026-12-04",
+          "name": "Utpanna Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.98686755205542,
+            "endTime": 10.457804877746455,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2026-12-20",
+          "name": "Moksada Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 7.15803775984411,
+            "endTime": 10.598443266034778,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 5.5
+        }
+      ],
+      "new-york": [
+        {
+          "date": "2026-01-14",
+          "name": "Sat-tila Ekadasi",
+          "type": 258,
+          "parana": {
+            "startTime": 8.298249925918032,
+            "endTime": 10.812997546046972,
+            "startReason": 4,
+            "endReason": 5
+          },
+          "paranaOffset": -4.0
+        },
+        {
+          "date": "2026-01-29",
+          "name": "Bhaimi Ekadasi",
+          "type": 256,
+          "parana": {
+            "startTime": 8.129789988523672,
+            "endTime": 11.482750585743096,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": -4.0
+        },
+        {
+          "date": "2026-02-12",
+          "name": "Vijaya Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 11.372052684426308,
+            "endTime": 11.407375425119046,
+            "startReason": 2,
+            "endReason": 1
+          },
+          "paranaOffset": -4.0
+        },
+        {
+          "date": "2026-02-27",
+          "name": "Amalaki vrata Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 7.522716867699771,
+            "endTime": 11.260311476886272,
+            "startReason": 4,
+            "endReason": 5
+          },
+          "paranaOffset": -4.0
+        },
+        {
+          "date": "2026-03-14",
+          "name": "Papamocani Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 7.125795992772366,
+            "endTime": 11.099815492668949,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": -4.0
+        },
+        {
+          "date": "2026-03-28",
+          "name": "Kamada Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.740178855204338,
+            "endTime": 10.925333215213893,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": -4.0
+        },
+        {
+          "date": "2026-04-13",
+          "name": "Varuthini Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.312114787270566,
+            "endTime": 10.733089549912867,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": -4.0
+        },
+        {
+          "date": "2026-04-27",
+          "name": "Mohini Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 5.974910491685685,
+            "endTime": 9.407634485512972,
+            "startReason": 4,
+            "endReason": 5
+          },
+          "paranaOffset": -4.0
+        },
+        {
+          "date": "2026-05-13",
+          "name": "Apara Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 5.664436263726376,
+            "endTime": 10.473450486963907,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": -4.0
+        },
+        {
+          "date": "2026-05-26",
+          "name": "Padmini Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 5.493701689849098,
+            "endTime": 10.425084630299637,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": -4.0
+        },
+        {
+          "date": "2026-06-11",
+          "name": "Parama Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 5.405304184344944,
+            "endTime": 10.14917778223753,
+            "startReason": 4,
+            "endReason": 5
+          },
+          "paranaOffset": -4.0
+        },
+        {
+          "date": "2026-06-25",
+          "name": "Pandava Nirjala Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 5.441415072382786,
+            "endTime": 10.468431490308713,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": -4.0
+        },
+        {
+          "date": "2026-07-10",
+          "name": "Yogini Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 5.579674134602157,
+            "endTime": 10.542374685197455,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": -4.0
+        },
+        {
+          "date": "2026-07-24",
+          "name": "Sayana Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 8.696238849312067,
+            "endTime": 10.616134429419374,
+            "startReason": 2,
+            "endReason": 1
+          },
+          "paranaOffset": -4.0
+        },
+        {
+          "date": "2026-08-09",
+          "name": "Kamika Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.0250484255717005,
+            "endTime": 10.686597381298231,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": -4.0
+        },
+        {
+          "date": "2026-08-23",
+          "name": "Pavitraropana Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.254584430256681,
+            "endTime": 10.729180777882622,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": -4.0
+        },
+        {
+          "date": "2026-09-07",
+          "name": "Annada Ekadasi",
+          "type": 260,
+          "parana": {
+            "startTime": 6.498608983389768,
+            "endTime": 10.758114869074214,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": -4.0
+        },
+        {
+          "date": "2026-09-22",
+          "name": "Parsva Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.743103665189884,
+            "endTime": 10.78069197985284,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": -4.0
+        },
+        {
+          "date": "2026-10-06",
+          "name": "Indira Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.979484706879483,
+            "endTime": 10.809398348138703,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": -4.0
+        },
+        {
+          "date": "2026-10-21",
+          "name": "Pasankusa Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 11.268853440880775,
+            "endTime": -1.0,
+            "startReason": 2,
+            "endReason": 0
+          },
+          "paranaOffset": -4.0
+        },
+        {
+          "date": "2026-11-04",
+          "name": "Rama Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.518723591869635,
+            "endTime": 9.943641591508225,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": -5.0
+        },
+        {
+          "date": "2026-11-20",
+          "name": "Utthana Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.831102303215422,
+            "endTime": 10.074228608494426,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": -5.0
+        },
+        {
+          "date": "2026-12-04",
+          "name": "Utpanna Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 8.077693763537072,
+            "endTime": 11.210328314221591,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": -4.0
+        },
+        {
+          "date": "2026-12-20",
+          "name": "Moksada Ekadasi",
+          "type": 260,
+          "parana": {
+            "startTime": 8.276198964899828,
+            "endTime": 11.360833938621333,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": -4.0
+        }
+      ],
+      "london": [
+        {
+          "date": "2026-01-14",
+          "name": "Sat-tila Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 8.990945180972968,
+            "endTime": 11.776251124057978,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2026-01-29",
+          "name": "Bhaimi Ekadasi",
+          "type": 260,
+          "parana": {
+            "startTime": 8.697682873833767,
+            "endTime": 11.722482117542867,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2026-02-13",
+          "name": "Vijaya Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 8.272803318303103,
+            "endTime": 11.568793307989836,
+            "startReason": 4,
+            "endReason": 5
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2026-02-27",
+          "name": "Amalaki vrata Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 7.799329180867007,
+            "endTime": 11.415973495379664,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2026-03-14",
+          "name": "Papamocani Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 9.921947613358498,
+            "endTime": 10.192132839189235,
+            "startReason": 2,
+            "endReason": 1
+          },
+          "paranaOffset": 0.0
+        },
+        {
+          "date": "2026-03-28",
+          "name": "Kamada Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 9.162331618368626,
+            "endTime": 10.969231653784252,
+            "startReason": 2,
+            "endReason": 1
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2026-04-13",
+          "name": "Varuthini Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.119463193604664,
+            "endTime": 10.721449155207505,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2026-04-27",
+          "name": "Mohini Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 5.637839706545343,
+            "endTime": 10.5299771049667,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2026-05-13",
+          "name": "Apara Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 5.171662526467258,
+            "endTime": 6.888642504811287,
+            "startReason": 4,
+            "endReason": 5
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2026-05-26",
+          "name": "Padmini Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 8.300174970179796,
+            "endTime": 10.27650723162219,
+            "startReason": 2,
+            "endReason": 1
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2026-06-11",
+          "name": "Parama Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 4.721177021873822,
+            "endTime": 10.246569549181052,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2026-06-25",
+          "name": "Pandava Nirjala Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 4.745680535002917,
+            "endTime": 10.285479950885112,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2026-07-11",
+          "name": "Yogini Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 4.957526786692046,
+            "endTime": 10.384316194814295,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2026-07-25",
+          "name": "Sayana Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 5.255509419820826,
+            "endTime": 9.491082232445478,
+            "startReason": 4,
+            "endReason": 5
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2026-08-09",
+          "name": "Kamika Ekadasi",
+          "type": 260,
+          "parana": {
+            "startTime": 5.633120462984563,
+            "endTime": 10.603895318095496,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2026-08-23",
+          "name": "Pavitraropana Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.34138435870409,
+            "endTime": 10.69377469949162,
+            "startReason": 2,
+            "endReason": 1
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2026-09-07",
+          "name": "Annada Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.401725178406662,
+            "endTime": 10.237212542444468,
+            "startReason": 4,
+            "endReason": 5
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2026-09-22",
+          "name": "Parsva Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.8009252570638505,
+            "endTime": 10.848875586650328,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2026-10-06",
+          "name": "Indira Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 7.181775870843126,
+            "endTime": 10.925808016113095,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2026-10-22",
+          "name": "Pasankusa Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 7.635363499018987,
+            "endTime": 10.116717264056206,
+            "startReason": 4,
+            "endReason": 5
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2026-11-05",
+          "name": "Rama Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 8.045709857933813,
+            "endTime": 11.168492617681284,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2026-11-20",
+          "name": "Utthana Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 8.474788655294166,
+            "endTime": 11.337320862501407,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2026-12-04",
+          "name": "Utpanna Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 8.817716267233829,
+            "endTime": 11.505483701652249,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2026-12-20",
+          "name": "Moksada Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 9.062349760441741,
+            "endTime": 11.671583621599837,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 1.0
+        }
+      ],
+      "sydney": [
+        {
+          "date": "2026-01-15",
+          "name": "Sat-tila Ekadasi",
+          "type": 262,
+          "parana": {
+            "startTime": 6.007494097219193,
+            "endTime": 10.720237051735698,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 11.0
+        },
+        {
+          "date": "2026-01-29",
+          "name": "Bhaimi Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.238531105608268,
+            "endTime": 10.836464347410276,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 11.0
+        },
+        {
+          "date": "2026-02-13",
+          "name": "Vijaya Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.484274696814379,
+            "endTime": 10.928609443658035,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 11.0
+        },
+        {
+          "date": "2026-02-28",
+          "name": "Amalaki vrata Ekadasi",
+          "type": 256,
+          "parana": {
+            "startTime": 6.710374247281651,
+            "endTime": 10.984298961735005,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 11.0
+        },
+        {
+          "date": "2026-03-15",
+          "name": "Papamocani Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.914745207357374,
+            "endTime": 11.011940613760988,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 11.0
+        },
+        {
+          "date": "2026-03-29",
+          "name": "Kamada Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 7.092450347455419,
+            "endTime": 11.025157877360114,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 11.0
+        },
+        {
+          "date": "2026-04-14",
+          "name": "Varuthini Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.290919887246645,
+            "endTime": 10.042227999435468,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 10.0
+        },
+        {
+          "date": "2026-04-27",
+          "name": "Mohini Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.453834580685829,
+            "endTime": 10.06819586036799,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 10.0
+        },
+        {
+          "date": "2026-05-13",
+          "name": "Apara Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.654067917362587,
+            "endTime": 10.122058908508787,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 10.0
+        },
+        {
+          "date": "2026-05-27",
+          "name": "Padmini Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.8159398597224055,
+            "endTime": 10.186492956551222,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 10.0
+        },
+        {
+          "date": "2026-06-12",
+          "name": "Parama Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.957225826632439,
+            "endTime": 10.265047283554551,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 10.0
+        },
+        {
+          "date": "2026-06-25",
+          "name": "Pandava Nirjala Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 7.244450870901346,
+            "endTime": 10.31558806113894,
+            "startReason": 2,
+            "endReason": 1
+          },
+          "paranaOffset": 10.0
+        },
+        {
+          "date": "2026-07-11",
+          "name": "Yogini Ekadasi",
+          "type": 260,
+          "parana": {
+            "startTime": 6.987569145376526,
+            "endTime": 10.33904075853041,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 10.0
+        },
+        {
+          "date": "2026-07-25",
+          "name": "Sayana Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.872716755889739,
+            "endTime": 10.311716555743358,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 10.0
+        },
+        {
+          "date": "2026-08-09",
+          "name": "Kamika Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.662939077522063,
+            "endTime": 10.229834444699494,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 10.0
+        },
+        {
+          "date": "2026-08-24",
+          "name": "Pavitraropana Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.382630677312828,
+            "endTime": 10.100859624326787,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 10.0
+        },
+        {
+          "date": "2026-09-07",
+          "name": "Annada Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.078786248792821,
+            "endTime": 9.950969726414073,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 10.0
+        },
+        {
+          "date": "2026-09-22",
+          "name": "Parsva Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 8.519068457186222,
+            "endTime": 9.776644554267728,
+            "startReason": 2,
+            "endReason": 1
+          },
+          "paranaOffset": 10.0
+        },
+        {
+          "date": "2026-10-07",
+          "name": "Indira Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.389857378464484,
+            "endTime": 10.60868828986617,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 11.0
+        },
+        {
+          "date": "2026-10-22",
+          "name": "Pasankusa Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.0788906475061,
+            "endTime": 10.46864904357664,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 11.0
+        },
+        {
+          "date": "2026-11-05",
+          "name": "Rama Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 5.842507625137091,
+            "endTime": 10.381033024005452,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 11.0
+        },
+        {
+          "date": "2026-11-21",
+          "name": "Utthana Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 5.666644480422482,
+            "endTime": 10.348468803644,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 11.0
+        },
+        {
+          "date": "2026-12-05",
+          "name": "Utpanna Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 5.616358136942198,
+            "endTime": 6.397623397409916,
+            "startReason": 4,
+            "endReason": 5
+          },
+          "paranaOffset": 11.0
+        },
+        {
+          "date": "2026-12-20",
+          "name": "Moksada Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 7.110045023262501,
+            "endTime": 10.48154967065733,
+            "startReason": 2,
+            "endReason": 1
+          },
+          "paranaOffset": 11.0
+        }
+      ]
+    },
+    "2027": {
+      "new-delhi": [
+        {
+          "date": "2027-01-03",
+          "name": "Saphala Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 7.241890560236478,
+            "endTime": 10.702518461711328,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2027-01-19",
+          "name": "Putrada Ekadasi",
+          "type": 260,
+          "parana": {
+            "startTime": 7.236306717682308,
+            "endTime": 10.769482390229694,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2027-02-02",
+          "name": "Sat-tila Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 7.139838028521781,
+            "endTime": 10.769594791575186,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2027-02-17",
+          "name": "Bhaimi Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.9552075485038,
+            "endTime": 10.710384633586026,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2027-03-04",
+          "name": "Vijaya Ekadasi",
+          "type": 258,
+          "parana": {
+            "startTime": 6.709442023494653,
+            "endTime": 9.930038340389729,
+            "startReason": 4,
+            "endReason": 5
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2027-03-18",
+          "name": "Amalaki vrata Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 7.24088916555047,
+            "endTime": 10.474624559331566,
+            "startReason": 2,
+            "endReason": 1
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2027-04-02",
+          "name": "Papamocani Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 9.293569128960371,
+            "endTime": 10.328565607899225,
+            "startReason": 2,
+            "endReason": 1
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2027-04-17",
+          "name": "Kamada Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 5.886177778987684,
+            "endTime": 7.731743574142456,
+            "startReason": 4,
+            "endReason": 5
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2027-05-02",
+          "name": "Varuthini Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 5.65367097406705,
+            "endTime": 10.087880724038879,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2027-05-16",
+          "name": "Mohini Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 5.4929520106326,
+            "endTime": 10.02797436132681,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2027-06-01",
+          "name": "Apara Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 5.3931868987118134,
+            "endTime": 8.50961909070611,
+            "startReason": 4,
+            "endReason": 5
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2027-06-14",
+          "name": "Pandava Nirjala Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 8.256878335028887,
+            "endTime": 10.034466628749435,
+            "startReason": 2,
+            "endReason": 1
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2027-06-30",
+          "name": "Yogini Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 5.446041202499975,
+            "endTime": 10.092421386334347,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2027-07-14",
+          "name": "Sayana Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 5.550889657068758,
+            "endTime": 10.150540532944133,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2027-07-30",
+          "name": "Kamika Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 5.696817847073943,
+            "endTime": 10.203812203092198,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2027-08-12",
+          "name": "Pavitraropana Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 9.60736881941557,
+            "endTime": 10.227361528840301,
+            "startReason": 2,
+            "endReason": 1
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2027-08-28",
+          "name": "Annada Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 5.958182696907933,
+            "endTime": 9.619971636682749,
+            "startReason": 4,
+            "endReason": 5
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2027-09-12",
+          "name": "Parsva Ekadasi",
+          "type": 272,
+          "parana": {
+            "startTime": 6.081389081455823,
+            "endTime": 6.0882110595703125,
+            "startReason": 4,
+            "endReason": 3
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2027-09-26",
+          "name": "Indira Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.1965196280047845,
+            "endTime": 10.199740192832158,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2027-10-11",
+          "name": "Pasankusa Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.3312816515272985,
+            "endTime": 10.194307596183002,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2027-10-26",
+          "name": "Rama Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.488084610901152,
+            "endTime": 10.216974921921539,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2027-11-10",
+          "name": "Utthana Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.670258454350977,
+            "endTime": 10.143219877034426,
+            "startReason": 4,
+            "endReason": 5
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2027-11-24",
+          "name": "Utpanna Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.854761869890586,
+            "endTime": 10.37249687101285,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2027-12-09",
+          "name": "Moksada Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 9.246067207306623,
+            "endTime": 10.499830272091849,
+            "startReason": 2,
+            "endReason": 1
+          },
+          "paranaOffset": 5.5
+        },
+        {
+          "date": "2027-12-23",
+          "name": "Saphala Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 7.180305867693414,
+            "endTime": 10.621213383187655,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 5.5
+        }
+      ],
+      "new-york": [
+        {
+          "date": "2027-01-03",
+          "name": "Saphala Ekadasi",
+          "type": 259,
+          "parana": {
+            "startTime": 8.33725588092419,
+            "endTime": 8.793989587575197,
+            "startReason": 4,
+            "endReason": 5
+          },
+          "paranaOffset": -4.0
+        },
+        {
+          "date": "2027-01-18",
+          "name": "Putrada Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 8.267881651716063,
+            "endTime": 11.499356315546578,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": -4.0
+        },
+        {
+          "date": "2027-02-01",
+          "name": "Sat-tila Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 8.371148545295,
+            "endTime": 11.472426084446807,
+            "startReason": 2,
+            "endReason": 1
+          },
+          "paranaOffset": -4.0
+        },
+        {
+          "date": "2027-02-17",
+          "name": "Bhaimi Ekadasi",
+          "type": 260,
+          "parana": {
+            "startTime": 7.768960064542957,
+            "endTime": 11.369689781188603,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": -4.0
+        },
+        {
+          "date": "2027-03-03",
+          "name": "Vijaya Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.426386825266409,
+            "endTime": 10.231463926066137,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": -5.0
+        },
+        {
+          "date": "2027-03-18",
+          "name": "Amalaki vrata Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 7.022683328366616,
+            "endTime": 11.053479504878592,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": -4.0
+        },
+        {
+          "date": "2027-04-02",
+          "name": "Papamocani Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.610059407854334,
+            "endTime": 10.866303856149534,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": -4.0
+        },
+        {
+          "date": "2027-04-16",
+          "name": "Kamada Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.2421052851974235,
+            "endTime": 10.70249244705104,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": -4.0
+        },
+        {
+          "date": "2027-05-02",
+          "name": "Varuthini Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 5.872794977218594,
+            "endTime": 10.54928020190046,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": -4.0
+        },
+        {
+          "date": "2027-05-16",
+          "name": "Mohini Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 5.62145820876966,
+            "endTime": 6.9974958114326,
+            "startReason": 4,
+            "endReason": 5
+          },
+          "paranaOffset": -4.0
+        },
+        {
+          "date": "2027-05-31",
+          "name": "Apara Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 5.89780542626977,
+            "endTime": 10.418363464204074,
+            "startReason": 2,
+            "endReason": 1
+          },
+          "paranaOffset": -4.0
+        },
+        {
+          "date": "2027-06-14",
+          "name": "Pandava Nirjala Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 5.404327956632796,
+            "endTime": 10.430344465352476,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": -4.0
+        },
+        {
+          "date": "2027-06-30",
+          "name": "Yogini Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 5.475557432603517,
+            "endTime": 8.772623166441917,
+            "startReason": 4,
+            "endReason": 5
+          },
+          "paranaOffset": -4.0
+        },
+        {
+          "date": "2027-07-13",
+          "name": "Sayana Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 10.0743911229074,
+            "endTime": 10.557193545429335,
+            "startReason": 2,
+            "endReason": 1
+          },
+          "paranaOffset": -4.0
+        },
+        {
+          "date": "2027-07-29",
+          "name": "Kamika Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 5.844446165480413,
+            "endTime": 10.639296637589537,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": -4.0
+        },
+        {
+          "date": "2027-08-12",
+          "name": "Pavitraropana Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.070231919005876,
+            "endTime": 10.696465568040212,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": -4.0
+        },
+        {
+          "date": "2027-08-28",
+          "name": "Annada Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.332316077165033,
+            "endTime": 10.739871030707613,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": -4.0
+        },
+        {
+          "date": "2027-09-11",
+          "name": "Parsva Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.5595538633757124,
+            "endTime": 10.763832430074652,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": -4.0
+        },
+        {
+          "date": "2027-09-26",
+          "name": "Indira Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.80541020762151,
+            "endTime": 7.446073353290558,
+            "startReason": 4,
+            "endReason": 5
+          },
+          "paranaOffset": -4.0
+        },
+        {
+          "date": "2027-10-10",
+          "name": "Pasankusa Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 11.184049781411886,
+            "endTime": -1.0,
+            "startReason": 2,
+            "endReason": 0
+          },
+          "paranaOffset": -4.0
+        },
+        {
+          "date": "2027-10-25",
+          "name": "Rama Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 7.320470089962332,
+            "endTime": 10.881343820377715,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": -4.0
+        },
+        {
+          "date": "2027-11-09",
+          "name": "Utthana Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.612280418160137,
+            "endTime": 9.97847066786707,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": -5.0
+        },
+        {
+          "date": "2027-11-23",
+          "name": "Utpanna Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 7.3822784051299095,
+            "endTime": 10.1000089332389,
+            "startReason": 2,
+            "endReason": 1
+          },
+          "paranaOffset": -5.0
+        },
+        {
+          "date": "2027-12-09",
+          "name": "Moksada Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 8.148445550611825,
+            "endTime": 11.257262721844215,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": -4.0
+        },
+        {
+          "date": "2027-12-23",
+          "name": "Saphala Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 8.297422743177885,
+            "endTime": 11.38332134587904,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": -4.0
+        }
+      ],
+      "london": [
+        {
+          "date": "2027-01-03",
+          "name": "Saphala Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 9.094690096278397,
+            "endTime": 11.759071572070669,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2027-01-18",
+          "name": "Putrada Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 8.932595391659325,
+            "endTime": 11.770785692568028,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2027-02-02",
+          "name": "Sat-tila Ekadasi",
+          "type": 259,
+          "parana": {
+            "startTime": 8.601564890419668,
+            "endTime": 9.3697381131351,
+            "startReason": 4,
+            "endReason": 5
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2027-02-17",
+          "name": "Bhaimi Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 8.151438879943111,
+            "endTime": 9.990367103368044,
+            "startReason": 4,
+            "endReason": 5
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2027-03-03",
+          "name": "Vijaya Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 8.558194041252136,
+            "endTime": 10.36250936986486,
+            "startReason": 2,
+            "endReason": 1
+          },
+          "paranaOffset": 0.0
+        },
+        {
+          "date": "2027-03-18",
+          "name": "Amalaki vrata Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.103864198972227,
+            "endTime": 10.132820313780513,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 0.0
+        },
+        {
+          "date": "2027-04-02",
+          "name": "Papamocani Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.534689657685172,
+            "endTime": 10.893699491575251,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2027-04-17",
+          "name": "Kamada Ekadasi",
+          "type": 256,
+          "parana": {
+            "startTime": 5.985403485683306,
+            "endTime": 10.666991865389242,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2027-05-02",
+          "name": "Varuthini Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 5.487831475887621,
+            "endTime": 10.473353980111755,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2027-05-16",
+          "name": "Mohini Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 5.103971290452044,
+            "endTime": 10.33902929648464,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2027-06-01",
+          "name": "Apara Ekadasi",
+          "type": 260,
+          "parana": {
+            "startTime": 4.8081263113157435,
+            "endTime": 10.256117797790832,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2027-06-14",
+          "name": "Pandava Nirjala Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 4.712918644482872,
+            "endTime": 10.249787648837248,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2027-06-30",
+          "name": "Yogini Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 4.790303228041778,
+            "endTime": 10.31019206567174,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2027-07-14",
+          "name": "Sayana Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 5.00978969485125,
+            "endTime": 10.203873857855797,
+            "startReason": 4,
+            "endReason": 5
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2027-07-29",
+          "name": "Kamika Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.016422521322966,
+            "endTime": 10.52105982914118,
+            "startReason": 2,
+            "endReason": 1
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2027-08-12",
+          "name": "Pavitraropana Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 5.70553872588291,
+            "endTime": 10.622905831283923,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2027-08-28",
+          "name": "Annada Ekadasi",
+          "type": 260,
+          "parana": {
+            "startTime": 6.129975947952691,
+            "endTime": 10.720849726215963,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2027-09-11",
+          "name": "Parsva Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.501424905752187,
+            "endTime": 10.793200809915504,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2027-09-26",
+          "name": "Indira Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.901990512035145,
+            "endTime": 10.868242681232337,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2027-10-11",
+          "name": "Pasankusa Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 7.314394066380514,
+            "endTime": 10.955941063334416,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2027-10-25",
+          "name": "Rama Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 7.715550593109945,
+            "endTime": 11.061896325147528,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2027-11-09",
+          "name": "Utthana Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 10.943815305829048,
+            "endTime": 11.208293395429523,
+            "startReason": 2,
+            "endReason": 1
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2027-11-24",
+          "name": "Utpanna Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 8.574777414681598,
+            "endTime": 11.382509215667831,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2027-12-09",
+          "name": "Moksada Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 8.91046237557263,
+            "endTime": 11.559779812326239,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 1.0
+        },
+        {
+          "date": "2027-12-23",
+          "name": "Saphala Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 9.083050611095354,
+            "endTime": 11.693968605690827,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 1.0
+        }
+      ],
+      "sydney": [
+        {
+          "date": "2027-01-04",
+          "name": "Saphala Ekadasi",
+          "type": 262,
+          "parana": {
+            "startTime": 5.840335377755401,
+            "endTime": 10.615227710307629,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 11.0
+        },
+        {
+          "date": "2027-01-19",
+          "name": "Putrada Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.068156116092831,
+            "endTime": 10.216227408498526,
+            "startReason": 4,
+            "endReason": 5
+          },
+          "paranaOffset": 11.0
+        },
+        {
+          "date": "2027-02-02",
+          "name": "Sat-tila Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.3012178250263045,
+            "endTime": 10.86300205238939,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 11.0
+        },
+        {
+          "date": "2027-02-17",
+          "name": "Bhaimi Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.543064980204871,
+            "endTime": 10.94578909570061,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 11.0
+        },
+        {
+          "date": "2027-03-04",
+          "name": "Vijaya Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.763403959368064,
+            "endTime": 10.99333429422828,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 11.0
+        },
+        {
+          "date": "2027-03-19",
+          "name": "Amalaki vrata Ekadasi",
+          "type": 260,
+          "parana": {
+            "startTime": 6.963300786458414,
+            "endTime": 11.016096778125846,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 11.0
+        },
+        {
+          "date": "2027-04-03",
+          "name": "Papamocani Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.151520568318334,
+            "endTime": 8.974617797881365,
+            "startReason": 4,
+            "endReason": 5
+          },
+          "paranaOffset": 10.0
+        },
+        {
+          "date": "2027-04-17",
+          "name": "Kamada Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.325284431826572,
+            "endTime": 10.046567920304708,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 10.0
+        },
+        {
+          "date": "2027-05-02",
+          "name": "Varuthini Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.513850820211509,
+            "endTime": 10.0816240041374,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 10.0
+        },
+        {
+          "date": "2027-05-16",
+          "name": "Mohini Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.687595103174763,
+            "endTime": 10.13375801853621,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 10.0
+        },
+        {
+          "date": "2027-06-01",
+          "name": "Apara Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.864390330547216,
+            "endTime": 10.210305808717548,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 10.0
+        },
+        {
+          "date": "2027-06-15",
+          "name": "Pandava Nirjala Ekadasi",
+          "type": 256,
+          "parana": {
+            "startTime": 6.97433200119955,
+            "endTime": 7.04496493935585,
+            "startReason": 4,
+            "endReason": 5
+          },
+          "paranaOffset": 10.0
+        },
+        {
+          "date": "2027-06-30",
+          "name": "Yogini Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 7.01748357460649,
+            "endTime": 10.32795303354382,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 10.0
+        },
+        {
+          "date": "2027-07-14",
+          "name": "Sayana Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.9717131060562565,
+            "endTime": 10.337476084192325,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 10.0
+        },
+        {
+          "date": "2027-07-30",
+          "name": "Kamika Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.815186027302956,
+            "endTime": 6.832626823335886,
+            "startReason": 4,
+            "endReason": 5
+          },
+          "paranaOffset": 10.0
+        },
+        {
+          "date": "2027-08-13",
+          "name": "Pavitraropana Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.598456583726476,
+            "endTime": 9.876387801021338,
+            "startReason": 4,
+            "endReason": 5
+          },
+          "paranaOffset": 10.0
+        },
+        {
+          "date": "2027-08-28",
+          "name": "Annada Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.304186754432655,
+            "endTime": 10.062817768398679,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 10.0
+        },
+        {
+          "date": "2027-09-11",
+          "name": "Parsva Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.775195252150297,
+            "endTime": 9.907888264259078,
+            "startReason": 2,
+            "endReason": 1
+          },
+          "paranaOffset": 10.0
+        },
+        {
+          "date": "2027-09-26",
+          "name": "Indira Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 5.645085495205411,
+            "endTime": 9.73313918838626,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 10.0
+        },
+        {
+          "date": "2027-10-11",
+          "name": "Pasankusa Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.307888158153486,
+            "endTime": 10.57014561977791,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 11.0
+        },
+        {
+          "date": "2027-10-26",
+          "name": "Rama Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 6.009273973500198,
+            "endTime": 6.585232228040695,
+            "startReason": 4,
+            "endReason": 5
+          },
+          "paranaOffset": 11.0
+        },
+        {
+          "date": "2027-11-10",
+          "name": "Utthana Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 5.778348602655999,
+            "endTime": 10.363242134727033,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 11.0
+        },
+        {
+          "date": "2027-11-24",
+          "name": "Utpanna Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 5.648582472928565,
+            "endTime": 10.35081451833624,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 11.0
+        },
+        {
+          "date": "2027-12-10",
+          "name": "Moksada Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 5.623009044696429,
+            "endTime": 8.413925487548113,
+            "startReason": 4,
+            "endReason": 5
+          },
+          "paranaOffset": 11.0
+        },
+        {
+          "date": "2027-12-24",
+          "name": "Saphala Ekadasi",
+          "type": 257,
+          "parana": {
+            "startTime": 5.709587564634395,
+            "endTime": 10.512757494100384,
+            "startReason": 4,
+            "endReason": 1
+          },
+          "paranaOffset": 11.0
+        }
+      ]
+    }
+  },
+  "note": "Unmodified public Python port output, retained as a comparator rather than authoritative religious guidance. See PANCHANG_RESEARCH.md for sentinel diagnostic."
+}
