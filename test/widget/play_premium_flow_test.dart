@@ -217,6 +217,53 @@ void main() {
     expect(billing.bought, ['lifetime']);
   });
 
+  testWidgets('A cancelled subscriber is told and can reactivate', (
+    tester,
+  ) async {
+    final premium = PremiumService(entitlements: PremiumFixture())
+      ..applyOwned(
+        {PremiumService.subscriptionId},
+        autoRenewing: {PremiumService.subscriptionId: false},
+      );
+    addTearDown(premium.dispose);
+    final billing = await pumpPaywall(tester, premium, currentPlan: 'monthly');
+    expect(
+      find.text(lang.translate('premium_cancelled_title')),
+      findsOneWidget,
+    );
+    await tester.tap(find.byKey(const Key('premium_plan_monthly')));
+    await tester.pumpAndSettle();
+    expect(ctaLabel(tester), contains(lang.translate('premium_reactivate')));
+    await tester.tap(find.byKey(const Key('premium_buy')));
+    await tester.pumpAndSettle();
+    expect(billing.bought, ['monthly']);
+  });
+
+  testWidgets('The paywall says why it opened after the free sync', (
+    tester,
+  ) async {
+    final premium = freeUser(PremiumFixture());
+    final billing = FixtureBilling(premium);
+    addTearDown(billing.dispose);
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider.value(value: lang),
+          ChangeNotifierProvider.value(value: premium),
+        ],
+        child: MaterialApp(
+          home: PremiumScreen(
+            billingOverride: billing,
+            reasonKey: 'google_free_sync_used',
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('premium_reason')), findsOneWidget);
+    expect(find.text(lang.translate('google_free_sync_used')), findsOneWidget);
+  });
+
   testWidgets('Paywall plans fit a 320dp phone with large text', (
     tester,
   ) async {
@@ -314,6 +361,14 @@ void main() {
     await tester.tap(find.byKey(const Key('import_google_year')));
     await tester.pumpAndSettle();
     expect(find.byType(PremiumScreen), findsOneWidget);
+    // ...and the paywall says why it opened.
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('premium_reason')),
+        matching: find.text(lang.translate('google_free_sync_used')),
+      ),
+      findsOneWidget,
+    );
     expect(google.min, isNull);
   });
 
@@ -392,6 +447,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Import selected'), findsNothing);
     expect(find.byType(PremiumScreen), findsOneWidget);
+    expect(find.text(lang.translate('free_sync_unverified')), findsOneWidget);
     await tester.tap(find.byKey(const Key('premium_close')));
     await tester.pumpAndSettle();
     expect(google.min, isNull);

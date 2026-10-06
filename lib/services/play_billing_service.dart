@@ -39,7 +39,7 @@ DateTime? playPurchaseTime(PurchaseDetails purchase) {
 /// Reads owned purchases from Google Play Billing on this device and
 /// acknowledges any completed purchase Play still holds unacknowledged
 /// (Play refunds purchases left unacknowledged for three days).
-class PlayStoreEntitlements implements PlayEntitlementSource {
+class PlayStoreEntitlements extends PlayEntitlementSource {
   PlayStoreEntitlements({
     Future<List<PurchaseDetails>> Function()? query,
     Future<void> Function(PurchaseDetails purchase)? acknowledge,
@@ -63,8 +63,12 @@ class PlayStoreEntitlements implements PlayEntitlementSource {
   }
 
   @override
+  Map<String, bool> autoRenewing = const {};
+
+  @override
   Future<Map<String, DateTime?>> ownedProducts() async {
     final owned = <String, DateTime?>{};
+    final renewing = <String, bool>{};
     for (final purchase in await _query()) {
       if (!{
             PremiumService.subscriptionId,
@@ -74,8 +78,13 @@ class PlayStoreEntitlements implements PlayEntitlementSource {
         continue;
       }
       owned[purchase.productID] = playPurchaseTime(purchase);
+      if (purchase is GooglePlayPurchaseDetails) {
+        renewing[purchase.productID] =
+            purchase.billingClientPurchase.isAutoRenewing;
+      }
       if (purchase.pendingCompletePurchase) await _acknowledge(purchase);
     }
+    autoRenewing = renewing;
     return owned;
   }
 }
@@ -106,22 +115,13 @@ class PlayBillingService extends ChangeNotifier {
   String? _requestedPlan;
   static const planHintKey = 'premium_plan_hint';
 
-  /// Google Play only accepts CHARGE_FULL_PRICE ("charge immediately") or
-  /// WITHOUT_PRORATION ("charge at the next billing date") when switching
-  /// base plans within the same subscription; any other mode makes Play show
-  /// "Something went wrong". Upgrading to yearly starts now; moving to
-  /// monthly keeps the paid year and charges monthly from the next renewal.
-  static ReplacementMode replacementModeFor(String targetPlanId) =>
-      targetPlanId == 'yearly'
-      ? ReplacementMode.chargeFullPrice
-      : ReplacementMode.withoutProration;
-
   /// Like other subscription apps, a subscriber can still switch between
   /// monthly and yearly or buy lifetime; lifetime owners need nothing more.
+  /// A cancelled subscriber may also reactivate their current plan.
   bool canBuy(PremiumPlan plan) {
     if (pending || premium.lifetime) return false;
     if (plan.id == 'lifetime' || !premium.subscribed) return true;
-    return plan.id != currentPlanId;
+    return plan.id != currentPlanId || premium.subscriptionCancelled;
   }
 
   Future<void> initialize() async {
@@ -184,7 +184,8 @@ class PlayBillingService extends ChangeNotifier {
     for (final purchase in values) {
       debugPrint(
         'Google Play purchase update: ${purchase.productID} '
-        '${purchase.status.name}',
+        '${purchase.status.name} ${purchase.error?.code ?? ''} '
+        '${purchase.error?.message ?? ''} ${purchase.error?.details ?? ''}',
       );
       if (!{subscription, lifetime}.contains(purchase.productID)) continue;
       switch (purchase.status) {
@@ -244,19 +245,13 @@ class PlayBillingService extends ChangeNotifier {
             .subscriptionOfferDetails![product.subscriptionIndex!]
             .offerIdToken;
       }
-      // Switching monthly <-> yearly replaces the current subscription.
-      final old = offer != null && premium.subscribed
-          ? await _ownedSubscription()
-          : null;
+      // Switching between monthly and yearly (base plans of the same
+      // subscription) and reactivating a cancelled plan are plain purchases:
+      // Google says to send no SubscriptionUpdateParams; Play replaces the
+      // old plan using the Play Console's default replacement mode.
       final param = GooglePlayPurchaseParam(
         productDetails: product,
         offerToken: offer,
-        changeSubscriptionParam: old == null
-            ? null
-            : ChangeSubscriptionParam(
-                oldPurchaseDetails: old,
-                replacementMode: replacementModeFor(plan.id),
-              ),
       );
       if (!await store.buyNonConsumable(purchaseParam: param)) {
         error = 'premium_unavailable';
@@ -266,19 +261,6 @@ class PlayBillingService extends ChangeNotifier {
       error = 'premium_unavailable';
     }
     _notify();
-  }
-
-  Future<GooglePlayPurchaseDetails?> _ownedSubscription() async {
-    final addition = store
-        .getPlatformAddition<InAppPurchaseAndroidPlatformAddition>();
-    final response = await addition.queryPastPurchases();
-    for (final purchase in response.pastPurchases) {
-      if (purchase.productID == subscription &&
-          isCompletedPlayPurchase(purchase)) {
-        return purchase;
-      }
-    }
-    return null;
   }
 
   /// Restores from Google Play's owned purchases; no account sign-in needed.

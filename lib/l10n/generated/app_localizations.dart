@@ -1806,6 +1806,30 @@ abstract class AppLocalizations {
   /// **'one-time'**
   String get premium_one_time;
 
+  /// No description provided for @premium_cancelled_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription cancelled'**
+  String get premium_cancelled_title;
+
+  /// No description provided for @premium_cancelled_body.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium stays on until the end of the period you paid for. Reactivate anytime to keep it.'**
+  String get premium_cancelled_body;
+
+  /// No description provided for @premium_reactivate.
+  ///
+  /// In en, this message translates to:
+  /// **'Reactivate'**
+  String get premium_reactivate;
+
+  /// No description provided for @free_sync_unverified.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t check your free sync. Check your connection, or get Premium.'**
+  String get free_sync_unverified;
+
   /// No description provided for @premium_upgrade.
   ///
   /// In en, this message translates to:

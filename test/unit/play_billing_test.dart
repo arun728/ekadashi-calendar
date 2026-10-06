@@ -162,24 +162,27 @@ void main() {
     await store.updates.close();
   });
 
-  test('checkout needs no Google sign-in; lifetime cannot be bought twice', () async {
-    final store = Store();
-    InAppPurchasePlatform.instance = store;
-    final premium = PremiumService(
-      entitlements: PremiumFixture()..premium = false,
-    );
-    final billing = PlayBillingService(premium);
-    await billing.initialize();
-    await billing.buy(billing.plans.single);
-    expect(store.bought, 1);
-    expect(store.param!.applicationUserName, isNull);
-    premium.applyOwned({PremiumService.lifetimeId});
-    await billing.buy(billing.plans.single);
-    expect(store.bought, 1);
-    billing.dispose();
-    premium.dispose();
-    await store.updates.close();
-  });
+  test(
+    'checkout needs no Google sign-in; lifetime cannot be bought twice',
+    () async {
+      final store = Store();
+      InAppPurchasePlatform.instance = store;
+      final premium = PremiumService(
+        entitlements: PremiumFixture()..premium = false,
+      );
+      final billing = PlayBillingService(premium);
+      await billing.initialize();
+      await billing.buy(billing.plans.single);
+      expect(store.bought, 1);
+      expect(store.param!.applicationUserName, isNull);
+      premium.applyOwned({PremiumService.lifetimeId});
+      await billing.buy(billing.plans.single);
+      expect(store.bought, 1);
+      billing.dispose();
+      premium.dispose();
+      await store.updates.close();
+    },
+  );
 
   test('restore re-reads what Google Play owns', () async {
     final store = Store();
@@ -253,6 +256,56 @@ void main() {
       await store.updates.close();
     },
   );
+
+  test('switching plans within the subscription is a plain purchase', () async {
+    // Google: a different base plan of the same subscription is bought as a
+    // regular purchase with no SubscriptionUpdateParams; Play replaces the
+    // old plan using the Play Console's default replacement mode.
+    final store = Store();
+    InAppPurchasePlatform.instance = store;
+    final offers = [
+      for (final pair in [('yearly', 'year-token'), ('monthly', 'month-token')])
+        SubscriptionOfferDetailsWrapper(
+          basePlanId: pair.$1,
+          offerIdToken: pair.$2,
+          offerTags: const [],
+          pricingPhases: const [
+            PricingPhaseWrapper(
+              billingCycleCount: 0,
+              billingPeriod: 'P1M',
+              formattedPrice: '₹99',
+              priceAmountMicros: 99000000,
+              priceCurrencyCode: 'INR',
+              recurrenceMode: RecurrenceMode.infiniteRecurring,
+            ),
+          ],
+        ),
+    ];
+    store.catalog = GooglePlayProductDetails.fromProductDetails(
+      ProductDetailsWrapper(
+        description: 'Premium',
+        name: 'Premium',
+        productId: PlayBillingService.subscription,
+        productType: ProductType.subs,
+        title: 'Premium',
+        subscriptionOfferDetails: offers,
+      ),
+    );
+    final premium = PremiumService(entitlements: PremiumFixture());
+    final billing = PlayBillingService(premium);
+    await billing.initialize();
+    premium.applyOwned({PremiumService.subscriptionId});
+    billing.currentPlanId = 'monthly';
+    await billing.buy(billing.plans.firstWhere((p) => p.id == 'yearly'));
+    expect(store.bought, 1);
+    final param = store.param as GooglePlayPurchaseParam;
+    expect(param.offerToken, 'year-token');
+    expect(param.changeSubscriptionParam, isNull);
+    expect(billing.error, isNull);
+    billing.dispose();
+    premium.dispose();
+    await store.updates.close();
+  });
 
   group('owned purchases from Google Play', () {
     test(

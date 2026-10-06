@@ -907,6 +907,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premium_one_time => 'one-time';
 
   @override
+  String get premium_cancelled_title => 'Subscription cancelled';
+
+  @override
+  String get premium_cancelled_body =>
+      'Premium stays on until the end of the period you paid for. Reactivate anytime to keep it.';
+
+  @override
+  String get premium_reactivate => 'Reactivate';
+
+  @override
+  String get free_sync_unverified =>
+      'Couldn\'t check your free sync. Check your connection, or get Premium.';
+
+  @override
   String get premium_upgrade => 'Upgrade';
 
   @override

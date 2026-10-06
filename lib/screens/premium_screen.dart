@@ -5,12 +5,16 @@ import '../services/language_service.dart';
 import '../services/premium_service.dart';
 import '../services/play_billing_service.dart';
 
+/// Opens the paywall; [reasonKey] is a translation key saying why (for
+/// example, the free Google Calendar sync was used).
 Future<void> openPremium(
   BuildContext context, {
   String currentTimezone = 'IST',
+  String? reasonKey,
 }) => Navigator.of(context).push(
   MaterialPageRoute<void>(
-    builder: (_) => PremiumScreen(currentTimezone: currentTimezone),
+    builder: (_) =>
+        PremiumScreen(currentTimezone: currentTimezone, reasonKey: reasonKey),
   ),
 );
 
@@ -21,9 +25,13 @@ class PremiumScreen extends StatefulWidget {
     super.key,
     this.billingOverride,
     this.currentTimezone = 'IST',
+    this.reasonKey,
   });
   final PlayBillingService? billingOverride;
   final String currentTimezone;
+
+  /// Why the paywall opened, shown above the plans (translation key).
+  final String? reasonKey;
 
   static const privacyUrl =
       'https://arun728.github.io/ekadashi-calendar/privacy-policy';
@@ -338,12 +346,46 @@ class _PremiumScreenState extends State<PremiumScreen> {
                         Padding(
                           key: const Key('premium_active'),
                           padding: const EdgeInsets.only(bottom: 12),
-                          child: _statusCard(
-                            title: lang.translate('premium_subscriber_title'),
-                            body: lang.translate('premium_subscriber_body'),
-                          ),
+                          child: premium.subscriptionCancelled
+                              ? _statusCard(
+                                  color: Colors.orange,
+                                  title: lang.translate(
+                                    'premium_cancelled_title',
+                                  ),
+                                  body: lang.translate(
+                                    'premium_cancelled_body',
+                                  ),
+                                )
+                              : _statusCard(
+                                  title: lang.translate(
+                                    'premium_subscriber_title',
+                                  ),
+                                  body: lang.translate(
+                                    'premium_subscriber_body',
+                                  ),
+                                ),
                         ),
                       ] else ...[
+                        if (widget.reasonKey != null)
+                          Padding(
+                            key: const Key('premium_reason'),
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Icon(Icons.info_outline, color: _teal),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    lang.translate(widget.reasonKey!),
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         _feature(
                           Icons.sync,
                           lang.translate('premium_feature_calendar'),
@@ -413,7 +455,10 @@ class _PremiumScreenState extends State<PremiumScreen> {
                               ? () => _buy(lang, selected)
                               : null,
                           child: Text(
-                            '${lang.translate('premium_${selected.id}')} · ${selected.price}',
+                            premium.subscriptionCancelled &&
+                                    selected.id == billing.currentPlanId
+                                ? '${lang.translate('premium_reactivate')} · ${selected.price}'
+                                : '${lang.translate('premium_${selected.id}')} · ${selected.price}',
                             textAlign: TextAlign.center,
                           ),
                         ),

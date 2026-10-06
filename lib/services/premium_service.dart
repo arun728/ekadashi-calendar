@@ -1,11 +1,16 @@
 import 'package:flutter/foundation.dart';
 
 /// What Google Play Billing reports as currently owned on this device.
-abstract interface class PlayEntitlementSource {
+abstract class PlayEntitlementSource {
   /// Product IDs in the PURCHASED state (an active or grace-period
   /// subscription, or the lifetime product) mapped to the purchase time Play
   /// reports, when known. Throws when Play is unavailable.
   Future<Map<String, DateTime?>> ownedProducts();
+
+  /// Whether each owned product renews automatically, from the last
+  /// [ownedProducts] call. A cancelled subscription stays owned (and
+  /// Premium stays on) until the period already paid for ends.
+  Map<String, bool> get autoRenewing => const {};
 }
 
 /// Premium access comes only from Google Play's purchase record. It is never
@@ -27,6 +32,10 @@ class PremiumService extends ChangeNotifier {
   DateTime? purchasedAt;
 
   bool get isPremium => subscribed || lifetime;
+
+  /// The subscription was cancelled in Google Play but the paid period has
+  /// not ended yet, so Premium stays on until it does (Google's rule).
+  bool subscriptionCancelled = false;
 
   bool _confirmedByPlay = false;
 
@@ -74,10 +83,12 @@ class PremiumService extends ChangeNotifier {
   void applyOwned(
     Set<String> owned, {
     Map<String, DateTime?> purchasedAt = const {},
+    Map<String, bool> autoRenewing = const {},
   }) {
     if (_disposed) return;
     subscribed = owned.contains(subscriptionId);
     lifetime = owned.contains(lifetimeId);
+    subscriptionCancelled = subscribed && autoRenewing[subscriptionId] == false;
     _confirmedByPlay = true;
     // The subscription's year governs syncing while it is active.
     this.purchasedAt = subscribed
@@ -113,13 +124,18 @@ class PremiumService extends ChangeNotifier {
       final owned = await entitlements.ownedProducts();
       if (_disposed) return;
       busy = false;
-      applyOwned(owned.keys.toSet(), purchasedAt: owned);
+      applyOwned(
+        owned.keys.toSet(),
+        purchasedAt: owned,
+        autoRenewing: entitlements.autoRenewing,
+      );
     } catch (_) {
       if (_disposed) return;
       busy = false;
       _confirmedByPlay = false;
       subscribed = false;
       lifetime = false;
+      subscriptionCancelled = false;
       purchasedAt = null;
       error = 'premium_unavailable';
       _notify();

@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
-import 'package:in_app_purchase_android/billing_client_wrappers.dart';
 import 'package:ekadashi_calendar/services/play_billing_service.dart';
 import 'package:ekadashi_calendar/services/premium_service.dart';
 import '../support/premium_fixture.dart';
@@ -69,17 +68,27 @@ void main() {
     expect(free.canBuy(monthly), isFalse);
   });
 
-  // Google Play: switching base plans within the same subscription only
-  // accepts CHARGE_FULL_PRICE or WITHOUT_PRORATION; any other mode fails
-  // with "Something went wrong on our end".
-  test('switching to yearly charges now; switching to monthly at renewal', () {
-    expect(
-      PlayBillingService.replacementModeFor('yearly'),
-      ReplacementMode.chargeFullPrice,
-    );
-    expect(
-      PlayBillingService.replacementModeFor('monthly'),
-      ReplacementMode.withoutProration,
-    );
+  test('a cancelled subscription can be reactivated on the same plan', () {
+    // Google: show a cancelled-but-active subscriber a Reactivate option for
+    // the same plan (bought with the normal purchase flow).
+    final premium = PremiumService(entitlements: PremiumFixture())
+      ..applyOwned(
+        {PremiumService.subscriptionId},
+        autoRenewing: {PremiumService.subscriptionId: false},
+      );
+    expect(premium.subscriptionCancelled, isTrue);
+    expect(premium.isPremium, isTrue);
+    final billing = billingFor(premium)..currentPlanId = 'monthly';
+    expect(billing.canBuy(monthly), isTrue);
+  });
+
+  test('an auto-renewing subscription is not reported as cancelled', () {
+    final premium = PremiumService(entitlements: PremiumFixture())
+      ..applyOwned(
+        {PremiumService.subscriptionId},
+        autoRenewing: {PremiumService.subscriptionId: true},
+      );
+    expect(premium.subscriptionCancelled, isFalse);
+    addTearDown(premium.dispose);
   });
 }

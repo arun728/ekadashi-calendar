@@ -306,10 +306,11 @@ class CalendarScreenState extends State<CalendarScreen> {
   bool _isPremium() => context.read<PremiumService?>()?.isPremium == true;
 
   /// Opens the paywall; true when the user now has premium.
-  Future<bool> _unlockPremium() async {
+  Future<bool> _unlockPremium({String? reasonKey}) async {
     await openPremium(
       context,
       currentTimezone: widget.currentTimezone ?? 'IST',
+      reasonKey: reasonKey,
     );
     return mounted && _isPremium();
   }
@@ -332,7 +333,7 @@ class CalendarScreenState extends State<CalendarScreen> {
     var premium = _isPremium();
     if (!premium && prefs.getBool(CalendarScreen.freeSyncUsedKey) == true) {
       // Continue straight into the import after a successful purchase.
-      if (!await _unlockPremium()) return;
+      if (!await _unlockPremium(reasonKey: 'google_free_sync_used')) return;
       premium = true;
     }
     setState(() => _syncing = true);
@@ -357,6 +358,7 @@ class CalendarScreenState extends State<CalendarScreen> {
         if (googleIdToken == null) throw StateError('No Google ID token');
       }
       var freeSyncAvailable = true;
+      var paywallReason = 'google_free_sync_used';
       if (!premium && googleIdToken != null) {
         try {
           if (await _registry!.isUsed(googleIdToken)) {
@@ -370,12 +372,13 @@ class CalendarScreenState extends State<CalendarScreen> {
           // Premium instead of an error. The free sync stays available.
           debugPrint('Free sync check failed: $error');
           freeSyncAvailable = false;
+          paywallReason = 'free_sync_unverified';
         }
       }
       if (!premium && !freeSyncAvailable) {
         if (!mounted) return;
         setState(() => _syncing = false);
-        if (!await _unlockPremium()) return;
+        if (!await _unlockPremium(reasonKey: paywallReason)) return;
         premium = true;
         setState(() => _syncing = true);
       }

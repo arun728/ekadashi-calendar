@@ -906,6 +906,20 @@ class AppLocalizationsTe extends AppLocalizations {
   String get premium_one_time => 'ఒకసారి';
 
   @override
+  String get premium_cancelled_title => 'సబ్‌స్క్రిప్షన్ రద్దయింది';
+
+  @override
+  String get premium_cancelled_body =>
+      'మీరు చెల్లించిన వ్యవధి ముగిసే వరకు Premium ఉంటుంది. కొనసాగించడానికి ఎప్పుడైనా మళ్లీ ప్రారంభించండి.';
+
+  @override
+  String get premium_reactivate => 'మళ్లీ ప్రారంభించండి';
+
+  @override
+  String get free_sync_unverified =>
+      'మీ ఉచిత సింక్‌ను తనిఖీ చేయలేకపోయాం. కనెక్షన్ చూడండి, లేదా Premium పొందండి.';
+
+  @override
   String get premium_upgrade => 'అప్‌గ్రేడ్';
 
   @override

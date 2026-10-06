@@ -907,6 +907,20 @@ class AppLocalizationsTa extends AppLocalizations {
   String get premium_one_time => 'ஒரு முறை';
 
   @override
+  String get premium_cancelled_title => 'சந்தா ரத்துசெய்யப்பட்டது';
+
+  @override
+  String get premium_cancelled_body =>
+      'நீங்கள் செலுத்திய காலம் முடியும் வரை Premium செயலில் இருக்கும். தொடர எப்போது வேண்டுமானாலும் மீண்டும் இயக்கலாம்.';
+
+  @override
+  String get premium_reactivate => 'மீண்டும் இயக்கு';
+
+  @override
+  String get free_sync_unverified =>
+      'உங்கள் இலவச ஒத்திசைவைச் சரிபார்க்க முடியவில்லை. இணைப்பைச் சரிபார்க்கவும் அல்லது Premium பெறவும்.';
+
+  @override
   String get premium_upgrade => 'மேம்படுத்து';
 
   @override

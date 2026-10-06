@@ -3,7 +3,7 @@ import 'package:ekadashi_calendar/services/premium_service.dart';
 import 'package:ekadashi_calendar/services/play_billing_service.dart';
 
 /// Test-only stand-in for what Google Play Billing reports as owned.
-class PremiumFixture implements PlayEntitlementSource {
+class PremiumFixture extends PlayEntitlementSource {
   bool premium = true;
   bool lifetime = false;
   bool fail = false;

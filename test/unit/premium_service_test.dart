@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ekadashi_calendar/services/premium_service.dart';
 import '../support/premium_fixture.dart';
 
-class DelayedSource implements PlayEntitlementSource {
+class DelayedSource extends PlayEntitlementSource {
   final response = Completer<Map<String, DateTime?>>();
   @override
   Future<Map<String, DateTime?>> ownedProducts() => response.future;

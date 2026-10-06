@@ -901,6 +901,20 @@ class AppLocalizationsHi extends AppLocalizations {
   String get premium_one_time => 'एक बार';
 
   @override
+  String get premium_cancelled_title => 'सदस्यता रद्द की गई';
+
+  @override
+  String get premium_cancelled_body =>
+      'भुगतान की गई अवधि के अंत तक Premium चालू रहेगा। इसे बनाए रखने के लिए कभी भी फिर से चालू करें।';
+
+  @override
+  String get premium_reactivate => 'फिर से चालू करें';
+
+  @override
+  String get free_sync_unverified =>
+      'आपका मुफ़्त सिंक जाँचा नहीं जा सका। अपना कनेक्शन जाँचें, या Premium लें।';
+
+  @override
   String get premium_upgrade => 'अपग्रेड';
 
   @override
