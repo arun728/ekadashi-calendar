@@ -1044,7 +1044,4 @@ class AppLocalizationsHi extends AppLocalizations {
   @override
   String get google_premium_events_removed =>
       'आपका प्रीमियम समाप्त हो गया है, इसलिए उससे सिंक किए गए Google इवेंट हटा दिए गए। फिर से सिंक करने के लिए नवीनीकरण करें।';
-
-  @override
-  String get more => 'और';
 }

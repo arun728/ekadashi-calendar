@@ -8,6 +8,7 @@ import '../services/premium_service.dart';
 import 'premium_screen.dart';
 import 'panchang_location_dialog.dart';
 import 'panchang_month_panels.dart';
+import 'panchang_tools.dart';
 import '../services/panchang/calculated_ekadashi.dart';
 import '../services/panchang/panchang_location_store.dart';
 
@@ -133,7 +134,7 @@ class _PanchangScreenState extends State<PanchangScreen> {
     );
     final colors = Theme.of(context).colorScheme;
     return DefaultTabController(
-      length: 4,
+      length: 6,
       child: SafeArea(
         top: false,
         child: Column(
@@ -150,6 +151,8 @@ class _PanchangScreenState extends State<PanchangScreen> {
                 Tab(text: 'Muhurta'),
                 Tab(text: 'Ekadashi'),
                 Tab(text: 'Rashi'),
+                Tab(text: 'Festivals'),
+                Tab(text: 'Guide'),
               ],
             ),
             Expanded(
@@ -187,14 +190,18 @@ class _PanchangScreenState extends State<PanchangScreen> {
                             onTraditionChanged: (value) =>
                                 setState(() => _tradition = value),
                           ),
+                        ] else if (_section == 5) ...[
+                          const PanchangGuide(),
                         ] else if (!premium) ...[
                           _buildUpgradeCard(context, colors),
                         ] else if (_section == 1) ...[
                           _buildTimingPanel(context, colors),
                           const SizedBox(height: 16),
                           _buildMuhurtaDetails(context),
-                        ] else ...[
+                        ] else if (_section == 3) ...[
                           _buildRashiDetails(context),
+                        ] else ...[
+                          const PanchangFestivalFinderCard(),
                         ],
                       ],
                     ),

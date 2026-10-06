@@ -56,7 +56,7 @@ void main() {
       'lib/screens/panchang_screen.dart',
       'lib/screens/panchang_location_dialog.dart',
       'lib/screens/panchang_month_panels.dart',
-      'lib/screens/more_screen.dart',
+      'lib/screens/panchang_tools.dart',
     };
     for (final file in [
       File('lib/main.dart'),

@@ -1053,7 +1053,4 @@ class AppLocalizationsTe extends AppLocalizations {
   @override
   String get google_premium_events_removed =>
       'మీ ప్రీమియం ముగిసింది, కాబట్టి దానితో సింక్ చేసిన Google ఈవెంట్లు తొలగించబడ్డాయి. మళ్లీ సింక్ చేయడానికి పునరుద్ధరించండి.';
-
-  @override
-  String get more => 'మరిన్ని';
 }

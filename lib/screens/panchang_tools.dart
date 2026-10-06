@@ -9,90 +9,84 @@ import '../services/premium_service.dart';
 import 'panchang_screen.dart';
 import 'premium_screen.dart';
 
-class MoreScreen extends StatelessWidget {
-  const MoreScreen({super.key});
+/// Free calculation notes shown in Panchang's Guide subtab.
+class PanchangGuide extends StatelessWidget {
+  const PanchangGuide({super.key});
   @override
-  Widget build(BuildContext context) => SafeArea(
-    top: false,
-    child: ListView(
-      padding: const EdgeInsets.all(20),
-      children: [
-        Text(
-          'Panchang tools',
-          style: Theme.of(context).textTheme.headlineMedium,
-        ),
-        const SizedBox(height: 16),
-        Card(
-          child: ListTile(
-            leading: const Icon(Icons.celebration_outlined),
-            title: const Text('Festival finder'),
-            subtitle: const Text(
-              'Browse calculated observances for your saved location',
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      const Card(
+        child: ExpansionTile(
+          leading: Icon(Icons.menu_book_outlined),
+          title: Text('Panchang guide'),
+          childrenPadding: EdgeInsets.all(16),
+          children: [
+            Text(
+              'Tithi measures the angular separation of Moon and Sun in 12° steps. Nakshatra divides the sidereal Moon’s path into 27 parts; each has four padas. Yoga divides the sum of sidereal Sun and Moon longitudes into 27 parts. Karana is half a tithi. Vara is the weekday.\n\nLimb labels are sampled at the selected location’s sunrise, with every subsequent change shown through the next sunrise. Times after local midnight carry a day marker.',
             ),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              if (!(context.read<PremiumService?>()?.isPremium ?? false)) {
-                openPremium(context, currentTimezone: 'IST');
-                return;
-              }
-              Navigator.push(
-                context,
-                MaterialPageRoute<void>(
-                  builder: (_) => const PanchangFestivalExplorer(),
-                ),
-              );
-            },
-          ),
+          ],
         ),
-        const Card(
-          child: ExpansionTile(
-            leading: Icon(Icons.menu_book_outlined),
-            title: Text('Panchang guide'),
-            childrenPadding: EdgeInsets.all(16),
-            children: [
-              Text(
-                'Tithi measures the angular separation of Moon and Sun in 12° steps. Nakshatra divides the sidereal Moon’s path into 27 parts; each has four padas. Yoga divides the sum of sidereal Sun and Moon longitudes into 27 parts. Karana is half a tithi. Vara is the weekday.\n\nLimb labels are sampled at the selected location’s sunrise, with every subsequent change shown through the next sunrise. Times after local midnight carry a day marker.',
-              ),
-            ],
-          ),
+      ),
+      const Card(
+        child: ExpansionTile(
+          leading: Icon(Icons.spa_outlined),
+          title: Text('Smarta and Vaishnava'),
+          childrenPadding: EdgeInsets.all(16),
+          children: [
+            Text(
+              'Smarta householders use the sunrise Ekadashi and the first day when it repeats. The Gaudiya/ISKCON profile also tests Arunodaya, 96 minutes before sunrise, and Mahadvadashi conditions.\n\nParana depends on sunrise, the end of Dwadashi, Hari Vasara, and the applicable special rule. A difference between profiles can be intentional. The calculated schedule is a preview while comparisons with independent calendars are completed; existing reminders and fasting history remain on the published schedule.',
+            ),
+          ],
         ),
-        const Card(
-          child: ExpansionTile(
-            leading: Icon(Icons.spa_outlined),
-            title: Text('Smarta and Vaishnava'),
-            childrenPadding: EdgeInsets.all(16),
-            children: [
-              Text(
-                'Smarta householders use the sunrise Ekadashi and the first day when it repeats. The Gaudiya/ISKCON profile also tests Arunodaya, 96 minutes before sunrise, and Mahadvadashi conditions.\n\nParana depends on sunrise, the end of Dwadashi, Hari Vasara, and the applicable special rule. A difference between profiles can be intentional. The calculated schedule is a preview while comparisons with independent calendars are completed; existing reminders and fasting history remain on the published schedule.',
-              ),
-            ],
-          ),
+      ),
+      const Card(
+        child: ExpansionTile(
+          leading: Icon(Icons.public),
+          title: Text('Location and calculation methods'),
+          childrenPadding: EdgeInsets.all(16),
+          children: [
+            Text(
+              'City search and Panchang calculations work offline. City selection supplies coordinates and an IANA timezone, including daylight-saving transitions. GPS is optional and its suggested timezone should be checked.\n\nSun and Moon positions use published astronomical formulas with a Lahiri sidereal offset. Rise/set estimates use the apparent upper limb and a level horizon. Mountains, elevation and unusual refraction can change observed times. When there is no complete solar day, sunrise-based periods and fasting recommendations are unavailable.\n\nRitu uses lunar months; Ayana is labelled with the tropical solstice convention. Muhurta labels are traditional timing categories, not guarantees of outcomes.',
+            ),
+          ],
         ),
-        const Card(
-          child: ExpansionTile(
-            leading: Icon(Icons.public),
-            title: Text('Location and calculation methods'),
-            childrenPadding: EdgeInsets.all(16),
-            children: [
-              Text(
-                'City search and Panchang calculations work offline. City selection supplies coordinates and an IANA timezone, including daylight-saving transitions. GPS is optional and its suggested timezone should be checked.\n\nSun and Moon positions use published astronomical formulas with a Lahiri sidereal offset. Rise/set estimates use the apparent upper limb and a level horizon. Mountains, elevation and unusual refraction can change observed times. When there is no complete solar day, sunrise-based periods and fasting recommendations are unavailable.\n\nRitu uses lunar months; Ayana is labelled with the tropical solstice convention. Muhurta labels are traditional timing categories, not guarantees of outcomes.',
-              ),
-            ],
-          ),
+      ),
+      const Card(
+        child: ExpansionTile(
+          leading: Icon(Icons.info_outline),
+          title: Text('Sources and coverage'),
+          childrenPadding: EdgeInsets.all(16),
+          children: [
+            Text(
+              'Astronomy: Meeus, Astronomical Algorithms; NOAA and USNO rise/set references. Fasting rules: separately modelled Smarta and Gaudiya profiles; the latter cross-reviewed against the published GCAL decision table.\n\nCities: GeoNames (geonames.org), CC BY 4.0. Timezones: IANA database distributed by the timezone package.\n\nRegional festival profiles, personal birth charts, horoscope matching and eclipse calculations are not yet included. This is not a claim of full Drik Panchang equivalence.',
+            ),
+          ],
         ),
-        const Card(
-          child: ExpansionTile(
-            leading: Icon(Icons.info_outline),
-            title: Text('Sources and coverage'),
-            childrenPadding: EdgeInsets.all(16),
-            children: [
-              Text(
-                'Astronomy: Meeus, Astronomical Algorithms; NOAA and USNO rise/set references. Fasting rules: separately modelled Smarta and Gaudiya profiles; the latter cross-reviewed against the published GCAL decision table.\n\nCities: GeoNames (geonames.org), CC BY 4.0. Timezones: IANA database distributed by the timezone package.\n\nRegional festival profiles, personal birth charts, horoscope matching and eclipse calculations are not yet included. This is not a claim of full Drik Panchang equivalence.',
-              ),
-            ],
-          ),
+      ),
+    ],
+  );
+}
+
+/// Entry to the premium festival finder in Panchang's Festivals subtab.
+class PanchangFestivalFinderCard extends StatelessWidget {
+  const PanchangFestivalFinderCard({super.key});
+  @override
+  Widget build(BuildContext context) => Card(
+    child: ListTile(
+      key: const Key('panchang_festival_finder'),
+      leading: const Icon(Icons.celebration_outlined),
+      title: const Text('Festival finder'),
+      subtitle: const Text(
+        'Browse calculated observances for your saved location',
+      ),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute<void>(
+          builder: (_) => const PanchangFestivalExplorer(),
         ),
-      ],
+      ),
     ),
   );
 }
@@ -154,7 +148,7 @@ class _PanchangFestivalExplorerState extends State<PanchangFestivalExplorer> {
           appBar: AppBar(title: const Text('Festival finder')),
           body: Center(
             child: FilledButton(
-              onPressed: () => openPremium(context),
+              onPressed: () => openPremium(context, currentTimezone: 'IST'),
               child: const Text('Unlock full Panchang'),
             ),
           ),
