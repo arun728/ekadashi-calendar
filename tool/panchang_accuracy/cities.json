@@ -1,0 +1,18 @@
+[
+  {"id": "new-delhi", "label": "New Delhi", "lat": 28.6139, "lon": 77.2090, "tz": "Asia/Kolkata"},
+  {"id": "mumbai", "label": "Mumbai", "lat": 19.0760, "lon": 72.8777, "tz": "Asia/Kolkata"},
+  {"id": "chennai", "label": "Chennai", "lat": 13.0827, "lon": 80.2707, "tz": "Asia/Kolkata"},
+  {"id": "kolkata", "label": "Kolkata", "lat": 22.5726, "lon": 88.3639, "tz": "Asia/Kolkata"},
+  {"id": "ujjain", "label": "Ujjain", "lat": 23.1765, "lon": 75.7885, "tz": "Asia/Kolkata"},
+  {"id": "kathmandu", "label": "Kathmandu", "lat": 27.7172, "lon": 85.3240, "tz": "Asia/Kathmandu"},
+  {"id": "dubai", "label": "Dubai", "lat": 25.2048, "lon": 55.2708, "tz": "Asia/Dubai"},
+  {"id": "singapore", "label": "Singapore", "lat": 1.3521, "lon": 103.8198, "tz": "Asia/Singapore"},
+  {"id": "london", "label": "London", "lat": 51.5074, "lon": -0.1278, "tz": "Europe/London"},
+  {"id": "johannesburg", "label": "Johannesburg", "lat": -26.2041, "lon": 28.0473, "tz": "Africa/Johannesburg"},
+  {"id": "new-york", "label": "New York", "lat": 40.7128, "lon": -74.0060, "tz": "America/New_York"},
+  {"id": "chicago", "label": "Chicago", "lat": 41.8781, "lon": -87.6298, "tz": "America/Chicago"},
+  {"id": "denver", "label": "Denver", "lat": 39.7392, "lon": -104.9903, "tz": "America/Denver"},
+  {"id": "los-angeles", "label": "Los Angeles", "lat": 34.0522, "lon": -118.2437, "tz": "America/Los_Angeles"},
+  {"id": "sydney", "label": "Sydney", "lat": -33.8688, "lon": 151.2093, "tz": "Australia/Sydney"},
+  {"id": "auckland", "label": "Auckland", "lat": -36.8485, "lon": 174.7633, "tz": "Pacific/Auckland"}
+]
