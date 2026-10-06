@@ -69,9 +69,17 @@ class CalendarScreen extends StatefulWidget {
 class CalendarScreenState extends State<CalendarScreen> {
   List<int> get _years =>
       (widget.ekadashiList.map((e) => e.date.year).toSet().toList()..sort());
+
+  /// The year shown in the selector; it follows the month on screen.
   late int _selectedYear;
-  DateTime get _firstDay => DateTime(_selectedYear, 1, 1);
-  DateTime get _lastDay => DateTime(_selectedYear, 12, 31);
+
+  /// The calendar spans every bundled year pack (assets/calendar/<year>.json
+  /// listed in manifest.json), so adding a 2028 pack extends it with no code
+  /// change, and past years stay browsable after the new year starts.
+  DateTime get _firstDay =>
+      DateTime(_years.isEmpty ? _selectedYear : _years.first, 1, 1);
+  DateTime get _lastDay =>
+      DateTime(_years.isEmpty ? _selectedYear : _years.last, 12, 31);
 
   late DateTime _focusedDay;
   late DateTime _selectedDay;
@@ -650,10 +658,16 @@ class CalendarScreenState extends State<CalendarScreen> {
                     ],
                     onChanged: (year) {
                       if (year == null) return;
+                      // Another year opens on its January; the current year
+                      // opens on today.
+                      final now = _now();
+                      final target = year == now.year
+                          ? DateTime(now.year, now.month, now.day)
+                          : DateTime(year, 1, 1);
                       setState(() {
                         _selectedYear = year;
-                        _focusedDay = DateTime(year, _focusedDay.month, 1);
-                        _selectedDay = _focusedDay;
+                        _focusedDay = target;
+                        _selectedDay = target;
                       });
                       _checkSelectedDayEkadashi();
                     },
@@ -730,7 +744,6 @@ class CalendarScreenState extends State<CalendarScreen> {
             ),
           SliverToBoxAdapter(
             child: TableCalendar(
-              key: ValueKey(_selectedYear),
               firstDay: _firstDay,
               lastDay: _lastDay,
               focusedDay: _focusedDay,
@@ -801,6 +814,8 @@ class CalendarScreenState extends State<CalendarScreen> {
               onPageChanged: (focusedDay) {
                 setState(() {
                   _focusedDay = focusedDay;
+                  // Swiping from December into January moves the year too.
+                  _selectedYear = focusedDay.year;
                 });
               },
               calendarStyle: CalendarStyle(

@@ -124,42 +124,70 @@ void main() {
     },
   );
 
+  TableCalendar<dynamic> calendarOf(WidgetTester tester) =>
+      tester.widget<TableCalendar<dynamic>>(
+        find.byWidgetPredicate((w) => w is TableCalendar),
+      );
+
+  int? selectorYear(WidgetTester tester) => tester
+      .widget<DropdownButton<int>>(
+        find.byKey(const Key('calendar_year_selector')),
+      )
+      .value;
+
   testWidgets(
-    'Glass month actions stay in selected year and preserve selected day',
+    'The calendar runs across every data year, with the selector following',
     (tester) async {
       await open(tester);
       final state = tester.state<CalendarScreenState>(
         find.byType(CalendarScreen),
       );
-      state.selectDate(DateTime(2027, 1, 15));
-      await tester.pumpAndSettle();
       final previous = find.byKey(const Key('calendar_previous_month'));
       final next = find.byKey(const Key('calendar_next_month'));
-      expect(tester.widget<IconButton>(previous).onPressed, isNull);
+      // The range comes from the bundled year packs (2026 and 2027).
+      String ymd(DateTime d) => '${d.year}-${d.month}-${d.day}';
+      expect(ymd(calendarOf(tester).firstDay), '2026-1-1');
+      expect(ymd(calendarOf(tester).lastDay), '2027-12-31');
+      state.selectDate(DateTime(2026, 12, 15));
+      await tester.pumpAndSettle();
       await tester.ensureVisible(next);
+      expect(tester.widget<IconButton>(next).onPressed, isNotNull);
       await tester.tap(next);
       await tester.pumpAndSettle();
-      var calendar = tester.widget<TableCalendar>(
-        find.byWidgetPredicate((w) => w is TableCalendar),
-      );
-      expect(calendar.focusedDay.month, 2);
-      expect(calendar.focusedDay.year, 2027);
-      expect(calendar.selectedDayPredicate!(DateTime(2027, 1, 15)), isTrue);
+      expect(calendarOf(tester).focusedDay.year, 2027);
+      expect(calendarOf(tester).focusedDay.month, 1);
+      expect(selectorYear(tester), 2027);
+      await tester.tap(previous);
+      await tester.pumpAndSettle();
+      expect(calendarOf(tester).focusedDay.year, 2026);
+      expect(calendarOf(tester).focusedDay.month, 12);
+      expect(selectorYear(tester), 2026);
       state.selectDate(DateTime(2027, 12, 15));
       await tester.pumpAndSettle();
       expect(tester.widget<IconButton>(next).onPressed, isNull);
-      await tester.tap(previous);
+      state.selectDate(DateTime(2026, 1, 15));
       await tester.pumpAndSettle();
-      calendar = tester.widget<TableCalendar>(
-        find.byWidgetPredicate((w) => w is TableCalendar),
-      );
-      expect(calendar.focusedDay.month, 11);
-      expect(calendar.focusedDay.year, 2027);
+      expect(tester.widget<IconButton>(previous).onPressed, isNull);
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets('Choosing a year opens its January; the current year, today', (
+    tester,
+  ) async {
+    await open(tester);
+    await year2027(tester);
+    final focused = calendarOf(tester).focusedDay;
+    expect([focused.year, focused.month, focused.day], [2027, 1, 1]);
+    await tester.tap(find.byKey(const Key('calendar_year_selector')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('2026').last);
+    await tester.pumpAndSettle();
+    expect(calendarOf(tester).focusedDay.month, 10);
+    expect(calendarOf(tester).focusedDay.year, 2026);
+  });
   testWidgets(
-    'Year selector changes bounds and Today resets to the current year',
+    'Year selector keeps the full range and Today resets to the current year',
     (tester) async {
       await open(tester);
       await year2027(tester);
@@ -172,7 +200,7 @@ void main() {
           calendar.firstDay.month,
           calendar.firstDay.day,
         ],
-        [2027, 1, 1],
+        [2026, 1, 1],
       );
       expect(
         [calendar.lastDay.year, calendar.lastDay.month, calendar.lastDay.day],
@@ -185,9 +213,10 @@ void main() {
       calendar = tester.widget<TableCalendar>(
         find.byWidgetPredicate((w) => w is TableCalendar),
       );
+      final now = DateTime.now();
       expect(
-        calendar.firstDay.year,
-        [2026, 2027].contains(DateTime.now().year) ? DateTime.now().year : 2027,
+        calendar.focusedDay.year,
+        [2026, 2027].contains(now.year) ? now.year : 2027,
       );
       expect(tester.takeException(), isNull);
     },
