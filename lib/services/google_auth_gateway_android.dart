@@ -64,11 +64,19 @@ class GoogleAuthGatewayAndroid implements GoogleAuthGateway {
     _apiAccount = account;
   }
 
+  /// A fresh ID token: Google ID tokens expire after an hour and the cached
+  /// account can hold an expired one, which Firebase rejects.
   @override
   Future<String?> idToken() async {
-    final account = _signIn.currentUser ?? await _signIn.signInSilently();
+    final account =
+        await _signIn.signInSilently(reAuthenticate: true) ??
+        _signIn.currentUser;
     return (await account?.authentication)?.idToken;
   }
+
+  @override
+  Future<String?> accountEmail() async =>
+      (_signIn.currentUser ?? await _signIn.signInSilently())?.email;
 
   @override
   Future<List<GoogleCalendarInfo>> listCalendars() async {

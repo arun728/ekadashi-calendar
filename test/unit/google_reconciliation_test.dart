@@ -181,10 +181,7 @@ void main() {
       auth.events = [event('a')];
       await sync();
       auth.events = [
-        {
-          ...event('b'),
-          'end': {'date': '2026-01-01'},
-        },
+        {...event('b'), 'start': <String, dynamic>{}},
       ];
       await expectLater(sync(), throwsFormatException);
       expect((await repo.getAll()).single.title, 'a');

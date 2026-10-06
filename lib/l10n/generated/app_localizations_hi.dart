@@ -585,6 +585,9 @@ class AppLocalizationsHi extends AppLocalizations {
       'ऐप में दिखाने के लिए कैलेंडर चुनें। आयात आपके Google कार्यक्रम नहीं बदलता।';
 
   @override
+  String get switch_google_account => 'दूसरा खाता इस्तेमाल करें';
+
+  @override
   String get primary_calendar => 'प्राथमिक';
 
   @override
@@ -878,6 +881,9 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get premium_active => 'प्रीमियम सुविधा सक्रिय है';
+
+  @override
+  String get premium_current_plan => 'आपका मौजूदा प्लान';
 
   @override
   String get premium_unavailable =>

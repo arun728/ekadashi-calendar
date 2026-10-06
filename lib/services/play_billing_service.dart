@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:in_app_purchase_android/billing_client_wrappers.dart';
 import 'package:in_app_purchase_android/in_app_purchase_android.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'premium_service.dart';
 
 class PremiumPlan {
@@ -96,8 +97,28 @@ class PlayBillingService extends ChangeNotifier {
   String? error;
   bool pending = false;
   Future<void>? _processing;
+
+  /// The base plan (`monthly`/`yearly`) last bought on this phone. Only a
+  /// label hint for the paywall; entitlement always comes from Google Play.
+  String? currentPlanId;
+  String? _requestedPlan;
+  static const planHintKey = 'premium_plan_hint';
+
+  /// Like other subscription apps, a subscriber can still switch between
+  /// monthly and yearly or buy lifetime; lifetime owners need nothing more.
+  bool canBuy(PremiumPlan plan) {
+    if (pending || premium.lifetime) return false;
+    if (plan.id == 'lifetime' || !premium.subscribed) return true;
+    return plan.id != currentPlanId;
+  }
+
   Future<void> initialize() async {
     if (_disposed) return;
+    try {
+      currentPlanId = (await SharedPreferences.getInstance()).getString(
+        planHintKey,
+      );
+    } catch (_) {}
     _subscription ??= store.purchaseStream.listen(
       (values) {
         _processing = (_processing ?? Future<void>.value())
@@ -172,6 +193,15 @@ class PlayBillingService extends ChangeNotifier {
             purchase.productID,
             purchasedAt: playPurchaseTime(purchase),
           );
+          if (purchase.productID == subscription && _requestedPlan != null) {
+            currentPlanId = _requestedPlan;
+            try {
+              await (await SharedPreferences.getInstance()).setString(
+                planHintKey,
+                _requestedPlan!,
+              );
+            } catch (_) {}
+          }
           if (purchase.pendingCompletePurchase) {
             await store.completePurchase(purchase);
           }
@@ -182,7 +212,8 @@ class PlayBillingService extends ChangeNotifier {
   }
 
   Future<void> buy(PremiumPlan plan) async {
-    if (pending || premium.isPremium) return;
+    if (!canBuy(plan)) return;
+    _requestedPlan = plan.id == 'lifetime' ? null : plan.id;
     try {
       final product = plan.product;
       String? offer;
@@ -193,9 +224,19 @@ class PlayBillingService extends ChangeNotifier {
             .subscriptionOfferDetails![product.subscriptionIndex!]
             .offerIdToken;
       }
+      // Switching monthly <-> yearly replaces the current subscription.
+      final old = offer != null && premium.subscribed
+          ? await _ownedSubscription()
+          : null;
       final param = GooglePlayPurchaseParam(
         productDetails: product,
         offerToken: offer,
+        changeSubscriptionParam: old == null
+            ? null
+            : ChangeSubscriptionParam(
+                oldPurchaseDetails: old,
+                replacementMode: ReplacementMode.withTimeProration,
+              ),
       );
       if (!await store.buyNonConsumable(purchaseParam: param)) {
         error = 'premium_unavailable';
@@ -204,6 +245,19 @@ class PlayBillingService extends ChangeNotifier {
       error = 'premium_unavailable';
     }
     _notify();
+  }
+
+  Future<GooglePlayPurchaseDetails?> _ownedSubscription() async {
+    final addition = store
+        .getPlatformAddition<InAppPurchaseAndroidPlatformAddition>();
+    final response = await addition.queryPastPurchases();
+    for (final purchase in response.pastPurchases) {
+      if (purchase.productID == subscription &&
+          isCompletedPlayPurchase(purchase)) {
+        return purchase;
+      }
+    }
+    return null;
   }
 
   /// Restores from Google Play's owned purchases; no account sign-in needed.

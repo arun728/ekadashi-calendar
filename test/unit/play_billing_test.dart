@@ -162,7 +162,7 @@ void main() {
     await store.updates.close();
   });
 
-  test('checkout needs no Google sign-in; duplicates are blocked', () async {
+  test('checkout needs no Google sign-in; lifetime cannot be bought twice', () async {
     final store = Store();
     InAppPurchasePlatform.instance = store;
     final premium = PremiumService(
@@ -173,7 +173,7 @@ void main() {
     await billing.buy(billing.plans.single);
     expect(store.bought, 1);
     expect(store.param!.applicationUserName, isNull);
-    premium.applyOwned({PremiumService.subscriptionId});
+    premium.applyOwned({PremiumService.lifetimeId});
     await billing.buy(billing.plans.single);
     expect(store.bought, 1);
     billing.dispose();

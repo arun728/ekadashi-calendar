@@ -590,6 +590,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Select calendars to display in this app. Import does not change your Google events.';
 
   @override
+  String get switch_google_account => 'Use another account';
+
+  @override
   String get primary_calendar => 'Primary';
 
   @override
@@ -884,6 +887,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premium_active => 'Premium access active';
+
+  @override
+  String get premium_current_plan => 'Your current plan';
 
   @override
   String get premium_unavailable =>

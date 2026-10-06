@@ -168,13 +168,21 @@ class _PremiumScreenState extends State<PremiumScreen> {
                           '${lang.translate('premium_${plan.id}')} · ${plan.price}',
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
+                        if (premium.subscribed &&
+                            !premium.lifetime &&
+                            plan.id == billing.currentPlanId)
+                          Text(
+                            lang.translate('premium_current_plan'),
+                            key: Key('premium_current_${plan.id}'),
+                            style: const TextStyle(color: Color(0xFF00A19B)),
+                          ),
                         const SizedBox(height: 8),
                         Text(lang.translate('premium_${plan.id}_terms')),
                         const SizedBox(height: 8),
                         FilledButton(
-                          onPressed: billing.pending || premium.isPremium
-                              ? null
-                              : () => billing.buy(plan),
+                          onPressed: billing.canBuy(plan)
+                              ? () => billing.buy(plan)
+                              : null,
                           child: Text(
                             '${lang.translate('premium_${plan.id}')} · ${plan.price}',
                           ),

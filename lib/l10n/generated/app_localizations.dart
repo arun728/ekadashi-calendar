@@ -1194,6 +1194,12 @@ abstract class AppLocalizations {
   /// **'Select calendars to display in this app. Import does not change your Google events.'**
   String get choose_calendars_help;
 
+  /// No description provided for @switch_google_account.
+  ///
+  /// In en, this message translates to:
+  /// **'Use another account'**
+  String get switch_google_account;
+
   /// No description provided for @primary_calendar.
   ///
   /// In en, this message translates to:
@@ -1763,6 +1769,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Premium access active'**
   String get premium_active;
+
+  /// No description provided for @premium_current_plan.
+  ///
+  /// In en, this message translates to:
+  /// **'Your current plan'**
+  String get premium_current_plan;
 
   /// No description provided for @premium_unavailable.
   ///

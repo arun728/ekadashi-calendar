@@ -3,11 +3,15 @@ import '../../services/language_service.dart';
 import 'package:flutter/material.dart';
 import '../../services/google_calendar_service.dart';
 
-/// Multi-select which Google calendars to import.
+/// Returned by the picker when the user wants another Google account.
+const switchGoogleAccountResult = ['__switch_google_account__'];
+
+/// Multi-select which Google calendars to import from [accountEmail].
 Future<List<String>?> showGoogleCalendarPickerSheet({
   required BuildContext context,
   required List<GoogleCalendarInfo> calendars,
   required List<String> initiallySelected,
+  String? accountEmail,
 }) {
   return showModalBottomSheet<List<String>>(
     context: context,
@@ -19,6 +23,7 @@ Future<List<String>?> showGoogleCalendarPickerSheet({
     builder: (ctx) => _GoogleCalendarPickerBody(
       calendars: calendars,
       initiallySelected: initiallySelected,
+      accountEmail: accountEmail,
     ),
   );
 }
@@ -26,10 +31,12 @@ Future<List<String>?> showGoogleCalendarPickerSheet({
 class _GoogleCalendarPickerBody extends StatefulWidget {
   final List<GoogleCalendarInfo> calendars;
   final List<String> initiallySelected;
+  final String? accountEmail;
 
   const _GoogleCalendarPickerBody({
     required this.calendars,
     required this.initiallySelected,
+    this.accountEmail,
   });
 
   @override
@@ -86,6 +93,26 @@ class _GoogleCalendarPickerBodyState extends State<_GoogleCalendarPickerBody> {
               lang.translate('choose_calendars_help'),
               style: TextStyle(fontSize: 13, color: Colors.grey.shade400),
             ),
+            if (widget.accountEmail != null)
+              Row(
+                children: [
+                  const Icon(Icons.account_circle_outlined, size: 18),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      widget.accountEmail!,
+                      key: const Key('google_picker_account'),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  TextButton(
+                    key: const Key('google_switch_account'),
+                    onPressed: () =>
+                        Navigator.pop(context, switchGoogleAccountResult),
+                    child: Text(lang.translate('switch_google_account')),
+                  ),
+                ],
+              ),
             const SizedBox(height: 12),
             Flexible(
               child: ListView.builder(

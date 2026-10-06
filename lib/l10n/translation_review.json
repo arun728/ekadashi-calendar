@@ -59,7 +59,9 @@
       "terms_of_service",
       "tracker_storage_failed",
       "translation_pending",
-      "vrat_free_limit_reached"
+      "vrat_free_limit_reached",
+      "switch_google_account",
+      "premium_current_plan"
     ],
     "hi": [
       "add_entry",
@@ -119,7 +121,9 @@
       "terms_of_service",
       "tracker_storage_failed",
       "translation_pending",
-      "vrat_free_limit_reached"
+      "vrat_free_limit_reached",
+      "switch_google_account",
+      "premium_current_plan"
     ],
     "te": [
       "achievement_10_vrat_desc",
@@ -264,7 +268,9 @@
       "widget_preview",
       "widget_preview_desc",
       "widgets",
-      "year"
+      "year",
+      "switch_google_account",
+      "premium_current_plan"
     ]
   },
   "contentLimit": "Curated English-only search content is available using the English content-language filter.",

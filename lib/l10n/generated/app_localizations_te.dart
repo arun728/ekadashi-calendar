@@ -590,6 +590,9 @@ class AppLocalizationsTe extends AppLocalizations {
       'యాప్‌లో చూపించాల్సిన క్యాలెండర్లను ఎంచుకోండి. దిగుమతి మీ Google ఈవెంట్లను మార్చదు.';
 
   @override
+  String get switch_google_account => 'మరో ఖాతాను ఉపయోగించండి';
+
+  @override
   String get primary_calendar => 'ప్రధాన';
 
   @override
@@ -883,6 +886,9 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get premium_active => 'ప్రీమియం సదుపాయం అందుబాటులో ఉంది';
+
+  @override
+  String get premium_current_plan => 'మీ ప్రస్తుత ప్లాన్';
 
   @override
   String get premium_unavailable =>

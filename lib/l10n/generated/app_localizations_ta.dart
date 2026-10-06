@@ -589,6 +589,9 @@ class AppLocalizationsTa extends AppLocalizations {
       'செயலியில் காட்ட வேண்டிய நாள்காட்டிகளைத் தேர்ந்தெடுக்கவும். இறக்குமதி உங்கள் Google நிகழ்வுகளை மாற்றாது.';
 
   @override
+  String get switch_google_account => 'வேறு கணக்கைப் பயன்படுத்து';
+
+  @override
   String get primary_calendar => 'முதன்மை';
 
   @override
@@ -884,6 +887,9 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get premium_active => 'பிரீமியம் அணுகல் செயலில் உள்ளது';
+
+  @override
+  String get premium_current_plan => 'உங்கள் தற்போதைய திட்டம்';
 
   @override
   String get premium_unavailable =>

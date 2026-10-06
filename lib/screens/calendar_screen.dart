@@ -371,12 +371,22 @@ class CalendarScreenState extends State<CalendarScreen> {
         return;
       }
       final saved = await GoogleCalendarPrefs.loadSelectedIds(account);
+      final email = await _google.auth.accountEmail();
       if (!mounted) return;
       final chosen = await showGoogleCalendarPickerSheet(
         context: context,
         calendars: calendars,
         initiallySelected: saved,
+        accountEmail: email,
       );
+      if (identical(chosen, switchGoogleAccountResult)) {
+        // Forget the remembered account so the next sign-in shows Google's
+        // account chooser. Imported events of the old account are kept.
+        await _google.auth.signOut();
+        if (mounted) setState(() => _syncing = false);
+        await _syncYear();
+        return;
+      }
       if (chosen == null || chosen.isEmpty) return;
       // The window was fixed before the picker: changing the month or year
       // while a request runs cannot silently change the import range.
@@ -967,12 +977,17 @@ class CalendarScreenState extends State<CalendarScreen> {
                     children: [
                       Icon(statusIcon, size: 13, color: statusColor),
                       const SizedBox(width: 4),
-                      Text(
-                        statusLabel,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: statusColor,
+                      // Wraps on narrow phones with large text instead of
+                      // overflowing the card.
+                      Flexible(
+                        child: Text(
+                          statusLabel,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: statusColor,
+                          ),
                         ),
                       ),
                     ],

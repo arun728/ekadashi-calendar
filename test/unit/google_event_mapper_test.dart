@@ -19,11 +19,36 @@ void main() {
     expect(entry!.startAt, entry.endAt);
   });
 
-  test('an event ending before it starts is still rejected', () {
+  test('an event ending before it starts becomes an instant at its start', () {
+    final entry = GoogleEventMapper.fromApiEvent(
+      _event('2026-10-05T11:00:00+05:30', '2026-10-05T10:00:00+05:30'),
+    );
+    expect(entry!.endAt, entry.startAt);
+  });
+
+  test('an all-day event without a later end covers its start day', () {
+    for (final end in [null, '2026-10-05', '2026-10-04']) {
+      final entry = GoogleEventMapper.fromApiEvent({
+        'id': 'e2',
+        'accountId': 'a',
+        'calendarId': 'c',
+        'start': {'date': '2026-10-05'},
+        'end': {'date': ?end},
+      });
+      expect(entry!.isAllDay, isTrue);
+      expect(entry.endAt, DateTime(2026, 10, 6), reason: 'end $end');
+    }
+  });
+
+  test('an event without a start is rejected', () {
     expect(
-      () => GoogleEventMapper.fromApiEvent(
-        _event('2026-10-05T11:00:00+05:30', '2026-10-05T10:00:00+05:30'),
-      ),
+      () => GoogleEventMapper.fromApiEvent({
+        'id': 'e3',
+        'accountId': 'a',
+        'calendarId': 'c',
+        'start': <String, dynamic>{},
+        'end': {'date': '2026-10-06'},
+      }),
       throwsFormatException,
     );
   });

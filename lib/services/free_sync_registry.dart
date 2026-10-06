@@ -56,10 +56,24 @@ class FirestoreFreeSyncRegistry implements FreeSyncRegistry {
         )
         .timeout(_timeout);
     if (response.statusCode != 200) {
-      throw StateError('Free sync sign-in failed (${response.statusCode})');
+      throw StateError(
+        'Free sync sign-in failed (${response.statusCode}: '
+        '${_errorMessage(response.body)})',
+      );
     }
     final body = jsonDecode(response.body) as Map<String, dynamic>;
     return (uid: body['localId'] as String, token: body['idToken'] as String);
+  }
+
+  /// Firebase's error reason (e.g. `INVALID_IDP_RESPONSE : ...`), which
+  /// contains no secrets, so a failure on a device can be diagnosed.
+  static String _errorMessage(String body) {
+    try {
+      final error = (jsonDecode(body) as Map<String, dynamic>)['error'];
+      return (error as Map<String, dynamic>)['message'] as String? ?? body;
+    } catch (_) {
+      return body.length > 200 ? body.substring(0, 200) : body;
+    }
   }
 
   Uri _documents([String path = '', Map<String, String>? query]) => Uri.https(
@@ -79,7 +93,10 @@ class FirestoreFreeSyncRegistry implements FreeSyncRegistry {
         .timeout(_timeout);
     if (response.statusCode == 200) return true;
     if (response.statusCode == 404) return false;
-    throw StateError('Free sync registry unavailable (${response.statusCode})');
+    throw StateError(
+      'Free sync registry unavailable (${response.statusCode}: '
+      '${_errorMessage(response.body)})',
+    );
   }
 
   @override
