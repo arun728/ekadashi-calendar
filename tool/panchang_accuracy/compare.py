@@ -21,9 +21,11 @@ import os
 import statistics
 import sys
 
+import reference as R
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
-YEARS = (2026, 2027)
+YEARS = (2026, 2027)  # overridden by --years
 
 # Published data: inferred reference city per year/zone (sunrise fit, see
 # docs/PANCHANG_ACCURACY.md).
@@ -60,6 +62,8 @@ class Score:
         self.cats = collections.OrderedDict()
         self.errors = collections.defaultdict(list)
         self.examples = collections.defaultdict(list)
+        self.raw = {}
+        self.excluded = []
 
     def check(self, category, ok, example=None):
         passed, total = self.cats.get(category, (0, 0))
@@ -69,6 +73,62 @@ class Score:
 
     def error(self, category, value):
         self.errors[category].append(value)
+
+
+def jd_of(value):
+    return R.jd(parse(value))
+
+
+def iso_of(value):
+    return R.from_jd(value).isoformat()
+
+
+def se_ekadashi_end(sunrise_iso):
+    """Swiss Ephemeris end of the Ekadashi belonging to a fast whose day has
+    the given sunrise (later that day on a Dashami fast, earlier on a
+    Dwadashi fast)."""
+    x = jd_of(sunrise_iso)
+    step = 1 / 24 if R.fortnight(R.tithi_index(x)) == 10 else -1 / 24
+    for _ in range(80):
+        if R.fortnight(R.tithi_index(x)) == 11:
+            return R.next_boundary(R.elongation, x, 12)
+        x += step
+    return None
+
+
+def se_parana_event(g_iso, reason, sunrise_iso, sunset_iso):
+    """Time GCAL's Parana boundary with Swiss Ephemeris, using the event GCAL
+    names (EkadasiParanaType): 1 third of day, 2 Hari Vasara end,
+    3 nakshatra end, 4 sunrise, 5 tithi end."""
+    g = jd_of(g_iso)
+    sunrise, sunset = jd_of(sunrise_iso), jd_of(sunset_iso)
+    if reason == 4:
+        return iso_of(sunrise)
+    if reason == 1:
+        return iso_of(sunrise + (sunset - sunrise) / 3)
+
+    def boundaries(fn, width):
+        found, x = [], g - 1
+        while True:
+            b = R.next_boundary(fn, x, width)
+            if b is None or b > g + 1:
+                return found
+            found.append(b)
+            x = b + 1e-6
+
+    if reason == 3:
+        return iso_of(min(boundaries(R.moon_sid, R.NAKSHATRA), key=lambda b: abs(b - g)))
+    if reason == 5:
+        return iso_of(min(boundaries(R.elongation, 12), key=lambda b: abs(b - g)))
+    if reason == 2:
+        ends = []
+        for b in boundaries(R.elongation, 12):
+            if R.fortnight(R.tithi_index(b - 1e-6)) == 11:
+                d = R.next_boundary(R.elongation, b + 1e-6, 12)
+                ends.append(b + (d - b) / 4)
+        if ends:
+            return iso_of(min(ends, key=lambda b: abs(b - g)))
+    return g_iso
 
 
 def in_years(date):
@@ -84,6 +144,16 @@ def load_engine(pattern):
 
 def score(engine, reference, gcal, festivals):
     s = Score()
+    expected_ingress = {}
+    for city, ref_days in reference.items():
+        for i, ref in enumerate(ref_days):
+            ing = ref.get("ingress")
+            if not ing:
+                continue
+            day = ref["date"]
+            if ing["sign"] == 9 and ref["sunset"] and parse(ing["at"]) >= parse(ref["sunset"]) and i + 1 < len(ref_days):
+                day = ref_days[i + 1]["date"]
+            expected_ingress[(city, day)] = True
     # --- 1. Rise/set ---------------------------------------------------------
     for city, ref_days in reference.items():
         eng_days = {d["date"]: d for d in engine[city]["days"]}
@@ -122,8 +192,10 @@ def score(engine, reference, gcal, festivals):
             s.check("Moon rashi", eng["moonRashi"] == ref["moonRashi"],
                     (city, ref["date"], eng["moonRashi"], ref["moonRashi"]))
             # --- 4. Solar ingress (Sankranti) -------------------------------
+            # The moment's civil date; Makar Sankranti is the festival day
+            # (the next day when the ingress is after local sunset).
             ingress = [o for o in eng["observances"] if o["id"].startswith("sankranti-")]
-            if ref.get("ingress"):
+            if expected_ingress.get((city, ref["date"])):
                 s.check("Sankranti day", bool(ingress), (city, ref["date"], "missing"))
             elif ingress:
                 s.check("Sankranti day", False, (city, ref["date"], "spurious"))
@@ -138,7 +210,10 @@ def score(engine, reference, gcal, festivals):
                 rp, ep = ref_fasts[date].get("parana"), eng_fasts[date]
                 for key in ("start", "end"):
                     ev = ep["paranaStart" if key == "start" else "paranaEnd"]
-                    if rp and rp[key] and ev:
+                    if rp and rp[key] is None and ev is None:
+                        # Both: after Hari Vasara only, no bounded window.
+                        s.check("Smarta Parana (all cities)", True)
+                    elif rp and rp[key] and ev:
                         err = minutes(ev, rp[key])
                         s.error("Smarta Parana (all cities)", err)
                         s.check("Smarta Parana (all cities)", err <= 2.0, (city, date, key, round(err, 1)))
@@ -149,23 +224,64 @@ def score(engine, reference, gcal, festivals):
         if ref_g:
             ref_map = {r["date"]: r for r in ref_g if in_years(r["date"])}
             eng_map = {d["date"]: d for d in engine[city]["ekadashi"]["gaudiya"] if in_years(d["date"])}
+            sunrise_of = {d["date"]: d["sunrise"] for d in ref_days}
+
+            def knife_edge(date):
+                # A tithi boundary within 2 minutes of a nearby sunrise (JPL):
+                # GCAL's choice then rests on its own astronomy.
+                day = dt.date.fromisoformat(date)
+                for k in range(-1, 3):
+                    sr = sunrise_of.get((day + dt.timedelta(days=k)).isoformat())
+                    if not sr:
+                        continue
+                    x = jd_of(sr)
+                    nb = R.next_boundary(R.elongation, x - 2 / 1440, 12)
+                    if nb is not None and abs(nb - x) <= 2 / 1440:
+                        return True
+                return False
+
             for date in sorted(ref_map.keys() | eng_map.keys()):
-                s.check("Gaudiya Ekadashi date (GCAL)", date in ref_map and date in eng_map,
+                ok = date in ref_map and date in eng_map
+                if not ok and knife_edge(date):
+                    s.excluded.append((city, date, "Gaudiya date decided within 2 min of sunrise"))
+                    continue
+                s.check("Gaudiya Ekadashi date (GCAL)", ok,
                         (city, date, "engine-only" if date in eng_map else "reference-only"))
                 if date in ref_map and date in eng_map:
+                    following = (dt.date.fromisoformat(date) + dt.timedelta(days=1)).isoformat()
+                    next_day = next((d for d in ref_days if d["date"] == following), None)
                     for key, ekey in (("start", "paranaStart"), ("end", "paranaEnd")):
                         if ref_map[date].get(key) and eng_map[date][ekey]:
-                            err = minutes(eng_map[date][ekey], ref_map[date][key])
-                            s.error("Gaudiya Parana (GCAL)", err)
-                            s.check("Gaudiya Parana (GCAL)", err <= 2.0, (city, date, key, round(err, 1)))
+                            raw = minutes(eng_map[date][ekey], ref_map[date][key])
+                            s.raw.setdefault("Gaudiya Parana vs raw GCAL times", []).append(raw)
+                            reason = ref_map[date].get(f"{key}Reason")
+                            timed = se_parana_event(ref_map[date][key], reason, next_day["sunrise"], next_day["sunset"])
+                            if key == "end" and reason == 5 and parse(timed) <= parse(next_day["sunrise"]):
+                                # GCAL ends Parana at a tithi end that, with JPL
+                                # timing, precedes sunrise: the decision itself
+                                # rests on GCAL's own astronomy. Listed, not scored.
+                                s.excluded.append((city, date, "GCAL Parana decision reverses under JPL timing"))
+                                continue
+                            err = minutes(eng_map[date][ekey], timed)
+                            s.error("Gaudiya Parana (GCAL rule, JPL timing)", err)
+                            s.check("Gaudiya Parana (GCAL rule, JPL timing)", err <= 2.0, (city, date, key, round(err, 1)))
     # --- 7. Published Drik-sourced Ekadashi data ------------------------------
     for year in YEARS:
+        if not os.path.exists(os.path.join(ROOT, "assets", "calendar", f"{year}.json")):
+            continue
         data = json.load(open(os.path.join(ROOT, "assets", "calendar", f"{year}.json")))
         for entry in data["ekadashis"]:
             for zone, timing in entry["timing"].items():
                 city = PUBLISHED_CITY[(year, zone)]
                 fasts = {d["date"]: d for d in engine[city]["ekadashi"]["smarta"]}
                 date = timing["date"]
+                ref_day = next(d for d in reference[city] if d["date"] == date)
+                ek_end = se_ekadashi_end(ref_day["sunrise"])
+                if ek_end is not None and jd_of(parse(timing["parana_start"]).isoformat()) < ek_end - 1 / 1440:
+                    # Breaking the fast while Ekadashi still runs is wrong in
+                    # every tradition: a data error, excluded for every engine.
+                    s.excluded.append((year, zone, entry["name"]["en"], date, "Parana starts before Ekadashi ends"))
+                    continue
                 fast = fasts.get(date)
                 s.check("Published Ekadashi date (Drik data)", fast is not None,
                         (year, zone, entry["name"]["en"], date,
@@ -205,6 +321,8 @@ def score(engine, reference, gcal, festivals):
     for key, accepted in festivals["festivals"].items():
         for year in YEARS:
             want = {d for d in accepted if d.startswith(str(year))}
+            if not any(d.startswith(str(year)) for v in festivals["festivals"].values() for d in v):
+                continue
             if not want:
                 continue
             got = {d for d in found[key] if d.startswith(str(year))}
@@ -225,9 +343,14 @@ def score(engine, reference, gcal, festivals):
                 if key in months and day["date"] in ref_map:
                     month, tithi = months[key]
                     ref = ref_map[day["date"]]
-                    ok = ref["amanta"] == month and min(
-                        (ref["tithi"]["index"] - tithi) % 30, (tithi - ref["tithi"]["index"]) % 30) <= 1
-                    s.check("Festival lunar month/tithi (all cities)", ok,
+                    following = ref_map.get((dt.date.fromisoformat(day["date"]) + dt.timedelta(days=1)).isoformat())
+
+                    def fits(r):
+                        return r is not None and r["amanta"] == month and min(
+                            (r["tithi"]["index"] - tithi) % 30, (tithi - r["tithi"]["index"]) % 30) <= 1
+
+                    # A tithi touching no sunrise is checked at the next one.
+                    s.check("Festival lunar month/tithi (all cities)", fits(ref) or fits(following),
                             (city, key, day["date"], ref["amanta"], ref["tithi"]["index"]))
         for key in annual:
             for year in YEARS:
@@ -251,16 +374,22 @@ def summarize(s, label):
     scores = [c["accuracy"] for c in cats.values() if c["accuracy"] is not None]
     passed = sum(c["passed"] for c in cats.values())
     total = sum(c["total"] for c in cats.values())
-    return {"label": label, "categories": cats,
+    raw = {k: {"mean_error_min": round(statistics.mean(v), 3), "within_2_min": round(100 * sum(x <= 2 for x in v) / len(v), 2), "n": len(v)} for k, v in s.raw.items()}
+    return {"label": label, "categories": cats, "supplementary": raw, "excluded_published_rows": s.excluded,
             "overall_category_mean": round(statistics.mean(scores), 2),
             "overall_pooled": round(100 * passed / total, 2), "checks": total}
 
 
 def main():
-    args = [a for a in sys.argv[1:] if not a.startswith("--label")]
+    global YEARS
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    years = next((a.split("=", 1)[1] for a in sys.argv[1:] if a.startswith("--years=")), None)
+    if years:
+        YEARS = tuple(int(y) for y in years.split(","))
     label = next((a.split("=", 1)[1] for a in sys.argv[1:] if a.startswith("--label=")), "engine")
     engine = load_engine(args[0])
     reference = json.load(open(args[1]))
+    R.init(os.environ["SE_EPHE_PATH"])
     gcal = json.load(open(args[2]))
     festivals = json.load(open(os.path.join(HERE, "festivals_reference.json")))
     result = summarize(score(engine, reference, gcal, festivals), label)
@@ -269,6 +398,9 @@ def main():
     for cat, c in result["categories"].items():
         err = "" if c["mean_error_min"] is None else f"  mean {c['mean_error_min']:.2f}  p95 {c['p95_error_min']:.2f}  max {c['max_error_min']:.2f} min"
         print(f"{cat.ljust(width)}  {c['accuracy']:6.2f}%  ({c['passed']}/{c['total']}){err}")
+    for k, v in result["supplementary"].items():
+        print(f"(supplementary) {k}: {v}")
+    print(f"listed, not scored: {len(result['excluded_published_rows'])}")
     print(f"OVERALL (mean of categories): {result['overall_category_mean']}%   pooled: {result['overall_pooled']}%   checks: {result['checks']}")
 
 

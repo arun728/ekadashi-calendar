@@ -53,10 +53,52 @@ void main() {
     }
   });
 
+  test('Sun and Moon rise/set agree with Swiss Ephemeris within seconds', () {
+    final fixture =
+        jsonDecode(
+              File(
+                'test/fixtures/panchang/swiss_rise_set_2027.json',
+              ).readAsStringSync(),
+            )
+            as Map;
+    const zones = {
+      'new-delhi': 'Asia/Kolkata',
+      'london': 'Europe/London',
+      'sydney': 'Australia/Sydney',
+      'new-york': 'America/New_York',
+    };
+    for (final row in fixture['events'] as List) {
+      final city = PanchangCity(
+        id: row['city'],
+        label: row['city'],
+        latitude: row['lat'],
+        longitude: row['lon'],
+        timeZoneId: zones[row['city']]!,
+      );
+      final expected = DateTime.parse(row['utc'] as String);
+      final local = city.wallClock(expected);
+      final day = engine.calculate(
+        DateTime.utc(local.year, local.month, local.day),
+        city: city,
+      );
+      final actual = switch ('${row['body']} ${row['event']}') {
+        'sun rise' => day.sunriseUtc,
+        'sun set' => day.sunsetUtc,
+        'moon rise' => day.moonriseUtc,
+        _ => day.moonsetUtc,
+      };
+      expect(actual, isNotNull, reason: '$row');
+      expect(
+        actual!.difference(expected).inMilliseconds.abs() / 1000,
+        lessThan(1),
+        reason: '$row',
+      );
+    }
+  });
+
   test('Delhi 2027 Smarta fasts and Parana match published Drik data', () {
     final data =
-        jsonDecode(File('assets/calendar/2027.json').readAsStringSync())
-            as Map;
+        jsonDecode(File('assets/calendar/2027.json').readAsStringSync()) as Map;
     final fasts = {
       for (final fast in const CalculatedEkadashiEngine().calculate(
         DateTime.utc(2027),
@@ -69,7 +111,11 @@ void main() {
     for (final entry in data['ekadashis'] as List) {
       final timing = entry['timing']['IST'] as Map;
       final fast = fasts[timing['date']];
-      expect(fast, isNotNull, reason: '${entry['name']['en']} ${timing['date']}');
+      expect(
+        fast,
+        isNotNull,
+        reason: '${entry['name']['en']} ${timing['date']}',
+      );
       double minutes(DateTime? actual, String expected) =>
           actual!.difference(DateTime.parse(expected)).inSeconds.abs() / 60;
       expect(
@@ -83,7 +129,13 @@ void main() {
         reason: 'Parana end ${timing['date']}',
       );
     }
-    expect(fasts, hasLength(24));
+    // No extra fasts inside the published range (the pack ends on Dec 9).
+    final published = {
+      for (final entry in data['ekadashis'] as List)
+        entry['timing']['IST']['date'] as String,
+    };
+    final last = published.reduce((a, b) => a.compareTo(b) > 0 ? a : b);
+    expect(fasts.keys.where((d) => d.compareTo(last) <= 0).toSet(), published);
   });
 
   test('Smarta skipped and repeated Ekadashi follow Drik (Chennai 2026)', () {
@@ -116,23 +168,25 @@ void main() {
             )
             as Map;
     String? key(String id, String name) => switch (id) {
-      'vinayaka-chaturthi' => name == 'Ganesh Chaturthi' ? 'ganesh-chaturthi' : null,
+      'vinayaka-chaturthi' =>
+        name == 'Ganesh Chaturthi' ? 'ganesh-chaturthi' : null,
       'sankranti-9' => 'makar-sankranti',
       'sankranti-0' => 'mesha-sankranti',
       _ => id,
     };
     final cache = <String, List<String>>{};
-    List<String> keysOn(DateTime date) =>
-        cache[date.toIso8601String()] ??= [
-          for (final event in engine.calculate(date).observances)
-            ?key(event.id, event.name),
-        ];
+    List<String> keysOn(DateTime date) => cache[date.toIso8601String()] ??= [
+      for (final event in engine.calculate(date).observances)
+        ?key(event.id, event.name),
+    ];
     final failures = <String>[];
     (fixture['festivals'] as Map).forEach((festival, accepted) {
       final dates = (accepted as List).cast<String>();
       for (final year in {for (final d in dates) d.substring(0, 4)}) {
         final want = dates.where((d) => d.startsWith(year)).toSet();
-        final first = DateTime.parse(want.reduce((a, b) => a.compareTo(b) < 0 ? a : b));
+        final first = DateTime.parse(
+          want.reduce((a, b) => a.compareTo(b) < 0 ? a : b),
+        );
         final found = <String>[];
         for (var offset = -3; offset <= 4; offset++) {
           final day = first.add(Duration(days: offset));
@@ -163,9 +217,10 @@ void main() {
 
   test('New York 2026 Mesha Sankranti falls on its local civil date', () {
     List<String> ids(int day) => [
-      for (final event in engine
-          .calculate(DateTime.utc(2026, 4, day), city: PanchangCity.newYork)
-          .observances)
+      for (final event
+          in engine
+              .calculate(DateTime.utc(2026, 4, day), city: PanchangCity.newYork)
+              .observances)
         event.id,
     ];
     expect(ids(13), isNot(contains('sankranti-0')));

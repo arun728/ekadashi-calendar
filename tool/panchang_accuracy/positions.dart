@@ -6,7 +6,9 @@ import '../../lib/services/panchang/astronomy_calculator.dart';
 
 void main() {
   final out = <List<double>>[];
-  for (final line in File(Platform.environment['POSITIONS_IN']!).readAsLinesSync()) {
+  for (final line in File(
+    Platform.environment['POSITIONS_IN']!,
+  ).readAsLinesSync()) {
     if (line.trim().isEmpty) continue;
     final t = DateTime.parse(line.trim());
     out.add([

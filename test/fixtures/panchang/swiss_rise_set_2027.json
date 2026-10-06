@@ -1,0 +1,773 @@
+{
+ "source": "Swiss Ephemeris 2.10.03 swe_rise_trans: upper limb, refraction at 1013.25 hPa and 15 C, sea level",
+ "events": [
+  {
+   "city": "new-delhi",
+   "lat": 28.6139,
+   "lon": 77.209,
+   "body": "sun",
+   "event": "rise",
+   "utc": "2027-01-10T01:45:12.319936Z"
+  },
+  {
+   "city": "new-delhi",
+   "lat": 28.6139,
+   "lon": 77.209,
+   "body": "sun",
+   "event": "set",
+   "utc": "2027-01-10T12:11:57.706950Z"
+  },
+  {
+   "city": "new-delhi",
+   "lat": 28.6139,
+   "lon": 77.209,
+   "body": "moon",
+   "event": "rise",
+   "utc": "2027-01-10T03:20:39.043450Z"
+  },
+  {
+   "city": "new-delhi",
+   "lat": 28.6139,
+   "lon": 77.209,
+   "body": "moon",
+   "event": "set",
+   "utc": "2027-01-10T14:27:13.076008Z"
+  },
+  {
+   "city": "new-delhi",
+   "lat": 28.6139,
+   "lon": 77.209,
+   "body": "sun",
+   "event": "rise",
+   "utc": "2027-03-10T01:07:08.131199Z"
+  },
+  {
+   "city": "new-delhi",
+   "lat": 28.6139,
+   "lon": 77.209,
+   "body": "sun",
+   "event": "set",
+   "utc": "2027-03-10T12:56:20.719502Z"
+  },
+  {
+   "city": "new-delhi",
+   "lat": 28.6139,
+   "lon": 77.209,
+   "body": "moon",
+   "event": "rise",
+   "utc": "2027-03-10T01:52:47.545027Z"
+  },
+  {
+   "city": "new-delhi",
+   "lat": 28.6139,
+   "lon": 77.209,
+   "body": "moon",
+   "event": "set",
+   "utc": "2027-03-10T14:53:32.682608Z"
+  },
+  {
+   "city": "new-delhi",
+   "lat": 28.6139,
+   "lon": 77.209,
+   "body": "sun",
+   "event": "rise",
+   "utc": "2027-05-10T00:03:59.096832Z"
+  },
+  {
+   "city": "new-delhi",
+   "lat": 28.6139,
+   "lon": 77.209,
+   "body": "sun",
+   "event": "set",
+   "utc": "2027-05-10T13:31:34.771524Z"
+  },
+  {
+   "city": "new-delhi",
+   "lat": 28.6139,
+   "lon": 77.209,
+   "body": "moon",
+   "event": "rise",
+   "utc": "2027-05-10T03:17:23.266842Z"
+  },
+  {
+   "city": "new-delhi",
+   "lat": 28.6139,
+   "lon": 77.209,
+   "body": "moon",
+   "event": "set",
+   "utc": "2027-05-10T17:51:46.098515Z"
+  },
+  {
+   "city": "new-delhi",
+   "lat": 28.6139,
+   "lon": 77.209,
+   "body": "sun",
+   "event": "rise",
+   "utc": "2027-07-10T00:00:39.337425Z"
+  },
+  {
+   "city": "new-delhi",
+   "lat": 28.6139,
+   "lon": 77.209,
+   "body": "sun",
+   "event": "set",
+   "utc": "2027-07-10T13:52:11.765901Z"
+  },
+  {
+   "city": "new-delhi",
+   "lat": 28.6139,
+   "lon": 77.209,
+   "body": "moon",
+   "event": "rise",
+   "utc": "2027-07-10T06:34:24.116344Z"
+  },
+  {
+   "city": "new-delhi",
+   "lat": 28.6139,
+   "lon": 77.209,
+   "body": "moon",
+   "event": "set",
+   "utc": "2027-07-10T18:10:15.591109Z"
+  },
+  {
+   "city": "new-delhi",
+   "lat": 28.6139,
+   "lon": 77.209,
+   "body": "sun",
+   "event": "rise",
+   "utc": "2027-09-10T00:33:29.032917Z"
+  },
+  {
+   "city": "new-delhi",
+   "lat": 28.6139,
+   "lon": 77.209,
+   "body": "sun",
+   "event": "set",
+   "utc": "2027-09-10T13:02:41.349101Z"
+  },
+  {
+   "city": "new-delhi",
+   "lat": 28.6139,
+   "lon": 77.209,
+   "body": "moon",
+   "event": "rise",
+   "utc": "2027-09-10T09:46:03.203922Z"
+  },
+  {
+   "city": "new-delhi",
+   "lat": 28.6139,
+   "lon": 77.209,
+   "body": "moon",
+   "event": "set",
+   "utc": "2027-09-09T19:17:17.256803Z"
+  },
+  {
+   "city": "new-delhi",
+   "lat": 28.6139,
+   "lon": 77.209,
+   "body": "sun",
+   "event": "rise",
+   "utc": "2027-11-10T01:09:29.152562Z"
+  },
+  {
+   "city": "new-delhi",
+   "lat": 28.6139,
+   "lon": 77.209,
+   "body": "sun",
+   "event": "set",
+   "utc": "2027-11-10T12:00:16.113089Z"
+  },
+  {
+   "city": "new-delhi",
+   "lat": 28.6139,
+   "lon": 77.209,
+   "body": "moon",
+   "event": "rise",
+   "utc": "2027-11-10T09:26:14.259053Z"
+  },
+  {
+   "city": "new-delhi",
+   "lat": 28.6139,
+   "lon": 77.209,
+   "body": "moon",
+   "event": "set",
+   "utc": "2027-11-09T21:19:53.700305Z"
+  },
+  {
+   "city": "london",
+   "lat": 51.5074,
+   "lon": -0.1278,
+   "body": "sun",
+   "event": "rise",
+   "utc": "2027-01-10T08:03:12.405005Z"
+  },
+  {
+   "city": "london",
+   "lat": 51.5074,
+   "lon": -0.1278,
+   "body": "sun",
+   "event": "set",
+   "utc": "2027-01-10T16:13:00.120559Z"
+  },
+  {
+   "city": "london",
+   "lat": 51.5074,
+   "lon": -0.1278,
+   "body": "moon",
+   "event": "rise",
+   "utc": "2027-01-10T09:26:17.060848Z"
+  },
+  {
+   "city": "london",
+   "lat": 51.5074,
+   "lon": -0.1278,
+   "body": "moon",
+   "event": "set",
+   "utc": "2027-01-10T19:04:50.165100Z"
+  },
+  {
+   "city": "london",
+   "lat": 51.5074,
+   "lon": -0.1278,
+   "body": "sun",
+   "event": "rise",
+   "utc": "2027-03-10T06:26:36.592949Z"
+  },
+  {
+   "city": "london",
+   "lat": 51.5074,
+   "lon": -0.1278,
+   "body": "sun",
+   "event": "set",
+   "utc": "2027-03-10T17:55:58.995192Z"
+  },
+  {
+   "city": "london",
+   "lat": 51.5074,
+   "lon": -0.1278,
+   "body": "moon",
+   "event": "rise",
+   "utc": "2027-03-10T06:44:15.514625Z"
+  },
+  {
+   "city": "london",
+   "lat": 51.5074,
+   "lon": -0.1278,
+   "body": "moon",
+   "event": "set",
+   "utc": "2027-03-10T20:51:09.993138Z"
+  },
+  {
+   "city": "london",
+   "lat": 51.5074,
+   "lon": -0.1278,
+   "body": "sun",
+   "event": "rise",
+   "utc": "2027-05-10T04:17:07.318735Z"
+  },
+  {
+   "city": "london",
+   "lat": 51.5074,
+   "lon": -0.1278,
+   "body": "sun",
+   "event": "set",
+   "utc": "2027-05-10T19:37:47.154095Z"
+  },
+  {
+   "city": "london",
+   "lat": 51.5074,
+   "lon": -0.1278,
+   "body": "moon",
+   "event": "rise",
+   "utc": "2027-05-10T07:09:08.744828Z"
+  },
+  {
+   "city": "london",
+   "lat": 51.5074,
+   "lon": -0.1278,
+   "body": "moon",
+   "event": "set",
+   "utc": "2027-05-11T00:33:10.094617Z"
+  },
+  {
+   "city": "london",
+   "lat": 51.5074,
+   "lon": -0.1278,
+   "body": "sun",
+   "event": "rise",
+   "utc": "2027-07-10T03:55:12.436549Z"
+  },
+  {
+   "city": "london",
+   "lat": 51.5074,
+   "lon": -0.1278,
+   "body": "sun",
+   "event": "set",
+   "utc": "2027-07-10T20:15:59.167372Z"
+  },
+  {
+   "city": "london",
+   "lat": 51.5074,
+   "lon": -0.1278,
+   "body": "moon",
+   "event": "rise",
+   "utc": "2027-07-10T12:28:02.816219Z"
+  },
+  {
+   "city": "london",
+   "lat": 51.5074,
+   "lon": -0.1278,
+   "body": "moon",
+   "event": "set",
+   "utc": "2027-07-10T22:48:26.252982Z"
+  },
+  {
+   "city": "london",
+   "lat": 51.5074,
+   "lon": -0.1278,
+   "body": "sun",
+   "event": "rise",
+   "utc": "2027-09-10T05:26:59.290647Z"
+  },
+  {
+   "city": "london",
+   "lat": 51.5074,
+   "lon": -0.1278,
+   "body": "sun",
+   "event": "set",
+   "utc": "2027-09-10T18:27:06.819742Z"
+  },
+  {
+   "city": "london",
+   "lat": 51.5074,
+   "lon": -0.1278,
+   "body": "moon",
+   "event": "rise",
+   "utc": "2027-09-10T16:25:50.527485Z"
+  },
+  {
+   "city": "london",
+   "lat": 51.5074,
+   "lon": -0.1278,
+   "body": "moon",
+   "event": "set",
+   "utc": "2027-09-11T00:16:25.724165Z"
+  },
+  {
+   "city": "london",
+   "lat": 51.5074,
+   "lon": -0.1278,
+   "body": "sun",
+   "event": "rise",
+   "utc": "2027-11-10T07:09:23.918835Z"
+  },
+  {
+   "city": "london",
+   "lat": 51.5074,
+   "lon": -0.1278,
+   "body": "sun",
+   "event": "set",
+   "utc": "2027-11-10T16:18:45.916511Z"
+  },
+  {
+   "city": "london",
+   "lat": 51.5074,
+   "lon": -0.1278,
+   "body": "moon",
+   "event": "rise",
+   "utc": "2027-11-10T14:24:37.433118Z"
+  },
+  {
+   "city": "london",
+   "lat": 51.5074,
+   "lon": -0.1278,
+   "body": "moon",
+   "event": "set",
+   "utc": "2027-11-10T02:50:32.358661Z"
+  },
+  {
+   "city": "sydney",
+   "lat": -33.8688,
+   "lon": 151.2093,
+   "body": "sun",
+   "event": "rise",
+   "utc": "2027-01-09T18:54:42.122250Z"
+  },
+  {
+   "city": "sydney",
+   "lat": -33.8688,
+   "lon": 151.2093,
+   "body": "sun",
+   "event": "set",
+   "utc": "2027-01-10T09:09:50.530492Z"
+  },
+  {
+   "city": "sydney",
+   "lat": -33.8688,
+   "lon": 151.2093,
+   "body": "moon",
+   "event": "rise",
+   "utc": "2027-01-09T20:43:10.584956Z"
+  },
+  {
+   "city": "sydney",
+   "lat": -33.8688,
+   "lon": 151.2093,
+   "body": "moon",
+   "event": "set",
+   "utc": "2027-01-10T10:41:21.942831Z"
+  },
+  {
+   "city": "sydney",
+   "lat": -33.8688,
+   "lon": 151.2093,
+   "body": "sun",
+   "event": "rise",
+   "utc": "2027-03-09T19:49:56.878400Z"
+  },
+  {
+   "city": "sydney",
+   "lat": -33.8688,
+   "lon": 151.2093,
+   "body": "sun",
+   "event": "set",
+   "utc": "2027-03-10T08:20:39.493109Z"
+  },
+  {
+   "city": "sydney",
+   "lat": -33.8688,
+   "lon": 151.2093,
+   "body": "moon",
+   "event": "rise",
+   "utc": "2027-03-09T21:20:56.696101Z"
+  },
+  {
+   "city": "sydney",
+   "lat": -33.8688,
+   "lon": 151.2093,
+   "body": "moon",
+   "event": "set",
+   "utc": "2027-03-10T08:59:58.551366Z"
+  },
+  {
+   "city": "sydney",
+   "lat": -33.8688,
+   "lon": 151.2093,
+   "body": "sun",
+   "event": "rise",
+   "utc": "2027-05-09T20:36:09.375372Z"
+  },
+  {
+   "city": "sydney",
+   "lat": -33.8688,
+   "lon": 151.2093,
+   "body": "sun",
+   "event": "set",
+   "utc": "2027-05-10T07:06:42.804923Z"
+  },
+  {
+   "city": "sydney",
+   "lat": -33.8688,
+   "lon": 151.2093,
+   "body": "moon",
+   "event": "rise",
+   "utc": "2027-05-10T00:34:39.808192Z"
+  },
+  {
+   "city": "sydney",
+   "lat": -33.8688,
+   "lon": 151.2093,
+   "body": "moon",
+   "event": "set",
+   "utc": "2027-05-10T10:24:44.613338Z"
+  },
+  {
+   "city": "sydney",
+   "lat": -33.8688,
+   "lon": 151.2093,
+   "body": "sun",
+   "event": "rise",
+   "utc": "2027-07-09T20:59:56.875897Z"
+  },
+  {
+   "city": "sydney",
+   "lat": -33.8688,
+   "lon": 151.2093,
+   "body": "sun",
+   "event": "set",
+   "utc": "2027-07-10T07:01:12.099696Z"
+  },
+  {
+   "city": "sydney",
+   "lat": -33.8688,
+   "lon": 151.2093,
+   "body": "moon",
+   "event": "rise",
+   "utc": "2027-07-10T00:48:35.455239Z"
+  },
+  {
+   "city": "sydney",
+   "lat": -33.8688,
+   "lon": 151.2093,
+   "body": "moon",
+   "event": "set",
+   "utc": "2027-07-10T14:00:32.900177Z"
+  },
+  {
+   "city": "sydney",
+   "lat": -33.8688,
+   "lon": 151.2093,
+   "body": "sun",
+   "event": "rise",
+   "utc": "2027-09-09T20:02:23.046270Z"
+  },
+  {
+   "city": "sydney",
+   "lat": -33.8688,
+   "lon": 151.2093,
+   "body": "sun",
+   "event": "set",
+   "utc": "2027-09-10T07:42:51.720578Z"
+  },
+  {
+   "city": "sydney",
+   "lat": -33.8688,
+   "lon": 151.2093,
+   "body": "moon",
+   "event": "rise",
+   "utc": "2027-09-10T02:24:04.330461Z"
+  },
+  {
+   "city": "sydney",
+   "lat": -33.8688,
+   "lon": 151.2093,
+   "body": "moon",
+   "event": "set",
+   "utc": "2027-09-09T16:33:25.396512Z"
+  },
+  {
+   "city": "sydney",
+   "lat": -33.8688,
+   "lon": 151.2093,
+   "body": "sun",
+   "event": "rise",
+   "utc": "2027-11-09T18:47:30.403489Z"
+  },
+  {
+   "city": "sydney",
+   "lat": -33.8688,
+   "lon": 151.2093,
+   "body": "sun",
+   "event": "set",
+   "utc": "2027-11-10T08:31:00.240537Z"
+  },
+  {
+   "city": "sydney",
+   "lat": -33.8688,
+   "lon": 151.2093,
+   "body": "moon",
+   "event": "rise",
+   "utc": "2027-11-10T04:42:56.163764Z"
+  },
+  {
+   "city": "sydney",
+   "lat": -33.8688,
+   "lon": 151.2093,
+   "body": "moon",
+   "event": "set",
+   "utc": "2027-11-09T16:08:25.076788Z"
+  },
+  {
+   "city": "new-york",
+   "lat": 40.7128,
+   "lon": -74.006,
+   "body": "sun",
+   "event": "rise",
+   "utc": "2027-01-10T12:19:35.557132Z"
+  },
+  {
+   "city": "new-york",
+   "lat": 40.7128,
+   "lon": -74.006,
+   "body": "sun",
+   "event": "set",
+   "utc": "2027-01-10T21:47:43.231020Z"
+  },
+  {
+   "city": "new-york",
+   "lat": 40.7128,
+   "lon": -74.006,
+   "body": "moon",
+   "event": "rise",
+   "utc": "2027-01-10T13:58:57.847021Z"
+  },
+  {
+   "city": "new-york",
+   "lat": 40.7128,
+   "lon": -74.006,
+   "body": "moon",
+   "event": "set",
+   "utc": "2027-01-11T00:37:43.020878Z"
+  },
+  {
+   "city": "new-york",
+   "lat": 40.7128,
+   "lon": -74.006,
+   "body": "sun",
+   "event": "rise",
+   "utc": "2027-03-10T11:16:06.048445Z"
+  },
+  {
+   "city": "new-york",
+   "lat": 40.7128,
+   "lon": -74.006,
+   "body": "sun",
+   "event": "set",
+   "utc": "2027-03-10T22:57:07.395397Z"
+  },
+  {
+   "city": "new-york",
+   "lat": 40.7128,
+   "lon": -74.006,
+   "body": "moon",
+   "event": "rise",
+   "utc": "2027-03-10T11:58:07.261726Z"
+  },
+  {
+   "city": "new-york",
+   "lat": 40.7128,
+   "lon": -74.006,
+   "body": "moon",
+   "event": "set",
+   "utc": "2027-03-11T01:40:35.559297Z"
+  },
+  {
+   "city": "new-york",
+   "lat": 40.7128,
+   "lon": -74.006,
+   "body": "sun",
+   "event": "rise",
+   "utc": "2027-05-10T09:44:17.763577Z"
+  },
+  {
+   "city": "new-york",
+   "lat": 40.7128,
+   "lon": -74.006,
+   "body": "sun",
+   "event": "set",
+   "utc": "2027-05-11T00:01:12.870094Z"
+  },
+  {
+   "city": "new-york",
+   "lat": 40.7128,
+   "lon": -74.006,
+   "body": "moon",
+   "event": "rise",
+   "utc": "2027-05-10T13:13:37.137377Z"
+  },
+  {
+   "city": "new-york",
+   "lat": 40.7128,
+   "lon": -74.006,
+   "body": "moon",
+   "event": "set",
+   "utc": "2027-05-11T04:50:59.309323Z"
+  },
+  {
+   "city": "new-york",
+   "lat": 40.7128,
+   "lon": -74.006,
+   "body": "sun",
+   "event": "rise",
+   "utc": "2027-07-10T09:33:59.876966Z"
+  },
+  {
+   "city": "new-york",
+   "lat": 40.7128,
+   "lon": -74.006,
+   "body": "sun",
+   "event": "set",
+   "utc": "2027-07-11T00:28:32.242372Z"
+  },
+  {
+   "city": "new-york",
+   "lat": 40.7128,
+   "lon": -74.006,
+   "body": "moon",
+   "event": "rise",
+   "utc": "2027-07-10T17:20:08.003157Z"
+  },
+  {
+   "city": "new-york",
+   "lat": 40.7128,
+   "lon": -74.006,
+   "body": "moon",
+   "event": "set",
+   "utc": "2027-07-11T04:10:48.339500Z"
+  },
+  {
+   "city": "new-york",
+   "lat": 40.7128,
+   "lon": -74.006,
+   "body": "sun",
+   "event": "rise",
+   "utc": "2027-09-10T10:31:41.830910Z"
+  },
+  {
+   "city": "new-york",
+   "lat": 40.7128,
+   "lon": -74.006,
+   "body": "sun",
+   "event": "set",
+   "utc": "2027-09-10T23:13:38.227762Z"
+  },
+  {
+   "city": "new-york",
+   "lat": 40.7128,
+   "lon": -74.006,
+   "body": "moon",
+   "event": "rise",
+   "utc": "2027-09-10T20:41:34.773647Z"
+  },
+  {
+   "city": "new-york",
+   "lat": 40.7128,
+   "lon": -74.006,
+   "body": "moon",
+   "event": "set",
+   "utc": "2027-09-10T05:08:24.477100Z"
+  },
+  {
+   "city": "new-york",
+   "lat": 40.7128,
+   "lon": -74.006,
+   "body": "sun",
+   "event": "rise",
+   "utc": "2027-11-10T11:36:46.824616Z"
+  },
+  {
+   "city": "new-york",
+   "lat": 40.7128,
+   "lon": -74.006,
+   "body": "sun",
+   "event": "set",
+   "utc": "2027-11-10T21:42:37.413527Z"
+  },
+  {
+   "city": "new-york",
+   "lat": 40.7128,
+   "lon": -74.006,
+   "body": "moon",
+   "event": "rise",
+   "utc": "2027-11-10T19:34:23.687365Z"
+  },
+  {
+   "city": "new-york",
+   "lat": 40.7128,
+   "lon": -74.006,
+   "body": "moon",
+   "event": "set",
+   "utc": "2027-11-10T07:53:25.874410Z"
+  }
+ ]
+}

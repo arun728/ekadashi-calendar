@@ -244,4 +244,5 @@ def smarta_parana(fast_sunrise_next, sunset_next, ekadashi_end, dwadashi_end):
         end = sunrise + 4 * fifth
     if limit is not None and limit < end:
         end = limit
-    return begin, end
+    # No bounded window left (Dwadashi or Aparahna ends first): after-only.
+    return begin, (end if end > begin else None)

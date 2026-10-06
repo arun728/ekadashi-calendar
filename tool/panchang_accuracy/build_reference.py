@@ -94,7 +94,7 @@ def city_reference(args):
         ekadashi_end = R.next_boundary(R.elongation, probe, 12)
         dwadashi_end = R.next_boundary(R.elongation, ekadashi_end + 1e-6, 12)
         begin, end = R.smarta_parana(sunrises[i + 1], sunsets[i + 1], ekadashi_end, dwadashi_end)
-        day["parana"] = {"start": iso(begin), "end": iso(end)}
+        day["parana"] = {"start": iso(begin), "end": iso(end) if end else None}
     return city["id"], days
 
 

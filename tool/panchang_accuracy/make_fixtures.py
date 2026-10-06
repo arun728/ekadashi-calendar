@@ -35,3 +35,25 @@ out = os.path.join(root, "test", "fixtures", "panchang", "swiss_ephemeris_positi
 json.dump({"source": f"Swiss Ephemeris {swe.version} (sepl_18/semo_18, JPL DE431); apparent, true equinox of date; Lahiri SE_SIDM_LAHIRI true ayanamsa",
            "samples": rows}, open(out, "w"), indent=1)
 print(out, len(rows))
+
+# Rise/set fixture: apparent upper limb, standard refraction (1013.25 hPa,
+# 15 C), sea level, topocentric Moon - Swiss Ephemeris swe_rise_trans.
+cities = [("new-delhi", 28.6139, 77.2090), ("london", 51.5074, -0.1278),
+          ("sydney", -33.8688, 151.2093), ("new-york", 40.7128, -74.0060)]
+events = []
+for name, lat, lon in cities:
+    for month in range(1, 13, 2):
+        jd0 = swe.julday(2027, month, 10, 0) - lon / 360  # local midnight-ish
+        for body, label in ((swe.SUN, "sun"), (swe.MOON, "moon")):
+            for flag, kind in ((swe.CALC_RISE, "rise"), (swe.CALC_SET, "set")):
+                res, t = swe.rise_trans(jd0, body, flag, (lon, lat, 0), 1013.25, 15, swe.FLG_SWIEPH)
+                if res != 0:
+                    continue
+                y, m, d, h = swe.revjul(t[0])
+                instant = dt.datetime(y, m, d, tzinfo=dt.timezone.utc) + dt.timedelta(hours=h)
+                events.append({"city": name, "lat": lat, "lon": lon, "body": label, "event": kind,
+                               "utc": instant.isoformat().replace("+00:00", "Z")})
+out = os.path.join(root, "test", "fixtures", "panchang", "swiss_rise_set_2027.json")
+json.dump({"source": f"Swiss Ephemeris {swe.version} swe_rise_trans: upper limb, refraction at 1013.25 hPa and 15 C, sea level",
+           "events": events}, open(out, "w"), indent=1)
+print(out, len(events))

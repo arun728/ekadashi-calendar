@@ -35,6 +35,9 @@ there is no year-specific daily-data download.
 
 ## Calculation choices and numerical checks
 
+Superseded by docs/PANCHANG_ACCURACY.md (VSOP87 Sun, ELP 2000-82B Moon,
+IAU nutation, tabulated Delta T, Drik-validated Smarta rules and kala-based
+festival rules). The paragraphs below describe the earlier implementation.
 The inherited Meeus Sun/Moon series remain independently implemented. Orbital
 formulas now receive terrestrial time, using the NASA/Espenak–Meeus Delta T
 polynomials (UTC approximates UT1 to sub-second accuracy); Earth rotation still
@@ -106,9 +109,9 @@ IDs, tracker, notification scheduler and widgets. It returns UTC instants, local
 fast/parana dates, tradition, rule identifier, tithi interval, Hari Vasara and a
 near-boundary flag. It searches neighbouring days across month/year boundaries.
 
-- Smarta householders: first sunrise occurrence of Ekadashi; skipped Ekadashi
-  follows the stated Dwadashi-fast rule. Parana begins after sunrise and the
-  first quarter of Dwadashi where applicable. This is not the renunciate profile.
+- Smarta householders: Drik Panchang's rules, validated against all 24
+  published Delhi 2027 fasts and Parana windows (see PANCHANG_ACCURACY.md).
+  This is not the renunciate profile.
 - Gaudiya/ISKCON: Arunodaya contamination, repeated Ekadashi (Unmilani), extended
   Dwadashi (Vyanjuli), skipped Dwadashi (Trisprisha and combined case), repeated
   next full/new moon (Pakshavardhini), and Jaya/Jayanti/Papanashini/Vijaya

@@ -35,7 +35,7 @@ class PanchangGuide extends StatelessWidget {
           childrenPadding: EdgeInsets.all(16),
           children: [
             Text(
-              'Smarta householders use the sunrise Ekadashi and the first day when it repeats. The Gaudiya/ISKCON profile also tests Arunodaya, 96 minutes before sunrise, and Mahadvadashi conditions.\n\nParana depends on sunrise, the end of Dwadashi, Hari Vasara, and the applicable special rule. A difference between profiles can be intentional. The calculated schedule is a preview while comparisons with independent calendars are completed; existing reminders and fasting history remain on the published schedule.',
+              'Smarta householders fast on the Ekadashi at sunrise. When Ekadashi touches two sunrises and Dwadashi also reaches the next one, the second day is kept; when Ekadashi or the following Dwadashi touches no sunrise, the fast moves to the Dashami day so that Parana falls in Dwadashi. The Gaudiya/ISKCON profile also tests Arunodaya, 96 minutes before sunrise, and Mahadvadashi conditions.\n\nSmarta Parana begins after sunrise and Hari Vasara (the first quarter of Dwadashi), preferably within Pratahkala, the first fifth of the day; if Hari Vasara lasts longer, it moves after Madhyahna. Gaudiya Parana follows the GCAL rules for its special days. A difference between profiles can be intentional. The calculated schedule is a preview while comparisons with independent calendars are completed; existing reminders and fasting history remain on the published schedule.',
             ),
           ],
         ),
@@ -47,7 +47,7 @@ class PanchangGuide extends StatelessWidget {
           childrenPadding: EdgeInsets.all(16),
           children: [
             Text(
-              'City search and Panchang calculations work offline. City selection supplies coordinates and an IANA timezone, including daylight-saving transitions. GPS is optional and its suggested timezone should be checked.\n\nSun and Moon positions use published astronomical formulas with a Lahiri sidereal offset. Rise/set estimates use the apparent upper limb and a level horizon. Mountains, elevation and unusual refraction can change observed times. When there is no complete solar day, sunrise-based periods and fasting recommendations are unavailable.\n\nRitu uses lunar months; Ayana is labelled with the tropical solstice convention. Muhurta labels are traditional timing categories, not guarantees of outcomes.',
+              'City search and Panchang calculations work offline. City selection supplies coordinates and an IANA timezone, including daylight-saving transitions. GPS is optional and its suggested timezone should be checked.\n\nThe Sun uses the VSOP87 planetary theory and the Moon the ELP 2000-82B lunar theory, with IAU nutation and the Lahiri ayanamsa; positions agree with JPL ephemerides to better than an arcsecond. Rise/set use the apparent upper limb, standard refraction and a sea-level horizon. Mountains, elevation and unusual refraction can change observed times. When there is no complete solar day, sunrise-based periods and fasting recommendations are unavailable.\n\nRitu uses lunar months; Ayana is labelled with the tropical solstice convention. Muhurta labels are traditional timing categories, not guarantees of outcomes.',
             ),
           ],
         ),
@@ -59,7 +59,7 @@ class PanchangGuide extends StatelessWidget {
           childrenPadding: EdgeInsets.all(16),
           children: [
             Text(
-              'Astronomy: Meeus, Astronomical Algorithms; NOAA and USNO rise/set references. Fasting rules: separately modelled Smarta and Gaudiya profiles; the latter cross-reviewed against the published GCAL decision table.\n\nCities: GeoNames (geonames.org), CC BY 4.0. Timezones: IANA database distributed by the timezone package.\n\nRegional festival profiles, personal birth charts, horoscope matching and eclipse calculations are not yet included. This is not a claim of full Drik Panchang equivalence.',
+              'Astronomy: VSOP87 (Bretagnon & Francou), ELP 2000-82B (Chapront-Touzé & Chapront), IAU 1980 nutation, Meeus, Astronomical Algorithms; checked against Swiss Ephemeris (JPL DE431). Fasting rules: Smarta dates and Parana checked against published Drik Panchang dates; Gaudiya cross-reviewed against the GCAL decision table. Festivals follow the traditional time-window (kala) rules and were checked against public Indian festival lists.\n\nCities: GeoNames (geonames.org), CC BY 4.0. Timezones: IANA database distributed by the timezone package.\n\nRegional festival profiles, personal birth charts, horoscope matching and eclipse calculations are not yet included. This is not a claim of full Drik Panchang equivalence.',
             ),
           ],
         ),

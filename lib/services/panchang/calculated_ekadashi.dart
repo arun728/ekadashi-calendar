@@ -54,11 +54,7 @@ class EkadashiRules {
     }
     final t = today.fortnightTithi;
     if (tradition == EkadashiTradition.smarta) {
-      if (t == 11 && previous.fortnightTithi != 11) return 'Sunrise Ekadashi';
-      if (t == 12 && previous.fortnightTithi == 10) {
-        return 'Kshaya Ekadashi / Dwadashi fast';
-      }
-      return null;
+      return _smarta(days, index);
     }
     final mahadvadashi = _mahadvadashi(days, index);
     if (mahadvadashi != null) return mahadvadashi;
@@ -72,6 +68,33 @@ class EkadashiRules {
       return null;
     }
     return 'Shuddha Ekadashi';
+  }
+
+  /// Smarta householder rules, as published by Drik Panchang (validated
+  /// against all 24 Delhi 2027 dates; see docs/PANCHANG_ACCURACY.md):
+  /// - one Ekadashi sunrise followed by Dwadashi: that day;
+  /// - Ekadashi at two sunrises: the second day when Dwadashi also reaches
+  ///   the next sunrise, otherwise the first day;
+  /// - Ekadashi touching no sunrise, or Dwadashi touching no sunrise after
+  ///   the Ekadashi day: the Dashami day, so that Parana falls in Dwadashi.
+  static String? _smarta(List<EkadashiSample> days, int i) {
+    if (i + 2 >= days.length) return null;
+    final p = days[i - 1].fortnightTithi;
+    final t = days[i].fortnightTithi;
+    final n = days[i + 1].fortnightTithi;
+    final nn = days[i + 2].fortnightTithi;
+    if (t == 11 && p != 11) {
+      if (n == 11) return nn == 12 ? null : 'Sunrise Ekadashi (first of two)';
+      return n == 12 ? 'Sunrise Ekadashi' : null;
+    }
+    if (t == 11 && p == 11) {
+      return n == 12 ? 'Ekadashi and Dwadashi both extended' : null;
+    }
+    if (t == 10) {
+      if (n == 12) return 'Kshaya Ekadashi: fast on Dashami day';
+      if (n == 11 && nn == 13) return 'Kshaya Dwadashi: fast on Dashami day';
+    }
+    return null;
   }
 
   static String? _mahadvadashi(List<EkadashiSample> days, int i) {
@@ -134,7 +157,7 @@ class CalculatedEkadashi {
   final DateTime tithiStartUtc;
   final DateTime tithiEndUtc;
   final bool nearBoundary;
-  static const ruleVersion = 'current-location-v1';
+  static const ruleVersion = 'current-location-v2';
   // Candidate data deliberately does not implement the published Ekadashi
   // model: no accidental replacement of reminders, tracker IDs or history.
 }
@@ -189,14 +212,16 @@ class CalculatedEkadashiEngine {
       if (rule == null) continue;
       final day = days[i], next = days[i + 1];
       final sunrise = day.sunriseUtc!;
-      // Locate the actual Ekadashi interval, even when fasting on Dwadashi.
+      // Locate the actual Ekadashi interval: later the same day when the
+      // fast is on the Dashami day, earlier when fasting on Dwadashi.
+      final forward = samples[i].fortnightTithi == 10;
       var probe = sunrise;
       for (
         var hours = 0;
         hours < 72 && (engine.tithiAt(probe).index - 1) % 15 + 1 != 11;
         hours++
       ) {
-        probe = probe.subtract(const Duration(hours: 1));
+        probe = probe.add(Duration(hours: forward ? 1 : -1));
       }
       final ekadashi = engine.tithiAt(probe);
       if ((ekadashi.index - 1) % 15 + 1 != 11) continue;
@@ -205,7 +230,9 @@ class CalculatedEkadashiEngine {
       final dwadashi = engine.tithiAt(tithiEnd.add(const Duration(seconds: 1)));
       final dwadashiEnd = dwadashi.endsAtUtc!;
       final hariVasara = tithiEnd.add(dwadashiEnd.difference(tithiEnd) ~/ 4);
-      final parana = _parana(day, next, tradition, rule, hariVasara);
+      final parana = tradition == EkadashiTradition.smarta
+          ? _smartaParana(next, tithiEnd, dwadashiEnd)
+          : _parana(day, next, tradition, rule, hariVasara);
       final arunodaya = sunrise.subtract(const Duration(minutes: 96));
       final nearBoundary =
           [day.nakshatra, next.nakshatra].any(
@@ -242,6 +269,46 @@ class CalculatedEkadashiEngine {
       );
     }
     return List.unmodifiable(result);
+  }
+
+  /// Drik Panchang's Smarta Parana: after sunrise and Hari Vasara (the first
+  /// quarter of Dwadashi), preferably in Pratahkala (the first fifth of the
+  /// day); if Hari Vasara outlasts Pratahkala, after Madhyahna (the third
+  /// fifth) until the end of Aparahna (the fourth fifth). Always before
+  /// Dwadashi ends, unless Dwadashi ended before sunrise.
+  (DateTime?, DateTime?, String) _smartaParana(
+    PanchangDay next,
+    DateTime ekadashiEnd,
+    DateTime dwadashiEnd,
+  ) {
+    final sunrise = next.sunriseUtc, sunset = next.sunsetUtc;
+    if (sunrise == null || sunset == null || !sunset.isAfter(sunrise)) {
+      return (null, null, 'Solar day unavailable');
+    }
+    final fifth = sunset.difference(sunrise) ~/ 5;
+    final hariVasara = ekadashiEnd.add(
+      dwadashiEnd.difference(ekadashiEnd) ~/ 4,
+    );
+    DateTime later(DateTime a, DateTime b) => a.isAfter(b) ? a : b;
+    var begin = later(sunrise, hariVasara);
+    late DateTime end;
+    late String reason;
+    if (begin.isBefore(sunrise.add(fifth))) {
+      end = sunrise.add(fifth);
+      reason = 'After sunrise and Hari Vasara, within Pratahkala';
+    } else {
+      begin = later(begin, sunrise.add(fifth * 3));
+      end = sunrise.add(fifth * 4);
+      reason = 'Hari Vasara outlasts Pratahkala: after Madhyahna';
+    }
+    if (dwadashiEnd.isAfter(sunrise) && dwadashiEnd.isBefore(end)) {
+      end = dwadashiEnd;
+      reason = '$reason, before Dwadashi ends';
+    }
+    if (!end.isAfter(begin)) {
+      return (begin, null, '$reason. No bounded window; shown as after-only.');
+    }
+    return (begin, end, reason);
   }
 
   (DateTime?, DateTime?, String) _parana(

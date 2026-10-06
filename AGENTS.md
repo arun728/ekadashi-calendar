@@ -144,3 +144,14 @@ published Ekadashi dates stay authoritative. Today's vrat and festival names
 are free; full Panchang details, Muhurta, Rashi and the festival finder are
 premium. Open one PR to `dev`; do not merge it without Arun's approval and do
 not run CI without explicit permission.
+
+## Panchang accuracy (6 October 2026)
+
+Arun asked for `feature/panchang-accuracy`, branched from PR #14, to measure
+and improve the accuracy of the existing Panchang calculations without new
+features. Keep `test/unit/panchang_accuracy_test.dart` green and re-run
+`tool/panchang_accuracy` (see docs/PANCHANG_ACCURACY.md) after any engine or
+rule change. Smarta Ekadashi dates and Parana follow the published Drik
+rules; published Ekadashi data in `assets/calendar` stays authoritative for
+the Vrat UI. Do not merge to dev or main without Arun's approval and do not
+run CI without explicit permission.

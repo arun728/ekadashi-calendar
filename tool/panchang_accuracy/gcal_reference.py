@@ -41,6 +41,10 @@ def fasts(city, year):
         following = days[index + 1]
         parana = following.get("ekadashiParana")
         if parana:
+            # GCAL EkadasiParanaType: 1 third of day, 2 Hari Vasara (quarter
+            # of Dwadashi), 3 nakshatra end, 4 sunrise, 5 tithi end.
+            entry["startReason"] = parana.get("startReason")
+            entry["endReason"] = parana.get("endReason")
             for key, ref_key in (("start", "startTime"), ("end", "endTime")):
                 if parana[ref_key] >= 0:
                     hours = parana[ref_key] - following["date"]["offset"] - following["hasDST"]
