@@ -30,6 +30,12 @@ class CalendarEntry {
     required this.updatedAt,
   });
 
+  /// Start and end in the phone's local time, for display and editing.
+  /// Google timed events are stored as UTC instants; custom entries and
+  /// all-day dates are already local, so `toLocal` leaves them unchanged.
+  DateTime get localStart => isAllDay ? startAt : startAt.toLocal();
+  DateTime get localEnd => isAllDay ? endAt : endAt.toLocal();
+
   bool occursOn(DateTime day) {
     final d = DateTime(day.year, day.month, day.day);
     final next = DateTime(day.year, day.month, day.day + 1);

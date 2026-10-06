@@ -195,8 +195,9 @@ void main() {
       'id': 'night',
       'calendarId': 'primary',
       'accountId': 'account-a',
-      'start': {'dateTime': '2027-01-01T23:00:00Z'},
-      'end': {'dateTime': '2027-01-02T00:00:00Z'},
+      // An hour ending exactly at the phone's local midnight, in any zone.
+      'start': {'dateTime': DateTime(2027, 1, 1, 23).toUtc().toIso8601String()},
+      'end': {'dateTime': DateTime(2027, 1, 2).toUtc().toIso8601String()},
     })!;
     expect(timed.occursOn(DateTime(2027, 1, 2)), isFalse);
   });
