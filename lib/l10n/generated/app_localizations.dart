@@ -1806,6 +1806,72 @@ abstract class AppLocalizations {
   /// **'one-time'**
   String get premium_one_time;
 
+  /// No description provided for @premium_restored.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchases restored. Premium is active.'**
+  String get premium_restored;
+
+  /// No description provided for @premium_restore_none.
+  ///
+  /// In en, this message translates to:
+  /// **'No purchases found for this Google Play account.'**
+  String get premium_restore_none;
+
+  /// No description provided for @premium_lifetime_thanks_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Thank you, lifetime member! 🙏'**
+  String get premium_lifetime_thanks_title;
+
+  /// No description provided for @premium_lifetime_thanks_body.
+  ///
+  /// In en, this message translates to:
+  /// **'Every Premium feature is yours for life, including all future features and updates. We look forward to serving you for years to come.'**
+  String get premium_lifetime_thanks_body;
+
+  /// No description provided for @premium_subscriber_title.
+  ///
+  /// In en, this message translates to:
+  /// **'You have Premium ✨'**
+  String get premium_subscriber_title;
+
+  /// No description provided for @premium_subscriber_body.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch plans or go lifetime anytime.'**
+  String get premium_subscriber_body;
+
+  /// No description provided for @premium_cancel_subscription_note.
+  ///
+  /// In en, this message translates to:
+  /// **'Your subscription is still active. Cancel it in Google Play so you are not charged again. Lifetime stays yours.'**
+  String get premium_cancel_subscription_note;
+
+  /// No description provided for @premium_cancel_subscription_action.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel subscription in Google Play'**
+  String get premium_cancel_subscription_action;
+
+  /// No description provided for @premium_lifetime_confirm_title.
+  ///
+  /// In en, this message translates to:
+  /// **'You already have a subscription'**
+  String get premium_lifetime_confirm_title;
+
+  /// No description provided for @premium_lifetime_confirm_body.
+  ///
+  /// In en, this message translates to:
+  /// **'Google Play does not cancel subscriptions automatically. After buying lifetime, cancel your subscription in Google Play to stop renewals.'**
+  String get premium_lifetime_confirm_body;
+
+  /// No description provided for @premium_buy_lifetime_anyway.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy lifetime'**
+  String get premium_buy_lifetime_anyway;
+
   /// No description provided for @premium_unavailable.
   ///
   /// In en, this message translates to:

@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:in_app_purchase_android/billing_client_wrappers.dart';
 import 'package:ekadashi_calendar/services/play_billing_service.dart';
 import 'package:ekadashi_calendar/services/premium_service.dart';
 import '../support/premium_fixture.dart';
@@ -66,5 +67,19 @@ void main() {
       PremiumService(entitlements: PremiumFixture()..premium = false),
     )..pending = true;
     expect(free.canBuy(monthly), isFalse);
+  });
+
+  // Google Play: switching base plans within the same subscription only
+  // accepts CHARGE_FULL_PRICE or WITHOUT_PRORATION; any other mode fails
+  // with "Something went wrong on our end".
+  test('switching to yearly charges now; switching to monthly at renewal', () {
+    expect(
+      PlayBillingService.replacementModeFor('yearly'),
+      ReplacementMode.chargeFullPrice,
+    );
+    expect(
+      PlayBillingService.replacementModeFor('monthly'),
+      ReplacementMode.withoutProration,
+    );
   });
 }

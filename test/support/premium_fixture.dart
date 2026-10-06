@@ -24,6 +24,14 @@ class PremiumFixture implements PlayEntitlementSource {
 
 class FixtureBilling extends PlayBillingService {
   FixtureBilling(super.premium);
+
+  /// Plans the paywall asked Google Play to buy (no real checkout in tests).
+  final bought = <String>[];
+  @override
+  Future<void> buy(PremiumPlan plan) async {
+    if (canBuy(plan)) bought.add(plan.id);
+  }
+
   @override
   Future<void> initialize() async {
     plans.clear();

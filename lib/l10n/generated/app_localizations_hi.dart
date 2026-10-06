@@ -901,6 +901,44 @@ class AppLocalizationsHi extends AppLocalizations {
   String get premium_one_time => 'एक बार';
 
   @override
+  String get premium_restored => 'खरीदारी बहाल हो गई। Premium सक्रिय है।';
+
+  @override
+  String get premium_restore_none =>
+      'इस Google Play खाते के लिए कोई खरीदारी नहीं मिली।';
+
+  @override
+  String get premium_lifetime_thanks_title => 'धन्यवाद, आजीवन सदस्य! 🙏';
+
+  @override
+  String get premium_lifetime_thanks_body =>
+      'हर Premium सुविधा जीवनभर आपकी है, आने वाली सभी नई सुविधाओं और अपडेट सहित। हम वर्षों तक आपकी सेवा करने के लिए उत्सुक हैं।';
+
+  @override
+  String get premium_subscriber_title => 'आपके पास Premium है ✨';
+
+  @override
+  String get premium_subscriber_body => 'कभी भी प्लान बदलें या आजीवन लें।';
+
+  @override
+  String get premium_cancel_subscription_note =>
+      'आपकी सदस्यता अभी भी सक्रिय है। दोबारा शुल्क से बचने के लिए इसे Google Play में रद्द करें। आजीवन प्लान आपका ही रहेगा।';
+
+  @override
+  String get premium_cancel_subscription_action =>
+      'Google Play में सदस्यता रद्द करें';
+
+  @override
+  String get premium_lifetime_confirm_title => 'आपकी सदस्यता पहले से है';
+
+  @override
+  String get premium_lifetime_confirm_body =>
+      'Google Play सदस्यता अपने आप रद्द नहीं करता। आजीवन खरीदने के बाद, नवीनीकरण रोकने के लिए Google Play में अपनी सदस्यता रद्द करें।';
+
+  @override
+  String get premium_buy_lifetime_anyway => 'आजीवन खरीदें';
+
+  @override
   String get premium_unavailable =>
       'अभी खरीदारी उपलब्ध नहीं है। ऐप Google Play से इंस्टॉल करके फिर प्रयास करें। मुफ़्त सुविधाएँ काम करती रहेंगी।';
 

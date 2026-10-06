@@ -907,6 +907,46 @@ class AppLocalizationsTa extends AppLocalizations {
   String get premium_one_time => 'ஒரு முறை';
 
   @override
+  String get premium_restored =>
+      'வாங்கியவை மீட்டெடுக்கப்பட்டன. Premium செயலில் உள்ளது.';
+
+  @override
+  String get premium_restore_none =>
+      'இந்த Google Play கணக்கில் வாங்கியவை எதுவும் இல்லை.';
+
+  @override
+  String get premium_lifetime_thanks_title => 'நன்றி, வாழ்நாள் உறுப்பினரே! 🙏';
+
+  @override
+  String get premium_lifetime_thanks_body =>
+      'எதிர்கால அம்சங்கள், புதுப்பிப்புகள் உட்பட அனைத்து Premium அம்சங்களும் வாழ்நாள் முழுவதும் உங்களுடையவை. பல ஆண்டுகள் உங்களுக்கு சேவை செய்ய ஆவலாக உள்ளோம்.';
+
+  @override
+  String get premium_subscriber_title => 'உங்களிடம் Premium உள்ளது ✨';
+
+  @override
+  String get premium_subscriber_body =>
+      'எப்போது வேண்டுமானாலும் திட்டத்தை மாற்றலாம் அல்லது வாழ்நாள் திட்டத்தைப் பெறலாம்.';
+
+  @override
+  String get premium_cancel_subscription_note =>
+      'உங்கள் சந்தா இன்னும் செயலில் உள்ளது. மீண்டும் கட்டணம் வசூலிக்கப்படாமல் இருக்க Google Play-இல் அதை ரத்துசெய்யவும். வாழ்நாள் திட்டம் உங்களுடையதே.';
+
+  @override
+  String get premium_cancel_subscription_action =>
+      'Google Play-இல் சந்தாவை ரத்துசெய்';
+
+  @override
+  String get premium_lifetime_confirm_title => 'உங்களிடம் ஏற்கனவே சந்தா உள்ளது';
+
+  @override
+  String get premium_lifetime_confirm_body =>
+      'Google Play சந்தாக்களை தானாக ரத்துசெய்யாது. வாழ்நாள் திட்டத்தை வாங்கிய பின், புதுப்பித்தலை நிறுத்த Google Play-இல் உங்கள் சந்தாவை ரத்துசெய்யவும்.';
+
+  @override
+  String get premium_buy_lifetime_anyway => 'வாழ்நாள் திட்டத்தை வாங்கு';
+
+  @override
   String get premium_unavailable =>
       'தற்போது வாங்க முடியவில்லை. Google Play-இலிருந்து செயலியை நிறுவி மீண்டும் முயலவும். இலவச அம்சங்கள் தொடர்ந்து செயல்படும்.';
 

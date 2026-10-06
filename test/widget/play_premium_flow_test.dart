@@ -146,6 +146,77 @@ void main() {
     );
   });
 
+  testWidgets('Restore says whether purchases were found', (tester) async {
+    final source = PremiumFixture()..premium = false;
+    final premium = PremiumService(entitlements: source);
+    addTearDown(premium.dispose);
+    await pumpPaywall(tester, premium);
+    await tester.tap(find.text(lang.translate('premium_restore')));
+    await tester.pumpAndSettle();
+    expect(find.text(lang.translate('premium_restore_none')), findsOneWidget);
+    source.premium = true;
+    await tester.tap(find.text(lang.translate('premium_restore')));
+    await tester.pumpAndSettle();
+    expect(find.text(lang.translate('premium_restored')), findsOneWidget);
+  });
+
+  testWidgets('Lifetime members get a thank-you, not a sales page', (
+    tester,
+  ) async {
+    final premium = PremiumService(entitlements: PremiumFixture())
+      ..applyOwned({PremiumService.lifetimeId});
+    addTearDown(premium.dispose);
+    await pumpPaywall(tester, premium);
+    expect(
+      find.text(lang.translate('premium_lifetime_thanks_title')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const Key('premium_plan_monthly')), findsNothing);
+    expect(find.byKey(const Key('premium_buy')), findsNothing);
+    expect(find.text(lang.translate('premium_feature_calendar')), findsNothing);
+    expect(find.byKey(const Key('premium_cancel_subscription')), findsNothing);
+  });
+
+  testWidgets('A lifetime member still subscribed is told to cancel in Play', (
+    tester,
+  ) async {
+    final premium = PremiumService(entitlements: PremiumFixture())
+      ..applyOwned({PremiumService.lifetimeId, PremiumService.subscriptionId});
+    addTearDown(premium.dispose);
+    await pumpPaywall(tester, premium);
+    expect(
+      find.text(lang.translate('premium_cancel_subscription_note')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const Key('premium_cancel_subscription')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('A subscriber buying lifetime is warned first', (tester) async {
+    final premium = PremiumService(entitlements: PremiumFixture())
+      ..applyOwned({PremiumService.subscriptionId});
+    addTearDown(premium.dispose);
+    final billing = await pumpPaywall(tester, premium, currentPlan: 'monthly');
+    expect(
+      find.text(lang.translate('premium_subscriber_title')),
+      findsOneWidget,
+    );
+    await tester.tap(find.byKey(const Key('premium_plan_lifetime')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('premium_buy')));
+    await tester.pumpAndSettle();
+    expect(
+      find.text(lang.translate('premium_lifetime_confirm_body')),
+      findsOneWidget,
+    );
+    expect(billing.bought, isEmpty);
+    await tester.tap(find.text(lang.translate('premium_buy_lifetime_anyway')));
+    await tester.pumpAndSettle();
+    expect(billing.bought, ['lifetime']);
+  });
+
   testWidgets('Paywall plans fit a 320dp phone with large text', (
     tester,
   ) async {

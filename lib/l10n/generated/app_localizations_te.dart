@@ -906,6 +906,48 @@ class AppLocalizationsTe extends AppLocalizations {
   String get premium_one_time => 'ఒకసారి';
 
   @override
+  String get premium_restored =>
+      'కొనుగోళ్లు పునరుద్ధరించబడ్డాయి. Premium సక్రియంగా ఉంది.';
+
+  @override
+  String get premium_restore_none =>
+      'ఈ Google Play ఖాతాకు ఎలాంటి కొనుగోళ్లు కనబడలేదు.';
+
+  @override
+  String get premium_lifetime_thanks_title =>
+      'ధన్యవాదాలు, జీవితకాల సభ్యులారా! 🙏';
+
+  @override
+  String get premium_lifetime_thanks_body =>
+      'భవిష్యత్ ఫీచర్లు, అప్‌డేట్‌లతో సహా ప్రతి Premium ఫీచర్ జీవితాంతం మీదే. ఎన్నో ఏళ్లు మీకు సేవ చేయడానికి ఎదురుచూస్తున్నాం.';
+
+  @override
+  String get premium_subscriber_title => 'మీకు Premium ఉంది ✨';
+
+  @override
+  String get premium_subscriber_body =>
+      'ఎప్పుడైనా ప్లాన్ మార్చండి లేదా జీవితకాలానికి మారండి.';
+
+  @override
+  String get premium_cancel_subscription_note =>
+      'మీ సబ్‌స్క్రిప్షన్ ఇంకా సక్రియంగా ఉంది. మళ్లీ ఛార్జ్ కాకుండా Google Playలో దాన్ని రద్దు చేయండి. జీవితకాలం మీదే.';
+
+  @override
+  String get premium_cancel_subscription_action =>
+      'Google Playలో సబ్‌స్క్రిప్షన్ రద్దు చేయండి';
+
+  @override
+  String get premium_lifetime_confirm_title =>
+      'మీకు ఇప్పటికే సబ్‌స్క్రిప్షన్ ఉంది';
+
+  @override
+  String get premium_lifetime_confirm_body =>
+      'Google Play సబ్‌స్క్రిప్షన్‌లను ఆటోమేటిక్‌గా రద్దు చేయదు. జీవితకాలం కొన్న తర్వాత, రెన్యూవల్స్ ఆపడానికి Google Playలో మీ సబ్‌స్క్రిప్షన్‌ను రద్దు చేయండి.';
+
+  @override
+  String get premium_buy_lifetime_anyway => 'జీవితకాలం కొనండి';
+
+  @override
   String get premium_unavailable =>
       'ప్రస్తుతం కొనుగోళ్లు అందుబాటులో లేవు. Google Play నుండి యాప్‌ను ఇన్‌స్టాల్ చేసి మళ్లీ ప్రయత్నించండి. ఉచిత ఫీచర్లు పనిచేస్తాయి.';
 

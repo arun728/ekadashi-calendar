@@ -198,6 +198,83 @@ class _PremiumScreenState extends State<PremiumScreen> {
     );
   }
 
+  Future<void> _restore(LanguageService lang) async {
+    final result = await billing.restore();
+    if (!mounted) return;
+    final key = switch (result) {
+      RestoreResult.restored => 'premium_restored',
+      RestoreResult.none => 'premium_restore_none',
+      RestoreResult.unavailable => 'premium_unavailable',
+    };
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(lang.translate(key)),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+  }
+
+  /// Google Play cannot cancel a subscription for the app, so a subscriber
+  /// is told before buying lifetime that they must cancel it themselves.
+  Future<void> _buy(LanguageService lang, PremiumPlan plan) async {
+    if (plan.id == 'lifetime' && premium.subscribed) {
+      final go = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(lang.translate('premium_lifetime_confirm_title')),
+          content: Text(lang.translate('premium_lifetime_confirm_body')),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(lang.translate('cancel')),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(lang.translate('premium_buy_lifetime_anyway')),
+            ),
+          ],
+        ),
+      );
+      if (go != true) return;
+    }
+    await billing.buy(plan);
+  }
+
+  Widget _statusCard({
+    required String title,
+    required String body,
+    Widget? action,
+    Color color = _teal,
+    Key? key,
+  }) => Card(
+    key: key,
+    color: color.withValues(alpha: 0.12),
+    elevation: 0,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(16),
+      side: BorderSide(color: color.withValues(alpha: 0.5)),
+    ),
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 6),
+          Text(body),
+          if (action != null) ...[const SizedBox(height: 12), action],
+        ],
+      ),
+    ),
+  );
+
   Widget _link(String label, VoidCallback? onPressed) => TextButton(
     onPressed: onPressed,
     style: TextButton.styleFrom(
@@ -232,31 +309,55 @@ class _PremiumScreenState extends State<PremiumScreen> {
                   child: ListView(
                     padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
                     children: [
-                      _feature(
-                        Icons.sync,
-                        lang.translate('premium_feature_calendar'),
-                      ),
-                      _feature(
-                        Icons.self_improvement,
-                        lang.translate('premium_feature_vrat'),
-                      ),
-                      _feature(
-                        Icons.wb_twilight,
-                        lang.translate('premium_feature_panchang'),
-                      ),
-                      const SizedBox(height: 16),
-                      if (premium.isPremium)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: Text(
-                            lang.translate('premium_active'),
-                            key: const Key('premium_active'),
-                            style: const TextStyle(
-                              color: _teal,
-                              fontWeight: FontWeight.bold,
+                      if (premium.lifetime) ...[
+                        _statusCard(
+                          key: const Key('premium_lifetime_thanks'),
+                          title: lang.translate(
+                            'premium_lifetime_thanks_title',
+                          ),
+                          body: lang.translate('premium_lifetime_thanks_body'),
+                        ),
+                        if (premium.subscribed)
+                          _statusCard(
+                            color: Colors.orange,
+                            title: lang.translate('premium_active'),
+                            body: lang.translate(
+                              'premium_cancel_subscription_note',
+                            ),
+                            action: OutlinedButton(
+                              key: const Key('premium_cancel_subscription'),
+                              onPressed: _manage,
+                              child: Text(
+                                lang.translate(
+                                  'premium_cancel_subscription_action',
+                                ),
+                              ),
                             ),
                           ),
+                      ] else if (premium.subscribed) ...[
+                        Padding(
+                          key: const Key('premium_active'),
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: _statusCard(
+                            title: lang.translate('premium_subscriber_title'),
+                            body: lang.translate('premium_subscriber_body'),
+                          ),
                         ),
+                      ] else ...[
+                        _feature(
+                          Icons.sync,
+                          lang.translate('premium_feature_calendar'),
+                        ),
+                        _feature(
+                          Icons.self_improvement,
+                          lang.translate('premium_feature_vrat'),
+                        ),
+                        _feature(
+                          Icons.wb_twilight,
+                          lang.translate('premium_feature_panchang'),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
                       if (premium.busy) const LinearProgressIndicator(),
                       if (billing.pending)
                         Text(lang.translate('premium_pending')),
@@ -309,7 +410,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
                             padding: const EdgeInsets.symmetric(vertical: 14),
                           ),
                           onPressed: billing.canBuy(selected)
-                              ? () => billing.buy(selected)
+                              ? () => _buy(lang, selected)
                               : null,
                           child: Text(
                             '${lang.translate('premium_${selected.id}')} · ${selected.price}',
@@ -321,7 +422,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
                         children: [
                           _link(
                             lang.translate('premium_restore'),
-                            premium.busy ? null : billing.restore,
+                            premium.busy ? null : () => _restore(lang),
                           ),
                           _link(lang.translate('premium_manage'), _manage),
                           _link(

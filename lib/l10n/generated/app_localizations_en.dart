@@ -907,6 +907,45 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premium_one_time => 'one-time';
 
   @override
+  String get premium_restored => 'Purchases restored. Premium is active.';
+
+  @override
+  String get premium_restore_none =>
+      'No purchases found for this Google Play account.';
+
+  @override
+  String get premium_lifetime_thanks_title => 'Thank you, lifetime member! 🙏';
+
+  @override
+  String get premium_lifetime_thanks_body =>
+      'Every Premium feature is yours for life, including all future features and updates. We look forward to serving you for years to come.';
+
+  @override
+  String get premium_subscriber_title => 'You have Premium ✨';
+
+  @override
+  String get premium_subscriber_body => 'Switch plans or go lifetime anytime.';
+
+  @override
+  String get premium_cancel_subscription_note =>
+      'Your subscription is still active. Cancel it in Google Play so you are not charged again. Lifetime stays yours.';
+
+  @override
+  String get premium_cancel_subscription_action =>
+      'Cancel subscription in Google Play';
+
+  @override
+  String get premium_lifetime_confirm_title =>
+      'You already have a subscription';
+
+  @override
+  String get premium_lifetime_confirm_body =>
+      'Google Play does not cancel subscriptions automatically. After buying lifetime, cancel your subscription in Google Play to stop renewals.';
+
+  @override
+  String get premium_buy_lifetime_anyway => 'Buy lifetime';
+
+  @override
   String get premium_unavailable =>
       'Purchases are unavailable right now. Install the app from Google Play and try again. Free features still work.';
 
