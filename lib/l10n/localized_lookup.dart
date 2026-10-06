@@ -285,6 +285,7 @@ Map<String, String> localizedLookup(AppLocalizations l) => {
   'premium_per_month': l.premium_per_month,
   'premium_per_year': l.premium_per_year,
   'premium_one_time': l.premium_one_time,
+  'premium_upgrade': l.premium_upgrade,
   'premium_restored': l.premium_restored,
   'premium_restore_none': l.premium_restore_none,
   'premium_lifetime_thanks_title': l.premium_lifetime_thanks_title,

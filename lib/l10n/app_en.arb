@@ -325,6 +325,7 @@
   "premium_per_month": "per month",
   "premium_per_year": "per year",
   "premium_one_time": "one-time",
+  "premium_upgrade": "Upgrade",
   "premium_restored": "Purchases restored. Premium is active.",
   "premium_restore_none": "No purchases found for this Google Play account.",
   "premium_lifetime_thanks_title": "Thank you, lifetime member! 🙏",
@@ -357,7 +358,7 @@
   "premium_feature_panchang": "Full daily Panchang: all five limbs, city timings and observances",
   "terms_of_service": "Terms of service",
   "privacy_policy": "Privacy policy",
-  "google_free_sync_used": "Your one free Google Calendar sync is done. Get Premium to sync the whole year anytime.",
+  "google_free_sync_used": "Free sync used. Upgrade to sync the whole year.",
   "google_sign_in_failed": "Google sign-in failed. Check your connection and try again.",
   "vrat_free_limit_reached": "You've used your three free Vrat entries. Get Premium to keep recording.",
   "google_premium_events_removed": "Your Premium has ended, so the Google events it synced were removed. Renew to sync again."

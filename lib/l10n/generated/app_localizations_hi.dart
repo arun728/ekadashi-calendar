@@ -901,6 +901,9 @@ class AppLocalizationsHi extends AppLocalizations {
   String get premium_one_time => 'एक बार';
 
   @override
+  String get premium_upgrade => 'अपग्रेड';
+
+  @override
   String get premium_restored => 'खरीदारी बहाल हो गई। Premium सक्रिय है।';
 
   @override
@@ -1014,7 +1017,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get google_free_sync_used =>
-      'आपका एक मुफ़्त Google कैलेंडर सिंक पूरा हुआ। पूरे साल को कभी भी सिंक करने के लिए प्रीमियम लें।';
+      'मुफ़्त सिंक इस्तेमाल हो गया। पूरे साल के सिंक के लिए अपग्रेड करें।';
 
   @override
   String get google_sign_in_failed =>

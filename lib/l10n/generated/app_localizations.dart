@@ -1806,6 +1806,12 @@ abstract class AppLocalizations {
   /// **'one-time'**
   String get premium_one_time;
 
+  /// No description provided for @premium_upgrade.
+  ///
+  /// In en, this message translates to:
+  /// **'Upgrade'**
+  String get premium_upgrade;
+
   /// No description provided for @premium_restored.
   ///
   /// In en, this message translates to:
@@ -2001,7 +2007,7 @@ abstract class AppLocalizations {
   /// No description provided for @google_free_sync_used.
   ///
   /// In en, this message translates to:
-  /// **'Your one free Google Calendar sync is done. Get Premium to sync the whole year anytime.'**
+  /// **'Free sync used. Upgrade to sync the whole year.'**
   String get google_free_sync_used;
 
   /// No description provided for @google_sign_in_failed.

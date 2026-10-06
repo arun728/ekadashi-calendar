@@ -907,6 +907,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premium_one_time => 'one-time';
 
   @override
+  String get premium_upgrade => 'Upgrade';
+
+  @override
   String get premium_restored => 'Purchases restored. Premium is active.';
 
   @override
@@ -1021,7 +1024,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get google_free_sync_used =>
-      'Your one free Google Calendar sync is done. Get Premium to sync the whole year anytime.';
+      'Free sync used. Upgrade to sync the whole year.';
 
   @override
   String get google_sign_in_failed =>

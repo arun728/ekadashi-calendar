@@ -77,7 +77,8 @@
       "premium_cancel_subscription_action",
       "premium_lifetime_confirm_title",
       "premium_lifetime_confirm_body",
-      "premium_buy_lifetime_anyway"
+      "premium_buy_lifetime_anyway",
+      "premium_upgrade"
     ],
     "hi": [
       "add_entry",
@@ -155,7 +156,8 @@
       "premium_cancel_subscription_action",
       "premium_lifetime_confirm_title",
       "premium_lifetime_confirm_body",
-      "premium_buy_lifetime_anyway"
+      "premium_buy_lifetime_anyway",
+      "premium_upgrade"
     ],
     "te": [
       "achievement_10_vrat_desc",
@@ -318,7 +320,8 @@
       "premium_cancel_subscription_action",
       "premium_lifetime_confirm_title",
       "premium_lifetime_confirm_body",
-      "premium_buy_lifetime_anyway"
+      "premium_buy_lifetime_anyway",
+      "premium_upgrade"
     ]
   },
   "contentLimit": "Curated English-only search content is available using the English content-language filter.",

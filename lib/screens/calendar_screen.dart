@@ -269,6 +269,12 @@ class CalendarScreenState extends State<CalendarScreen> {
       ..hideCurrentSnackBar()
       ..showSnackBar(
         SnackBar(
+          // Compact floating message (Material snackbar: one or two short
+          // lines, at most one short action).
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           content: Text(
             args == null
                 ? lang.translate(key)
@@ -276,7 +282,7 @@ class CalendarScreenState extends State<CalendarScreen> {
           ),
           action: upsell
               ? SnackBarAction(
-                  label: lang.translate('premium_title'),
+                  label: lang.translate('premium_upgrade'),
                   onPressed: () => openPremium(
                     context,
                     currentTimezone: widget.currentTimezone ?? 'IST',

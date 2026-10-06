@@ -907,6 +907,9 @@ class AppLocalizationsTa extends AppLocalizations {
   String get premium_one_time => 'ஒரு முறை';
 
   @override
+  String get premium_upgrade => 'மேம்படுத்து';
+
+  @override
   String get premium_restored =>
       'வாங்கியவை மீட்டெடுக்கப்பட்டன. Premium செயலில் உள்ளது.';
 
@@ -1024,7 +1027,7 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get google_free_sync_used =>
-      'உங்கள் ஒரு இலவச Google நாள்காட்டி ஒத்திசைவு முடிந்தது. முழு ஆண்டையும் எப்போதும் ஒத்திசைக்க பிரீமியம் பெறவும்.';
+      'இலவச ஒத்திசைவு பயன்படுத்தப்பட்டது. முழு ஆண்டுக்கும் மேம்படுத்தவும்.';
 
   @override
   String get google_sign_in_failed =>

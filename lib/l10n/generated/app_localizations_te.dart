@@ -906,6 +906,9 @@ class AppLocalizationsTe extends AppLocalizations {
   String get premium_one_time => 'ఒకసారి';
 
   @override
+  String get premium_upgrade => 'అప్‌గ్రేడ్';
+
+  @override
   String get premium_restored =>
       'కొనుగోళ్లు పునరుద్ధరించబడ్డాయి. Premium సక్రియంగా ఉంది.';
 
@@ -1023,7 +1026,7 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get google_free_sync_used =>
-      'మీ ఒక్క ఉచిత Google క్యాలెండర్ సింక్ పూర్తయింది. సంవత్సరం మొత్తాన్ని ఎప్పుడైనా సింక్ చేయడానికి ప్రీమియం పొందండి.';
+      'ఉచిత సింక్ వాడేశారు. ఏడాది మొత్తం సింక్ కోసం అప్‌గ్రేడ్ చేయండి.';
 
   @override
   String get google_sign_in_failed =>

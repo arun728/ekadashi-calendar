@@ -299,6 +299,11 @@ void main() {
     expect(google.min, DateTime(2026, 10, 1));
     expect(google.max, DateTime(2026, 11, 1));
     expect(find.text(lang.translate('google_free_sync_used')), findsOneWidget);
+    // A compact floating message with one short action.
+    final snack = tester.widget<SnackBar>(find.byType(SnackBar));
+    expect(snack.behavior, SnackBarBehavior.floating);
+    expect((snack.action!).label, 'Upgrade');
+    expect(lang.translate('google_free_sync_used').length, lessThan(60));
     expect(await freeSyncUsed(), isTrue);
     // Also recorded for the Google account (free database), so a reinstall
     // or another phone cannot reuse it.
