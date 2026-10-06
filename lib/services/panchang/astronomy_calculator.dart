@@ -11,8 +11,8 @@ import 'lunar_series.dart';
 ///   *Astronomical Algorithms* 2nd ed., ch. 22, 25 and 32).
 /// - Moon: ELP 2000-82B (Chapront-Touze & Chapront), 769 terms, light
 ///   time, secular terms refitted to JPL DE431, IAU 1980 nutation.
-/// - Delta T: yearly observed and predicted values (IERS/USNO, as tabulated
-///   by Swiss Ephemeris 2.10), linear between years.
+/// - Delta T: yearly observed (IERS/USNO) and predicted values, 1900-2100,
+///   as tabulated by Swiss Ephemeris 2.10, linear between years.
 /// - Lahiri: 23°51′25.53″ at J2000 plus IAU 2006 general precession, the
 ///   Swiss Ephemeris SE_SIDM_LAHIRI definition to better than 0.001″.
 /// See docs/PANCHANG_ACCURACY.md for the independent comparison.
@@ -40,7 +40,7 @@ class AstronomyCalculator {
       return _deltaT[i] + (_deltaT[i + 1] - _deltaT[i]) * f;
     }
     if (year >= first + _deltaT.length - 1) {
-      // Continue the last tabulated trend (about +0.29 s per year).
+      // Continue the last tabulated trend.
       final last = _deltaT.length - 1;
       return _deltaT[last] +
           (_deltaT[last] - _deltaT[last - 1]) * (year - first - last);
@@ -432,7 +432,8 @@ class AstronomyCalculator {
   static double _normalizeRadians(double radians) =>
       (radians % (math.pi * 2) + math.pi * 2) % (math.pi * 2);
 
-  // Delta T (seconds) on 1 January of each year from 1900.
+  // Delta T (seconds) on 1 January of each year, 1900-2100 (observed to
+  // 2025, then the standard prediction used by Swiss Ephemeris).
   static const _deltaT = <double>[
     -1.95, -0.72, 0.64, 2.08, 3.53, 4.94, 6.26, 7.50, 8.71, 9.92, // 1900
     11.16,
@@ -575,6 +576,56 @@ class AstronomyCalculator {
     73.72,
     74.00,
     74.29, // 2040
-    74.58, // 2050
+    74.58,
+    74.87,
+    75.17,
+    75.47,
+    75.77,
+    76.07,
+    76.38,
+    76.69,
+    77.01,
+    77.32, // 2050
+    77.64,
+    77.97,
+    78.29,
+    78.62,
+    78.95,
+    79.29,
+    79.62,
+    79.97,
+    80.31,
+    80.66, // 2060
+    81.01,
+    81.36,
+    81.72,
+    82.08,
+    82.45,
+    82.81,
+    83.19,
+    83.56,
+    83.94,
+    84.32, // 2070
+    84.70,
+    85.09,
+    85.49,
+    85.88,
+    86.28,
+    86.68,
+    87.09,
+    87.50,
+    87.92,
+    88.33, // 2080
+    88.76,
+    89.18,
+    89.61,
+    90.04,
+    90.48,
+    90.92,
+    91.36,
+    91.81,
+    92.27,
+    92.72, // 2090
+    93.18, // 2100
   ];
 }

@@ -16,8 +16,10 @@ import swisseph as swe
 swe.set_ephe_path(sys.argv[1])
 swe.set_sid_mode(swe.SIDM_LAHIRI)
 random.seed(7)
-start = dt.datetime(2000, 1, 1, tzinfo=dt.timezone.utc)
-instants = [start + dt.timedelta(seconds=random.uniform(0, 40 * 365.25 * 86400)) for _ in range(400)]
+first, last = (int(y) for y in os.environ.get("YEARS", "2000-2040").split("-"))
+start = dt.datetime(first, 1, 1, tzinfo=dt.timezone.utc)
+span = (last - first) * 365.25 * 86400
+instants = [start + dt.timedelta(seconds=random.uniform(0, span)) for _ in range(400)]
 with tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False) as f:
     f.write("\n".join(i.isoformat().replace("+00:00", "Z") for i in instants))
     path = f.name
