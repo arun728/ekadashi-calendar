@@ -588,6 +588,9 @@ class AppLocalizationsHi extends AppLocalizations {
   String get switch_google_account => 'दूसरा खाता इस्तेमाल करें';
 
   @override
+  String get google_calendar => 'Google कैलेंडर';
+
+  @override
   String get primary_calendar => 'प्राथमिक';
 
   @override
@@ -884,6 +887,18 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get premium_current_plan => 'आपका मौजूदा प्लान';
+
+  @override
+  String get premium_best_value => 'सबसे किफ़ायती';
+
+  @override
+  String get premium_per_month => 'प्रति माह';
+
+  @override
+  String get premium_per_year => 'प्रति वर्ष';
+
+  @override
+  String get premium_one_time => 'एक बार';
 
   @override
   String get premium_unavailable =>

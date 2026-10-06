@@ -178,6 +178,10 @@ class PlayBillingService extends ChangeNotifier {
         case PurchaseStatus.error:
           pending = false;
           error = 'premium_unavailable';
+          debugPrint(
+            'Google Play purchase error: ${purchase.error?.code} '
+            '${purchase.error?.message} ${purchase.error?.details}',
+          );
           break;
         case PurchaseStatus.canceled:
           pending = false;
@@ -235,13 +239,18 @@ class PlayBillingService extends ChangeNotifier {
             ? null
             : ChangeSubscriptionParam(
                 oldPurchaseDetails: old,
-                replacementMode: ReplacementMode.withTimeProration,
+                // Google's recommendation: upgrades charge now with credit for
+                // the unused time; downgrades start at the next renewal.
+                replacementMode: plan.id == 'yearly'
+                    ? ReplacementMode.chargeProratedPrice
+                    : ReplacementMode.deferred,
               ),
       );
       if (!await store.buyNonConsumable(purchaseParam: param)) {
         error = 'premium_unavailable';
       }
-    } catch (_) {
+    } catch (e) {
+      debugPrint('Google Play checkout failed: $e');
       error = 'premium_unavailable';
     }
     _notify();

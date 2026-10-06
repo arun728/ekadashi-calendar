@@ -593,6 +593,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get switch_google_account => 'Use another account';
 
   @override
+  String get google_calendar => 'Google Calendar';
+
+  @override
   String get primary_calendar => 'Primary';
 
   @override
@@ -890,6 +893,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premium_current_plan => 'Your current plan';
+
+  @override
+  String get premium_best_value => 'Best value';
+
+  @override
+  String get premium_per_month => 'per month';
+
+  @override
+  String get premium_per_year => 'per year';
+
+  @override
+  String get premium_one_time => 'one-time';
 
   @override
   String get premium_unavailable =>

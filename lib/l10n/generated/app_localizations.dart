@@ -1200,6 +1200,12 @@ abstract class AppLocalizations {
   /// **'Use another account'**
   String get switch_google_account;
 
+  /// No description provided for @google_calendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Google Calendar'**
+  String get google_calendar;
+
   /// No description provided for @primary_calendar.
   ///
   /// In en, this message translates to:
@@ -1775,6 +1781,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your current plan'**
   String get premium_current_plan;
+
+  /// No description provided for @premium_best_value.
+  ///
+  /// In en, this message translates to:
+  /// **'Best value'**
+  String get premium_best_value;
+
+  /// No description provided for @premium_per_month.
+  ///
+  /// In en, this message translates to:
+  /// **'per month'**
+  String get premium_per_month;
+
+  /// No description provided for @premium_per_year.
+  ///
+  /// In en, this message translates to:
+  /// **'per year'**
+  String get premium_per_year;
+
+  /// No description provided for @premium_one_time.
+  ///
+  /// In en, this message translates to:
+  /// **'one-time'**
+  String get premium_one_time;
 
   /// No description provided for @premium_unavailable.
   ///

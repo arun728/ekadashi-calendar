@@ -342,12 +342,23 @@ class CalendarScreenState extends State<CalendarScreen> {
         googleIdToken = await _google.auth.idToken();
         if (googleIdToken == null) throw StateError('No Google ID token');
       }
-      if (!premium &&
-          googleIdToken != null &&
-          await _registry!.isUsed(googleIdToken)) {
-        // This Google account used its free sync before (e.g. before a
-        // reinstall or on another phone).
-        await prefs.setBool(CalendarScreen.freeSyncUsedKey, true);
+      var freeSyncAvailable = true;
+      if (!premium && googleIdToken != null) {
+        try {
+          if (await _registry!.isUsed(googleIdToken)) {
+            // This Google account used its free sync before (e.g. before a
+            // reinstall or on another phone).
+            freeSyncAvailable = false;
+            await prefs.setBool(CalendarScreen.freeSyncUsedKey, true);
+          }
+        } catch (error) {
+          // The free sync cannot be confirmed, so none is handed out; offer
+          // Premium instead of an error. The free sync stays available.
+          debugPrint('Free sync check failed: $error');
+          freeSyncAvailable = false;
+        }
+      }
+      if (!premium && !freeSyncAvailable) {
         if (!mounted) return;
         setState(() => _syncing = false);
         if (!await _unlockPremium()) return;

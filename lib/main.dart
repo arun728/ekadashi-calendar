@@ -163,6 +163,11 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   bool _isResuming = false;
   bool _isPermanentDenial = false;
   bool _searchOpen = false;
+
+  /// Re-checks Google Play while the app stays open, so an ended
+  /// subscription is noticed without leaving the app.
+  Timer? _premiumRecheck;
+  static const premiumRecheckInterval = Duration(minutes: 5);
   bool _premiumSessionStarted = false;
 
   final PageController _pageController = PageController(viewportFraction: 1.0);
@@ -190,7 +195,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     if (!_premiumSessionStarted && _premium != null) {
       _premiumSessionStarted = true;
       // Premium is read from Google Play's owned purchases (Android only).
-      if (Platform.isAndroid) Future.microtask(() => _premium?.refresh());
+      if (Platform.isAndroid) {
+        Future.microtask(() => _premium?.refresh());
+        _startPremiumRecheck();
+      }
     }
     _achievementTracker ??= context.read<VratTrackerService?>();
     final langService = Provider.of<LanguageService>(context);
@@ -205,15 +213,28 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
     NativeWidgetService().clearDeepLinkListener();
     _premium?.removeListener(_refreshPremiumFeatures);
+    _premiumRecheck?.cancel();
     _pageController.dispose();
     super.dispose();
   }
 
+  void _startPremiumRecheck() {
+    _premiumRecheck?.cancel();
+    _premiumRecheck = Timer.periodic(
+      premiumRecheckInterval,
+      (_) => _premium?.refresh(),
+    );
+  }
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) _premiumRecheck?.cancel();
     if (state == AppLifecycleState.resumed) {
       // Pick up renewals, cancellations and refunds made in Google Play.
-      if (Platform.isAndroid) _premium?.refresh();
+      if (Platform.isAndroid) {
+        _premium?.refresh();
+        _startPremiumRecheck();
+      }
       // Wait for the first frame to render (ensure engine is attached)
       WidgetsBinding.instance.addPostFrameCallback((_) {
         // Add a small safety buffer for low-end devices/heavy restoration

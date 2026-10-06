@@ -53,10 +53,11 @@ void main() {
     return premium;
   }
 
-  testWidgets('Paywall has no Google sign-in or rewards and can buy', (
-    tester,
-  ) async {
-    final premium = freeUser(PremiumFixture());
+  Future<FixtureBilling> pumpPaywall(
+    WidgetTester tester,
+    PremiumService premium, {
+    String? currentPlan,
+  }) async {
     final billing = FixtureBilling(premium);
     addTearDown(billing.dispose);
     await tester.pumpWidget(
@@ -69,14 +70,28 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.byKey(const Key('premium_sign_in')), findsNothing);
+    billing.currentPlanId = currentPlan;
+    billing.notifyListeners();
+    await tester.pumpAndSettle();
+    return billing;
+  }
+
+  String ctaLabel(WidgetTester tester) {
+    final cta = find.byKey(const Key('premium_buy'));
+    return tester
+        .widgetList<Text>(find.descendant(of: cta, matching: find.byType(Text)))
+        .map((t) => t.data)
+        .join();
+  }
+
+  testWidgets('Paywall: plans side by side, one buy button, no sign-in', (
+    tester,
+  ) async {
+    final premium = freeUser(PremiumFixture());
+    await pumpPaywall(tester, premium);
     expect(find.text('Sign in securely with Google'), findsNothing);
     expect(find.text('Fasting rewards'), findsNothing);
-    expect(find.text('Activate rewards'), findsNothing);
-    expect(find.text('Delete cloud account'), findsNothing);
-    final monthly = find.widgetWithText(FilledButton, 'Monthly · ₹99');
-    expect(monthly, findsOneWidget);
-    expect(tester.widget<FilledButton>(monthly).onPressed, isNotNull);
+    expect(find.text(lang.translate('premium_continue_free')), findsNothing);
     for (final feature in [
       'premium_feature_calendar',
       'premium_feature_vrat',
@@ -84,14 +99,65 @@ void main() {
     ]) {
       expect(find.text(lang.translate(feature)), findsOneWidget);
     }
-    for (final label in ['Yearly · ₹499', 'Lifetime · ₹999']) {
-      final button = find.widgetWithText(FilledButton, label);
-      await tester.scrollUntilVisible(
-        button,
-        200,
-        scrollable: find.byType(Scrollable).first,
-      );
-      expect(tester.widget<FilledButton>(button).onPressed, isNotNull);
+    final tops = [
+      for (final id in ['monthly', 'yearly', 'lifetime'])
+        tester.getTopLeft(find.byKey(Key('premium_plan_$id'))),
+    ];
+    expect(tops.map((o) => o.dy).toSet(), hasLength(1), reason: 'one row');
+    expect(tops[0].dx < tops[1].dx && tops[1].dx < tops[2].dx, isTrue);
+    expect(find.text(lang.translate('premium_best_value')), findsOneWidget);
+    // Yearly is preselected; one call to action buys the selected plan.
+    expect(find.byKey(const Key('premium_buy')), findsOneWidget);
+    expect(ctaLabel(tester), contains('₹499'));
+    await tester.tap(find.byKey(const Key('premium_plan_monthly')));
+    await tester.pumpAndSettle();
+    expect(ctaLabel(tester), contains('₹99'));
+    final cta = tester.widget<FilledButton>(
+      find.byKey(const Key('premium_buy')),
+    );
+    expect(cta.onPressed, isNotNull);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Paywall: a monthly subscriber can only pick another plan', (
+    tester,
+  ) async {
+    final premium = PremiumService(entitlements: PremiumFixture())
+      ..applyOwned({PremiumService.subscriptionId});
+    addTearDown(premium.dispose);
+    await pumpPaywall(tester, premium, currentPlan: 'monthly');
+    expect(find.byKey(const Key('premium_active')), findsOneWidget);
+    expect(find.byKey(const Key('premium_current_monthly')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('premium_plan_monthly')));
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<FilledButton>(find.byKey(const Key('premium_buy')))
+          .onPressed,
+      isNull,
+    );
+    await tester.tap(find.byKey(const Key('premium_plan_lifetime')));
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<FilledButton>(find.byKey(const Key('premium_buy')))
+          .onPressed,
+      isNotNull,
+    );
+  });
+
+  testWidgets('Paywall plans fit a 320dp phone with large text', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 700);
+    tester.view.devicePixelRatio = 1;
+    tester.platformDispatcher.textScaleFactorTestValue = 1.6;
+    addTearDown(tester.view.reset);
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    for (final code in ['en', 'ta', 'hi', 'te']) {
+      await lang.changeLanguage(code);
+      await pumpPaywall(tester, freeUser(PremiumFixture()));
+      expect(tester.takeException(), isNull, reason: code);
     }
   });
 
@@ -240,14 +306,18 @@ void main() {
   });
 
   testWidgets('If the free-sync record cannot be checked, nothing is handed '
-      'out and the free sync stays available', (tester) async {
+      'out, Premium is offered and the free sync stays available', (
+    tester,
+  ) async {
     final premium = freeUser(PremiumFixture());
     final registry = FakeFreeSyncRegistry()..fail = true;
     final google = await pumpCalendar(tester, premium, registry: registry);
     await tester.tap(find.byKey(const Key('import_google_year')));
     await tester.pumpAndSettle();
     expect(find.text('Import selected'), findsNothing);
-    expect(find.text(lang.translate('google_sync_failed')), findsOneWidget);
+    expect(find.byType(PremiumScreen), findsOneWidget);
+    await tester.tap(find.byKey(const Key('premium_close')));
+    await tester.pumpAndSettle();
     expect(google.min, isNull);
     expect(await freeSyncUsed(), isNot(isTrue));
   });

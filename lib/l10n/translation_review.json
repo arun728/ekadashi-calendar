@@ -61,7 +61,12 @@
       "translation_pending",
       "vrat_free_limit_reached",
       "switch_google_account",
-      "premium_current_plan"
+      "premium_current_plan",
+      "premium_best_value",
+      "premium_per_month",
+      "premium_per_year",
+      "premium_one_time",
+      "google_calendar"
     ],
     "hi": [
       "add_entry",
@@ -123,7 +128,12 @@
       "translation_pending",
       "vrat_free_limit_reached",
       "switch_google_account",
-      "premium_current_plan"
+      "premium_current_plan",
+      "premium_best_value",
+      "premium_per_month",
+      "premium_per_year",
+      "premium_one_time",
+      "google_calendar"
     ],
     "te": [
       "achievement_10_vrat_desc",
@@ -270,7 +280,12 @@
       "widgets",
       "year",
       "switch_google_account",
-      "premium_current_plan"
+      "premium_current_plan",
+      "premium_best_value",
+      "premium_per_month",
+      "premium_per_year",
+      "premium_one_time",
+      "google_calendar"
     ]
   },
   "contentLimit": "Curated English-only search content is available using the English content-language filter.",

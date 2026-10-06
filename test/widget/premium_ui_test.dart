@@ -72,7 +72,10 @@ void main() {
             ),
           );
           await tester.pumpAndSettle();
-          expect(find.text(lang.translate('premium_benefits')), findsOneWidget);
+          expect(
+            find.text(lang.translate('premium_feature_calendar')),
+            findsOneWidget,
+          );
           Future<void> capture(String suffix) async {
             expect(tester.takeException(), isNull);
             await tester.runAsync(() async {
@@ -93,37 +96,30 @@ void main() {
           }
 
           await capture('plans');
-          await tester.scrollUntilVisible(
-            find.text(lang.translate('premium_continue_free')),
-            200,
-            scrollable: find.byType(Scrollable).first,
-          );
+          // One call to action and a compact footer; closing is the X.
+          final buy = find.byKey(const Key('premium_buy'));
+          expect(buy, findsOneWidget);
           expect(find.text(lang.translate('premium_manage')), findsOneWidget);
-          await capture('free_exit');
+          expect(
+            find.text(lang.translate('premium_continue_free')),
+            findsNothing,
+          );
           // Rewards are hidden for v2; the paywall must not show them.
           expect(
             find.text(lang.translate('premium_reward_activate')),
             findsNothing,
           );
           expect(find.text(lang.translate('premium_wallet')), findsNothing);
-          final restoreLabel = find.text(lang.translate('premium_restore'));
-          await tester.ensureVisible(restoreLabel);
-          await tester.pumpAndSettle();
-          final continueLabel = find.text(
-            lang.translate('premium_continue_free'),
-          );
-          final continueButton = find.ancestor(
-            of: continueLabel,
-            matching: find.byType(OutlinedButton),
-          );
-          final buttonRect = tester.getRect(continueButton);
-          final labelRect = tester.getRect(continueLabel);
+          final label = find.descendant(of: buy, matching: find.byType(Text));
+          final buttonRect = tester.getRect(buy);
+          final labelRect = tester.getRect(label);
           expect(
             labelRect.top - buttonRect.top,
             greaterThanOrEqualTo(8),
-            reason: 'Translated labels need vertical space inside the capsule',
+            reason: 'Translated labels need vertical space inside the button',
           );
           expect(buttonRect.bottom - labelRect.bottom, greaterThanOrEqualTo(8));
+          await capture('free_exit');
           expect(tester.takeException(), isNull);
         },
       );

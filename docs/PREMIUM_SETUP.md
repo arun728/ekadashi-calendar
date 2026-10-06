@@ -118,11 +118,13 @@ Public build values (not secrets; Android apps ship them):
 Release build:
 
 ```
-flutter build appbundle --release \
-  --dart-define=FIREBASE_API_KEY=AIzaSyACQgEzjZxdO_m2WgrGhm9PNeKGEHI7z0I \
-  --dart-define=FIREBASE_PROJECT_ID=ekadashi-calendar-505210 \
-  --dart-define=GOOGLE_WEB_CLIENT_ID=827853182968-sb9tdckeqgsufpv1rh86204ipq18nd10.apps.googleusercontent.com
+flutter build appbundle --release --dart-define-from-file=config/release_defines.json
 ```
+
+To test on a phone: `flutter run --release --dart-define-from-file=config/release_defines.json`.
+The values live in `config/release_defines.json`; do not copy them from chat
+or web pages, which can mask the API key and break the free-sync check
+(`API key not valid`).
 
 The web client ID makes Google sign-in return an ID token for Firebase. It
 lives in the same project as the existing Calendar OAuth Android client, so

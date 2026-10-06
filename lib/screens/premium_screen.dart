@@ -71,16 +71,140 @@ class _PremiumScreenState extends State<PremiumScreen> {
     }),
   );
 
-  Widget _feature(BuildContext context, IconData icon, String text) => Padding(
+  String? _selected;
+
+  /// Yearly first (best value), then the others, skipping plans that cannot
+  /// be bought (for example the subscriber's current plan).
+  PremiumPlan? _selectedPlan() {
+    final plans = billing.plans;
+    if (plans.isEmpty) return null;
+    for (final plan in plans) {
+      if (plan.id == _selected) return plan;
+    }
+    for (final id in ['yearly', 'monthly', 'lifetime']) {
+      for (final plan in plans) {
+        if (plan.id == id && billing.canBuy(plan)) return plan;
+      }
+    }
+    return plans.first;
+  }
+
+  Widget _feature(IconData icon, String text) => Padding(
     padding: const EdgeInsets.symmetric(vertical: 6),
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, color: const Color(0xFF00A19B)),
+        Icon(icon, color: _teal, size: 22),
         const SizedBox(width: 12),
         Expanded(child: Text(text)),
       ],
     ),
+  );
+
+  static const _teal = Color(0xFF00A19B);
+
+  Widget _planTile(LanguageService lang, PremiumPlan plan, bool selected) {
+    final theme = Theme.of(context);
+    final current =
+        premium.subscribed &&
+        !premium.lifetime &&
+        plan.id == billing.currentPlanId;
+    final period = switch (plan.id) {
+      'monthly' => lang.translate('premium_per_month'),
+      'yearly' => lang.translate('premium_per_year'),
+      _ => lang.translate('premium_one_time'),
+    };
+    return Opacity(
+      opacity: billing.canBuy(plan) || current ? 1 : 0.5,
+      child: Material(
+        color: selected
+            ? _teal.withValues(alpha: 0.14)
+            : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(
+            color: selected ? _teal : theme.dividerColor,
+            width: selected ? 2 : 1,
+          ),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          key: Key('premium_plan_${plan.id}'),
+          onTap: () => setState(() => _selected = plan.id),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(8, 10, 8, 12),
+            child: Column(
+              children: [
+                SizedBox(
+                  height: 20,
+                  child: plan.id == 'yearly'
+                      ? FittedBox(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: _teal,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              lang.translate('premium_best_value'),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        )
+                      : null,
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  lang.translate('premium_${plan.id}'),
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.labelLarge,
+                ),
+                const SizedBox(height: 6),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    plan.price,
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                Text(
+                  period,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodySmall,
+                ),
+                if (current) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    lang.translate('premium_current_plan'),
+                    key: Key('premium_current_${plan.id}'),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: _teal, fontSize: 12),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _link(String label, VoidCallback? onPressed) => TextButton(
+    onPressed: onPressed,
+    style: TextButton.styleFrom(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      textStyle: const TextStyle(fontSize: 13),
+    ),
+    child: Text(label),
   );
 
   @override
@@ -88,34 +212,10 @@ class _PremiumScreenState extends State<PremiumScreen> {
     final lang = context.watch<LanguageService>();
     return AnimatedBuilder(
       animation: Listenable.merge([premium, billing]),
-      builder: (context, _) => Theme(
-        data: Theme.of(context).copyWith(
-          colorScheme: Theme.of(context).colorScheme.copyWith(
-            primary: const Color(0xFF00A19B),
-            onPrimary: Colors.white,
-          ),
-          outlinedButtonTheme: OutlinedButtonThemeData(
-            style:
-                (Theme.of(context).outlinedButtonTheme.style ??
-                        const ButtonStyle())
-                    .copyWith(
-                      padding: const WidgetStatePropertyAll(
-                        EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      ),
-                    ),
-          ),
-          filledButtonTheme: FilledButtonThemeData(
-            style:
-                (Theme.of(context).filledButtonTheme.style ??
-                        const ButtonStyle())
-                    .copyWith(
-                      padding: const WidgetStatePropertyAll(
-                        EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      ),
-                    ),
-          ),
-        ),
-        child: Scaffold(
+      builder: (context, _) {
+        final selected = _selectedPlan();
+        final showPlans = !premium.lifetime && billing.plans.isNotEmpty;
+        return Scaffold(
           appBar: AppBar(
             title: Text(lang.translate('premium_title')),
             leading: IconButton(
@@ -125,109 +225,123 @@ class _PremiumScreenState extends State<PremiumScreen> {
               onPressed: () => Navigator.maybePop(context),
             ),
           ),
-          body: ListView(
-            padding: const EdgeInsets.all(20),
-            children: [
-              Text(lang.translate('premium_benefits')),
-              const SizedBox(height: 8),
-              _feature(
-                context,
-                Icons.sync,
-                lang.translate('premium_feature_calendar'),
-              ),
-              _feature(
-                context,
-                Icons.self_improvement,
-                lang.translate('premium_feature_vrat'),
-              ),
-              _feature(
-                context,
-                Icons.wb_twilight,
-                lang.translate('premium_feature_panchang'),
-              ),
-              const SizedBox(height: 12),
-              if (premium.isPremium)
-                Text(
-                  lang.translate('premium_active'),
-                  key: const Key('premium_active'),
-                  style: const TextStyle(
-                    color: Color(0xFF00A19B),
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              if (premium.busy) const LinearProgressIndicator(),
-              if (billing.pending) Text(lang.translate('premium_pending')),
-              for (final plan in billing.plans)
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Text(
-                          '${lang.translate('premium_${plan.id}')} · ${plan.price}',
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        if (premium.subscribed &&
-                            !premium.lifetime &&
-                            plan.id == billing.currentPlanId)
-                          Text(
-                            lang.translate('premium_current_plan'),
-                            key: Key('premium_current_${plan.id}'),
-                            style: const TextStyle(color: Color(0xFF00A19B)),
-                          ),
-                        const SizedBox(height: 8),
-                        Text(lang.translate('premium_${plan.id}_terms')),
-                        const SizedBox(height: 8),
-                        FilledButton(
-                          onPressed: billing.canBuy(plan)
-                              ? () => billing.buy(plan)
-                              : null,
+          body: SafeArea(
+            child: Column(
+              children: [
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+                    children: [
+                      _feature(
+                        Icons.sync,
+                        lang.translate('premium_feature_calendar'),
+                      ),
+                      _feature(
+                        Icons.self_improvement,
+                        lang.translate('premium_feature_vrat'),
+                      ),
+                      _feature(
+                        Icons.wb_twilight,
+                        lang.translate('premium_feature_panchang'),
+                      ),
+                      const SizedBox(height: 16),
+                      if (premium.isPremium)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
                           child: Text(
-                            '${lang.translate('premium_${plan.id}')} · ${plan.price}',
+                            lang.translate('premium_active'),
+                            key: const Key('premium_active'),
+                            style: const TextStyle(
+                              color: _teal,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
+                        ),
+                      if (premium.busy) const LinearProgressIndicator(),
+                      if (billing.pending)
+                        Text(lang.translate('premium_pending')),
+                      if (showPlans)
+                        IntrinsicHeight(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              for (final plan in billing.plans) ...[
+                                if (plan != billing.plans.first)
+                                  const SizedBox(width: 8),
+                                Expanded(
+                                  child: _planTile(
+                                    lang,
+                                    plan,
+                                    plan.id == selected?.id,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      if (showPlans && selected != null) ...[
+                        const SizedBox(height: 12),
+                        Text(
+                          lang.translate('premium_${selected.id}_terms'),
+                          style: Theme.of(context).textTheme.bodySmall,
                         ),
                       ],
-                    ),
+                      if (billing.error != null && !premium.isPremium)
+                        Padding(
+                          key: const Key('premium_status_message'),
+                          padding: const EdgeInsets.only(top: 12),
+                          child: Text(lang.translate(billing.error!)),
+                        ),
+                    ],
                   ),
                 ),
-              if (billing.error != null && !premium.isPremium)
                 Padding(
-                  key: const Key('premium_status_message'),
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Text(lang.translate(billing.error!)),
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 4),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (showPlans && selected != null)
+                        FilledButton(
+                          key: const Key('premium_buy'),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: _teal,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          onPressed: billing.canBuy(selected)
+                              ? () => billing.buy(selected)
+                              : null,
+                          child: Text(
+                            '${lang.translate('premium_${selected.id}')} · ${selected.price}',
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      Wrap(
+                        alignment: WrapAlignment.center,
+                        children: [
+                          _link(
+                            lang.translate('premium_restore'),
+                            premium.busy ? null : billing.restore,
+                          ),
+                          _link(lang.translate('premium_manage'), _manage),
+                          _link(
+                            lang.translate('terms_of_service'),
+                            () => _open(Uri.parse(PremiumScreen.termsUrl)),
+                          ),
+                          _link(
+                            lang.translate('privacy_policy'),
+                            () => _open(Uri.parse(PremiumScreen.privacyUrl)),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              TextButton(
-                onPressed: premium.busy ? null : billing.restore,
-                child: Text(lang.translate('premium_restore')),
-              ),
-              TextButton(
-                onPressed: _manage,
-                child: Text(lang.translate('premium_manage')),
-              ),
-              OutlinedButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(lang.translate('premium_continue_free')),
-              ),
-              const SizedBox(height: 16),
-              Wrap(
-                alignment: WrapAlignment.center,
-                children: [
-                  TextButton(
-                    onPressed: () => _open(Uri.parse(PremiumScreen.termsUrl)),
-                    child: Text(lang.translate('terms_of_service')),
-                  ),
-                  TextButton(
-                    onPressed: () => _open(Uri.parse(PremiumScreen.privacyUrl)),
-                    child: Text(lang.translate('privacy_policy')),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-            ],
+              ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
