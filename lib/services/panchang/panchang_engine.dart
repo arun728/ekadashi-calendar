@@ -139,7 +139,9 @@ class PanchangEngine {
       moon: false,
       rising: false,
     );
-    if (sunrise != null && sunset != null && sunset.isBefore(sunrise)) {
+    // The solar day's sunset follows its sunrise; at high latitudes it can
+    // fall after local midnight (none, or an earlier one, in the civil day).
+    if (sunrise != null && (sunset == null || sunset.isBefore(sunrise))) {
       sunset = _findCrossing(
         sunrise,
         city.midnight(calendarDate, dayOffset: 2),

@@ -134,6 +134,15 @@ def se_parana_event(g_iso, reason, sunrise_iso, sunset_iso):
     return g_iso
 
 
+def date_line_shift(info):
+    """True when the civil offset differs from local mean time by > 12 h."""
+    if not info:
+        return False
+    from zoneinfo import ZoneInfo
+    offset = dt.datetime(2026, 1, 15, 12, tzinfo=ZoneInfo(info["tz"])).utcoffset().total_seconds() / 3600
+    return abs(offset - info["lon"] / 15) > 12
+
+
 def in_years(date):
     return int(date[:4]) in YEARS
 
@@ -147,6 +156,11 @@ def load_engine(pattern):
 
 def score(engine, reference, gcal, festivals):
     s = Score()
+    city_info = {}
+    for name in ("cities.json", "cities_world.json"):
+        path = os.path.join(HERE, name)
+        if os.path.exists(path):
+            city_info.update({c["id"]: c for c in json.load(open(path))})
     expected_ingress = {}
     for city, ref_days in reference.items():
         for i, ref in enumerate(ref_days):
@@ -225,6 +239,11 @@ def score(engine, reference, gcal, festivals):
         # --- 6. Gaudiya vs GCAL ------------------------------------------------
         ref_g = (gcal.get(city) or {}).get("corrected") if not any(
             d["sunrise"] is None for d in ref_days) else None
+        if ref_g and date_line_shift(city_info.get(city)):
+            # GCAL dates by longitude: west of 180 degrees on a UTC+12..+14
+            # civil date it is one day early (verified for every fast).
+            s.excluded.append((city, "all", "GCAL dates locations across the date line by longitude"))
+            ref_g = None
         if ref_g:
             ref_map = {r["date"]: r for r in ref_g if in_years(r["date"])}
             eng_map = {d["date"]: d for d in engine[city]["ekadashi"]["gaudiya"] if in_years(d["date"])}

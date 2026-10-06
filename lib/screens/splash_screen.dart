@@ -6,7 +6,7 @@ import '../main.dart';
 import '../services/ekadashi_service.dart';
 import '../services/notification_service.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:timezone/data/latest.dart' as tz;
+import '../services/time_zone_data.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -33,7 +33,7 @@ class _SplashScreenState extends State<SplashScreen> {
     await initializeDateFormatting();
 
     // Initialize timezone database
-    tz.initializeTimeZones();
+    initializeTimeZoneData();
 
     debugPrint('Splash blocking init took: ${stopwatch.elapsedMilliseconds}ms');
 

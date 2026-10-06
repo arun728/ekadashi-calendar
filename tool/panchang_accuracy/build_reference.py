@@ -41,8 +41,17 @@ def city_reference(args):
         return value is not None and mids[i] <= value < mids[i + 1]
 
     def event(i, body, rising):
-        value = R.rise_set(mids[i], lon, lat, body, rising)
-        return value if within(value, i) else None
+        # Start an hour early so an event seconds after midnight is not
+        # skipped, then take the first one inside the civil day.
+        start = mids[i] - 1 / 24
+        for _ in range(4):
+            value = R.rise_set(start, lon, lat, body, rising)
+            if value is None or value >= mids[i + 1]:
+                return None
+            if value >= mids[i]:
+                return value
+            start = value + 1 / 1440
+        return None
 
     sunrises = [event(i, swe.SUN, True) for i in range(len(dates))]
     # Sunset of the solar day: the first sunset after that day's sunrise,

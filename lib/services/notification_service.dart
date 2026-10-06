@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart' as fln;
-import 'package:timezone/data/latest.dart' as tz;
+import 'time_zone_data.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:intl/intl.dart';
@@ -22,7 +22,8 @@ class NotificationService {
   String _currentTimeZone = 'UTC';
 
   Future<void> init() async {
-    tz.initializeTimeZones();
+    // Bundled IANA database (see time_zone_data.dart), shared with Panchang.
+    initializeTimeZoneData();
 
     try {
       String timeZoneName = await FlutterTimezone.getLocalTimezone();

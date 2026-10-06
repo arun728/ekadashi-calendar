@@ -273,6 +273,28 @@ void main() {
     );
   });
 
+  test('sunset just after local midnight belongs to the solar day', () {
+    const reykjavik = PanchangCity(
+      id: 'reykjavik',
+      label: 'Reykjavik',
+      latitude: 64.1466,
+      longitude: -21.9426,
+      timeZoneId: 'Atlantic/Reykjavik',
+    );
+    // 16 June 2026 has no sunset before midnight; the Sun sets at 00:00:52
+    // on the 17th (Swiss Ephemeris), which ends the 16th's solar day.
+    final day = engine.calculate(DateTime.utc(2026, 6, 16), city: reykjavik);
+    expect(day.sunsetUtc, isNotNull);
+    expect(
+      day.sunsetUtc!
+          .difference(DateTime.utc(2026, 6, 17, 0, 0, 52))
+          .inSeconds
+          .abs(),
+      lessThanOrEqualTo(1),
+    );
+    expect(day.rahukala, isNotNull);
+  });
+
   test('Sankranti is shown on polar days without sunrise or sunset', () {
     const longyearbyen = PanchangCity(
       id: 'longyearbyen',
@@ -298,6 +320,22 @@ void main() {
       summer.observances.map((event) => event.id),
       contains('sankranti-2'),
     );
+  });
+
+  test('time zones follow IANA 2026b (British Columbia stays on UTC-7)', () {
+    const vancouver = PanchangCity(
+      id: 'vancouver',
+      label: 'Vancouver',
+      latitude: 49.2827,
+      longitude: -123.1207,
+      timeZoneId: 'America/Vancouver',
+    );
+    // tzdata 2026b: no fall-back on 2026-11-01; PST would be UTC-8.
+    final december = vancouver.wallClock(DateTime.utc(2026, 12, 1, 12));
+    expect(december.timeZoneOffset, const Duration(hours: -7));
+    // Sunrise on 1 December is shown on the UTC-7 civil day.
+    final day = engine.calculate(DateTime.utc(2026, 12, 1), city: vancouver);
+    expect(vancouver.wallClock(day.sunriseUtc!).hour, 8);
   });
 
   test('New York 2026 Mesha Sankranti falls on its local civil date', () {
