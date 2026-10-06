@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ekadashi_calendar/main.dart';
 import 'package:ekadashi_calendar/screens/global_search_screen.dart';
 import 'package:ekadashi_calendar/screens/calendar_screen.dart';
+import 'package:ekadashi_calendar/screens/panchang_screen.dart';
 import 'package:ekadashi_calendar/screens/vrat_tracker/vrat_tracker_screen.dart';
 import 'package:ekadashi_calendar/services/search_index_manager.dart';
 import '../support/app_harness.dart';
@@ -24,7 +25,7 @@ void main() {
       final nav = tester.widget<GlassNavigationBar>(
         find.byType(GlassNavigationBar),
       );
-      expect(nav.items, hasLength(6));
+      expect(nav.items, hasLength(5));
       final dynamic state = tester.state(find.byType(MainScreen));
       await tester.tap(find.byIcon(Icons.spa_outlined));
       await tester.pumpAndSettle();
@@ -48,6 +49,10 @@ void main() {
             .value,
         2027,
       );
+      // PR #12's old More tab now lives inside Panchang.
+      state.handleDeepLink(Uri.parse('ekadashi://more'));
+      await tester.pumpAndSettle();
+      expect(find.byType(PanchangScreen).hitTestable(), findsOneWidget);
       state.handleDeepLink(Uri.parse('ekadashi://search'));
       await tester.pumpAndSettle();
       expect(find.byType(GlobalSearchScreen).hitTestable(), findsOneWidget);

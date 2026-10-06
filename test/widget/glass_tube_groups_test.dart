@@ -14,7 +14,7 @@ void main() {
     ]) {
       final (dark, width, scale) = variant;
       testWidgets(
-        '$locale grouped tubes across six tabs, dark=$dark width=$width scale=$scale',
+        '$locale grouped tubes across five tabs, dark=$dark width=$width scale=$scale',
         (tester) async {
           final harness = AppHarness();
           await tester.runAsync(

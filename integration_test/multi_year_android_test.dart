@@ -97,14 +97,21 @@ void main() {
       await binding.convertFlutterSurfaceToImage();
       await frames(tester);
       expect(find.byKey(const Key('glass_navigation_bar')), findsOneWidget);
-      for (var i = 0; i < 6; i++) {
+      for (var i = 0; i < 5; i++) {
         expect(find.byKey(Key('glass_tab_$i')).hitTestable(), findsOneWidget);
       }
       await binding.takeScreenshot('v2_home_2026');
       await tester.tap(find.byKey(const Key('glass_tab_3')));
       await frames(tester);
       expect(find.byKey(const Key('panchang_daily_overview')), findsOneWidget);
-      for (final label in ['Daily', 'Muhurta', 'Ekadashi', 'Rashi']) {
+      for (final label in [
+        'Daily',
+        'Muhurta',
+        'Ekadashi',
+        'Rashi',
+        'Festivals',
+        'Guide',
+      ]) {
         expect(find.widgetWithText(Tab, label), findsOneWidget);
       }
       await binding.takeScreenshot('v2_panchang_free');
@@ -125,7 +132,7 @@ void main() {
       await until(
         tester,
         () => find
-            .byKey(const Key('glass_tab_5'))
+            .byKey(const Key('glass_tab_4'))
             .hitTestable()
             .evaluate()
             .isNotEmpty,
@@ -136,11 +143,10 @@ void main() {
         contains('America/New_York'),
       );
       await binding.takeScreenshot('v2_panchang_worldwide');
-      await tester.tap(find.byKey(const Key('glass_tab_5')));
+      await tester.tap(find.widgetWithText(Tab, 'Guide'));
       await frames(tester);
-      expect(find.text('Festival finder'), findsOneWidget);
       expect(find.text('Smarta and Vaishnava'), findsOneWidget);
-      await binding.takeScreenshot('v2_more');
+      await binding.takeScreenshot('v2_panchang_guide');
       final lang = tester
           .element(find.byType(MaterialApp).first)
           .read<LanguageService>();
