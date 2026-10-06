@@ -57,3 +57,37 @@ out = os.path.join(root, "test", "fixtures", "panchang", "swiss_rise_set_2027.js
 json.dump({"source": f"Swiss Ephemeris {swe.version} swe_rise_trans: upper limb, refraction at 1013.25 hPa and 15 C, sea level",
            "events": events}, open(out, "w"), indent=1)
 print(out, len(events))
+
+# Worldwide edge cases: polar day/night, date line, half/quarter-hour zones,
+# DST transition days in both hemispheres. First event in each local civil
+# day, as the engine reports it (None when the body does not rise or set).
+import math
+from zoneinfo import ZoneInfo
+
+sys.path.insert(0, os.path.dirname(__file__))
+import reference as R  # noqa: E402
+
+R.init(sys.argv[1])
+world = json.load(open(os.path.join(os.path.dirname(__file__), "cities_world.json")))
+edge = [c for c in world if c["id"].startswith("x-")]
+dates = ["2026-03-08", "2026-03-29", "2026-04-05", "2026-06-21", "2026-09-27",
+         "2026-10-04", "2026-11-01", "2026-12-21"]
+cases = []
+for c in edge:
+    zone = ZoneInfo(c["tz"])
+    for d in dates:
+        day = dt.date.fromisoformat(d)
+        start = R.civil_midnight(day, zone)
+        end = R.civil_midnight(day + dt.timedelta(days=1), zone)
+        row = {"id": c["id"], "lat": c["lat"], "lon": c["lon"], "tz": c["tz"], "date": d}
+        for key, body, rising in (("sunrise", swe.SUN, True), ("sunset", swe.SUN, False),
+                                  ("moonrise", swe.MOON, True), ("moonset", swe.MOON, False)):
+            v = R.rise_set(start, c["lon"], c["lat"], body, rising)
+            row[key] = R.from_jd(v).isoformat().replace("+00:00", "Z") if v is not None and v < end else None
+        sample = R.jd(dt.datetime.fromisoformat(row["sunrise"].replace("Z", "+00:00"))) if row["sunrise"] else None
+        row["tithi"] = R.tithi_index(sample) if sample else None
+        cases.append(row)
+out = os.path.join(root, "test", "fixtures", "panchang", "swiss_world_edges_2026.json")
+json.dump({"source": f"Swiss Ephemeris {swe.version}: first rise/set in each local civil day (upper limb, 1013.25 hPa, 15 C), tithi at that sunrise",
+           "cases": cases}, open(out, "w"), indent=1)
+print(out, len(cases))

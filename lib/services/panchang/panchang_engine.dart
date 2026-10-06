@@ -208,8 +208,10 @@ class PanchangEngine {
       segmentByWeekday: const [6, 5, 4, 3, 2, 1, 7],
       name: 'Gulika Kalam',
     );
+    // Without a full solar day only the Sankranti moment is reported; every
+    // other observance needs sunrise-based windows.
     final events = !hasSolarDay || nightEnd == null
-        ? <PanchangObservance>[]
+        ? _sankrantiOnly(city, calendarDate, sunset)
         : _observances(
             city: city,
             date: calendarDate,
@@ -1131,8 +1133,49 @@ class PanchangEngine {
       add('holi', 'Holi', major: true, note: 'The day after Holika Dahan.');
     }
 
-    // Solar ingress: the Sankranti moment on its civil date. Makar Sankranti
-    // and Pongal move to the next day when the ingress is after sunset.
+    _addSankranti(add, city, date, sunset, days);
+
+    items.sort((a, b) {
+      if (a.isMajor != b.isMajor) return a.isMajor ? -1 : 1;
+      return a.name.compareTo(b.name);
+    });
+    return List.unmodifiable(items);
+  }
+
+  List<PanchangObservance> _sankrantiOnly(
+    PanchangCity city,
+    DateTime date,
+    DateTime? sunset,
+  ) {
+    final items = <PanchangObservance>[];
+    _addSankranti(
+      (id, name, {major = false, note = ''}) => items.add(
+        PanchangObservance(
+          id: id,
+          name: name,
+          ruleSource: 'calculated',
+          description: note,
+          isMajor: major,
+        ),
+      ),
+      city,
+      date,
+      sunset,
+      _SolarDays(this, city),
+    );
+    return List.unmodifiable(items);
+  }
+
+  /// Solar ingress: the Sankranti moment on its civil date. Makar Sankranti
+  /// and Pongal move to the next day when the ingress is after sunset (and
+  /// stay on the ingress day where the Sun does not set).
+  void _addSankranti(
+    void Function(String, String, {bool major, String note}) add,
+    PanchangCity city,
+    DateTime date,
+    DateTime? sunset,
+    _SolarDays days,
+  ) {
     final start = startFor(date, city: city), end = endFor(date, city: city);
     final ingress = _solarIngress(start, end);
     if (ingress != null) {
@@ -1145,7 +1188,7 @@ class PanchangEngine {
           note:
               'Sidereal solar ingress at ${formatPanchangTime(ingress, city, date)}.',
         );
-      } else if (ingress.isBefore(sunset)) {
+      } else if (sunset == null || ingress.isBefore(sunset)) {
         _addMakar(add, ingress, city, date);
       }
     }
@@ -1161,12 +1204,6 @@ class PanchangEngine {
         _addMakar(add, yesterdayIngress, city, date);
       }
     }
-
-    items.sort((a, b) {
-      if (a.isMajor != b.isMajor) return a.isMajor ? -1 : 1;
-      return a.name.compareTo(b.name);
-    });
-    return List.unmodifiable(items);
   }
 
   static const _signs = [
@@ -1298,6 +1335,11 @@ class PanchangEngine {
     if (t != 10 && t != 11) return false;
     final p = fortnight(-1), n = fortnight(1), nn = fortnight(2);
     if (p == null || n == null || nn == null) return false;
+    if (fortnight(-2) == null || fortnight(3) == null) return false;
+    for (final offset in const [-1, 0, 1]) {
+      final sunset = days.of(date.add(Duration(days: offset))).sunset;
+      if (sunset == null) return false;
+    }
     if (t == 11 && p != 11) return n == 11 ? nn != 12 : n == 12;
     if (t == 11 && p == 11) return n == 12;
     return n == 12 || (n == 11 && nn == 13);

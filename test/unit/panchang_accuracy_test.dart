@@ -96,6 +96,64 @@ void main() {
     }
   });
 
+  test(
+    'polar, date-line, odd-offset and DST locations match Swiss Ephemeris',
+    () {
+      final fixture =
+          jsonDecode(
+                File(
+                  'test/fixtures/panchang/swiss_world_edges_2026.json',
+                ).readAsStringSync(),
+              )
+              as Map;
+      final failures = <String>[];
+      for (final row in fixture['cases'] as List) {
+        final city = PanchangCity(
+          id: row['id'],
+          label: row['id'],
+          latitude: (row['lat'] as num).toDouble(),
+          longitude: (row['lon'] as num).toDouble(),
+          timeZoneId: row['tz'],
+        );
+        final date = DateTime.parse(row['date'] as String);
+        final day = engine.calculate(date, city: city);
+        void compare(String key, DateTime? actual) {
+          final expected = row[key] == null ? null : DateTime.parse(row[key]);
+          if (expected == null || actual == null) {
+            if (expected != actual)
+              failures.add(
+                '${row['id']} ${row['date']} $key $actual vs $expected',
+              );
+            return;
+          }
+          if (actual.difference(expected).inMilliseconds.abs() > 1000) {
+            failures.add(
+              '${row['id']} ${row['date']} $key $actual vs $expected',
+            );
+          }
+        }
+
+        compare('sunrise', day.sunriseUtc);
+        compare('moonrise', day.moonriseUtc);
+        compare('moonset', day.moonsetUtc);
+        // The engine reports the sunset that follows sunrise (which can fall
+        // after midnight in polar summer); compare only same-day ordering.
+        final sunrise = row['sunrise'], sunset = row['sunset'];
+        if (sunrise != null &&
+            sunset != null &&
+            (sunset as String).compareTo(sunrise) > 0) {
+          compare('sunset', day.sunsetUtc);
+        }
+        if (row['tithi'] != null && day.tithi.index != row['tithi']) {
+          failures.add(
+            '${row['id']} ${row['date']} tithi ${day.tithi.index} vs ${row['tithi']}',
+          );
+        }
+      }
+      expect(failures, isEmpty);
+    },
+  );
+
   test('Delhi 2027 Smarta fasts and Parana match published Drik data', () {
     final data =
         jsonDecode(File('assets/calendar/2027.json').readAsStringSync()) as Map;
@@ -212,6 +270,33 @@ void main() {
     expect(
       nextDay.observances.map((event) => event.name),
       contains('Makar Sankranti'),
+    );
+  });
+
+  test('Sankranti is shown on polar days without sunrise or sunset', () {
+    const longyearbyen = PanchangCity(
+      id: 'longyearbyen',
+      label: 'Longyearbyen',
+      latitude: 78.2232,
+      longitude: 15.6267,
+      timeZoneId: 'Arctic/Longyearbyen',
+    );
+    // Polar night: no sunrise. Dhanu Sankranti 2026 is on 16 December.
+    final day = engine.calculate(
+      DateTime.utc(2026, 12, 16),
+      city: longyearbyen,
+    );
+    expect(day.sunriseUtc, isNull);
+    expect(day.observances.map((event) => event.id), contains('sankranti-8'));
+    // Polar day: no sunset. Mithuna Sankranti 2026 is on 15 June.
+    final summer = engine.calculate(
+      DateTime.utc(2026, 6, 15),
+      city: longyearbyen,
+    );
+    expect(summer.sunsetUtc, isNull);
+    expect(
+      summer.observances.map((event) => event.id),
+      contains('sankranti-2'),
     );
   });
 

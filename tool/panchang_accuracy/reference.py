@@ -109,12 +109,45 @@ def previous_boundary(fn, value, width):
     return high
 
 
+REFRACTION = 0.5599  # degrees at the horizon, 1013.25 hPa and 15 C (SE)
+
+
+def _limb_altitude(value, lon, lat, body):
+    """Topocentric true altitude of the upper limb plus horizon refraction;
+    zero at apparent rise/set of the upper limb."""
+    x = swe.calc_ut(value, body, swe.FLG_SWIEPH | swe.FLG_EQUATORIAL | swe.FLG_TOPOCTR)[0]
+    _, true_alt, _ = swe.azalt(value, swe.EQU2HOR, (lon, lat, 0), 0, 0, (x[0], x[1], x[2]))
+    if body == swe.MOON:
+        sd = math.degrees(math.asin(1737.4 / (x[2] * 149597870.7)))
+    else:
+        sd = 959.63 / x[2] / 3600
+    return true_alt + sd + REFRACTION
+
+
 def rise_set(value, lon, lat, body, rising, hindu=False):
     flags = swe.CALC_RISE if rising else swe.CALC_SET
     if hindu:
         flags |= swe.BIT_HINDU_RISING
     res, tret = swe.rise_trans(value, body, flags, (lon, lat, 0), 1013.25, 15, swe.FLG_SWIEPH)
-    return tret[0] if res == 0 else None
+    if res != 0:
+        return None
+    if hindu:
+        return tret[0]
+    # swe_rise_trans converges to a few arcseconds, which is seconds of time
+    # when the body grazes the horizon at high latitude. Solve exactly on
+    # Swiss Ephemeris positions with the same refraction and semidiameter.
+    swe.set_topo(lon, lat, 0)
+    sign = 1 if rising else -1
+    low, high = tret[0] - 10 / 1440, tret[0] + 10 / 1440
+    if sign * _limb_altitude(low, lon, lat, body) > 0 or sign * _limb_altitude(high, lon, lat, body) < 0:
+        return tret[0]
+    for _ in range(40):
+        middle = (low + high) / 2
+        if sign * _limb_altitude(middle, lon, lat, body) < 0:
+            low = middle
+        else:
+            high = middle
+    return high
 
 
 def civil_midnight(date, zone):
@@ -221,7 +254,8 @@ def smarta_ekadashi(sunrises, i):
             return j - 1
         return j
 
-    for j in range(max(1, i - 2), min(len(t) - 2, i + 3)):
+    # Day i can only be decided from j = i-1, i or i+1 (needs t[i-2..i+3]).
+    for j in range(max(1, i - 1), min(len(t) - 2, i + 2)):
         if (t[j] == 11 and t[j - 1] != 11) or (t[j] == 12 and t[j - 1] == 10):
             if day_for(j) == i:
                 return True

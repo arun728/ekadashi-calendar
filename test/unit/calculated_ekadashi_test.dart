@@ -18,6 +18,21 @@ void main() {
     sunsetTithi: sunsetTithi ?? tithi,
     nakshatra: nakshatra,
   );
+  // Smarta decisions need sunrises from two days before to three days after;
+  // pad the synthetic fortnight with ordinary neighbouring days.
+  String? smarta(List<EkadashiSample> days, int index) {
+    final first = days.first.tithi, last = days.last.tithi;
+    final padded = [
+      sample(-2, first - 2),
+      sample(-1, first - 1),
+      ...days,
+      sample(days.length, last + 1),
+      sample(days.length + 1, last + 2),
+      sample(days.length + 2, last + 3),
+    ];
+    return EkadashiRules.select(padded, index + 2, EkadashiTradition.smarta);
+  }
+
   test(
     'Smarta sunrise vs Gaudiya Dashami contamination differ intentionally',
     () {
@@ -28,10 +43,7 @@ void main() {
         sample(3, 13),
         sample(4, 14),
       ];
-      expect(
-        EkadashiRules.select(days, 1, EkadashiTradition.smarta),
-        'Sunrise Ekadashi',
-      );
+      expect(smarta(days, 1), 'Sunrise Ekadashi');
       expect(EkadashiRules.select(days, 1, EkadashiTradition.gaudiya), isNull);
       expect(
         EkadashiRules.select(days, 2, EkadashiTradition.gaudiya),
@@ -49,8 +61,8 @@ void main() {
     ];
     // Drik: when Dwadashi also reaches the following sunrise, Smarta
     // householders fast on the second day, with Parana in Dwadashi.
-    expect(EkadashiRules.select(days, 1, EkadashiTradition.smarta), isNull);
-    expect(EkadashiRules.select(days, 2, EkadashiTradition.smarta), isNotNull);
+    expect(smarta(days, 1), isNull);
+    expect(smarta(days, 2), isNotNull);
     expect(EkadashiRules.select(days, 1, EkadashiTradition.gaudiya), isNull);
     expect(
       EkadashiRules.select(days, 2, EkadashiTradition.gaudiya),
@@ -65,8 +77,8 @@ void main() {
       sample(3, 13),
       sample(4, 14),
     ];
-    expect(EkadashiRules.select(days, 1, EkadashiTradition.smarta), isNotNull);
-    expect(EkadashiRules.select(days, 2, EkadashiTradition.smarta), isNull);
+    expect(smarta(days, 1), isNotNull);
+    expect(smarta(days, 2), isNull);
   });
   test('Smarta skipped Ekadashi or Dwadashi fasts on the Dashami day', () {
     final skippedEkadashi = [
@@ -76,14 +88,8 @@ void main() {
       sample(3, 13),
       sample(4, 14),
     ];
-    expect(
-      EkadashiRules.select(skippedEkadashi, 1, EkadashiTradition.smarta),
-      isNotNull,
-    );
-    expect(
-      EkadashiRules.select(skippedEkadashi, 2, EkadashiTradition.smarta),
-      isNull,
-    );
+    expect(smarta(skippedEkadashi, 1), isNotNull);
+    expect(smarta(skippedEkadashi, 2), isNull);
     final skippedDwadashi = [
       sample(0, 9),
       sample(1, 10),
@@ -91,14 +97,8 @@ void main() {
       sample(3, 13),
       sample(4, 14),
     ];
-    expect(
-      EkadashiRules.select(skippedDwadashi, 1, EkadashiTradition.smarta),
-      isNotNull,
-    );
-    expect(
-      EkadashiRules.select(skippedDwadashi, 2, EkadashiTradition.smarta),
-      isNull,
-    );
+    expect(smarta(skippedDwadashi, 1), isNotNull);
+    expect(smarta(skippedDwadashi, 2), isNull);
   });
   test('Dwadashi kshaya selects Trisprisha; extended Dwadashi Vyanjuli', () {
     final skipped = [
@@ -152,7 +152,7 @@ void main() {
       ),
       sample(2, 12),
     ];
-    expect(EkadashiRules.select(days, 1, EkadashiTradition.smarta), isNull);
+    expect(smarta(days, 1), isNull);
   });
   test(
     'Pakshavardhini is not bypassed when no nakshatra Mahadvadashi matches',

@@ -45,12 +45,16 @@ def city_reference(args):
         return value if within(value, i) else None
 
     sunrises = [event(i, swe.SUN, True) for i in range(len(dates))]
+    # Sunset of the solar day: the first sunset after that day's sunrise,
+    # which falls after local midnight in some polar summers.
     sunsets = []
     for i in range(len(dates)):
-        value = event(i, swe.SUN, False)
-        if value is not None and sunrises[i] is not None and value < sunrises[i]:
-            later = R.rise_set(sunrises[i], lon, lat, swe.SUN, False)
-            value = later if later is not None and later < mids[i] + 2 else None
+        if sunrises[i] is None:
+            value = event(i, swe.SUN, False)
+        else:
+            value = R.rise_set(sunrises[i], lon, lat, swe.SUN, False)
+            if value is None or value >= mids[i] + 2:
+                value = None
         sunsets.append(value)
     days = []
     month_cache = {}
@@ -82,9 +86,11 @@ def city_reference(args):
         })
     # Smarta fasts and Parana (Drik-style rules validated in compare.py).
     for i in range(4, len(dates) - 5):
-        if None in sunrises[i - 3:i + 4] or None in sunsets[i:i + 2]:
+        # Same requirement as the engine: sunrises on days -2..+3 and
+        # sunsets on days -1..+1, otherwise no recommendation.
+        if None in sunrises[i - 2:i + 4] or None in sunsets[i - 1:i + 2]:
             continue
-        if not R.smarta_ekadashi(sunrises[i - 3:i + 4], 3):
+        if not R.smarta_ekadashi(sunrises[i - 2:i + 4], 2):
             continue
         day = days[i - 4]
         day["smarta"] = True

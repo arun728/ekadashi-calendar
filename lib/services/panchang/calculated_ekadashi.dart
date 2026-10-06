@@ -78,7 +78,12 @@ class EkadashiRules {
   /// - Ekadashi touching no sunrise, or Dwadashi touching no sunrise after
   ///   the Ekadashi day: the Dashami day, so that Parana falls in Dwadashi.
   static String? _smarta(List<EkadashiSample> days, int i) {
-    if (i + 2 >= days.length) return null;
+    // A decision needs sunrises from two days before to three days after
+    // (and sunsets around the day); otherwise none is offered.
+    if (i < 2 || i + 3 >= days.length) return null;
+    for (var k = i - 2; k <= i + 3; k++) {
+      if (days[k].sunrise == null) return null;
+    }
     final p = days[i - 1].fortnightTithi;
     final t = days[i].fortnightTithi;
     final n = days[i + 1].fortnightTithi;

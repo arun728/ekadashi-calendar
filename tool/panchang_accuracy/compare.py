@@ -64,10 +64,13 @@ class Score:
         self.examples = collections.defaultdict(list)
         self.raw = {}
         self.excluded = []
+        self.by_city = collections.defaultdict(collections.Counter)
 
     def check(self, category, ok, example=None):
         passed, total = self.cats.get(category, (0, 0))
         self.cats[category] = (passed + bool(ok), total + 1)
+        if not ok and example and isinstance(example[0], str):
+            self.by_city[example[0]][category] += 1
         if not ok and example is not None and len(self.examples[category]) < 12:
             self.examples[category].append(example)
 
@@ -220,7 +223,8 @@ def score(engine, reference, gcal, festivals):
                     else:
                         s.check("Smarta Parana (all cities)", False, (city, date, key, "missing"))
         # --- 6. Gaudiya vs GCAL ------------------------------------------------
-        ref_g = (gcal.get(city) or {}).get("corrected")
+        ref_g = (gcal.get(city) or {}).get("corrected") if not any(
+            d["sunrise"] is None for d in ref_days) else None
         if ref_g:
             ref_map = {r["date"]: r for r in ref_g if in_years(r["date"])}
             eng_map = {d["date"]: d for d in engine[city]["ekadashi"]["gaudiya"] if in_years(d["date"])}
@@ -273,6 +277,8 @@ def score(engine, reference, gcal, festivals):
         for entry in data["ekadashis"]:
             for zone, timing in entry["timing"].items():
                 city = PUBLISHED_CITY[(year, zone)]
+                if city not in engine:
+                    continue
                 fasts = {d["date"]: d for d in engine[city]["ekadashi"]["smarta"]}
                 date = timing["date"]
                 ref_day = next(d for d in reference[city] if d["date"] == date)
@@ -311,7 +317,7 @@ def score(engine, reference, gcal, festivals):
         return obs["id"]
 
     annual = set(festivals["festivals"])
-    delhi = engine[festivals["city"]]["days"]
+    delhi = engine.get(festivals["city"], {"days": []})["days"]
     found = collections.defaultdict(set)
     for day in delhi:
         for obs in day["observances"]:
@@ -324,6 +330,8 @@ def score(engine, reference, gcal, festivals):
             if not any(d.startswith(str(year)) for v in festivals["festivals"].values() for d in v):
                 continue
             if not want:
+                continue
+            if not delhi:
                 continue
             got = {d for d in found[key] if d.startswith(str(year))}
             s.check("Festival dates (India, public lists)", len(got) == 1 and got <= want,
@@ -352,8 +360,14 @@ def score(engine, reference, gcal, festivals):
                     # A tithi touching no sunrise is checked at the next one.
                     s.check("Festival lunar month/tithi (all cities)", fits(ref) or fits(following),
                             (city, key, day["date"], ref["amanta"], ref["tithi"]["index"]))
+        polar = {y for y in YEARS if any(
+            d["date"].startswith(str(y)) and (d["sunrise"] is None or d["sunset"] is None) for d in ref_days)}
         for key in annual:
             for year in YEARS:
+                if year in polar:
+                    # Without a sunrise and sunset every day, kala windows do
+                    # not exist on some days; listed, not scored.
+                    continue
                 n = counts[(key, str(year))]
                 s.check("Festival occurs once per year (all cities)", n == 1, (city, key, year, n))
     return s
@@ -375,7 +389,9 @@ def summarize(s, label):
     passed = sum(c["passed"] for c in cats.values())
     total = sum(c["total"] for c in cats.values())
     raw = {k: {"mean_error_min": round(statistics.mean(v), 3), "within_2_min": round(100 * sum(x <= 2 for x in v) / len(v), 2), "n": len(v)} for k, v in s.raw.items()}
+    worst = sorted(s.by_city.items(), key=lambda kv: -sum(kv[1].values()))[:25]
     return {"label": label, "categories": cats, "supplementary": raw, "excluded_published_rows": s.excluded,
+            "worst_locations": [(city, dict(c)) for city, c in worst],
             "overall_category_mean": round(statistics.mean(scores), 2),
             "overall_pooled": round(100 * passed / total, 2), "checks": total}
 
@@ -389,6 +405,7 @@ def main():
     label = next((a.split("=", 1)[1] for a in sys.argv[1:] if a.startswith("--label=")), "engine")
     engine = load_engine(args[0])
     reference = json.load(open(args[1]))
+    reference = {k: v for k, v in reference.items() if k in engine}
     R.init(os.environ["SE_EPHE_PATH"])
     gcal = json.load(open(args[2]))
     festivals = json.load(open(os.path.join(HERE, "festivals_reference.json")))
@@ -401,6 +418,8 @@ def main():
     for k, v in result["supplementary"].items():
         print(f"(supplementary) {k}: {v}")
     print(f"listed, not scored: {len(result['excluded_published_rows'])}")
+    for city, counts in result["worst_locations"][:12]:
+        print(f"  most failures: {city}: {counts}")
     print(f"OVERALL (mean of categories): {result['overall_category_mean']}%   pooled: {result['overall_pooled']}%   checks: {result['checks']}")
 
 
