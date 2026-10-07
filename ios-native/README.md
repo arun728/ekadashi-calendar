@@ -47,7 +47,13 @@ xcodebuild test -project EkadashiCalendar.xcodeproj -scheme EkadashiCalendar \
   -destination 'platform=iOS Simulator,name=iPhone 17'
 ```
 
-The core tests read the repository's `assets/` and `lib/l10n/` files. They fail if the iOS copies drift from Android. Regenerate the copies and the Dart parity fixture with `python3 tool/ios/generate_core_resources.py` and the exporters in `test/tool/`.
+The core tests read the repository's `assets/` and `lib/l10n/` files. They fail if the iOS copies drift from Android. In the Flutter suite, `test/tool/dump_search_catalog_test.dart` and `test/tool/dump_panchang_parity_test.dart` fail if the iOS search catalog or the Panchang parity fixture no longer match the Dart code.
+
+To regenerate the copies:
+- data and Swift series files: `python3 tool/ios/generate_core_resources.py`;
+- search catalog and parity fixture: run those two tests with `UPDATE_IOS_FIXTURES=1`.
+
+CI runs the iOS job in `.github/workflows/android-tests.yml` on macOS with Xcode 26. It runs the package tests, then builds the app and widgets and runs the unit and UI tests on the newest iPhone simulator. The UI screenshots are uploaded as an artifact.
 
 ## Configuration
 

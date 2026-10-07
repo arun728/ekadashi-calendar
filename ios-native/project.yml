@@ -134,6 +134,5 @@ schemes:
       targets:
         - EkadashiCalendarTests
         - EkadashiCalendarUITests
-        - package: EkadashiCore/EkadashiCoreTests
     archive:
       config: Release

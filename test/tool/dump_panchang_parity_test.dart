@@ -1,5 +1,7 @@
-// Exports Flutter engine results for the iOS parity test:
-//   flutter test test/tool/dump_panchang_parity_test.dart
+// Checks the Flutter engine results the iOS parity test compares against
+// are current (instants within one second, numbers within 1e-9); regenerate
+// them after an engine or rule change with:
+//   UPDATE_IOS_FIXTURES=1 flutter test test/tool/dump_panchang_parity_test.dart
 // Output: ios-native/EkadashiCore/Tests/EkadashiCoreTests/Fixtures/panchang_parity.json
 // EkadashiCoreTests/PanchangParityTests compares every field of the Swift
 // port with these values.
@@ -13,7 +15,7 @@ import 'package:ekadashi_calendar/services/panchang/panchang_models.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('dump Panchang parity fixture for iOS', () {
+  test('iOS Panchang parity fixture matches the Dart engine', () {
     const engine = PanchangEngine();
     const cities = [
       PanchangCity.newDelhi,
@@ -153,10 +155,64 @@ void main() {
     }
     final file = File(
       'ios-native/EkadashiCore/Tests/EkadashiCoreTests/Fixtures/panchang_parity.json',
-    )..createSync(recursive: true);
-    file.writeAsStringSync(
-      '${const JsonEncoder.withIndent(' ').convert({'days': days, 'fasts': fasts})}\n',
     );
+    final actual = {'days': days, 'fasts': fasts};
     expect(days, hasLength(cities.length * 14));
+    if (Platform.environment['UPDATE_IOS_FIXTURES'] == '1') {
+      file
+        ..createSync(recursive: true)
+        ..writeAsStringSync(
+          '${const JsonEncoder.withIndent(' ').convert(actual)}\n',
+        );
+      return;
+    }
+    final differences = <String>[];
+    _compare(
+      jsonDecode(file.readAsStringSync()),
+      jsonDecode(jsonEncode(actual)),
+      r'$',
+      differences,
+    );
+    expect(
+      differences.take(20).toList(),
+      isEmpty,
+      reason:
+          'The iOS parity fixture is stale (${differences.length} '
+          'differences). Run: UPDATE_IOS_FIXTURES=1 flutter test '
+          'test/tool/dump_panchang_parity_test.dart, then update the Swift '
+          'port until PanchangParityTests passes.',
+    );
   });
+}
+
+final _instant = RegExp(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}');
+
+void _compare(Object? expected, Object? actual, String path, List<String> out) {
+  if (expected is Map && actual is Map) {
+    final keys = {...expected.keys, ...actual.keys};
+    for (final key in keys) {
+      _compare(expected[key], actual[key], '$path.$key', out);
+    }
+  } else if (expected is List && actual is List) {
+    if (expected.length != actual.length) {
+      out.add('$path: length ${expected.length} vs ${actual.length}');
+      return;
+    }
+    for (var i = 0; i < expected.length; i++) {
+      _compare(expected[i], actual[i], '$path[$i]', out);
+    }
+  } else if (expected is num && actual is num) {
+    if ((expected - actual).abs() > 1e-9)
+      out.add('$path: $expected vs $actual');
+  } else if (expected is String &&
+      actual is String &&
+      _instant.hasMatch(expected) &&
+      _instant.hasMatch(actual)) {
+    final delta = DateTime.parse(
+      expected,
+    ).difference(DateTime.parse(actual)).inMilliseconds.abs();
+    if (delta > 1000) out.add('$path: $expected vs $actual');
+  } else if (expected != actual) {
+    out.add('$path: $expected vs $actual');
+  }
 }
