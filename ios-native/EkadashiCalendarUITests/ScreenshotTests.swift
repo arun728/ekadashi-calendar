@@ -22,10 +22,17 @@ final class ScreenshotTests: XCTestCase {
         add(attachment)
     }
 
+    /// Selects a tab and waits until it is selected; a tap that lands while a
+    /// navigation transition is still running can be dropped, so retry once.
     private func tab(_ index: Int) {
-        let buttons = app.tabBars.buttons
-        XCTAssertTrue(buttons.element(boundBy: index).waitForExistence(timeout: 10))
-        buttons.element(boundBy: index).tap()
+        let button = app.tabBars.buttons.element(boundBy: index)
+        XCTAssertTrue(button.waitForExistence(timeout: 10))
+        let selected = NSPredicate(format: "isSelected == true")
+        for _ in 0..<2 {
+            button.tap()
+            if XCTWaiter.wait(for: [expectation(for: selected, evaluatedWith: button)], timeout: 5) == .completed { return }
+        }
+        XCTFail("Tab \(index) did not become selected")
     }
 
     func testTabsSearchAndPaywall() {
@@ -37,6 +44,8 @@ final class ScreenshotTests: XCTestCase {
         app.buttons["view_details"].firstMatch.tap()
         snap("02-details")
         app.navigationBars.buttons.element(boundBy: 0).tap()
+        // Back on Today before switching tabs.
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 10))
 
         tab(1)
         XCTAssertTrue(app.buttons["calendar_next_month"].waitForExistence(timeout: 5))
