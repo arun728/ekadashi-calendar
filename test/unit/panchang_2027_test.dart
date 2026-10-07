@@ -51,6 +51,12 @@ void main() {
           final matching = rows.where((r) => r['date'] == date);
           if (matching.isEmpty) continue;
           final row = matching.single;
+          // When Dwadashi ends within seconds of sunrise, the Shuddha versus
+          // Trisprisha decision flips with GCAL's own ~2-minute tithi error.
+          // The engine flags these days; Sydney 2027-07-30 is one (JPL
+          // sunrise 20:48:58 UTC follows Dwadashi's end). Timing is checked
+          // in docs/PANCHANG_ACCURACY.md against Swiss Ephemeris instead.
+          if (fast.nearBoundary) continue;
           for (final pair in [
             (fast.paranaStartUtc, 'startTime'),
             (fast.paranaEndUtc, 'endTime'),

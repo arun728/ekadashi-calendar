@@ -88,9 +88,12 @@ void main() {
         final holika = const PanchangEngine().calculate(
           DateTime.utc(2026, 3, 2),
         );
-        final holi = const PanchangEngine().calculate(DateTime.utc(2026, 3, 4));
+        // Holi is the day after Holika Dahan; Akshaya Tritiya 2026 is 19 April
+        // (Tritiya at sunrise on the 20th ends within Pratahkala). Both match
+        // test/fixtures/panchang/festivals_india_2026_2027.json.
+        final holi = const PanchangEngine().calculate(DateTime.utc(2026, 3, 3));
         final akshaya = const PanchangEngine().calculate(
-          DateTime.utc(2026, 4, 20),
+          DateTime.utc(2026, 4, 19),
         );
         final guru = const PanchangEngine().calculate(
           DateTime.utc(2026, 7, 29),

@@ -130,7 +130,6 @@ class PanchangEngine {
       endUtc,
       city,
       moon: false,
-      targetAltitude: -0.833,
       rising: true,
     );
     var sunset = _findCrossing(
@@ -138,16 +137,16 @@ class PanchangEngine {
       endUtc,
       city,
       moon: false,
-      targetAltitude: -0.833,
       rising: false,
     );
-    if (sunrise != null && sunset != null && sunset.isBefore(sunrise)) {
+    // The solar day's sunset follows its sunrise; at high latitudes it can
+    // fall after local midnight (none, or an earlier one, in the civil day).
+    if (sunrise != null && (sunset == null || sunset.isBefore(sunrise))) {
       sunset = _findCrossing(
         sunrise,
         city.midnight(calendarDate, dayOffset: 2),
         city,
         moon: false,
-        targetAltitude: -0.833,
         rising: false,
       );
     }
@@ -156,7 +155,6 @@ class PanchangEngine {
       endUtc,
       city,
       moon: true,
-      targetAltitude: -0.833,
       rising: true,
     );
     final moonset = _findCrossing(
@@ -164,7 +162,6 @@ class PanchangEngine {
       endUtc,
       city,
       moon: true,
-      targetAltitude: -0.833,
       rising: false,
     );
     final hasSolarDay =
@@ -174,23 +171,13 @@ class PanchangEngine {
     final madhyahna = localSunrise.add(
       localSunset.difference(localSunrise) ~/ 2,
     );
-    final aparahna = localSunrise.add(
-      Duration(
-        microseconds:
-            (localSunset.difference(localSunrise).inMicroseconds * 0.6).round(),
-      ),
-    );
     final nightEnd = _findCrossing(
       localSunset,
       city.midnight(calendarDate, dayOffset: 2),
       city,
       moon: false,
-      targetAltitude: -0.833,
       rising: true,
     );
-    final nishita = nightEnd == null
-        ? localSunset.add(const Duration(hours: 6))
-        : localSunset.add(nightEnd.difference(localSunset) ~/ 2);
 
     final tithi = _tithiAt(localSunrise);
     final nakshatra = _nakshatraAt(localSunrise);
@@ -223,20 +210,16 @@ class PanchangEngine {
       segmentByWeekday: const [6, 5, 4, 3, 2, 1, 7],
       name: 'Gulika Kalam',
     );
+    // Without a full solar day only the Sankranti moment is reported; every
+    // other observance needs sunrise-based windows.
     final events = !hasSolarDay || nightEnd == null
-        ? <PanchangObservance>[]
+        ? _sankrantiOnly(city, calendarDate, sunset)
         : _observances(
             city: city,
             date: calendarDate,
             sunrise: localSunrise,
-            madhyahna: madhyahna,
-            aparahna: aparahna,
             sunset: localSunset,
-            moonrise: moonrise,
-            nishita: nishita,
             tithi: tithi,
-            monthAmanta: month.name,
-            monthPurnimanta: purnimanta,
           );
 
     return PanchangDay(
@@ -866,18 +849,20 @@ class PanchangEngine {
     DateTime end,
     PanchangCity city, {
     required bool moon,
-    required double targetAltitude,
     required bool rising,
   }) {
     const step = Duration(minutes: 5);
+    // Apparent upper limb on a sea-level horizon: geometric altitude of the
+    // centre equals -(horizon refraction + actual semidiameter).
     double difference(DateTime instant) =>
         AstronomyCalculator.altitudeDegrees(
           instant: instant,
           latitude: city.latitude,
           longitude: city.longitude,
           moon: moon,
-        ) -
-        targetAltitude;
+        ) +
+        AstronomyCalculator.horizonRefraction +
+        AstronomyCalculator.semidiameterDegrees(instant, moon: moon);
 
     var low = start;
     var lowValue = difference(low);
@@ -932,20 +917,10 @@ class PanchangEngine {
     required PanchangCity city,
     required DateTime date,
     required DateTime sunrise,
-    required DateTime madhyahna,
-    required DateTime aparahna,
     required DateTime sunset,
-    required DateTime? moonrise,
-    required DateTime nishita,
     required PanchangLimb tithi,
-    required String monthAmanta,
-    required String monthPurnimanta,
   }) {
     final items = <PanchangObservance>[];
-    // Krishna-paksha observances are also known by the next Purnimanta label.
-    final monthForPaksha = tithi.paksha == 'Krishna'
-        ? monthPurnimanta
-        : monthAmanta;
     void add(String id, String name, {bool major = false, String note = ''}) {
       if (items.any((item) => item.id == id)) return;
       items.add(
@@ -959,54 +934,82 @@ class PanchangEngine {
       );
     }
 
-    switch (tithi.index) {
-      case 11:
-      case 26:
-        add(
-          'ekadashi',
-          'Ekadashi',
-          major: true,
-          note:
-              'Tithi at local sunrise; fasting and parana follow the app schedule.',
-        );
-      case 12:
-      case 27:
-        add('dwadashi', 'Dwadashi');
-      case 15:
-        add('purnima', 'Purnima', major: true);
-      case 30:
-        add('amavasya', 'Amavasya', major: true);
-      case 4:
-        if (tithi.paksha == 'Shukla') {
-          add(
-            'vinayaka-chaturthi',
-            monthAmanta == 'Bhadrapada'
-                ? 'Ganesh Chaturthi'
-                : 'Vinayaka Chaturthi',
-            major: true,
-          );
-        }
-      case 8:
-      case 23:
-        add('ashtami', 'Ashtami');
-      case 9:
-      case 24:
-        add('navami', 'Navami');
+    final days = _SolarDays(this, city);
+    final nextSunrise = days.of(date.add(const Duration(days: 1))).sunrise;
+    final tomorrow = nextSunrise == null ? null : _tithiAt(nextSunrise).index;
+
+    // Occurrences of tithi [index] (1-30) that can be observed on [date]:
+    // the one current at sunrise, its neighbours and the next sunrise's.
+    bool near(int index) {
+      bool same(int a, int b) => (a - b) % 30 == 0;
+      return same(index, tithi.index) ||
+          same(index, tithi.index + 1) ||
+          same(index, tithi.index - 1) ||
+          (tomorrow != null &&
+              (same(index, tomorrow) || same(index, tomorrow + 1)));
     }
 
-    final middayTithi = _tithiAt(madhyahna);
-    final aparahnaTithi = _tithiAt(aparahna);
-    final sunsetTithi = _tithiAt(sunset);
-    if (sunsetTithi.index == 13 || sunsetTithi.index == 28) {
+    _Occurrence? occurrence(int index) =>
+        near(index) ? _occurrence(index, date, sunrise, tithi, days) : null;
+
+    bool observed(
+      int index,
+      _Kala kala, {
+      String? month,
+      _Tie tie = _Tie.longest,
+    }) {
+      final found = occurrence(index);
+      if (found == null) return false;
+      if (month != null && found.month != month) return false;
+      return _sameDate(found.observedOn(kala, tie, days, city), date);
+    }
+
+    // Monthly observances.
+    if (_smartaEkadashi(date, days)) {
       add(
-        'pradosham',
-        'Pradosham',
+        'ekadashi',
+        'Ekadashi',
         major: true,
-        note: 'Trayodashi is present at local sunset.',
+        note:
+            'Smarta fasting day for this location (Drik rules); Gaudiya days are in the Ekadashi tab.',
       );
     }
-    final moonriseTithi = moonrise == null ? null : _tithiAt(moonrise);
-    if (moonriseTithi?.index == 19) {
+    for (final index in const [12, 27]) {
+      if (tithi.index == index) add('dwadashi', 'Dwadashi');
+    }
+    if (observed(15, _Kala.sunrise)) add('purnima', 'Purnima', major: true);
+    if (observed(30, _Kala.sunrise)) add('amavasya', 'Amavasya', major: true);
+    for (final index in const [8, 23]) {
+      if (tithi.index == index) add('ashtami', 'Ashtami');
+    }
+    for (final index in const [9, 24]) {
+      if (tithi.index == index) add('navami', 'Navami');
+    }
+    final chaturthi = occurrence(4);
+    if (chaturthi != null &&
+        _sameDate(
+          chaturthi.observedOn(_Kala.madhyahna, _Tie.longest, days, city),
+          date,
+        )) {
+      final annual = chaturthi.month == 'Bhadrapada';
+      add(
+        'vinayaka-chaturthi',
+        annual ? 'Ganesh Chaturthi' : 'Vinayaka Chaturthi (monthly)',
+        major: true,
+        note: 'Shukla Chaturthi during Madhyahna (the third fifth of the day).',
+      );
+    }
+    for (final index in const [13, 28]) {
+      if (observed(index, _Kala.pradosh)) {
+        add(
+          'pradosham',
+          'Pradosham',
+          major: true,
+          note: 'Trayodashi during Pradosh (the first fifth of the night).',
+        );
+      }
+    }
+    if (observed(19, _Kala.moonrise, tie: _Tie.first)) {
       add(
         'sankashti-chaturthi',
         'Sankashti Chaturthi',
@@ -1014,178 +1017,334 @@ class PanchangEngine {
         note: 'Krishna Chaturthi is present at local moonrise.',
       );
     }
-    final nightTithi = _tithiAt(nishita);
-    final isChaturdashiNight = nightTithi.index == 29;
-    if (isChaturdashiNight) {
-      if (monthAmanta == 'Magha' || monthPurnimanta == 'Phalguna') {
+    final chaturdashi = occurrence(29);
+    if (chaturdashi != null &&
+        _sameDate(
+          chaturdashi.observedOn(_Kala.nishita, _Tie.longest, days, city),
+          date,
+        )) {
+      if (chaturdashi.month == 'Magha') {
         add(
           'maha-shivaratri',
           'Maha Shivaratri',
           major: true,
           note:
-              'Krishna Chaturdashi at Nishita; both common month labels are shown.',
+              'Krishna Chaturdashi at Nishita (Magha Amanta, Phalguna Purnimanta).',
         );
       } else {
         add(
           'masik-shivaratri',
           'Masik Shivaratri',
           major: true,
-          note: 'Krishna Chaturdashi at the local night midpoint.',
+          note:
+              'Krishna Chaturdashi at Nishita, the eighth fifteenth of the night.',
         );
       }
     }
 
-    // Tithi rules are kept explicit here so each event's paksha, lunar month,
-    // and sunrise/sunset/night decision can be reviewed independently.
-    final sunriseIndex = tithi.index;
-    final sunrisePaksha = tithi.paksha;
-    final m = monthForPaksha;
-    if (sunrisePaksha == 'Shukla') {
-      if (m == 'Chaitra' && sunriseIndex == 1) {
-        add('ugadi', 'Ugadi / Gudi Padwa', major: true);
-        add('chaitra-navratri', 'Chaitra Navaratri begins', major: true);
-      }
-      if (m == 'Magha' && sunriseIndex == 5) {
-        add('vasant-panchami', 'Vasant Panchami', major: true);
-      }
-      if (m == 'Chaitra' &&
-          middayTithi.index == 9 &&
-          middayTithi.paksha == 'Shukla') {
-        add('rama-navami', 'Rama Navami', major: true);
-      }
-      if (m == 'Vaishakha' && sunriseIndex == 3) {
-        add('akshaya-tritiya', 'Akshaya Tritiya', major: true);
-      }
-      if (m == 'Ashadha' && sunriseIndex == 15) {
-        add('guru-purnima', 'Guru Purnima', major: true);
-      }
-      if (m == 'Chaitra' && sunriseIndex == 15) {
-        add(
-          'hanuman-jayanti',
-          'Hanuman Jayanti',
-          major: true,
-          note: 'Common North Indian Chaitra Purnima observance.',
-        );
-      }
-      if (middayTithi.index == 4 && middayTithi.paksha == 'Shukla') {
-        add(
-          'vinayaka-chaturthi',
-          monthAmanta == 'Bhadrapada'
-              ? 'Ganesh Chaturthi'
-              : 'Vinayaka Chaturthi',
-          major: true,
-        );
-      }
-      if (m == 'Ashvina' && sunriseIndex == 1) {
-        add('sharad-navratri', 'Sharad Navaratri begins', major: true);
-      }
-      if (m == 'Ashvina' &&
-          aparahnaTithi.index == 10 &&
-          aparahnaTithi.paksha == 'Shukla') {
-        add('vijayadashami', 'Vijayadashami', major: true);
-      }
-      if (m == 'Kartika' && sunriseIndex == 1) {
-        add('govardhan-puja', 'Govardhan Puja', major: true);
-      }
-      if (m == 'Kartika' && sunriseIndex == 2) {
-        add('bhai-dooj', 'Bhai Dooj', major: true);
-      }
-      if (m == 'Kartika' && sunriseIndex == 6) {
-        add('chhath-puja', 'Chhath Puja', major: true);
-      }
-    } else {
-      if (m == 'Bhadrapada' &&
-          nightTithi.index == 23 &&
-          nightTithi.paksha == 'Krishna') {
-        add(
-          'janmashtami',
-          'Krishna Janmashtami',
-          major: true,
-          note: 'Krishna Ashtami is present at Nishita.',
-        );
-      }
-      if (m == 'Kartika' && sunriseIndex == 19 && moonriseTithi?.index == 19) {
-        add(
-          'karwa-chauth',
-          'Karwa Chauth',
-          major: true,
-          note: 'Krishna Chaturthi is present at moonrise.',
-        );
-      }
-      if (m == 'Kartika' && sunsetTithi.index == 28) {
-        add('dhanteras', 'Dhanteras', major: true);
-      }
-      if (m == 'Kartika' && sunriseIndex == 29) {
-        add('naraka-chaturdashi', 'Naraka Chaturdashi', major: true);
-      }
+    // Annual festivals. Months are Amanta; each tithi keeps its own month,
+    // so festivals never move into an Adhika month or the wrong lunation.
+    if (observed(1, _Kala.sunrise, month: 'Chaitra')) {
+      add('ugadi', 'Ugadi / Gudi Padwa', major: true);
+      add('chaitra-navratri', 'Chaitra Navaratri begins', major: true);
     }
-    if (monthAmanta == 'Phalguna' && sunriseIndex == 16) {
-      add('holi', 'Holi', major: true);
+    if (observed(5, _Kala.purvahna, month: 'Magha')) {
+      add('vasant-panchami', 'Vasant Panchami', major: true);
     }
-    if (sunsetTithi.index == 15 && monthForPaksha == 'Phalguna') {
+    if (observed(9, _Kala.madhyahna, month: 'Chaitra')) {
+      add('rama-navami', 'Rama Navami', major: true);
+    }
+    if (observed(15, _Kala.sunrise, month: 'Chaitra')) {
       add(
-        'holika-dahan',
-        'Holika Dahan',
+        'hanuman-jayanti',
+        'Hanuman Jayanti',
         major: true,
-        note: 'Purnima is present at sunset.',
+        note: 'Common North Indian Chaitra Purnima observance.',
       );
     }
-    if (sunsetTithi.index == 30 && monthPurnimanta == 'Kartika') {
+    if (observed(3, _Kala.akshaya, month: 'Vaishakha')) {
+      add('akshaya-tritiya', 'Akshaya Tritiya', major: true);
+    }
+    if (observed(15, _Kala.sunrise, month: 'Ashadha')) {
+      add('guru-purnima', 'Guru Purnima', major: true);
+    }
+    final ashtami = occurrence(23);
+    if (ashtami != null &&
+        ashtami.month == 'Shravana' &&
+        _sameDate(_janmashtami(ashtami, days, city), date)) {
+      add(
+        'janmashtami',
+        'Krishna Janmashtami',
+        major: true,
+        note:
+            'Smarta: Krishna Ashtami at Nishita, preferring the night with Rohini.',
+      );
+    }
+    if (observed(1, _Kala.sunrise, month: 'Ashvina')) {
+      add('sharad-navratri', 'Sharad Navaratri begins', major: true);
+    }
+    if (observed(10, _Kala.aparahna, month: 'Ashvina')) {
+      add('vijayadashami', 'Vijayadashami', major: true);
+    }
+    if (observed(19, _Kala.moonrise, month: 'Ashvina', tie: _Tie.first)) {
+      add(
+        'karwa-chauth',
+        'Karwa Chauth',
+        major: true,
+        note: 'Krishna Chaturthi is present at moonrise.',
+      );
+    }
+    if (observed(28, _Kala.pradosh, month: 'Ashvina')) {
+      add('dhanteras', 'Dhanteras', major: true);
+    }
+    if (observed(29, _Kala.arunodaya, month: 'Ashvina')) {
+      add('naraka-chaturdashi', 'Naraka Chaturdashi', major: true);
+    }
+    if (observed(30, _Kala.pradosh, month: 'Ashvina')) {
       add(
         'deepavali',
         'Deepavali',
         major: true,
-        note: 'Amavasya is present at local sunset.',
+        note: 'Amavasya during Pradosh (Lakshmi Puja).',
       );
+    }
+    if (observed(1, _Kala.pratah, month: 'Kartika')) {
+      add('govardhan-puja', 'Govardhan Puja', major: true);
+    }
+    if (observed(2, _Kala.aparahna, month: 'Kartika')) {
+      add('bhai-dooj', 'Bhai Dooj', major: true);
+    }
+    if (observed(6, _Kala.sunset, month: 'Kartika', tie: _Tie.first)) {
+      add('chhath-puja', 'Chhath Puja', major: true);
+    }
+    if (observed(15, _Kala.pradosh, month: 'Phalguna')) {
+      add(
+        'holika-dahan',
+        'Holika Dahan',
+        major: true,
+        note: 'Purnima during Pradosh. Bhadra is not evaluated.',
+      );
+    }
+    final holika = _holikaDate(
+      date.subtract(const Duration(days: 1)),
+      city,
+      days,
+    );
+    if (holika != null &&
+        _sameDate(holika, date.subtract(const Duration(days: 1)))) {
+      add('holi', 'Holi', major: true, note: 'The day after Holika Dahan.');
     }
 
-    final ingress = _solarIngress(
-      startFor(date, city: city),
-      endFor(date, city: city),
-    );
-    if (ingress != null) {
-      final sign =
-          (AstronomyCalculator.normalize(
-                    AstronomyCalculator.sunLongitude(ingress) -
-                        AstronomyCalculator.apparentLahiriAyanamsa(ingress),
-                  ) /
-                  30)
-              .floor();
-      const signs = [
-        'Mesha',
-        'Vrishabha',
-        'Mithuna',
-        'Karka',
-        'Simha',
-        'Kanya',
-        'Tula',
-        'Vrischika',
-        'Dhanu',
-        'Makara',
-        'Kumbha',
-        'Meena',
-      ];
-      final signName = signs[sign.clamp(0, 11)];
-      final festivalName = sign == 9
-          ? 'Makar Sankranti'
-          : sign == 0
-          ? 'Mesha Sankranti'
-          : '$signName Sankranti';
-      add(
-        'sankranti-$sign',
-        festivalName,
-        major: true,
-        note:
-            'Sidereal solar ingress at ${formatPanchangTime(ingress, city, date)}.',
-      );
-      if (sign == 9) add('pongal', 'Pongal');
-    }
+    _addSankranti(add, city, date, sunset, days);
 
     items.sort((a, b) {
       if (a.isMajor != b.isMajor) return a.isMajor ? -1 : 1;
       return a.name.compareTo(b.name);
     });
     return List.unmodifiable(items);
+  }
+
+  List<PanchangObservance> _sankrantiOnly(
+    PanchangCity city,
+    DateTime date,
+    DateTime? sunset,
+  ) {
+    final items = <PanchangObservance>[];
+    _addSankranti(
+      (id, name, {major = false, note = ''}) => items.add(
+        PanchangObservance(
+          id: id,
+          name: name,
+          ruleSource: 'calculated',
+          description: note,
+          isMajor: major,
+        ),
+      ),
+      city,
+      date,
+      sunset,
+      _SolarDays(this, city),
+    );
+    return List.unmodifiable(items);
+  }
+
+  /// Solar ingress: the Sankranti moment on its civil date. Makar Sankranti
+  /// and Pongal move to the next day when the ingress is after sunset (and
+  /// stay on the ingress day where the Sun does not set).
+  void _addSankranti(
+    void Function(String, String, {bool major, String note}) add,
+    PanchangCity city,
+    DateTime date,
+    DateTime? sunset,
+    _SolarDays days,
+  ) {
+    final start = startFor(date, city: city), end = endFor(date, city: city);
+    final ingress = _solarIngress(start, end);
+    if (ingress != null) {
+      final sign = _siderealSign(ingress);
+      if (sign != 9) {
+        add(
+          'sankranti-$sign',
+          sign == 0 ? 'Mesha Sankranti' : '${_signs[sign]} Sankranti',
+          major: true,
+          note:
+              'Sidereal solar ingress at ${formatPanchangTime(ingress, city, date)}.',
+        );
+      } else if (sunset == null || ingress.isBefore(sunset)) {
+        _addMakar(add, ingress, city, date);
+      }
+    }
+    final previous = date.subtract(const Duration(days: 1));
+    final yesterdayIngress = _solarIngress(
+      startFor(previous, city: city),
+      startFor(date, city: city),
+    );
+    if (yesterdayIngress != null && _siderealSign(yesterdayIngress) == 9) {
+      final previousSunset = days.of(previous).sunset;
+      if (previousSunset != null &&
+          !yesterdayIngress.isBefore(previousSunset)) {
+        _addMakar(add, yesterdayIngress, city, date);
+      }
+    }
+  }
+
+  static const _signs = [
+    'Mesha',
+    'Vrishabha',
+    'Mithuna',
+    'Karka',
+    'Simha',
+    'Kanya',
+    'Tula',
+    'Vrischika',
+    'Dhanu',
+    'Makara',
+    'Kumbha',
+    'Meena',
+  ];
+
+  int _siderealSign(DateTime instant) =>
+      (AstronomyCalculator.normalize(
+                AstronomyCalculator.sunLongitude(instant) -
+                    AstronomyCalculator.apparentLahiriAyanamsa(instant),
+              ) /
+              30)
+          .floor()
+          .clamp(0, 11);
+
+  void _addMakar(
+    void Function(String, String, {bool major, String note}) add,
+    DateTime ingress,
+    PanchangCity city,
+    DateTime date,
+  ) {
+    add(
+      'sankranti-9',
+      'Makar Sankranti',
+      major: true,
+      note:
+          'Sidereal ingress into Makara at ${formatPanchangTime(ingress, city, date)}; after sunset it is observed the next day.',
+    );
+    add('pongal', 'Pongal');
+  }
+
+  static bool _sameDate(DateTime? a, DateTime b) =>
+      a != null && a.year == b.year && a.month == b.month && a.day == b.day;
+
+  /// The occurrence of tithi [index] (1-30) closest to [date]'s sunrise.
+  _Occurrence? _occurrence(
+    int index,
+    DateTime date,
+    DateTime sunrise,
+    PanchangLimb current,
+    _SolarDays days,
+  ) {
+    DateTime probe;
+    if (current.index == index) {
+      probe = sunrise;
+    } else if ((index - current.index) % 30 == 1) {
+      probe = current.endsAtUtc!.add(const Duration(seconds: 1));
+    } else if ((current.index - index) % 30 == 1) {
+      probe = tithiStart(sunrise).subtract(const Duration(seconds: 1));
+    } else {
+      final next = days.of(date.add(const Duration(days: 1))).sunrise;
+      if (next == null) return null;
+      final limb = _tithiAt(next);
+      probe = limb.index == index
+          ? next
+          : limb.endsAtUtc!.add(const Duration(seconds: 1));
+    }
+    final limb = _tithiAt(probe);
+    if (limb.index != index || limb.endsAtUtc == null) return null;
+    final start = tithiStart(probe);
+    final end = limb.endsAtUtc!;
+    final middle = start.add(end.difference(start) ~/ 2);
+    final month = _monthFor(middle);
+    return _Occurrence(
+      start: start,
+      end: end,
+      month: month.adhika
+          ? 'Adhika ${_lunarMonths[month.index]}'
+          : _lunarMonths[month.index],
+    );
+  }
+
+  /// Smarta Janmashtami: Krishna Ashtami at Nishita. If Rohini is not at
+  /// that midnight but is at the next one, while Ashtami still prevails at
+  /// that day's sunrise, the next day is preferred (Rohini-yukta Ashtami).
+  DateTime? _janmashtami(
+    _Occurrence ashtami,
+    _SolarDays days,
+    PanchangCity city,
+  ) {
+    final chosen = ashtami.observedOn(_Kala.nishita, _Tie.longest, days, city);
+    if (chosen == null) return null;
+    bool rohiniAtNishita(DateTime day) {
+      final window = days.window(day, _Kala.nishita);
+      if (window == null) return false;
+      final middle = window.$1.add(window.$2.difference(window.$1) ~/ 2);
+      return _nakshatraAt(middle).index == 4;
+    }
+
+    final next = chosen.add(const Duration(days: 1));
+    final nextSunrise = days.of(next).sunrise;
+    if (!rohiniAtNishita(chosen) &&
+        rohiniAtNishita(next) &&
+        nextSunrise != null &&
+        nextSunrise.isBefore(ashtami.end)) {
+      return next;
+    }
+    return chosen;
+  }
+
+  DateTime? _holikaDate(DateTime date, PanchangCity city, _SolarDays days) {
+    final sunrise = days.of(date).sunrise;
+    if (sunrise == null) return null;
+    final current = _tithiAt(sunrise);
+    if (![14, 15, 16].contains(current.index)) return null;
+    final found = _occurrence(15, date, sunrise, current, days);
+    if (found == null || found.month != 'Phalguna') return null;
+    return found.observedOn(_Kala.pradosh, _Tie.longest, days, city);
+  }
+
+  bool _smartaEkadashi(DateTime date, _SolarDays days) {
+    int? fortnight(int offset) {
+      final sunrise = days.of(date.add(Duration(days: offset))).sunrise;
+      return sunrise == null ? null : (_tithiAt(sunrise).index - 1) % 15 + 1;
+    }
+
+    final t = fortnight(0);
+    if (t != 10 && t != 11) return false;
+    final p = fortnight(-1), n = fortnight(1), nn = fortnight(2);
+    if (p == null || n == null || nn == null) return false;
+    if (fortnight(-2) == null || fortnight(3) == null) return false;
+    for (final offset in const [-1, 0, 1]) {
+      final sunset = days.of(date.add(Duration(days: offset))).sunset;
+      if (sunset == null) return false;
+    }
+    if (t == 11 && p != 11) return n == 11 ? nn != 12 : n == 12;
+    if (t == 11 && p == 11) return n == 12;
+    return n == 12 || (n == 11 && nn == 13);
   }
 
   DateTime startFor(
@@ -1302,6 +1461,204 @@ class PanchangEngine {
       }
       low = high;
       lowAngle = highAngle;
+    }
+    return null;
+  }
+}
+
+/// Time windows (kala) used by festival rules; fifths of daylight follow the
+/// five-part day (Pratah, Sangava, Madhyahna, Aparahna, Sayahna).
+enum _Kala {
+  sunrise,
+  sunset,
+  moonrise,
+  purvahna,
+  pratah,
+  madhyahna,
+  aparahna,
+  pradosh,
+  nishita,
+  arunodaya,
+  akshaya,
+}
+
+/// When a tithi covers its window on two days: the longer coverage, or the
+/// first day.
+enum _Tie { longest, first }
+
+class _Solar {
+  const _Solar(this.sunrise, this.sunset, this.nextSunrise, this.moonrise);
+  final DateTime? sunrise;
+  final DateTime? sunset;
+  final DateTime? nextSunrise;
+  final DateTime? moonrise;
+}
+
+/// Lazily computed sunrise/sunset/moonrise for neighbouring civil days.
+class _SolarDays {
+  _SolarDays(this.engine, this.city);
+  final PanchangEngine engine;
+  final PanchangCity city;
+  final _cache = <int, _Solar>{};
+
+  _Solar of(DateTime date) {
+    final key = DateTime.utc(
+      date.year,
+      date.month,
+      date.day,
+    ).millisecondsSinceEpoch;
+    return _cache[key] ??= _compute(
+      DateTime.utc(date.year, date.month, date.day),
+    );
+  }
+
+  _Solar _compute(DateTime date) {
+    final start = engine.startFor(date, city: city);
+    final end = engine.endFor(date, city: city);
+    final sunrise = engine._findCrossing(
+      start,
+      end,
+      city,
+      moon: false,
+      rising: true,
+    );
+    DateTime? sunset;
+    if (sunrise != null) {
+      sunset = engine._findCrossing(
+        sunrise,
+        city.midnight(date, dayOffset: 2),
+        city,
+        moon: false,
+        rising: false,
+      );
+    }
+    final nextSunrise = sunset == null
+        ? null
+        : engine._findCrossing(
+            sunset,
+            city.midnight(date, dayOffset: 2),
+            city,
+            moon: false,
+            rising: true,
+          );
+    final moonrise = engine._findCrossing(
+      start,
+      end,
+      city,
+      moon: true,
+      rising: true,
+    );
+    return _Solar(sunrise, sunset, nextSunrise, moonrise);
+  }
+
+  /// [start, end] of the window on civil [date]; instants have start == end.
+  (DateTime, DateTime)? window(DateTime date, _Kala kala) {
+    final day = of(date);
+    final a = day.sunrise, b = day.sunset, n = day.nextSunrise;
+    if (a == null || b == null || n == null) return null;
+    final dayLength = b.difference(a), night = n.difference(b);
+    DateTime at(DateTime from, Duration length, double fraction) => from.add(
+      Duration(microseconds: (length.inMicroseconds * fraction).round()),
+    );
+    return switch (kala) {
+      _Kala.sunrise => (a, a),
+      _Kala.sunset => (b, b),
+      _Kala.moonrise =>
+        day.moonrise == null ? null : (day.moonrise!, day.moonrise!),
+      _Kala.purvahna => (a, at(a, dayLength, .5)),
+      _Kala.pratah || _Kala.akshaya => (a, at(a, dayLength, .2)),
+      _Kala.madhyahna => (at(a, dayLength, .4), at(a, dayLength, .6)),
+      _Kala.aparahna => (at(a, dayLength, .6), at(a, dayLength, .8)),
+      _Kala.pradosh => (b, at(b, night, .2)),
+      _Kala.nishita => (at(b, night, 7 / 15), at(b, night, 8 / 15)),
+      _Kala.arunodaya => (a.subtract(const Duration(minutes: 96)), a),
+    };
+  }
+}
+
+class _Occurrence {
+  const _Occurrence({
+    required this.start,
+    required this.end,
+    required this.month,
+  });
+  final DateTime start;
+  final DateTime end;
+  final String month;
+
+  bool _covers(DateTime instant) =>
+      !instant.isBefore(start) && instant.isBefore(end);
+
+  Duration _overlap((DateTime, DateTime) window) {
+    final from = window.$1.isAfter(start) ? window.$1 : start;
+    final to = window.$2.isBefore(end) ? window.$2 : end;
+    return to.isAfter(from) ? to.difference(from) : Duration.zero;
+  }
+
+  /// The civil date on which this tithi is observed for [kala].
+  DateTime? observedOn(
+    _Kala kala,
+    _Tie tie,
+    _SolarDays days,
+    PanchangCity city,
+  ) {
+    final first = city.wallClock(start.subtract(const Duration(days: 1)));
+    final last = city.wallClock(end.add(const Duration(days: 1)));
+    final candidates = <DateTime>[];
+    for (
+      var day = DateTime.utc(first.year, first.month, first.day);
+      !day.isAfter(DateTime.utc(last.year, last.month, last.day));
+      day = day.add(const Duration(days: 1))
+    ) {
+      candidates.add(day);
+    }
+    final instant =
+        kala == _Kala.sunrise || kala == _Kala.sunset || kala == _Kala.moonrise;
+    if (kala == _Kala.akshaya) {
+      // Udaya tithi if it lasts through Pratahkala; otherwise the previous
+      // day, when the tithi began during that forenoon.
+      for (final day in candidates) {
+        final window = days.window(day, _Kala.pratah);
+        if (window != null && _covers(window.$1)) {
+          if (!end.isBefore(window.$2)) return day;
+          final previous = day.subtract(const Duration(days: 1));
+          final forenoon = days.window(previous, _Kala.purvahna);
+          return forenoon != null && _overlap(forenoon) > Duration.zero
+              ? previous
+              : day;
+        }
+      }
+    }
+    DateTime? best;
+    var bestOverlap = Duration.zero;
+    for (final day in candidates) {
+      final window = days.window(
+        day,
+        kala == _Kala.akshaya ? _Kala.purvahna : kala,
+      );
+      if (window == null) continue;
+      if (instant) {
+        if (_covers(window.$1)) return day;
+        continue;
+      }
+      final overlap = _overlap(window);
+      if (overlap <= Duration.zero) continue;
+      if (tie == _Tie.first) return day;
+      if (overlap > bestOverlap) {
+        best = day;
+        bestOverlap = overlap;
+      }
+    }
+    if (best != null) return best;
+    // Tithi touches no window (kshaya): the civil day on which it begins,
+    // counted from sunrise.
+    for (final day in candidates) {
+      final today = days.of(day),
+          next = days.of(day.add(const Duration(days: 1)));
+      final a = today.sunrise, n = next.sunrise;
+      if (a != null && n != null && !start.isBefore(a) && start.isBefore(n)) {
+        return day;
+      }
     }
     return null;
   }

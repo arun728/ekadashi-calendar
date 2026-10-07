@@ -1,5 +1,6 @@
-import 'package:timezone/data/latest_all.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
+
+import '../time_zone_data.dart';
 
 /// Explicit coordinates and IANA timezone; never uses the host timezone.
 class PanchangCity {
@@ -31,7 +32,7 @@ class PanchangCity {
       } catch (_) {
         previousLocal = tz.UTC;
       }
-      tzdata.initializeTimeZones();
+      initializeTimeZoneData();
       _zones = Map.unmodifiable(tz.timeZoneDatabase.locations);
       tz.setLocalLocation(previousLocal);
     }

@@ -1,0 +1,2774 @@
+[
+{
+"id": "new-delhi",
+"label": "New Delhi",
+"lat": 28.6139,
+"lon": 77.209,
+"tz": "Asia/Kolkata"
+},
+{
+"id": "mumbai",
+"label": "Mumbai",
+"lat": 19.076,
+"lon": 72.8777,
+"tz": "Asia/Kolkata"
+},
+{
+"id": "chennai",
+"label": "Chennai",
+"lat": 13.0827,
+"lon": 80.2707,
+"tz": "Asia/Kolkata"
+},
+{
+"id": "kolkata",
+"label": "Kolkata",
+"lat": 22.5726,
+"lon": 88.3639,
+"tz": "Asia/Kolkata"
+},
+{
+"id": "ujjain",
+"label": "Ujjain",
+"lat": 23.1765,
+"lon": 75.7885,
+"tz": "Asia/Kolkata"
+},
+{
+"id": "kathmandu",
+"label": "Kathmandu",
+"lat": 27.7172,
+"lon": 85.324,
+"tz": "Asia/Kathmandu"
+},
+{
+"id": "dubai",
+"label": "Dubai",
+"lat": 25.2048,
+"lon": 55.2708,
+"tz": "Asia/Dubai"
+},
+{
+"id": "singapore",
+"label": "Singapore",
+"lat": 1.3521,
+"lon": 103.8198,
+"tz": "Asia/Singapore"
+},
+{
+"id": "london",
+"label": "London",
+"lat": 51.5074,
+"lon": -0.1278,
+"tz": "Europe/London"
+},
+{
+"id": "johannesburg",
+"label": "Johannesburg",
+"lat": -26.2041,
+"lon": 28.0473,
+"tz": "Africa/Johannesburg"
+},
+{
+"id": "new-york",
+"label": "New York",
+"lat": 40.7128,
+"lon": -74.006,
+"tz": "America/New_York"
+},
+{
+"id": "chicago",
+"label": "Chicago",
+"lat": 41.8781,
+"lon": -87.6298,
+"tz": "America/Chicago"
+},
+{
+"id": "denver",
+"label": "Denver",
+"lat": 39.7392,
+"lon": -104.9903,
+"tz": "America/Denver"
+},
+{
+"id": "los-angeles",
+"label": "Los Angeles",
+"lat": 34.0522,
+"lon": -118.2437,
+"tz": "America/Los_Angeles"
+},
+{
+"id": "sydney",
+"label": "Sydney",
+"lat": -33.8688,
+"lon": 151.2093,
+"tz": "Australia/Sydney"
+},
+{
+"id": "auckland",
+"label": "Auckland",
+"lat": -36.8485,
+"lon": 174.7633,
+"tz": "Pacific/Auckland"
+},
+{
+"id": "z-africa-abidjan",
+"label": "Abidjan (Africa/Abidjan)",
+"lat": 5.35444,
+"lon": -4.00167,
+"tz": "Africa/Abidjan"
+},
+{
+"id": "z-africa-accra",
+"label": "Accra (Africa/Accra)",
+"lat": 5.55602,
+"lon": -0.1969,
+"tz": "Africa/Accra"
+},
+{
+"id": "z-africa-addis-ababa",
+"label": "Addis Ababa (Africa/Addis_Ababa)",
+"lat": 9.02497,
+"lon": 38.74689,
+"tz": "Africa/Addis_Ababa"
+},
+{
+"id": "z-africa-algiers",
+"label": "Algiers (Africa/Algiers)",
+"lat": 36.73225,
+"lon": 3.08746,
+"tz": "Africa/Algiers"
+},
+{
+"id": "z-africa-asmara",
+"label": "Asmara (Africa/Asmara)",
+"lat": 15.33805,
+"lon": 38.93184,
+"tz": "Africa/Asmara"
+},
+{
+"id": "z-africa-bamako",
+"label": "Bamako (Africa/Bamako)",
+"lat": 12.60915,
+"lon": -7.97522,
+"tz": "Africa/Bamako"
+},
+{
+"id": "z-africa-bangui",
+"label": "Bangui (Africa/Bangui)",
+"lat": 4.36122,
+"lon": 18.55496,
+"tz": "Africa/Bangui"
+},
+{
+"id": "z-africa-banjul",
+"label": "Banjul (Africa/Banjul)",
+"lat": 13.45274,
+"lon": -16.57803,
+"tz": "Africa/Banjul"
+},
+{
+"id": "z-africa-bissau",
+"label": "Bissau (Africa/Bissau)",
+"lat": 11.86357,
+"lon": -15.59767,
+"tz": "Africa/Bissau"
+},
+{
+"id": "z-africa-blantyre",
+"label": "Blantyre (Africa/Blantyre)",
+"lat": -15.78499,
+"lon": 35.00854,
+"tz": "Africa/Blantyre"
+},
+{
+"id": "z-africa-brazzaville",
+"label": "Brazzaville (Africa/Brazzaville)",
+"lat": -4.26613,
+"lon": 15.28318,
+"tz": "Africa/Brazzaville"
+},
+{
+"id": "z-africa-bujumbura",
+"label": "Bujumbura (Africa/Bujumbura)",
+"lat": -3.38193,
+"lon": 29.36142,
+"tz": "Africa/Bujumbura"
+},
+{
+"id": "z-africa-cairo",
+"label": "Cairo (Africa/Cairo)",
+"lat": 30.06263,
+"lon": 31.24967,
+"tz": "Africa/Cairo"
+},
+{
+"id": "z-africa-casablanca",
+"label": "Casablanca (Africa/Casablanca)",
+"lat": 33.58831,
+"lon": -7.61138,
+"tz": "Africa/Casablanca"
+},
+{
+"id": "z-africa-ceuta",
+"label": "Melilla (Africa/Ceuta)",
+"lat": 35.29369,
+"lon": -2.93833,
+"tz": "Africa/Ceuta"
+},
+{
+"id": "z-africa-conakry",
+"label": "Conakry (Africa/Conakry)",
+"lat": 9.53795,
+"lon": -13.67729,
+"tz": "Africa/Conakry"
+},
+{
+"id": "z-africa-dakar",
+"label": "Dakar (Africa/Dakar)",
+"lat": 14.6937,
+"lon": -17.44406,
+"tz": "Africa/Dakar"
+},
+{
+"id": "z-africa-dar-es-salaam",
+"label": "Dar es Salaam (Africa/Dar_es_Salaam)",
+"lat": -6.82349,
+"lon": 39.26951,
+"tz": "Africa/Dar_es_Salaam"
+},
+{
+"id": "z-africa-djibouti",
+"label": "Djibouti (Africa/Djibouti)",
+"lat": 11.58901,
+"lon": 43.14503,
+"tz": "Africa/Djibouti"
+},
+{
+"id": "z-africa-douala",
+"label": "Douala (Africa/Douala)",
+"lat": 4.04827,
+"lon": 9.70428,
+"tz": "Africa/Douala"
+},
+{
+"id": "z-africa-el-aaiun",
+"label": "El Marsa (Africa/El_Aaiun)",
+"lat": 27.09611,
+"lon": -13.41583,
+"tz": "Africa/El_Aaiun"
+},
+{
+"id": "z-africa-freetown",
+"label": "Freetown (Africa/Freetown)",
+"lat": 8.48714,
+"lon": -13.2356,
+"tz": "Africa/Freetown"
+},
+{
+"id": "z-africa-gaborone",
+"label": "Gaborone (Africa/Gaborone)",
+"lat": -24.65451,
+"lon": 25.90859,
+"tz": "Africa/Gaborone"
+},
+{
+"id": "z-africa-harare",
+"label": "Harare (Africa/Harare)",
+"lat": -17.82772,
+"lon": 31.05337,
+"tz": "Africa/Harare"
+},
+{
+"id": "z-africa-johannesburg",
+"label": "Johannesburg (Africa/Johannesburg)",
+"lat": -26.20227,
+"lon": 28.04363,
+"tz": "Africa/Johannesburg"
+},
+{
+"id": "z-africa-juba",
+"label": "Juba (Africa/Juba)",
+"lat": 4.85165,
+"lon": 31.58247,
+"tz": "Africa/Juba"
+},
+{
+"id": "z-africa-kampala",
+"label": "Kampala (Africa/Kampala)",
+"lat": 0.31628,
+"lon": 32.58219,
+"tz": "Africa/Kampala"
+},
+{
+"id": "z-africa-khartoum",
+"label": "Khartoum (Africa/Khartoum)",
+"lat": 15.55177,
+"lon": 32.53241,
+"tz": "Africa/Khartoum"
+},
+{
+"id": "z-africa-kigali",
+"label": "Kigali (Africa/Kigali)",
+"lat": -1.94995,
+"lon": 30.05885,
+"tz": "Africa/Kigali"
+},
+{
+"id": "z-africa-kinshasa",
+"label": "Kinshasa (Africa/Kinshasa)",
+"lat": -4.32758,
+"lon": 15.31357,
+"tz": "Africa/Kinshasa"
+},
+{
+"id": "z-africa-lagos",
+"label": "Lagos (Africa/Lagos)",
+"lat": 6.45407,
+"lon": 3.39467,
+"tz": "Africa/Lagos"
+},
+{
+"id": "z-africa-libreville",
+"label": "Libreville (Africa/Libreville)",
+"lat": 0.39241,
+"lon": 9.45356,
+"tz": "Africa/Libreville"
+},
+{
+"id": "z-africa-lome",
+"label": "Lome (Africa/Lome)",
+"lat": 6.12874,
+"lon": 1.22154,
+"tz": "Africa/Lome"
+},
+{
+"id": "z-africa-luanda",
+"label": "Luanda (Africa/Luanda)",
+"lat": -8.83682,
+"lon": 13.23432,
+"tz": "Africa/Luanda"
+},
+{
+"id": "z-africa-lubumbashi",
+"label": "Lubumbashi (Africa/Lubumbashi)",
+"lat": -11.66089,
+"lon": 27.47938,
+"tz": "Africa/Lubumbashi"
+},
+{
+"id": "z-africa-lusaka",
+"label": "Lusaka (Africa/Lusaka)",
+"lat": -15.40669,
+"lon": 28.28713,
+"tz": "Africa/Lusaka"
+},
+{
+"id": "z-africa-malabo",
+"label": "Malabo (Africa/Malabo)",
+"lat": 3.75578,
+"lon": 8.78166,
+"tz": "Africa/Malabo"
+},
+{
+"id": "z-africa-maputo",
+"label": "Maputo (Africa/Maputo)",
+"lat": -25.96553,
+"lon": 32.58322,
+"tz": "Africa/Maputo"
+},
+{
+"id": "z-africa-maseru",
+"label": "Maseru (Africa/Maseru)",
+"lat": -29.31667,
+"lon": 27.48333,
+"tz": "Africa/Maseru"
+},
+{
+"id": "z-africa-mbabane",
+"label": "Mbabane (Africa/Mbabane)",
+"lat": -26.31667,
+"lon": 31.13333,
+"tz": "Africa/Mbabane"
+},
+{
+"id": "z-africa-mogadishu",
+"label": "Mogadishu (Africa/Mogadishu)",
+"lat": 2.03711,
+"lon": 45.34375,
+"tz": "Africa/Mogadishu"
+},
+{
+"id": "z-africa-monrovia",
+"label": "Monrovia (Africa/Monrovia)",
+"lat": 6.30054,
+"lon": -10.7969,
+"tz": "Africa/Monrovia"
+},
+{
+"id": "z-africa-nairobi",
+"label": "Nairobi (Africa/Nairobi)",
+"lat": -1.28333,
+"lon": 36.81667,
+"tz": "Africa/Nairobi"
+},
+{
+"id": "z-africa-ndjamena",
+"label": "Iriba (Africa/Ndjamena)",
+"lat": 15.11667,
+"lon": 22.25,
+"tz": "Africa/Ndjamena"
+},
+{
+"id": "z-africa-niamey",
+"label": "Niamey (Africa/Niamey)",
+"lat": 13.51366,
+"lon": 2.1098,
+"tz": "Africa/Niamey"
+},
+{
+"id": "z-africa-nouakchott",
+"label": "Nouakchott (Africa/Nouakchott)",
+"lat": 18.08581,
+"lon": -15.9785,
+"tz": "Africa/Nouakchott"
+},
+{
+"id": "z-africa-ouagadougou",
+"label": "Ouagadougou (Africa/Ouagadougou)",
+"lat": 12.36566,
+"lon": -1.53388,
+"tz": "Africa/Ouagadougou"
+},
+{
+"id": "z-africa-porto-novo",
+"label": "Porto-Novo (Africa/Porto-Novo)",
+"lat": 6.49646,
+"lon": 2.60359,
+"tz": "Africa/Porto-Novo"
+},
+{
+"id": "z-africa-sao-tome",
+"label": "Sao Tome (Africa/Sao_Tome)",
+"lat": 0.33756,
+"lon": 6.7299,
+"tz": "Africa/Sao_Tome"
+},
+{
+"id": "z-africa-tripoli",
+"label": "Tripoli (Africa/Tripoli)",
+"lat": 32.88743,
+"lon": 13.18733,
+"tz": "Africa/Tripoli"
+},
+{
+"id": "z-africa-tunis",
+"label": "Tunis (Africa/Tunis)",
+"lat": 36.81897,
+"lon": 10.16579,
+"tz": "Africa/Tunis"
+},
+{
+"id": "z-africa-windhoek",
+"label": "Windhoek (Africa/Windhoek)",
+"lat": -22.55941,
+"lon": 17.08323,
+"tz": "Africa/Windhoek"
+},
+{
+"id": "z-america-anchorage",
+"label": "Anchorage (America/Anchorage)",
+"lat": 61.21806,
+"lon": -149.90028,
+"tz": "America/Anchorage"
+},
+{
+"id": "z-america-anguilla",
+"label": "The Valley (America/Anguilla)",
+"lat": 18.21704,
+"lon": -63.05783,
+"tz": "America/Anguilla"
+},
+{
+"id": "z-america-antigua",
+"label": "Saint John's (America/Antigua)",
+"lat": 17.12096,
+"lon": -61.84329,
+"tz": "America/Antigua"
+},
+{
+"id": "z-america-araguaina",
+"label": "Araguaina (America/Araguaina)",
+"lat": -7.19111,
+"lon": -48.20722,
+"tz": "America/Araguaina"
+},
+{
+"id": "z-america-argentina-buenos-aires",
+"label": "Buenos Aires (America/Argentina/Buenos_Aires)",
+"lat": -34.61315,
+"lon": -58.37723,
+"tz": "America/Argentina/Buenos_Aires"
+},
+{
+"id": "z-america-argentina-catamarca",
+"label": "Catamarca (America/Argentina/Catamarca)",
+"lat": -28.46957,
+"lon": -65.78524,
+"tz": "America/Argentina/Catamarca"
+},
+{
+"id": "z-america-argentina-cordoba",
+"label": "Cordoba (America/Argentina/Cordoba)",
+"lat": -31.40648,
+"lon": -64.18853,
+"tz": "America/Argentina/Cordoba"
+},
+{
+"id": "z-america-argentina-jujuy",
+"label": "San Salvador de Jujuy (America/Argentina/Jujuy)",
+"lat": -24.1928,
+"lon": -65.29342,
+"tz": "America/Argentina/Jujuy"
+},
+{
+"id": "z-america-argentina-la-rioja",
+"label": "La Rioja (America/Argentina/La_Rioja)",
+"lat": -29.41328,
+"lon": -66.85637,
+"tz": "America/Argentina/La_Rioja"
+},
+{
+"id": "z-america-argentina-mendoza",
+"label": "Mendoza (America/Argentina/Mendoza)",
+"lat": -32.88946,
+"lon": -68.84582,
+"tz": "America/Argentina/Mendoza"
+},
+{
+"id": "z-america-argentina-rio-gallegos",
+"label": "Rio Gallegos (America/Argentina/Rio_Gallegos)",
+"lat": -51.6253,
+"lon": -69.25229,
+"tz": "America/Argentina/Rio_Gallegos"
+},
+{
+"id": "z-america-argentina-salta",
+"label": "Salta (America/Argentina/Salta)",
+"lat": -24.80645,
+"lon": -65.41999,
+"tz": "America/Argentina/Salta"
+},
+{
+"id": "z-america-argentina-san-juan",
+"label": "San Juan (America/Argentina/San_Juan)",
+"lat": -31.53726,
+"lon": -68.52568,
+"tz": "America/Argentina/San_Juan"
+},
+{
+"id": "z-america-argentina-san-luis",
+"label": "San Luis (America/Argentina/San_Luis)",
+"lat": -33.2914,
+"lon": -66.32467,
+"tz": "America/Argentina/San_Luis"
+},
+{
+"id": "z-america-argentina-tucuman",
+"label": "Yerba Buena (America/Argentina/Tucuman)",
+"lat": -26.81298,
+"lon": -65.29543,
+"tz": "America/Argentina/Tucuman"
+},
+{
+"id": "z-america-argentina-ushuaia",
+"label": "Ushuaia (America/Argentina/Ushuaia)",
+"lat": -54.81084,
+"lon": -68.31591,
+"tz": "America/Argentina/Ushuaia"
+},
+{
+"id": "z-america-aruba",
+"label": "Tanki Leendert (America/Aruba)",
+"lat": 12.53914,
+"lon": -70.02004,
+"tz": "America/Aruba"
+},
+{
+"id": "z-america-asuncion",
+"label": "Asuncion (America/Asuncion)",
+"lat": -25.28646,
+"lon": -57.647,
+"tz": "America/Asuncion"
+},
+{
+"id": "z-america-bahia",
+"label": "Uaua (America/Bahia)",
+"lat": -9.84139,
+"lon": -39.48167,
+"tz": "America/Bahia"
+},
+{
+"id": "z-america-bahia-banderas",
+"label": "Mezcales (America/Bahia_Banderas)",
+"lat": 20.73039,
+"lon": -105.283,
+"tz": "America/Bahia_Banderas"
+},
+{
+"id": "z-america-barbados",
+"label": "Bridgetown (America/Barbados)",
+"lat": 13.10732,
+"lon": -59.62021,
+"tz": "America/Barbados"
+},
+{
+"id": "z-america-belem",
+"label": "Belem (America/Belem)",
+"lat": -1.45583,
+"lon": -48.50444,
+"tz": "America/Belem"
+},
+{
+"id": "z-america-belize",
+"label": "San Pedro (America/Belize)",
+"lat": 17.91598,
+"lon": -87.9659,
+"tz": "America/Belize"
+},
+{
+"id": "z-america-boa-vista",
+"label": "Boa Vista (America/Boa_Vista)",
+"lat": 2.81972,
+"lon": -60.67333,
+"tz": "America/Boa_Vista"
+},
+{
+"id": "z-america-bogota",
+"label": "Bogota (America/Bogota)",
+"lat": 4.60971,
+"lon": -74.08175,
+"tz": "America/Bogota"
+},
+{
+"id": "z-america-boise",
+"label": "Boise (America/Boise)",
+"lat": 43.6135,
+"lon": -116.20345,
+"tz": "America/Boise"
+},
+{
+"id": "z-america-campo-grande",
+"label": "Campo Grande (America/Campo_Grande)",
+"lat": -20.44278,
+"lon": -54.64639,
+"tz": "America/Campo_Grande"
+},
+{
+"id": "z-america-cancun",
+"label": "Cancun (America/Cancun)",
+"lat": 21.17429,
+"lon": -86.84656,
+"tz": "America/Cancun"
+},
+{
+"id": "z-america-caracas",
+"label": "Caracas (America/Caracas)",
+"lat": 10.48801,
+"lon": -66.87919,
+"tz": "America/Caracas"
+},
+{
+"id": "z-america-cayenne",
+"label": "Cayenne (America/Cayenne)",
+"lat": 4.9381,
+"lon": -52.33455,
+"tz": "America/Cayenne"
+},
+{
+"id": "z-america-cayman",
+"label": "West Bay (America/Cayman)",
+"lat": 19.38197,
+"lon": -81.39281,
+"tz": "America/Cayman"
+},
+{
+"id": "z-america-chicago",
+"label": "Chicago (America/Chicago)",
+"lat": 41.85003,
+"lon": -87.65005,
+"tz": "America/Chicago"
+},
+{
+"id": "z-america-chihuahua",
+"label": "Chihuahua (America/Chihuahua)",
+"lat": 28.63528,
+"lon": -106.08889,
+"tz": "America/Chihuahua"
+},
+{
+"id": "z-america-ciudad-juarez",
+"label": "Ciudad Juarez (America/Ciudad_Juarez)",
+"lat": 31.72024,
+"lon": -106.46084,
+"tz": "America/Ciudad_Juarez"
+},
+{
+"id": "z-america-costa-rica",
+"label": "Turrialba (America/Costa_Rica)",
+"lat": 9.90371,
+"lon": -83.68361,
+"tz": "America/Costa_Rica"
+},
+{
+"id": "z-america-coyhaique",
+"label": "Coyhaique (America/Coyhaique)",
+"lat": -45.57524,
+"lon": -72.06619,
+"tz": "America/Coyhaique"
+},
+{
+"id": "z-america-cuiaba",
+"label": "Cuiaba (America/Cuiaba)",
+"lat": -15.59611,
+"lon": -56.09667,
+"tz": "America/Cuiaba"
+},
+{
+"id": "z-america-curacao",
+"label": "Willemstad (America/Curacao)",
+"lat": 12.12246,
+"lon": -68.88641,
+"tz": "America/Curacao"
+},
+{
+"id": "z-america-dawson-creek",
+"label": "Fort St. John (America/Dawson_Creek)",
+"lat": 56.24988,
+"lon": -120.85292,
+"tz": "America/Dawson_Creek"
+},
+{
+"id": "z-america-denver",
+"label": "Denver (America/Denver)",
+"lat": 39.73915,
+"lon": -104.9847,
+"tz": "America/Denver"
+},
+{
+"id": "z-america-detroit",
+"label": "Detroit (America/Detroit)",
+"lat": 42.33143,
+"lon": -83.04575,
+"tz": "America/Detroit"
+},
+{
+"id": "z-america-dominica",
+"label": "Roseau (America/Dominica)",
+"lat": 15.30174,
+"lon": -61.38808,
+"tz": "America/Dominica"
+},
+{
+"id": "z-america-edmonton",
+"label": "Edmonton (America/Edmonton)",
+"lat": 53.55014,
+"lon": -113.46871,
+"tz": "America/Edmonton"
+},
+{
+"id": "z-america-eirunepe",
+"label": "Eirunepe (America/Eirunepe)",
+"lat": -6.66028,
+"lon": -69.87361,
+"tz": "America/Eirunepe"
+},
+{
+"id": "z-america-el-salvador",
+"label": "Zacatecoluca (America/El_Salvador)",
+"lat": 13.50872,
+"lon": -88.87017,
+"tz": "America/El_Salvador"
+},
+{
+"id": "z-america-fortaleza",
+"label": "Fortaleza (America/Fortaleza)",
+"lat": -3.71722,
+"lon": -38.54306,
+"tz": "America/Fortaleza"
+},
+{
+"id": "z-america-glace-bay",
+"label": "Glace Bay (America/Glace_Bay)",
+"lat": 46.19695,
+"lon": -59.95698,
+"tz": "America/Glace_Bay"
+},
+{
+"id": "z-america-grand-turk",
+"label": "Cockburn Town (America/Grand_Turk)",
+"lat": 21.46122,
+"lon": -71.14188,
+"tz": "America/Grand_Turk"
+},
+{
+"id": "z-america-grenada",
+"label": "Saint George's (America/Grenada)",
+"lat": 12.05288,
+"lon": -61.75226,
+"tz": "America/Grenada"
+},
+{
+"id": "z-america-guadeloupe",
+"label": "Sainte-Rose (America/Guadeloupe)",
+"lat": 16.33264,
+"lon": -61.6969,
+"tz": "America/Guadeloupe"
+},
+{
+"id": "z-america-guatemala",
+"label": "Zaragoza (America/Guatemala)",
+"lat": 14.64968,
+"lon": -90.89034,
+"tz": "America/Guatemala"
+},
+{
+"id": "z-america-guayaquil",
+"label": "Guayaquil (America/Guayaquil)",
+"lat": -2.19616,
+"lon": -79.88621,
+"tz": "America/Guayaquil"
+},
+{
+"id": "z-america-guyana",
+"label": "New Amsterdam (America/Guyana)",
+"lat": 6.24924,
+"lon": -57.51578,
+"tz": "America/Guyana"
+},
+{
+"id": "z-america-halifax",
+"label": "Halifax (America/Halifax)",
+"lat": 44.64269,
+"lon": -63.57688,
+"tz": "America/Halifax"
+},
+{
+"id": "z-america-havana",
+"label": "Havana (America/Havana)",
+"lat": 23.13302,
+"lon": -82.38304,
+"tz": "America/Havana"
+},
+{
+"id": "z-america-hermosillo",
+"label": "Hermosillo (America/Hermosillo)",
+"lat": 29.08874,
+"lon": -110.96677,
+"tz": "America/Hermosillo"
+},
+{
+"id": "z-america-indiana-indianapolis",
+"label": "Indianapolis (America/Indiana/Indianapolis)",
+"lat": 39.76838,
+"lon": -86.15804,
+"tz": "America/Indiana/Indianapolis"
+},
+{
+"id": "z-america-indiana-vincennes",
+"label": "Jasper (America/Indiana/Vincennes)",
+"lat": 38.39144,
+"lon": -86.93111,
+"tz": "America/Indiana/Vincennes"
+},
+{
+"id": "z-america-jamaica",
+"label": "Spanish Town (America/Jamaica)",
+"lat": 17.99107,
+"lon": -76.95742,
+"tz": "America/Jamaica"
+},
+{
+"id": "z-america-juneau",
+"label": "Juneau (America/Juneau)",
+"lat": 58.30194,
+"lon": -134.41972,
+"tz": "America/Juneau"
+},
+{
+"id": "z-america-kentucky-louisville",
+"label": "Louisville (America/Kentucky/Louisville)",
+"lat": 38.25424,
+"lon": -85.75941,
+"tz": "America/Kentucky/Louisville"
+},
+{
+"id": "z-america-kralendijk",
+"label": "Kralendijk (America/Kralendijk)",
+"lat": 12.15,
+"lon": -68.26667,
+"tz": "America/Kralendijk"
+},
+{
+"id": "z-america-la-paz",
+"label": "La Paz (America/La_Paz)",
+"lat": -16.5,
+"lon": -68.15,
+"tz": "America/La_Paz"
+},
+{
+"id": "z-america-lima",
+"label": "Lima (America/Lima)",
+"lat": -12.04318,
+"lon": -77.02824,
+"tz": "America/Lima"
+},
+{
+"id": "z-america-los-angeles",
+"label": "Los Angeles (America/Los_Angeles)",
+"lat": 34.05223,
+"lon": -118.24368,
+"tz": "America/Los_Angeles"
+},
+{
+"id": "z-america-lower-princes",
+"label": "Philipsburg (America/Lower_Princes)",
+"lat": 18.026,
+"lon": -63.04582,
+"tz": "America/Lower_Princes"
+},
+{
+"id": "z-america-maceio",
+"label": "Maceio (America/Maceio)",
+"lat": -9.66583,
+"lon": -35.73528,
+"tz": "America/Maceio"
+},
+{
+"id": "z-america-managua",
+"label": "Managua (America/Managua)",
+"lat": 12.13282,
+"lon": -86.2504,
+"tz": "America/Managua"
+},
+{
+"id": "z-america-manaus",
+"label": "Manaus (America/Manaus)",
+"lat": -3.10194,
+"lon": -60.025,
+"tz": "America/Manaus"
+},
+{
+"id": "z-america-marigot",
+"label": "Marigot (America/Marigot)",
+"lat": 18.06819,
+"lon": -63.08302,
+"tz": "America/Marigot"
+},
+{
+"id": "z-america-martinique",
+"label": "Saint-Joseph (America/Martinique)",
+"lat": 14.67099,
+"lon": -61.03905,
+"tz": "America/Martinique"
+},
+{
+"id": "z-america-matamoros",
+"label": "Reynosa (America/Matamoros)",
+"lat": 26.08005,
+"lon": -98.28456,
+"tz": "America/Matamoros"
+},
+{
+"id": "z-america-mazatlan",
+"label": "Mazatlan (America/Mazatlan)",
+"lat": 23.22163,
+"lon": -106.41885,
+"tz": "America/Mazatlan"
+},
+{
+"id": "z-america-merida",
+"label": "Merida (America/Merida)",
+"lat": 20.967,
+"lon": -89.62318,
+"tz": "America/Merida"
+},
+{
+"id": "z-america-mexico-city",
+"label": "Mexico City (America/Mexico_City)",
+"lat": 19.42847,
+"lon": -99.12766,
+"tz": "America/Mexico_City"
+},
+{
+"id": "z-america-miquelon",
+"label": "Saint-Pierre (America/Miquelon)",
+"lat": 46.77914,
+"lon": -56.1773,
+"tz": "America/Miquelon"
+},
+{
+"id": "z-america-moncton",
+"label": "Moncton (America/Moncton)",
+"lat": 46.09454,
+"lon": -64.7965,
+"tz": "America/Moncton"
+},
+{
+"id": "z-america-monterrey",
+"label": "Monterrey (America/Monterrey)",
+"lat": 25.68435,
+"lon": -100.31721,
+"tz": "America/Monterrey"
+},
+{
+"id": "z-america-montevideo",
+"label": "Montevideo (America/Montevideo)",
+"lat": -34.90328,
+"lon": -56.18816,
+"tz": "America/Montevideo"
+},
+{
+"id": "z-america-montserrat",
+"label": "Plymouth (America/Montserrat)",
+"lat": 16.70555,
+"lon": -62.21292,
+"tz": "America/Montserrat"
+},
+{
+"id": "z-america-nassau",
+"label": "Nassau (America/Nassau)",
+"lat": 25.05823,
+"lon": -77.34306,
+"tz": "America/Nassau"
+},
+{
+"id": "z-america-new-york",
+"label": "Fort Hunt (America/New_York)",
+"lat": 38.73289,
+"lon": -77.05803,
+"tz": "America/New_York"
+},
+{
+"id": "z-america-north-dakota-new-salem",
+"label": "Mandan (America/North_Dakota/New_Salem)",
+"lat": 46.82666,
+"lon": -100.88958,
+"tz": "America/North_Dakota/New_Salem"
+},
+{
+"id": "z-america-nuuk",
+"label": "Nuuk (America/Nuuk)",
+"lat": 64.18347,
+"lon": -51.72157,
+"tz": "America/Nuuk"
+},
+{
+"id": "z-america-ojinaga",
+"label": "Ojinaga (America/Ojinaga)",
+"lat": 29.56689,
+"lon": -104.54487,
+"tz": "America/Ojinaga"
+},
+{
+"id": "z-america-panama",
+"label": "Veracruz (America/Panama)",
+"lat": 8.89319,
+"lon": -79.62338,
+"tz": "America/Panama"
+},
+{
+"id": "z-america-paramaribo",
+"label": "Paramaribo (America/Paramaribo)",
+"lat": 5.86638,
+"lon": -55.16682,
+"tz": "America/Paramaribo"
+},
+{
+"id": "z-america-phoenix",
+"label": "Phoenix (America/Phoenix)",
+"lat": 33.44838,
+"lon": -112.07404,
+"tz": "America/Phoenix"
+},
+{
+"id": "z-america-port-au-prince",
+"label": "Port-au-Prince (America/Port-au-Prince)",
+"lat": 18.54349,
+"lon": -72.33881,
+"tz": "America/Port-au-Prince"
+},
+{
+"id": "z-america-port-of-spain",
+"label": "Port of Spain (America/Port_of_Spain)",
+"lat": 10.66668,
+"lon": -61.51889,
+"tz": "America/Port_of_Spain"
+},
+{
+"id": "z-america-porto-velho",
+"label": "Porto Velho (America/Porto_Velho)",
+"lat": -8.76194,
+"lon": -63.90389,
+"tz": "America/Porto_Velho"
+},
+{
+"id": "z-america-puerto-rico",
+"label": "Aguadilla (America/Puerto_Rico)",
+"lat": 18.42745,
+"lon": -67.15407,
+"tz": "America/Puerto_Rico"
+},
+{
+"id": "z-america-punta-arenas",
+"label": "Punta Arenas (America/Punta_Arenas)",
+"lat": -53.16282,
+"lon": -70.90922,
+"tz": "America/Punta_Arenas"
+},
+{
+"id": "z-america-recife",
+"label": "Recife (America/Recife)",
+"lat": -8.05389,
+"lon": -34.88111,
+"tz": "America/Recife"
+},
+{
+"id": "z-america-regina",
+"label": "Regina (America/Regina)",
+"lat": 50.45008,
+"lon": -104.6178,
+"tz": "America/Regina"
+},
+{
+"id": "z-america-rio-branco",
+"label": "Rio Branco (America/Rio_Branco)",
+"lat": -9.97472,
+"lon": -67.81,
+"tz": "America/Rio_Branco"
+},
+{
+"id": "z-america-santarem",
+"label": "Santarem (America/Santarem)",
+"lat": -2.44306,
+"lon": -54.70833,
+"tz": "America/Santarem"
+},
+{
+"id": "z-america-santiago",
+"label": "Santiago (America/Santiago)",
+"lat": -33.45694,
+"lon": -70.64827,
+"tz": "America/Santiago"
+},
+{
+"id": "z-america-santo-domingo",
+"label": "Santo Domingo (America/Santo_Domingo)",
+"lat": 18.47186,
+"lon": -69.89232,
+"tz": "America/Santo_Domingo"
+},
+{
+"id": "z-america-sao-paulo",
+"label": "Sao Paulo (America/Sao_Paulo)",
+"lat": -23.5475,
+"lon": -46.63611,
+"tz": "America/Sao_Paulo"
+},
+{
+"id": "z-america-st-barthelemy",
+"label": "Gustavia (America/St_Barthelemy)",
+"lat": 17.89618,
+"lon": -62.84978,
+"tz": "America/St_Barthelemy"
+},
+{
+"id": "z-america-st-johns",
+"label": "Conception Bay South (America/St_Johns)",
+"lat": 47.49989,
+"lon": -52.99806,
+"tz": "America/St_Johns"
+},
+{
+"id": "z-america-st-kitts",
+"label": "Basseterre (America/St_Kitts)",
+"lat": 17.2955,
+"lon": -62.72499,
+"tz": "America/St_Kitts"
+},
+{
+"id": "z-america-st-lucia",
+"label": "Gros Islet (America/St_Lucia)",
+"lat": 14.06667,
+"lon": -60.95,
+"tz": "America/St_Lucia"
+},
+{
+"id": "z-america-st-thomas",
+"label": "Charlotte Amalie (America/St_Thomas)",
+"lat": 18.3419,
+"lon": -64.9307,
+"tz": "America/St_Thomas"
+},
+{
+"id": "z-america-st-vincent",
+"label": "Kingstown (America/St_Vincent)",
+"lat": 13.15527,
+"lon": -61.22742,
+"tz": "America/St_Vincent"
+},
+{
+"id": "z-america-swift-current",
+"label": "Swift Current (America/Swift_Current)",
+"lat": 50.28337,
+"lon": -107.80135,
+"tz": "America/Swift_Current"
+},
+{
+"id": "z-america-tegucigalpa",
+"label": "Tegucigalpa (America/Tegucigalpa)",
+"lat": 14.0818,
+"lon": -87.20681,
+"tz": "America/Tegucigalpa"
+},
+{
+"id": "z-america-tijuana",
+"label": "Tijuana (America/Tijuana)",
+"lat": 32.5027,
+"lon": -117.00371,
+"tz": "America/Tijuana"
+},
+{
+"id": "z-america-toronto",
+"label": "Toronto (America/Toronto)",
+"lat": 43.70643,
+"lon": -79.39864,
+"tz": "America/Toronto"
+},
+{
+"id": "z-america-tortola",
+"label": "Road Town (America/Tortola)",
+"lat": 18.42693,
+"lon": -64.62079,
+"tz": "America/Tortola"
+},
+{
+"id": "z-america-vancouver",
+"label": "Vancouver (America/Vancouver)",
+"lat": 49.24966,
+"lon": -123.11934,
+"tz": "America/Vancouver"
+},
+{
+"id": "z-america-whitehorse",
+"label": "Whitehorse (America/Whitehorse)",
+"lat": 60.71611,
+"lon": -135.05375,
+"tz": "America/Whitehorse"
+},
+{
+"id": "z-america-winnipeg",
+"label": "Winnipeg (America/Winnipeg)",
+"lat": 49.8844,
+"lon": -97.14704,
+"tz": "America/Winnipeg"
+},
+{
+"id": "z-arctic-longyearbyen",
+"label": "Longyearbyen (Arctic/Longyearbyen)",
+"lat": 78.22334,
+"lon": 15.64689,
+"tz": "Arctic/Longyearbyen"
+},
+{
+"id": "z-asia-aden",
+"label": "Aden (Asia/Aden)",
+"lat": 12.77957,
+"lon": 45.03852,
+"tz": "Asia/Aden"
+},
+{
+"id": "z-asia-almaty",
+"label": "Almaty (Asia/Almaty)",
+"lat": 43.25249,
+"lon": 76.9115,
+"tz": "Asia/Almaty"
+},
+{
+"id": "z-asia-amman",
+"label": "Amman (Asia/Amman)",
+"lat": 31.95522,
+"lon": 35.94503,
+"tz": "Asia/Amman"
+},
+{
+"id": "z-asia-anadyr",
+"label": "Anadyr (Asia/Anadyr)",
+"lat": 64.73424,
+"lon": 177.5103,
+"tz": "Asia/Anadyr"
+},
+{
+"id": "z-asia-aqtau",
+"label": "Zhanaozen (Asia/Aqtau)",
+"lat": 43.34116,
+"lon": 52.86192,
+"tz": "Asia/Aqtau"
+},
+{
+"id": "z-asia-aqtobe",
+"label": "Shalqar (Asia/Aqtobe)",
+"lat": 47.83154,
+"lon": 59.61926,
+"tz": "Asia/Aqtobe"
+},
+{
+"id": "z-asia-ashgabat",
+"label": "Ashgabat (Asia/Ashgabat)",
+"lat": 37.95,
+"lon": 58.38333,
+"tz": "Asia/Ashgabat"
+},
+{
+"id": "z-asia-atyrau",
+"label": "Atyrau (Asia/Atyrau)",
+"lat": 47.1048,
+"lon": 51.88427,
+"tz": "Asia/Atyrau"
+},
+{
+"id": "z-asia-baghdad",
+"label": "Baghdad (Asia/Baghdad)",
+"lat": 33.34058,
+"lon": 44.40088,
+"tz": "Asia/Baghdad"
+},
+{
+"id": "z-asia-bahrain",
+"label": "Sitrah (Asia/Bahrain)",
+"lat": 26.15472,
+"lon": 50.62056,
+"tz": "Asia/Bahrain"
+},
+{
+"id": "z-asia-baku",
+"label": "Baku (Asia/Baku)",
+"lat": 40.37767,
+"lon": 49.89201,
+"tz": "Asia/Baku"
+},
+{
+"id": "z-asia-bangkok",
+"label": "Bangkok (Asia/Bangkok)",
+"lat": 13.75398,
+"lon": 100.50144,
+"tz": "Asia/Bangkok"
+},
+{
+"id": "z-asia-barnaul",
+"label": "Barnaul (Asia/Barnaul)",
+"lat": 53.36199,
+"lon": 83.72786,
+"tz": "Asia/Barnaul"
+},
+{
+"id": "z-asia-beirut",
+"label": "Beirut (Asia/Beirut)",
+"lat": 33.89332,
+"lon": 35.50157,
+"tz": "Asia/Beirut"
+},
+{
+"id": "z-asia-bishkek",
+"label": "Bishkek (Asia/Bishkek)",
+"lat": 42.87,
+"lon": 74.59,
+"tz": "Asia/Bishkek"
+},
+{
+"id": "z-asia-brunei",
+"label": "Tutong (Asia/Brunei)",
+"lat": 4.80278,
+"lon": 114.64917,
+"tz": "Asia/Brunei"
+},
+{
+"id": "z-asia-chita",
+"label": "Chita (Asia/Chita)",
+"lat": 52.04311,
+"lon": 113.49171,
+"tz": "Asia/Chita"
+},
+{
+"id": "z-asia-colombo",
+"label": "Colombo (Asia/Colombo)",
+"lat": 6.93548,
+"lon": 79.84868,
+"tz": "Asia/Colombo"
+},
+{
+"id": "z-asia-damascus",
+"label": "Damascus (Asia/Damascus)",
+"lat": 33.5102,
+"lon": 36.29128,
+"tz": "Asia/Damascus"
+},
+{
+"id": "z-asia-dhaka",
+"label": "Dhaka (Asia/Dhaka)",
+"lat": 23.7104,
+"lon": 90.40744,
+"tz": "Asia/Dhaka"
+},
+{
+"id": "z-asia-dili",
+"label": "Dili (Asia/Dili)",
+"lat": -8.55861,
+"lon": 125.57361,
+"tz": "Asia/Dili"
+},
+{
+"id": "z-asia-dubai",
+"label": "Dubai (Asia/Dubai)",
+"lat": 25.07725,
+"lon": 55.30927,
+"tz": "Asia/Dubai"
+},
+{
+"id": "z-asia-dushanbe",
+"label": "Dushanbe (Asia/Dushanbe)",
+"lat": 38.53575,
+"lon": 68.77905,
+"tz": "Asia/Dushanbe"
+},
+{
+"id": "z-asia-famagusta",
+"label": "Famagusta (Asia/Famagusta)",
+"lat": 35.12489,
+"lon": 33.94135,
+"tz": "Asia/Famagusta"
+},
+{
+"id": "z-asia-gaza",
+"label": "Gaza (Asia/Gaza)",
+"lat": 31.50161,
+"lon": 34.46672,
+"tz": "Asia/Gaza"
+},
+{
+"id": "z-asia-hebron",
+"label": "Hebron (Asia/Hebron)",
+"lat": 31.52935,
+"lon": 35.0938,
+"tz": "Asia/Hebron"
+},
+{
+"id": "z-asia-ho-chi-minh",
+"label": "Kota Sambas (Asia/Ho_Chi_Minh)",
+"lat": 1.36259,
+"lon": 109.30093,
+"tz": "Asia/Ho_Chi_Minh"
+},
+{
+"id": "z-asia-hong-kong",
+"label": "Hong Kong (Asia/Hong_Kong)",
+"lat": 22.27832,
+"lon": 114.17469,
+"tz": "Asia/Hong_Kong"
+},
+{
+"id": "z-asia-hovd",
+"label": "Uliastay (Asia/Hovd)",
+"lat": 47.74167,
+"lon": 96.84444,
+"tz": "Asia/Hovd"
+},
+{
+"id": "z-asia-irkutsk",
+"label": "Irkutsk (Asia/Irkutsk)",
+"lat": 52.29566,
+"lon": 104.29076,
+"tz": "Asia/Irkutsk"
+},
+{
+"id": "z-asia-jakarta",
+"label": "Jakarta (Asia/Jakarta)",
+"lat": -6.21462,
+"lon": 106.84513,
+"tz": "Asia/Jakarta"
+},
+{
+"id": "z-asia-jayapura",
+"label": "Jayapura (Asia/Jayapura)",
+"lat": -2.53371,
+"lon": 140.71813,
+"tz": "Asia/Jayapura"
+},
+{
+"id": "z-asia-jerusalem",
+"label": "Jerusalem (Asia/Jerusalem)",
+"lat": 31.76904,
+"lon": 35.21633,
+"tz": "Asia/Jerusalem"
+},
+{
+"id": "z-asia-kabul",
+"label": "Kabul (Asia/Kabul)",
+"lat": 34.52813,
+"lon": 69.17233,
+"tz": "Asia/Kabul"
+},
+{
+"id": "z-asia-kamchatka",
+"label": "Vilyuchinsk (Asia/Kamchatka)",
+"lat": 52.93196,
+"lon": 158.40585,
+"tz": "Asia/Kamchatka"
+},
+{
+"id": "z-asia-karachi",
+"label": "Karachi (Asia/Karachi)",
+"lat": 24.8608,
+"lon": 67.0104,
+"tz": "Asia/Karachi"
+},
+{
+"id": "z-asia-kathmandu",
+"label": "Kathmandu (Asia/Kathmandu)",
+"lat": 27.70169,
+"lon": 85.3206,
+"tz": "Asia/Kathmandu"
+},
+{
+"id": "z-asia-kolkata",
+"label": "Kolkata (Asia/Kolkata)",
+"lat": 22.56263,
+"lon": 88.36304,
+"tz": "Asia/Kolkata"
+},
+{
+"id": "z-asia-krasnoyarsk",
+"label": "Krasnoyarsk (Asia/Krasnoyarsk)",
+"lat": 56.03742,
+"lon": 92.93136,
+"tz": "Asia/Krasnoyarsk"
+},
+{
+"id": "z-asia-kuala-lumpur",
+"label": "Kuala Lumpur (Asia/Kuala_Lumpur)",
+"lat": 3.1412,
+"lon": 101.68653,
+"tz": "Asia/Kuala_Lumpur"
+},
+{
+"id": "z-asia-kuching",
+"label": "Kuching (Asia/Kuching)",
+"lat": 1.55,
+"lon": 110.33333,
+"tz": "Asia/Kuching"
+},
+{
+"id": "z-asia-kuwait",
+"label": "Janub as Surrah (Asia/Kuwait)",
+"lat": 29.26917,
+"lon": 47.97806,
+"tz": "Asia/Kuwait"
+},
+{
+"id": "z-asia-macau",
+"label": "Macau (Asia/Macau)",
+"lat": 22.20056,
+"lon": 113.54611,
+"tz": "Asia/Macau"
+},
+{
+"id": "z-asia-magadan",
+"label": "Magadan (Asia/Magadan)",
+"lat": 59.56274,
+"lon": 150.80211,
+"tz": "Asia/Magadan"
+},
+{
+"id": "z-asia-makassar",
+"label": "Makassar (Asia/Makassar)",
+"lat": -5.14861,
+"lon": 119.43194,
+"tz": "Asia/Makassar"
+},
+{
+"id": "z-asia-manila",
+"label": "Manila (Asia/Manila)",
+"lat": 14.6042,
+"lon": 120.9822,
+"tz": "Asia/Manila"
+},
+{
+"id": "z-asia-muscat",
+"label": "Muscat (Asia/Muscat)",
+"lat": 23.58413,
+"lon": 58.40778,
+"tz": "Asia/Muscat"
+},
+{
+"id": "z-asia-nicosia",
+"label": "Nicosia (Asia/Nicosia)",
+"lat": 35.17284,
+"lon": 33.35397,
+"tz": "Asia/Nicosia"
+},
+{
+"id": "z-asia-novokuznetsk",
+"label": "Novokuznetsk (Asia/Novokuznetsk)",
+"lat": 53.75752,
+"lon": 87.13599,
+"tz": "Asia/Novokuznetsk"
+},
+{
+"id": "z-asia-novosibirsk",
+"label": "Novosibirsk (Asia/Novosibirsk)",
+"lat": 55.02259,
+"lon": 82.93175,
+"tz": "Asia/Novosibirsk"
+},
+{
+"id": "z-asia-omsk",
+"label": "Omsk (Asia/Omsk)",
+"lat": 54.99244,
+"lon": 73.36859,
+"tz": "Asia/Omsk"
+},
+{
+"id": "z-asia-oral",
+"label": "Oral (Asia/Oral)",
+"lat": 51.24601,
+"lon": 51.42558,
+"tz": "Asia/Oral"
+},
+{
+"id": "z-asia-phnom-penh",
+"label": "Phnom Penh (Asia/Phnom_Penh)",
+"lat": 11.56245,
+"lon": 104.91601,
+"tz": "Asia/Phnom_Penh"
+},
+{
+"id": "z-asia-pontianak",
+"label": "Pontianak (Asia/Pontianak)",
+"lat": -0.03194,
+"lon": 109.325,
+"tz": "Asia/Pontianak"
+},
+{
+"id": "z-asia-pyongyang",
+"label": "Pyongyang (Asia/Pyongyang)",
+"lat": 39.03385,
+"lon": 125.75432,
+"tz": "Asia/Pyongyang"
+},
+{
+"id": "z-asia-qatar",
+"label": "Al 'Unayzah (Asia/Qatar)",
+"lat": 25.33759,
+"lon": 51.50953,
+"tz": "Asia/Qatar"
+},
+{
+"id": "z-asia-qostanay",
+"label": "Zhitikara (Asia/Qostanay)",
+"lat": 52.19019,
+"lon": 61.19894,
+"tz": "Asia/Qostanay"
+},
+{
+"id": "z-asia-qyzylorda",
+"label": "Zhosaly (Asia/Qyzylorda)",
+"lat": 45.48778,
+"lon": 64.07806,
+"tz": "Asia/Qyzylorda"
+},
+{
+"id": "z-asia-riyadh",
+"label": "Riyadh (Asia/Riyadh)",
+"lat": 24.68773,
+"lon": 46.72185,
+"tz": "Asia/Riyadh"
+},
+{
+"id": "z-asia-sakhalin",
+"label": "Yuzhno-Sakhalinsk (Asia/Sakhalin)",
+"lat": 46.9543,
+"lon": 142.73559,
+"tz": "Asia/Sakhalin"
+},
+{
+"id": "z-asia-samarkand",
+"label": "Samarkand (Asia/Samarkand)",
+"lat": 39.65456,
+"lon": 66.96445,
+"tz": "Asia/Samarkand"
+},
+{
+"id": "z-asia-seoul",
+"label": "Seoul (Asia/Seoul)",
+"lat": 37.566,
+"lon": 126.9784,
+"tz": "Asia/Seoul"
+},
+{
+"id": "z-asia-shanghai",
+"label": "Shanghai (Asia/Shanghai)",
+"lat": 31.22222,
+"lon": 121.45806,
+"tz": "Asia/Shanghai"
+},
+{
+"id": "z-asia-singapore",
+"label": "Singapore (Asia/Singapore)",
+"lat": 1.28967,
+"lon": 103.85007,
+"tz": "Asia/Singapore"
+},
+{
+"id": "z-asia-taipei",
+"label": "Taipei (Asia/Taipei)",
+"lat": 25.05306,
+"lon": 121.52639,
+"tz": "Asia/Taipei"
+},
+{
+"id": "z-asia-tashkent",
+"label": "Tashkent (Asia/Tashkent)",
+"lat": 41.26465,
+"lon": 69.21627,
+"tz": "Asia/Tashkent"
+},
+{
+"id": "z-asia-tbilisi",
+"label": "Tbilisi (Asia/Tbilisi)",
+"lat": 41.69143,
+"lon": 44.83412,
+"tz": "Asia/Tbilisi"
+},
+{
+"id": "z-asia-tehran",
+"label": "Tehran (Asia/Tehran)",
+"lat": 35.69439,
+"lon": 51.42151,
+"tz": "Asia/Tehran"
+},
+{
+"id": "z-asia-thimphu",
+"label": "Thimphu (Asia/Thimphu)",
+"lat": 27.46609,
+"lon": 89.64191,
+"tz": "Asia/Thimphu"
+},
+{
+"id": "z-asia-tokyo",
+"label": "Tokyo (Asia/Tokyo)",
+"lat": 35.6895,
+"lon": 139.69171,
+"tz": "Asia/Tokyo"
+},
+{
+"id": "z-asia-tomsk",
+"label": "Tomsk (Asia/Tomsk)",
+"lat": 56.50049,
+"lon": 84.98216,
+"tz": "Asia/Tomsk"
+},
+{
+"id": "z-asia-ulaanbaatar",
+"label": "Ulan Bator (Asia/Ulaanbaatar)",
+"lat": 47.90771,
+"lon": 106.88324,
+"tz": "Asia/Ulaanbaatar"
+},
+{
+"id": "z-asia-urumqi",
+"label": "Zepu (Asia/Urumqi)",
+"lat": 38.18867,
+"lon": 77.27075,
+"tz": "Asia/Urumqi"
+},
+{
+"id": "z-asia-vientiane",
+"label": "Vientiane (Asia/Vientiane)",
+"lat": 17.96667,
+"lon": 102.6,
+"tz": "Asia/Vientiane"
+},
+{
+"id": "z-asia-vladivostok",
+"label": "Vladivostok (Asia/Vladivostok)",
+"lat": 43.10562,
+"lon": 131.87353,
+"tz": "Asia/Vladivostok"
+},
+{
+"id": "z-asia-yakutsk",
+"label": "Yakutsk (Asia/Yakutsk)",
+"lat": 62.03114,
+"lon": 129.72288,
+"tz": "Asia/Yakutsk"
+},
+{
+"id": "z-asia-yangon",
+"label": "Yangon (Asia/Yangon)",
+"lat": 16.80528,
+"lon": 96.15611,
+"tz": "Asia/Yangon"
+},
+{
+"id": "z-asia-yekaterinburg",
+"label": "Yekaterinburg (Asia/Yekaterinburg)",
+"lat": 56.85733,
+"lon": 60.61529,
+"tz": "Asia/Yekaterinburg"
+},
+{
+"id": "z-asia-yerevan",
+"label": "Yerevan (Asia/Yerevan)",
+"lat": 40.17765,
+"lon": 44.5126,
+"tz": "Asia/Yerevan"
+},
+{
+"id": "z-atlantic-azores",
+"label": "Ponta Delgada (Atlantic/Azores)",
+"lat": 37.73952,
+"lon": -25.66874,
+"tz": "Atlantic/Azores"
+},
+{
+"id": "z-atlantic-bermuda",
+"label": "Hamilton (Atlantic/Bermuda)",
+"lat": 32.2949,
+"lon": -64.78303,
+"tz": "Atlantic/Bermuda"
+},
+{
+"id": "z-atlantic-canary",
+"label": "Yaiza (Atlantic/Canary)",
+"lat": 28.95678,
+"lon": -13.76535,
+"tz": "Atlantic/Canary"
+},
+{
+"id": "z-atlantic-cape-verde",
+"label": "Praia (Atlantic/Cape_Verde)",
+"lat": 14.93152,
+"lon": -23.51254,
+"tz": "Atlantic/Cape_Verde"
+},
+{
+"id": "z-atlantic-faroe",
+"label": "Torshavn (Atlantic/Faroe)",
+"lat": 62.00973,
+"lon": -6.77164,
+"tz": "Atlantic/Faroe"
+},
+{
+"id": "z-atlantic-madeira",
+"label": "Sao Martinho (Atlantic/Madeira)",
+"lat": 32.6448,
+"lon": -16.93843,
+"tz": "Atlantic/Madeira"
+},
+{
+"id": "z-atlantic-reykjavik",
+"label": "Reykjavik (Atlantic/Reykjavik)",
+"lat": 64.13548,
+"lon": -21.89541,
+"tz": "Atlantic/Reykjavik"
+},
+{
+"id": "z-atlantic-south-georgia",
+"label": "Grytviken (Atlantic/South_Georgia)",
+"lat": -54.28111,
+"lon": -36.5092,
+"tz": "Atlantic/South_Georgia"
+},
+{
+"id": "z-atlantic-st-helena",
+"label": "Jamestown (Atlantic/St_Helena)",
+"lat": -15.92488,
+"lon": -5.71816,
+"tz": "Atlantic/St_Helena"
+},
+{
+"id": "z-atlantic-stanley",
+"label": "Stanley (Atlantic/Stanley)",
+"lat": -51.69382,
+"lon": -57.85701,
+"tz": "Atlantic/Stanley"
+},
+{
+"id": "z-australia-adelaide",
+"label": "Adelaide (Australia/Adelaide)",
+"lat": -34.92866,
+"lon": 138.59863,
+"tz": "Australia/Adelaide"
+},
+{
+"id": "z-australia-brisbane",
+"label": "Brisbane (Australia/Brisbane)",
+"lat": -27.46794,
+"lon": 153.02809,
+"tz": "Australia/Brisbane"
+},
+{
+"id": "z-australia-broken-hill",
+"label": "Broken Hill (Australia/Broken_Hill)",
+"lat": -31.9652,
+"lon": 141.4512,
+"tz": "Australia/Broken_Hill"
+},
+{
+"id": "z-australia-darwin",
+"label": "Darwin (Australia/Darwin)",
+"lat": -12.46113,
+"lon": 130.84185,
+"tz": "Australia/Darwin"
+},
+{
+"id": "z-australia-hobart",
+"label": "Hobart (Australia/Hobart)",
+"lat": -42.87936,
+"lon": 147.32941,
+"tz": "Australia/Hobart"
+},
+{
+"id": "z-australia-melbourne",
+"label": "Melbourne (Australia/Melbourne)",
+"lat": -37.814,
+"lon": 144.96332,
+"tz": "Australia/Melbourne"
+},
+{
+"id": "z-australia-perth",
+"label": "Perth (Australia/Perth)",
+"lat": -31.95224,
+"lon": 115.8614,
+"tz": "Australia/Perth"
+},
+{
+"id": "z-australia-sydney",
+"label": "Sydney (Australia/Sydney)",
+"lat": -33.86785,
+"lon": 151.20732,
+"tz": "Australia/Sydney"
+},
+{
+"id": "z-europe-amsterdam",
+"label": "Amsterdam (Europe/Amsterdam)",
+"lat": 52.37403,
+"lon": 4.88969,
+"tz": "Europe/Amsterdam"
+},
+{
+"id": "z-europe-andorra",
+"label": "les Escaldes (Europe/Andorra)",
+"lat": 42.50729,
+"lon": 1.53414,
+"tz": "Europe/Andorra"
+},
+{
+"id": "z-europe-astrakhan",
+"label": "Astrakhan (Europe/Astrakhan)",
+"lat": 46.34968,
+"lon": 48.04076,
+"tz": "Europe/Astrakhan"
+},
+{
+"id": "z-europe-athens",
+"label": "Athens (Europe/Athens)",
+"lat": 37.98376,
+"lon": 23.72784,
+"tz": "Europe/Athens"
+},
+{
+"id": "z-europe-belgrade",
+"label": "Belgrade (Europe/Belgrade)",
+"lat": 44.80401,
+"lon": 20.46513,
+"tz": "Europe/Belgrade"
+},
+{
+"id": "z-europe-berlin",
+"label": "Berlin (Europe/Berlin)",
+"lat": 52.52437,
+"lon": 13.41053,
+"tz": "Europe/Berlin"
+},
+{
+"id": "z-europe-bratislava",
+"label": "Bratislava (Europe/Bratislava)",
+"lat": 48.14816,
+"lon": 17.10674,
+"tz": "Europe/Bratislava"
+},
+{
+"id": "z-europe-brussels",
+"label": "Brussels (Europe/Brussels)",
+"lat": 50.85045,
+"lon": 4.34878,
+"tz": "Europe/Brussels"
+},
+{
+"id": "z-europe-bucharest",
+"label": "Bucharest (Europe/Bucharest)",
+"lat": 44.43225,
+"lon": 26.10626,
+"tz": "Europe/Bucharest"
+},
+{
+"id": "z-europe-budapest",
+"label": "Budapest (Europe/Budapest)",
+"lat": 47.49835,
+"lon": 19.04045,
+"tz": "Europe/Budapest"
+},
+{
+"id": "z-europe-chisinau",
+"label": "Chisinau (Europe/Chisinau)",
+"lat": 47.00902,
+"lon": 28.85938,
+"tz": "Europe/Chisinau"
+},
+{
+"id": "z-europe-copenhagen",
+"label": "Copenhagen (Europe/Copenhagen)",
+"lat": 55.67594,
+"lon": 12.56553,
+"tz": "Europe/Copenhagen"
+},
+{
+"id": "z-europe-dublin",
+"label": "Dublin (Europe/Dublin)",
+"lat": 53.33306,
+"lon": -6.24889,
+"tz": "Europe/Dublin"
+},
+{
+"id": "z-europe-gibraltar",
+"label": "Gibraltar (Europe/Gibraltar)",
+"lat": 36.14474,
+"lon": -5.35257,
+"tz": "Europe/Gibraltar"
+},
+{
+"id": "z-europe-guernsey",
+"label": "Saint Peter Port (Europe/Guernsey)",
+"lat": 49.45981,
+"lon": -2.53527,
+"tz": "Europe/Guernsey"
+},
+{
+"id": "z-europe-helsinki",
+"label": "Helsinki (Europe/Helsinki)",
+"lat": 60.16952,
+"lon": 24.93545,
+"tz": "Europe/Helsinki"
+},
+{
+"id": "z-europe-isle-of-man",
+"label": "Douglas (Europe/Isle_of_Man)",
+"lat": 54.15,
+"lon": -4.48333,
+"tz": "Europe/Isle_of_Man"
+},
+{
+"id": "z-europe-istanbul",
+"label": "Istanbul (Europe/Istanbul)",
+"lat": 41.01384,
+"lon": 28.94966,
+"tz": "Europe/Istanbul"
+},
+{
+"id": "z-europe-jersey",
+"label": "Saint Helier (Europe/Jersey)",
+"lat": 49.18804,
+"lon": -2.10491,
+"tz": "Europe/Jersey"
+},
+{
+"id": "z-europe-kaliningrad",
+"label": "Kaliningrad (Europe/Kaliningrad)",
+"lat": 54.70639,
+"lon": 20.51102,
+"tz": "Europe/Kaliningrad"
+},
+{
+"id": "z-europe-kirov",
+"label": "Kirov (Europe/Kirov)",
+"lat": 58.59809,
+"lon": 49.65783,
+"tz": "Europe/Kirov"
+},
+{
+"id": "z-europe-kyiv",
+"label": "Kyiv (Europe/Kyiv)",
+"lat": 50.45466,
+"lon": 30.5238,
+"tz": "Europe/Kyiv"
+},
+{
+"id": "z-europe-lisbon",
+"label": "Lisbon (Europe/Lisbon)",
+"lat": 38.72509,
+"lon": -9.1498,
+"tz": "Europe/Lisbon"
+},
+{
+"id": "z-europe-ljubljana",
+"label": "Ljubljana (Europe/Ljubljana)",
+"lat": 46.05108,
+"lon": 14.50513,
+"tz": "Europe/Ljubljana"
+},
+{
+"id": "z-europe-london",
+"label": "London (Europe/London)",
+"lat": 51.50853,
+"lon": -0.12574,
+"tz": "Europe/London"
+},
+{
+"id": "z-europe-luxembourg",
+"label": "Luxembourg (Europe/Luxembourg)",
+"lat": 49.60982,
+"lon": 6.13268,
+"tz": "Europe/Luxembourg"
+},
+{
+"id": "z-europe-madrid",
+"label": "Madrid (Europe/Madrid)",
+"lat": 40.4165,
+"lon": -3.70256,
+"tz": "Europe/Madrid"
+},
+{
+"id": "z-europe-malta",
+"label": "Zabbar (Europe/Malta)",
+"lat": 35.87687,
+"lon": 14.53592,
+"tz": "Europe/Malta"
+},
+{
+"id": "z-europe-mariehamn",
+"label": "Mariehamn (Europe/Mariehamn)",
+"lat": 60.09726,
+"lon": 19.93481,
+"tz": "Europe/Mariehamn"
+},
+{
+"id": "z-europe-minsk",
+"label": "Minsk (Europe/Minsk)",
+"lat": 53.90019,
+"lon": 27.56653,
+"tz": "Europe/Minsk"
+},
+{
+"id": "z-europe-monaco",
+"label": "Monaco (Europe/Monaco)",
+"lat": 43.73718,
+"lon": 7.42145,
+"tz": "Europe/Monaco"
+},
+{
+"id": "z-europe-moscow",
+"label": "Moscow (Europe/Moscow)",
+"lat": 55.75204,
+"lon": 37.61781,
+"tz": "Europe/Moscow"
+},
+{
+"id": "z-europe-oslo",
+"label": "Oslo (Europe/Oslo)",
+"lat": 59.91273,
+"lon": 10.74609,
+"tz": "Europe/Oslo"
+},
+{
+"id": "z-europe-paris",
+"label": "Paris (Europe/Paris)",
+"lat": 48.85341,
+"lon": 2.3488,
+"tz": "Europe/Paris"
+},
+{
+"id": "z-europe-podgorica",
+"label": "Podgorica (Europe/Podgorica)",
+"lat": 42.44124,
+"lon": 19.26309,
+"tz": "Europe/Podgorica"
+},
+{
+"id": "z-europe-prague",
+"label": "Prague (Europe/Prague)",
+"lat": 50.08804,
+"lon": 14.42076,
+"tz": "Europe/Prague"
+},
+{
+"id": "z-europe-riga",
+"label": "Riga (Europe/Riga)",
+"lat": 56.946,
+"lon": 24.10589,
+"tz": "Europe/Riga"
+},
+{
+"id": "z-europe-rome",
+"label": "Rome (Europe/Rome)",
+"lat": 41.89193,
+"lon": 12.51133,
+"tz": "Europe/Rome"
+},
+{
+"id": "z-europe-samara",
+"label": "Samara (Europe/Samara)",
+"lat": 53.20767,
+"lon": 50.13553,
+"tz": "Europe/Samara"
+},
+{
+"id": "z-europe-san-marino",
+"label": "San Marino (Europe/San_Marino)",
+"lat": 43.93667,
+"lon": 12.44639,
+"tz": "Europe/San_Marino"
+},
+{
+"id": "z-europe-sarajevo",
+"label": "Sarajevo (Europe/Sarajevo)",
+"lat": 43.84864,
+"lon": 18.35644,
+"tz": "Europe/Sarajevo"
+},
+{
+"id": "z-europe-saratov",
+"label": "Saratov (Europe/Saratov)",
+"lat": 51.54048,
+"lon": 45.9901,
+"tz": "Europe/Saratov"
+},
+{
+"id": "z-europe-simferopol",
+"label": "Simferopol (Europe/Simferopol)",
+"lat": 44.95719,
+"lon": 34.11079,
+"tz": "Europe/Simferopol"
+},
+{
+"id": "z-europe-skopje",
+"label": "Skopje (Europe/Skopje)",
+"lat": 41.99646,
+"lon": 21.43141,
+"tz": "Europe/Skopje"
+},
+{
+"id": "z-europe-sofia",
+"label": "Sofia (Europe/Sofia)",
+"lat": 42.69751,
+"lon": 23.32415,
+"tz": "Europe/Sofia"
+},
+{
+"id": "z-europe-stockholm",
+"label": "Stockholm (Europe/Stockholm)",
+"lat": 59.32938,
+"lon": 18.06871,
+"tz": "Europe/Stockholm"
+},
+{
+"id": "z-europe-tallinn",
+"label": "Tallinn (Europe/Tallinn)",
+"lat": 59.43696,
+"lon": 24.75353,
+"tz": "Europe/Tallinn"
+},
+{
+"id": "z-europe-tirane",
+"label": "Sarande (Europe/Tirane)",
+"lat": 39.87534,
+"lon": 20.00477,
+"tz": "Europe/Tirane"
+},
+{
+"id": "z-europe-ulyanovsk",
+"label": "Ulyanovsk (Europe/Ulyanovsk)",
+"lat": 54.32824,
+"lon": 48.38657,
+"tz": "Europe/Ulyanovsk"
+},
+{
+"id": "z-europe-vaduz",
+"label": "Vaduz (Europe/Vaduz)",
+"lat": 47.14151,
+"lon": 9.52154,
+"tz": "Europe/Vaduz"
+},
+{
+"id": "z-europe-vatican",
+"label": "Vatican City (Europe/Vatican)",
+"lat": 41.90268,
+"lon": 12.45414,
+"tz": "Europe/Vatican"
+},
+{
+"id": "z-europe-vienna",
+"label": "Vienna (Europe/Vienna)",
+"lat": 48.20849,
+"lon": 16.37208,
+"tz": "Europe/Vienna"
+},
+{
+"id": "z-europe-vilnius",
+"label": "Vilnius (Europe/Vilnius)",
+"lat": 54.68916,
+"lon": 25.2798,
+"tz": "Europe/Vilnius"
+},
+{
+"id": "z-europe-volgograd",
+"label": "Volgograd (Europe/Volgograd)",
+"lat": 48.71378,
+"lon": 44.4976,
+"tz": "Europe/Volgograd"
+},
+{
+"id": "z-europe-warsaw",
+"label": "Warsaw (Europe/Warsaw)",
+"lat": 52.22977,
+"lon": 21.01178,
+"tz": "Europe/Warsaw"
+},
+{
+"id": "z-europe-zagreb",
+"label": "Zagreb (Europe/Zagreb)",
+"lat": 45.81444,
+"lon": 15.97798,
+"tz": "Europe/Zagreb"
+},
+{
+"id": "z-europe-zurich",
+"label": "Zuerich (Europe/Zurich)",
+"lat": 47.36667,
+"lon": 8.55,
+"tz": "Europe/Zurich"
+},
+{
+"id": "z-indian-antananarivo",
+"label": "Antananarivo (Indian/Antananarivo)",
+"lat": -18.91368,
+"lon": 47.53613,
+"tz": "Indian/Antananarivo"
+},
+{
+"id": "z-indian-christmas",
+"label": "Flying Fish Cove (Indian/Christmas)",
+"lat": -10.42172,
+"lon": 105.67912,
+"tz": "Indian/Christmas"
+},
+{
+"id": "z-indian-cocos",
+"label": "West Island (Indian/Cocos)",
+"lat": -12.15681,
+"lon": 96.82251,
+"tz": "Indian/Cocos"
+},
+{
+"id": "z-indian-comoro",
+"label": "Moutsamoudou (Indian/Comoro)",
+"lat": -12.16672,
+"lon": 44.39944,
+"tz": "Indian/Comoro"
+},
+{
+"id": "z-indian-kerguelen",
+"label": "Port-aux-Francais (Indian/Kerguelen)",
+"lat": -49.34916,
+"lon": 70.21937,
+"tz": "Indian/Kerguelen"
+},
+{
+"id": "z-indian-mahe",
+"label": "Victoria (Indian/Mahe)",
+"lat": -4.62001,
+"lon": 55.45501,
+"tz": "Indian/Mahe"
+},
+{
+"id": "z-indian-maldives",
+"label": "Male (Indian/Maldives)",
+"lat": 4.17521,
+"lon": 73.50916,
+"tz": "Indian/Maldives"
+},
+{
+"id": "z-indian-mauritius",
+"label": "Vacoas (Indian/Mauritius)",
+"lat": -20.29806,
+"lon": 57.47833,
+"tz": "Indian/Mauritius"
+},
+{
+"id": "z-indian-mayotte",
+"label": "Mamoudzou (Indian/Mayotte)",
+"lat": -12.78234,
+"lon": 45.22878,
+"tz": "Indian/Mayotte"
+},
+{
+"id": "z-indian-reunion",
+"label": "Saint-Pierre (Indian/Reunion)",
+"lat": -21.3393,
+"lon": 55.47811,
+"tz": "Indian/Reunion"
+},
+{
+"id": "z-pacific-apia",
+"label": "Apia (Pacific/Apia)",
+"lat": -13.83333,
+"lon": -171.76666,
+"tz": "Pacific/Apia"
+},
+{
+"id": "z-pacific-auckland",
+"label": "Auckland (Pacific/Auckland)",
+"lat": -36.84853,
+"lon": 174.76349,
+"tz": "Pacific/Auckland"
+},
+{
+"id": "z-pacific-bougainville",
+"label": "Arawa (Pacific/Bougainville)",
+"lat": -6.22977,
+"lon": 155.56598,
+"tz": "Pacific/Bougainville"
+},
+{
+"id": "z-pacific-efate",
+"label": "Port-Vila (Pacific/Efate)",
+"lat": -17.73648,
+"lon": 168.31366,
+"tz": "Pacific/Efate"
+},
+{
+"id": "z-pacific-fiji",
+"label": "Suva (Pacific/Fiji)",
+"lat": -18.13683,
+"lon": 178.42531,
+"tz": "Pacific/Fiji"
+},
+{
+"id": "z-pacific-funafuti",
+"label": "Funafuti (Pacific/Funafuti)",
+"lat": -8.52425,
+"lon": 179.19417,
+"tz": "Pacific/Funafuti"
+},
+{
+"id": "z-pacific-guadalcanal",
+"label": "Panatina (Pacific/Guadalcanal)",
+"lat": -9.43215,
+"lon": 160.00607,
+"tz": "Pacific/Guadalcanal"
+},
+{
+"id": "z-pacific-guam",
+"label": "Tamuning-Tumon-Harmon Village (Pacific/Guam)",
+"lat": 13.48773,
+"lon": 144.78138,
+"tz": "Pacific/Guam"
+},
+{
+"id": "z-pacific-honolulu",
+"label": "Honolulu (Pacific/Honolulu)",
+"lat": 21.30694,
+"lon": -157.85833,
+"tz": "Pacific/Honolulu"
+},
+{
+"id": "z-pacific-majuro",
+"label": "Majuro (Pacific/Majuro)",
+"lat": 7.08971,
+"lon": 171.38027,
+"tz": "Pacific/Majuro"
+},
+{
+"id": "z-pacific-nauru",
+"label": "Yaren (Pacific/Nauru)",
+"lat": -0.55085,
+"lon": 166.9252,
+"tz": "Pacific/Nauru"
+},
+{
+"id": "z-pacific-niue",
+"label": "Alofi (Pacific/Niue)",
+"lat": -19.05294,
+"lon": -169.91957,
+"tz": "Pacific/Niue"
+},
+{
+"id": "z-pacific-norfolk",
+"label": "Kingston (Pacific/Norfolk)",
+"lat": -29.05459,
+"lon": 167.96628,
+"tz": "Pacific/Norfolk"
+},
+{
+"id": "z-pacific-noumea",
+"label": "Noumea (Pacific/Noumea)",
+"lat": -22.27407,
+"lon": 166.44884,
+"tz": "Pacific/Noumea"
+},
+{
+"id": "z-pacific-pago-pago",
+"label": "Pago Pago (Pacific/Pago_Pago)",
+"lat": -14.27806,
+"lon": -170.7025,
+"tz": "Pacific/Pago_Pago"
+},
+{
+"id": "z-pacific-palau",
+"label": "Ngerulmud (Pacific/Palau)",
+"lat": 7.50077,
+"lon": 134.6238,
+"tz": "Pacific/Palau"
+},
+{
+"id": "z-pacific-pitcairn",
+"label": "Adamstown (Pacific/Pitcairn)",
+"lat": -25.06597,
+"lon": -130.10147,
+"tz": "Pacific/Pitcairn"
+},
+{
+"id": "z-pacific-pohnpei",
+"label": "Palikir (Pacific/Pohnpei)",
+"lat": 6.92477,
+"lon": 158.16109,
+"tz": "Pacific/Pohnpei"
+},
+{
+"id": "z-pacific-port-moresby",
+"label": "Port Moresby (Pacific/Port_Moresby)",
+"lat": -9.47723,
+"lon": 147.15089,
+"tz": "Pacific/Port_Moresby"
+},
+{
+"id": "z-pacific-rarotonga",
+"label": "Avarua (Pacific/Rarotonga)",
+"lat": -21.2075,
+"lon": -159.77546,
+"tz": "Pacific/Rarotonga"
+},
+{
+"id": "z-pacific-saipan",
+"label": "Saipan (Pacific/Saipan)",
+"lat": 15.21233,
+"lon": 145.7545,
+"tz": "Pacific/Saipan"
+},
+{
+"id": "z-pacific-tahiti",
+"label": "Punaauia (Pacific/Tahiti)",
+"lat": -17.63333,
+"lon": -149.6,
+"tz": "Pacific/Tahiti"
+},
+{
+"id": "z-pacific-tarawa",
+"label": "Tarawa (Pacific/Tarawa)",
+"lat": 1.3278,
+"lon": 172.97696,
+"tz": "Pacific/Tarawa"
+},
+{
+"id": "z-pacific-tongatapu",
+"label": "Nuku'alofa (Pacific/Tongatapu)",
+"lat": -21.13683,
+"lon": -175.20114,
+"tz": "Pacific/Tongatapu"
+},
+{
+"id": "z-pacific-wallis",
+"label": "Mata-Utu (Pacific/Wallis)",
+"lat": -13.28163,
+"lon": -176.17453,
+"tz": "Pacific/Wallis"
+},
+{
+"id": "x-longyearbyen",
+"label": "Longyearbyen",
+"lat": 78.2232,
+"lon": 15.6267,
+"tz": "Arctic/Longyearbyen"
+},
+{
+"id": "x-tromso",
+"label": "Tromso",
+"lat": 69.6496,
+"lon": 18.956,
+"tz": "Europe/Oslo"
+},
+{
+"id": "x-utqiagvik",
+"label": "Utqiagvik",
+"lat": 71.2906,
+"lon": -156.7886,
+"tz": "America/Anchorage"
+},
+{
+"id": "x-murmansk",
+"label": "Murmansk",
+"lat": 68.9585,
+"lon": 33.0827,
+"tz": "Europe/Moscow"
+},
+{
+"id": "x-reykjavik",
+"label": "Reykjavik",
+"lat": 64.1466,
+"lon": -21.9426,
+"tz": "Atlantic/Reykjavik"
+},
+{
+"id": "x-fairbanks",
+"label": "Fairbanks",
+"lat": 64.8378,
+"lon": -147.7164,
+"tz": "America/Anchorage"
+},
+{
+"id": "x-ushuaia",
+"label": "Ushuaia",
+"lat": -54.8019,
+"lon": -68.303,
+"tz": "America/Argentina/Ushuaia"
+},
+{
+"id": "x-mcmurdo",
+"label": "McMurdo Station",
+"lat": -77.846,
+"lon": 166.676,
+"tz": "Antarctica/McMurdo"
+},
+{
+"id": "x-kiritimati",
+"label": "Kiritimati",
+"lat": 1.8721,
+"lon": -157.4278,
+"tz": "Pacific/Kiritimati"
+},
+{
+"id": "x-apia",
+"label": "Apia",
+"lat": -13.8333,
+"lon": -171.7667,
+"tz": "Pacific/Apia"
+},
+{
+"id": "x-pago-pago",
+"label": "Pago Pago",
+"lat": -14.2756,
+"lon": -170.702,
+"tz": "Pacific/Pago_Pago"
+},
+{
+"id": "x-chatham",
+"label": "Waitangi, Chatham Islands",
+"lat": -43.9535,
+"lon": -176.5597,
+"tz": "Pacific/Chatham"
+},
+{
+"id": "x-lord-howe",
+"label": "Lord Howe Island",
+"lat": -31.5553,
+"lon": 159.0821,
+"tz": "Australia/Lord_Howe"
+},
+{
+"id": "x-eucla",
+"label": "Eucla",
+"lat": -31.677,
+"lon": 128.883,
+"tz": "Australia/Eucla"
+},
+{
+"id": "x-marquesas",
+"label": "Taiohae, Marquesas",
+"lat": -8.9109,
+"lon": -140.0997,
+"tz": "Pacific/Marquesas"
+},
+{
+"id": "x-st-johns",
+"label": "St. John's",
+"lat": 47.5615,
+"lon": -52.7126,
+"tz": "America/St_Johns"
+},
+{
+"id": "x-tehran",
+"label": "Tehran",
+"lat": 35.6892,
+"lon": 51.389,
+"tz": "Asia/Tehran"
+},
+{
+"id": "x-kabul",
+"label": "Kabul",
+"lat": 34.5553,
+"lon": 69.2075,
+"tz": "Asia/Kabul"
+},
+{
+"id": "x-yangon",
+"label": "Yangon",
+"lat": 16.8409,
+"lon": 96.1735,
+"tz": "Asia/Yangon"
+},
+{
+"id": "x-adelaide",
+"label": "Adelaide",
+"lat": -34.9285,
+"lon": 138.6007,
+"tz": "Australia/Adelaide"
+},
+{
+"id": "x-honolulu",
+"label": "Honolulu",
+"lat": 21.3069,
+"lon": -157.8583,
+"tz": "Pacific/Honolulu"
+},
+{
+"id": "x-suva",
+"label": "Suva",
+"lat": -18.1248,
+"lon": 178.4501,
+"tz": "Pacific/Fiji"
+},
+{
+"id": "x-tarawa",
+"label": "Tarawa",
+"lat": 1.4518,
+"lon": 173.0333,
+"tz": "Pacific/Tarawa"
+},
+{
+"id": "x-mayapur",
+"label": "Mayapur",
+"lat": 23.4231,
+"lon": 88.3884,
+"tz": "Asia/Kolkata"
+}
+]
