@@ -1,0 +1,139 @@
+# XcodeGen spec for the native iOS app (https://github.com/yonaskolb/XcodeGen).
+#   brew install xcodegen && cd ios-native && xcodegen generate && open EkadashiCalendar.xcodeproj
+# Requires Xcode 26 (iOS 26 SDK) for Liquid Glass; the app runs on iOS 17+
+# and falls back to system materials before iOS 26.
+name: EkadashiCalendar
+options:
+  bundleIdPrefix: com.applausestudios
+  deploymentTarget:
+    iOS: "17.0"
+  developmentLanguage: en
+  createIntermediateGroups: true
+configFiles:
+  Debug: Config/App.xcconfig
+  Release: Config/App.xcconfig
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "2.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+    TARGETED_DEVICE_FAMILY: "1"
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    LOCALIZATION_PREFERS_STRING_CATALOGS: YES
+packages:
+  EkadashiCore:
+    path: EkadashiCore
+  GoogleSignIn:
+    url: https://github.com/google/GoogleSignIn-iOS
+    from: 8.0.0
+targets:
+  EkadashiCalendar:
+    type: application
+    platform: iOS
+    sources:
+      - path: EkadashiCalendar
+      - path: Shared
+    dependencies:
+      - package: EkadashiCore
+      - package: GoogleSignIn
+        product: GoogleSignIn
+      - target: EkadashiWidgets
+    info:
+      path: EkadashiCalendar/Info.plist
+      properties:
+        CFBundleDisplayName: Ekadashi Calendar
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        CFBundleLocalizations: [en, ta, hi, te]
+        CFBundleURLTypes:
+          - CFBundleURLName: com.applausestudios.ekadashi-calendar
+            CFBundleURLSchemes: [ekadashi]
+          - CFBundleURLName: google-sign-in
+            CFBundleURLSchemes: [$(GOOGLE_REVERSED_CLIENT_ID)]
+        GIDClientID: $(GOOGLE_IOS_CLIENT_ID)
+        EkadashiFirebaseApiKey: $(FIREBASE_API_KEY)
+        EkadashiFirebaseProjectId: $(FIREBASE_PROJECT_ID)
+        EkadashiAppStoreId: $(APP_STORE_ID)
+        EkadashiAppGroup: $(APP_GROUP)
+        NSLocationWhenInUseUsageDescription: Your location chooses the Ekadashi schedule and the city shown for your area.
+        UIBackgroundModes: [fetch]
+        BGTaskSchedulerPermittedIdentifiers: [com.applausestudios.ekadashi-calendar.refresh]
+        UILaunchScreen:
+          UIColorName: LaunchBackground
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        UIApplicationSupportsIndirectInputEvents: true
+        ITSAppUsesNonExemptEncryption: false
+    entitlements:
+      path: EkadashiCalendar/EkadashiCalendar.entitlements
+      properties:
+        com.apple.security.application-groups: [$(APP_GROUP)]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.applausestudios.ekadashi-calendar
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+  EkadashiWidgets:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: EkadashiWidgets
+      - path: Shared
+    dependencies:
+      - package: EkadashiCore
+      - sdk: WidgetKit.framework
+      - sdk: SwiftUI.framework
+    info:
+      path: EkadashiWidgets/Info.plist
+      properties:
+        CFBundleDisplayName: Ekadashi Calendar
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        EkadashiAppGroup: $(APP_GROUP)
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    entitlements:
+      path: EkadashiWidgets/EkadashiWidgets.entitlements
+      properties:
+        com.apple.security.application-groups: [$(APP_GROUP)]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.applausestudios.ekadashi-calendar.widgets
+  EkadashiCalendarTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: EkadashiCalendarTests
+    dependencies:
+      - target: EkadashiCalendar
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+  EkadashiCalendarUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: EkadashiCalendarUITests
+    dependencies:
+      - target: EkadashiCalendar
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: EkadashiCalendar
+schemes:
+  EkadashiCalendar:
+    build:
+      targets:
+        EkadashiCalendar: all
+        EkadashiWidgets: all
+    run:
+      config: Debug
+      storeKitConfiguration: EkadashiCalendar/Resources/Products.storekit
+    test:
+      config: Debug
+      gatherCoverageData: true
+      targets:
+        - EkadashiCalendarTests
+        - EkadashiCalendarUITests
+        - package: EkadashiCore/EkadashiCoreTests
+    archive:
+      config: Release

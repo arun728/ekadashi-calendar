@@ -283,4 +283,51 @@ final class ResourceSyncTests: XCTestCase {
         }
         XCTAssertEqual(violations, [])
     }
+
+    /// Every translation key the iOS app and widgets use exists in English,
+    /// Tamil, Hindi and Telugu (Android ARB strings or the iOS override table).
+    func testEveryIosStringKeyIsTranslatedInAllLanguages() throws {
+        let patterns = [
+            #"\bt\("([^"\\]+)""#, #"show\("([^"\\]+)""#, #"reason: "([^"\\]+)""#, #"translate\("([^"\\]+)""#,
+            #"statusCard\("([^"\\]+)""#, #"statusCard\("[^"]+", "([^"\\]+)""#, #"\bsection\("([^"\\]+)""#,
+            #"\blabel\("([^"\\]+)"\)"#, #"filterChip\([^,]+, "([^"\\]+)"\)"#, #"\bchip\([^,]+, "([^"\\]+)""#,
+            #"countCard\("([^"\\]+)""#, #"iconButton\("[^"]+", "([^"\\]+)""#, #"reminder\("([^"\\]+)""#,
+            #"feature\("[^"]+", "([^"\\]+)"\)"#, #"caption\("([^"\\]+)"\)"#, #"\blink\("([^"\\]+)"\)"#,
+            #"statusChip\([^,]+, "([^"\\]+)""#, #""(premium_[a-z_]+)""#,
+        ].map { try! NSRegularExpression(pattern: $0) }
+        var keys: [String: String] = [:]
+        for folder in ["ios-native/EkadashiCalendar", "ios-native/EkadashiWidgets", "ios-native/Shared"] {
+            guard let files = FileManager.default.enumerator(at: Repo.url(folder), includingPropertiesForKeys: nil) else { continue }
+            for case let url as URL in files where url.pathExtension == "swift" && !url.lastPathComponent.hasPrefix("Panchang") {
+                for line in try String(contentsOf: url, encoding: .utf8).components(separatedBy: "\n")
+                where !line.contains("accessibilityIdentifier") {
+                    for pattern in patterns {
+                        for match in pattern.matches(in: line, range: NSRange(line.startIndex..., in: line)) {
+                            keys[(line as NSString).substring(with: match.range(at: 1))] = url.lastPathComponent
+                        }
+                    }
+                }
+            }
+        }
+        // Keys built at runtime.
+        for plan in PremiumPlanID.allCases {
+            keys["premium_\(plan.rawValue)"] = "PremiumView.swift"
+            if plan != .lifetime { keys["premium_\(plan.rawValue)_terms"] = "PremiumView.swift" }
+        }
+        for type in SearchContentType.allCases { keys[type.localizationKey] = "Search" }
+        for method in FastingMethod.allCases { keys[method.localizationKey] = "VratModels" }
+        for status in ObservanceStatus.allCases where status != .unrecorded { keys[status.rawValue] = "VratStatusStyle" }
+        for achievement in AchievementEvaluator.all {
+            keys[achievement.titleKey] = "Achievements"
+            keys[achievement.descriptionKey] = "Achievements"
+        }
+        for key in WidgetSnapshot.stringKeys.values { keys[key] = "WidgetSnapshot" }
+        XCTAssertGreaterThan(keys.count, 150)
+        var missing: [String] = []
+        for language in Localizer.languages {
+            let known = Set(Localizer.shared.keys(language: language)).union(Localizer.shared.overrideKeys(language: language))
+            for (key, file) in keys where !known.contains(key) { missing.append("\(language) \(key) (\(file))") }
+        }
+        XCTAssertEqual(missing.sorted(), [])
+    }
 }
