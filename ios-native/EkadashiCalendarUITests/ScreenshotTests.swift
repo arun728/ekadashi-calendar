@@ -9,8 +9,9 @@ final class ScreenshotTests: XCTestCase {
     override func setUp() {
         continueAfterFailure = false
         app = XCUIApplication()
-        // Skip the first-launch permission prompts (a Bool in the argument domain).
-        app.launchArguments += ["-has_launched", "<true/>"]
+        // A clean in-memory store, already launched, in English: no
+        // permission prompts and no state left by the unit tests.
+        app.launchArguments += ["-ui-testing"]
         app.launch()
     }
 
@@ -29,7 +30,8 @@ final class ScreenshotTests: XCTestCase {
 
     func testTabsSearchAndPaywall() {
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 20))
-        XCTAssertTrue(app.otherElements["home_options_tube"].exists || app.buttons["language_menu"].exists)
+        XCTAssertTrue(app.descendants(matching: .any)["home_options_tube"].exists)
+        XCTAssertTrue(app.descendants(matching: .any)["language_menu"].exists)
         snap("01-today")
 
         app.buttons["view_details"].firstMatch.tap()

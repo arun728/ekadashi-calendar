@@ -62,7 +62,10 @@ final class AppModel {
 
     init() {
         let group = Bundle.main.object(forInfoDictionaryKey: "EkadashiAppGroup") as? String ?? ""
-        let store: KeyValueStore = UserDefaultsKeyValueStore(defaults: UserDefaults(suiteName: group) ?? .standard)
+        // UI tests start from a clean, already-launched English state.
+        let store: KeyValueStore = ProcessInfo.processInfo.arguments.contains("-ui-testing")
+            ? InMemoryKeyValueStore(["has_launched": true, "language_code": "en"])
+            : UserDefaultsKeyValueStore(defaults: UserDefaults(suiteName: group) ?? .standard)
         let premium = StoreKitPremiumService()
         let snapshot = premium.snapshot
         self.store = store

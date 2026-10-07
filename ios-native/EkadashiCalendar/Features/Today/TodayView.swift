@@ -71,6 +71,7 @@ struct HomeHeader: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
         .glassCapsule(interactive: false)
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("home_options_tube")
     }
 

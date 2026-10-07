@@ -8,11 +8,17 @@ import EkadashiCore
 final class AppModelTests: XCTestCase {
     func testBundledScheduleLoadsInEveryLanguage() {
         let model = AppModel()
-        for language in Localizer.languages {
+        let original = model.language
+        model.reload()
+        XCTAssertFalse(model.ekadashis.isEmpty, original)
+        for language in Localizer.languages where language != original {
             model.setLanguage(language)
+            XCTAssertEqual(model.language, language)
             XCTAssertFalse(model.ekadashis.isEmpty, language)
             XCTAssertNil(model.loadError)
         }
+        // The tests share the app's settings; leave the language as it was.
+        model.setLanguage(original)
     }
 
     func testDeepLinksSelectTabsAndSearch() {
