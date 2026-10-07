@@ -137,12 +137,10 @@ void main() {
             )
             .first;
         tester.state<ScrollableState>(scrollable).position.jumpTo(0);
-        for (
-          var i = 0;
-          i < 30 &&
-              find.text(lang.translate('premium_benefits')).evaluate().isEmpty;
-          i++
-        ) {
+        // The compact paywall lists the three premium features for a free
+        // user; closing is the X (no "continue free" button).
+        final feature = find.text(lang.translate('premium_feature_calendar'));
+        for (var i = 0; i < 30 && feature.evaluate().isEmpty; i++) {
           await tester.pump(const Duration(seconds: 1));
         }
         await capturePremiumScreenshot(
@@ -150,18 +148,18 @@ void main() {
           binding,
           'premium_fixture_${locale}_before_validation',
         );
-        expect(find.text(lang.translate('premium_benefits')), findsOneWidget);
+        expect(feature, findsOneWidget);
         expect(find.textContaining('₹99'), findsWidgets);
+        expect(
+          find.text(lang.translate('premium_continue_free')),
+          findsNothing,
+        );
         await capturePremiumScreenshot(
           tester,
           binding,
           'premium_fixture_${locale}_plans',
         );
-        await tester.scrollUntilVisible(
-          find.text(lang.translate('premium_continue_free')),
-          200,
-          scrollable: find.byType(Scrollable).first,
-        );
+        await tester.ensureVisible(find.text(lang.translate('premium_manage')));
         await tester.pump();
         await capturePremiumScreenshot(
           tester,
