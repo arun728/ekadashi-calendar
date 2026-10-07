@@ -104,7 +104,7 @@ struct HomeHeader: View {
             .buttonStyle(.plain)
         default:
             Button {
-                Task { await model.handleLocation() }
+                Task { await model.requestLocationAgain() }
             } label: {
                 HStack(spacing: 6) {
                     Image(systemName: "location.fill").foregroundStyle(Theme.teal)

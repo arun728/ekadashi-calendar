@@ -113,8 +113,12 @@ final class AppModel {
 
     // MARK: Launch
 
+    /// True while the app only hosts the unit tests: no launch flow or
+    /// permission prompts then.
+    static var isHostingUnitTests: Bool { ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil }
+
     func start() async {
-        guard !started else { return }
+        guard !started, !Self.isHostingUnitTests else { return }
         started = true
         reload(scrollToNext: true)
         await premium.start()
@@ -146,9 +150,14 @@ final class AppModel {
         if let fix = await location.currentFix(store: store) {
             setTimezone(fix.timezone)
             locationState = .located(fix.city)
-        } else if !location.hasPermission {
+        } else if location.isDenied {
             setTimezone(AppTimezone.matching(deviceIdentifier: TimeZone.current.identifier))
             locationState = .denied
+        } else if !location.hasPermission {
+            // Not asked yet (or restricted to ask later): use the device
+            // time zone; tapping the location asks for permission.
+            setTimezone(AppTimezone.matching(deviceIdentifier: TimeZone.current.identifier))
+            locationState = .unknown
         } else if let cached = location.cachedFix(store: store) {
             setTimezone(cached.timezone)
             locationState = .located(cached.city)
