@@ -30,6 +30,9 @@ private final class GoogleSignInClient {
     static let calendarScope = "https://www.googleapis.com/auth/calendar.readonly"
     private let session = URLSession.shared
 
+    /// Created by the nonisolated gateway; holds no main-actor state yet.
+    nonisolated init() {}
+
     private var user: GIDGoogleUser? { GIDSignIn.sharedInstance.currentUser }
 
     private func restore() async -> GIDGoogleUser? {
