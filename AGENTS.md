@@ -154,8 +154,10 @@ features. Keep `test/unit/panchang_accuracy_test.dart` green and re-run
 rule change. Smarta Ekadashi dates and Parana follow the published Drik
 rules; Gaudiya rules follow the GCAL program and must keep matching the
 ISKCON Bangalore published dates; published Ekadashi data in
-`assets/calendar` stays authoritative for the Vrat UI. Do not merge to dev or main without Arun's approval and do not
-run CI without explicit permission.
+`assets/calendar` stays authoritative for the Vrat UI. Do not merge to dev
+or main without Arun's approval. On 7 October 2026 Arun asked for separate
+PRs to `dev` for this branch and for `feature/ios-native`, with CI run on
+both and each PR marked ready for review once all its checks pass.
 
 ## Native iOS app (7 October 2026)
 
@@ -168,4 +170,5 @@ its tests compare the bundled data with `assets/` and `lib/l10n/`, and compare
 the Panchang engine field by field with a Dart-exported fixture. Premium
 follows the Play-only rules adapted to StoreKit 2 (verified entitlements only;
 no stored flags, pending purchases or backend). Panchang stays English-only.
-Do not merge it to `dev` or `main`.
+CI's ios-tests job builds and tests it on macOS. Do not merge it to `dev` or
+`main` without Arun's approval.
