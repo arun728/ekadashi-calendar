@@ -102,19 +102,25 @@ final class StoreKitPremiumService {
     }
 
     private func readEntitlements() async {
-        var history = 0
-        for await _ in Transaction.all { history += 1 }
-        logger.info("Premium refresh: \(history, privacy: .public) transactions in history")
+        // On iOS 27 (Xcode StoreKit testing) `Transaction.currentEntitlements`
+        // came back empty while the history held a verified, unexpired
+        // monthly purchase. Ask for the latest transaction of each product
+        // too; both are signed by the App Store and verified the same way.
+        var results: [VerificationResult<Transaction>] = []
+        for await result in Transaction.currentEntitlements { results.append(result) }
+        for productId in PremiumProduct.all {
+            if let result = await Transaction.latest(for: productId) { results.append(result) }
+        }
         var owned: [OwnedProduct] = []
-        for await result in Transaction.currentEntitlements {
-            let raw = result.unsafePayloadValue
-            logger.info("Premium entitlement: \(raw.productID, privacy: .public) verified=\(String(describing: { if case .verified = result { return true } else { return false } }()), privacy: .public) expires=\(String(describing: raw.expirationDate), privacy: .public) revoked=\(String(describing: raw.revocationDate), privacy: .public) env=\(String(describing: raw.environment), privacy: .public)")
-            if case .unverified(let transaction, let failure) = result {
-                logger.error("Premium refresh: ignored unverified \(transaction.productID, privacy: .public): \(String(describing: failure), privacy: .public)")
+        for result in results {
+            guard case .verified(let transaction) = result else {
+                if case .unverified(let transaction, let failure) = result {
+                    logger.error("Premium refresh: ignored unverified \(transaction.productID, privacy: .public): \(String(describing: failure), privacy: .public)")
+                }
+                continue
             }
-            guard case .verified(let transaction) = result, transaction.revocationDate == nil,
-                  PremiumPlanID(productId: transaction.productID) != nil else { continue }
-            if let expiry = transaction.expirationDate, expiry < Date() { continue }
+            guard Self.grantsAccess(transaction, now: Date()),
+                  !owned.contains(where: { $0.productId == transaction.productID }) else { continue }
             var renews: Bool?
             if transaction.productType == .autoRenewable {
                 renews = await willAutoRenew(transaction.productID)
@@ -132,6 +138,16 @@ final class StoreKitPremiumService {
         snapshot.set(state)
         pending = false
         logger.info("Premium refresh: owned=\(owned.map(\.productId), privacy: .public) premium=\(self.state.isPremium, privacy: .public) products=\(self.products.count, privacy: .public)")
+    }
+
+    /// A verified transaction unlocks Premium while it is one of ours, not
+    /// refunded or revoked, not replaced by an upgrade, and (for a
+    /// subscription) not past its expiry.
+    private static func grantsAccess(_ transaction: Transaction, now: Date) -> Bool {
+        guard PremiumPlanID(productId: transaction.productID) != nil,
+              transaction.revocationDate == nil, !transaction.isUpgraded else { return false }
+        if let expiry = transaction.expirationDate, expiry < now { return false }
+        return true
     }
 
     private func willAutoRenew(_ productId: String) async -> Bool? {
