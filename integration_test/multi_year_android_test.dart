@@ -143,7 +143,12 @@ void main() {
         contains('America/New_York'),
       );
       await binding.takeScreenshot('v2_panchang_worldwide');
-      await tester.tap(find.widgetWithText(Tab, 'Guide'));
+      // Six Panchang subtabs scroll horizontally; Guide is off-screen on
+      // narrow phones until scrolled into view.
+      final guide = find.widgetWithText(Tab, 'Guide');
+      await tester.ensureVisible(guide);
+      await frames(tester);
+      await tester.tap(guide);
       await frames(tester);
       expect(find.text('Smarta and Vaishnava'), findsOneWidget);
       await binding.takeScreenshot('v2_panchang_guide');
