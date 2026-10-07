@@ -3,10 +3,30 @@ import UIKit
 import GoogleSignIn
 import EkadashiCore
 
+/// The sync coordinator calls its gateway from a background task, and a
+/// `@MainActor` class satisfying the nonisolated `GoogleAuthGateway` does not
+/// hop to the main thread when called through the protocol (Swift 5 mode), so
+/// Google's sign-in UI crashed with "Call must be made on main thread". Each
+/// requirement here calls the main-actor client directly, which does hop.
+final class GoogleSignInGateway: GoogleAuthGateway {
+    private let client = GoogleSignInClient()
+
+    func accountId() async -> String? { await client.accountId() }
+    func isSignedIn() async -> Bool { await client.isSignedIn() }
+    func signIn() async throws -> Bool { try await client.signIn() }
+    func signOut() async { await client.signOut() }
+    func idToken() async throws -> String? { try await client.idToken() }
+    func accountEmail() async -> String? { await client.accountEmail() }
+    func listCalendars() async throws -> [GoogleCalendarInfo] { try await client.listCalendars() }
+    func fetchEvents(from: Date, to: Date, calendarIds: [String]) async throws -> [GoogleEvent] {
+        try await client.fetchEvents(from: from, to: to, calendarIds: calendarIds)
+    }
+}
+
 /// Google sign-in (read-only Calendar scope) and the Calendar REST API.
 /// Sign-in is only for Calendar import; Premium never depends on it.
 @MainActor
-final class GoogleSignInGateway: GoogleAuthGateway {
+private final class GoogleSignInClient {
     static let calendarScope = "https://www.googleapis.com/auth/calendar.readonly"
     private let session = URLSession.shared
 

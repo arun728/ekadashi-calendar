@@ -1,7 +1,10 @@
 import Foundation
 import StoreKit
 import Observation
+import os
 import EkadashiCore
+
+private let logger = Logger(subsystem: "com.applausestudios.ekadashi-calendar", category: "premium")
 
 enum RestoreResult { case restored, none, unavailable }
 
@@ -34,6 +37,8 @@ final class StoreKitPremiumService {
     @ObservationIgnored let snapshot = PremiumSnapshot()
     @ObservationIgnored private var updates: Task<Void, Never>?
     @ObservationIgnored private var recheck: Task<Void, Never>?
+    @ObservationIgnored private var refreshAgain = false
+    @ObservationIgnored private var inFlight: Task<Void, Never>?
     static let recheckInterval: UInt64 = 5 * 60 * 1_000_000_000
 
     var isPremium: Bool { state.isPremium }
@@ -73,9 +78,30 @@ final class StoreKitPremiumService {
     /// Re-reads owned purchases. A lapse is only reported once the App Store
     /// answers that the subscription ended; being offline never counts.
     func refresh() async {
-        guard !busy else { return }
-        busy = true
-        defer { busy = false }
+        // A refresh requested while one runs (a purchase finishing while
+        // Transaction.updates or the launch check is reading) used to be
+        // dropped, so a new purchase could stay locked until the next check.
+        // Now it waits for that read and one more, so the caller sees it.
+        if let running = inFlight {
+            refreshAgain = true
+            await running.value
+            return
+        }
+        let task = Task { [weak self] in
+            guard let self else { return }
+            self.busy = true
+            repeat {
+                self.refreshAgain = false
+                await self.readEntitlements()
+            } while self.refreshAgain
+            self.busy = false
+            self.inFlight = nil
+        }
+        inFlight = task
+        await task.value
+    }
+
+    private func readEntitlements() async {
         var owned: [OwnedProduct] = []
         for await result in Transaction.currentEntitlements {
             guard case .verified(let transaction) = result, transaction.revocationDate == nil,
@@ -97,6 +123,7 @@ final class StoreKitPremiumService {
         }
         snapshot.set(state)
         pending = false
+        logger.info("Premium refresh: owned=\(owned.map(\.productId), privacy: .public) premium=\(self.state.isPremium, privacy: .public) products=\(self.products.count, privacy: .public)")
     }
 
     private func willAutoRenew(_ productId: String) async -> Bool? {

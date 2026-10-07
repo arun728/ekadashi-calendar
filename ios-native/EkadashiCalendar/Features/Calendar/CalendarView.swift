@@ -90,7 +90,7 @@ struct CalendarView: View {
                             Task { await sync() }
                         }
                     }
-                    iconButton("link.badge.minus", "disconnect_google", id: "disconnect_google", disabled: syncing) {
+                    iconButton("person.crop.circle.badge.minus", "disconnect_google", id: "disconnect_google", disabled: syncing) {
                         Task { await disconnect() }
                     }
                 }
