@@ -1,6 +1,6 @@
 # Privacy Policy for Ekadashi Calendar
 
-**Last Updated:** January 30, 2026  
+**Last Updated:** October 5, 2026  
 **Developer:** Arun Kumar MP  
 **Contact:** arunmp.728@gmail.com
 
@@ -30,6 +30,22 @@ Ekadashi Calendar ("the App") is committed to protecting your privacy. This app 
 - Notification preferences (which types of reminders you want)
 - Stored locally using Android WorkManager
 
+### Google Calendar Import (Optional)
+- **What we access:** If you choose "Import from Google Calendar" and sign in with Google, the app requests read-only access (`https://www.googleapis.com/auth/calendar.readonly`) to list your calendars and read the events in the calendars you select, for the date range you import.
+- **Why:** Only to show your own Google Calendar events alongside Ekadashi dates inside the app.
+- **Storage:** Imported events are stored only on your device. They are never sent to the developer or any other server, and the app never creates, edits or deletes events in your Google Calendar.
+- **Free sync record:** to allow one free sync per Google account, the app stores a small record (a pseudonymous account ID, the month of the free sync and when it was made) in Google Cloud Firestore, signed in with your Google sign-in. It contains no calendar data, email address or event details and is used only to prevent repeat free syncs.
+- **Premium-synced events:** when a subscription ends, events imported with Premium are removed from the app; the free month's events stay.
+- **Removal:** "Disconnect Google" in the Calendar screen signs out and deletes imported events from the app. You can also revoke access at https://myaccount.google.com/permissions.
+- **Limited Use:** Ekadashi Calendar's use and transfer of information received from Google APIs adheres to the [Google API Services User Data Policy](https://developers.google.com/terms/api-services-user-data-policy), including the Limited Use requirements. Google user data is not used for advertising, is not sold, and is not read by humans.
+
+### Vrat (Fasting) Records
+- Observances, notes, streaks and achievements you record stay on your device only.
+
+### Purchases (Ekadashi Premium)
+- Subscriptions and the lifetime purchase are processed entirely by Google Play. The developer never receives your payment details.
+- The app asks Google Play on your device which Ekadashi Premium products you own to unlock premium features. No purchase data is sent to the developer's servers.
+
 ## Data We Do NOT Collect
 - ❌ No user accounts or personal information
 - ❌ No email addresses or phone numbers
@@ -40,7 +56,7 @@ Ekadashi Calendar ("the App") is committed to protecting your privacy. This app 
 
 ## Data Storage and Security
 - **100% Local Storage:** All data is stored on your device only
-- **No Cloud Sync:** We do not sync data to any servers
+- **No Cloud Sync:** We do not sync your data to any servers (the only exception is the free-sync record above)
 - **No External Servers:** The app works completely offline
 - **Encryption:** Data is stored in Android's secure SharedPreferences
 - **Data Deletion:** Uninstalling the app deletes all stored data

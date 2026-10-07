@@ -52,9 +52,10 @@ class _AddEditEntrySheetState extends State<AddEditEntrySheet> {
       _titleCtrl.text = e.title;
       _notesCtrl.text = e.notes ?? '';
       _allDay = e.isAllDay;
-      _start = TimeOfDay(hour: e.startAt.hour, minute: e.startAt.minute);
-      _end = TimeOfDay(hour: e.endAt.hour, minute: e.endAt.minute);
-      _day = DateTime(e.startAt.year, e.startAt.month, e.startAt.day);
+      final start = e.localStart, end = e.localEnd;
+      _start = TimeOfDay(hour: start.hour, minute: start.minute);
+      _end = TimeOfDay(hour: end.hour, minute: end.minute);
+      _day = DateTime(start.year, start.month, start.day);
     } else {
       _start = const TimeOfDay(hour: 9, minute: 0);
       _end = const TimeOfDay(hour: 10, minute: 0);

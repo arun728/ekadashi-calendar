@@ -1,8 +1,6 @@
 import 'dart:io';
 import 'services/premium_service.dart';
-import 'services/premium_http_backend.dart';
 import 'services/play_billing_service.dart';
-import 'services/reward_wallet_service.dart';
 import 'widgets/glass_tube.dart';
 import 'package:flutter/foundation.dart';
 import 'widgets/glass_navigation_bar.dart';
@@ -11,6 +9,7 @@ import 'services/native_widget_service.dart';
 import 'services/widget_sync_manager.dart';
 import 'services/search_index_manager.dart';
 import 'screens/global_search_screen.dart';
+import 'screens/panchang_screen.dart';
 import 'l10n/generated/app_localizations.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
@@ -63,11 +62,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ThemeService()..loadTheme()),
         ChangeNotifierProvider(create: (_) => LanguageService()),
         ChangeNotifierProvider(
-          create: (_) => PremiumService(backend: PremiumHttpBackend()),
-        ),
-        ChangeNotifierProvider(
-          create: (ctx) =>
-              RewardWalletService(ctx.read<PremiumService>().backend),
+          create: (_) => PremiumService(entitlements: PlayStoreEntitlements()),
         ),
         ChangeNotifierProvider(
           lazy: false,
@@ -134,7 +129,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   final NativeLocationService _locationService = NativeLocationService();
   String _currentLangCode = '';
   PremiumService? _premium;
-  VratTrackerService? _rewardTracker;
+  VratTrackerService? _achievementTracker;
   bool _lastPremium = false;
   void _refreshPremiumFeatures() {
     if (!mounted) return;
@@ -142,8 +137,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     if (premium == null) return;
     if (premium.isPremium != _lastPremium) {
       _lastPremium = premium.isPremium;
-      if (_rewardTracker?.isInitialized == true && _ekadashiList.isNotEmpty) {
-        _rewardTracker!
+      if (_achievementTracker?.isInitialized == true &&
+          _ekadashiList.isNotEmpty) {
+        _achievementTracker!
             .refreshAchievements(_ekadashiList)
             .then((unlocked) async {
               for (final achievement in unlocked) {
@@ -154,19 +150,6 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             .catchError((_) {});
       }
     }
-    _syncRewardHistory();
-  }
-
-  void _syncRewardHistory() {
-    if (!mounted ||
-        _premium?.accountId == null ||
-        _rewardTracker?.isInitialized != true) {
-      return;
-    }
-    context.read<RewardWalletService?>()?.sync(_premium!.accountId!, {
-      for (final r in _rewardTracker!.getAllRecords())
-        if (r.occurrenceUid != null) r.occurrenceUid!: r.status.key,
-    }, _currentTimezone);
   }
 
   List<EkadashiDate> _ekadashiList = [];
@@ -179,6 +162,13 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   int _currentPage = 0;
   bool _isResuming = false;
   bool _isPermanentDenial = false;
+  bool _searchOpen = false;
+
+  /// Re-checks Google Play while the app stays open, so an ended
+  /// subscription is noticed without leaving the app.
+  Timer? _premiumRecheck;
+  static const premiumRecheckInterval = Duration(minutes: 5);
+  bool _premiumSessionStarted = false;
 
   final PageController _pageController = PageController(viewportFraction: 1.0);
   final GlobalKey<CalendarScreenState> _calendarKey = GlobalKey();
@@ -202,8 +192,15 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     super.didChangeDependencies();
     _premium ??= context.read<PremiumService?>()
       ?..addListener(_refreshPremiumFeatures);
-    _rewardTracker ??= context.read<VratTrackerService?>()
-      ?..addListener(_syncRewardHistory);
+    if (!_premiumSessionStarted && _premium != null) {
+      _premiumSessionStarted = true;
+      // Premium is read from Google Play's owned purchases (Android only).
+      if (Platform.isAndroid) {
+        Future.microtask(() => _premium?.refresh());
+        _startPremiumRecheck();
+      }
+    }
+    _achievementTracker ??= context.read<VratTrackerService?>();
     final langService = Provider.of<LanguageService>(context);
     if (_currentLangCode != langService.currentLocale.languageCode) {
       _currentLangCode = langService.currentLocale.languageCode;
@@ -216,15 +213,28 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
     NativeWidgetService().clearDeepLinkListener();
     _premium?.removeListener(_refreshPremiumFeatures);
-    _rewardTracker?.removeListener(_syncRewardHistory);
+    _premiumRecheck?.cancel();
     _pageController.dispose();
     super.dispose();
   }
 
+  void _startPremiumRecheck() {
+    _premiumRecheck?.cancel();
+    _premiumRecheck = Timer.periodic(
+      premiumRecheckInterval,
+      (_) => _premium?.refresh(),
+    );
+  }
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) _premiumRecheck?.cancel();
     if (state == AppLifecycleState.resumed) {
-      if (_premium?.connected == true) _premium!.connect(interactive: false);
+      // Pick up renewals, cancellations and refunds made in Google Play.
+      if (Platform.isAndroid) {
+        _premium?.refresh();
+        _startPremiumRecheck();
+      }
       // Wait for the first frame to render (ensure engine is attached)
       WidgetsBinding.instance.addPostFrameCallback((_) {
         // Add a small safety buffer for low-end devices/heavy restoration
@@ -787,16 +797,25 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       _pendingDeepLink = uri;
       return;
     }
+    if (uri.host == 'search') {
+      _openSearch();
+      return;
+    }
     final tab = {
       'dashboard': 0,
       'today': 0,
       'parana': 0,
       'calendar': 1,
       'vrat': 2,
-      'search': 3,
+      'panchang': 3,
+      // PR #12's More tab now lives inside Panchang.
+      'more': 3,
       'settings': 4,
     }[uri.host];
     if (tab == null) return;
+    if (_searchOpen && Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    }
     setState(() => _currentIndex = tab);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -806,6 +825,23 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         if (date != null) _calendarKey.currentState?.selectDate(date);
       }
     });
+  }
+
+  Future<void> _openSearch() async {
+    if (!mounted || _searchOpen) return;
+    _searchOpen = true;
+    try {
+      await Navigator.of(context).push<void>(
+        MaterialPageRoute<void>(
+          builder: (_) => GlobalSearchScreen(
+            ekadashiList: _ekadashiList,
+            currentTimezone: _currentTimezone,
+          ),
+        ),
+      );
+    } finally {
+      _searchOpen = false;
+    }
   }
 
   Future<void> _syncSearchAndWidgets() async {
@@ -939,9 +975,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         activeIcon: const Icon(Icons.spa),
         label: lang.translate('vrat'),
       ),
-      BottomNavigationBarItem(
-        icon: const Icon(Icons.search),
-        label: lang.translate('search'),
+      const BottomNavigationBarItem(
+        icon: Icon(Icons.auto_awesome_outlined),
+        activeIcon: Icon(Icons.auto_awesome),
+        label: 'Panchang',
       ),
       BottomNavigationBarItem(
         icon: const Icon(Icons.settings),
@@ -950,9 +987,19 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     ];
     return Scaffold(
       extendBody: glass,
-      appBar: _currentIndex == 3
-          ? null
-          : AppBar(title: Text(lang.translate('app_title')), centerTitle: true),
+      appBar: AppBar(
+        title: Text(lang.translate('app_title')),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            key: const Key('open_global_search'),
+            tooltip: lang.translate('search'),
+            icon: const Icon(Icons.search),
+            onPressed: _openSearch,
+          ),
+          const SizedBox(width: 4),
+        ],
+      ),
       body: _buildBody(lang, tealColor),
       bottomNavigationBar: glass
           ? (keyboardOpen
@@ -1025,15 +1072,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             currentTimezone: _currentTimezone,
           ),
         ),
-        SafeArea(
-          top: false,
-          child: GlobalSearchScreen(
-            ekadashiList: _ekadashiList,
-            currentTimezone: _currentTimezone,
-            showBackButton: false,
-            onBackToHome: () => _onBottomNavTapped(0),
-          ),
-        ),
+        const PanchangScreen(),
         SettingsScreen(currentTimezone: _currentTimezone),
       ],
     );

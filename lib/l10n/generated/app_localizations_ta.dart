@@ -566,6 +566,11 @@ class AppLocalizationsTa extends AppLocalizations {
   }
 
   @override
+  String imported_google_range(String value0, String value1, String value2) {
+    return '$value0 Google நிகழ்வுகள் இறக்குமதி செய்யப்பட்டன ($value1 – $value2)';
+  }
+
+  @override
   String get google_sync_failed =>
       'நாள்காட்டி இறக்குமதி தோல்வி. முந்தைய பதிவுகள் பாதுகாக்கப்பட்டன. மீண்டும் முயலவும்.';
 
@@ -582,6 +587,12 @@ class AppLocalizationsTa extends AppLocalizations {
   @override
   String get choose_calendars_help =>
       'செயலியில் காட்ட வேண்டிய நாள்காட்டிகளைத் தேர்ந்தெடுக்கவும். இறக்குமதி உங்கள் Google நிகழ்வுகளை மாற்றாது.';
+
+  @override
+  String get switch_google_account => 'வேறு கணக்கைப் பயன்படுத்து';
+
+  @override
+  String get google_calendar => 'Google கேலெண்டர்';
 
   @override
   String get primary_calendar => 'முதன்மை';
@@ -838,11 +849,11 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get premium_benefits =>
-      'கூகுள் நாட்காட்டி ஒத்திசைவு மற்றும் கூடுதல் சாதனைகள். தேதிகள், தனிப்பட்ட பதிவுகள், விரதப் பதிவுகள், தொடர்கள் மற்றும் தற்போதைய விட்ஜெட்டுகள் இலவசம்.';
+      'ஏகாதசி பிரீமியம் மூலம் அனைத்தையும் திறக்கவும். ஏகாதசி தேதிகள், நினைவூட்டல்கள், விட்ஜெட்டுகள், தனிப்பட்ட பதிவுகள் மற்றும் சேமித்த விரத வரலாறு இலவசமாகவே இருக்கும்.';
 
   @override
   String get premium_free_achievements =>
-      'முதலில் பெறும் மூன்று சாதனைகள் இலவசம். அனைத்து விரதப் பதிவுகளும் தொடர்களும் இலவசம்.';
+      'உங்கள் முதல் மூன்று விரதப் பதிவுகளும் முதல் மூன்று சாதனைகளும் இலவசம். மற்றவை பிரீமியத்தில் திறக்கும்.';
 
   @override
   String get premium_monthly => 'மாதந்தோறும்';
@@ -881,8 +892,80 @@ class AppLocalizationsTa extends AppLocalizations {
   String get premium_active => 'பிரீமியம் அணுகல் செயலில் உள்ளது';
 
   @override
+  String get premium_current_plan => 'உங்கள் தற்போதைய திட்டம்';
+
+  @override
+  String get premium_best_value => 'சிறந்த மதிப்பு';
+
+  @override
+  String get premium_per_month => 'மாதத்திற்கு';
+
+  @override
+  String get premium_per_year => 'ஆண்டுக்கு';
+
+  @override
+  String get premium_one_time => 'ஒரு முறை';
+
+  @override
+  String get premium_cancelled_title => 'சந்தா ரத்துசெய்யப்பட்டது';
+
+  @override
+  String get premium_cancelled_body =>
+      'நீங்கள் செலுத்திய காலம் முடியும் வரை Premium செயலில் இருக்கும். தொடர எப்போது வேண்டுமானாலும் மீண்டும் இயக்கலாம்.';
+
+  @override
+  String get premium_reactivate => 'மீண்டும் இயக்கு';
+
+  @override
+  String get free_sync_unverified =>
+      'உங்கள் இலவச ஒத்திசைவைச் சரிபார்க்க முடியவில்லை. இணைப்பைச் சரிபார்க்கவும் அல்லது Premium பெறவும்.';
+
+  @override
+  String get premium_upgrade => 'மேம்படுத்து';
+
+  @override
+  String get premium_restored =>
+      'வாங்கியவை மீட்டெடுக்கப்பட்டன. Premium செயலில் உள்ளது.';
+
+  @override
+  String get premium_restore_none =>
+      'இந்த Google Play கணக்கில் வாங்கியவை எதுவும் இல்லை.';
+
+  @override
+  String get premium_lifetime_thanks_title => 'நன்றி, வாழ்நாள் உறுப்பினரே! 🙏';
+
+  @override
+  String get premium_lifetime_thanks_body =>
+      'எதிர்கால அம்சங்கள், புதுப்பிப்புகள் உட்பட அனைத்து Premium அம்சங்களும் வாழ்நாள் முழுவதும் உங்களுடையவை. பல ஆண்டுகள் உங்களுக்கு சேவை செய்ய ஆவலாக உள்ளோம்.';
+
+  @override
+  String get premium_subscriber_title => 'உங்களிடம் Premium உள்ளது ✨';
+
+  @override
+  String get premium_subscriber_body =>
+      'எப்போது வேண்டுமானாலும் திட்டத்தை மாற்றலாம் அல்லது வாழ்நாள் திட்டத்தைப் பெறலாம்.';
+
+  @override
+  String get premium_cancel_subscription_note =>
+      'உங்கள் சந்தா இன்னும் செயலில் உள்ளது. மீண்டும் கட்டணம் வசூலிக்கப்படாமல் இருக்க Google Play-இல் அதை ரத்துசெய்யவும். வாழ்நாள் திட்டம் உங்களுடையதே.';
+
+  @override
+  String get premium_cancel_subscription_action =>
+      'Google Play-இல் சந்தாவை ரத்துசெய்';
+
+  @override
+  String get premium_lifetime_confirm_title => 'உங்களிடம் ஏற்கனவே சந்தா உள்ளது';
+
+  @override
+  String get premium_lifetime_confirm_body =>
+      'Google Play சந்தாக்களை தானாக ரத்துசெய்யாது. வாழ்நாள் திட்டத்தை வாங்கிய பின், புதுப்பித்தலை நிறுத்த Google Play-இல் உங்கள் சந்தாவை ரத்துசெய்யவும்.';
+
+  @override
+  String get premium_buy_lifetime_anyway => 'வாழ்நாள் திட்டத்தை வாங்கு';
+
+  @override
   String get premium_unavailable =>
-      'வாங்கும் வசதி தற்போது இல்லை. இலவச அம்சங்களைப் பயன்படுத்தலாம்.';
+      'தற்போது வாங்க முடியவில்லை. Google Play-இலிருந்து செயலியை நிறுவி மீண்டும் முயலவும். இலவச அம்சங்கள் தொடர்ந்து செயல்படும்.';
 
   @override
   String get premium_verification_failed =>
@@ -937,4 +1020,38 @@ class AppLocalizationsTa extends AppLocalizations {
   @override
   String get premium_reward_example =>
       'வழக்கமான ஆண்டு: 24 × 10 = 240 நாணயங்கள்; முழு ஆண்டு பலன் 60 சேர்த்து 300. 26 ஏகாதசிகள் உள்ள ஆண்டில்: 260 + 40 = 300.';
+
+  @override
+  String get premium_feature_calendar =>
+      'உங்கள் முழு சந்தா ஆண்டுக்கான Google நாள்காட்டி ஒத்திசைவு (ஒரு மாத ஒத்திசைவு இலவசம்)';
+
+  @override
+  String get premium_feature_vrat =>
+      'வரம்பற்ற விரதப் பதிவுகள் (முதல் மூன்று இலவசம்) மற்றும் அனைத்து சாதனைகளும்';
+
+  @override
+  String get premium_feature_panchang =>
+      'முழு தினசரி பஞ்சாங்கம்: ஐந்து அங்கங்கள், நகர நேரங்கள் மற்றும் விழாக்கள்';
+
+  @override
+  String get terms_of_service => 'சேவை விதிமுறைகள்';
+
+  @override
+  String get privacy_policy => 'தனியுரிமைக் கொள்கை';
+
+  @override
+  String get google_free_sync_used =>
+      'இலவச ஒத்திசைவு பயன்படுத்தப்பட்டது. முழு ஆண்டுக்கும் மேம்படுத்தவும்.';
+
+  @override
+  String get google_sign_in_failed =>
+      'Google உள்நுழைவு தோல்வியடைந்தது. இணைப்பைச் சரிபார்த்து மீண்டும் முயலவும்.';
+
+  @override
+  String get vrat_free_limit_reached =>
+      'மூன்று இலவச விரதப் பதிவுகளையும் பயன்படுத்திவிட்டீர்கள். தொடர்ந்து பதிவு செய்ய பிரீமியம் பெறவும்.';
+
+  @override
+  String get google_premium_events_removed =>
+      'உங்கள் பிரீமியம் முடிந்தது, எனவே அதன் மூலம் ஒத்திசைத்த Google நிகழ்வுகள் நீக்கப்பட்டன. மீண்டும் ஒத்திசைக்க புதுப்பிக்கவும்.';
 }

@@ -50,6 +50,23 @@ void main() {
           }
           await tester.tap(find.byKey(const Key('glass_tab_3')));
           await tester.pumpAndSettle();
+          await tester.scrollUntilVisible(
+            find.byKey(const Key('panchang_daily_overview')),
+            200,
+            scrollable: find
+                .descendant(
+                  of: find.byKey(const Key('panchang_scroll_view')),
+                  matching: find.byType(Scrollable),
+                )
+                .first,
+          );
+          expect(
+            find.byKey(const Key('panchang_daily_overview')),
+            findsOneWidget,
+          );
+          expect(tester.takeException(), isNull);
+          await tester.tap(find.byKey(const Key('open_global_search')));
+          await tester.pumpAndSettle();
           expect(
             find.byKey(const Key('search_categories_tube')),
             findsOneWidget,
@@ -63,6 +80,8 @@ void main() {
             tester.getSize(find.byKey(const Key('search_submit_tube'))).height,
             greaterThanOrEqualTo(48),
           );
+          await tester.binding.handlePopRoute();
+          await tester.pumpAndSettle();
           await tester.tap(find.byKey(const Key('glass_tab_2')));
           await tester.pumpAndSettle();
           expect(find.byKey(const Key('vrat_tabs_tube')), findsOneWidget);

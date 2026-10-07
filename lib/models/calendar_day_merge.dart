@@ -79,8 +79,9 @@ class CalendarDayMerge {
               : DayItemKind.custom,
           title: e.title,
           subtitle: e.notes,
-          startAt: e.startAt,
-          endAt: e.endAt,
+          // Never show a UTC clock time: Google events are stored as UTC.
+          startAt: e.localStart,
+          endAt: e.localEnd,
           isAllDay: e.isAllDay,
           entryId: e.id,
           editable: e.source == CalendarEntrySource.custom,

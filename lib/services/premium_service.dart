@@ -1,156 +1,152 @@
-import 'dart:async';
 import 'package:flutter/foundation.dart';
 
-abstract interface class PremiumBackend {
-  Future<Map<String, dynamic>> session({bool interactive = true});
-  Future<Map<String, dynamic>> verify(String token, String product);
-  Future<Map<String, dynamic>> wallet();
-  Future<Map<String, dynamic>> record(
-    Map<String, dynamic> body, {
-    String? expectedAccount,
-  });
-  Future<Map<String, dynamic>> redeem(String key, {String? expectedAccount});
-  Future<void> deleteAccount({String? expectedAccount});
+/// What Google Play Billing reports as currently owned on this device.
+abstract class PlayEntitlementSource {
+  /// Product IDs in the PURCHASED state (an active or grace-period
+  /// subscription, or the lifetime product) mapped to the purchase time Play
+  /// reports, when known. Throws when Play is unavailable.
+  Future<Map<String, DateTime?>> ownedProducts();
+
+  /// Whether each owned product renews automatically, from the last
+  /// [ownedProducts] call. A cancelled subscription stays owned (and
+  /// Premium stays on) until the period already paid for ends.
+  Map<String, bool> get autoRenewing => const {};
 }
 
-/// Paid access is a short verified server lease, never a persisted local flag.
+/// Premium access comes only from Google Play's purchase record. It is never
+/// persisted locally and is not tied to a Google (Calendar) sign-in.
 class PremiumService extends ChangeNotifier {
-  PremiumService({
-    required this.backend,
-    int Function()? elapsedMillis,
-    this.startLeaseTimer = true,
-  }) {
-    _watch.start();
-    _elapsed = elapsedMillis ?? (() => _watch.elapsedMilliseconds);
-  }
+  PremiumService({required this.entitlements});
+
+  static const subscriptionId = 'ekadashi_premium';
+  static const lifetimeId = 'ekadashi_premium_lifetime';
+
+  final PlayEntitlementSource entitlements;
   bool _disposed = false;
+  bool subscribed = false;
+  bool lifetime = false;
+  bool busy = false;
+  String? error;
+
+  /// When the active premium product was bought, as reported by Google Play.
+  DateTime? purchasedAt;
+
+  bool get isPremium => subscribed || lifetime;
+
+  /// The subscription was cancelled in Google Play but the paid period has
+  /// not ended yet, so Premium stays on until it does (Google's rule).
+  bool subscriptionCancelled = false;
+
+  bool _confirmedByPlay = false;
+
+  /// Google Play answered and reports no premium product owned (a
+  /// subscription ended or a purchase was refunded). False while Play has not
+  /// answered or is unreachable, so being offline never counts as a lapse.
+  bool get lapsed => _confirmedByPlay && !isPremium;
+
+  /// The 12-month subscription year containing [now], anchored on the month
+  /// of [purchasedAt] (a plan bought in November runs November to October).
+  /// Without a purchase date it starts in the current month.
+  static ({DateTime start, DateTime end}) subscriptionYear(
+    DateTime? purchasedAt,
+    DateTime now,
+  ) {
+    final anchor = purchasedAt ?? now;
+    final months = (now.year - anchor.year) * 12 + now.month - anchor.month;
+    final years = months < 0 ? 0 : months ~/ 12;
+    final start = DateTime(anchor.year + years, anchor.month);
+    return (start: start, end: DateTime(start.year + 1, start.month));
+  }
+
+  /// The Google Calendar range premium may sync now, or null when free.
+  /// Lifetime covers every calendar year the app has data for
+  /// ([calendarYears]); subscriptions cover the current subscription year.
+  ({DateTime start, DateTime end})? syncWindow(
+    DateTime now, {
+    ({int first, int last})? calendarYears,
+  }) {
+    if (!isPremium) return null;
+    if (lifetime && calendarYears != null) {
+      return (
+        start: DateTime(calendarYears.first),
+        end: DateTime(calendarYears.last + 1),
+      );
+    }
+    return subscriptionYear(purchasedAt, now);
+  }
+
   void _notify() {
     if (!_disposed) notifyListeners();
   }
 
-  final PremiumBackend backend;
-  final bool startLeaseTimer;
-  final Stopwatch _watch = Stopwatch();
-  late final int Function() _elapsed;
-  Timer? _expiryTimer;
-  int _expires = 0;
-  int _accountEpoch = 0;
-  String? accountId;
-  String? error;
-  bool busy = false;
-  bool autoRenew = false;
-  bool lifetime = false;
-  String? redemptionState;
-  bool get isPremium => _elapsed() < _expires;
-  bool get connected => accountId != null;
-  void _accept(Map<String, dynamic> response) {
-    _expires = 0;
-    _expiryTimer?.cancel();
-    autoRenew = response['autoRenew'] == true;
-    lifetime = response['lifetime'] == true;
-    final now = DateTime.parse(response['serverTime'] as String).toUtc();
-    if (response['premium'] == true) {
-      final remaining = lifetime
-          ? const Duration(minutes: 5)
-          : DateTime.parse(
-              response['validUntil'] as String,
-            ).toUtc().difference(now);
-      final duration = remaining.inMilliseconds.clamp(0, 300000);
-      _expires = _elapsed() + duration;
-      if (duration > 0 && startLeaseTimer) {
-        _expiryTimer = Timer(Duration(milliseconds: duration), () {
-          _notify();
-          if (connected) connect(interactive: false);
-        });
-      }
-    }
-  }
-
-  Future<void> connect({bool interactive = true}) async {
-    if (busy || _disposed) return;
-    final epoch = _accountEpoch;
-    busy = true;
+  /// Applies Play's complete owned-product list, revoking anything missing.
+  void applyOwned(
+    Set<String> owned, {
+    Map<String, DateTime?> purchasedAt = const {},
+    Map<String, bool> autoRenewing = const {},
+  }) {
+    if (_disposed) return;
+    subscribed = owned.contains(subscriptionId);
+    lifetime = owned.contains(lifetimeId);
+    subscriptionCancelled = subscribed && autoRenewing[subscriptionId] == false;
+    _confirmedByPlay = true;
+    // The subscription's year governs syncing while it is active.
+    this.purchasedAt = subscribed
+        ? purchasedAt[subscriptionId]
+        : lifetime
+        ? purchasedAt[lifetimeId]
+        : null;
     error = null;
     _notify();
+  }
+
+  /// Adds one completed purchase reported by the Play purchase stream.
+  void grant(String productId, {DateTime? purchasedAt}) {
+    if (_disposed) return;
+    if (productId == subscriptionId) {
+      subscribed = true;
+      this.purchasedAt = purchasedAt;
+    }
+    if (productId == lifetimeId) {
+      lifetime = true;
+      if (!subscribed) this.purchasedAt = purchasedAt;
+    }
+    error = null;
+    _notify();
+  }
+
+  /// Re-reads owned purchases from Google Play (startup, resume, restore).
+  Future<void> refresh() async {
+    if (busy || _disposed) return;
+    busy = true;
+    _notify();
     try {
-      final value = await backend.session(interactive: interactive);
-      if (_disposed || epoch != _accountEpoch) return;
-      final nextAccount = value['accountId'] as String;
-      _accept(value);
-      if (nextAccount != accountId) _accountEpoch++;
-      accountId = nextAccount;
+      final owned = await entitlements.ownedProducts();
+      if (_disposed) return;
+      busy = false;
+      applyOwned(
+        owned.keys.toSet(),
+        purchasedAt: owned,
+        autoRenewing: entitlements.autoRenewing,
+      );
     } catch (_) {
-      if (_disposed || epoch != _accountEpoch) return;
-      _expires = 0;
+      if (_disposed) return;
+      busy = false;
+      _confirmedByPlay = false;
+      subscribed = false;
+      lifetime = false;
+      subscriptionCancelled = false;
+      purchasedAt = null;
       error = 'premium_unavailable';
-    }
-    busy = false;
-    _notify();
-  }
-
-  Future<bool> verify(String token, String product) async {
-    final epoch = _accountEpoch;
-    try {
-      final value = await backend.verify(token, product);
-      if (_disposed || epoch != _accountEpoch) {
-        return value['acknowledged'] == true;
-      }
-      _accept(value);
-      error = null;
       _notify();
-      return value['acknowledged'] == true;
-    } catch (_) {
-      if (_disposed || epoch != _accountEpoch) return false;
-      _expires = 0;
-      error = 'premium_verification_failed';
-      _notify();
-      return false;
     }
-  }
-
-  Future<void> redeem(String key) async {
-    if (busy || _disposed) return;
-    final epoch = _accountEpoch;
-    final account = accountId;
-    busy = true;
-    error = null;
-    _notify();
-    try {
-      final response = await backend.redeem(key, expectedAccount: account);
-      if (_disposed || epoch != _accountEpoch) return;
-      redemptionState = response['state'] as String?;
-      _accept(response);
-    } catch (_) {
-      if (_disposed || epoch != _accountEpoch) return;
-      error = 'premium_redemption_failed';
-    }
-    busy = false;
-    _notify();
-  }
-
-  Future<void> deleteAccount() async {
-    final epoch = _accountEpoch;
-    await backend.deleteAccount(expectedAccount: accountId);
-    if (epoch == _accountEpoch && !_disposed) reset();
-  }
-
-  void reset() {
-    _accountEpoch++;
-    busy = false;
-    accountId = null;
-    _expires = 0;
-    autoRenew = false;
-    lifetime = false;
-    _expiryTimer?.cancel();
-    _notify();
   }
 
   @override
   void dispose() {
     _disposed = true;
-    _expires = 0;
-    _expiryTimer?.cancel();
-    _watch.stop();
+    subscribed = false;
+    lifetime = false;
     super.dispose();
   }
 }

@@ -89,10 +89,12 @@ jobs:
           packages: 'platform-tools'
       - run: sdkmanager 'ndk;28.2.13676358'
       - name: Bound Gradle memory on hosted runners
+        # 2G ran out of heap in packageDebugUnitTestForUnitTest while the
+        # in-process Kotlin compile ran; hosted runners have 16G.
         run: |
           mkdir -p "$HOME/.gradle"
           cat > "$HOME/.gradle/gradle.properties" <<'EOF'
-          org.gradle.jvmargs=-Xmx2G -XX:MaxMetaspaceSize=768m
+          org.gradle.jvmargs=-Xmx4G -XX:MaxMetaspaceSize=1G
           org.gradle.workers.max=2
           org.gradle.parallel=false
           kotlin.compiler.execution.strategy=in-process
@@ -107,7 +109,7 @@ jobs:
         id: native_tests
         # Still collect emulator evidence if a native regression fails.
         continue-on-error: true
-        run: cd android && ./gradlew app:testDebugUnitTest
+        run: cd android && ./gradlew app:testDebugUnitTest --stacktrace
       - name: Enable KVM
         run: sudo chmod 666 /dev/kvm
       - uses: reactivecircus/android-emulator-runner@v2
@@ -134,7 +136,7 @@ jobs:
         run: exit 1
 
   glass-preview:
-    if: github.head_ref == 'feature/android-glass-navigation' || github.head_ref == 'feature/subscriptions-rewards'
+    if: github.head_ref == 'feature/android-glass-navigation' || github.head_ref == 'feature/subscriptions-rewards' || github.head_ref == 'feature/play-premium-paywall'
     needs: flutter-tests
     runs-on: ubuntu-latest
     steps:

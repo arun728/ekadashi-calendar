@@ -47,16 +47,32 @@ void main() {
       },
     );
   }
-  test('screen Text literals do not bypass localization',(){
-    final violations=<String>[];
-    final expression=RegExp(r"Text\(\s*'([^'\n]+)'");
-    for(final file in [File('lib/main.dart'),...Directory('lib/screens').listSync(recursive:true).whereType<File>().where((f)=>f.path.endsWith('.dart'))]){
-      for(final match in expression.allMatches(file.readAsStringSync())){
-        final value=match.group(1)!;
-        if(RegExp('[A-Za-z]').hasMatch(value) && !value.contains(r'$')) violations.add('${file.path}: $value');
+  test('screen Text literals do not bypass localization', () {
+    final violations = <String>[];
+    final expression = RegExp(r"Text\(\s*'([^'\n]+)'");
+    // Panchang is intentionally English-only for this release, as approved in
+    // AGENTS.md. Remove this exception when the feature is localized.
+    const englishOnlyScreenFiles = {
+      'lib/screens/panchang_screen.dart',
+      'lib/screens/panchang_location_dialog.dart',
+      'lib/screens/panchang_month_panels.dart',
+      'lib/screens/panchang_tools.dart',
+    };
+    for (final file in [
+      File('lib/main.dart'),
+      ...Directory('lib/screens')
+          .listSync(recursive: true)
+          .whereType<File>()
+          .where((f) => f.path.endsWith('.dart')),
+    ]) {
+      if (englishOnlyScreenFiles.contains(file.path)) continue;
+      for (final match in expression.allMatches(file.readAsStringSync())) {
+        final value = match.group(1)!;
+        if (RegExp('[A-Za-z]').hasMatch(value) && !value.contains(r'$')) {
+          violations.add('${file.path}: $value');
+        }
       }
     }
-    expect(violations,isEmpty,reason:violations.join('\n'));
+    expect(violations, isEmpty, reason: violations.join('\n'));
   });
-
 }

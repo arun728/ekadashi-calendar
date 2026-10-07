@@ -1,135 +1,163 @@
-# Paid branch setup and release gates
+# Ekadashi Premium setup (v2, Google Play only)
 
-The glass UI was merged in PR8 to dev `78f1ee3332b4c3d002b5b01ef47b096f4fa7b24c`.
-Paid/rewards changes stay on `feature/subscriptions-rewards`. Do not merge them
-to dev or main until Arun reviews/finalizes, tests and gives fresh permission.
+v2 has no premium server. The app unlocks premium from what Google Play Billing
+reports as owned on the device, and acknowledges completed purchases. The
+paywall needs no Google sign-in. Google sign-in is used only for read-only
+Google Calendar import. Fasting rewards are hidden; `backend/` is dormant.
 
-## Product configuration
+## Free vs premium
 
-In Play Console, create subscription `ekadashi_premium` with auto-renewing base
-plans `monthly` (India INR99/month) and `yearly` (India INR399/year), plus active
-non-consumable product `ekadashi_premium_lifetime` (India INR999). Set country
-availability and localized descriptions. The app displays prices returned by
-Play, not hard-coded charge amounts. No introductory offers are selected until
-complete intro/renewal disclosures are implemented. Existing renewing customers
-manage/change plans in Play; new checkout is blocked while verified premium is
-active, including canceled subscriptions and earned access credit. Lifetime is
-not consumed and never auto-renews.
+| Feature | Free | Premium |
+|---|---|---|
+| Ekadashi dates, reminders, widgets, search, custom entries | Yes | Yes |
+| Google Calendar import (import only) | One sync ever per Google account, of the month on screen | Subscriptions: the subscription year (12 months from the purchase month); lifetime: every calendar year in the app. Premium-synced events are removed when a subscription ends |
+| Vrat entries | First 3 new entries (editing always free) | Unlimited + all achievements |
+| Panchang | Daily preview | Full limbs, timings, observances, browsing |
 
-## What Arun needs to provide for real checkout
+## 1. Create the products in Play Console (prices live here, not in code)
 
-An Android developer account allows app publishing. It does not automatically
-create products, activate a merchant payments profile, host a verification API,
-or give that API access to purchase records. The production app package remains
-`com.applausestudios.ekadashi_calendar`; the separate `.glasspreview` APK cannot
-validate purchases for the production app's products.
+Play Console → your app → **Monetize with Play**. First finish the
+**payments profile** (merchant account) if it is not done.
 
-1. In this app's Play Console **Monetize with Play** area, finish the payments
-   profile and activate the product IDs/base plans listed above. Confirm INR
-   pricing, tax display and enabled countries; send the non-secret IDs/statuses
-   or screenshots. Do not create three subscription IDs: monthly/yearly are
-   two base plans of `ekadashi_premium`; lifetime is a separate one-time product.
-2. Identify the existing Google Cloud/Firebase project, or create one. This
-   backend needs HTTPS compute, persistent PostgreSQL, Secret Manager, Pub/Sub,
-   and a scheduled worker. Firebase alone does not replace the PostgreSQL ledger.
-   Hosting/database charges are separate from Play transaction fees; choose
-   the budget and region before deploying production resources.
-3. Enable Android Publisher API and grant a backend service account the
-   necessary app-scoped order/subscription permissions in Play Console. Use
-   workload identity/managed credentials. Never paste service-account private
-   keys, passwords or Play tokens into chat or commit them to the app.
-4. Provide the public OAuth **web client ID** for ID-token sign-in. Confirm the
-   Android OAuth client uses the production package and the **Play app-signing**
-   certificate fingerprints, not only the upload/debug certificate. The existing
-   Calendar OAuth project can be reused if its configuration matches.
-5. Provide HTTPS privacy, premium/reward terms and account-deletion page URLs,
-   support contact, and accurate Play Data safety declarations. Connect the
-   external deletion request page to a working authenticated/support flow.
-6. Add tester Google accounts under **license testing** and to an **internal
-   testing** track, upload a release-signed production-package AAB with a new
-   version code, and share its opt-in link. Install from Play with the tester
-   account and select Google's test payment instruments; do not use real cards
-   for this QA. Track access alone does not make purchases free.
+1. **Products → Subscriptions → Create subscription**
+   - Product ID: `ekadashi_premium` (exactly; cannot be changed later).
+   - Add base plan `monthly`: auto-renewing, billing period 1 month, price
+     INR 99. Activate.
+   - Add base plan `yearly`: auto-renewing, billing period 1 year, price
+     INR 499. Activate.
+   - Do not add introductory offers yet (the app hides offers by design).
+2. **Products → One-time products → Create**
+   - Product ID: `ekadashi_premium_lifetime`, price INR 999. Activate.
+3. Use Play's suggested local prices for other countries or restrict
+   availability to India.
 
-After configuration, build with the public defines below and deploy the server
-with managed secrets. Test real monthly/yearly/lifetime checkout, pending/cancel,
-acknowledgement, restore/reinstall/account switch, renewal/grace/hold, refund/revoke,
-RTDN and retries on the internal track. Use Play Billing Lab/license-test tools
-for subscription lifecycle cases where supported. Validate the six-calendar-month
-reward deferral against the Publisher API separately; accelerated test renewals
-do not prove production calendar timing. Run the same release-signed flows on
-Samsung M52 and Z Flip5, including retaining local Vrat history across an upgrade.
-Only then finalize this draft branch and request integration/release approval.
+The app shows whatever price Google Play returns; changing a price in Play
+Console needs no app update.
 
-Build with HTTPS `PREMIUM_API_URL`, OAuth `GOOGLE_WEB_CLIENT_ID`, and hosted
-`PREMIUM_PRIVACY_URL`, `PREMIUM_TERMS_URL`, `PREMIUM_DELETION_URL` dart-defines.
-Purchasing fails closed without these settings; free features still work. The
-web OAuth client audience must match the server; configure Android package,
-Play signing certificate SHA fingerprints and the web client for ID tokens.
-Calendar requests its read-only scope additionally; Google sign-in is shared.
+## 2. Test purchases (no real money)
 
-Deploy the verification backend as described in `backend/README.md`; configure
-Publisher permission, authenticated Pub/Sub push, persistent PostgreSQL, scheduled
-acknowledgement/redemption recovery, encryption/HMAC keys, HTTPS/rate limiting,
-monitoring/backups and bounded deletion retention. Nothing has been deployed or
-activated by this branch. No production secret is in the app or repository.
+1. Play Console → **Settings → License testing**: add your Gmail test accounts.
+2. Upload a release AAB of the production package
+   `com.applausestudios.ekadashi_calendar` (new version code) to the
+   **Internal testing** track and add the same testers.
+3. Install from the internal-testing opt-in link (not a sideloaded APK; the
+   `.glasspreview` APK cannot buy) and buy each plan with the test card.
+   Test: buy, cancel, restore after reinstall, and subscription expiry
+   (test subscriptions renew every few minutes).
 
-## Behavior implemented
+## 3. Google sign-in for Calendar import (Google Cloud project `ekadashi-calendar-505210`)
 
-All private Vrat records/history/streaks/statistics remain free and available,
-including users with the old disabled flag. Three earned badges are free;
-additional badges require verified premium. Existing earned badges and records
-survive downgrade and upgrade. Google sync alone is gated; disconnect, cached
-imports, custom entries, years/search/reminders and existing widgets remain free.
+Google Cloud Console → **Google Auth Platform**.
 
-Reward activation separately consents to UID/status/calendar-region and sync-metadata upload, with no private notes,
-method or tradition. A durable per-account outbox uses stable mutation keys and
-last-owned server versions. Missing records on another device cannot erase cloud
-history, and stale corrections do not overwrite newer edits. Conflicting/future
-legacy claims stop with a visible retry/support message; no coins are guessed.
+1. **Clients**: open the Android client. Package must be
+   `com.applausestudios.ekadashi_calendar`. Add SHA-1 fingerprints for:
+   - the **Play app-signing key** (Play Console → Test and release →
+     App integrity → App signing), used by every Play install;
+   - your upload key / local debug key (`cd android && ./gradlew signingReport`).
+   A preview build with another package (`.glasspreview`) needs its own
+   Android client, otherwise sign-in fails with `DEVELOPER_ERROR (10)`.
 
-Each completed past Ekadashi earns 10 coins: normally 24→240. A full-year bonus
-adds 60 for a 24-event catalog or 40 for 26, bringing full-year earnings to 300.
-300 coins redeem six calendar months of non-cash premium credit. No purchase is
-required to earn. No coin packs, cash refund/transfer, chance or paid-entry game.
-Active renewals are deferred through Play V2 etag/duration; provider ambiguity
-reserves coins for reconciliation/support, never a blind second extension.
+   Registered on 5 October 2026 (one Android client per fingerprint):
+   | Client | SHA-1 |
+   |---|---|
+   | Ekadashi Android (Play signing) | `B4:19:86:19:52:8F:55:34:19:9C:66:1C:AD:D7:93:1E:5C:66:F3:89` |
+   | Ekadashi Android (upload key) | `6B:58:0D:79:BB:BE:13:29:64:F8:36:6A:02:E3:2A:64:D6:83:13:A7` |
+   | Ekadashi Android debug | local debug key |
+2. **Branding**: app name, support email, logo, application home page,
+   privacy policy URL (`https://arun728.github.io/ekadashi-calendar/privacy-policy`),
+   terms URL, and the authorized domain. Verify domain ownership in Google
+   Search Console.
+3. **Data access**: add only `.../auth/calendar.readonly` (a *sensitive*
+   scope; no paid security assessment is needed, that is only for
+   *restricted* scopes).
+4. **Audience → Publish app** (moves from Testing to In production).
+5. **Verification Center**: submit for verification with a scope
+   justification and an unlisted YouTube video showing sign-in, the consent
+   screen and the import. Verification is free and takes days to weeks.
 
-Account deletion removes cloud reward/history data while preserving local Vrat.
-It does not cancel Play billing. Pseudonymous receipt hashes/deleted-account
-markers have documented 180-day anti-replay retention; the worker then purges them.
-Provide public account deletion, privacy/reward rules and accurate Play Data
-safety before release. Official policy research is in `PREMIUM_REWARDS_PLAN.md`.
+While in **Testing**, only listed test users can sign in and their access
+expires after 7 days. Published but unverified, users see an "unverified app"
+warning and sensitive-scope sign-ins are capped at 100 users in total.
 
-## Test interpretation
+The Google Calendar API itself is free (default quota is about one million
+requests per day); one import uses only a few requests.
 
-Dart tests exercise verified short leases, pending/error/cancel/restore, safe
-acknowledgement, no local paid flag, receipt retries, reward queues/corrections,
-free migration and first-three earned unlocks. PostgreSQL tests exercise real
-account locking/concurrency and durable ledgers with injected Publisher receipts.
-Android CI preserves API24/33/35, permission/GPS modes, native widget/WorkManager
-regressions and adds actual premium UI captures. `premium_fixture_*` captures use
-explicit test-only Play prices: they prove native layout/navigation, not checkout.
-Offscreen PNGs similarly use fixture prices and desktop native-channel mocks.
+## 4. Free-sync registry (free Firebase, one free sync per Google account)
 
-Real payments require Play internal testing/license testers and the deployed
-server. Validate every plan, pending/cancel, restore/reinstall/new device, grace,
-hold, renewal, refund/revoke, account mismatch, RTDN and recovery/credit deferral.
-Samsung M52/Z Flip5 OEM background reliability, real OAuth, native-speaker review
-and release-signed upgrade preservation remain release checks. No code/test suite
-can guarantee no bugs or Play approval; these gates must precede monetized release.
+The phone remembers the free sync (Android Auto Backup restores it after a
+reinstall when the user's backup is on). To make it strictly once per Google
+account, even after a reinstall or on another phone, the app also keeps one
+tiny record per account in Cloud Firestore on Firebase's free Spark plan (no
+card needed; free quota is 50,000 reads and 20,000 writes per day). It uses
+the same Google sign-in, so users see no extra screen or permission.
 
-## Suggested later premium value
+### Status: configured on 5 October 2026
 
-Keep the current three widgets free. Consider premium themes/custom layouts,
-family fasting profiles, encrypted opt-in multi-device backup, devotional/offline
-audio with licensed content, chanting routines/history/insights and advanced
-Panchang planning once its source/calculation accuracy is validated. Essential
-Ekadashi dates, reminders, fasting records and a basic chanting counter stay free.
-Build one useful premium bundle, not a paywall for every basic interaction.
-Recurring calendar service supplies ongoing value; achievements complement it.
+- Firebase added to `ekadashi-calendar-505210` (Spark, no billing).
+- Firestore database `(default)` in `asia-south1`, rules from
+  `firebase/firestore.rules` published. Verified with the Rules test API: an
+  account can read and create only its own record, once; updates, deletes,
+  listing, other accounts and signed-out requests are denied. A signed-out
+  request to the live database returns 403.
+- Authentication: Google provider enabled; Firebase created the web client
+  below.
+- Android app `com.applausestudios.ekadashi_calendar` registered
+  (`1:827853182968:android:135de93e4c5110290fa80d`); web config
+  `1:827853182968:web:e827522098e5f8f40fa80d`.
+- The web API key ("Browser key (auto created by Firebase)") is restricted
+  to the Identity Toolkit, Secure Token and Cloud Firestore APIs.
 
-A verified Play purchase can be restored after deleting the cloud rewards account;
-it never recreates old reward/history data or removes the anti-replay block.
-Cloud rewards re-enrollment waits for the bounded 180-day deletion marker purge.
-Newly restored, necessary billing receipts remain valid after that purge.
+Public build values (not secrets; Android apps ship them):
+
+| Setting | Value |
+|---|---|
+| `FIREBASE_API_KEY` | `AIzaSyACQgEzjZxdO_m2WgrGhm9PNeKGEHI7z0I` |
+| `FIREBASE_PROJECT_ID` | `ekadashi-calendar-505210` |
+| `GOOGLE_WEB_CLIENT_ID` | `827853182968-sb9tdckeqgsufpv1rh86204ipq18nd10.apps.googleusercontent.com` |
+
+Release build:
+
+```
+flutter build appbundle --release --dart-define-from-file=config/release_defines.json
+```
+
+To test on a phone: `flutter run --release --dart-define-from-file=config/release_defines.json`.
+The values live in `config/release_defines.json`; do not copy them from chat
+or web pages, which can mask the API key and break the free-sync check
+(`API key not valid`).
+
+The web client ID makes Google sign-in return an ID token for Firebase. It
+lives in the same project as the existing Calendar OAuth Android client, so
+the Android client's package and SHA-1 fingerprints (including the Play
+app-signing key) must be registered there for sign-in to work in release.
+Adding the same SHA-1s to the Firebase Android app (Project settings → Your
+apps) is optional for this REST flow.
+
+To redo the setup elsewhere: add Firebase to the project, enable
+Authentication → Google, create Firestore in `asia-south1`, publish
+`firebase/firestore.rules`, and copy the web API key and web client ID.
+
+Without these build settings the app still works and relies on the phone's
+own record only.
+
+## Code map
+
+- `lib/services/premium_service.dart`: entitlement state from Play.
+- `lib/services/play_billing_service.dart`: products, checkout, purchase
+  stream, acknowledgement and `PlayStoreEntitlements` (owned purchases).
+- `lib/screens/premium_screen.dart`: paywall.
+- `lib/screens/calendar_screen.dart`: the one free sync and the premium subscription-year sync.
+- `lib/services/free_sync_registry.dart` and `firebase/firestore.rules`: the per-account free-sync record.
+- `lib/services/vrat_tracker_service.dart` and
+  `lib/screens/vrat_tracker/record_vrat_dialog.dart`: three free entries.
+
+## Known trade-offs
+
+Without the Firebase registry, the free sync relies on the phone (and
+Android Auto Backup), so a reinstall without a backup could offer it again.
+With the registry it is once per Google account; another Google account gets
+its own free sync, like a per-account free trial.
+
+Without a server, premium trusts Google Play on the device. A modified APK on
+a rooted phone can fake ownership. That is accepted for v2; adding local
+purchase-signature checks or server verification is a later option.

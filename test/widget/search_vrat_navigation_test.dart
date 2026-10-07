@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ekadashi_calendar/main.dart';
 import 'package:ekadashi_calendar/screens/global_search_screen.dart';
 import 'package:ekadashi_calendar/screens/calendar_screen.dart';
+import 'package:ekadashi_calendar/screens/panchang_screen.dart';
 import 'package:ekadashi_calendar/screens/vrat_tracker/vrat_tracker_screen.dart';
 import 'package:ekadashi_calendar/services/search_index_manager.dart';
 import '../support/app_harness.dart';
@@ -25,10 +26,11 @@ void main() {
         find.byType(GlassNavigationBar),
       );
       expect(nav.items, hasLength(5));
+      final dynamic state = tester.state(find.byType(MainScreen));
       await tester.tap(find.byIcon(Icons.spa_outlined));
       await tester.pumpAndSettle();
       expect(find.byType(VratTrackerScreen).hitTestable(), findsOneWidget);
-      await tester.tap(find.byIcon(Icons.search));
+      await tester.tap(find.byKey(const Key('open_global_search')));
       await tester.pumpAndSettle();
       expect(find.byType(GlobalSearchScreen).hitTestable(), findsOneWidget);
       await tester.enterText(find.byType(TextField), 'zzzznomatch9999');
@@ -36,7 +38,6 @@ void main() {
       await tester.pumpAndSettle();
       expect(SearchIndexManager().search('zzzznomatch9999'), isEmpty);
       expect(find.textContaining('No results found'), findsOneWidget);
-      final dynamic state = tester.state(find.byType(MainScreen));
       state.handleDeepLink(Uri.parse('ekadashi://calendar?date=2027-01-07'));
       await tester.pumpAndSettle();
       expect(find.byType(CalendarScreen).hitTestable(), findsOneWidget);
@@ -48,6 +49,10 @@ void main() {
             .value,
         2027,
       );
+      // PR #12's old More tab now lives inside Panchang.
+      state.handleDeepLink(Uri.parse('ekadashi://more'));
+      await tester.pumpAndSettle();
+      expect(find.byType(PanchangScreen).hitTestable(), findsOneWidget);
       state.handleDeepLink(Uri.parse('ekadashi://search'));
       await tester.pumpAndSettle();
       expect(find.byType(GlobalSearchScreen).hitTestable(), findsOneWidget);
@@ -61,4 +66,27 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets('closing focused Search restores the app navigation', (
+    tester,
+  ) async {
+    await tester.pumpWidget(harness.app());
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('open_global_search')));
+    await tester.pumpAndSettle();
+    expect(find.byType(GlobalSearchScreen), findsOneWidget);
+
+    final searchField = find.byType(TextField).first;
+    final focusNode = tester.widget<TextField>(searchField).focusNode!;
+    await tester.showKeyboard(searchField);
+    expect(focusNode.hasFocus, isTrue);
+
+    await tester.tap(find.byKey(const Key('global_search_back')));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(GlobalSearchScreen), findsNothing);
+    expect(focusNode.hasFocus, isFalse);
+    expect(find.byKey(const Key('glass_navigation_bar')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }

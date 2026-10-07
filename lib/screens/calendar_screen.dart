@@ -9,6 +9,8 @@ import '../data/sqflite_calendar_entry_repository.dart';
 import '../services/google_calendar_service.dart';
 import '../services/google_auth_gateway_android.dart';
 import '../services/google_calendar_prefs.dart';
+import '../services/free_sync_registry.dart';
+import 'dart:convert';
 import 'widgets/calendar_filter_bar.dart';
 import 'widgets/day_entries_list.dart';
 import 'widgets/add_edit_entry_sheet.dart';
@@ -16,6 +18,7 @@ import 'widgets/google_calendar_picker_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/ekadashi_service.dart';
 import '../services/language_service.dart';
 import 'package:intl/intl.dart';
@@ -31,12 +34,32 @@ class CalendarScreen extends StatefulWidget {
   final CalendarEntryRepository? repository;
   final GoogleCalendarService? googleService;
 
+  /// Overrides "now" in tests.
+  final DateTime Function()? clock;
+
+  /// Per-Google-account record of the free sync; defaults to the free
+  /// Firestore registry when it is configured at build time.
+  final FreeSyncRegistry? freeSyncRegistry;
+
+  /// Set after a free user's one free Google Calendar sync (Android Auto
+  /// Backup restores it after a reinstall).
+  static const freeSyncUsedKey = 'google_free_sync_used';
+
+  /// The month ("yyyy-MM") of the free sync; its events stay after a lapse.
+  static const freeSyncMonthKey = 'google_free_sync_month';
+
+  /// What Premium synced (account, calendars and range), so it can be removed
+  /// when Google Play confirms the subscription has ended.
+  static const premiumSyncKey = 'google_premium_sync_v1';
+
   const CalendarScreen({
     super.key,
     required this.ekadashiList,
     this.currentTimezone,
     this.repository,
     this.googleService,
+    this.clock,
+    this.freeSyncRegistry,
   });
 
   @override
@@ -46,9 +69,17 @@ class CalendarScreen extends StatefulWidget {
 class CalendarScreenState extends State<CalendarScreen> {
   List<int> get _years =>
       (widget.ekadashiList.map((e) => e.date.year).toSet().toList()..sort());
+
+  /// The year shown in the selector; it follows the month on screen.
   late int _selectedYear;
-  DateTime get _firstDay => DateTime(_selectedYear, 1, 1);
-  DateTime get _lastDay => DateTime(_selectedYear, 12, 31);
+
+  /// The calendar spans every bundled year pack (assets/calendar/<year>.json
+  /// listed in manifest.json), so adding a 2028 pack extends it with no code
+  /// change, and past years stay browsable after the new year starts.
+  DateTime get _firstDay =>
+      DateTime(_years.isEmpty ? _selectedYear : _years.first, 1, 1);
+  DateTime get _lastDay =>
+      DateTime(_years.isEmpty ? _selectedYear : _years.last, 12, 31);
 
   late DateTime _focusedDay;
   late DateTime _selectedDay;
@@ -61,6 +92,20 @@ class CalendarScreenState extends State<CalendarScreen> {
   bool _repoError = false;
   bool _syncing = false;
   PageController? _monthPager;
+  late final FreeSyncRegistry? _registry =
+      widget.freeSyncRegistry ?? FirestoreFreeSyncRegistry.fromEnvironment();
+  PremiumService? _premium;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _premium ??= context.read<PremiumService?>()
+      ?..addListener(_onPremiumChanged);
+  }
+
+  void _onPremiumChanged() {
+    if (_repoReady) _removeLapsedPremiumSync();
+  }
 
   void selectDate(DateTime date) {
     if (!_years.contains(date.year)) return;
@@ -85,7 +130,7 @@ class CalendarScreenState extends State<CalendarScreen> {
         );
     _initRepo();
     // Ensure focused day is within valid range
-    final now = DateTime.now();
+    final now = _now();
     _selectedYear = _years.contains(now.year)
         ? now.year
         : (_years.isEmpty ? now.year : _years.last);
@@ -104,6 +149,7 @@ class CalendarScreenState extends State<CalendarScreen> {
 
   @override
   void dispose() {
+    _premium?.removeListener(_onPremiumChanged);
     if (widget.repository == null) {
       unawaited(_repo.close().catchError((Object _) {}));
     }
@@ -113,6 +159,7 @@ class CalendarScreenState extends State<CalendarScreen> {
   Future<void> _initRepo() async {
     try {
       await _repo.init();
+      await _removeLapsedPremiumSync(notify: false);
       await _reloadEntries();
       if (mounted) {
         setState(() {
@@ -128,6 +175,77 @@ class CalendarScreenState extends State<CalendarScreen> {
         });
       }
     }
+  }
+
+  /// Once Google Play confirms premium has ended, removes the Google events
+  /// that Premium synced. Events of the one free month stay.
+  Future<void> _removeLapsedPremiumSync({bool notify = true}) async {
+    if (_premium?.lapsed != true) return;
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(CalendarScreen.premiumSyncKey);
+    if (raw == null) return;
+    final record = jsonDecode(raw) as Map<String, dynamic>;
+    final account = record['account'] as String;
+    final calendars = (record['calendars'] as List).cast<String>();
+    final start = DateTime.parse(record['start'] as String);
+    final end = DateTime.parse(record['end'] as String);
+    var ranges = [(start, end)];
+    final freeMonth = prefs.getString(CalendarScreen.freeSyncMonthKey);
+    if (freeMonth != null) {
+      final keepStart = DateTime.parse('$freeMonth-01');
+      final keepEnd = DateTime(keepStart.year, keepStart.month + 1);
+      if (start.isBefore(keepEnd) && end.isAfter(keepStart)) {
+        ranges = [
+          if (start.isBefore(keepStart)) (start, keepStart),
+          if (end.isAfter(keepEnd)) (keepEnd, end),
+        ];
+      }
+    }
+    for (final (from, to) in ranges) {
+      await _repo.replaceGoogleWindow(
+        accountId: account,
+        calendarIds: calendars,
+        timeMin: from,
+        timeMax: to,
+        entries: const [],
+      );
+    }
+    await prefs.remove(CalendarScreen.premiumSyncKey);
+    if (notify) {
+      await _reloadEntries();
+      _showMessage('google_premium_events_removed');
+    }
+  }
+
+  /// Merges a premium sync into the record used for removal after a lapse.
+  Future<void> _rememberPremiumSync(
+    SharedPreferences prefs,
+    String account,
+    List<String> calendars,
+    DateTime start,
+    DateTime end,
+  ) async {
+    final raw = prefs.getString(CalendarScreen.premiumSyncKey);
+    final old = raw == null ? null : jsonDecode(raw) as Map<String, dynamic>;
+    if (old != null && old['account'] == account) {
+      final oldStart = DateTime.parse(old['start'] as String);
+      final oldEnd = DateTime.parse(old['end'] as String);
+      if (oldStart.isBefore(start)) start = oldStart;
+      if (oldEnd.isAfter(end)) end = oldEnd;
+      calendars = {
+        ...(old['calendars'] as List).cast<String>(),
+        ...calendars,
+      }.toList();
+    }
+    await prefs.setString(
+      CalendarScreen.premiumSyncKey,
+      jsonEncode({
+        'account': account,
+        'calendars': calendars,
+        'start': start.toIso8601String(),
+        'end': end.toIso8601String(),
+      }),
+    );
   }
 
   Future<void> _reloadEntries() async {
@@ -151,36 +269,128 @@ class CalendarScreenState extends State<CalendarScreen> {
     }
   }
 
-  void _showMessage(String key, {List<String>? args}) {
+  void _showMessage(String key, {List<String>? args, bool upsell = false}) {
     if (!mounted) return;
     final lang = context.read<LanguageService>();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          args == null
-              ? lang.translate(key)
-              : lang.translateWithArgs(key, args),
+    // The newest Calendar status replaces any message still showing.
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          // Compact floating message (Material snackbar: one or two short
+          // lines, at most one short action).
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          content: Text(
+            args == null
+                ? lang.translate(key)
+                : lang.translateWithArgs(key, args),
+          ),
+          action: upsell
+              ? SnackBarAction(
+                  label: lang.translate('premium_upgrade'),
+                  onPressed: () => openPremium(
+                    context,
+                    currentTimezone: widget.currentTimezone ?? 'IST',
+                  ),
+                )
+              : null,
         ),
-      ),
-    );
+      );
   }
 
+  DateTime _now() => (widget.clock ?? DateTime.now)();
+
+  bool _isPremium() => context.read<PremiumService?>()?.isPremium == true;
+
+  /// Opens the paywall; true when the user now has premium.
+  Future<bool> _unlockPremium({String? reasonKey}) async {
+    await openPremium(
+      context,
+      currentTimezone: widget.currentTimezone ?? 'IST',
+      reasonKey: reasonKey,
+    );
+    return mounted && _isPremium();
+  }
+
+  /// Premium (an active Play subscription or lifetime purchase, re-checked
+  /// with Google Play at every sync) imports the whole subscription year.
+  /// Free users get one sync ever, of the month being viewed; it is recorded
+  /// on the phone and in the Google account, and is only used up by a
+  /// successful import.
   Future<void> _syncYear() async {
     if (_syncing || !_repoReady) return;
-    if (context.read<PremiumService?>()?.isPremium != true) {
-      await openPremium(
-        context,
-        currentTimezone: widget.currentTimezone ?? 'IST',
-      );
-      return;
+    final month = DateTime(_focusedDay.year, _focusedDay.month);
+    final premiumService = context.read<PremiumService?>();
+    final languageCode = context
+        .read<LanguageService>()
+        .currentLocale
+        .languageCode;
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    var premium = _isPremium();
+    if (!premium && prefs.getBool(CalendarScreen.freeSyncUsedKey) == true) {
+      // Continue straight into the import after a successful purchase.
+      if (!await _unlockPremium(reasonKey: 'google_free_sync_used')) return;
+      premium = true;
     }
-    final year = _selectedYear;
     setState(() => _syncing = true);
+    // Names the step a failed sync stopped at in the device log.
+    var stage = 'sign_in';
     try {
-      if (!await _google.isSignedIn() && !await _google.signIn()) {
+      final bool signedIn;
+      try {
+        signedIn = await _google.isSignedIn() || await _google.signIn();
+      } catch (_) {
+        _showMessage('google_sign_in_failed');
+        return;
+      }
+      if (!signedIn) {
         _showMessage('sign_in_cancelled');
         return;
       }
+      String? googleIdToken;
+      stage = 'free_sync_registry';
+      if (!premium && _registry != null) {
+        googleIdToken = await _google.auth.idToken();
+        if (googleIdToken == null) throw StateError('No Google ID token');
+      }
+      var freeSyncAvailable = true;
+      var paywallReason = 'google_free_sync_used';
+      if (!premium && googleIdToken != null) {
+        try {
+          if (await _registry!.isUsed(googleIdToken)) {
+            // This Google account used its free sync before (e.g. before a
+            // reinstall or on another phone).
+            freeSyncAvailable = false;
+            await prefs.setBool(CalendarScreen.freeSyncUsedKey, true);
+          }
+        } catch (error) {
+          // The free sync cannot be confirmed, so none is handed out; offer
+          // Premium instead of an error. The free sync stays available.
+          debugPrint('Free sync check failed: $error');
+          freeSyncAvailable = false;
+          paywallReason = 'free_sync_unverified';
+        }
+      }
+      if (!premium && !freeSyncAvailable) {
+        if (!mounted) return;
+        setState(() => _syncing = false);
+        if (!await _unlockPremium(reasonKey: paywallReason)) return;
+        premium = true;
+        setState(() => _syncing = true);
+      }
+      final window = premium
+          ? premiumService!.syncWindow(
+              _now(),
+              calendarYears: _years.isEmpty
+                  ? null
+                  : (first: _years.first, last: _years.last),
+            )!
+          : (start: month, end: DateTime(month.year, month.month + 1));
+      stage = 'list_calendars';
       final account = await _google.auth.accountId();
       if (account == null) throw StateError('No Google account');
       final calendars = await _google.listCalendars();
@@ -189,28 +399,68 @@ class CalendarScreenState extends State<CalendarScreen> {
         return;
       }
       final saved = await GoogleCalendarPrefs.loadSelectedIds(account);
+      final email = await _google.auth.accountEmail();
       if (!mounted) return;
       final chosen = await showGoogleCalendarPickerSheet(
         context: context,
         calendars: calendars,
         initiallySelected: saved,
+        accountEmail: email,
       );
+      if (identical(chosen, switchGoogleAccountResult)) {
+        // Forget the remembered account so the next sign-in shows Google's
+        // account chooser. Imported events of the old account are kept.
+        await _google.auth.signOut();
+        if (mounted) setState(() => _syncing = false);
+        await _syncYear();
+        return;
+      }
       if (chosen == null || chosen.isEmpty) return;
-      // Capture the selected year before authentication: changing a tab or year
-      // while a request runs cannot silently change the requested import range.
+      // The window was fixed before the picker: changing the month or year
+      // while a request runs cannot silently change the import range.
+      stage = 'import';
       final count = await _google.syncImport(
-        timeMin: DateTime(year, 1, 1),
-        timeMax: DateTime(year + 1, 1, 1),
+        timeMin: window.start,
+        timeMax: window.end,
         calendarIds: chosen,
       );
       await GoogleCalendarPrefs.saveSelectedIds(account, chosen);
       await _reloadEntries();
       if (mounted) setState(() => _filter = CalendarFilter.google);
-      _showMessage(
-        count == 0 ? 'no_google_events' : 'imported_google_events',
-        args: ['$count'],
-      );
-    } catch (_) {
+      if (!premium) {
+        await prefs.setBool(CalendarScreen.freeSyncUsedKey, true);
+        await prefs.setString(
+          CalendarScreen.freeSyncMonthKey,
+          month.toIso8601String().substring(0, 7),
+        );
+        if (googleIdToken != null) {
+          try {
+            await _registry!.record(googleIdToken, month);
+          } catch (_) {
+            // Best effort: this phone already remembers the free sync.
+          }
+        }
+        _showMessage('google_free_sync_used', upsell: true);
+      } else {
+        await _rememberPremiumSync(
+          prefs,
+          account,
+          chosen,
+          window.start,
+          window.end,
+        );
+        final format = DateFormat.yMMM(languageCode);
+        _showMessage(
+          'imported_google_range',
+          args: [
+            '$count',
+            format.format(window.start),
+            format.format(DateTime(window.end.year, window.end.month - 1)),
+          ],
+        );
+      }
+    } catch (error) {
+      debugPrint('Google Calendar sync failed at $stage: $error');
       _showMessage('google_sync_failed');
     } finally {
       if (mounted) setState(() => _syncing = false);
@@ -221,8 +471,8 @@ class CalendarScreenState extends State<CalendarScreen> {
     if (_syncing || !_repoReady) return;
     setState(() => _syncing = true);
     try {
+      // Premium belongs to the Google Play purchase, not this Google sign-in.
       await _google.signOut();
-      if (mounted) context.read<PremiumService?>()?.reset();
       await _reloadEntries();
     } catch (_) {
       _showMessage('google_sync_failed');
@@ -369,6 +619,7 @@ class CalendarScreenState extends State<CalendarScreen> {
                           ),
                         ),
                         IconButton(
+                          key: const Key('disconnect_google'),
                           tooltip: lang.translate('disconnect_google'),
                           onPressed: _repoReady && !_syncing
                               ? _disconnectGoogle
@@ -410,10 +661,16 @@ class CalendarScreenState extends State<CalendarScreen> {
                     ],
                     onChanged: (year) {
                       if (year == null) return;
+                      // Another year opens on its January; the current year
+                      // opens on today.
+                      final now = _now();
+                      final target = year == now.year
+                          ? DateTime(now.year, now.month, now.day)
+                          : DateTime(year, 1, 1);
                       setState(() {
                         _selectedYear = year;
-                        _focusedDay = DateTime(year, _focusedDay.month, 1);
-                        _selectedDay = _focusedDay;
+                        _focusedDay = target;
+                        _selectedDay = target;
                       });
                       _checkSelectedDayEkadashi();
                     },
@@ -490,7 +747,6 @@ class CalendarScreenState extends State<CalendarScreen> {
             ),
           SliverToBoxAdapter(
             child: TableCalendar(
-              key: ValueKey(_selectedYear),
               firstDay: _firstDay,
               lastDay: _lastDay,
               focusedDay: _focusedDay,
@@ -561,6 +817,8 @@ class CalendarScreenState extends State<CalendarScreen> {
               onPageChanged: (focusedDay) {
                 setState(() {
                   _focusedDay = focusedDay;
+                  // Swiping from December into January moves the year too.
+                  _selectedYear = focusedDay.year;
                 });
               },
               calendarStyle: CalendarStyle(
@@ -754,12 +1012,17 @@ class CalendarScreenState extends State<CalendarScreen> {
                     children: [
                       Icon(statusIcon, size: 13, color: statusColor),
                       const SizedBox(width: 4),
-                      Text(
-                        statusLabel,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: statusColor,
+                      // Wraps on narrow phones with large text instead of
+                      // overflowing the card.
+                      Flexible(
+                        child: Text(
+                          statusLabel,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: statusColor,
+                          ),
                         ),
                       ),
                     ],

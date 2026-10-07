@@ -197,11 +197,27 @@
       }
     }
   },
+  "imported_google_range": "Imported {value0} Google events ({value1} – {value2})",
+  "@imported_google_range": {
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      },
+      "value1": {
+        "type": "String"
+      },
+      "value2": {
+        "type": "String"
+      }
+    }
+  },
   "google_sync_failed": "Calendar import failed. Previous entries were kept. Please try again.",
   "storage_failed": "Calendar storage is unavailable. Please try again.",
   "retry": "Try again",
   "choose_calendars": "Calendars to import",
   "choose_calendars_help": "Select calendars to display in this app. Import does not change your Google events.",
+  "switch_google_account": "Use another account",
+  "google_calendar": "Google Calendar",
   "primary_calendar": "Primary",
   "import_selected": "Import selected",
   "content_fallback": "This archived content is currently available in English.",
@@ -291,8 +307,8 @@
   "splash_mantra": "Om Namo Narayana!",
   "no_offline_results": "No offline results found. Save content for offline access.",
   "premium_title": "Ekadashi Premium",
-  "premium_benefits": "Google Calendar sync and additional achievements. Dates, custom entries, Vrat records, streaks and all existing widgets stay free.",
-  "premium_free_achievements": "Your first three earned achievements are free. All recording and streaks remain free.",
+  "premium_benefits": "Unlock everything in Ekadashi Premium. Ekadashi dates, reminders, widgets, custom entries and your saved Vrat history stay free.",
+  "premium_free_achievements": "Your first three Vrat entries and first three achievements are free. Premium unlocks the rest.",
   "premium_monthly": "Monthly",
   "premium_yearly": "Yearly",
   "premium_lifetime": "Lifetime",
@@ -304,7 +320,28 @@
   "premium_restore": "Restore purchases",
   "premium_manage": "Manage subscription in Google Play",
   "premium_active": "Premium access active",
-  "premium_unavailable": "Purchases are unavailable. Free features still work.",
+  "premium_current_plan": "Your current plan",
+  "premium_best_value": "Best value",
+  "premium_per_month": "per month",
+  "premium_per_year": "per year",
+  "premium_one_time": "one-time",
+  "premium_cancelled_title": "Subscription cancelled",
+  "premium_cancelled_body": "Premium stays on until the end of the period you paid for. Reactivate anytime to keep it.",
+  "premium_reactivate": "Reactivate",
+  "free_sync_unverified": "Couldn't check your free sync. Check your connection, or get Premium.",
+  "premium_upgrade": "Upgrade",
+  "premium_restored": "Purchases restored. Premium is active.",
+  "premium_restore_none": "No purchases found for this Google Play account.",
+  "premium_lifetime_thanks_title": "Thank you, lifetime member! 🙏",
+  "premium_lifetime_thanks_body": "Every Premium feature is yours for life, including all future features and updates. We look forward to serving you for years to come.",
+  "premium_subscriber_title": "You have Premium ✨",
+  "premium_subscriber_body": "Switch plans or go lifetime anytime.",
+  "premium_cancel_subscription_note": "Your subscription is still active. Cancel it in Google Play so you are not charged again. Lifetime stays yours.",
+  "premium_cancel_subscription_action": "Cancel subscription in Google Play",
+  "premium_lifetime_confirm_title": "You already have a subscription",
+  "premium_lifetime_confirm_body": "Google Play does not cancel subscriptions automatically. After buying lifetime, cancel your subscription in Google Play to stop renewals.",
+  "premium_buy_lifetime_anyway": "Buy lifetime",
+  "premium_unavailable": "Purchases are unavailable right now. Install the app from Google Play and try again. Free features still work.",
   "premium_verification_failed": "Purchase verification is pending. Try Restore purchases; access is granted only after verification.",
   "premium_pending": "Awaiting payment confirmation",
   "premium_wallet": "Fasting rewards",
@@ -319,5 +356,14 @@
   "premium_terms": "Privacy and reward terms",
   "premium_coins": "Coins",
   "premium_more_achievements": "More achievements with Premium",
-  "premium_reward_example": "Typical year: 24 × 10 = 240 coins, plus a 60-coin full-year bonus = 300 coins. In a 26-Ekadashi year: 260 + 40 = 300."
+  "premium_reward_example": "Typical year: 24 × 10 = 240 coins, plus a 60-coin full-year bonus = 300 coins. In a 26-Ekadashi year: 260 + 40 = 300.",
+  "premium_feature_calendar": "Google Calendar sync for your whole subscription year (one free month sync)",
+  "premium_feature_vrat": "Unlimited Vrat entries (the first three are free) and all achievements",
+  "premium_feature_panchang": "Full daily Panchang: all five limbs, city timings and observances",
+  "terms_of_service": "Terms of service",
+  "privacy_policy": "Privacy policy",
+  "google_free_sync_used": "Free sync used. Upgrade to sync the whole year.",
+  "google_sign_in_failed": "Google sign-in failed. Check your connection and try again.",
+  "vrat_free_limit_reached": "You've used your three free Vrat entries. Get Premium to keep recording.",
+  "google_premium_events_removed": "Your Premium has ended, so the Google events it synced were removed. Renew to sync again."
 }

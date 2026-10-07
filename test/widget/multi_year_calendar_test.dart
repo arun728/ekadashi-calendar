@@ -44,12 +44,18 @@ void main() {
     google = UiGoogle();
     language = LanguageService();
   });
-  Future<void> open(WidgetTester tester, {bool paid = true}) async {
+  Future<void> open(
+    WidgetTester tester, {
+    bool paid = true,
+    DateTime? now,
+    DateTime? purchasedAt,
+  }) async {
     final premium = PremiumService(
-      backend: PremiumFixture()..premium = paid,
-      startLeaseTimer: false,
+      entitlements: PremiumFixture()
+        ..premium = paid
+        ..purchasedAt = purchasedAt,
     );
-    await premium.connect();
+    await premium.refresh();
     addTearDown(premium.dispose);
     await tester.pumpWidget(
       MultiProvider(
@@ -70,6 +76,7 @@ void main() {
               languageCode: 'en',
             ),
             repository: repo,
+            clock: () => now ?? DateTime(2026, 10, 5),
             googleService: GoogleCalendarService(
               auth: google,
               repository: repo,
@@ -97,9 +104,13 @@ void main() {
   }
 
   testWidgets(
-    'Free calendar opens premium for Google sync and keeps custom entry free',
+    'Free calendar opens premium after the free sync and keeps custom entry free',
     (tester) async {
+      SharedPreferences.setMockInitialValues({
+        CalendarScreen.freeSyncUsedKey: true,
+      });
       await open(tester, paid: false);
+      await year2027(tester);
       await tester.tap(find.byKey(const Key('import_google_year')));
       await tester.pumpAndSettle();
       expect(find.byType(PremiumScreen), findsOneWidget);
@@ -113,42 +124,70 @@ void main() {
     },
   );
 
+  TableCalendar<dynamic> calendarOf(WidgetTester tester) =>
+      tester.widget<TableCalendar<dynamic>>(
+        find.byWidgetPredicate((w) => w is TableCalendar),
+      );
+
+  int? selectorYear(WidgetTester tester) => tester
+      .widget<DropdownButton<int>>(
+        find.byKey(const Key('calendar_year_selector')),
+      )
+      .value;
+
   testWidgets(
-    'Glass month actions stay in selected year and preserve selected day',
+    'The calendar runs across every data year, with the selector following',
     (tester) async {
       await open(tester);
       final state = tester.state<CalendarScreenState>(
         find.byType(CalendarScreen),
       );
-      state.selectDate(DateTime(2027, 1, 15));
-      await tester.pumpAndSettle();
       final previous = find.byKey(const Key('calendar_previous_month'));
       final next = find.byKey(const Key('calendar_next_month'));
-      expect(tester.widget<IconButton>(previous).onPressed, isNull);
+      // The range comes from the bundled year packs (2026 and 2027).
+      String ymd(DateTime d) => '${d.year}-${d.month}-${d.day}';
+      expect(ymd(calendarOf(tester).firstDay), '2026-1-1');
+      expect(ymd(calendarOf(tester).lastDay), '2027-12-31');
+      state.selectDate(DateTime(2026, 12, 15));
+      await tester.pumpAndSettle();
       await tester.ensureVisible(next);
+      expect(tester.widget<IconButton>(next).onPressed, isNotNull);
       await tester.tap(next);
       await tester.pumpAndSettle();
-      var calendar = tester.widget<TableCalendar>(
-        find.byWidgetPredicate((w) => w is TableCalendar),
-      );
-      expect(calendar.focusedDay.month, 2);
-      expect(calendar.focusedDay.year, 2027);
-      expect(calendar.selectedDayPredicate!(DateTime(2027, 1, 15)), isTrue);
+      expect(calendarOf(tester).focusedDay.year, 2027);
+      expect(calendarOf(tester).focusedDay.month, 1);
+      expect(selectorYear(tester), 2027);
+      await tester.tap(previous);
+      await tester.pumpAndSettle();
+      expect(calendarOf(tester).focusedDay.year, 2026);
+      expect(calendarOf(tester).focusedDay.month, 12);
+      expect(selectorYear(tester), 2026);
       state.selectDate(DateTime(2027, 12, 15));
       await tester.pumpAndSettle();
       expect(tester.widget<IconButton>(next).onPressed, isNull);
-      await tester.tap(previous);
+      state.selectDate(DateTime(2026, 1, 15));
       await tester.pumpAndSettle();
-      calendar = tester.widget<TableCalendar>(
-        find.byWidgetPredicate((w) => w is TableCalendar),
-      );
-      expect(calendar.focusedDay.month, 11);
-      expect(calendar.focusedDay.year, 2027);
+      expect(tester.widget<IconButton>(previous).onPressed, isNull);
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets('Choosing a year opens its January; the current year, today', (
+    tester,
+  ) async {
+    await open(tester);
+    await year2027(tester);
+    final focused = calendarOf(tester).focusedDay;
+    expect([focused.year, focused.month, focused.day], [2027, 1, 1]);
+    await tester.tap(find.byKey(const Key('calendar_year_selector')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('2026').last);
+    await tester.pumpAndSettle();
+    expect(calendarOf(tester).focusedDay.month, 10);
+    expect(calendarOf(tester).focusedDay.year, 2026);
+  });
   testWidgets(
-    'Year selector changes bounds and Today resets to the current year',
+    'Year selector keeps the full range and Today resets to the current year',
     (tester) async {
       await open(tester);
       await year2027(tester);
@@ -161,7 +200,7 @@ void main() {
           calendar.firstDay.month,
           calendar.firstDay.day,
         ],
-        [2027, 1, 1],
+        [2026, 1, 1],
       );
       expect(
         [calendar.lastDay.year, calendar.lastDay.month, calendar.lastDay.day],
@@ -174,18 +213,28 @@ void main() {
       calendar = tester.widget<TableCalendar>(
         find.byWidgetPredicate((w) => w is TableCalendar),
       );
+      final now = DateTime.now();
       expect(
-        calendar.firstDay.year,
-        [2026, 2027].contains(DateTime.now().year) ? DateTime.now().year : 2027,
+        calendar.focusedDay.year,
+        [2026, 2027].contains(now.year) ? now.year : 2027,
       );
       expect(tester.takeException(), isNull);
     },
   );
   testWidgets(
-    'UI import uses selected whole year and reflects a deleted Google event',
+    'UI import uses the subscription year and reflects a deleted Google event',
     (tester) async {
-      await open(tester);
+      // A January 2027 subscription syncs January to December 2027.
+      await open(
+        tester,
+        now: DateTime(2027, 3, 1),
+        purchasedAt: DateTime(2027, 1, 10),
+      );
       await year2027(tester);
+      tester
+          .state<CalendarScreenState>(find.byType(CalendarScreen))
+          .selectDate(DateTime(2027, 1, 1));
+      await tester.pumpAndSettle();
       google.events = [
         event('Deleted in Google'),
         event('Keep December', start: '2027-12-31', end: '2028-01-01'),
@@ -194,9 +243,33 @@ void main() {
       expect(google.min, DateTime(2027));
       expect(google.max, DateTime(2028));
       expect(repo.entries, hasLength(2));
+      final importedEvent = find.text('Deleted in Google');
+      await tester.scrollUntilVisible(
+        importedEvent,
+        220,
+        scrollable: find
+            .descendant(
+              of: find.byType(CalendarScreen),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
+      expect(importedEvent, findsOneWidget);
       google.events = [
         event('Keep December', start: '2027-12-31', end: '2028-01-01'),
       ];
+      final importButton = find.byKey(const Key('import_google_year'));
+      final calendarViewport = find.byType(CustomScrollView).first;
+      for (
+        var attempt = 0;
+        attempt < 20 && importButton.evaluate().isEmpty;
+        attempt++
+      ) {
+        await tester.drag(calendarViewport, const Offset(0, 500));
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      expect(importButton, findsOneWidget);
+      await tester.ensureVisible(importButton);
       await import(tester);
       expect(repo.entries.values.map((e) => e.title), ['Keep December']);
       expect(find.text('Deleted in Google'), findsNothing);

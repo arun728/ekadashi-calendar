@@ -563,6 +563,11 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
+  String imported_google_range(String value0, String value1, String value2) {
+    return '$value0 Google इवेंट आयात किए गए ($value1 – $value2)';
+  }
+
+  @override
   String get google_sync_failed =>
       'कैलेंडर आयात विफल। पिछली प्रविष्टियाँ सुरक्षित हैं। फिर प्रयास करें।';
 
@@ -578,6 +583,12 @@ class AppLocalizationsHi extends AppLocalizations {
   @override
   String get choose_calendars_help =>
       'ऐप में दिखाने के लिए कैलेंडर चुनें। आयात आपके Google कार्यक्रम नहीं बदलता।';
+
+  @override
+  String get switch_google_account => 'दूसरा खाता इस्तेमाल करें';
+
+  @override
+  String get google_calendar => 'Google कैलेंडर';
 
   @override
   String get primary_calendar => 'प्राथमिक';
@@ -832,11 +843,11 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get premium_benefits =>
-      'गूगल कैलेंडर सिंक और अतिरिक्त उपलब्धियाँ। तिथियाँ, निजी प्रविष्टियाँ, व्रत रिकॉर्ड, क्रम और सभी मौजूदा विजेट मुफ़्त हैं।';
+      'एकादशी प्रीमियम से सब कुछ अनलॉक करें। एकादशी तिथियाँ, रिमाइंडर, विजेट, निजी प्रविष्टियाँ और आपका सहेजा व्रत इतिहास मुफ़्त रहेगा।';
 
   @override
   String get premium_free_achievements =>
-      'पहली तीन अर्जित उपलब्धियाँ मुफ़्त हैं। सभी व्रत रिकॉर्ड और क्रम मुफ़्त हैं।';
+      'आपकी पहली तीन व्रत प्रविष्टियाँ और पहली तीन उपलब्धियाँ मुफ़्त हैं। बाकी प्रीमियम में खुलती हैं।';
 
   @override
   String get premium_monthly => 'मासिक';
@@ -875,8 +886,78 @@ class AppLocalizationsHi extends AppLocalizations {
   String get premium_active => 'प्रीमियम सुविधा सक्रिय है';
 
   @override
+  String get premium_current_plan => 'आपका मौजूदा प्लान';
+
+  @override
+  String get premium_best_value => 'सबसे किफ़ायती';
+
+  @override
+  String get premium_per_month => 'प्रति माह';
+
+  @override
+  String get premium_per_year => 'प्रति वर्ष';
+
+  @override
+  String get premium_one_time => 'एक बार';
+
+  @override
+  String get premium_cancelled_title => 'सदस्यता रद्द की गई';
+
+  @override
+  String get premium_cancelled_body =>
+      'भुगतान की गई अवधि के अंत तक Premium चालू रहेगा। इसे बनाए रखने के लिए कभी भी फिर से चालू करें।';
+
+  @override
+  String get premium_reactivate => 'फिर से चालू करें';
+
+  @override
+  String get free_sync_unverified =>
+      'आपका मुफ़्त सिंक जाँचा नहीं जा सका। अपना कनेक्शन जाँचें, या Premium लें।';
+
+  @override
+  String get premium_upgrade => 'अपग्रेड';
+
+  @override
+  String get premium_restored => 'खरीदारी बहाल हो गई। Premium सक्रिय है।';
+
+  @override
+  String get premium_restore_none =>
+      'इस Google Play खाते के लिए कोई खरीदारी नहीं मिली।';
+
+  @override
+  String get premium_lifetime_thanks_title => 'धन्यवाद, आजीवन सदस्य! 🙏';
+
+  @override
+  String get premium_lifetime_thanks_body =>
+      'हर Premium सुविधा जीवनभर आपकी है, आने वाली सभी नई सुविधाओं और अपडेट सहित। हम वर्षों तक आपकी सेवा करने के लिए उत्सुक हैं।';
+
+  @override
+  String get premium_subscriber_title => 'आपके पास Premium है ✨';
+
+  @override
+  String get premium_subscriber_body => 'कभी भी प्लान बदलें या आजीवन लें।';
+
+  @override
+  String get premium_cancel_subscription_note =>
+      'आपकी सदस्यता अभी भी सक्रिय है। दोबारा शुल्क से बचने के लिए इसे Google Play में रद्द करें। आजीवन प्लान आपका ही रहेगा।';
+
+  @override
+  String get premium_cancel_subscription_action =>
+      'Google Play में सदस्यता रद्द करें';
+
+  @override
+  String get premium_lifetime_confirm_title => 'आपकी सदस्यता पहले से है';
+
+  @override
+  String get premium_lifetime_confirm_body =>
+      'Google Play सदस्यता अपने आप रद्द नहीं करता। आजीवन खरीदने के बाद, नवीनीकरण रोकने के लिए Google Play में अपनी सदस्यता रद्द करें।';
+
+  @override
+  String get premium_buy_lifetime_anyway => 'आजीवन खरीदें';
+
+  @override
   String get premium_unavailable =>
-      'खरीदारी उपलब्ध नहीं है। मुफ़्त सुविधाएँ काम करती रहेंगी।';
+      'अभी खरीदारी उपलब्ध नहीं है। ऐप Google Play से इंस्टॉल करके फिर प्रयास करें। मुफ़्त सुविधाएँ काम करती रहेंगी।';
 
   @override
   String get premium_verification_failed =>
@@ -929,4 +1010,38 @@ class AppLocalizationsHi extends AppLocalizations {
   @override
   String get premium_reward_example =>
       'सामान्य वर्ष: 24 × 10 = 240 सिक्के, पूरे वर्ष का बोनस 60 जोड़कर 300। 26 एकादशी वाले वर्ष में: 260 + 40 = 300।';
+
+  @override
+  String get premium_feature_calendar =>
+      'आपके पूरे सदस्यता वर्ष के लिए Google कैलेंडर सिंक (एक महीने का सिंक मुफ़्त)';
+
+  @override
+  String get premium_feature_vrat =>
+      'असीमित व्रत प्रविष्टियाँ (पहली तीन मुफ़्त) और सभी उपलब्धियाँ';
+
+  @override
+  String get premium_feature_panchang =>
+      'पूर्ण दैनिक पंचांग: पाँचों अंग, शहर के अनुसार समय और पर्व';
+
+  @override
+  String get terms_of_service => 'सेवा की शर्तें';
+
+  @override
+  String get privacy_policy => 'गोपनीयता नीति';
+
+  @override
+  String get google_free_sync_used =>
+      'मुफ़्त सिंक इस्तेमाल हो गया। पूरे साल के सिंक के लिए अपग्रेड करें।';
+
+  @override
+  String get google_sign_in_failed =>
+      'Google साइन इन विफल रहा। अपना कनेक्शन जाँचें और फिर प्रयास करें।';
+
+  @override
+  String get vrat_free_limit_reached =>
+      'आपने तीन मुफ़्त व्रत प्रविष्टियाँ उपयोग कर ली हैं। आगे दर्ज करने के लिए प्रीमियम लें।';
+
+  @override
+  String get google_premium_events_removed =>
+      'आपका प्रीमियम समाप्त हो गया है, इसलिए उससे सिंक किए गए Google इवेंट हटा दिए गए। फिर से सिंक करने के लिए नवीनीकरण करें।';
 }

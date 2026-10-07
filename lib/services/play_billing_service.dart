@@ -1,8 +1,9 @@
-import 'premium_http_backend.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:in_app_purchase_android/billing_client_wrappers.dart';
 import 'package:in_app_purchase_android/in_app_purchase_android.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'premium_service.dart';
 
 class PremiumPlan {
@@ -11,6 +12,85 @@ class PremiumPlan {
   final ProductDetails product;
 }
 
+/// True only for purchases Google Play reports as PURCHASED. The Android
+/// plugin labels every restored purchase "restored", including pending ones,
+/// so the Play purchase state is checked directly when it is available.
+bool isCompletedPlayPurchase(PurchaseDetails purchase) {
+  if (purchase is GooglePlayPurchaseDetails) {
+    return purchase.billingClientPurchase.purchaseState ==
+        PurchaseStateWrapper.purchased;
+  }
+  return purchase.status == PurchaseStatus.purchased ||
+      purchase.status == PurchaseStatus.restored;
+}
+
+/// When Google Play says [purchase] was made (for a subscription, the
+/// original purchase; renewals keep it), or null when unknown.
+DateTime? playPurchaseTime(PurchaseDetails purchase) {
+  if (purchase is GooglePlayPurchaseDetails) {
+    return DateTime.fromMillisecondsSinceEpoch(
+      purchase.billingClientPurchase.purchaseTime,
+    );
+  }
+  final millis = int.tryParse(purchase.transactionDate ?? '');
+  return millis == null ? null : DateTime.fromMillisecondsSinceEpoch(millis);
+}
+
+/// Reads owned purchases from Google Play Billing on this device and
+/// acknowledges any completed purchase Play still holds unacknowledged
+/// (Play refunds purchases left unacknowledged for three days).
+class PlayStoreEntitlements extends PlayEntitlementSource {
+  PlayStoreEntitlements({
+    Future<List<PurchaseDetails>> Function()? query,
+    Future<void> Function(PurchaseDetails purchase)? acknowledge,
+  }) : _query = query ?? _queryPlay,
+       // Resolve the store lazily: creating it connects to Play Billing.
+       _acknowledge =
+           acknowledge ??
+           ((purchase) => InAppPurchase.instance.completePurchase(purchase));
+
+  final Future<List<PurchaseDetails>> Function() _query;
+  final Future<void> Function(PurchaseDetails purchase) _acknowledge;
+
+  static Future<List<PurchaseDetails>> _queryPlay() async {
+    final addition = InAppPurchase.instance
+        .getPlatformAddition<InAppPurchaseAndroidPlatformAddition>();
+    final response = await addition.queryPastPurchases();
+    if (response.error != null) {
+      throw StateError('Google Play purchases unavailable');
+    }
+    return response.pastPurchases;
+  }
+
+  @override
+  Map<String, bool> autoRenewing = const {};
+
+  @override
+  Future<Map<String, DateTime?>> ownedProducts() async {
+    final owned = <String, DateTime?>{};
+    final renewing = <String, bool>{};
+    for (final purchase in await _query()) {
+      if (!{
+            PremiumService.subscriptionId,
+            PremiumService.lifetimeId,
+          }.contains(purchase.productID) ||
+          !isCompletedPlayPurchase(purchase)) {
+        continue;
+      }
+      owned[purchase.productID] = playPurchaseTime(purchase);
+      if (purchase is GooglePlayPurchaseDetails) {
+        renewing[purchase.productID] =
+            purchase.billingClientPurchase.isAutoRenewing;
+      }
+      if (purchase.pendingCompletePurchase) await _acknowledge(purchase);
+    }
+    autoRenewing = renewing;
+    return owned;
+  }
+}
+
+enum RestoreResult { restored, none, unavailable }
+
 class PlayBillingService extends ChangeNotifier {
   PlayBillingService(this.premium, {InAppPurchase? store}) : _store = store;
   bool _disposed = false;
@@ -18,8 +98,8 @@ class PlayBillingService extends ChangeNotifier {
     if (!_disposed) notifyListeners();
   }
 
-  static const subscription = 'ekadashi_premium';
-  static const lifetime = 'ekadashi_premium_lifetime';
+  static const subscription = PremiumService.subscriptionId;
+  static const lifetime = PremiumService.lifetimeId;
   final PremiumService premium;
   InAppPurchase? _store;
   InAppPurchase get store => _store ??= InAppPurchase.instance;
@@ -28,20 +108,35 @@ class PlayBillingService extends ChangeNotifier {
   String? error;
   bool pending = false;
   Future<void>? _processing;
+
+  /// The base plan (`monthly`/`yearly`) last bought on this phone. Only a
+  /// label hint for the paywall; entitlement always comes from Google Play.
+  String? currentPlanId;
+  String? _requestedPlan;
+  static const planHintKey = 'premium_plan_hint';
+
+  /// Like other subscription apps, a subscriber can still switch between
+  /// monthly and yearly or buy lifetime; lifetime owners need nothing more.
+  /// A cancelled subscriber may also reactivate their current plan.
+  bool canBuy(PremiumPlan plan) {
+    if (pending || premium.lifetime) return false;
+    if (plan.id == 'lifetime' || !premium.subscribed) return true;
+    return plan.id != currentPlanId || premium.subscriptionCancelled;
+  }
+
   Future<void> initialize() async {
     if (_disposed) return;
-    if (premium.backend is PremiumHttpBackend &&
-        !(premium.backend as PremiumHttpBackend).configured) {
-      error = 'premium_unavailable';
-      _notify();
-      return;
-    }
+    try {
+      currentPlanId = (await SharedPreferences.getInstance()).getString(
+        planHintKey,
+      );
+    } catch (_) {}
     _subscription ??= store.purchaseStream.listen(
       (values) {
         _processing = (_processing ?? Future<void>.value())
             .then((_) => _process(values))
             .catchError((_) {
-              error = 'premium_verification_failed';
+              error = 'premium_unavailable';
               _notify();
             });
       },
@@ -87,6 +182,11 @@ class PlayBillingService extends ChangeNotifier {
 
   Future<void> _process(List<PurchaseDetails> values) async {
     for (final purchase in values) {
+      debugPrint(
+        'Google Play purchase update: ${purchase.productID} '
+        '${purchase.status.name} ${purchase.error?.code ?? ''} '
+        '${purchase.error?.message ?? ''} ${purchase.error?.details ?? ''}',
+      );
       if (!{subscription, lifetime}.contains(purchase.productID)) continue;
       switch (purchase.status) {
         case PurchaseStatus.pending:
@@ -95,37 +195,46 @@ class PlayBillingService extends ChangeNotifier {
         case PurchaseStatus.error:
           pending = false;
           error = 'premium_unavailable';
+          debugPrint(
+            'Google Play purchase error: ${purchase.error?.code} '
+            '${purchase.error?.message} ${purchase.error?.details}',
+          );
           break;
         case PurchaseStatus.canceled:
           pending = false;
           break;
         case PurchaseStatus.purchased:
         case PurchaseStatus.restored:
+          if (!isCompletedPlayPurchase(purchase)) {
+            pending = true;
+            break;
+          }
           pending = false;
-          // A purchase remains unacknowledged locally until server verification
-          // succeeds. Server/restore retries fulfill it durably.
-          final verified = await premium.verify(
-            purchase.verificationData.serverVerificationData,
+          premium.grant(
             purchase.productID,
+            purchasedAt: playPurchaseTime(purchase),
           );
-          if (verified && purchase.pendingCompletePurchase) {
+          if (purchase.productID == subscription && _requestedPlan != null) {
+            currentPlanId = _requestedPlan;
+            try {
+              await (await SharedPreferences.getInstance()).setString(
+                planHintKey,
+                _requestedPlan!,
+              );
+            } catch (_) {}
+          }
+          if (purchase.pendingCompletePurchase) {
             await store.completePurchase(purchase);
           }
-          error = verified ? null : 'premium_verification_failed';
+          error = null;
       }
     }
     _notify();
   }
 
   Future<void> buy(PremiumPlan plan) async {
-    if (!premium.connected ||
-        premium.accountId == null ||
-        pending ||
-        premium.isPremium ||
-        premium.autoRenew ||
-        premium.lifetime) {
-      return;
-    }
+    if (!canBuy(plan)) return;
+    _requestedPlan = plan.id == 'lifetime' ? null : plan.id;
     try {
       final product = plan.product;
       String? offer;
@@ -136,30 +245,33 @@ class PlayBillingService extends ChangeNotifier {
             .subscriptionOfferDetails![product.subscriptionIndex!]
             .offerIdToken;
       }
+      // Switching between monthly and yearly (base plans of the same
+      // subscription) and reactivating a cancelled plan are plain purchases:
+      // Google says to send no SubscriptionUpdateParams; Play replaces the
+      // old plan using the Play Console's default replacement mode.
       final param = GooglePlayPurchaseParam(
         productDetails: product,
-        applicationUserName: premium.accountId,
         offerToken: offer,
       );
       if (!await store.buyNonConsumable(purchaseParam: param)) {
         error = 'premium_unavailable';
       }
-    } catch (_) {
+    } catch (e) {
+      debugPrint('Google Play checkout failed: $e');
       error = 'premium_unavailable';
     }
     _notify();
   }
 
-  Future<void> restore() async {
-    try {
-      await premium.connect();
-      if (premium.connected) {
-        await store.restorePurchases(applicationUserName: premium.accountId);
-      }
-    } catch (_) {
-      error = 'premium_unavailable';
-      _notify();
-    }
+  /// Restores from Google Play's owned purchases; no account sign-in needed.
+  /// Google Play also restores automatically at launch and on resume; this
+  /// manual check reports what it found so the user gets clear feedback.
+  Future<RestoreResult> restore() async {
+    await premium.refresh();
+    error = premium.error;
+    _notify();
+    if (premium.error != null) return RestoreResult.unavailable;
+    return premium.isPremium ? RestoreResult.restored : RestoreResult.none;
   }
 
   @override

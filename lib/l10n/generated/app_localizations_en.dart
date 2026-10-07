@@ -567,6 +567,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String imported_google_range(String value0, String value1, String value2) {
+    return 'Imported $value0 Google events ($value1 – $value2)';
+  }
+
+  @override
   String get google_sync_failed =>
       'Calendar import failed. Previous entries were kept. Please try again.';
 
@@ -583,6 +588,12 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get choose_calendars_help =>
       'Select calendars to display in this app. Import does not change your Google events.';
+
+  @override
+  String get switch_google_account => 'Use another account';
+
+  @override
+  String get google_calendar => 'Google Calendar';
 
   @override
   String get primary_calendar => 'Primary';
@@ -838,11 +849,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premium_benefits =>
-      'Google Calendar sync and additional achievements. Dates, custom entries, Vrat records, streaks and all existing widgets stay free.';
+      'Unlock everything in Ekadashi Premium. Ekadashi dates, reminders, widgets, custom entries and your saved Vrat history stay free.';
 
   @override
   String get premium_free_achievements =>
-      'Your first three earned achievements are free. All recording and streaks remain free.';
+      'Your first three Vrat entries and first three achievements are free. Premium unlocks the rest.';
 
   @override
   String get premium_monthly => 'Monthly';
@@ -881,8 +892,79 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premium_active => 'Premium access active';
 
   @override
+  String get premium_current_plan => 'Your current plan';
+
+  @override
+  String get premium_best_value => 'Best value';
+
+  @override
+  String get premium_per_month => 'per month';
+
+  @override
+  String get premium_per_year => 'per year';
+
+  @override
+  String get premium_one_time => 'one-time';
+
+  @override
+  String get premium_cancelled_title => 'Subscription cancelled';
+
+  @override
+  String get premium_cancelled_body =>
+      'Premium stays on until the end of the period you paid for. Reactivate anytime to keep it.';
+
+  @override
+  String get premium_reactivate => 'Reactivate';
+
+  @override
+  String get free_sync_unverified =>
+      'Couldn\'t check your free sync. Check your connection, or get Premium.';
+
+  @override
+  String get premium_upgrade => 'Upgrade';
+
+  @override
+  String get premium_restored => 'Purchases restored. Premium is active.';
+
+  @override
+  String get premium_restore_none =>
+      'No purchases found for this Google Play account.';
+
+  @override
+  String get premium_lifetime_thanks_title => 'Thank you, lifetime member! 🙏';
+
+  @override
+  String get premium_lifetime_thanks_body =>
+      'Every Premium feature is yours for life, including all future features and updates. We look forward to serving you for years to come.';
+
+  @override
+  String get premium_subscriber_title => 'You have Premium ✨';
+
+  @override
+  String get premium_subscriber_body => 'Switch plans or go lifetime anytime.';
+
+  @override
+  String get premium_cancel_subscription_note =>
+      'Your subscription is still active. Cancel it in Google Play so you are not charged again. Lifetime stays yours.';
+
+  @override
+  String get premium_cancel_subscription_action =>
+      'Cancel subscription in Google Play';
+
+  @override
+  String get premium_lifetime_confirm_title =>
+      'You already have a subscription';
+
+  @override
+  String get premium_lifetime_confirm_body =>
+      'Google Play does not cancel subscriptions automatically. After buying lifetime, cancel your subscription in Google Play to stop renewals.';
+
+  @override
+  String get premium_buy_lifetime_anyway => 'Buy lifetime';
+
+  @override
   String get premium_unavailable =>
-      'Purchases are unavailable. Free features still work.';
+      'Purchases are unavailable right now. Install the app from Google Play and try again. Free features still work.';
 
   @override
   String get premium_verification_failed =>
@@ -935,4 +1017,38 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get premium_reward_example =>
       'Typical year: 24 × 10 = 240 coins, plus a 60-coin full-year bonus = 300 coins. In a 26-Ekadashi year: 260 + 40 = 300.';
+
+  @override
+  String get premium_feature_calendar =>
+      'Google Calendar sync for your whole subscription year (one free month sync)';
+
+  @override
+  String get premium_feature_vrat =>
+      'Unlimited Vrat entries (the first three are free) and all achievements';
+
+  @override
+  String get premium_feature_panchang =>
+      'Full daily Panchang: all five limbs, city timings and observances';
+
+  @override
+  String get terms_of_service => 'Terms of service';
+
+  @override
+  String get privacy_policy => 'Privacy policy';
+
+  @override
+  String get google_free_sync_used =>
+      'Free sync used. Upgrade to sync the whole year.';
+
+  @override
+  String get google_sign_in_failed =>
+      'Google sign-in failed. Check your connection and try again.';
+
+  @override
+  String get vrat_free_limit_reached =>
+      'You\'ve used your three free Vrat entries. Get Premium to keep recording.';
+
+  @override
+  String get google_premium_events_removed =>
+      'Your Premium has ended, so the Google events it synced were removed. Renew to sync again.';
 }

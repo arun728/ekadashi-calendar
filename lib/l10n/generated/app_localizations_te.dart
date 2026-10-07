@@ -567,6 +567,11 @@ class AppLocalizationsTe extends AppLocalizations {
   }
 
   @override
+  String imported_google_range(String value0, String value1, String value2) {
+    return '$value0 Google ఈవెంట్లు దిగుమతి అయ్యాయి ($value1 – $value2)';
+  }
+
+  @override
   String get google_sync_failed =>
       'క్యాలెండర్ దిగుమతి విఫలమైంది. పాత నమోదులు భద్రంగా ఉన్నాయి. మళ్లీ ప్రయత్నించండి.';
 
@@ -583,6 +588,12 @@ class AppLocalizationsTe extends AppLocalizations {
   @override
   String get choose_calendars_help =>
       'యాప్‌లో చూపించాల్సిన క్యాలెండర్లను ఎంచుకోండి. దిగుమతి మీ Google ఈవెంట్లను మార్చదు.';
+
+  @override
+  String get switch_google_account => 'మరో ఖాతాను ఉపయోగించండి';
+
+  @override
+  String get google_calendar => 'Google క్యాలెండర్';
 
   @override
   String get primary_calendar => 'ప్రధాన';
@@ -837,11 +848,11 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get premium_benefits =>
-      'గూగుల్ క్యాలెండర్ సమకాలీకరణ మరియు అదనపు విజయాలు. తేదీలు, వ్యక్తిగత నమోదులు, వ్రత నమోదులు, వరుసలు మరియు ప్రస్తుత విడ్జెట్‌లు ఉచితం.';
+      'ఏకాదశి ప్రీమియంతో అన్నింటినీ అన్‌లాక్ చేయండి. ఏకాదశి తేదీలు, రిమైండర్లు, విడ్జెట్లు, వ్యక్తిగత ఎంట్రీలు మరియు సేవ్ చేసిన వ్రత చరిత్ర ఉచితంగానే ఉంటాయి.';
 
   @override
   String get premium_free_achievements =>
-      'మొదట సాధించిన మూడు విజయాలు ఉచితం. అన్ని వ్రత నమోదులు మరియు వరుసలు ఉచితం.';
+      'మీ మొదటి మూడు వ్రత ఎంట్రీలు మరియు మొదటి మూడు విజయాలు ఉచితం. మిగిలినవి ప్రీమియంలో అన్‌లాక్ అవుతాయి.';
 
   @override
   String get premium_monthly => 'నెలవారీ';
@@ -880,8 +891,82 @@ class AppLocalizationsTe extends AppLocalizations {
   String get premium_active => 'ప్రీమియం సదుపాయం అందుబాటులో ఉంది';
 
   @override
+  String get premium_current_plan => 'మీ ప్రస్తుత ప్లాన్';
+
+  @override
+  String get premium_best_value => 'ఉత్తమ విలువ';
+
+  @override
+  String get premium_per_month => 'నెలకు';
+
+  @override
+  String get premium_per_year => 'సంవత్సరానికి';
+
+  @override
+  String get premium_one_time => 'ఒకసారి';
+
+  @override
+  String get premium_cancelled_title => 'సబ్‌స్క్రిప్షన్ రద్దయింది';
+
+  @override
+  String get premium_cancelled_body =>
+      'మీరు చెల్లించిన వ్యవధి ముగిసే వరకు Premium ఉంటుంది. కొనసాగించడానికి ఎప్పుడైనా మళ్లీ ప్రారంభించండి.';
+
+  @override
+  String get premium_reactivate => 'మళ్లీ ప్రారంభించండి';
+
+  @override
+  String get free_sync_unverified =>
+      'మీ ఉచిత సింక్‌ను తనిఖీ చేయలేకపోయాం. కనెక్షన్ చూడండి, లేదా Premium పొందండి.';
+
+  @override
+  String get premium_upgrade => 'అప్‌గ్రేడ్';
+
+  @override
+  String get premium_restored =>
+      'కొనుగోళ్లు పునరుద్ధరించబడ్డాయి. Premium సక్రియంగా ఉంది.';
+
+  @override
+  String get premium_restore_none =>
+      'ఈ Google Play ఖాతాకు ఎలాంటి కొనుగోళ్లు కనబడలేదు.';
+
+  @override
+  String get premium_lifetime_thanks_title =>
+      'ధన్యవాదాలు, జీవితకాల సభ్యులారా! 🙏';
+
+  @override
+  String get premium_lifetime_thanks_body =>
+      'భవిష్యత్ ఫీచర్లు, అప్‌డేట్‌లతో సహా ప్రతి Premium ఫీచర్ జీవితాంతం మీదే. ఎన్నో ఏళ్లు మీకు సేవ చేయడానికి ఎదురుచూస్తున్నాం.';
+
+  @override
+  String get premium_subscriber_title => 'మీకు Premium ఉంది ✨';
+
+  @override
+  String get premium_subscriber_body =>
+      'ఎప్పుడైనా ప్లాన్ మార్చండి లేదా జీవితకాలానికి మారండి.';
+
+  @override
+  String get premium_cancel_subscription_note =>
+      'మీ సబ్‌స్క్రిప్షన్ ఇంకా సక్రియంగా ఉంది. మళ్లీ ఛార్జ్ కాకుండా Google Playలో దాన్ని రద్దు చేయండి. జీవితకాలం మీదే.';
+
+  @override
+  String get premium_cancel_subscription_action =>
+      'Google Playలో సబ్‌స్క్రిప్షన్ రద్దు చేయండి';
+
+  @override
+  String get premium_lifetime_confirm_title =>
+      'మీకు ఇప్పటికే సబ్‌స్క్రిప్షన్ ఉంది';
+
+  @override
+  String get premium_lifetime_confirm_body =>
+      'Google Play సబ్‌స్క్రిప్షన్‌లను ఆటోమేటిక్‌గా రద్దు చేయదు. జీవితకాలం కొన్న తర్వాత, రెన్యూవల్స్ ఆపడానికి Google Playలో మీ సబ్‌స్క్రిప్షన్‌ను రద్దు చేయండి.';
+
+  @override
+  String get premium_buy_lifetime_anyway => 'జీవితకాలం కొనండి';
+
+  @override
   String get premium_unavailable =>
-      'కొనుగోళ్లు అందుబాటులో లేవు. ఉచిత సదుపాయాలు పనిచేస్తాయి.';
+      'ప్రస్తుతం కొనుగోళ్లు అందుబాటులో లేవు. Google Play నుండి యాప్‌ను ఇన్‌స్టాల్ చేసి మళ్లీ ప్రయత్నించండి. ఉచిత ఫీచర్లు పనిచేస్తాయి.';
 
   @override
   String get premium_verification_failed =>
@@ -934,4 +1019,38 @@ class AppLocalizationsTe extends AppLocalizations {
   @override
   String get premium_reward_example =>
       'సాధారణ సంవత్సరం: 24 × 10 = 240 నాణేలు, పూర్తి సంవత్సరం బోనస్ 60 కలిపి 300. 26 ఏకాదశులు ఉన్న సంవత్సరంలో: 260 + 40 = 300.';
+
+  @override
+  String get premium_feature_calendar =>
+      'మీ పూర్తి సబ్‌స్క్రిప్షన్ సంవత్సరానికి Google క్యాలెండర్ సింక్ (ఒక నెల సింక్ ఉచితం)';
+
+  @override
+  String get premium_feature_vrat =>
+      'అపరిమిత వ్రత ఎంట్రీలు (మొదటి మూడు ఉచితం) మరియు అన్ని విజయాలు';
+
+  @override
+  String get premium_feature_panchang =>
+      'పూర్తి రోజువారీ పంచాంగం: ఐదు అంగాలు, నగర సమయాలు మరియు పండుగలు';
+
+  @override
+  String get terms_of_service => 'సేవా నిబంధనలు';
+
+  @override
+  String get privacy_policy => 'గోప్యతా విధానం';
+
+  @override
+  String get google_free_sync_used =>
+      'ఉచిత సింక్ వాడేశారు. ఏడాది మొత్తం సింక్ కోసం అప్‌గ్రేడ్ చేయండి.';
+
+  @override
+  String get google_sign_in_failed =>
+      'Google సైన్ ఇన్ విఫలమైంది. కనెక్షన్ తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.';
+
+  @override
+  String get vrat_free_limit_reached =>
+      'మీరు మూడు ఉచిత వ్రత ఎంట్రీలను ఉపయోగించారు. రికార్డ్ చేయడం కొనసాగించడానికి ప్రీమియం పొందండి.';
+
+  @override
+  String get google_premium_events_removed =>
+      'మీ ప్రీమియం ముగిసింది, కాబట్టి దానితో సింక్ చేసిన Google ఈవెంట్లు తొలగించబడ్డాయి. మళ్లీ సింక్ చేయడానికి పునరుద్ధరించండి.';
 }

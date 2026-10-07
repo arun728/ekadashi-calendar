@@ -1158,6 +1158,12 @@ abstract class AppLocalizations {
   /// **'Imported {value0} Google events'**
   String imported_google_events(String value0);
 
+  /// No description provided for @imported_google_range.
+  ///
+  /// In en, this message translates to:
+  /// **'Imported {value0} Google events ({value1} – {value2})'**
+  String imported_google_range(String value0, String value1, String value2);
+
   /// No description provided for @google_sync_failed.
   ///
   /// In en, this message translates to:
@@ -1187,6 +1193,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Select calendars to display in this app. Import does not change your Google events.'**
   String get choose_calendars_help;
+
+  /// No description provided for @switch_google_account.
+  ///
+  /// In en, this message translates to:
+  /// **'Use another account'**
+  String get switch_google_account;
+
+  /// No description provided for @google_calendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Google Calendar'**
+  String get google_calendar;
 
   /// No description provided for @primary_calendar.
   ///
@@ -1683,13 +1701,13 @@ abstract class AppLocalizations {
   /// No description provided for @premium_benefits.
   ///
   /// In en, this message translates to:
-  /// **'Google Calendar sync and additional achievements. Dates, custom entries, Vrat records, streaks and all existing widgets stay free.'**
+  /// **'Unlock everything in Ekadashi Premium. Ekadashi dates, reminders, widgets, custom entries and your saved Vrat history stay free.'**
   String get premium_benefits;
 
   /// No description provided for @premium_free_achievements.
   ///
   /// In en, this message translates to:
-  /// **'Your first three earned achievements are free. All recording and streaks remain free.'**
+  /// **'Your first three Vrat entries and first three achievements are free. Premium unlocks the rest.'**
   String get premium_free_achievements;
 
   /// No description provided for @premium_monthly.
@@ -1758,10 +1776,136 @@ abstract class AppLocalizations {
   /// **'Premium access active'**
   String get premium_active;
 
+  /// No description provided for @premium_current_plan.
+  ///
+  /// In en, this message translates to:
+  /// **'Your current plan'**
+  String get premium_current_plan;
+
+  /// No description provided for @premium_best_value.
+  ///
+  /// In en, this message translates to:
+  /// **'Best value'**
+  String get premium_best_value;
+
+  /// No description provided for @premium_per_month.
+  ///
+  /// In en, this message translates to:
+  /// **'per month'**
+  String get premium_per_month;
+
+  /// No description provided for @premium_per_year.
+  ///
+  /// In en, this message translates to:
+  /// **'per year'**
+  String get premium_per_year;
+
+  /// No description provided for @premium_one_time.
+  ///
+  /// In en, this message translates to:
+  /// **'one-time'**
+  String get premium_one_time;
+
+  /// No description provided for @premium_cancelled_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription cancelled'**
+  String get premium_cancelled_title;
+
+  /// No description provided for @premium_cancelled_body.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium stays on until the end of the period you paid for. Reactivate anytime to keep it.'**
+  String get premium_cancelled_body;
+
+  /// No description provided for @premium_reactivate.
+  ///
+  /// In en, this message translates to:
+  /// **'Reactivate'**
+  String get premium_reactivate;
+
+  /// No description provided for @free_sync_unverified.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t check your free sync. Check your connection, or get Premium.'**
+  String get free_sync_unverified;
+
+  /// No description provided for @premium_upgrade.
+  ///
+  /// In en, this message translates to:
+  /// **'Upgrade'**
+  String get premium_upgrade;
+
+  /// No description provided for @premium_restored.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchases restored. Premium is active.'**
+  String get premium_restored;
+
+  /// No description provided for @premium_restore_none.
+  ///
+  /// In en, this message translates to:
+  /// **'No purchases found for this Google Play account.'**
+  String get premium_restore_none;
+
+  /// No description provided for @premium_lifetime_thanks_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Thank you, lifetime member! 🙏'**
+  String get premium_lifetime_thanks_title;
+
+  /// No description provided for @premium_lifetime_thanks_body.
+  ///
+  /// In en, this message translates to:
+  /// **'Every Premium feature is yours for life, including all future features and updates. We look forward to serving you for years to come.'**
+  String get premium_lifetime_thanks_body;
+
+  /// No description provided for @premium_subscriber_title.
+  ///
+  /// In en, this message translates to:
+  /// **'You have Premium ✨'**
+  String get premium_subscriber_title;
+
+  /// No description provided for @premium_subscriber_body.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch plans or go lifetime anytime.'**
+  String get premium_subscriber_body;
+
+  /// No description provided for @premium_cancel_subscription_note.
+  ///
+  /// In en, this message translates to:
+  /// **'Your subscription is still active. Cancel it in Google Play so you are not charged again. Lifetime stays yours.'**
+  String get premium_cancel_subscription_note;
+
+  /// No description provided for @premium_cancel_subscription_action.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel subscription in Google Play'**
+  String get premium_cancel_subscription_action;
+
+  /// No description provided for @premium_lifetime_confirm_title.
+  ///
+  /// In en, this message translates to:
+  /// **'You already have a subscription'**
+  String get premium_lifetime_confirm_title;
+
+  /// No description provided for @premium_lifetime_confirm_body.
+  ///
+  /// In en, this message translates to:
+  /// **'Google Play does not cancel subscriptions automatically. After buying lifetime, cancel your subscription in Google Play to stop renewals.'**
+  String get premium_lifetime_confirm_body;
+
+  /// No description provided for @premium_buy_lifetime_anyway.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy lifetime'**
+  String get premium_buy_lifetime_anyway;
+
   /// No description provided for @premium_unavailable.
   ///
   /// In en, this message translates to:
-  /// **'Purchases are unavailable. Free features still work.'**
+  /// **'Purchases are unavailable right now. Install the app from Google Play and try again. Free features still work.'**
   String get premium_unavailable;
 
   /// No description provided for @premium_verification_failed.
@@ -1853,6 +1997,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Typical year: 24 × 10 = 240 coins, plus a 60-coin full-year bonus = 300 coins. In a 26-Ekadashi year: 260 + 40 = 300.'**
   String get premium_reward_example;
+
+  /// No description provided for @premium_feature_calendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Google Calendar sync for your whole subscription year (one free month sync)'**
+  String get premium_feature_calendar;
+
+  /// No description provided for @premium_feature_vrat.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlimited Vrat entries (the first three are free) and all achievements'**
+  String get premium_feature_vrat;
+
+  /// No description provided for @premium_feature_panchang.
+  ///
+  /// In en, this message translates to:
+  /// **'Full daily Panchang: all five limbs, city timings and observances'**
+  String get premium_feature_panchang;
+
+  /// No description provided for @terms_of_service.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms of service'**
+  String get terms_of_service;
+
+  /// No description provided for @privacy_policy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy policy'**
+  String get privacy_policy;
+
+  /// No description provided for @google_free_sync_used.
+  ///
+  /// In en, this message translates to:
+  /// **'Free sync used. Upgrade to sync the whole year.'**
+  String get google_free_sync_used;
+
+  /// No description provided for @google_sign_in_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Google sign-in failed. Check your connection and try again.'**
+  String get google_sign_in_failed;
+
+  /// No description provided for @vrat_free_limit_reached.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve used your three free Vrat entries. Get Premium to keep recording.'**
+  String get vrat_free_limit_reached;
+
+  /// No description provided for @google_premium_events_removed.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Premium has ended, so the Google events it synced were removed. Renew to sync again.'**
+  String get google_premium_events_removed;
 }
 
 class _AppLocalizationsDelegate

@@ -1,4 +1,5 @@
 import '../test/support/premium_fixture.dart';
+import '../test/support/fake_free_sync_registry.dart';
 import 'package:ekadashi_calendar/services/premium_service.dart';
 import 'dart:io';
 import 'package:sqflite/sqflite.dart' show getDatabasesPath;
@@ -15,6 +16,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ekadashi_calendar/main.dart' as app;
 import 'package:ekadashi_calendar/screens/calendar_screen.dart';
+import 'package:ekadashi_calendar/screens/premium_screen.dart';
 import 'package:ekadashi_calendar/models/vrat_tracker_models.dart';
 import 'package:ekadashi_calendar/services/ekadashi_service.dart';
 import 'package:ekadashi_calendar/services/language_service.dart';
@@ -55,6 +57,10 @@ void main() {
   testWidgets(
     'Multi-year archive, Telugu, SQLite persistence and whole-year Google deletion',
     (tester) async {
+      // Register before the location editor's first text entry as well as
+      // Search. Native IME callbacks can otherwise outlive the closed dialog.
+      tester.testTextInput.register();
+      addTearDown(tester.testTextInput.unregister);
       final prefs = await SharedPreferences.getInstance();
       await prefs.clear();
       await prefs.setBool('has_launched', true);
@@ -95,6 +101,57 @@ void main() {
         expect(find.byKey(Key('glass_tab_$i')).hitTestable(), findsOneWidget);
       }
       await binding.takeScreenshot('v2_home_2026');
+      await tester.tap(find.byKey(const Key('glass_tab_3')));
+      await frames(tester);
+      expect(find.byKey(const Key('panchang_daily_overview')), findsOneWidget);
+      for (final label in [
+        'Daily',
+        'Muhurta',
+        'Ekadashi',
+        'Rashi',
+        'Festivals',
+        'Guide',
+      ]) {
+        expect(find.widgetWithText(Tab, label), findsOneWidget);
+      }
+      await binding.takeScreenshot('v2_panchang_free');
+      await tester.tap(find.byKey(const Key('panchang_edit_location')));
+      await frames(tester);
+      for (final entry in {
+        'location_name': 'New York',
+        'location_latitude': '40.7128',
+        'location_longitude': '-74.006',
+        'location_timezone': 'America/New_York',
+      }.entries) {
+        final field = find.byKey(Key(entry.key));
+        await tester.ensureVisible(field);
+        await tester.enterText(field, entry.value);
+      }
+      await tester.tap(find.text('Save location'));
+      await frames(tester);
+      await until(
+        tester,
+        () => find
+            .byKey(const Key('glass_tab_4'))
+            .hitTestable()
+            .evaluate()
+            .isNotEmpty,
+      );
+      expect(find.text('America/New_York · English'), findsOneWidget);
+      expect(
+        prefs.getString('panchang_location'),
+        contains('America/New_York'),
+      );
+      await binding.takeScreenshot('v2_panchang_worldwide');
+      // Six Panchang subtabs scroll horizontally; Guide is off-screen on
+      // narrow phones until scrolled into view.
+      final guide = find.widgetWithText(Tab, 'Guide');
+      await tester.ensureVisible(guide);
+      await frames(tester);
+      await tester.tap(guide);
+      await frames(tester);
+      expect(find.text('Smarta and Vaishnava'), findsOneWidget);
+      await binding.takeScreenshot('v2_panchang_guide');
       final lang = tester
           .element(find.byType(MaterialApp).first)
           .read<LanguageService>();
@@ -112,7 +169,7 @@ void main() {
       final restartedTracker = VratTrackerService();
       await restartedTracker.init(occurrences: years);
       expect(restartedTracker.getRecord(1)?.note, 'Archived private note');
-      await tester.tap(find.byIcon(Icons.spa_outlined));
+      await tester.tap(find.byKey(const Key('glass_tab_2')));
       await frames(tester);
       await binding.takeScreenshot('v2_tracker_retained');
       await tester.tap(find.text('History'));
@@ -182,6 +239,12 @@ void main() {
         await frames(tester);
         expect(find.byType(GlobalSearchScreen).hitTestable(), findsOneWidget);
         await binding.takeScreenshot('v2_search_$code');
+        await tester.tap(find.byKey(const Key('global_search_back')));
+        await frames(tester);
+        await until(
+          tester,
+          () => find.byIcon(Icons.settings).evaluate().isNotEmpty,
+        );
         await tester.tap(find.byIcon(Icons.settings));
         await frames(tester);
         await binding.takeScreenshot('glass_settings_dark_$code');
@@ -196,15 +259,11 @@ void main() {
         await tester.tap(find.byIcon(Icons.calendar_month));
         await frames(tester);
         await binding.takeScreenshot('glass_calendar_$code');
-        await tester.tap(find.byIcon(Icons.search));
-        await frames(tester);
       }
+      await tester.tap(find.byIcon(Icons.search));
+      await frames(tester);
       await lang.changeLanguage('en');
       await frames(tester, count: 10);
-      // IntegrationTest defaults to real IME clients. Register controlled input
-      // so repeated tester.enterText calls track the current TextInput client.
-      tester.testTextInput.register();
-      addTearDown(tester.testTextInput.unregister);
       await tester.enterText(find.byType(TextField), 'nirjla');
       await tester.pump(const Duration(milliseconds: 400));
       await tester.tap(find.byIcon(Icons.arrow_forward).first);
@@ -242,12 +301,17 @@ void main() {
       final google = AndroidTestGoogle();
       // Verification is asynchronous: a lazy provider initialized on the first
       // sync tap otherwise correctly opens the free user's paywall.
-      final fixturePremium = PremiumService(
-        backend: PremiumFixture(),
-        startLeaseTimer: false,
-      );
-      await fixturePremium.connect();
-      expect(fixturePremium.isPremium, isTrue);
+      // Starts on the free tier; a Play purchase is simulated further down.
+      // Deterministic "today" for the Calendar: March 2027. The simulated
+      // purchase below is a January 2027 subscription (Jan–Dec 2027).
+      final calendarNow = DateTime(2027, 3, 1);
+      final freeSyncRegistry = FakeFreeSyncRegistry();
+      final fixtureSource = PremiumFixture()
+        ..premium = false
+        ..purchasedAt = DateTime(2027, 1, 10);
+      final fixturePremium = PremiumService(entitlements: fixtureSource);
+      await fixturePremium.refresh();
+      expect(fixturePremium.isPremium, isFalse);
       addTearDown(fixturePremium.dispose);
       Future<void> openCalendar() async {
         await tester.pumpWidget(
@@ -264,6 +328,8 @@ void main() {
               home: CalendarScreen(
                 ekadashiList: years,
                 repository: repo,
+                clock: () => calendarNow,
+                freeSyncRegistry: freeSyncRegistry,
                 googleService: GoogleCalendarService(
                   auth: google,
                   repository: repo,
@@ -286,6 +352,60 @@ void main() {
       }
 
       await openCalendar();
+      // Free: one free sync, of the month on screen (the current month).
+      final now = calendarNow;
+      google.events = [
+        event(
+          'Free month event',
+          start: DateTime(
+            now.year,
+            now.month,
+            1,
+          ).toIso8601String().substring(0, 10),
+          end: DateTime(
+            now.year,
+            now.month,
+            2,
+          ).toIso8601String().substring(0, 10),
+        ),
+      ];
+      final freeImport = find.byKey(const Key('import_google_year'));
+      for (
+        var attempt = 0;
+        attempt < 20 && freeImport.evaluate().isEmpty;
+        attempt++
+      ) {
+        await tester.drag(
+          find.byType(CustomScrollView).first,
+          const Offset(0, 500),
+        );
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      await tester.ensureVisible(freeImport);
+      await tester.tap(freeImport);
+      await frames(tester);
+      expect(find.byType(PremiumScreen), findsNothing);
+      await until(
+        tester,
+        () => find.text('Import selected').evaluate().isNotEmpty,
+      );
+      await tester.tap(find.text('Import selected'));
+      await frames(tester);
+      await until(
+        tester,
+        () => find.byType(CircularProgressIndicator).evaluate().isEmpty,
+      );
+      expect(google.min, DateTime(now.year, now.month));
+      expect(google.max, DateTime(now.year, now.month + 1));
+      expect(
+        find.text(fixtureLang.translate('google_free_sync_used')),
+        findsOneWidget,
+      );
+      // Recorded for the Google account, so a reinstall cannot reuse it.
+      expect(freeSyncRegistry.recorded, DateTime(now.year, now.month));
+      await binding.takeScreenshot('v2_google_free_month');
+      debugPrint('Android free current-month Google import verified');
+      google.min = null;
       await tester.tap(find.byKey(const Key('calendar_year_selector')));
       await frames(tester);
       await tester.tap(find.text('2027').last);
@@ -298,12 +418,55 @@ void main() {
       expect(calendar, findsOneWidget);
       state.selectDate(DateTime(2027, 1, 1));
       await frames(tester);
+      // The free sync is used: the next sync opens the paywall; then simulate
+      // a Play purchase.
+      final paidImport = find.byKey(const Key('import_google_year'));
+      await tester.ensureVisible(paidImport);
+      await tester.tap(paidImport);
+      await frames(tester);
+      await until(
+        tester,
+        () => find.byType(PremiumScreen).evaluate().isNotEmpty,
+      );
+      expect(google.min, isNull);
+      await binding.takeScreenshot('v2_google_full_year_paywall');
+      fixtureSource.premium = true;
+      await fixturePremium.refresh();
+      expect(fixturePremium.isPremium, isTrue);
+      await tester.tap(find.byKey(const Key('premium_close')));
+      await frames(tester);
+      // The purchase continues straight into the whole-year import.
+      await until(
+        tester,
+        () => find.text('Import selected').evaluate().isNotEmpty,
+      );
+      Navigator.of(tester.element(find.text('Import selected'))).pop();
+      await frames(tester);
+      await until(
+        tester,
+        () => find.byType(CircularProgressIndicator).evaluate().isEmpty,
+      );
       google.events = [
         event('Google event before deletion'),
         event('December event', start: '2027-12-31', end: '2028-01-01'),
       ];
       Future<void> sync() async {
-        await tester.tap(find.byKey(const Key('import_google_year')));
+        final importButton = find.byKey(const Key('import_google_year'));
+        // TableCalendar also handles vertical drags. Reset the outer viewport
+        // explicitly after capturing the event row, then use the real toolbar.
+        final scrollable = tester.state<ScrollableState>(
+          find
+              .descendant(
+                of: find.byType(CustomScrollView).first,
+                matching: find.byType(Scrollable),
+              )
+              .first,
+        );
+        scrollable.position.jumpTo(scrollable.position.minScrollExtent);
+        await frames(tester);
+        expect(importButton.hitTestable(), findsOneWidget);
+        await tester.ensureVisible(importButton);
+        await tester.tap(importButton);
         await frames(tester);
         await until(
           tester,
@@ -320,6 +483,24 @@ void main() {
       await sync();
       expect(google.min, DateTime(2027));
       expect(google.max, DateTime(2028));
+      expect(
+        (await repo.getForDay(
+          DateTime(2027, 1, 1),
+        )).map((entry) => entry.title),
+        contains('Google event before deletion'),
+        reason: 'The whole-year sync should persist the selected day event',
+      );
+      await tester.scrollUntilVisible(
+        find.text('Google event before deletion'),
+        220,
+        scrollable: find
+            .descendant(
+              of: find.byType(CalendarScreen),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
+      await frames(tester);
       expect(find.text('Google event before deletion'), findsOneWidget);
       await binding.takeScreenshot('v2_google_before_delete');
       google.events = [
@@ -345,7 +526,31 @@ void main() {
       await tester.ensureVisible(find.text('Save'));
       await tester.tap(find.text('Save'));
       await frames(tester);
-      expect(find.text('My private reminder'), findsOneWidget);
+      expect(
+        (await repo.getForDay(
+          DateTime(2027, 1, 1),
+        )).map((entry) => entry.title),
+        contains('My private reminder'),
+        reason:
+            'Saving the custom entry should persist it for the selected day',
+      );
+      // The editor sheet (with the same text in its field) may still be
+      // closing on a slow emulator; wait until only the list entry remains.
+      await until(tester, () => find.byType(TextField).evaluate().isEmpty);
+      // The title can show twice (e.g. a day marker and the entry list); any
+      // visible copy proves the saved entry is listed.
+      final savedReminder = find.text('My private reminder');
+      await tester.scrollUntilVisible(
+        savedReminder.first,
+        220,
+        scrollable: find
+            .descendant(
+              of: find.byType(CalendarScreen),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
+      expect(savedReminder, findsWidgets);
       await binding.takeScreenshot('v2_custom_saved');
       await tester.pumpWidget(const SizedBox.shrink());
       await frames(tester);

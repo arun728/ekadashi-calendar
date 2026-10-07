@@ -15,14 +15,23 @@ class GoogleEventMapper {
     final start = event['start'] as Map<String, dynamic>? ?? {};
     final end = event['end'] as Map<String, dynamic>? ?? {};
     final allDay = start['date'] != null;
-    final startAt = DateTime.parse(
-      (allDay ? start['date'] : start['dateTime']) as String,
-    );
-    final endAt = DateTime.parse(
-      (allDay ? end['date'] : end['dateTime']) as String,
-    );
+    final startText = (allDay ? start['date'] : start['dateTime']) as String?;
+    if (startText == null) {
+      // Without a start the event cannot be placed: abort the import, which
+      // keeps the previously cached events.
+      throw const FormatException('Google event has no start');
+    }
+    final startAt = DateTime.parse(startText);
+    final endText = (allDay ? end['date'] : end['dateTime']) as String?;
+    var endAt = endText == null ? startAt : DateTime.parse(endText);
+    // Real calendars contain events with a missing, equal or earlier end
+    // (reminders, imported or legacy events). Show them instead of failing
+    // the whole import: an all-day event covers its start day, a timed event
+    // becomes an instant at its start.
     if (!endAt.isAfter(startAt)) {
-      throw const FormatException('Invalid Google event interval');
+      endAt = allDay
+          ? DateTime(startAt.year, startAt.month, startAt.day + 1)
+          : startAt;
     }
     final identity = base64Url.encode(
       utf8.encode(jsonEncode([account, calendar, id])),

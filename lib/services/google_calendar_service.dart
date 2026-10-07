@@ -23,6 +23,14 @@ abstract class GoogleAuthGateway {
   Future<bool> isSignedIn();
   Future<bool> signIn();
   Future<void> signOut();
+
+  /// The signed-in account's Google ID token (for the free-sync registry),
+  /// or null when unavailable.
+  Future<String?> idToken();
+
+  /// The signed-in account's email, shown so the user knows which Google
+  /// account is being imported (null when unknown).
+  Future<String?> accountEmail() async => null;
   Future<List<GoogleCalendarInfo>> listCalendars();
   Future<List<Map<String, dynamic>>> fetchEvents({
     required DateTime timeMin,

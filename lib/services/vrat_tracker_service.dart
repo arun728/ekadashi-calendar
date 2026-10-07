@@ -274,6 +274,20 @@ class VratTrackerService extends ChangeNotifier {
 
   VratHistory? getRecordByUid(String uid) => _historyByUid[uid];
 
+  /// Free users may record this many Ekadashis. Editing or deleting existing
+  /// entries and viewing history, streaks and statistics always stay free.
+  static const freeEntryLimit = 3;
+
+  int get recordedEntryCount => _historyByUid.values
+      .where((r) => r.status != ObservanceStatus.unrecorded)
+      .length;
+
+  /// Whether recording a new entry for [uid] needs premium.
+  bool needsPremiumToRecord(String uid, {required bool premium}) =>
+      !premium &&
+      getRecordByUid(uid) == null &&
+      recordedEntryCount >= freeEntryLimit;
+
   /// Get all history records sorted chronologically
   List<VratHistory> getAllRecords() {
     final list = _historyByUid.values.toList();
