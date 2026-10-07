@@ -104,6 +104,9 @@ final class StoreKitPremiumService {
     private func readEntitlements() async {
         var owned: [OwnedProduct] = []
         for await result in Transaction.currentEntitlements {
+            if case .unverified(let transaction, let failure) = result {
+                logger.error("Premium refresh: ignored unverified \(transaction.productID, privacy: .public): \(String(describing: failure), privacy: .public)")
+            }
             guard case .verified(let transaction) = result, transaction.revocationDate == nil,
                   PremiumPlanID(productId: transaction.productID) != nil else { continue }
             if let expiry = transaction.expirationDate, expiry < Date() { continue }
@@ -158,6 +161,9 @@ final class StoreKitPremiumService {
             case .success(let verification):
                 // Never grant an unverified transaction.
                 guard case .verified(let transaction) = verification else {
+                    if case .unverified(_, let failure) = verification {
+                        logger.error("Purchase not verified: \(String(describing: failure), privacy: .public)")
+                    }
                     error = "premium_unavailable"
                     return
                 }
@@ -172,7 +178,11 @@ final class StoreKitPremiumService {
                 break
             }
         } catch {
+            logger.error("Purchase failed: \(String(describing: error), privacy: .public)")
             self.error = "premium_unavailable"
+            // The store may already hold this purchase (for example "already
+            // subscribed"): re-read entitlements so the screen matches it.
+            await refresh()
         }
     }
 
