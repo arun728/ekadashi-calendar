@@ -112,6 +112,18 @@ public final class PanchangCityCatalog: @unchecked Sendable {
         return cities
     }
 
+    /// The closest catalog city, for naming a location fix without a network.
+    public func nearest(latitude: Double, longitude: Double) -> PanchangCity? {
+        guard let all = try? cities() else { return nil }
+        let rad = Double.pi / 180
+        func distance(_ city: PanchangCity) -> Double {
+            let dLat = (city.latitude - latitude) * rad, dLon = (city.longitude - longitude) * rad
+            let a = sin(dLat / 2) * sin(dLat / 2) + cos(latitude * rad) * cos(city.latitude * rad) * sin(dLon / 2) * sin(dLon / 2)
+            return a
+        }
+        return all.min { distance($0) < distance($1) }
+    }
+
     /// Matches names, ASCII names and country codes, as the Android picker.
     public func search(_ query: String, limit: Int = 12) -> [PanchangCity] {
         let q = query.trimmingCharacters(in: .whitespaces).lowercased()

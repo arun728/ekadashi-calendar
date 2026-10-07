@@ -258,7 +258,7 @@ final class ResourceSyncTests: XCTestCase {
         for language in Localizer.languages {
             let arb = try Repo.json("lib/l10n/app_\(language).arb") as! [String: Any]
             for (key, value) in arb where !key.hasPrefix("@") {
-                XCTAssertEqual(Localizer.shared.translate(key, language: language), value as? String, "\(language) \(key)")
+                XCTAssertEqual(Localizer.shared.arbValue(key, language: language), value as? String, "\(language) \(key)")
             }
         }
     }

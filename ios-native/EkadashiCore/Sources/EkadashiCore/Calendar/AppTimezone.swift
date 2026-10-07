@@ -40,6 +40,18 @@ public enum AppTimezone: String, CaseIterable, Codable, Sendable {
         return .ist
     }
 
+    /// The schedule for a location fix (LocationService.kt `detectTimezone`):
+    /// India and the four contiguous US zones by coordinates, IST elsewhere.
+    public static func detect(latitude lat: Double, longitude lng: Double) -> AppTimezone {
+        let us = lat >= 24 && lat <= 50
+        if lng >= 68 && lng <= 97 && lat >= 6 && lat <= 37 { return .ist }
+        if us && lng >= -85 && lng <= -67 { return .est }
+        if us && lng >= -102 && lng < -85 { return .cst }
+        if us && lng >= -115 && lng < -102 { return .mst }
+        if us && lng >= -125 && lng < -115 { return .pst }
+        return .ist
+    }
+
     public struct City: Hashable, Sendable, Identifiable {
         public let id: String
         public let name: String

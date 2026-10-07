@@ -115,6 +115,17 @@ final class CalendarDataTests: XCTestCase {
         XCTAssertEqual(AppTimezone.ist.ianaIdentifier, "Asia/Kolkata")
     }
 
+    func testLocationFixMapsToAScheduleLikeAndroid() {
+        XCTAssertEqual(AppTimezone.detect(latitude: 13.08, longitude: 80.27), .ist)
+        XCTAssertEqual(AppTimezone.detect(latitude: 40.71, longitude: -74.0), .est)
+        XCTAssertEqual(AppTimezone.detect(latitude: 41.88, longitude: -87.63), .cst)
+        XCTAssertEqual(AppTimezone.detect(latitude: 39.74, longitude: -104.99), .mst)
+        XCTAssertEqual(AppTimezone.detect(latitude: 34.05, longitude: -118.24), .pst)
+        XCTAssertEqual(AppTimezone.detect(latitude: 51.5, longitude: -0.12), .ist)
+        let nearest = PanchangCityCatalog.shared.nearest(latitude: 13.0827, longitude: 80.2707)
+        XCTAssertEqual(nearest?.label, "Chennai (IN)")
+    }
+
     func testCitySelectionRoundTripsCountryAndTimezone() {
         let groups = AppTimezone.citiesByCountry
         XCTAssertTrue(groups.keys.contains("India"))
@@ -174,5 +185,43 @@ final class LocalizationTests: XCTestCase {
         XCTAssertEqual(Localizer.shared.translate("home", language: "xx"), Localizer.shared.translate("home", language: "en"))
         XCTAssertEqual(Localizer.languages, ["en", "ta", "hi", "te"])
         XCTAssertEqual(Localizer.displayName("te"), "తెలుగు")
+    }
+
+    func testIosNeverNamesGooglePlayOrAndroidBattery() {
+        let android = ["Google Play", "Play Store", "Battery", "கூகுள் பிளே", "பிளே ஸ்டோர்", "பேட்டரி", "गूगल प्ले",
+                       "प्ले स्टोर", "बैटरी", "గూగుల్ ప్లే", "ప్లే స్టోర్", "బ్యాటరీ"]
+        let shownOnIos = ["rate_app_desc", "app_settings_desc", "perm_guide_desc", "premium_monthly_terms", "premium_yearly_terms",
+                          "premium_manage", "premium_restore_none", "premium_cancel_subscription_note",
+                          "premium_cancel_subscription_action", "premium_lifetime_confirm_body", "premium_unavailable"]
+        for language in Localizer.languages {
+            for key in shownOnIos {
+                let value = Localizer.shared.translate(key, language: language)
+                XCTAssertFalse(android.contains { value.contains($0) }, "\(language) \(key): \(value)")
+            }
+        }
+        XCTAssertEqual(Localizer.shared.translate("premium_manage", language: "en"), "Manage subscription in the App Store")
+        XCTAssertEqual(Localizer.shared.translate("ios_share_message", language: "en", args: ["https://example.org"]).suffix(19),
+                       "https://example.org")
+    }
+
+    func testOverridesOnlyReplacePlatformWordingInEveryLanguage() throws {
+        let english = try Repo.json("lib/l10n/app_en.arb") as! [String: Any]
+        let keys = Set(Localizer.shared.overrideKeys(language: "en"))
+        for language in Localizer.languages {
+            XCTAssertEqual(Set(Localizer.shared.overrideKeys(language: language)), keys, language)
+        }
+        for key in keys {
+            if key.hasPrefix("ios_") {
+                XCTAssertNil(english[key], key)
+            } else {
+                let source = english[key] as? String ?? ""
+                XCTAssertTrue(["Play", "Battery", "battery"].contains { source.contains($0) }, key)
+            }
+            for language in Localizer.languages {
+                XCTAssertEqual(Localizer.placeholders(Localizer.shared.translate(key, language: language)),
+                               Localizer.placeholders(Localizer.shared.translate(key, language: "en")), "\(language) \(key)")
+            }
+        }
+        XCTAssertEqual(Localizer.shared.arbValue("premium_manage", language: "en"), "Manage subscription in Google Play")
     }
 }
