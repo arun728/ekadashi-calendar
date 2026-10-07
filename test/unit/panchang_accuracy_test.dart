@@ -120,10 +120,11 @@ void main() {
         void compare(String key, DateTime? actual) {
           final expected = row[key] == null ? null : DateTime.parse(row[key]);
           if (expected == null || actual == null) {
-            if (expected != actual)
+            if (expected != actual) {
               failures.add(
                 '${row['id']} ${row['date']} $key $actual vs $expected',
               );
+            }
             return;
           }
           if (actual.difference(expected).inMilliseconds.abs() > 1000) {
@@ -215,6 +216,65 @@ void main() {
     // Dwadashi touching no sunrise: the day before, so Parana is in Dwadashi.
     expect(dates, contains('2026-11-20'));
     expect(dates, isNot(contains('2026-11-21')));
+  });
+
+  test('Gaudiya fasts match the ISKCON Bangalore published calendar', () {
+    // https://www.iskconbangalore.org/ekadashi-calendar/ (March 2026 to
+    // March 2027), with its special cases noted.
+    const published = {
+      '2026-03-15': null,
+      '2026-03-29': null,
+      '2026-04-13': null,
+      '2026-04-27': null,
+      '2026-05-13': null,
+      '2026-05-27': null,
+      '2026-06-11': null,
+      '2026-06-25': null,
+      '2026-07-11': 'Viddha / shifted to Dwadashi',
+      '2026-07-25': null,
+      '2026-08-09': null,
+      '2026-08-24': 'Vyanjuli',
+      '2026-09-07': null,
+      '2026-09-22': null,
+      '2026-10-06': null,
+      '2026-10-22': null,
+      '2026-11-05': null,
+      '2026-11-21': 'Trisprisha',
+      '2026-12-04': null,
+      '2026-12-20': null,
+      '2027-01-03': null,
+      '2027-01-19': 'Trisprisha',
+      '2027-02-02': null,
+      '2027-02-17': null,
+      '2027-03-04': 'Unmilani',
+      '2027-03-18': null,
+    };
+    const bengaluru = PanchangCity(
+      id: 'bengaluru',
+      label: 'Bengaluru',
+      latitude: 12.9716,
+      longitude: 77.5946,
+    );
+    final fasts = {
+      for (final start in [DateTime.utc(2026, 3, 10), DateTime.utc(2027)])
+        for (final fast in const CalculatedEkadashiEngine().calculate(
+          start,
+          start.year == 2026 ? 300 : 90,
+          bengaluru,
+          EkadashiTradition.gaudiya,
+        ))
+          fast.date.toIso8601String().substring(0, 10): fast.rule,
+    };
+    final inRange = {
+      for (final entry in fasts.entries)
+        if (entry.key.compareTo('2026-03-15') >= 0 &&
+            entry.key.compareTo('2027-03-18') <= 0)
+          entry.key: entry.value,
+    };
+    expect(inRange.keys.toSet(), published.keys.toSet());
+    published.forEach((date, rule) {
+      if (rule != null) expect(inRange[date], rule, reason: date);
+    });
   });
 
   test('festival dates match public Indian lists (New Delhi 2026-2027)', () {

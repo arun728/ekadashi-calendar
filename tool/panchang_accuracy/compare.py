@@ -234,6 +234,7 @@ def score(engine, reference, gcal, festivals):
                         err = minutes(ev, rp[key])
                         s.error("Smarta Parana (all cities)", err)
                         s.check("Smarta Parana (all cities)", err <= 2.0, (city, date, key, round(err, 1)))
+                        s.check("Smarta Parana (displayed minute)", same_minute(ev, rp[key]), (city, date, key))
                     else:
                         s.check("Smarta Parana (all cities)", False, (city, date, key, "missing"))
         # --- 6. Gaudiya vs GCAL ------------------------------------------------
@@ -290,6 +291,7 @@ def score(engine, reference, gcal, festivals):
                             err = minutes(eng_map[date][ekey], timed)
                             s.error("Gaudiya Parana (GCAL rule, JPL timing)", err)
                             s.check("Gaudiya Parana (GCAL rule, JPL timing)", err <= 2.0, (city, date, key, round(err, 1)))
+                            s.check("Gaudiya Parana (displayed minute)", same_minute(eng_map[date][ekey], timed), (city, date, key, round(err, 2)))
     # --- 7. Published Drik-sourced Ekadashi data ------------------------------
     for year in YEARS:
         if not os.path.exists(os.path.join(ROOT, "assets", "calendar", f"{year}.json")):

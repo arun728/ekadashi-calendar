@@ -13,10 +13,10 @@ import 'premium_screen.dart';
 class PanchangGuide extends StatelessWidget {
   const PanchangGuide({super.key});
   @override
-  Widget build(BuildContext context) => Column(
+  Widget build(BuildContext context) => const Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
-      const Card(
+      Card(
         child: ExpansionTile(
           leading: Icon(Icons.menu_book_outlined),
           title: Text('Panchang guide'),
@@ -28,7 +28,7 @@ class PanchangGuide extends StatelessWidget {
           ],
         ),
       ),
-      const Card(
+      Card(
         child: ExpansionTile(
           leading: Icon(Icons.spa_outlined),
           title: Text('Smarta and Vaishnava'),
@@ -40,7 +40,7 @@ class PanchangGuide extends StatelessWidget {
           ],
         ),
       ),
-      const Card(
+      Card(
         child: ExpansionTile(
           leading: Icon(Icons.public),
           title: Text('Location and calculation methods'),
@@ -52,7 +52,7 @@ class PanchangGuide extends StatelessWidget {
           ],
         ),
       ),
-      const Card(
+      Card(
         child: ExpansionTile(
           leading: Icon(Icons.info_outline),
           title: Text('Sources and coverage'),
