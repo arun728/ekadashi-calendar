@@ -158,3 +158,17 @@ ISKCON Bangalore published dates; published Ekadashi data in
 or main without Arun's approval. On 7 October 2026 Arun asked for separate
 PRs to `dev` for this branch and for `feature/ios-native`, with CI run on
 both and each PR marked ready for review once all its checks pass.
+
+## Native iOS app (7 October 2026)
+
+The user asked for a native iOS app on a new branch on top of
+`feature/panchang-accuracy`, with exactly the same features as Android, in
+Swift/SwiftUI with Liquid Glass UI. It lives on `feature/ios-native` under
+`ios-native/` (see `ios-native/README.md`). Shared logic is in the
+`EkadashiCore` Swift package and must stay at parity with the Flutter code:
+its tests compare the bundled data with `assets/` and `lib/l10n/`, and compare
+the Panchang engine field by field with a Dart-exported fixture. Premium
+follows the Play-only rules adapted to StoreKit 2 (verified entitlements only;
+no stored flags, pending purchases or backend). Panchang stays English-only.
+CI's ios-tests job builds and tests it on macOS. Do not merge it to `dev` or
+`main` without Arun's approval.

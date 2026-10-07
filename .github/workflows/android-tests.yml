@@ -1,4 +1,4 @@
-name: Android regression and UI tests
+name: Android and iOS regression and UI tests
 on:
   workflow_dispatch:
   pull_request:
@@ -159,3 +159,50 @@ jobs:
         with:
           name: ekadashi-glass-preview-arm64
           path: build/glass-preview/ekadashi-glass-preview-arm64.apk
+
+  ios-tests:
+    # Native iOS app (ios-native/): EkadashiCore package tests, then the app,
+    # widgets, unit and UI screenshot tests on the newest iPhone simulator.
+    runs-on: macos-15
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select Xcode 26 (iOS 26 SDK, Liquid Glass)
+        run: |
+          ls -d /Applications/Xcode*.app
+          XCODE=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+          if [ -z "$XCODE" ]; then echo "::error::Xcode 26 is required"; exit 1; fi
+          sudo xcode-select -s "$XCODE/Contents/Developer"
+          xcodebuild -version
+      - name: EkadashiCore package tests
+        run: cd ios-native/EkadashiCore && swift test -c release
+      - name: Generate the Xcode project
+        run: brew install xcodegen && cd ios-native && xcodegen generate
+      - name: Build and test the app, widgets and UI screenshots
+        run: |
+          UDID=$(xcrun simctl list devices available -j | python3 tool/ios/pick_simulator.py)
+          echo "Simulator: $UDID"
+          mkdir -p build/ios
+          cd ios-native
+          set +e
+          xcodebuild test -project EkadashiCalendar.xcodeproj -scheme EkadashiCalendar \
+            -destination "id=$UDID" -resultBundlePath ../build/ios/EkadashiCalendar.xcresult \
+            CODE_SIGNING_ALLOWED=NO > ../build/ios/xcodebuild.log 2>&1
+          status=$?
+          grep -E "error:|Test Case .*(passed|failed)|Executed|\*\* " ../build/ios/xcodebuild.log | tail -300
+          exit $status
+      - name: Export UI screenshots
+        if: always()
+        run: |
+          if [ -d build/ios/EkadashiCalendar.xcresult ]; then
+            xcrun xcresulttool export attachments --path build/ios/EkadashiCalendar.xcresult \
+              --output-path build/ios/screenshots || true
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ios-tests-and-screenshots
+          path: |
+            build/ios/xcodebuild.log
+            build/ios/screenshots/
+

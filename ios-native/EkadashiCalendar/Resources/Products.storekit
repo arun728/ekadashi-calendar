@@ -1,0 +1,69 @@
+{
+  "identifier" : "E7A3B1C2",
+  "nonRenewingSubscriptions" : [ ],
+  "products" : [
+    {
+      "displayPrice" : "999.0",
+      "familyShareable" : false,
+      "internalID" : "6740000003",
+      "localizations" : [
+        { "description" : "Ekadashi Premium for life, one purchase", "displayName" : "Lifetime", "locale" : "en_US" }
+      ],
+      "productID" : "ekadashi_premium_lifetime",
+      "referenceName" : "Premium Lifetime",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_applicationInternalID" : "6740000000",
+    "_developerTeamID" : "",
+    "_failTransactionsEnabled" : false,
+    "_locale" : "en_IN",
+    "_storefront" : "IND",
+    "_storeKitErrors" : [ ]
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "21500000",
+      "localizations" : [ ],
+      "name" : "ekadashi_premium",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [ ],
+          "codeOffers" : [ ],
+          "displayPrice" : "499.0",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "6740000002",
+          "introductoryOffer" : null,
+          "localizations" : [
+            { "description" : "Ekadashi Premium, billed yearly", "displayName" : "Yearly", "locale" : "en_US" }
+          ],
+          "productID" : "ekadashi_premium_yearly",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Premium Yearly",
+          "subscriptionGroupID" : "21500000",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [ ],
+          "codeOffers" : [ ],
+          "displayPrice" : "99.0",
+          "familyShareable" : false,
+          "groupNumber" : 2,
+          "internalID" : "6740000001",
+          "introductoryOffer" : null,
+          "localizations" : [
+            { "description" : "Ekadashi Premium, billed monthly", "displayName" : "Monthly", "locale" : "en_US" }
+          ],
+          "productID" : "ekadashi_premium_monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Premium Monthly",
+          "subscriptionGroupID" : "21500000",
+          "type" : "RecurringSubscription"
+        }
+      ]
+    }
+  ],
+  "version" : { "major" : 3, "minor" : 0 }
+}
