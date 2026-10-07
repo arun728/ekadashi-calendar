@@ -103,6 +103,7 @@ struct GlobalSearchView: View {
         .tint(Theme.teal)
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("search_filters_tube")
     }
 
@@ -124,6 +125,7 @@ struct GlobalSearchView: View {
             }
         }
         .scrollIndicators(.hidden)
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("search_categories_tube")
     }
 
@@ -192,6 +194,7 @@ struct GlobalSearchView: View {
                         }
                     }
                 }
+                .accessibilityElement(children: .contain)
                 .accessibilityIdentifier("search_explore_tube")
             }
             .padding(16)

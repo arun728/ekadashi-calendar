@@ -47,6 +47,7 @@ struct RecordVratSheet: View {
                             statusChip(.missed, "missed", "xmark.circle")
                         }
                     }
+                    .accessibilityElement(children: .contain)
                     .accessibilityIdentifier("vrat_record_status_tube")
                     if status == .observed || status == .partial {
                         label("fasting_method")
@@ -55,6 +56,7 @@ struct RecordVratSheet: View {
                                 GlassChip(title: model.t(item.localizationKey), selected: method == item) { method = item }
                             }
                         }
+                        .accessibilityElement(children: .contain)
                         .accessibilityIdentifier("vrat_fasting_method_tube")
                         if method == .other {
                             TextField(model.t("method_other_hint"), text: $methodOther)

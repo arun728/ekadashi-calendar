@@ -97,6 +97,7 @@ struct CalendarView: View {
                 .padding(.horizontal, 6)
                 .glassCapsule(interactive: false)
             }
+            .accessibilityElement(children: .contain)
             .accessibilityIdentifier("calendar_actions_tube")
         }
         .padding(.horizontal, 12)
@@ -150,18 +151,21 @@ struct CalendarView: View {
             HStack {
                 Button { move(-1) } label: { Image(systemName: "chevron.left").frame(width: 44, height: 44) }
                     .disabled(isFirstMonth)
+                    .accessibilityLabel(model.format(month.adding(months: -1), "MMMM yyyy"))
                     .accessibilityIdentifier("calendar_previous_month")
                 Spacer()
                 Text(model.format(month, "MMMM yyyy")).font(.headline)
                 Spacer()
                 Button { move(1) } label: { Image(systemName: "chevron.right").frame(width: 44, height: 44) }
                     .disabled(isLastMonth)
+                    .accessibilityLabel(model.format(month.adding(months: 1), "MMMM yyyy"))
                     .accessibilityIdentifier("calendar_next_month")
             }
             .foregroundStyle(Theme.teal)
             .padding(.horizontal, 8)
             .glassCapsule(interactive: false)
             .padding(.horizontal, 12)
+            .accessibilityElement(children: .contain)
             .accessibilityIdentifier("calendar_month_tube")
         }
     }
@@ -338,6 +342,7 @@ struct CalendarEkadashiCard: View {
                     }
                 }
             }
+            .accessibilityElement(children: .contain)
             .accessibilityIdentifier("calendar_card_actions_tube")
         }
         .padding(16)

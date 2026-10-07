@@ -134,6 +134,7 @@ struct VratView: View {
                 }
             }
             .scrollIndicators(.hidden)
+            .accessibilityElement(children: .contain)
             .accessibilityIdentifier("vrat_history_filters_tube")
             Text(model.t("tap_to_record_instruction")).font(.caption).foregroundStyle(.secondary)
             if filtered.isEmpty {
