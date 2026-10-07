@@ -8,7 +8,7 @@ output_dir=build/android-feature-evidence/$(basename "$test_target" .dart)
 mkdir -p "$output_dir"
 flutter build apk --debug --target-platform android-x64 --target "$test_target"
 timeout 120 adb wait-for-device
-timeout 120 adb install --no-streaming -r "$apk_path"
+bash tool/adb-install-retry.sh "$apk_path"
 adb shell pm grant "$package_name" android.permission.ACCESS_FINE_LOCATION
 adb shell pm grant "$package_name" android.permission.ACCESS_COARSE_LOCATION
 api_level=$(adb shell getprop ro.build.version.sdk | tr -d '\r')

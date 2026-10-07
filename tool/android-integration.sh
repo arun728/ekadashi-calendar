@@ -12,7 +12,7 @@ if [[ "$mode" == denied ]] && (( api_level < 33 )); then
   exit 2
 fi
 flutter build apk --debug --target-platform android-x64 --target=integration_test/android_app_test.dart --dart-define=TEST_PERMISSION_MODE="$mode"
-timeout 120 adb install --no-streaming -r build/app/outputs/flutter-apk/app-debug.apk
+bash tool/adb-install-retry.sh build/app/outputs/flutter-apk/app-debug.apk
 adb shell pm grant "$package_name" android.permission.ACCESS_FINE_LOCATION
 adb shell pm grant "$package_name" android.permission.ACCESS_COARSE_LOCATION
 if (( api_level >= 33 )); then
