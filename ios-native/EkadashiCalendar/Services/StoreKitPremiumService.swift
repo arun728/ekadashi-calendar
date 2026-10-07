@@ -102,8 +102,13 @@ final class StoreKitPremiumService {
     }
 
     private func readEntitlements() async {
+        var history = 0
+        for await _ in Transaction.all { history += 1 }
+        logger.info("Premium refresh: \(history, privacy: .public) transactions in history")
         var owned: [OwnedProduct] = []
         for await result in Transaction.currentEntitlements {
+            let raw = result.unsafePayloadValue
+            logger.info("Premium entitlement: \(raw.productID, privacy: .public) verified=\(String(describing: { if case .verified = result { return true } else { return false } }()), privacy: .public) expires=\(String(describing: raw.expirationDate), privacy: .public) revoked=\(String(describing: raw.revocationDate), privacy: .public) env=\(String(describing: raw.environment), privacy: .public)")
             if case .unverified(let transaction, let failure) = result {
                 logger.error("Premium refresh: ignored unverified \(transaction.productID, privacy: .public): \(String(describing: failure), privacy: .public)")
             }
@@ -157,7 +162,9 @@ final class StoreKitPremiumService {
     func buy(_ plan: PremiumPlanID) async {
         guard let product = products[plan], canBuy(plan) else { return }
         do {
-            switch try await product.purchase() {
+            let outcome = try await product.purchase()
+            logger.info("Purchase result for \(product.id, privacy: .public): \(String(describing: outcome), privacy: .public)")
+            switch outcome {
             case .success(let verification):
                 // Never grant an unverified transaction.
                 guard case .verified(let transaction) = verification else {
