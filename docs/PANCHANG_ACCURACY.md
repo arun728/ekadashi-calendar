@@ -11,7 +11,7 @@ scores the engine for 16 cities on every continent (New Delhi, Mumbai,
 Chennai, Kolkata, Ujjain, Kathmandu, Dubai, Singapore, London,
 Johannesburg, New York, Chicago, Denver, Los Angeles, Sydney, Auckland) and
 every civil day of 2026-2027 in each city's own IANA timezone, 274,783
-checks in all. Every check is pass/fail with a stated tolerance; the overall
+checks in all, then extended to 396 locations worldwide (below). Every check is pass/fail with a stated tolerance; the overall
 score is the unweighted mean of the category pass rates.
 
 References, all independent of the engine:
@@ -45,7 +45,95 @@ SE_EPHE_PATH=EPHE_DIR python compare.py /tmp/engine.json /tmp/reference.json /tm
 python check_positions.py EPHE_DIR /tmp/positions   # compiled positions.dart
 ```
 
-## Results, 2026-2027 (16 cities)
+## Worldwide robustness (396 locations, every time zone)
+
+The engine is meant for devotees anywhere, so the harness was scaled from 16
+cities to 396 locations: one in each of the 356 IANA time zones in the
+bundled GeoNames catalogue, the original 16 cities, and 24 deliberate edge
+cases: polar day and night (Longyearbyen 78°N, Utqiagvik, Tromso, Murmansk,
+Fairbanks, Reykjavik, McMurdo 78°S), the date line (Kiritimati UTC+14, Apia,
+Pago Pago UTC-11, Tarawa, Suva), quarter- and half-hour zones (Chatham
++12:45 with DST, Eucla +8:45, Marquesas -9:30, St John's, Tehran, Kabul,
+Yangon, Adelaide), Lord Howe's 30-minute DST, Ushuaia and Mayapur. Every
+civil day of 2026-2027 in each location's own zone: 6,772,695 checks.
+
+| Check | Before | After | Error before → after (mean / max, min) |
+|---|---:|---:|---|
+| Sunrise | 99.99% | 100.00% | 0.03 / 3.00 → 0.00 / 0.01 |
+| Sunrise (displayed minute) | 96.96% | 100.00% |  |
+| Sunset | 99.99% | 100.00% | 0.07 / 3.07 → 0.00 / 0.01 |
+| Sunset (displayed minute) | 92.67% | 100.00% |  |
+| Moonrise | 99.93% | 100.00% | 0.08 / 1415.38 → 0.00 / 0.05 |
+| Moonrise (displayed minute) | 92.64% | 99.98% |  |
+| Moonset | 99.92% | 100.00% | 0.10 / 7.21 → 0.00 / 0.05 |
+| Moonset (displayed minute) | 90.47% | 99.98% |  |
+| Tithi at sunrise | 99.98% | 100.00% |  |
+| Tithi end time | 96.79% | 100.00% | 0.32 / 1.30 → 0.00 / 0.02 |
+| Tithi end (displayed minute) | 71.84% | 99.86% |  |
+| Nakshatra at sunrise | 99.99% | 100.00% |  |
+| Nakshatra end time | 100.00% | 100.00% | 0.15 / 0.36 → 0.00 / 0.02 |
+| Nakshatra end (displayed minute) | 84.54% | 99.87% |  |
+| Yoga at sunrise | 99.96% | 100.00% |  |
+| Yoga end time | 94.73% | 100.00% | 0.48 / 1.30 → 0.00 / 0.02 |
+| Yoga end (displayed minute) | 53.06% | 99.74% |  |
+| Karana at sunrise | 99.96% | 100.00% |  |
+| Karana end time | 96.74% | 100.00% | 0.32 / 1.30 → 0.00 / 0.02 |
+| Karana end (displayed minute) | 70.55% | 99.74% |  |
+| Lunar month (Amanta, Adhika) | 100.00% | 100.00% |  |
+| Sun rashi | 99.99% | 100.00% |  |
+| Moon rashi | 99.99% | 100.00% |  |
+| Sankranti day | 94.48% | 100.00% |  |
+| Smarta Ekadashi date (all cities, Drik rules) | 79.40% | 100.00% |  |
+| Smarta Parana (all cities) | 47.99% | 100.00% | 60.60 / 563.59 → 0.00 / 0.01 |
+| Gaudiya Ekadashi date (GCAL) | 99.94% | 99.92% |  |
+| Gaudiya Parana (GCAL rule, JPL timing) | 100.00% | 100.00% | 0.07 / 1.90 → 0.00 / 2.42 |
+| Published Ekadashi date (Drik data) | 90.52% | 99.57% |  |
+| Published Ekadashi name | 100.00% | 100.00% |  |
+| Published Parana (Drik, Delhi 2027) | 40.48% | 100.00% | 104.80 / 390.91 → 0.28 / 1.21 |
+| Festival dates (India, public lists) | 74.47% | 100.00% |  |
+| Festival lunar month/tithi (all cities) | 100.00% | 100.00% |  |
+| Festival occurs once per year (all cities) | 90.65% | 100.00% |  |
+| **Overall (mean of categories)** | **89.96%** | **99.96%** | |
+| Overall (all 6,772,695 checks pooled) | 92.87% | 99.96% | |
+
+
+Found and fixed at world scale (failing tests first):
+
+- **Outdated time zone data.** The timezone package bundles IANA 2025b
+  (its newest release has 2025c). IANA 2026b records that British Columbia
+  stays on UTC-7 from 1 November 2026, so every Panchang time and Ekadashi
+  reminder in BC would have been an hour off from that date. The app now
+  ships IANA 2026b, built from the signed release with the package's own
+  encoder (`tool/time_zones/update.sh`), used by Panchang, the reminder
+  scheduler and the splash screen alike. Rerun the script for future IANA
+  releases (Alberta and the Northwest Territories are expected next).
+- **Sunset after local midnight.** In Reykjavik in mid-June the Sun sets at
+  00:00:52; the engine found no sunset in the civil day and dropped the
+  sunset-based periods. The solar day's sunset is now searched after its
+  sunrise.
+- **Polar days.** The Sankranti moment is reported even without sunrise or
+  sunset; Smarta fasts are recommended only when sunrises exist from two days
+  before to three days after (otherwise none is offered, never a guess).
+- Positions stay accurate across the date picker's whole range: worst Sun
+  0.34″ and Moon 0.66″ in each 50-year band from 1900 to 2100 (the old
+  engine reached 35″ and 72″); Delta T is now tabulated through 2100.
+
+Reference corrections, applied to every engine version: rise/set are solved
+exactly on Swiss Ephemeris positions (`swe_rise_trans` stops up to 13″ short
+when the Sun grazes the horizon, 8 seconds at 65°N); the reference sunset is
+the one after sunrise; events seconds after midnight are not skipped.
+
+Listed, not scored (same rules for both versions): 6 locations where GCAL
+dates by longitude across the date line (its dates there are one day early
+for all 49 fasts, while the engine matches the Swiss Ephemeris reference);
+GCAL days whose decision rests on a tithi ending within 2 minutes of sunrise
+or Arunodaya, where GCAL's own ~2.5-minute tithi error decides; 8
+self-contradictory published rows. The 7 Gaudiya dates still scored as
+disagreements (of about 8,600 fasts) all have a deciding tithi boundary
+within 0.2-2.4 minutes of a sunrise or Arunodaya, mostly in the
+Pakshavardhini full-moon test.
+
+## Results, 2026-2027 (first 16 cities)
 
 | Check | baseline | iteration3 | Error before → after (mean / max, min) |
 |---|---:|---:|---|

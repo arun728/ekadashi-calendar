@@ -250,23 +250,25 @@ def score(engine, reference, gcal, festivals):
             sunrise_of = {d["date"]: d["sunrise"] for d in ref_days}
 
             def knife_edge(date):
-                # A tithi boundary within 2 minutes of a nearby sunrise (JPL):
+                # A tithi boundary within 2 minutes of a nearby sunrise or
+                # Arunodaya (JPL):
                 # GCAL's choice then rests on its own astronomy.
                 day = dt.date.fromisoformat(date)
                 for k in range(-1, 3):
                     sr = sunrise_of.get((day + dt.timedelta(days=k)).isoformat())
                     if not sr:
                         continue
-                    x = jd_of(sr)
-                    nb = R.next_boundary(R.elongation, x - 2 / 1440, 12)
-                    if nb is not None and abs(nb - x) <= 2 / 1440:
-                        return True
+                    # Sunrise and Arunodaya (96 minutes earlier) both decide.
+                    for x in (jd_of(sr), jd_of(sr) - 96 / 1440):
+                        nb = R.next_boundary(R.elongation, x - 2 / 1440, 12)
+                        if nb is not None and abs(nb - x) <= 2 / 1440:
+                            return True
                 return False
 
             for date in sorted(ref_map.keys() | eng_map.keys()):
                 ok = date in ref_map and date in eng_map
                 if not ok and knife_edge(date):
-                    s.excluded.append((city, date, "Gaudiya date decided within 2 min of sunrise"))
+                    s.excluded.append((city, date, "Gaudiya date decided within 2 min of sunrise or Arunodaya"))
                     continue
                 s.check("Gaudiya Ekadashi date (GCAL)", ok,
                         (city, date, "engine-only" if date in eng_map else "reference-only"))
@@ -411,6 +413,7 @@ def summarize(s, label):
     worst = sorted(s.by_city.items(), key=lambda kv: -sum(kv[1].values()))[:25]
     return {"label": label, "categories": cats, "supplementary": raw, "excluded_published_rows": s.excluded,
             "worst_locations": [(city, dict(c)) for city, c in worst],
+            "failures_by_location": {city: sum(c.values()) for city, c in s.by_city.items()},
             "overall_category_mean": round(statistics.mean(scores), 2),
             "overall_pooled": round(100 * passed / total, 2), "checks": total}
 
