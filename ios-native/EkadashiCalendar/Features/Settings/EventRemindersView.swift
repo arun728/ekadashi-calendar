@@ -8,7 +8,8 @@ import EkadashiCore
 struct EventReminderRows: View {
     @Environment(AppModel.self) private var model
     let enabled: Bool
-    @State private var editing: EditorRequest?
+    /// Owned by the screen: a sheet on a List row is dismissed when the row is recycled.
+    @Binding var editing: EditorRequest?
 
     struct EditorRequest: Identifiable {
         let reminder: EventReminder?
@@ -38,9 +39,6 @@ struct EventReminderRows: View {
             .accessibilityIdentifier("notifications_add_event")
         }
         .disabled(!enabled)
-        .sheet(item: $editing) { request in
-            EventReminderEditor(original: request.reminder)
-        }
     }
 
     private func row(_ reminder: EventReminder) -> some View {
