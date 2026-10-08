@@ -86,6 +86,28 @@ final class EventReminderTests: XCTestCase {
         XCTAssertTrue(choices.contains { $0.target == .observance("amavasya") && $0.group == .monthly })
         XCTAssertTrue(choices.contains { $0.target == .calendar(.google) && $0.group == .myCalendar })
         XCTAssertFalse(choices.contains { $0.group == .festival && $0.target == .observance("amavasya") })
-        XCTAssertTrue(choices.filter { $0.group == .monthly }.allSatisfy { !$0.requiresPremium || $0.group != .myCalendar })
+        XCTAssertTrue(choices.filter { $0.group != .myCalendar }.allSatisfy(\.requiresPremium))
+        XCTAssertFalse(choices.filter { $0.group == .myCalendar }.contains(where: \.requiresPremium))
+        XCTAssertEqual(Set(choices.map(\.id)).count, choices.count)
+        XCTAssertFalse(choices.contains { $0.title.hasPrefix("event_reminder_") }, "every title is translated")
+    }
+
+    func testRemindersOpenTheDayInPanchang() {
+        XCTAssertEqual(AppRoute(url: AppRoute.panchangURL(CivilDate(2026, 10, 10))), .panchang(CivilDate(2026, 10, 10)))
+        XCTAssertEqual(AppRoute(url: URL(string: "ekadashi://panchang")!), .tab(.panchang))
+    }
+
+    func testStoredRemindersSurviveBadDataAndReplaceByEvent() {
+        let store = InMemoryKeyValueStore(["event_reminders": "not json", "notifications_enabled": false])
+        XCTAssertEqual(EventReminderSettings.load(from: store), EventReminderSettings(enabled: false))
+        var settings = EventReminderSettings()
+        settings.upsert(EventReminder(target: .observance("holi"), daysBefore: [2, 1, 1, 40], hour: 30, minute: -5))
+        settings.upsert(EventReminder(target: .observance("holi"), daysBefore: [0]))
+        XCTAssertEqual(settings.reminders.count, 1)
+        XCTAssertEqual(settings.reminders.first?.daysBefore, [0])
+        XCTAssertEqual(EventReminder(target: .observance("holi"), daysBefore: [2, 1, 1, 40], hour: 30, minute: -5),
+                       EventReminder(target: .observance("holi"), daysBefore: [1, 2], hour: 23, minute: 0))
+        settings.remove(.observance("holi"))
+        XCTAssertTrue(settings.reminders.isEmpty)
     }
 }
