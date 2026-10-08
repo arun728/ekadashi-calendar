@@ -13,6 +13,7 @@ struct SettingsView: View {
     @State private var authorization: UNAuthorizationStatus = .notDetermined
     @State private var backgroundRefresh: UIBackgroundRefreshStatus = .available
     @State private var showGuide = false
+    @State private var editingReminder: EventReminderRows.EditorRequest?
 
     private var hasPermission: Bool { authorization == .authorized || authorization == .provisional || authorization == .ephemeral }
     private var settings: ReminderSettings { model.reminderSettings }
@@ -81,7 +82,7 @@ struct SettingsView: View {
             .tint(Theme.teal)
 
             Section {
-                EventReminderRows(enabled: togglesEnabled)
+                EventReminderRows(enabled: togglesEnabled, editing: $editingReminder)
             } header: {
                 Text(model.t("notifications_section_events"))
             } footer: {
@@ -122,6 +123,9 @@ struct SettingsView: View {
         }
         .scrollContentBackground(.hidden)
         .contentMargins(.bottom, 80, for: .scrollContent)
+        .sheet(item: $editingReminder) { request in
+            EventReminderEditor(original: request.reminder)
+        }
         .alert(model.t("perm_guide_title"), isPresented: $showGuide) {
             Button(model.t("settings_button")) { openSettings() }
             Button(model.t("info_close"), role: .cancel) {}
