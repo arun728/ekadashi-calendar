@@ -64,7 +64,24 @@ void main() {
       expect(find.byKey(const Key('glass_tab_1')), findsOneWidget);
       debugPrint('Premium Android flow: opening Panchang');
       await tester.tap(find.byKey(const Key('glass_tab_3')));
-      await tester.pump(const Duration(seconds: 2));
+      // Panchang is built when first opened and calculates the month's
+      // festivals before Key days and its unlock card appear; slow emulators
+      // (API 24) need more than a fixed delay.
+      final scrollView = find.byKey(const Key('panchang_scroll_view'));
+      final loading = find.descendant(
+        of: scrollView,
+        matching: find.byType(CircularProgressIndicator),
+      );
+      for (
+        var i = 0;
+        i < 90 &&
+            (scrollView.evaluate().isEmpty || loading.evaluate().isNotEmpty);
+        i++
+      ) {
+        await tester.pump(const Duration(seconds: 1));
+      }
+      expect(scrollView, findsOneWidget);
+      expect(loading, findsNothing);
       // The unlock card is below the fold in Panchang's lazy list.
       final unlock = find.byKey(const Key('panchang_unlock_button'));
       await tester.scrollUntilVisible(

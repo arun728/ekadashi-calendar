@@ -102,18 +102,30 @@ void main() {
       await binding.takeScreenshot('v2_home_2026');
       await tester.tap(find.byKey(const Key('glass_tab_3')));
       await frames(tester);
-      expect(find.byKey(const Key('panchang_daily_overview')), findsOneWidget);
-      for (final label in [
-        'Daily',
-        'Muhurta',
-        'Ekadashi',
-        'Rashi',
-        'Festivals',
-        'Guide',
-      ]) {
-        expect(find.widgetWithText(Tab, label), findsOneWidget);
+      // Panchang is built when first opened (docs/ROADMAP.md Phase 3): five
+      // sections, Key days first.
+      await until(
+        tester,
+        () => find
+            .byKey(const Key('panchang_sections_tube'))
+            .evaluate()
+            .isNotEmpty,
+      );
+      for (final page in ['keydays', 'daily', 'muhurta', 'ekadashi', 'rashi']) {
+        expect(find.byKey(Key('panchang_tab_$page')), findsOneWidget);
       }
+      await tester.tap(find.byKey(const Key('panchang_tab_daily')));
+      await frames(tester);
+      await until(
+        tester,
+        () => find
+            .byKey(const Key('panchang_daily_overview'))
+            .evaluate()
+            .isNotEmpty,
+      );
       await binding.takeScreenshot('v2_panchang_free');
+      await tester.tap(find.byKey(const Key('panchang_city_selector')));
+      await frames(tester);
       await tester.tap(find.byKey(const Key('panchang_edit_location')));
       await frames(tester);
       for (final entry in {
@@ -126,7 +138,7 @@ void main() {
         await tester.ensureVisible(field);
         await tester.enterText(field, entry.value);
       }
-      await tester.tap(find.text('Save location'));
+      await tester.tap(find.byKey(const Key('location_save')));
       await frames(tester);
       await until(
         tester,
@@ -136,21 +148,21 @@ void main() {
             .evaluate()
             .isNotEmpty,
       );
-      expect(find.text('America/New_York · English'), findsOneWidget);
+      expect(find.text('New York'), findsWidgets);
+      expect(find.text('America/New_York'), findsOneWidget);
       expect(
         prefs.getString('panchang_location'),
         contains('America/New_York'),
       );
       await binding.takeScreenshot('v2_panchang_worldwide');
-      // Six Panchang subtabs scroll horizontally; Guide is off-screen on
-      // narrow phones until scrolled into view.
-      final guide = find.widgetWithText(Tab, 'Guide');
-      await tester.ensureVisible(guide);
+      // The calculation notes (formerly the Guide tab) open from the toolbar.
+      await tester.tap(find.byKey(const Key('panchang_notes')));
       await frames(tester);
-      await tester.tap(guide);
-      await frames(tester);
-      expect(find.text('Smarta and Vaishnava'), findsOneWidget);
+      final notes = find.byKey(const Key('panchang_notes_sheet'));
+      expect(notes, findsOneWidget);
       await binding.takeScreenshot('v2_panchang_guide');
+      Navigator.of(tester.element(notes)).pop();
+      await frames(tester);
       final lang = tester
           .element(find.byType(MaterialApp).first)
           .read<LanguageService>();
