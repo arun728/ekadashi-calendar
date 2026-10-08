@@ -2,7 +2,7 @@ import Foundation
 
 /// The Panchang in the app language (docs/ROADMAP.md Phase 2). The engine
 /// works in English terms; this table (assets/panchang/terms.json) gives
-/// each term in Hindi, Tamil and Telugu. Observance names come from the
+/// each term in every other app language. Observance names come from the
 /// search catalogue. Unknown terms stay in English.
 public final class PanchangTerms: @unchecked Sendable {
     public enum Kind: String, CaseIterable, Sendable {

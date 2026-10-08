@@ -20,8 +20,8 @@ status table as each phase moves forward.
   read.
 - **TDD.** Write the failing test first, then implement, then run the full
   suites.
-- **Languages** are always ordered English, Hindi, Tamil, Telugu. New
-  languages (Bengali, Gujarati, ...) are added at the end, never earlier.
+- **Languages** are always ordered English, Hindi, Tamil, Telugu, Gujarati,
+  Bengali. New languages are added at the end, never earlier.
 
 ## Status
 
@@ -37,6 +37,7 @@ status table as each phase moves forward.
 | 7 | Notifications revamp | Done | Not started |
 | 8 | Android look and feel parity | n/a | Not started |
 | 9 | Swipeable sub-sections and back to search | Done | Not started |
+| 10 | Gujarati and Bengali | Done | Done (`feature/android-v2`) |
 
 ## Phase 0: housekeeping
 
@@ -220,6 +221,19 @@ results) run by both the Swift and the Dart test suites.
   a deep link or a new search forgets it. Results that push a screen
   (Ekadashi, festival, widget preview) keep the system back button.
 - Core: `SearchReturn` and `SearchSession` (`SearchReturnTests`).
+
+## Phase 10: Gujarati and Bengali
+
+- Gujarati (ગુજરાતી) and Bengali (বাংলা) are appended after Telugu in both
+  apps' language menus, with every UI string, the iOS-only strings, the
+  Panchang vocabulary, festival names and search words, the Ekadashi names,
+  descriptions, stories, fasting rules and benefits for 2026 and 2027, and
+  the Android widget strings.
+- Arun chose Claude over Sarvam: the translations were written by Claude, at
+  no cost, and await native-speaker review (lib/l10n/translation_review.json).
+- Search keeps Gujarati and Bengali letters when matching.
+- Tests: every key, native script and placeholder in both languages; every
+  Ekadashi field; every Panchang term and observance; layouts in both.
 
 ## Testing and CI
 

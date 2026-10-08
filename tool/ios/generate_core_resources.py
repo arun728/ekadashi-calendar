@@ -12,7 +12,7 @@ copies drift.
 - lib/services/time_zone_data.dart  -> Resources/tz/tzdb.tzf (the same IANA
   release, decoded from its UTF-16 escapes to the timezone package's binary
   format, so iOS converts local times exactly like Android)
-- lib/l10n/app_{en,ta,hi,te}.arb    -> Resources/l10n/strings.json
+- lib/l10n/app_{en,ta,hi,te,gu,bn}.arb -> Resources/l10n/strings.json
 - lib/services/panchang/ephemeris_series.dart, lunar_series.dart
                                     -> Sources/EkadashiCore/Panchang/*Series.swift
 """
@@ -25,7 +25,7 @@ import struct
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 CORE = ROOT / "ios-native" / "EkadashiCore" / "Sources" / "EkadashiCore"
 RES = CORE / "Resources"
-LANGUAGES = ["en", "ta", "hi", "te"]
+LANGUAGES = ["en", "ta", "hi", "te", "gu", "bn"]
 
 
 def copy_assets():

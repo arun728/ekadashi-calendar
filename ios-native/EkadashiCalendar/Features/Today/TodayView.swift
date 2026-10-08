@@ -118,7 +118,7 @@ struct HomeHeader: View {
 
 /// The app's only language picker: every tab and subtab, including
 /// Panchang, follows it. Languages appear in registry order (English,
-/// Hindi, Tamil, Telugu, then any added later).
+/// Hindi, Tamil, Telugu, Gujarati, Bengali, then any added later).
 struct LanguageMenu: View {
     @Environment(AppModel.self) private var model
 

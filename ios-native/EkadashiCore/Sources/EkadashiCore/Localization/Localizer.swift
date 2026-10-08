@@ -1,6 +1,6 @@
 import Foundation
 
-/// The app's UI strings in English, Hindi, Tamil and Telugu, generated from
+/// The app's UI strings in every app language (`AppLanguage`), generated from
 /// the Flutter ARB files so both apps say the same thing. The language is
 /// chosen inside the app (as on Android), not only from the system.
 public final class Localizer: @unchecked Sendable {

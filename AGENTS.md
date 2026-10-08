@@ -190,8 +190,8 @@ current. These rules supersede earlier ones where they conflict:
   asked for CI on PR #17 and for it to be marked ready for review once every
   check passes.
 - Panchang is no longer English-only: it follows the app language (Phase 2).
-- Languages are ordered English, Hindi, Tamil, Telugu; new languages are
-  appended at the end.
+- Languages are ordered English, Hindi, Tamil, Telugu, Gujarati, Bengali; new
+  languages are appended at the end.
 - Search no longer covers katha, mantra, food or vrat-info content.
 
 ## No more CI (8 October 2026)

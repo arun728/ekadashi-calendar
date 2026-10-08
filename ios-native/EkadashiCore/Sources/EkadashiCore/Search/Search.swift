@@ -7,9 +7,11 @@ public enum SearchText {
         var lastWasSpace = true
         for scalar in text.lowercased().unicodeScalars {
             let v = scalar.value
-            // Dart's \w is ASCII [A-Za-z0-9_]; Devanagari, Tamil and Telugu are kept.
+            // Dart's \w is ASCII [A-Za-z0-9_]; Devanagari, Bengali, Gujarati,
+            // Tamil and Telugu are kept.
             let keep = (0x61...0x7A).contains(v) || (0x30...0x39).contains(v) || v == 0x5F
-                || (0x0900...0x097F).contains(v) || (0x0B80...0x0BFF).contains(v) || (0x0C00...0x0C7F).contains(v)
+                || (0x0900...0x097F).contains(v) || (0x0980...0x09FF).contains(v) || (0x0A80...0x0AFF).contains(v)
+                || (0x0B80...0x0BFF).contains(v) || (0x0C00...0x0C7F).contains(v)
             if keep {
                 out.unicodeScalars.append(scalar)
                 lastWasSpace = false
