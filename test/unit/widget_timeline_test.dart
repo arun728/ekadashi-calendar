@@ -105,7 +105,16 @@ void main() {
           language: language,
         );
         final strings = p['localizedStrings'] as Map;
-        expect(strings, hasLength(23));
+        expect(strings, hasLength(26));
+        // Phase 6 headline strings keep their {value0} placeholder.
+        expect(strings['widget.days_to_go'], contains('{value0}'));
+        expect(strings['widget.fast_done'], contains('{value0}'));
+        if (language != 'en') {
+          expect(
+            strings['widget.today_is_ekadashi'],
+            isNot('Today is Ekadashi'),
+          );
+        }
         for (final value in strings.values) {
           expect(value, isNotEmpty);
           expect(value, isNot(startsWith('widget_')));

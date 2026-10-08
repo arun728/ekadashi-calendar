@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">ஏகாதசி காலண்டர்</string>
-    <string name="widget_a_title">அடுத்த ஏகாதசி</string>
+    <string name="widget_a_title">ஏகாதசி</string>
     <string name="widget_b_title">இன்றைய ஏகாதசி</string>
     <string name="widget_c_title">வரவிருக்கும் ஏகாதசிகள்</string>
     <string name="widget_a_description">அடுத்த ஏகாதசி</string>

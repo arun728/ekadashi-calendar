@@ -1,4 +1,5 @@
 import 'dart:convert';
+import '../l10n/app_language.dart';
 import 'package:intl/intl.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'ekadashi_service.dart';
@@ -124,6 +125,17 @@ class WidgetSyncManager {
     };
     keys.forEach(
       (key, value) => strings['widget.$key'] = languageService.translate(value),
+    );
+    // Phase 6 headline strings; templates keep their {value0} placeholder.
+    const templates = {
+      'today_is_ekadashi': 'widget_today_is_ekadashi',
+      'days_to_go': 'widget_days_to_go',
+      'fast_done': 'widget_fast_done',
+    };
+    final language = languageService.currentLocale.languageCode;
+    templates.forEach(
+      (key, value) =>
+          strings['widget.$key'] = AppStrings.translate(value, language),
     );
     final upcoming = future.skip(1).map(item).toList();
     return {

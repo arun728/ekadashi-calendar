@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">एकादशी कैलेंडर</string>
-    <string name="widget_a_title">अगली एकादशी</string>
+    <string name="widget_a_title">एकादशी</string>
     <string name="widget_b_title">आज की एकादशी</string>
     <string name="widget_c_title">आगामी एकादशियाँ</string>
     <string name="widget_a_description">अगली एकादशी</string>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">ఏకాదశి క్యాలెండర్</string>
-    <string name="widget_a_title">తదుపరి ఏకాదశి</string>
+    <string name="widget_a_title">ఏకాదశి</string>
     <string name="widget_b_title">నేటి ఏకాదశి</string>
     <string name="widget_c_title">రాబోయే ఏకాదశులు</string>
     <string name="widget_a_description">తదుపరి ఏకాదశి</string>
