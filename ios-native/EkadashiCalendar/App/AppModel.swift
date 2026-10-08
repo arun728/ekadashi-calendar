@@ -57,6 +57,10 @@ final class AppModel {
     private(set) var entriesRevision = 0
     var selectedTab: AppTab = .today
     var showSearch = false
+    /// The way back to a search whose result opened a tab or calendar day.
+    private(set) var searchReturn = SearchReturn()
+    /// The search to show again when it reopens from that way back.
+    var restoredSearch: SearchSession?
     var homeIndex = 0
     var calendarFocus: CivilDate?
     /// A day to open in Panchang (from an event reminder).
@@ -335,8 +339,10 @@ final class AppModel {
             pendingRoute = route
             return
         }
+        searchReturn.clear()
         switch route {
         case .search:
+            restoredSearch = nil
             showSearch = true
         case .tab(let tab):
             showSearch = false
@@ -351,6 +357,26 @@ final class AppModel {
             selectedTab = .panchang
             panchangFocus = date
         }
+    }
+
+    /// A search result that opens a tab or calendar day; that screen's top
+    /// bar can go back to the same search.
+    func open(_ route: AppRoute, from session: SearchSession) {
+        open(route)
+        searchReturn.opened(route, from: session)
+    }
+
+    func returnToSearch() {
+        guard let session = searchReturn.goBack() else { return }
+        restoredSearch = session
+        showSearch = true
+    }
+
+    /// The user chose a tab in the tab bar.
+    func select(_ tab: AppTab) {
+        searchReturn.selected(tab)
+        if tab == selectedTab { reselect(tab) }
+        selectedTab = tab
     }
 
     /// Tapping the selected tab again: Today skips to the strictly next
