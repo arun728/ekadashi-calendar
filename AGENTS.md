@@ -198,6 +198,13 @@ current. These rules supersede earlier ones where they conflict:
   on its PR to `dev` and the PR marked ready for review once every check
   passes. Do not merge it without his approval.
 
+## No more CI (8 October 2026)
+
+Arun said "No more ci": until he explicitly asks for CI again, every pushed
+commit on every branch carries `[skip ci]`, nobody re-runs or triggers
+workflows, and nobody schedules check-ins to watch CI. Run the local checks
+(analyzer, Flutter tests, `swift test`) before pushing instead.
+
 ## Tests follow every change (8 October 2026)
 
 Arun's standing rule for every agent and chat: when you change a screen,
