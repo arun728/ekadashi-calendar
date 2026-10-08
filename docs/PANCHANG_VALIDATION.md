@@ -74,12 +74,12 @@ Existing published schedules, tracker identities, reminders and widgets remain
 in production use. Replacing those schedules needs wider calendar validation
 and explicit history/reminder migration tests; calculated data stays a preview.
 
-## Festivals added on iOS first (Phase 3, 8 October 2026)
+## Festivals added in Phase 3 (8 October 2026)
 
-`FestivalRuleTests` checks these against dates published for New Delhi.
-They are calculated by the Swift engine only for now
-(`PanchangEngine.iosFirstObservanceIds`); the Dart engine gains them with
-the Android port, and the Dart parity test skips them until then.
+`FestivalRuleTests` (Swift) and `test/unit/festival_rules_test.dart` (Dart)
+check these against dates published for New Delhi. Both engines calculate
+them with the same rules (`PanchangEngine.phase3FestivalIds`), and the
+parity fixture compares them field by field.
 
 | Festival | Rule (Amanta months) | 2026 | 2027 |
 | --- | --- | --- | --- |

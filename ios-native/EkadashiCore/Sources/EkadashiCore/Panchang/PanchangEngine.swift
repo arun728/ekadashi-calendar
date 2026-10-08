@@ -19,9 +19,8 @@ public struct PanchangEngine: Sendable {
                               "Kartika", "Margashirsha", "Pausha", "Magha", "Phalguna"]
     static let varas = ["", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
     static let varaNames = Array(varas.dropFirst())
-    /// Observances added on iOS first (docs/ROADMAP.md Phase 3); the Dart
-    /// engine gains them with the Android port, until then the parity test skips them.
-    public static let iosFirstObservanceIds: Set<String> = [
+    /// Festivals added in docs/ROADMAP.md Phase 3 (in both engines).
+    public static let phase3FestivalIds: Set<String> = [
         "raksha-bandhan", "nag-panchami", "ratha-yatra", "durga-ashtami", "varalakshmi-vratam", "onam", "karthigai-deepam",
     ]
     static let karanaFixed = ["Kimstughna", "Shakuni", "Chatushpada", "Naga"]
