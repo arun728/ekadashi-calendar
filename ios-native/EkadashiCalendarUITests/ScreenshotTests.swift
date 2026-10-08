@@ -26,6 +26,11 @@ final class ScreenshotTests: XCTestCase {
     /// navigation transition is still running can be dropped, so retry once.
     private func tab(_ index: Int) {
         let button = app.tabBars.buttons.element(boundBy: index)
+        // iOS 26 minimizes the tab bar after scrolling down; bring it back.
+        for _ in 0..<3 where !button.waitForExistence(timeout: 2) {
+            app.swipeDown(velocity: .fast)
+            if !button.exists, app.tabBars.buttons.firstMatch.exists { app.tabBars.buttons.firstMatch.tap() }
+        }
         XCTAssertTrue(button.waitForExistence(timeout: 10))
         let selected = NSPredicate(format: "isSelected == true")
         for _ in 0..<2 {
@@ -121,7 +126,7 @@ final class ScreenshotTests: XCTestCase {
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 20))
         tab(4)
         // The Ekadashi switches come first, then Festivals and events.
-        let parana = app.switches["notify_toggle_notify_parana"]
+        let parana = app.descendants(matching: .any)["notify_toggle_notify_parana"].firstMatch
         for _ in 0..<6 where !(parana.exists && parana.isHittable) { app.swipeUp() }
         XCTAssertTrue(parana.exists, "Ekadashi reminders")
         let add = app.buttons["notifications_add_event"]
