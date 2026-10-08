@@ -108,6 +108,9 @@ final class ScreenshotTests: XCTestCase {
             let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.4))
             start.press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.12)))
             XCTAssertLessThan(anchor.frame.minY, before, "tab \(index) scrolls when dragged from the middle")
+            // Scrolling down minimizes the tab bar; scroll back to bring it back.
+            app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.3))
+                .press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.9)))
         }
     }
 
@@ -117,10 +120,13 @@ final class ScreenshotTests: XCTestCase {
     func testEventReminderIsAddedFromSettings() {
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 20))
         tab(4)
+        // The Ekadashi switches come first, then Festivals and events.
+        let parana = app.switches["notify_toggle_notify_parana"]
+        for _ in 0..<6 where !(parana.exists && parana.isHittable) { app.swipeUp() }
+        XCTAssertTrue(parana.exists, "Ekadashi reminders")
         let add = app.buttons["notifications_add_event"]
         for _ in 0..<6 where !(add.exists && add.isHittable) { app.swipeUp() }
         XCTAssertTrue(add.waitForExistence(timeout: 5))
-        XCTAssertTrue(app.switches["notify_toggle_notify_parana"].exists, "Ekadashi reminders sit above")
         XCTAssertTrue(add.isEnabled, "UI tests run with notifications allowed")
         add.tap()
         app.buttons["event_reminder_choose"].tap()
