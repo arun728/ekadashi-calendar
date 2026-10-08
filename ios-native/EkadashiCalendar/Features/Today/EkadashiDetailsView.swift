@@ -63,7 +63,9 @@ struct EkadashiDetailsView: View {
     private var vratButton: some View {
         let record = model.vrat.record(for: event.occurrenceUid)
         let style = VratStatusStyle(record?.status)
-        let label = record != nil ? "\(model.t("vrat")): \(model.t(style.detailKey))" : model.t("record_vrat")
+        let open = model.canRecord(event)
+        let label = record != nil ? "\(model.t("vrat")): \(model.t(style.detailKey))"
+            : model.t(open ? "record_vrat" : "journey_record_after_parana")
         return Button {
             recording = true
         } label: {
@@ -74,6 +76,7 @@ struct EkadashiDetailsView: View {
                 .padding(.vertical, 8)
         }
         .secondaryActionStyle()
+        .disabled(!open)
         .accessibilityIdentifier("details_record_vrat")
     }
 }

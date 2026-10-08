@@ -277,6 +277,8 @@ struct PanchangMonthPicker: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
     let month: CivilDate
+    /// The years offered (the Calendar's data years); any year by default.
+    var years: ClosedRange<Int>? = nil
     let onPick: (CivilDate) -> Void
     @State private var selectedMonth = 1
     @State private var selectedYear = 2026
@@ -290,7 +292,7 @@ struct PanchangMonthPicker: View {
                     }
                 }
                 Picker(model.t("year"), selection: $selectedYear) {
-                    ForEach(1900...2100, id: \.self) { value in Text(String(value)).tag(value) }
+                    ForEach(Array(years ?? 1900...2100), id: \.self) { value in Text(String(value)).tag(value) }
                 }
             }
             .pickerStyle(.wheel)

@@ -89,6 +89,25 @@ final class ScreenshotTests: XCTestCase {
         snap("11-search-type-word")
     }
 
+    /// Long screens scroll when dragged from the top half, not only from
+    /// their lowest card (the Android Calendar bug, docs/ROADMAP.md Phase 4).
+    func testLongScreensScrollFromTheTopHalf() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 20))
+        let screens: [(Int, XCUIElement)] = [
+            (2, app.segmentedControls.firstMatch),
+            (3, app.descendants(matching: .any)["panchang_key_day_filters"].firstMatch),
+            (4, app.descendants(matching: .any)["settings_premium"].firstMatch),
+        ]
+        for (index, anchor) in screens {
+            tab(index)
+            XCTAssertTrue(anchor.waitForExistence(timeout: 60), "tab \(index)")
+            let before = anchor.frame.minY
+            let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.4))
+            start.press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.12)))
+            XCTAssertLessThan(anchor.frame.minY, before, "tab \(index) scrolls when dragged from the middle")
+        }
+    }
+
     private func result(_ prefix: String) -> XCUIElement {
         app.descendants(matching: .any).matching(NSPredicate(format: "identifier BEGINSWITH %@", prefix)).firstMatch
     }

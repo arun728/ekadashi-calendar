@@ -1057,7 +1057,7 @@
   },
   {
    "key": "vrat",
-   "titleKey": "vrat_tracker",
+   "titleKey": "journey_tab",
    "target": "tab:vrat",
    "aliases": [
     "vrat",

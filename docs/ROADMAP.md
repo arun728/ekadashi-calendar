@@ -31,7 +31,7 @@ status table as each phase moves forward.
 | 1 | One search for the whole app | Done (PR #17) | Not started |
 | 2 | One app language and Sarvam translation | Done; Sarvam run needs an API key | Not started |
 | 3 | Panchang redesign, missing festivals, regional names | Done | Not started |
-| 4 | Calendar tab, Home, Journey tab, observance fix, scroll tests | Not started | Not started |
+| 4 | Calendar tab, Home, Journey tab, observance fix, scroll tests | Done | Not started |
 | 5 | Settings and Premium card | Not started | Not started |
 | 6 | Widgets (two widgets) | Not started | Not started |
 | 7 | Notifications revamp | Not started | Not started |

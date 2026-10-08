@@ -333,6 +333,12 @@ final class AppModel {
         }
     }
 
+    /// Recording opens once the fast has happened (Parana started, or the
+    /// day after); an existing record stays editable.
+    func canRecord(_ event: EkadashiOccurrence) -> Bool {
+        vrat.record(for: event.occurrenceUid) != nil || VratRecording.isOpen(event, now: Date(), zone: scheduleZone)
+    }
+
     // MARK: Premium paywall
 
     /// Opens the paywall and waits until it closes; true when premium now.

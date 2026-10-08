@@ -1,7 +1,7 @@
 import SwiftUI
 import EkadashiCore
 
-/// Five tabs (Today, Calendar, Vrat, Panchang, Settings) with Search in the
+/// Five tabs (Home, Calendar, Journey, Panchang, Settings) with Search in the
 /// top bar, as on Android. On iOS 26 the system tab bar and toolbars are
 /// Liquid Glass.
 struct RootView: View {
@@ -17,7 +17,7 @@ struct RootView: View {
                 .tabItem { Label(model.t("calendar"), systemImage: "calendar") }
                 .tag(AppTab.calendar)
             screen(VratView())
-                .tabItem { Label(model.t("vrat"), systemImage: "leaf") }
+                .tabItem { Label(model.t("journey_tab"), systemImage: "leaf") }
                 .tag(AppTab.vrat)
             // Panchang is English-only by design.
             screen(PanchangView())

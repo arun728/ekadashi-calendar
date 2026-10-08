@@ -207,7 +207,9 @@ struct EkadashiCard: View {
                                 .padding(.vertical, 4)
                         }
                         .secondaryActionStyle()
+                        .disabled(!model.canRecord(event))
                         .accessibilityLabel(model.t(model.vrat.record(for: event.occurrenceUid) == nil ? "record_vrat" : "edit_record"))
+                        .accessibilityHint(model.canRecord(event) ? "" : model.t("journey_record_after_parana"))
                         .accessibilityIdentifier("home_record_vrat")
                     }
                 }

@@ -4,6 +4,12 @@ import EkadashiCore
 /// Month calendar of every data year with Ekadashi, Google and custom
 /// entries (calendar_screen.dart). Google import is free once (the viewed
 /// month) and Premium afterwards; see GoogleSyncCoordinator.
+///
+/// Layout (docs/ROADMAP.md Phase 4): Today at the top left, Add and the
+/// Google actions at the top right, filter chips, then the month title
+/// (tap for a month and year picker) with arrows, the grid (swipe between
+/// months) and the selected day. Recording a fast lives on Home and
+/// Journey only.
 struct CalendarView: View {
     @Environment(AppModel.self) private var model
     @State private var month = CivilDate.today().firstOfMonth
@@ -11,7 +17,7 @@ struct CalendarView: View {
     @State private var filter: CalendarFilter = .all
     @State private var syncing = false
     @State private var editing: EntryEditorRequest?
-    @State private var recording: EkadashiOccurrence?
+    @State private var pickingMonth = false
 
     private var years: [Int] { model.repository?.availableYears ?? [CivilDate.today().year] }
     private var firstDay: CivilDate { CivilDate(years.first ?? month.year, 1, 1) }
@@ -38,33 +44,38 @@ struct CalendarView: View {
                     }
                     .padding(.horizontal, 16)
                 }
-                actions
                 filterBar
-                yearAndMonth
-                if selectedEkadashi == nil && filter == .ekadashi {
-                    Text(model.t("no_ekadashi")).font(.subheadline).foregroundStyle(.secondary)
-                }
+                monthHeader
                 MonthGrid(month: month, selected: selected, today: CivilDate.today(), firstDay: firstDay, lastDay: lastDay,
                           markers: { markers(for: $0, loaded.list) }, select: { selected = $0 })
                     .padding(.horizontal, 12)
                     .gesture(DragGesture(minimumDistance: 30).onEnded { value in
                         if value.translation.width < -60 { move(1) } else if value.translation.width > 60 { move(-1) }
                     })
-                if let event = selectedEkadashi, filter == .all || filter == .ekadashi {
-                    CalendarEkadashiCard(event: event) { recording = event }
-                        .padding(.horizontal, 16)
-                }
-                if filter != .ekadashi {
-                    DayEntriesList(day: selected, entries: loaded.list, filter: filter,
-                                   edit: { editing = EntryEditorRequest(day: selected, existing: $0) },
-                                   delete: delete)
-                        .padding(.horizontal, 16)
-                }
+                selectedDay(loaded.list)
             }
+            .padding(.top, 4)
             .padding(.bottom, 100)
         }
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button(model.t("today")) { focus(CivilDate.today()) }
+                    .disabled(selected == CivilDate.today() && month == CivilDate.today().firstOfMonth)
+                    .accessibilityIdentifier("calendar_today")
+            }
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                Button { editing = EntryEditorRequest(day: selected, existing: nil) } label: { Image(systemName: "plus") }
+                    .disabled(loaded.failed)
+                    .accessibilityLabel(model.t("add_entry"))
+                    .accessibilityIdentifier("add_calendar_entry")
+                googleMenu
+            }
+        }
         .sheet(item: $editing) { EntryEditorView(request: $0) }
-        .sheet(item: $recording) { RecordVratSheet(event: $0) }
+        .sheet(isPresented: $pickingMonth) {
+            PanchangMonthPicker(month: month, years: years.first.map { $0...(years.last ?? $0) }) { focusMonth($0) }
+                .presentationDetents([.height(320)])
+        }
         .onAppear { focusInitial() }
         .onChange(of: model.calendarFocus) { _, date in
             guard let date else { return }
@@ -75,42 +86,26 @@ struct CalendarView: View {
 
     // MARK: Header
 
-    private var actions: some View {
-        HStack {
-            Spacer()
-            GlassGroup(spacing: 4) {
-                HStack(spacing: 4) {
-                    iconButton("plus", "add_entry", id: "add_calendar_entry", disabled: entries.failed) {
-                        editing = EntryEditorRequest(day: selected, existing: nil)
-                    }
-                    if syncing {
-                        ProgressView().frame(width: 44, height: 44)
-                    } else {
-                        iconButton("arrow.triangle.2.circlepath", "sync_google", id: "import_google_year", disabled: false) {
-                            Task { await sync() }
-                        }
-                    }
-                    iconButton("person.crop.circle.badge.minus", "disconnect_google", id: "disconnect_google", disabled: syncing) {
-                        Task { await disconnect() }
-                    }
+    @ViewBuilder
+    private var googleMenu: some View {
+        if syncing {
+            ProgressView().tint(Theme.teal)
+        } else {
+            Menu {
+                Button { Task { await sync() } } label: {
+                    Label(model.t("sync_google"), systemImage: "arrow.triangle.2.circlepath")
                 }
-                .padding(.horizontal, 6)
-                .glassCapsule(interactive: false)
+                .accessibilityIdentifier("import_google_year")
+                Button(role: .destructive) { Task { await disconnect() } } label: {
+                    Label(model.t("disconnect_google"), systemImage: "person.crop.circle.badge.minus")
+                }
+                .accessibilityIdentifier("disconnect_google")
+            } label: {
+                Image(systemName: "arrow.triangle.2.circlepath.circle")
             }
-            .accessibilityElement(children: .contain)
-            .accessibilityIdentifier("calendar_actions_tube")
+            .accessibilityLabel(model.t("google_calendar"))
+            .accessibilityIdentifier("calendar_google_menu")
         }
-        .padding(.horizontal, 12)
-        .padding(.top, 4)
-    }
-
-    private func iconButton(_ symbol: String, _ key: String, id: String, disabled: Bool, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Image(systemName: symbol).font(.title3).foregroundStyle(Theme.teal).frame(width: 44, height: 44)
-        }
-        .disabled(disabled)
-        .accessibilityLabel(model.t(key))
-        .accessibilityIdentifier(id)
     }
 
     private var filterBar: some View {
@@ -133,41 +128,48 @@ struct CalendarView: View {
         GlassChip(title: model.t(key), color: color, selected: filter == value) { filter = value }
     }
 
-    private var yearAndMonth: some View {
-        VStack(spacing: 8) {
-            HStack(spacing: 16) {
-                Text(model.t("year"))
-                Menu {
-                    ForEach(years, id: \.self) { year in
-                        Button(String(year)) { selectYear(year) }
-                    }
-                } label: {
-                    Label(String(month.year), systemImage: "chevron.up.chevron.down").labelStyle(TrailingIconLabel())
+    /// The month title opens the month and year picker; arrows step months.
+    private var monthHeader: some View {
+        HStack(spacing: 0) {
+            Button { pickingMonth = true } label: {
+                HStack(spacing: 6) {
+                    Text(model.format(month, "LLLL yyyy")).font(.title3.weight(.bold)).foregroundStyle(.primary)
+                    Image(systemName: "chevron.down").font(.footnote.weight(.bold)).foregroundStyle(Theme.teal)
                 }
-                .accessibilityIdentifier("calendar_year_selector")
-                Spacer()
             }
-            .padding(.horizontal, 24)
-            HStack {
-                Button { move(-1) } label: { Image(systemName: "chevron.left").frame(width: 44, height: 44) }
-                    .disabled(isFirstMonth)
-                    .accessibilityLabel(model.format(month.adding(months: -1), "MMMM yyyy"))
-                    .accessibilityIdentifier("calendar_previous_month")
-                Spacer()
-                Text(model.format(month, "MMMM yyyy")).font(.headline)
-                Spacer()
-                Button { move(1) } label: { Image(systemName: "chevron.right").frame(width: 44, height: 44) }
-                    .disabled(isLastMonth)
-                    .accessibilityLabel(model.format(month.adding(months: 1), "MMMM yyyy"))
-                    .accessibilityIdentifier("calendar_next_month")
-            }
-            .foregroundStyle(Theme.teal)
-            .padding(.horizontal, 8)
-            .glassCapsule(interactive: false)
-            .padding(.horizontal, 12)
-            .accessibilityElement(children: .contain)
-            .accessibilityIdentifier("calendar_month_tube")
+            .accessibilityIdentifier("calendar_year_selector")
+            Spacer()
+            Button { move(-1) } label: { Image(systemName: "chevron.left").frame(width: 44, height: 44) }
+                .disabled(isFirstMonth)
+                .accessibilityLabel(model.format(month.adding(months: -1), "MMMM yyyy"))
+                .accessibilityIdentifier("calendar_previous_month")
+            Button { move(1) } label: { Image(systemName: "chevron.right").frame(width: 44, height: 44) }
+                .disabled(isLastMonth)
+                .accessibilityLabel(model.format(month.adding(months: 1), "MMMM yyyy"))
+                .accessibilityIdentifier("calendar_next_month")
         }
+        .foregroundStyle(Theme.teal)
+        .padding(.horizontal, 20)
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("calendar_month_tube")
+    }
+
+    @ViewBuilder
+    private func selectedDay(_ list: [CalendarEntry]) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(model.format(selected, "EEEE, d MMMM yyyy")).font(.headline).padding(.horizontal, 4)
+            if let event = selectedEkadashi, filter == .all || filter == .ekadashi {
+                CalendarEkadashiCard(event: event)
+            } else if filter == .ekadashi {
+                Text(model.t("no_ekadashi")).font(.subheadline).foregroundStyle(.secondary)
+            }
+            if filter != .ekadashi {
+                DayEntriesList(day: selected, entries: list, filter: filter,
+                               edit: { editing = EntryEditorRequest(day: selected, existing: $0) }, delete: delete)
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 4)
     }
 
     // MARK: Navigation
@@ -180,13 +182,13 @@ struct CalendarView: View {
     private func focus(_ date: CivilDate) {
         let target = min(max(date, firstDay), lastDay)
         selected = target
-        month = target.firstOfMonth
+        withAnimation(.easeInOut(duration: 0.25)) { month = target.firstOfMonth }
     }
 
-    /// Another year opens on its January; the current year opens on today.
-    private func selectYear(_ year: Int) {
+    /// A picked month selects today when it is this month, else its first day.
+    private func focusMonth(_ picked: CivilDate) {
         let today = CivilDate.today()
-        focus(year == today.year ? today : CivilDate(year, 1, 1))
+        focus(picked.firstOfMonth == today.firstOfMonth ? today : picked.firstOfMonth)
     }
 
     private func move(_ months: Int) {
@@ -234,12 +236,6 @@ struct CalendarView: View {
         } catch {
             model.show("storage_failed")
         }
-    }
-}
-
-private struct TrailingIconLabel: LabelStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        HStack(spacing: 4) { configuration.title; configuration.icon.imageScale(.small) }
     }
 }
 
@@ -306,11 +302,11 @@ struct MonthGrid: View {
     }
 }
 
-/// The selected day's Ekadashi with View Details and the Vrat button.
+/// The selected day's Ekadashi with its times and View Details. Recording
+/// the fast happens on Home and Journey.
 struct CalendarEkadashiCard: View {
     @Environment(AppModel.self) private var model
     let event: EkadashiOccurrence
-    let record: () -> Void
 
     var body: some View {
         let status = model.vrat.record(for: event.occurrenceUid)?.status
@@ -319,31 +315,19 @@ struct CalendarEkadashiCard: View {
             HStack(alignment: .top) {
                 Text(event.name).font(.headline).foregroundStyle(Theme.teal)
                 Spacer()
-                if model.vrat.isEnabled {
+                if model.vrat.isEnabled, status != nil {
                     StatusPill(text: model.t(style.listKey), systemImage: style.symbol, color: style.color)
                 }
             }
             Text("\(model.t("start_fasting")): \(event.fastStartTime)").font(.subheadline)
             Text("\(model.t("break_fasting")): \(EkadashiDisplay.breakTime(event))").font(.subheadline)
-            Text(model.format(event.date, "EEEE, MMM dd, yyyy")).font(.caption).foregroundStyle(.secondary)
-            GlassGroup {
-                HStack(spacing: 8) {
-                    NavigationLink {
-                        EkadashiDetailsView(event: event)
-                    } label: {
-                        Text(model.t("view_details")).font(.footnote.bold()).frame(maxWidth: .infinity)
-                    }
-                    .primaryActionStyle()
-                    if model.vrat.isEnabled {
-                        Button(action: record) {
-                            Text(model.t(status == nil ? "record_vrat" : "edit_record")).font(.footnote.bold()).frame(maxWidth: .infinity)
-                        }
-                        .secondaryActionStyle()
-                    }
-                }
+            NavigationLink {
+                EkadashiDetailsView(event: event)
+            } label: {
+                Text(model.t("view_details")).font(.footnote.bold()).frame(maxWidth: .infinity)
             }
-            .accessibilityElement(children: .contain)
-            .accessibilityIdentifier("calendar_card_actions_tube")
+            .primaryActionStyle()
+            .accessibilityIdentifier("calendar_view_details")
         }
         .padding(16)
         .glassPanel(cornerRadius: 18)

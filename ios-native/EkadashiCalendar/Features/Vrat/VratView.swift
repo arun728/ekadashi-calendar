@@ -34,7 +34,7 @@ struct VratView: View {
                     Button(model.t("retry")) { model.vrat.load(events) }.primaryActionStyle()
                 }
             } else {
-                Picker(model.t("vrat_tracker"), selection: $section) {
+                Picker(model.t("journey_tab"), selection: $section) {
                     Text(model.t("overview")).tag(Section.overview)
                     Text(model.t("history")).tag(Section.history)
                     Text(model.t("statistics")).tag(Section.statistics)
@@ -168,8 +168,10 @@ struct VratView: View {
         let record = model.vrat.record(for: event.occurrenceUid)
         let style = VratStatusStyle(record?.status)
         let date = model.format(event.date, "MMM dd, yyyy")
+        let open = model.canRecord(event)
         return Button {
-            recording = event
+            // Only fasts that have happened can be recorded (Phase 4).
+            if open { recording = event } else { model.show("journey_record_after_parana") }
         } label: {
             HStack(spacing: 12) {
                 Image(systemName: style.symbol)
@@ -186,8 +188,9 @@ struct VratView: View {
                 }
                 Spacer(minLength: 8)
                 StatusPill(text: model.t(style.listKey), color: style.color)
-                Image(systemName: "chevron.right").font(.caption).foregroundStyle(.tertiary)
+                Image(systemName: open ? "chevron.right" : "clock").font(.caption).foregroundStyle(.tertiary)
             }
+            .opacity(open ? 1 : 0.55)
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
             .contentShape(Rectangle())
