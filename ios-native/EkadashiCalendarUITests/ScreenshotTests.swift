@@ -134,14 +134,18 @@ final class ScreenshotTests: XCTestCase {
         XCTAssertTrue(add.waitForExistence(timeout: 5))
         XCTAssertTrue(add.isEnabled, "UI tests run with notifications allowed")
         add.tap()
-        app.buttons["event_reminder_choose"].tap()
-        let choice = app.buttons["event_choice_calendar:custom"]
+        // Form rows and links are not always exposed as buttons; find them by id.
+        let choose = element("event_reminder_choose")
+        XCTAssertTrue(choose.waitForExistence(timeout: 10), "editor sheet")
+        choose.tap()
+        let choice = element("event_choice_calendar:custom")
+        XCTAssertTrue(choice.waitForExistence(timeout: 10), "event picker")
         for _ in 0..<12 where !(choice.exists && choice.isHittable) { app.swipeUp() }
         choice.tap()
-        XCTAssertTrue(app.buttons["event_reminder_lead_2"].waitForExistence(timeout: 5))
+        XCTAssertTrue(element("event_reminder_lead_2").waitForExistence(timeout: 10))
         snap("12-event-reminder-editor")
-        app.buttons["event_reminder_save"].tap()
-        XCTAssertTrue(app.buttons["event_reminder_row_calendar:custom"].waitForExistence(timeout: 5))
+        element("event_reminder_save").tap()
+        XCTAssertTrue(element("event_reminder_row_calendar:custom").waitForExistence(timeout: 10))
         snap("13-notifications")
     }
 
@@ -152,6 +156,10 @@ final class ScreenshotTests: XCTestCase {
         let value = field.value as? String ?? ""
         let count = value == field.placeholderValue ? 0 : value.count
         field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: count) + text)
+    }
+
+    private func element(_ identifier: String) -> XCUIElement {
+        app.descendants(matching: .any)[identifier].firstMatch
     }
 
     private func result(_ prefix: String) -> XCUIElement {
