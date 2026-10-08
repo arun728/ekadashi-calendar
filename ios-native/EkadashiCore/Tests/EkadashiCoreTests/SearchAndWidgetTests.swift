@@ -330,3 +330,44 @@ final class ResourceSyncTests: XCTestCase {
         XCTAssertEqual(missing.sorted(), [])
     }
 }
+
+/// Phase 6: the two redesigned widgets (Ekadashi, Upcoming).
+final class WidgetRedesignTests: XCTestCase {
+    private func snapshot(now: Date) throws -> WidgetSnapshot {
+        WidgetSnapshot.build(occurrences: try CalendarRepository.bundled().ekadashis(timezone: "IST", language: "en"),
+                             timezone: "IST", locationName: "", language: "en", now: now)
+    }
+
+    func testBeforeAnEkadashiTheWidgetShowsTheNextOneAndDaysToGo() throws {
+        let now = instant("2026-10-08T10:00:00+05:30")
+        let snapshot = try snapshot(now: now)
+        guard case .next(let item, let days) = snapshot.headline(at: now) else { return XCTFail("expected next") }
+        XCTAssertEqual(item.name, "Papankusha Ekadashi")
+        XCTAssertEqual(days, 14)
+        XCTAssertEqual(snapshot.daysToGo(days), "14 days to go")
+        XCTAssertEqual(snapshot.daysToGo(1), "Tomorrow")
+    }
+
+    func testOnTheEkadashiTheWidgetShowsProgressUntilParana() throws {
+        let probe = try snapshot(now: instant("2026-10-08T10:00:00+05:30")).nextEkadashi!
+        let middle = probe.fastingStart.addingTimeInterval(probe.paranaStart.timeIntervalSince(probe.fastingStart) / 2)
+        let snapshot = try snapshot(now: middle)
+        guard case .today(let item, let progress) = snapshot.headline(at: middle) else { return XCTFail("expected today") }
+        XCTAssertEqual(item.id, probe.id)
+        XCTAssertEqual(progress, 0.5, accuracy: 0.01)
+        XCTAssertEqual(item.fastProgress(at: probe.fastingStart.addingTimeInterval(-60)), 0)
+        XCTAssertEqual(item.fastProgress(at: probe.paranaEnd), 1)
+        // During Parana the widget stays on today's Ekadashi, fully fasted.
+        let parana = probe.paranaStart.addingTimeInterval(60)
+        guard case .today(_, let done) = snapshot.headline(at: parana) else { return XCTFail("expected parana") }
+        XCTAssertEqual(done, 1)
+    }
+
+    func testEveryLanguageHasTheNewWidgetStrings() {
+        for language in Localizer.languages {
+            for key in ["widget_today_is_ekadashi", "widget_days_to_go", "widget_fast_done"] {
+                XCTAssertNotEqual(Localizer.shared.translate(key, language: language), key, "\(language) \(key)")
+            }
+        }
+    }
+}
