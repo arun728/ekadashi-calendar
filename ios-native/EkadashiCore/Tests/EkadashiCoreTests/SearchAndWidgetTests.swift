@@ -2,9 +2,11 @@ import Foundation
 import XCTest
 @testable import EkadashiCore
 
-/// Ports search_accuracy_test.dart and the recent-search rules.
+/// Ports search_accuracy_test.dart (Ekadashi matching) and the recent-search rules.
 final class SearchTests: XCTestCase {
-    private func vaikuntha(_ language: String = "en") -> [EkadashiOccurrence] {
+    private let today = CivilDate(2026, 10, 8)
+
+    private func vaikuntha(_ language: String) -> [EkadashiOccurrence] {
         [2026, 2027].map { year in
             EkadashiOccurrence(id: year == 2026 ? 1 : 2027001, occurrenceUid: "ekadashi:\(year):01",
                                name: language == "te" ? "వైకుంఠ ఏకాదశి" : "Vaikuntha Ekadashi",
@@ -13,64 +15,50 @@ final class SearchTests: XCTestCase {
         }
     }
 
-    private func index(_ events: [EkadashiOccurrence], language: String = "en") -> SearchIndex {
-        let index = SearchIndex()
-        index.build(ekadashis: events, language: language)
-        return index
+    private func search(_ events: @escaping (String) -> [EkadashiOccurrence], language: String = "en") -> UnifiedSearch {
+        UnifiedSearch(items: SearchCorpus.ekadashiItems(events, language: language))
     }
 
     func testUnmatchedAndPunctuationOnlyQueriesReturnNothing() {
-        let s = index(vaikuntha())
-        XCTAssertTrue(s.search("zzzzreviewnomatch9999").isEmpty)
-        XCTAssertTrue(s.search("!!!").isEmpty)
+        let s = search(vaikuntha)
+        XCTAssertTrue(s.search("zzzzreviewnomatch9999", today: today).isEmpty)
+        XCTAssertTrue(s.search("!!!", today: today).isEmpty)
     }
 
     func testOneEditTranspositionAndTwoEditsFindTheIntendedEkadashi() {
-        let s = index(vaikuntha())
+        let s = search(vaikuntha)
         for query in ["vaikunta", "vaikuntah", "vaikntha", "vaikxxtha"] {
-            let results = s.search(query, filter: .ekadashi)
+            let results = s.search(query, category: .ekadashi, today: today)
             XCTAssertFalse(results.isEmpty, query)
-            XCTAssertTrue(results.allSatisfy { $0.title == "Vaikuntha Ekadashi" }, query)
+            XCTAssertTrue(results.allSatisfy { $0.titleEnglish == "Vaikuntha Ekadashi" }, query)
         }
-        XCTAssertTrue(s.search("vx", filter: .ekadashi).isEmpty)
-        XCTAssertTrue(s.search("vaikuntha unrelatedword", filter: .ekadashi).isEmpty)
+        XCTAssertTrue(s.search("vx", category: .ekadashi, today: today).isEmpty)
+        XCTAssertTrue(s.search("vaikuntha unrelatedword", category: .ekadashi, today: today).isEmpty)
     }
 
-    func testTeluguQueryKeepsItsLetters() {
-        let s = index(vaikuntha("te"), language: "te")
+    func testTeluguQueryKeepsItsLettersAndEveryLanguageNameMatches() {
         XCTAssertEqual(SearchText.normalize("వైకుంఠ"), "వైకుంఠ")
-        XCTAssertEqual(s.search("వైకుంఠ", filter: .ekadashi).count, 2)
-        XCTAssertTrue(s.search("mantra", languageCode: "te").isEmpty)
+        let telugu = search(vaikuntha, language: "te")
+        XCTAssertEqual(telugu.search("వైకుంఠ", today: today).count, 2)
+        XCTAssertEqual(telugu.search("vaikuntha", today: today).first?.title, "వైకుంఠ ఏకాదశి", "English name finds the Telugu title")
     }
 
     func testYearSelectionDistinguishesOccurrences() {
-        let s = index(vaikuntha())
+        let s = search(vaikuntha)
         for year in [2026, 2027] {
-            let results = s.search("vaikuntha", filter: .ekadashi, year: year)
-            XCTAssertEqual(results.count, 1)
-            XCTAssertEqual(results.first?.entry.metadataInt("year"), year)
+            let results = s.search("vaikuntha", year: year, today: today)
+            XCTAssertEqual(results.map { $0.date?.year }, [year])
         }
     }
 
     func testExactTitleTokenRanksAboveAPrefixAndTitleAboveBody() {
-        let prefix = index([EkadashiOccurrence(id: 1, name: "Vaikuntham Ekadashi", date: CivilDate(2026, 1, 1)),
-                            EkadashiOccurrence(id: 2, name: "Vaikuntha Ekadashi", date: CivilDate(2026, 1, 1))])
-        XCTAssertEqual(prefix.search("vaikuntha", filter: .ekadashi).first?.title, "Vaikuntha Ekadashi")
-        let body = index([EkadashiOccurrence(id: 1, name: "Unrelated Ekadashi", date: CivilDate(2026, 1, 1),
-                                             description: "Reaches Vaikuntha"),
-                          EkadashiOccurrence(id: 2, name: "Vaikuntha Ekadashi", date: CivilDate(2026, 1, 1))])
-        XCTAssertEqual(body.search("vaikunta", filter: .ekadashi).first?.title, "Vaikuntha Ekadashi")
-    }
-
-    func testCuratedCatalogIsSearchableAndOfflineHidesOnlineOnlyItems() {
-        let s = index([])
-        XCTAssertFalse(s.search("hare krishna").isEmpty)
-        XCTAssertFalse(s.search("nirjala", filter: .katha).isEmpty)
-        XCTAssertTrue(s.search("nirjala", filter: .katha, offline: true).isEmpty)
-        s.markDownloaded("katha_online_pandava")
-        XCTAssertFalse(s.search("nirjala", filter: .katha, offline: true).isEmpty)
-        XCTAssertFalse(s.suggestions("hare").isEmpty)
-        XCTAssertEqual(SearchContentType.vratInfo.localizationKey, "category_vrat")
+        let prefix = search { _ in [EkadashiOccurrence(id: 1, occurrenceUid: "a", name: "Vaikuntham Ekadashi", date: CivilDate(2026, 1, 1)),
+                                    EkadashiOccurrence(id: 2, occurrenceUid: "b", name: "Vaikuntha Ekadashi", date: CivilDate(2026, 1, 1))] }
+        XCTAssertEqual(prefix.search("vaikuntha", today: today).first?.titleEnglish, "Vaikuntha Ekadashi")
+        let body = search { _ in [EkadashiOccurrence(id: 1, occurrenceUid: "a", name: "Unrelated Ekadashi", date: CivilDate(2026, 1, 1),
+                                                     description: "Reaches Vaikuntha"),
+                                  EkadashiOccurrence(id: 2, occurrenceUid: "b", name: "Vaikuntha Ekadashi", date: CivilDate(2026, 1, 1))] }
+        XCTAssertEqual(body.search("vaikunta", today: today).first?.titleEnglish, "Vaikuntha Ekadashi")
     }
 
     func testRecentSearchesDeduplicateDropTypingPrefixesAndCapAtTen() {
@@ -314,7 +302,8 @@ final class ResourceSyncTests: XCTestCase {
             keys["premium_\(plan.rawValue)"] = "PremiumView.swift"
             if plan != .lifetime { keys["premium_\(plan.rawValue)_terms"] = "PremiumView.swift" }
         }
-        for type in SearchContentType.allCases { keys[type.localizationKey] = "Search" }
+        for category in SearchCategory.allCases { keys[category.localizationKey] = "Search" }
+        for screen in SearchCatalog.bundled.screens { keys[screen.titleKey] = "search_catalog.json" }
         for method in FastingMethod.allCases { keys[method.localizationKey] = "VratModels" }
         for status in ObservanceStatus.allCases where status != .unrecorded { keys[status.rawValue] = "VratStatusStyle" }
         for achievement in AchievementEvaluator.all {
