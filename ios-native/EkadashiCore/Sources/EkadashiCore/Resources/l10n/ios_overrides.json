@@ -135,7 +135,14 @@
   "panchang_location_unavailable": "Location unavailable. Search or enter a location instead.",
   "panchang_location_received": "Coordinates received. Check the time zone before saving.",
   "journey_tab": "Journey",
-  "journey_record_after_parana": "You can record this fast once Parana begins"
+  "journey_record_after_parana": "You can record this fast once Parana begins",
+  "settings_premium_subtitle": "Everything for your Ekadashi journey",
+  "premium_feature_panchang_v2": "Full Panchang: every festival in Key days, the five limbs, timings, Muhurta and Rashi",
+  "settings_premium_from": "From {value0} a month · Lifetime {value1}",
+  "settings_premium_cta": "See plans",
+  "settings_premium_plan": "Your plan: {value0}",
+  "settings_premium_manage": "Manage",
+  "settings_premium_plans": "Change plan"
  },
  "ta": {
   "rate_app_desc": "ஆப் ஸ்டோரில் எங்களை மதிப்பிடவும்",
@@ -272,7 +279,14 @@
   "panchang_location_unavailable": "இருப்பிடம் கிடைக்கவில்லை. அதற்குப் பதிலாக இருப்பிடத்தைத் தேடுங்கள் அல்லது உள்ளிடுங்கள்.",
   "panchang_location_received": "ஆயத்தொலைவுகள் கிடைத்தன. சேமிப்பதற்கு முன் நேர மண்டலத்தைச் சரிபார்க்கவும்.",
   "journey_tab": "பயணம்",
-  "journey_record_after_parana": "பாரணை தொடங்கியதும் இந்த விரதத்தைப் பதிவு செய்யலாம்"
+  "journey_record_after_parana": "பாரணை தொடங்கியதும் இந்த விரதத்தைப் பதிவு செய்யலாம்",
+  "settings_premium_subtitle": "உங்கள் ஏகாதசி பயணத்திற்கு அனைத்தும்",
+  "premium_feature_panchang_v2": "முழு பஞ்சாங்கம்: முக்கிய நாட்களில் அனைத்து பண்டிகைகள், ஐந்து அங்கங்கள், நேரங்கள், முகூர்த்தம், ராசி",
+  "settings_premium_from": "மாதம் {value0} முதல் · வாழ்நாள் {value1}",
+  "settings_premium_cta": "திட்டங்களைப் பார்க்கவும்",
+  "settings_premium_plan": "உங்கள் திட்டம்: {value0}",
+  "settings_premium_manage": "நிர்வகி",
+  "settings_premium_plans": "திட்டத்தை மாற்று"
  },
  "hi": {
   "rate_app_desc": "ऐप स्टोर पर हमें रेट करें",
@@ -409,7 +423,14 @@
   "panchang_location_unavailable": "स्थान उपलब्ध नहीं। इसके बजाय कोई स्थान खोजें या दर्ज करें।",
   "panchang_location_received": "निर्देशांक मिल गए। सहेजने से पहले समय क्षेत्र जाँच लें।",
   "journey_tab": "यात्रा",
-  "journey_record_after_parana": "पारण शुरू होने के बाद आप यह व्रत दर्ज कर सकते हैं"
+  "journey_record_after_parana": "पारण शुरू होने के बाद आप यह व्रत दर्ज कर सकते हैं",
+  "settings_premium_subtitle": "आपकी एकादशी यात्रा के लिए सब कुछ",
+  "premium_feature_panchang_v2": "पूरा पंचांग: मुख्य दिनों में हर त्योहार, पाँच अंग, समय, मुहूर्त और राशि",
+  "settings_premium_from": "{value0} प्रति माह से · आजीवन {value1}",
+  "settings_premium_cta": "प्लान देखें",
+  "settings_premium_plan": "आपका प्लान: {value0}",
+  "settings_premium_manage": "प्रबंधित करें",
+  "settings_premium_plans": "प्लान बदलें"
  },
  "te": {
   "rate_app_desc": "యాప్ స్టోర్‌లో రేట్ చేయండి",
@@ -546,6 +567,13 @@
   "panchang_location_unavailable": "స్థానం అందుబాటులో లేదు. బదులుగా స్థానాన్ని శోధించండి లేదా నమోదు చేయండి.",
   "panchang_location_received": "కోఆర్డినేట్లు అందాయి. సేవ్ చేసే ముందు సమయ మండలాన్ని తనిఖీ చేయండి.",
   "journey_tab": "ప్రయాణం",
-  "journey_record_after_parana": "పారణ మొదలైన తర్వాత ఈ ఉపవాసాన్ని నమోదు చేయవచ్చు"
+  "journey_record_after_parana": "పారణ మొదలైన తర్వాత ఈ ఉపవాసాన్ని నమోదు చేయవచ్చు",
+  "settings_premium_subtitle": "మీ ఏకాదశి ప్రయాణానికి అన్నీ",
+  "premium_feature_panchang_v2": "పూర్తి పంచాంగం: ముఖ్య దినాల్లో ప్రతి పండుగ, ఐదు అంగాలు, సమయాలు, ముహూర్తం, రాశి",
+  "settings_premium_from": "నెలకు {value0} నుండి · జీవితకాలం {value1}",
+  "settings_premium_cta": "ప్లాన్‌లు చూడండి",
+  "settings_premium_plan": "మీ ప్లాన్: {value0}",
+  "settings_premium_manage": "నిర్వహించండి",
+  "settings_premium_plans": "ప్లాన్ మార్చండి"
  }
 }

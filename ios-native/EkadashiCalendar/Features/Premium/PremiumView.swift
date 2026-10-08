@@ -94,7 +94,7 @@ struct PremiumView: View {
             }
             feature("arrow.triangle.2.circlepath", "premium_feature_calendar")
             feature("figure.mind.and.body", "premium_feature_vrat")
-            feature("sunrise", "premium_feature_panchang")
+            feature("sunrise", "premium_feature_panchang_v2")
                 .padding(.bottom, 8)
         }
     }
