@@ -163,6 +163,7 @@ struct SettingsView: View {
             }
         }
         .disabled(!togglesEnabled)
+        .accessibilityIdentifier("notify_toggle_\(key)")
     }
 
     /// Turning reminders on asks for permission once; after a denial iOS only

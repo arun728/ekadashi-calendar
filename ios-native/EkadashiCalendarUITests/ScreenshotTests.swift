@@ -57,7 +57,7 @@ final class ScreenshotTests: XCTestCase {
 
         tab(3)
         XCTAssertTrue(app.buttons["panchang_next_month"].waitForExistence(timeout: 10))
-        XCTAssertTrue(result("panchang_key_day_").waitForExistence(timeout: 60), "Key days list the month")
+        XCTAssertTrue(result("panchang_key_day_ekadashi:").waitForExistence(timeout: 60), "Key days list the month")
         snap("05-panchang-key-days")
         app.buttons["panchang_tab_daily"].tap()
         XCTAssertTrue(app.buttons["panchang_next_day"].waitForExistence(timeout: 10))
@@ -102,6 +102,8 @@ final class ScreenshotTests: XCTestCase {
         for (index, anchor) in screens {
             tab(index)
             XCTAssertTrue(anchor.waitForExistence(timeout: 60), "tab \(index)")
+            // Key days fills in once the month's festivals are calculated.
+            if index == 3 { XCTAssertTrue(result("panchang_key_day_ekadashi:").waitForExistence(timeout: 60), "key days") }
             let before = anchor.frame.minY
             let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.4))
             start.press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.12)))
@@ -118,8 +120,7 @@ final class ScreenshotTests: XCTestCase {
         let add = app.buttons["notifications_add_event"]
         for _ in 0..<6 where !(add.exists && add.isHittable) { app.swipeUp() }
         XCTAssertTrue(add.waitForExistence(timeout: 5))
-        XCTAssertTrue(app.descendants(matching: .any)["settings_notifications_ekadashi"].exists
-            || app.staticTexts["Ekadashi"].exists)
+        XCTAssertTrue(app.switches["notify_toggle_notify_parana"].exists, "Ekadashi reminders sit above")
         XCTAssertTrue(add.isEnabled, "UI tests run with notifications allowed")
         add.tap()
         app.buttons["event_reminder_choose"].tap()
