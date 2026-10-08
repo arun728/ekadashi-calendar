@@ -57,7 +57,9 @@ final class ScreenshotTests: XCTestCase {
         snap("03-calendar")
 
         tab(2)
-        XCTAssertTrue(app.segmentedControls.firstMatch.waitForExistence(timeout: 5))
+        // Journey's sections are glass chips, as in Panchang.
+        XCTAssertTrue(element("vrat_tabs_tube").waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["journey_tab_overview"].isSelected)
         snap("04-vrat")
 
         tab(3)
@@ -66,6 +68,7 @@ final class ScreenshotTests: XCTestCase {
         snap("05-panchang-key-days")
         app.buttons["panchang_tab_daily"].tap()
         XCTAssertTrue(app.buttons["panchang_next_day"].waitForExistence(timeout: 10))
+        waitSelected("panchang_tab_daily")
         snap("05b-panchang-daily")
         app.buttons["panchang_tab_ekadashi"].tap()
         snap("06-panchang-ekadashi")
@@ -92,6 +95,71 @@ final class ScreenshotTests: XCTestCase {
         replaceSearch(with: "amavasai")
         XCTAssertTrue(result("search_result_observance:amavasya:").waitForExistence(timeout: 10))
         snap("11-search-type-word")
+    }
+
+    /// Sub-sections change with a horizontal swipe as well as their chips,
+    /// and the chip bar follows (Panchang, Journey and Search).
+    func testSwipingChangesSubSections() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 20))
+        tab(3)
+        waitSelected("panchang_tab_keydays")
+        swipe(.left)
+        waitSelected("panchang_tab_daily")
+        XCTAssertTrue(app.buttons["panchang_next_day"].waitForExistence(timeout: 10), "the day stepper")
+        swipe(.left)
+        waitSelected("panchang_tab_muhurta")
+        swipe(.right)
+        swipe(.right)
+        waitSelected("panchang_tab_keydays")
+        XCTAssertTrue(app.buttons["panchang_next_month"].waitForExistence(timeout: 10), "the month stepper")
+
+        tab(2)
+        waitSelected("journey_tab_overview")
+        swipe(.left)
+        waitSelected("journey_tab_history")
+        XCTAssertTrue(element("vrat_history_filters_tube").waitForExistence(timeout: 10))
+        swipe(.left)
+        waitSelected("journey_tab_statistics")
+        app.buttons["journey_tab_achievements"].tap()
+        waitSelected("journey_tab_achievements")
+        snap("14-journey-achievements")
+        swipe(.right)
+        waitSelected("journey_tab_statistics")
+
+        app.buttons["open_global_search"].firstMatch.tap()
+        XCTAssertTrue(app.searchFields.firstMatch.waitForExistence(timeout: 5))
+        app.searchFields.firstMatch.tap()
+        app.searchFields.firstMatch.typeText("ekadashi\n")
+        waitSelected("search_filter_all")
+        XCTAssertNotNil(visible("search_result_ekadashi:"))
+        swipe(.left)
+        waitSelected("search_filter_\(firstFilter)")
+        swipe(.right)
+        waitSelected("search_filter_all")
+    }
+
+    /// A result that opens a tab leaves the search; that screen's top bar
+    /// goes back to the same results.
+    func testScreenResultsGoBackToTheSearch() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 20))
+        app.buttons["open_global_search"].firstMatch.tap()
+        XCTAssertTrue(app.searchFields.firstMatch.waitForExistence(timeout: 5))
+        app.searchFields.firstMatch.tap()
+        app.searchFields.firstMatch.typeText("settings\n")
+        let settings = visible("search_result_screen:settings")
+        XCTAssertNotNil(settings)
+        settings?.tap()
+        XCTAssertTrue(app.buttons["settings_premium"].waitForExistence(timeout: 10), "the Settings tab")
+        let back = app.buttons["search_return"]
+        XCTAssertTrue(back.waitForExistence(timeout: 5))
+        snap("15-search-return")
+        back.tap()
+        XCTAssertTrue(app.searchFields.firstMatch.waitForExistence(timeout: 5))
+        XCTAssertEqual(app.searchFields.firstMatch.value as? String, "settings", "the query is kept")
+        XCTAssertNotNil(visible("search_result_screen:settings"), "and its results")
+        // Leaving search from its own close button forgets the return.
+        app.buttons["global_search_back"].tap()
+        XCTAssertFalse(app.buttons["search_return"].waitForExistence(timeout: 2))
     }
 
     /// Long screens scroll when dragged from the top half, not only from
@@ -161,6 +229,38 @@ final class ScreenshotTests: XCTestCase {
         let value = field.value as? String ?? ""
         let count = value == field.placeholderValue ? 0 : value.count
         field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: count) + text)
+    }
+
+    /// The first search type after All (SearchCategory.filters).
+    private let firstFilter = "ekadashi"
+
+    /// Swipes across the middle of the screen, below the chip bars.
+    private func swipe(_ direction: Direction) {
+        let y = 0.6
+        let (from, to) = direction == .left ? (0.85, 0.15) : (0.15, 0.85)
+        app.coordinate(withNormalizedOffset: CGVector(dx: from, dy: y))
+            .press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: to, dy: y)))
+    }
+
+    private enum Direction { case left, right }
+
+    private func waitSelected(_ identifier: String, file: StaticString = #filePath, line: UInt = #line) {
+        let chip = app.buttons[identifier]
+        XCTAssertTrue(chip.waitForExistence(timeout: 10), identifier, file: file, line: line)
+        let selected = expectation(for: NSPredicate(format: "isSelected == true"), evaluatedWith: chip)
+        XCTAssertEqual(XCTWaiter.wait(for: [selected], timeout: 10), .completed, "\(identifier) selected", file: file, line: line)
+    }
+
+    /// The first on-screen element whose identifier starts with the prefix;
+    /// the pages beside the visible one may also be in the accessibility tree.
+    private func visible(_ prefix: String, timeout: TimeInterval = 10) -> XCUIElement? {
+        let query = app.descendants(matching: .any).matching(NSPredicate(format: "identifier BEGINSWITH %@", prefix))
+        let end = Date().addingTimeInterval(timeout)
+        repeat {
+            if let match = query.allElementsBoundByIndex.first(where: { $0.exists && $0.isHittable }) { return match }
+            _ = query.firstMatch.waitForExistence(timeout: 0.5)
+        } while Date() < end
+        return nil
     }
 
     private func element(_ identifier: String) -> XCUIElement {
