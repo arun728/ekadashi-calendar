@@ -186,7 +186,9 @@ current. These rules supersede earlier ones where they conflict:
 - When Arun says "skip ci", add `[skip ci]` to the commit messages.
 - Do not run CI until Arun explicitly asks (8 October 2026): every pushed
   commit carries `[skip ci]` until then. All phases go on
-  `feature/unified-search` (PR #17) for his review.
+  `feature/unified-search` (PR #17) for his review. On 8 October 2026 Arun
+  asked for CI on PR #17 and for it to be marked ready for review once every
+  check passes.
 - Panchang is no longer English-only: it follows the app language (Phase 2).
 - Languages are ordered English, Hindi, Tamil, Telugu; new languages are
   appended at the end.
