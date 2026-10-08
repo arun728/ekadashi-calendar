@@ -1576,4 +1576,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notifications_search_events => 'Search events';
+
+  @override
+  String get panchang_enter_name => 'Enter a name';
+
+  @override
+  String panchang_invalid_coordinate(String value0) {
+    return 'Enter a number from -$value0 to $value0';
+  }
+
+  @override
+  String get panchang_invalid_timezone =>
+      'Enter a valid time zone, such as Asia/Kolkata';
+
+  @override
+  String get panchang_city_search_unavailable =>
+      'City search is unavailable. Enter the coordinates below.';
 }

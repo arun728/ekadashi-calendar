@@ -5,7 +5,8 @@ import 'package:flutter/services.dart';
 /// Native location service that communicates with Kotlin via MethodChannel
 /// Replaces the Geolocator plugin to prevent activity recreation freeze issues
 class NativeLocationService {
-  static final NativeLocationService _instance = NativeLocationService._internal();
+  static final NativeLocationService _instance =
+      NativeLocationService._internal();
   factory NativeLocationService() => _instance;
   NativeLocationService._internal();
 
@@ -16,7 +17,8 @@ class NativeLocationService {
   Future<LocationData?> getCurrentLocation() async {
     try {
       // 40s timeout to cover native 30s timeout + 5s legacy fallback + overhead
-      final result = await _channel.invokeMethod<Map>('getCurrentLocation')
+      final result = await _channel
+          .invokeMethod<Map>('getCurrentLocation')
           .timeout(const Duration(seconds: 40));
       if (result == null) return null;
 
@@ -29,12 +31,16 @@ class NativeLocationService {
           timezone: map['timezone'] as String? ?? 'IST',
         );
       } else {
-        debugPrint('Location error: ${map['errorCode']} - ${map['errorMessage']}');
+        debugPrint(
+          'Location error: ${map['errorCode']} - ${map['errorMessage']}',
+        );
         return null;
       }
     } on TimeoutException {
       // Timeout is NOT a permission issue - just slow GPS on cold start
-      debugPrint('⚠️ NativeLocationService.getCurrentLocation TIMEOUT (15s) - GPS may be cold starting');
+      debugPrint(
+        '⚠️ NativeLocationService.getCurrentLocation TIMEOUT (15s) - GPS may be cold starting',
+      );
       return null;
     } catch (e) {
       debugPrint('NativeLocationService.getCurrentLocation error: $e');
@@ -67,8 +73,10 @@ class NativeLocationService {
   /// Check if location permission is granted
   Future<bool> hasLocationPermission() async {
     try {
-      return await _channel.invokeMethod<bool>('hasLocationPermission')
-          .timeout(const Duration(milliseconds: 1500)) ?? false;
+      return await _channel
+              .invokeMethod<bool>('hasLocationPermission')
+              .timeout(const Duration(milliseconds: 1500)) ??
+          false;
     } on TimeoutException {
       debugPrint('hasLocationPermission timeout');
       return false;
@@ -82,7 +90,8 @@ class NativeLocationService {
   /// Returns true if permission was granted, false otherwise
   Future<bool> requestLocationPermission() async {
     try {
-      return await _channel.invokeMethod<bool>('requestLocationPermission') ?? false;
+      return await _channel.invokeMethod<bool>('requestLocationPermission') ??
+          false;
     } catch (e) {
       debugPrint('requestLocationPermission error: $e');
       return false;
@@ -104,7 +113,8 @@ class NativeLocationService {
   /// Use this after requestLocationPermission() returns false to detect permanent denial.
   Future<bool> shouldShowRequestRationale() async {
     try {
-      return await _channel.invokeMethod<bool>('shouldShowRequestRationale') ?? false;
+      return await _channel.invokeMethod<bool>('shouldShowRequestRationale') ??
+          false;
     } catch (e) {
       debugPrint('shouldShowRequestRationale error: $e');
       return false;
@@ -193,5 +203,6 @@ class LocationData {
   });
 
   @override
-  String toString() => 'LocationData(city: $city, timezone: $timezone, lat: $latitude, lng: $longitude)';
+  String toString() =>
+      'LocationData(city: $city, timezone: $timezone, lat: $latitude, lng: $longitude)';
 }

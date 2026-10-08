@@ -509,5 +509,9 @@
   "notifications_premium_events": "பண்டிகை மற்றும் பஞ்சாங்க நினைவூட்டல்கள் பிரீமியத்தின் பகுதி. உங்கள் நாட்காட்டி பதிவுகளுக்கான நினைவூட்டல்கள் இலவசம்.",
   "notifications_no_events": "இன்னும் நினைவூட்டல்கள் இல்லை",
   "notifications_off_hint": "நினைவூட்டல்களுக்கு அறிவிப்புகளை இயக்கவும்.",
-  "notifications_search_events": "நிகழ்வுகளைத் தேடு"
+  "notifications_search_events": "நிகழ்வுகளைத் தேடு",
+  "panchang_enter_name": "பெயரை உள்ளிடவும்",
+  "panchang_invalid_coordinate": "-{value0} முதல் {value0} வரையிலான எண்ணை உள்ளிடவும்",
+  "panchang_invalid_timezone": "சரியான நேர மண்டலத்தை உள்ளிடவும், எ.கா. Asia/Kolkata",
+  "panchang_city_search_unavailable": "நகரத் தேடல் கிடைக்கவில்லை. கீழே ஆயத்தொலைவுகளை உள்ளிடவும்."
 }

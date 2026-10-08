@@ -1567,4 +1567,20 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get notifications_search_events => 'इवेंट खोजें';
+
+  @override
+  String get panchang_enter_name => 'नाम दर्ज करें';
+
+  @override
+  String panchang_invalid_coordinate(String value0) {
+    return '-$value0 से $value0 के बीच संख्या दर्ज करें';
+  }
+
+  @override
+  String get panchang_invalid_timezone =>
+      'मान्य समय क्षेत्र दर्ज करें, जैसे Asia/Kolkata';
+
+  @override
+  String get panchang_city_search_unavailable =>
+      'शहर खोज उपलब्ध नहीं है। नीचे निर्देशांक दर्ज करें।';
 }

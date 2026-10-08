@@ -1578,4 +1578,20 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get notifications_search_events => 'ఈవెంట్‌లను వెతకండి';
+
+  @override
+  String get panchang_enter_name => 'పేరు నమోదు చేయండి';
+
+  @override
+  String panchang_invalid_coordinate(String value0) {
+    return '-$value0 నుండి $value0 మధ్య సంఖ్య నమోదు చేయండి';
+  }
+
+  @override
+  String get panchang_invalid_timezone =>
+      'సరైన టైమ్ జోన్ నమోదు చేయండి, ఉదా. Asia/Kolkata';
+
+  @override
+  String get panchang_city_search_unavailable =>
+      'నగర శోధన అందుబాటులో లేదు. కింద కోఆర్డినేట్లు నమోదు చేయండి.';
 }

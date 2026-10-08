@@ -50,6 +50,17 @@ void main() {
           }
           await tester.tap(find.byKey(const Key('glass_tab_3')));
           await tester.pumpAndSettle();
+          // Key days come first; the day's Panchang is the Daily page.
+          expect(
+            find.byKey(const Key('panchang_sections_tube')),
+            findsOneWidget,
+          );
+          await tester.ensureVisible(
+            find.byKey(const Key('panchang_tab_daily')),
+          );
+          await tester.pumpAndSettle();
+          await tester.tap(find.byKey(const Key('panchang_tab_daily')));
+          await tester.pumpAndSettle();
           await tester.scrollUntilVisible(
             find.byKey(const Key('panchang_daily_overview')),
             200,

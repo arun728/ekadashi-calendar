@@ -631,5 +631,16 @@
   "notifications_premium_events": "Festival and Panchang reminders are part of Premium. Reminders for your calendar entries are free.",
   "notifications_no_events": "No reminders yet",
   "notifications_off_hint": "Turn on notifications to use reminders.",
-  "notifications_search_events": "Search events"
+  "notifications_search_events": "Search events",
+  "panchang_enter_name": "Enter a name",
+  "panchang_invalid_coordinate": "Enter a number from -{value0} to {value0}",
+  "panchang_invalid_timezone": "Enter a valid time zone, such as Asia/Kolkata",
+  "panchang_city_search_unavailable": "City search is unavailable. Enter the coordinates below.",
+  "@panchang_invalid_coordinate": {
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  }
 }

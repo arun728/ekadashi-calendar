@@ -49,15 +49,12 @@ void main() {
   }
   test('screen Text literals do not bypass localization', () {
     final violations = <String>[];
-    final expression = RegExp(r"Text\(\s*'([^'\n]+)'");
-    // Panchang is intentionally English-only for this release, as approved in
-    // AGENTS.md. Remove this exception when the feature is localized.
-    const englishOnlyScreenFiles = {
-      'lib/screens/panchang_screen.dart',
-      'lib/screens/panchang_location_dialog.dart',
-      'lib/screens/panchang_month_panels.dart',
-      'lib/screens/panchang_tools.dart',
-    };
+    // Text, labels, hints and tooltips; Panchang follows the app language
+    // too (docs/ROADMAP.md Phase 2).
+    final expression = RegExp(
+      r"(?:Text\(|labelText: |helperText: |hintText: |tooltip: |content: Text\()\s*'([^'\n]+)'",
+    );
+    const englishOnlyScreenFiles = <String>{};
     for (final file in [
       File('lib/main.dart'),
       ...Directory('lib/screens')

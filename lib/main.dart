@@ -172,6 +172,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
   final PageController _pageController = PageController(viewportFraction: 1.0);
   final GlobalKey<CalendarScreenState> _calendarKey = GlobalKey();
+  final GlobalKey<PanchangScreenState> _panchangKey = GlobalKey();
+  bool _panchangOpened = false;
 
   @override
   void initState() {
@@ -820,10 +822,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       if (tab == 0) _scrollToNextEkadashi(animate: false, includeParana: true);
-      if (tab == 1) {
-        final date = DateTime.tryParse(uri.queryParameters['date'] ?? '');
-        if (date != null) _calendarKey.currentState?.selectDate(date);
-      }
+      final date = DateTime.tryParse(uri.queryParameters['date'] ?? '');
+      if (tab == 1 && date != null) _calendarKey.currentState?.selectDate(date);
+      // Event reminders open their day in Panchang.
+      if (tab == 3 && date != null) _panchangKey.currentState?.showDate(date);
     });
   }
 
@@ -1066,6 +1068,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       );
     }
 
+    if (_currentIndex == 3) _panchangOpened = true;
     return IndexedStack(
       index: _currentIndex,
       children: [
@@ -1083,7 +1086,12 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             currentTimezone: _currentTimezone,
           ),
         ),
-        const PanchangScreen(),
+        // Built when first opened: the Panchang calculates a year of
+        // festivals, which the other tabs never need.
+        if (_currentIndex == 3 || _panchangOpened)
+          PanchangScreen(key: _panchangKey, ekadashiList: _ekadashiList)
+        else
+          const SizedBox.shrink(),
         SettingsScreen(currentTimezone: _currentTimezone),
       ],
     );

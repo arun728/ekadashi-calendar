@@ -1,7 +1,8 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart' as fln;
+import 'package:flutter_local_notifications/flutter_local_notifications.dart'
+    as fln;
 import 'time_zone_data.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_timezone/flutter_timezone.dart';
@@ -14,10 +15,12 @@ class NotificationService {
   NotificationService._internal();
 
   final fln.FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-  fln.FlutterLocalNotificationsPlugin();
+      fln.FlutterLocalNotificationsPlugin();
 
   // Native method channel for Android-specific permission handling
-  static const MethodChannel _permissionChannel = MethodChannel('com.ekadashi.permissions');
+  static const MethodChannel _permissionChannel = MethodChannel(
+    'com.ekadashi.permissions',
+  );
 
   String _currentTimeZone = 'UTC';
 
@@ -44,7 +47,9 @@ class NotificationService {
     } catch (e) {
       debugPrint('Timezone error: $e, using fallback');
       try {
-        final fallbackTz = _findTimezoneByOffset(DateTime.now().timeZoneOffset.inMinutes);
+        final fallbackTz = _findTimezoneByOffset(
+          DateTime.now().timeZoneOffset.inMinutes,
+        );
         _currentTimeZone = fallbackTz;
         tz.setLocalLocation(tz.getLocation(fallbackTz));
       } catch (_) {
@@ -53,7 +58,9 @@ class NotificationService {
       }
     }
 
-    const androidSettings = fln.AndroidInitializationSettings('@drawable/notification_icon');
+    const androidSettings = fln.AndroidInitializationSettings(
+      '@drawable/notification_icon',
+    );
     const iosSettings = fln.DarwinInitializationSettings(
       requestAlertPermission: false,
       requestBadgePermission: false,
@@ -62,19 +69,30 @@ class NotificationService {
 
     try {
       await flutterLocalNotificationsPlugin.initialize(
-        const fln.InitializationSettings(android: androidSettings, iOS: iosSettings),
+        const fln.InitializationSettings(
+          android: androidSettings,
+          iOS: iosSettings,
+        ),
       );
       debugPrint('✅ Notification service initialized (TZ: $_currentTimeZone)');
     } catch (e) {
-      debugPrint('⚠️ Notification service initialization skipped or failed: $e');
+      debugPrint(
+        '⚠️ Notification service initialization skipped or failed: $e',
+      );
     }
   }
 
   String _findTimezoneByOffset(int offsetMinutes) {
     const offsetMap = {
-      0: 'UTC', 330: 'Asia/Kolkata', 300: 'Asia/Karachi',
-      480: 'Asia/Singapore', 540: 'Asia/Tokyo', -300: 'America/New_York',
-      -480: 'America/Los_Angeles', 60: 'Europe/Paris', 120: 'Europe/Helsinki',
+      0: 'UTC',
+      330: 'Asia/Kolkata',
+      300: 'Asia/Karachi',
+      480: 'Asia/Singapore',
+      540: 'Asia/Tokyo',
+      -300: 'America/New_York',
+      -480: 'America/Los_Angeles',
+      60: 'Europe/Paris',
+      120: 'Europe/Helsinki',
     };
 
     if (offsetMap.containsKey(offsetMinutes)) return offsetMap[offsetMinutes]!;
@@ -94,7 +112,9 @@ class NotificationService {
   Future<bool> hasNotificationPermission() async {
     if (Platform.isAndroid) {
       final android = flutterLocalNotificationsPlugin
-          .resolvePlatformSpecificImplementation<fln.AndroidFlutterLocalNotificationsPlugin>();
+          .resolvePlatformSpecificImplementation<
+            fln.AndroidFlutterLocalNotificationsPlugin
+          >();
       return await android?.areNotificationsEnabled() ?? false;
     }
     return true;
@@ -107,7 +127,9 @@ class NotificationService {
       try {
         // Use native method channel for reliable permission check
         // This uses AppOpsManager which is more reliable than the flutter plugin
-        final bool result = await _permissionChannel.invokeMethod('canScheduleExactAlarms');
+        final bool result = await _permissionChannel.invokeMethod(
+          'canScheduleExactAlarms',
+        );
         debugPrint('🔔 Native hasExactAlarmPermission: $result');
         return result;
       } catch (e) {
@@ -115,8 +137,11 @@ class NotificationService {
         // Fallback to flutter plugin if native method fails
         try {
           final android = flutterLocalNotificationsPlugin
-              .resolvePlatformSpecificImplementation<fln.AndroidFlutterLocalNotificationsPlugin>();
-          final result = await android?.canScheduleExactNotifications() ?? false;
+              .resolvePlatformSpecificImplementation<
+                fln.AndroidFlutterLocalNotificationsPlugin
+              >();
+          final result =
+              await android?.canScheduleExactNotifications() ?? false;
           debugPrint('🔔 Fallback hasExactAlarmPermission: $result');
           return result;
         } catch (e2) {
@@ -131,12 +156,16 @@ class NotificationService {
   Future<bool> requestNotificationPermission() async {
     if (Platform.isIOS) {
       final result = await flutterLocalNotificationsPlugin
-          .resolvePlatformSpecificImplementation<fln.IOSFlutterLocalNotificationsPlugin>()
+          .resolvePlatformSpecificImplementation<
+            fln.IOSFlutterLocalNotificationsPlugin
+          >()
           ?.requestPermissions(alert: true, badge: true, sound: true);
       return result ?? false;
     } else if (Platform.isAndroid) {
       final android = flutterLocalNotificationsPlugin
-          .resolvePlatformSpecificImplementation<fln.AndroidFlutterLocalNotificationsPlugin>();
+          .resolvePlatformSpecificImplementation<
+            fln.AndroidFlutterLocalNotificationsPlugin
+          >();
       return await android?.requestNotificationsPermission() ?? false;
     }
     return false;
@@ -148,7 +177,9 @@ class NotificationService {
     if (Platform.isAndroid) {
       try {
         // Use native method channel for reliable intent handling
-        final bool result = await _permissionChannel.invokeMethod('openAlarmSettings');
+        final bool result = await _permissionChannel.invokeMethod(
+          'openAlarmSettings',
+        );
         debugPrint('🔔 openAlarmSettings result: $result');
         return result;
       } catch (e) {
@@ -156,7 +187,9 @@ class NotificationService {
         // Fallback: Try the flutter_local_notifications method
         try {
           final android = flutterLocalNotificationsPlugin
-              .resolvePlatformSpecificImplementation<fln.AndroidFlutterLocalNotificationsPlugin>();
+              .resolvePlatformSpecificImplementation<
+                fln.AndroidFlutterLocalNotificationsPlugin
+              >();
           await android?.requestExactAlarmsPermission();
           return true;
         } catch (e2) {
@@ -196,13 +229,15 @@ class NotificationService {
     );
 
     await flutterLocalNotificationsPlugin.show(
-      0, title, body,
+      0,
+      title,
+      body,
       fln.NotificationDetails(
         android: androidDetails,
         iOS: const fln.DarwinNotificationDetails(
-            presentAlert: true,
-            presentBadge: true,
-            presentSound: true
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
         ),
       ),
     );
@@ -216,18 +251,20 @@ class NotificationService {
   }
 
   Future<void> scheduleAllNotifications(
-      List<EkadashiDate> dates,
-      bool remind1Day,
-      bool remind2Days,
-      bool remindOnDay,
-      Map<String, String> texts) async {
-
+    List<EkadashiDate> dates,
+    bool remind1Day,
+    bool remind2Days,
+    bool remindOnDay,
+    Map<String, String> texts,
+  ) async {
     await cancelAll();
 
     if (!remind1Day && !remind2Days && !remindOnDay) return;
 
     if (Platform.isAndroid) {
-      if (!await hasNotificationPermission() || !await hasExactAlarmPermission()) return;
+      if (!await hasNotificationPermission() ||
+          !await hasExactAlarmPermission())
+        return;
     }
 
     final now = tz.TZDateTime.now(tz.local);
@@ -238,13 +275,21 @@ class NotificationService {
       // 2 days before at 8:00 AM
       if (remind2Days) {
         final notifDate = ekadashi.date.subtract(const Duration(days: 2));
-        final scheduled = tz.TZDateTime(tz.local, notifDate.year, notifDate.month, notifDate.day, 8, 0);
+        final scheduled = tz.TZDateTime(
+          tz.local,
+          notifDate.year,
+          notifDate.month,
+          notifDate.day,
+          8,
+          0,
+        );
 
         if (scheduled.isAfter(now)) {
           await _scheduleNotification(
             id: id++,
             title: texts['notif_2day_title'] ?? 'Upcoming Ekadashi',
-            body: '${ekadashi.name} ${texts['notif_2day_body'] ?? 'is in 2 days. Prepare for your fast.'}',
+            body:
+                '${ekadashi.name} ${texts['notif_2day_body'] ?? 'is in 2 days. Prepare for your fast.'}',
             scheduledDate: scheduled,
           );
         }
@@ -253,13 +298,21 @@ class NotificationService {
       // 1 day before at 8:00 AM
       if (remind1Day) {
         final notifDate = ekadashi.date.subtract(const Duration(days: 1));
-        final scheduled = tz.TZDateTime(tz.local, notifDate.year, notifDate.month, notifDate.day, 8, 0);
+        final scheduled = tz.TZDateTime(
+          tz.local,
+          notifDate.year,
+          notifDate.month,
+          notifDate.day,
+          8,
+          0,
+        );
 
         if (scheduled.isAfter(now)) {
           await _scheduleNotification(
             id: id++,
             title: texts['notif_1day_title'] ?? 'Ekadashi Tomorrow!',
-            body: '${ekadashi.name} ${texts['notif_1day_body'] ?? 'is tomorrow. Fasting starts at'} ${ekadashi.fastStartTime}.',
+            body:
+                '${ekadashi.name} ${texts['notif_1day_body'] ?? 'is tomorrow. Fasting starts at'} ${ekadashi.fastStartTime}.',
             scheduledDate: scheduled,
           );
         }
@@ -270,13 +323,18 @@ class NotificationService {
         try {
           final timeParts = DateFormat("hh:mm a").parse(ekadashi.fastStartTime);
           final scheduled = tz.TZDateTime(
-              tz.local, ekadashi.date.year, ekadashi.date.month, ekadashi.date.day,
-              timeParts.hour, timeParts.minute
+            tz.local,
+            ekadashi.date.year,
+            ekadashi.date.month,
+            ekadashi.date.day,
+            timeParts.hour,
+            timeParts.minute,
           );
 
           if (scheduled.isAfter(now)) {
             final bodyPrefix = texts['notif_start_body'] ?? 'Today is';
-            final bodySuffix = texts['notif_start_suffix'] ?? 'Fasting begins now.';
+            final bodySuffix =
+                texts['notif_start_suffix'] ?? 'Fasting begins now.';
             await _scheduleNotification(
               id: id++,
               title: texts['notif_start_title'] ?? 'Ekadashi Starts Now',
@@ -304,7 +362,10 @@ class NotificationService {
       );
 
       await flutterLocalNotificationsPlugin.zonedSchedule(
-        id, title, body, scheduledDate,
+        id,
+        title,
+        body,
+        scheduledDate,
         fln.NotificationDetails(
           android: androidDetails,
           iOS: const fln.DarwinNotificationDetails(
@@ -314,7 +375,8 @@ class NotificationService {
           ),
         ),
         androidScheduleMode: fln.AndroidScheduleMode.exactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation: fln.UILocalNotificationDateInterpretation.absoluteTime,
+        uiLocalNotificationDateInterpretation:
+            fln.UILocalNotificationDateInterpretation.absoluteTime,
       );
     } catch (e) {
       debugPrint('Error scheduling #$id: $e');

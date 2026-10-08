@@ -2993,6 +2993,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Search events'**
   String get notifications_search_events;
+
+  /// No description provided for @panchang_enter_name.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a name'**
+  String get panchang_enter_name;
+
+  /// No description provided for @panchang_invalid_coordinate.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a number from -{value0} to {value0}'**
+  String panchang_invalid_coordinate(String value0);
+
+  /// No description provided for @panchang_invalid_timezone.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid time zone, such as Asia/Kolkata'**
+  String get panchang_invalid_timezone;
+
+  /// No description provided for @panchang_city_search_unavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'City search is unavailable. Enter the coordinates below.'**
+  String get panchang_city_search_unavailable;
 }
 
 class _AppLocalizationsDelegate

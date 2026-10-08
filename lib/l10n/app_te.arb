@@ -509,5 +509,9 @@
   "notifications_premium_events": "పండుగ మరియు పంచాంగ రిమైండర్‌లు ప్రీమియంలో భాగం. మీ క్యాలెండర్ ఎంట్రీల రిమైండర్‌లు ఉచితం.",
   "notifications_no_events": "ఇంకా రిమైండర్‌లు లేవు",
   "notifications_off_hint": "రిమైండర్‌ల కోసం నోటిఫికేషన్‌లను ఆన్ చేయండి.",
-  "notifications_search_events": "ఈవెంట్‌లను వెతకండి"
+  "notifications_search_events": "ఈవెంట్‌లను వెతకండి",
+  "panchang_enter_name": "పేరు నమోదు చేయండి",
+  "panchang_invalid_coordinate": "-{value0} నుండి {value0} మధ్య సంఖ్య నమోదు చేయండి",
+  "panchang_invalid_timezone": "సరైన టైమ్ జోన్ నమోదు చేయండి, ఉదా. Asia/Kolkata",
+  "panchang_city_search_unavailable": "నగర శోధన అందుబాటులో లేదు. కింద కోఆర్డినేట్లు నమోదు చేయండి."
 }

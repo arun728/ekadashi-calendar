@@ -1584,4 +1584,20 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get notifications_search_events => 'நிகழ்வுகளைத் தேடு';
+
+  @override
+  String get panchang_enter_name => 'பெயரை உள்ளிடவும்';
+
+  @override
+  String panchang_invalid_coordinate(String value0) {
+    return '-$value0 முதல் $value0 வரையிலான எண்ணை உள்ளிடவும்';
+  }
+
+  @override
+  String get panchang_invalid_timezone =>
+      'சரியான நேர மண்டலத்தை உள்ளிடவும், எ.கா. Asia/Kolkata';
+
+  @override
+  String get panchang_city_search_unavailable =>
+      'நகரத் தேடல் கிடைக்கவில்லை. கீழே ஆயத்தொலைவுகளை உள்ளிடவும்.';
 }

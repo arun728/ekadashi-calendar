@@ -34,7 +34,7 @@ class AppStrings {
   static final _tables = <String, Map<String, String>>{};
 
   static Map<String, String> table(String language) =>
-      _tables[language] ??= localizedLookup(
+      _tables[language] ??= localizedTemplates(
         lookupAppLocalizations(
           Locale(AppLanguage.codes.contains(language) ? language : 'en'),
         ),
@@ -44,15 +44,16 @@ class AppStrings {
   static String translate(String key, String language) =>
       table(language)[key] ?? table('en')[key] ?? key;
 
-  /// Fills the `{}` placeholders in order.
+  /// Fills `{value0}`, `{value1}`, ... by position in [args], wherever the
+  /// translation puts them.
   static String translateWithArgs(
     String key,
     String language,
     List<String> args,
   ) {
     var text = translate(key, language);
-    for (final arg in args) {
-      text = text.replaceFirst('{}', arg);
+    for (final (index, arg) in args.indexed) {
+      text = text.replaceAll('{value$index}', arg);
     }
     return text;
   }

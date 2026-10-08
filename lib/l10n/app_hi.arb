@@ -509,5 +509,9 @@
   "notifications_premium_events": "त्योहार और पंचांग रिमाइंडर प्रीमियम का हिस्सा हैं। आपके कैलेंडर की प्रविष्टियों के रिमाइंडर मुफ़्त हैं।",
   "notifications_no_events": "अभी कोई रिमाइंडर नहीं",
   "notifications_off_hint": "रिमाइंडर के लिए सूचनाएँ चालू करें।",
-  "notifications_search_events": "इवेंट खोजें"
+  "notifications_search_events": "इवेंट खोजें",
+  "panchang_enter_name": "नाम दर्ज करें",
+  "panchang_invalid_coordinate": "-{value0} से {value0} के बीच संख्या दर्ज करें",
+  "panchang_invalid_timezone": "मान्य समय क्षेत्र दर्ज करें, जैसे Asia/Kolkata",
+  "panchang_city_search_unavailable": "शहर खोज उपलब्ध नहीं है। नीचे निर्देशांक दर्ज करें।"
 }

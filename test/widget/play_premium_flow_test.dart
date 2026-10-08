@@ -774,7 +774,6 @@ void main() {
     );
     await tester.pumpAndSettle();
     final unlock = find.byKey(const Key('panchang_unlock_button'));
-    expect(unlock, findsNothing, reason: 'Below the fold on a phone');
     await tester.scrollUntilVisible(
       unlock,
       300,

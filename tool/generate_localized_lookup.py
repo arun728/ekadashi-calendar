@@ -13,4 +13,13 @@ for key, value in data.items():
     expr = f'l.{key}' + ('(' + ', '.join("'{}'" for _ in range(n)) + ')' if n else '')
     lines.append(f"  '{key}': {expr},")
 lines.append('};')
+# Templates keep each placeholder's name ({value0}, {value1}, ...) so a
+# translation may reorder them (AppStrings.translateWithArgs).
+lines.append("Map<String, String> localizedTemplates(AppLocalizations l) => {")
+for key, value in data.items():
+    if key.startswith('@'): continue
+    names = list(data.get('@'+key, {}).get('placeholders', {}))
+    expr = f'l.{key}' + ('(' + ', '.join("'{" + n + "}'" for n in names) + ')' if names else '')
+    lines.append(f"  '{key}': {expr},")
+lines.append('};')
 (root/'lib/l10n/localized_lookup.dart').write_text('\n'.join(lines)+'\n')
