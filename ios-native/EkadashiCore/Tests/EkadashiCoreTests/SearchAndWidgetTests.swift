@@ -257,16 +257,20 @@ final class ResourceSyncTests: XCTestCase {
         XCTAssertEqual(try CalendarRepository.bundled().availableYears, years)
     }
 
+    /// No user-facing English literal in any iOS view, Panchang included
+    /// (Phase 2: every screen follows the app language).
     func testIosAppSourcesDoNotBypassLocalization() throws {
-        // Panchang is English-only by design (AGENTS.md), like on Android.
-        let app = Repo.url("ios-native/EkadashiCalendar")
-        guard let files = FileManager.default.enumerator(at: app, includingPropertiesForKeys: nil) else { return }
+        let views = #"(Text|Label|Button|TextField|SecureField|Toggle|Picker|DatePicker|DisclosureGroup|Section|navigationTitle|accessibilityLabel|accessibilityHint|ContentUnavailableView)"#
+        let pattern = try NSRegularExpression(pattern: #"\b"# + views + #"\(\s*"([^"\\]*[A-Za-z][^"\\]*)""#)
         var violations: [String] = []
-        let pattern = try NSRegularExpression(pattern: #"Text\("([^"\\]*[A-Za-z][^"\\]*)"\)"#)
-        for case let url as URL in files where url.pathExtension == "swift" && !url.lastPathComponent.hasPrefix("Panchang") {
-            let text = try String(contentsOf: url, encoding: .utf8)
-            for match in pattern.matches(in: text, range: NSRange(text.startIndex..., in: text)) {
-                violations.append("\(url.lastPathComponent): \((text as NSString).substring(with: match.range(at: 1)))")
+        for folder in ["ios-native/EkadashiCalendar", "ios-native/EkadashiWidgets", "ios-native/Shared"] {
+            guard let files = FileManager.default.enumerator(at: Repo.url(folder), includingPropertiesForKeys: nil) else { continue }
+            for case let url as URL in files where url.pathExtension == "swift" {
+                for line in try String(contentsOf: url, encoding: .utf8).components(separatedBy: "\n") {
+                    for match in pattern.matches(in: line, range: NSRange(line.startIndex..., in: line)) {
+                        violations.append("\(url.lastPathComponent): \((line as NSString).substring(with: match.range(at: 2)))")
+                    }
+                }
             }
         }
         XCTAssertEqual(violations, [])
@@ -282,11 +286,13 @@ final class ResourceSyncTests: XCTestCase {
             #"countCard\("([^"\\]+)""#, #"iconButton\("[^"]+", "([^"\\]+)""#, #"reminder\("([^"\\]+)""#,
             #"feature\("[^"]+", "([^"\\]+)"\)"#, #"caption\("([^"\\]+)"\)"#, #"\blink\("([^"\\]+)"\)"#,
             #"statusChip\([^,]+, "([^"\\]+)""#, #""(premium_[a-z_]+)""#,
+            // Every literal inside t(...), including both sides of a ternary.
+            #"\bt\([^()]*?"([a-z0-9_]+)"[^()]*?\)"#, #"\bt\([^()]*?"[a-z0-9_]+"[^()]*?"([a-z0-9_]+)"[^()]*?\)"#,
         ].map { try! NSRegularExpression(pattern: $0) }
         var keys: [String: String] = [:]
         for folder in ["ios-native/EkadashiCalendar", "ios-native/EkadashiWidgets", "ios-native/Shared"] {
             guard let files = FileManager.default.enumerator(at: Repo.url(folder), includingPropertiesForKeys: nil) else { continue }
-            for case let url as URL in files where url.pathExtension == "swift" && !url.lastPathComponent.hasPrefix("Panchang") {
+            for case let url as URL in files where url.pathExtension == "swift" {
                 for line in try String(contentsOf: url, encoding: .utf8).components(separatedBy: "\n")
                 where !line.contains("accessibilityIdentifier") {
                     for pattern in patterns {
@@ -304,6 +310,10 @@ final class ResourceSyncTests: XCTestCase {
         }
         for category in SearchCategory.allCases { keys[category.localizationKey] = "Search" }
         for screen in SearchCatalog.bundled.screens { keys[screen.titleKey] = "search_catalog.json" }
+        for page in ["keydays", "daily", "muhurta", "ekadashi", "rashi"] { keys["panchang_section_\(page)"] = "PanchangView" }
+        for limb in ["tithi", "nakshatra", "yoga", "karana"] { keys["panchang_\(limb)"] = "PanchangPages" }
+        for key in ["panchang_am", "panchang_pm", "panchang_next_day_marker", "panchang_previous_day_marker", "panchang_day",
+                    "panchang_night"] { keys[key] = "EkadashiCore" }
         for method in FastingMethod.allCases { keys[method.localizationKey] = "VratModels" }
         for status in ObservanceStatus.allCases where status != .unrecorded { keys[status.rawValue] = "VratStatusStyle" }
         for achievement in AchievementEvaluator.all {

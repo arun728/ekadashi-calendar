@@ -422,24 +422,24 @@ final class AppModel {
         return UnifiedSearch(items: items)
     }
 
-    /// Panchang observances for every data year at the Panchang location,
-    /// calculated off the main thread and kept for the session.
+    /// Panchang observances for every data year at the Panchang location.
     func searchObservances() async -> [DatedObservance] {
         let city = panchangCity
         var result: [DatedObservance] = []
-        for year in repository?.availableYears ?? [] {
-            let key = "\(city.id)|\(city.latitude)|\(city.longitude)|\(year)"
-            if let cached = observanceCache[key] {
-                result += cached
-                continue
-            }
-            let calculated = await Task.detached(priority: .userInitiated) {
-                PanchangEngine().observanceCalendar(year: year, city: city)
-            }.value
-            observanceCache[key] = calculated
-            result += calculated
-        }
+        for year in repository?.availableYears ?? [] { result += await panchangObservances(year: year, city: city) }
         return result
+    }
+
+    /// A year of observances at [city], calculated off the main thread and
+    /// kept for the session (Key days and search share it).
+    func panchangObservances(year: Int, city: PanchangCity) async -> [DatedObservance] {
+        let key = "\(city.id)|\(city.latitude)|\(city.longitude)|\(city.timeZoneId)|\(year)"
+        if let cached = observanceCache[key] { return cached }
+        let calculated = await Task.detached(priority: .userInitiated) {
+            PanchangEngine().observanceCalendar(year: year, city: city)
+        }.value
+        observanceCache[key] = calculated
+        return calculated
     }
 
     var calendarYears: ClosedRange<Int>? {

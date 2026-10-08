@@ -56,8 +56,12 @@ final class ScreenshotTests: XCTestCase {
         snap("04-vrat")
 
         tab(3)
+        XCTAssertTrue(app.buttons["panchang_next_month"].waitForExistence(timeout: 10))
+        XCTAssertTrue(result("panchang_key_day_").waitForExistence(timeout: 60), "Key days list the month")
+        snap("05-panchang-key-days")
+        app.buttons["panchang_tab_daily"].tap()
         XCTAssertTrue(app.buttons["panchang_next_day"].waitForExistence(timeout: 10))
-        snap("05-panchang")
+        snap("05b-panchang-daily")
         app.buttons["panchang_tab_ekadashi"].tap()
         snap("06-panchang-ekadashi")
 

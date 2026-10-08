@@ -1,14 +1,20 @@
 import SwiftUI
 import EkadashiCore
 
-/// Panchang (panchang_screen.dart): English-only by design, calculated
-/// offline for any location and date with its IANA timezone. The daily
-/// preview, today's vrat/festival names, the calculated Ekadashi list and
-/// the guide are free; the full limbs, Muhurta, Rashi and the festival
-/// finder are Premium.
+/// Panchang (docs/ROADMAP.md Phases 2 and 3): calculated offline for any
+/// location and date, in the app language. Key days (the month's
+/// Ekadashis, Amavasya, Purnima, Shivaratri and festivals) comes first.
+/// Free: published Ekadashis in Key days, the day's tithi, sun and moon
+/// times, the day's festival names and the calculated Ekadashi list.
+/// Premium: the other Key days, the five limbs, timings, Muhurta and Rashi.
 struct PanchangView: View {
-    enum Section: String, CaseIterable { case daily = "Daily", muhurta = "Muhurta", ekadashi = "Ekadashi", rashi = "Rashi",
-                                         festivals = "Festivals", guide = "Guide" }
+    enum Page: String, CaseIterable {
+        case keyDays = "keydays", daily, muhurta, ekadashi, rashi
+
+        var titleKey: String { "panchang_section_\(rawValue)" }
+        /// Sections that browse a month rather than a day.
+        var isMonthly: Bool { self == .keyDays || self == .ekadashi }
+    }
 
     @Environment(AppModel.self) private var model
     var initialDate: CivilDate?
@@ -16,35 +22,55 @@ struct PanchangView: View {
 
     @State private var city = PanchangCity.newDelhi
     @State private var date = PanchangCity.newDelhi.today()
+    @State private var month = PanchangCity.newDelhi.today().firstOfMonth
     @State private var day: PanchangDay?
-    @State private var section: Section = .daily
+    @State private var section: Page = .keyDays
     @State private var tradition: EkadashiTradition = .smarta
     @State private var editingLocation = false
     @State private var pickingDate = false
+    @State private var pickingMonth = false
+    @State private var showingNotes = false
     @State private var started = false
     @State private var toast: ToastMessage?
 
-    private var premium: Bool { model.premium.isPremium }
-    private var isToday: Bool { date == city.today() }
+    private var language: String { model.language }
+    private var isToday: Bool { section.isMonthly ? month == city.today().firstOfMonth : date == city.today() }
 
     var body: some View {
         VStack(spacing: 0) {
             sectionBar
             ScrollViewReader { proxy in
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 18) {
-                        header.id("top")
+                    VStack(alignment: .leading, spacing: 16) {
+                        controls.id("top")
                         content
                     }
-                    .padding(EdgeInsets(top: 16, leading: 20, bottom: 100, trailing: 20))
+                    .padding(EdgeInsets(top: 8, leading: 16, bottom: 100, trailing: 16))
                 }
                 .onChange(of: section) { _, _ in proxy.scrollTo("top", anchor: .top) }
+            }
+        }
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button(model.t("today")) { goToToday() }
+                    .disabled(isToday)
+                    .accessibilityIdentifier("panchang_today")
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                Button { showingNotes = true } label: { Image(systemName: "info.circle") }
+                    .accessibilityLabel(model.t("panchang_notes_title"))
+                    .accessibilityIdentifier("panchang_notes")
             }
         }
         .sheet(isPresented: $editingLocation) {
             PanchangLocationSheet(city: city) { changeCity($0) }
         }
         .sheet(isPresented: $pickingDate) { datePicker }
+        .sheet(isPresented: $pickingMonth) {
+            PanchangMonthPicker(month: month) { month = $0 }
+                .presentationDetents([.height(320)])
+        }
+        .sheet(isPresented: $showingNotes) { PanchangNotesSheet() }
         .toast($toast)
         .onAppear { start() }
         .task(id: "\(city.id)|\(city.latitude)|\(city.longitude)|\(city.timeZoneId)|\(date.iso)") { await recalculate() }
@@ -56,9 +82,9 @@ struct PanchangView: View {
         ScrollView(.horizontal) {
             GlassGroup(spacing: 8) {
                 HStack(spacing: 8) {
-                    ForEach(Section.allCases, id: \.self) { item in
-                        GlassChip(title: item.rawValue, selected: section == item) { section = item }
-                            .accessibilityIdentifier("panchang_tab_\(item.rawValue.lowercased())")
+                    ForEach(Page.allCases, id: \.self) { item in
+                        GlassChip(title: model.t(item.titleKey), selected: section == item) { section = item }
+                            .accessibilityIdentifier("panchang_tab_\(item.rawValue)")
                     }
                 }
                 .padding(.horizontal, 16)
@@ -68,88 +94,99 @@ struct PanchangView: View {
         .scrollIndicators(.hidden)
     }
 
-    private var header: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            ViewThatFits(in: .horizontal) {
-                HStack {
-                    title
-                    Spacer()
-                    cityMenu.frame(maxWidth: 200)
-                }
-                VStack(alignment: .leading, spacing: 8) {
-                    title
-                    cityMenu
+    /// The location, then the month or day being shown.
+    private var controls: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                locationMenu
+                Spacer(minLength: 0)
+                if city.timeZoneId != "Asia/Kolkata" {
+                    Text(city.timezoneLabel).font(.caption).foregroundStyle(.secondary).lineLimit(1)
                 }
             }
-            Text("\(city.timezoneLabel) · English").font(.subheadline.weight(.semibold)).foregroundStyle(Theme.teal)
-            Button {
-                editingLocation = true
-            } label: {
-                Label("Search city / use location", systemImage: "mappin.and.ellipse")
+            if section.isMonthly {
+                stepper(title: PanchangFormat.monthTitle(month, language: language), symbol: "calendar",
+                        previous: { month = month.adding(months: -1) }, next: { month = month.adding(months: 1) },
+                        pick: { pickingMonth = true }, id: "panchang_selected_month")
+            } else {
+                stepper(title: PanchangFormat.date(date, language: language), symbol: "calendar",
+                        previous: { date = date.adding(days: -1) }, next: { date = date.adding(days: 1) },
+                        pick: { pickingDate = true }, id: "panchang_selected_date")
             }
-            .font(.subheadline)
-            .accessibilityIdentifier("panchang_edit_location")
-            HStack {
-                Button { move(-1) } label: { Image(systemName: "chevron.left").frame(width: 44, height: 44) }
-                    .accessibilityLabel("Previous day")
-                    .accessibilityIdentifier("panchang_previous_day")
-                Spacer()
-                VStack(spacing: 2) {
-                    Button { pickingDate = true } label: {
-                        Text(formatPanchangDate(date)).font(.subheadline.weight(.semibold)).multilineTextAlignment(.center)
-                            .foregroundStyle(.primary)
-                    }
-                    .accessibilityIdentifier("panchang_selected_date")
-                    if !isToday {
-                        Button("Today") { date = city.today() }.font(.caption)
-                    }
-                }
-                Spacer()
-                Button { move(1) } label: { Image(systemName: "chevron.right").frame(width: 44, height: 44) }
-                    .accessibilityLabel("Next day")
-                    .accessibilityIdentifier("panchang_next_day")
-            }
-            .foregroundStyle(Theme.teal)
-            .padding(.horizontal, 6)
-            .padding(.vertical, 4)
-            .glassPanel(cornerRadius: 18)
-            .padding(.top, 7)
         }
     }
 
-    private var title: some View {
-        Text("Panchang").font(.largeTitle.bold())
-    }
-
-    private var cityMenu: some View {
+    private var locationMenu: some View {
         Menu {
-            ForEach(Array(Set(PanchangCity.supported + [city])).sorted { $0.label < $1.label }, id: \.self) { item in
-                Button(item.label) { changeCity(item) }
+            Section {
+                ForEach(Array(Set(PanchangCity.supported + [city])).sorted { $0.label < $1.label }, id: \.self) { item in
+                    Button { changeCity(item) } label: {
+                        if item == city { Label(item.label, systemImage: "checkmark") } else { Text(item.label) }
+                    }
+                }
             }
+            Button { editingLocation = true } label: {
+                Label(model.t("panchang_search_location"), systemImage: "magnifyingglass")
+            }
+            .accessibilityIdentifier("panchang_edit_location")
         } label: {
-            HStack {
+            HStack(spacing: 6) {
+                Image(systemName: "mappin.and.ellipse").foregroundStyle(Theme.teal)
                 Text(city.label).lineLimit(1)
-                Spacer(minLength: 4)
-                Image(systemName: "chevron.down").font(.caption)
+                Image(systemName: "chevron.down").font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
             }
-            .font(.subheadline.weight(.medium))
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(.primary)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 9)
             .glassCapsule()
         }
         .accessibilityIdentifier("panchang_city_selector")
     }
 
+    private func stepper(title: String, symbol: String, previous: @escaping () -> Void, next: @escaping () -> Void,
+                         pick: @escaping () -> Void, id: String) -> some View {
+        HStack(spacing: 0) {
+            Button(action: previous) { Image(systemName: "chevron.left").frame(width: 44, height: 44) }
+                .accessibilityLabel(model.t("panchang_previous"))
+                .accessibilityIdentifier(section.isMonthly ? "panchang_previous_month" : "panchang_previous_day")
+            Spacer(minLength: 4)
+            Button(action: pick) {
+                HStack(spacing: 6) {
+                    Image(systemName: symbol).font(.subheadline)
+                    Text(title).font(.headline).lineLimit(1).minimumScaleFactor(0.8)
+                }
+                .foregroundStyle(.primary)
+            }
+            .accessibilityIdentifier(id)
+            Spacer(minLength: 4)
+            Button(action: next) { Image(systemName: "chevron.right").frame(width: 44, height: 44) }
+                .accessibilityLabel(model.t("panchang_next"))
+                .accessibilityIdentifier(section.isMonthly ? "panchang_next_month" : "panchang_next_day")
+        }
+        .foregroundStyle(Theme.teal)
+        .padding(.horizontal, 4)
+        .glassPanel(cornerRadius: 16)
+    }
+
     private var datePicker: some View {
         NavigationStack {
-            DatePicker("Date", selection: Binding(get: { date.utcMidnight }, set: { date = CivilDate(utc: $0) }),
+            DatePicker(model.t("panchang_pick_date"),
+                       selection: Binding(get: { date.utcMidnight }, set: { date = CivilDate(utc: $0) }),
                        in: CivilDate(1900, 1, 1).utcMidnight...CivilDate(2100, 12, 31).utcMidnight, displayedComponents: .date)
                 .datePickerStyle(.graphical)
                 .environment(\.timeZone, TimeZone(identifier: "UTC")!)
-                .environment(\.locale, Locale(identifier: "en_US"))
+                .environment(\.locale, model.locale)
+                .tint(Theme.teal)
                 .padding()
                 .toolbar {
-                    ToolbarItem(placement: .confirmationAction) { Button("Done") { pickingDate = false } }
+                    ToolbarItem(placement: .confirmationAction) { Button(model.t("panchang_done")) { pickingDate = false } }
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button(model.t("today")) {
+                            date = city.today()
+                            pickingDate = false
+                        }
+                    }
                 }
         }
         .presentationDetents([.medium, .large])
@@ -160,59 +197,40 @@ struct PanchangView: View {
     @ViewBuilder
     private var content: some View {
         switch section {
-        case .daily:
-            if let day {
-                PanchangHero(day: day)
-                if premium {
-                    PanchangLimbGrid(day: day)
-                    PanchangExtendedDetails(day: day)
-                    PanchangObservancesPanel(day: day)
-                    Label("Festival dates follow the displayed sunrise, sunset or night rule. Regional and community traditions can differ; Amanta and Purnimanta month names are shown in the calculation notes.",
-                          systemImage: "info.circle")
-                        .font(.caption).foregroundStyle(.secondary)
-                } else {
-                    PanchangFreePreview(day: day)
-                    PanchangUpgradeCard()
-                }
-            } else {
-                ProgressView().frame(maxWidth: .infinity, minHeight: 200)
+        case .keyDays:
+            PanchangKeyDaysView(month: month, city: city) { selected in
+                date = selected
+                section = .daily
             }
         case .ekadashi:
-            PanchangEkadashiPanel(month: date.firstOfMonth, city: city, tradition: $tradition)
-        case .guide:
-            PanchangGuide()
-        case .muhurta, .rashi, .festivals:
-            if !premium {
-                PanchangUpgradeCard()
-            } else if section == .festivals {
-                NavigationLink {
-                    PanchangFestivalExplorer()
-                } label: {
-                    HStack(spacing: 12) {
-                        Image(systemName: "party.popper").foregroundStyle(Theme.teal)
-                        VStack(alignment: .leading) {
-                            Text("Festival finder").font(.headline)
-                            Text("Browse calculated observances for your saved location").font(.caption).foregroundStyle(.secondary)
-                        }
-                        Spacer()
-                        Image(systemName: "chevron.right").foregroundStyle(.tertiary)
-                    }
-                    .padding(16)
-                    .glassPanel(cornerRadius: 18, interactive: true)
-                }
-                .buttonStyle(.plain)
-                .accessibilityIdentifier("panchang_festival_finder")
-            } else if let day {
-                if section == .muhurta {
-                    PanchangTimingPanel(day: day)
-                    PanchangMuhurtaPanel(day: day)
-                } else {
-                    PanchangRashiPanel(day: day)
-                }
+            PanchangEkadashiPanel(month: month, city: city, tradition: $tradition)
+        case .daily:
+            if let day {
+                PanchangDailyView(day: day)
             } else {
-                ProgressView().frame(maxWidth: .infinity, minHeight: 200)
+                loading
+            }
+        case .muhurta:
+            if !model.premium.isPremium {
+                PanchangUpgradeCard()
+            } else if let day {
+                PanchangMuhurtaView(day: day)
+            } else {
+                loading
+            }
+        case .rashi:
+            if !model.premium.isPremium {
+                PanchangUpgradeCard()
+            } else if let day {
+                PanchangRashiView(day: day)
+            } else {
+                loading
             }
         }
+    }
+
+    private var loading: some View {
+        ProgressView().tint(Theme.teal).frame(maxWidth: .infinity, minHeight: 200)
     }
 
     // MARK: State
@@ -220,14 +238,11 @@ struct PanchangView: View {
     private func start() {
         guard !started else { return }
         started = true
-        if let initialCity {
-            city = initialCity
-            date = initialDate ?? initialCity.today()
-        } else {
-            let saved = PanchangLocationStore(store: model.store).load() ?? .newDelhi
-            city = saved
-            date = initialDate ?? saved.today()
-        }
+        let saved = initialCity ?? PanchangLocationStore(store: model.store).load() ?? .newDelhi
+        city = saved
+        date = initialDate ?? saved.today()
+        month = date.firstOfMonth
+        if initialDate != nil { section = .daily }
     }
 
     private func recalculate() async {
@@ -237,321 +252,152 @@ struct PanchangView: View {
         if city == self.city && date == self.date { day = result }
     }
 
-    private func move(_ days: Int) { date = date.adding(days: days) }
+    private func goToToday() {
+        date = city.today()
+        month = date.firstOfMonth
+    }
 
     /// A new city keeps "today" on the new city's today.
     private func changeCity(_ newCity: PanchangCity) {
         guard newCity != city else { return }
-        let wasToday = isToday
+        let wasToday = date == city.today()
         city = newCity
         if wasToday { date = newCity.today() }
         guard initialCity == nil else { return }
         do {
             try PanchangLocationStore(store: model.store).save(newCity)
         } catch {
-            toast = ToastMessage(text: "Location changed, but could not be saved.")
+            toast = ToastMessage(text: model.t("panchang_location_not_saved"))
         }
     }
 }
 
-// MARK: - Panels
-
-struct PanchangPanel<Content: View>: View {
-    let title: String
-    let subtitle: String
-    @ViewBuilder var content: () -> Content
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(.title3.bold())
-                Text(subtitle).font(.caption).foregroundStyle(.secondary)
-            }
-            content()
-        }
-        .padding(18)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .glassPanel(cornerRadius: 24)
-    }
-}
-
-/// Tithi at sunrise, its end, sunrise and sunset.
-struct PanchangHero: View {
-    let day: PanchangDay
-    private func time(_ instant: Date?) -> String { formatPanchangTime(instant, city: day.city, date: day.date) }
+/// Month and year wheels (Apple's pattern for choosing a month).
+struct PanchangMonthPicker: View {
+    @Environment(AppModel.self) private var model
+    @Environment(\.dismiss) private var dismiss
+    let month: CivilDate
+    let onPick: (CivilDate) -> Void
+    @State private var selectedMonth = 1
+    @State private var selectedYear = 2026
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            ViewThatFits(in: .horizontal) {
-                HStack {
-                    label
-                    Spacer()
-                    Text("Amanta · \(day.amantaMonth)").font(.caption)
-                }
-                VStack(alignment: .leading, spacing: 5) {
-                    label
-                    Text("Amanta · \(day.amantaMonth)").font(.caption)
-                }
-            }
-            Text("\(day.tithi.paksha ?? "") \(day.tithi.name)").font(.title2.bold())
-                .accessibilityIdentifier("panchang_tithi_title")
-            Text(day.tithi.endsAt == nil ? "Tithi transition unavailable" : "Changes at \(time(day.tithi.endsAt))")
-                .font(.subheadline).foregroundStyle(.secondary)
-            FlowLayout(spacing: 8) {
-                pill("sun.max", "Sunrise", time(day.sunrise))
-                pill("sunset", "Sunset", time(day.sunset))
-            }
-            .padding(.top, 6)
-        }
-        .padding(22)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .glassPanel(cornerRadius: 28, tint: Theme.teal)
-        .accessibilityIdentifier("panchang_daily_overview")
-    }
-
-    private var label: some View {
-        Label(day.sunrise == nil ? "TITHI AT 06:00 · NO SUNRISE" : "TITHI AT SUNRISE", systemImage: "moon.fill")
-            .font(.caption2.weight(.bold)).foregroundStyle(Theme.teal)
-    }
-
-    private func pill(_ symbol: String, _ title: String, _ value: String) -> some View {
-        Label("\(title)  \(value)", systemImage: symbol)
-            .font(.caption.weight(.semibold))
-            .padding(.horizontal, 12)
-            .padding(.vertical, 9)
-            .glassCapsule(interactive: false)
-    }
-}
-
-struct PanchangLimbGrid: View {
-    let day: PanchangDay
-
-    var body: some View {
-        let limbs: [(String, String, Date?)] = [
-            ("Tithi", "\(day.tithi.paksha ?? "") \(day.tithi.name)", day.tithi.endsAt),
-            ("Nakshatra", day.nakshatra.name, day.nakshatra.endsAt),
-            ("Yoga", day.yoga.name, day.yoga.endsAt),
-            ("Karana", day.karana.name, day.karana.endsAt),
-            ("Vara", day.vara, nil),
-        ]
-        VStack(alignment: .leading, spacing: 11) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Five limbs").font(.title3.bold())
-                Text(day.sunrise == nil ? "No sunrise: limbs sampled at 06:00 local time" : "Panchang at local sunrise")
-                    .font(.caption).foregroundStyle(.secondary)
-            }
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 10)], spacing: 10) {
-                ForEach(limbs, id: \.0) { limb in
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(limb.0).font(.caption.weight(.bold)).foregroundStyle(Theme.teal)
-                        Text(limb.1).font(.headline).lineLimit(1)
-                        if let end = limb.2 {
-                            Text("Until \(formatPanchangTime(end, city: day.city, date: day.date))").font(.caption2).foregroundStyle(.secondary)
-                        }
-                    }
-                    .padding(16)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .glassPanel(cornerRadius: 20)
-                }
-            }
-        }
-    }
-}
-
-struct PanchangExtendedDetails: View {
-    let day: PanchangDay
-    private func time(_ instant: Date?) -> String { formatPanchangTime(instant, city: day.city, date: day.date) }
-
-    var body: some View {
-        PanchangPanel(title: "Detailed Panchang", subtitle: day.city.timezoneLabel) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Moonset · \(time(day.moonset))")
-                Text("Surya Rashi · \(day.sunRashi)")
-                Text("Chandra Rashi · \(day.moonRashi)")
-                Text("Nakshatra Pada · \(day.nakshatraPada)")
-                Text("Lahiri Ayanamsa · \(String(format: "%.4f", day.ayanamsa))°")
-                Text("Ritu · \(day.ritu)")
-                Text("Ayana · \(day.ayana)")
-                Text("Shaka · \(day.shakaYear) / Vikrama · \(day.vikramaYear) (Chaitra start)")
-                Text("Anandadi Yoga · \(day.anandadiYoga)")
-                Text("Amanta · \(day.amantaMonth)")
-                Text("Purnimanta · \(day.purnimantaMonth)")
-                Text("At sunrise · \(day.specialYogas.isEmpty ? "No listed special yoga" : day.specialYogas.joined(separator: " · "))")
-                if day.sunrise == nil || day.sunset == nil {
-                    Text("No complete solar day at this location. Sunrise-based periods and observances are unavailable.")
-                }
-                Divider().padding(.vertical, 6)
-                Text("Limb transitions · sunrise to next sunrise").font(.subheadline.weight(.semibold))
-                ForEach(day.limbTimeline, id: \.name) { entry in
-                    ForEach(Array(entry.limbs.enumerated()), id: \.offset) { _, limb in
-                        Text("\(entry.name) · \(limb.paksha ?? "") \(limb.name) — until \(time(limb.endsAt))").padding(.top, 4)
+        NavigationStack {
+            HStack(spacing: 0) {
+                Picker(model.t("panchang_month"), selection: $selectedMonth) {
+                    ForEach(1...12, id: \.self) { value in
+                        Text(PanchangFormat.format(CivilDate(2026, value, 1), "LLLL", model.language)).tag(value)
                     }
                 }
+                Picker(model.t("year"), selection: $selectedYear) {
+                    ForEach(1900...2100, id: \.self) { value in Text(String(value)).tag(value) }
+                }
             }
-            .font(.subheadline)
-        }
-    }
-}
-
-struct PanchangObservancesPanel: View {
-    let day: PanchangDay
-
-    var body: some View {
-        PanchangPanel(title: "Observances", subtitle: "Calculated for \(day.city.label)") {
-            if day.observances.isEmpty {
-                Text("No supported observance rule matches this date.").font(.subheadline).foregroundStyle(.secondary)
-            } else {
-                ForEach(day.observances) { event in
-                    HStack(alignment: .top, spacing: 10) {
-                        Image(systemName: event.isMajor ? "sparkles" : "circle.fill")
-                            .font(event.isMajor ? .body : .system(size: 7)).foregroundStyle(Theme.teal).frame(width: 18)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(event.name).fontWeight(.semibold)
-                            if !event.description.isEmpty {
-                                Text(event.description).font(.caption).foregroundStyle(.secondary)
-                            }
-                        }
+            .pickerStyle(.wheel)
+            .padding(.horizontal)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button(model.t("cancel")) { dismiss() } }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(model.t("panchang_done")) {
+                        onPick(CivilDate(selectedYear, selectedMonth, 1))
+                        dismiss()
                     }
                 }
             }
         }
-    }
-}
-
-/// Free: up to two major observances (today's vrat and festival names).
-struct PanchangFreePreview: View {
-    let day: PanchangDay
-
-    var body: some View {
-        let events = day.observances.filter(\.isMajor).prefix(2)
-        PanchangPanel(title: "Today’s observances", subtitle: "A local preview") {
-            if events.isEmpty {
-                Text("Explore the full Panchang for observances and daily timings.").font(.subheadline).foregroundStyle(.secondary)
-            } else {
-                ForEach(Array(events)) { event in
-                    Label(event.name, systemImage: "sparkles").symbolRenderingMode(.multicolor)
-                }
-            }
+        .onAppear {
+            selectedMonth = month.month
+            selectedYear = month.year
         }
     }
 }
 
+/// How the Panchang is calculated, in a few lines (replaces the Guide tab).
+struct PanchangNotesSheet: View {
+    @Environment(AppModel.self) private var model
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 14) {
+                    Text(model.t("panchang_notes_body")).font(.body)
+                    Text(model.t("panchang_notes_traditions")).font(.body)
+                    Text(model.t("panchang_notes_sources")).font(.footnote).foregroundStyle(.secondary)
+                }
+                .padding(20)
+            }
+            .navigationTitle(model.t("panchang_notes_title"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) { Button(model.t("panchang_done")) { dismiss() } }
+            }
+        }
+        .presentationDetents([.medium, .large])
+    }
+}
+
+/// The paywall card for Premium Panchang sections.
 struct PanchangUpgradeCard: View {
     @Environment(AppModel.self) private var model
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Label("Full Panchang · Premium", systemImage: "star.circle.fill").font(.headline).foregroundStyle(Theme.teal)
-            Text("See all five limbs, lunar transitions, observances and city-specific daily timings.")
-                .font(.subheadline).foregroundStyle(.secondary)
+        VStack(alignment: .leading, spacing: 10) {
+            Label(model.t("panchang_premium_title"), systemImage: "lock.fill")
+                .font(.headline).foregroundStyle(Theme.amber)
+            Text(model.t("panchang_premium_body")).font(.subheadline).foregroundStyle(.secondary)
             Button {
                 model.openPaywall()
             } label: {
-                Label("Unlock full Panchang", systemImage: "lock.open.fill").frame(maxWidth: .infinity).padding(.vertical, 4)
+                Label(model.t("panchang_unlock"), systemImage: "star.fill").frame(maxWidth: .infinity).padding(.vertical, 4)
             }
             .primaryActionStyle()
-            .padding(.top, 6)
+            .padding(.top, 4)
             .accessibilityIdentifier("panchang_unlock_button")
         }
         .padding(18)
-        .glassPanel(cornerRadius: 24, tint: Theme.teal)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .glassPanel(cornerRadius: 22, tint: Theme.teal)
     }
 }
 
-struct PanchangTimingPanel: View {
-    let day: PanchangDay
-    private func time(_ instant: Date?) -> String { formatPanchangTime(instant, city: day.city, date: day.date) }
+/// A titled glass card.
+struct PanchangCard<Content: View>: View {
+    let title: String
+    var symbol: String?
+    @ViewBuilder var content: () -> Content
 
     var body: some View {
-        PanchangPanel(title: "Daily timings", subtitle: day.city.label) {
-            VStack(alignment: .leading, spacing: 4) {
-                Label("Lunar month labels", systemImage: "moon")
-                Text("Amanta · \(day.amantaMonth)")
-                Text("Purnimanta · \(day.purnimantaMonth)").font(.caption).foregroundStyle(.secondary)
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 8) {
+                if let symbol { Image(systemName: symbol).foregroundStyle(Theme.teal) }
+                Text(title).font(.headline)
             }
-            Divider()
-            ForEach([day.rahukala, day.yamaganda, day.gulika, day.abhijit, day.brahmaMuhurta].compactMap { $0 }, id: \.name) { period in
-                HStack {
-                    Label(period.name, systemImage: "clock")
-                    Spacer()
-                    Text("\(time(period.start)) – \(time(period.end))").font(.caption.weight(.semibold)).multilineTextAlignment(.trailing)
-                }
-            }
-            Divider()
-            HStack {
-                Label("Moonrise", systemImage: "moonrise")
-                Spacer()
-                Text(time(day.moonrise)).font(.caption)
-            }
+            content()
         }
-        .font(.subheadline)
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .glassPanel(cornerRadius: 20)
     }
 }
 
-struct PanchangMuhurtaPanel: View {
-    let day: PanchangDay
+/// A label on the left and a value on the right, wrapping when needed.
+struct PanchangRow: View {
+    let label: String
+    let value: String
+    var detail: String?
+    var color: Color?
 
     var body: some View {
-        PanchangPanel(title: "Additional periods", subtitle: "Local sunrise to next sunrise") {
-            if day.additionalPeriods.isEmpty { Text("No periods available for this solar day.") }
-            periods(day.additionalPeriods)
-            Divider()
-            heading("Day and night Choghadiya", "Amrit, Shubh, Labh: favourable · Chal: neutral · Rog, Kaal, Udveg: unfavourable")
-            periods(day.choghadiya)
-            Divider()
-            heading("Hora", "Planetary hours · twelve by day and twelve by night")
-            periods(day.hora)
-            Divider()
-            heading("Udaya Lagna", "Sidereal ascendant · local horizon")
-            if day.lagna.isEmpty { Text("Lagna periods unavailable for this location or solar day.") }
-            periods(day.lagna)
-        }
-        .font(.subheadline)
-    }
-
-    private func heading(_ title: String, _ subtitle: String) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(title).font(.title3.bold())
-            Text(subtitle).font(.caption).foregroundStyle(.secondary)
-        }
-    }
-
-    private func periods(_ list: [PanchangPeriod]) -> some View {
-        ForEach(Array(list.enumerated()), id: \.offset) { _, period in
-            VStack(alignment: .leading, spacing: 1) {
-                Text(period.name).fontWeight(.medium)
-                Text("\(formatPanchangTime(period.start, city: day.city, date: day.date)) – \(formatPanchangTime(period.end, city: day.city, date: day.date))")
-                    .font(.caption).foregroundStyle(.secondary)
+        HStack(alignment: .firstTextBaseline, spacing: 10) {
+            if let color { Circle().fill(color).frame(width: 8, height: 8) }
+            Text(label).font(.subheadline).foregroundStyle(.secondary)
+            Spacer(minLength: 8)
+            VStack(alignment: .trailing, spacing: 2) {
+                Text(value).font(.subheadline.weight(.semibold)).multilineTextAlignment(.trailing)
+                if let detail { Text(detail).font(.caption).foregroundStyle(.secondary).multilineTextAlignment(.trailing) }
             }
-            .padding(.top, 4)
         }
-    }
-}
-
-struct PanchangRashiPanel: View {
-    let day: PanchangDay
-    private func time(_ instant: Date?) -> String { formatPanchangTime(instant, city: day.city, date: day.date) }
-
-    var body: some View {
-        PanchangPanel(title: "Rashi and Nakshatra", subtitle: "Sidereal positions at local sunrise · Lahiri") {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Surya Rashi · \(day.sunRashi)").font(.headline)
-                Text("Changes at \(time(day.sunRashiEndsAt))")
-                Divider().padding(.vertical, 8)
-                Text("Chandra Rashi · \(day.moonRashi)").font(.headline)
-                Text("Changes at \(time(day.moonRashiEndsAt))")
-                Divider().padding(.vertical, 8)
-                Text("Nakshatra · \(day.nakshatra.name)").font(.headline)
-                Text("Pada \(day.nakshatraPada) · until \(time(day.padaEndsAt))")
-                Text("Nakshatra ends at \(time(day.nakshatra.endsAt))")
-                Divider().padding(.vertical, 8)
-                Text("Lahiri Ayanamsa · \(String(format: "%.4f", day.ayanamsa))°")
-                Text("Ritu · \(day.ritu)")
-                Text("Ayana · \(day.ayana)")
-                Text("These are the Sun and Moon positions for the selected day. A personal Janma Rashi requires birth date, time and location.")
-                    .padding(.top, 12)
-            }
-            .font(.subheadline)
-        }
+        .accessibilityElement(children: .combine)
     }
 }

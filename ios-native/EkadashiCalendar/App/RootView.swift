@@ -21,7 +21,7 @@ struct RootView: View {
                 .tag(AppTab.vrat)
             // Panchang is English-only by design.
             screen(PanchangView())
-                .tabItem { Label("Panchang", systemImage: "sparkles") }
+                .tabItem { Label(model.t("search_screen_panchang"), systemImage: "sparkles") }
                 .tag(AppTab.panchang)
             screen(SettingsView())
                 .tabItem { Label(model.t("settings"), systemImage: "gearshape.fill") }

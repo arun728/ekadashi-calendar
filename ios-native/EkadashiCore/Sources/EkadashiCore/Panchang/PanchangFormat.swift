@@ -43,7 +43,8 @@ public enum PanchangFormat {
         format(date, "EEE", language)
     }
 
-    static func format(_ date: CivilDate, _ pattern: String, _ language: String) -> String {
+    /// [date] with a DateFormatter [pattern] in [language].
+    public static func format(_ date: CivilDate, _ pattern: String, _ language: String) -> String {
         let formatter = DateFormatter()
         formatter.locale = Localizer.locale(language)
         formatter.timeZone = TimeZone(identifier: "UTC")
