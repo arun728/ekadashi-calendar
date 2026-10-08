@@ -193,3 +193,10 @@ current. These rules supersede earlier ones where they conflict:
 - Languages are ordered English, Hindi, Tamil, Telugu; new languages are
   appended at the end.
 - Search no longer covers katha, mantra, food or vrat-info content.
+
+## No more CI (8 October 2026)
+
+Arun said "No more ci": until he explicitly asks for CI again, every pushed
+commit on every branch carries `[skip ci]`, nobody re-runs or triggers
+workflows, and nobody schedules check-ins to watch CI. Run the local checks
+(analyzer, Flutter tests, `swift test`) before pushing instead.
