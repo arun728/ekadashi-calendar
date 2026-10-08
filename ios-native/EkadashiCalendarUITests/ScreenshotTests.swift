@@ -94,7 +94,8 @@ final class ScreenshotTests: XCTestCase {
     func testLongScreensScrollFromTheTopHalf() {
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 20))
         let screens: [(Int, XCUIElement)] = [
-            (2, app.segmentedControls.firstMatch),
+            // The segmented control is pinned above the scroll view.
+            (2, app.descendants(matching: .any)["journey_overview_streaks"].firstMatch),
             (3, app.descendants(matching: .any)["panchang_key_day_filters"].firstMatch),
             (4, app.descendants(matching: .any)["settings_premium"].firstMatch),
         ]
@@ -119,17 +120,7 @@ final class ScreenshotTests: XCTestCase {
         XCTAssertTrue(add.waitForExistence(timeout: 5))
         XCTAssertTrue(app.descendants(matching: .any)["settings_notifications_ekadashi"].exists
             || app.staticTexts["Ekadashi"].exists)
-        if !add.isEnabled {
-            // Allow notifications once (the simulator asks on first use).
-            let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
-            for _ in 0..<6 where !app.switches["notifications_master"].isHittable { app.swipeDown() }
-            let master = app.switches["notifications_master"]
-            master.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5)).tap()
-            let allow = springboard.buttons["Allow"]
-            if allow.waitForExistence(timeout: 5) { allow.tap() }
-            for _ in 0..<6 where !(add.exists && add.isHittable) { app.swipeUp() }
-        }
-        XCTAssertTrue(add.isEnabled, "reminders need notification permission")
+        XCTAssertTrue(add.isEnabled, "UI tests run with notifications allowed")
         add.tap()
         app.buttons["event_reminder_choose"].tap()
         let choice = app.buttons["event_choice_calendar:custom"]

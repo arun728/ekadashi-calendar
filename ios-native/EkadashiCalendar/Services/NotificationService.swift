@@ -9,20 +9,26 @@ import EkadashiCore
 final class NotificationService {
     private let center = UNUserNotificationCenter.current()
     static let prefix = "ekadashi."
+    private let assumeAuthorized: Bool
+
+    init(assumeAuthorized: Bool = false) { self.assumeAuthorized = assumeAuthorized }
 
     func requestAuthorization() async -> Bool {
-        (try? await center.requestAuthorization(options: [.alert, .sound, .badge])) ?? false
+        if assumeAuthorized { return true }
+        return (try? await center.requestAuthorization(options: [.alert, .sound, .badge])) ?? false
     }
 
     func isAuthorized() async -> Bool {
-        let settings = await center.notificationSettings()
-        switch settings.authorizationStatus {
+        switch await authorizationStatus() {
         case .authorized, .provisional, .ephemeral: return true
         default: return false
         }
     }
 
-    func authorizationStatus() async -> UNAuthorizationStatus { await center.notificationSettings().authorizationStatus }
+    func authorizationStatus() async -> UNAuthorizationStatus {
+        if assumeAuthorized { return .authorized }
+        return await center.notificationSettings().authorizationStatus
+    }
 
     /// Replaces this app's pending reminders with [plan] (Ekadashi and
     /// event reminders, docs/ROADMAP.md Phase 7).

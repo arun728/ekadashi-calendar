@@ -72,6 +72,7 @@ struct VratView: View {
                     GridRow {
                         MetricCard(title: model.t("current_streak"), value: "\(model.vrat.currentStreak(events))",
                                    subtitle: model.t("ekadashis_unit"), symbol: "flame", color: .orange)
+                            .accessibilityIdentifier("journey_overview_streaks")
                         MetricCard(title: model.t("longest_streak"), value: "\(longest)", subtitle: model.t("ekadashis_unit"),
                                    symbol: "medal", color: Theme.amber)
                     }

@@ -26,7 +26,9 @@ final class AppModel {
 
     @ObservationIgnored let store: KeyValueStore
     @ObservationIgnored let repository: CalendarRepository?
-    @ObservationIgnored let notifications = NotificationService()
+    /// UI tests cannot answer the system permission alert, so they run as if allowed.
+    @ObservationIgnored let notifications = NotificationService(
+        assumeAuthorized: ProcessInfo.processInfo.arguments.contains("-ui-testing"))
     @ObservationIgnored let location = LocationService()
     @ObservationIgnored let recents: RecentSearches
     @ObservationIgnored let entries: CalendarEntryStore
