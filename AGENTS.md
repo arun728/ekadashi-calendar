@@ -184,6 +184,9 @@ current. These rules supersede earlier ones where they conflict:
 - One branch per phase from the latest `dev`, with a **draft** PR to `dev`.
   Never push or merge to `dev` or `main` until Arun says so explicitly.
 - When Arun says "skip ci", add `[skip ci]` to the commit messages.
+- Do not run CI until Arun explicitly asks (8 October 2026): every pushed
+  commit carries `[skip ci]` until then. All phases go on
+  `feature/unified-search` (PR #17) for his review.
 - Panchang is no longer English-only: it follows the app language (Phase 2).
 - Languages are ordered English, Hindi, Tamil, Telugu; new languages are
   appended at the end.
