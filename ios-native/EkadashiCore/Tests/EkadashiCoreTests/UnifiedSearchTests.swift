@@ -34,10 +34,12 @@ final class SearchCatalogTests: XCTestCase {
         let engine = PanchangEngine()
         var unknown: Set<String> = []
         for city in [PanchangCity.newDelhi, .chennai] {
-            for (_, observance) in engine.observanceCalendar(year: 2026, city: city)
-            where catalog.observance(engineId: observance.id, name: observance.name) == nil
-                && !catalog.excludedEngineIds.contains(observance.id) {
-                unknown.insert("\(observance.id) \(observance.name)")
+            for dated in engine.observanceCalendar(year: 2026, city: city) {
+                let observance = dated.observance
+                if catalog.observance(engineId: observance.id, name: observance.name) == nil
+                    && !catalog.excludedEngineIds.contains(observance.id) {
+                    unknown.insert("\(observance.id) \(observance.name)")
+                }
             }
         }
         XCTAssertEqual(unknown.sorted(), [])

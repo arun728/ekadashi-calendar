@@ -326,3 +326,40 @@ extension PanchangEngine {
         return n == 12 || (n == 11 && nn == 13)
     }
 }
+
+/// An observance on its civil date at a location.
+public struct DatedObservance: Equatable, Sendable {
+    public let date: CivilDate
+    public let observance: PanchangObservance
+}
+
+extension PanchangEngine {
+    /// The day's observances without the rest of the Panchang (muhurtas,
+    /// choghadiya, lagna ...): the same result as `calculate(date).observances`.
+    public func observances(on date: CivilDate, city: PanchangCity) -> [PanchangObservance] {
+        let startUtc = startFor(date, city: city)
+        let endUtc = endFor(date, city: city)
+        let sunrise = findCrossing(startUtc, endUtc, city, moon: false, rising: true)
+        var sunset = findCrossing(startUtc, endUtc, city, moon: false, rising: false)
+        if let sunrise, sunset == nil || sunset! < sunrise {
+            sunset = findCrossing(sunrise, city.midnight(date, dayOffset: 2), city, moon: false, rising: false)
+        }
+        let hasSolarDay = sunrise != nil && sunset != nil && sunset! > sunrise!
+        let localSunrise = sunrise ?? city.dateAtHour(date, 6)
+        let localSunset = sunset ?? city.dateAtHour(date, 18)
+        let nightEnd = findCrossing(localSunset, city.midnight(date, dayOffset: 2), city, moon: false, rising: true)
+        guard hasSolarDay, nightEnd != nil else { return sankrantiOnly(city, date, sunset) }
+        return observances(city: city, date: date, sunrise: localSunrise, sunset: localSunset, tithi: tithiAt(localSunrise))
+    }
+
+    /// Every observance of [year] at [city], in date order.
+    public func observanceCalendar(year: Int, city: PanchangCity) -> [DatedObservance] {
+        var result: [DatedObservance] = []
+        var date = CivilDate(year, 1, 1)
+        while date.year == year {
+            for observance in observances(on: date, city: city) { result.append(DatedObservance(date: date, observance: observance)) }
+            date = date.adding(days: 1)
+        }
+        return result
+    }
+}

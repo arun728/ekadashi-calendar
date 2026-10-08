@@ -106,10 +106,7 @@
    "ஜெயந்தி",
    "జయంతి"
   ],
-  "my_calendar": [
-   "custom",
-   "google"
-  ]
+  "my_calendar": []
  },
  "observances": [
   {
@@ -901,8 +898,7 @@
     "today",
     "home",
     "dashboard",
-    "countdown",
-    "next ekadashi"
+    "countdown"
    ]
   },
   {
