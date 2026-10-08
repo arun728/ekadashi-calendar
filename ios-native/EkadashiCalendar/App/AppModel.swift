@@ -38,6 +38,7 @@ final class AppModel {
     @ObservationIgnored private var started = false
     @ObservationIgnored private var pendingRoute: AppRoute?
     @ObservationIgnored private var observanceCache: [String: [DatedObservance]] = [:]
+    @ObservationIgnored private var schedulingTask: Task<Void, Never>?
 
     let premium: StoreKitPremiumService
     let vrat: VratStore
@@ -50,11 +51,14 @@ final class AppModel {
     private(set) var loadError: String?
     private(set) var isLoading = true
     private(set) var reminderSettings: ReminderSettings
+    private(set) var eventReminders: EventReminderSettings
     private(set) var entriesRevision = 0
     var selectedTab: AppTab = .today
     var showSearch = false
     var homeIndex = 0
     var calendarFocus: CivilDate?
+    /// A day to open in Panchang (from an event reminder).
+    var panchangFocus: CivilDate?
     var toast: ToastMessage?
     var paywall: PaywallRequest?
     var googlePicker: GooglePickerRequest?
@@ -76,6 +80,7 @@ final class AppModel {
         timezone = store.string(forKey: "app_timezone").flatMap(AppTimezone.init(rawValue:))
             ?? AppTimezone.matching(deviceIdentifier: TimeZone.current.identifier)
         reminderSettings = ReminderSettings.load(from: store)
+        eventReminders = EventReminderSettings.load(from: store)
         recents = RecentSearches(store: store)
         let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         try? FileManager.default.createDirectory(at: support, withIntermediateDirectories: true)
@@ -225,22 +230,57 @@ final class AppModel {
 
     // MARK: Reminders and widgets
 
+    /// The Ekadashi switches; the master switch also covers event reminders.
     func updateReminders(_ settings: ReminderSettings) {
         reminderSettings = settings
+        settings.save(to: store)
+        eventReminders.enabled = settings.enabled
+        Task { await scheduleReminders() }
+    }
+
+    /// Festival, Panchang and calendar reminders (docs/ROADMAP.md Phase 7).
+    func updateEventReminders(_ settings: EventReminderSettings) {
+        eventReminders = settings
         settings.save(to: store)
         Task { await scheduleReminders() }
     }
 
+    /// Plans every reminder again, one run at a time so a slower run cannot
+    /// leave its older plan behind.
     func scheduleReminders() async {
+        let previous = schedulingTask
+        let task = Task { @MainActor in
+            await previous?.value
+            await scheduleRemindersNow()
+        }
+        schedulingTask = task
+        await task.value
+    }
+
+    private func scheduleRemindersNow() async {
         let settings = ReminderSettings.load(from: store)
         guard settings.enabled, await notifications.isAuthorized() else {
             await notifications.cancelAll()
             return
         }
-        let language = self.language
-        let plan = ReminderPlanner.plan(occurrences: ekadashis, settings: settings,
-                                        texts: { Localizer.shared.translate($0, language: language) }, now: Date())
-        await notifications.schedule(plan)
+        let language = self.language, now = Date()
+        let fasts = ReminderPlanner.plan(occurrences: ekadashis, settings: settings,
+                                         texts: { Localizer.shared.translate($0, language: language) }, now: now)
+        let events = EventReminderSettings.load(from: store)
+        let premium = self.premium.isPremium
+        let city = panchangCity
+        var observances: [DatedObservance] = []
+        if premium && events.reminders.contains(where: \.target.requiresPremium) {
+            let year = city.today().year
+            observances = await panchangObservances(year: year, city: city)
+            // Near the year's end the next year's festivals are within reach.
+            if city.today().month >= 11 { observances += await panchangObservances(year: year + 1, city: city) }
+        }
+        let planned = EventReminderPlanner.plan(
+            settings: events, observances: observances, entries: (try? entries.all()) ?? [],
+            observanceZone: TimeZone(identifier: city.timeZoneId) ?? .current, entryZone: .current,
+            language: language, premium: premium, now: now)
+        await notifications.schedule(PendingNotification.merge(ekadashi: fasts, events: planned))
     }
 
     func syncWidgets() {
@@ -258,9 +298,9 @@ final class AppModel {
     /// Background App Refresh: keep reminders and widgets current.
     func backgroundRefresh() async {
         reload()
-        await scheduleReminders()
         await premium.refresh()
         removeLapsedPremiumImports()
+        await scheduleReminders()
         scheduleBackgroundRefresh()
     }
 
@@ -304,6 +344,10 @@ final class AppModel {
             showSearch = false
             selectedTab = .calendar
             calendarFocus = date
+        case .panchang(let date):
+            showSearch = false
+            selectedTab = .panchang
+            panchangFocus = date
         }
     }
 
@@ -396,7 +440,10 @@ final class AppModel {
         pickerContinuation = nil
     }
 
-    func entriesChanged() { entriesRevision += 1 }
+    func entriesChanged() {
+        entriesRevision += 1
+        if eventReminders.reminders.contains(where: { !$0.target.requiresPremium }) { Task { await scheduleReminders() } }
+    }
 
     func removeLapsedPremiumImports() {
         if (try? coordinator.removeLapsedPremiumSync()) == true {

@@ -108,6 +108,40 @@ final class ScreenshotTests: XCTestCase {
         }
     }
 
+    /// Notifications has Ekadashi and Festivals and events sub-sections; a
+    /// free reminder for the user's own entries is added from a picker
+    /// (docs/ROADMAP.md Phase 7).
+    func testEventReminderIsAddedFromSettings() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 20))
+        tab(4)
+        let add = app.buttons["notifications_add_event"]
+        for _ in 0..<6 where !(add.exists && add.isHittable) { app.swipeUp() }
+        XCTAssertTrue(add.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.descendants(matching: .any)["settings_notifications_ekadashi"].exists
+            || app.staticTexts["Ekadashi"].exists)
+        if !add.isEnabled {
+            // Allow notifications once (the simulator asks on first use).
+            let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+            for _ in 0..<6 where !app.switches["notifications_master"].isHittable { app.swipeDown() }
+            let master = app.switches["notifications_master"]
+            master.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5)).tap()
+            let allow = springboard.buttons["Allow"]
+            if allow.waitForExistence(timeout: 5) { allow.tap() }
+            for _ in 0..<6 where !(add.exists && add.isHittable) { app.swipeUp() }
+        }
+        XCTAssertTrue(add.isEnabled, "reminders need notification permission")
+        add.tap()
+        app.buttons["event_reminder_choose"].tap()
+        let choice = app.buttons["event_choice_calendar:custom"]
+        for _ in 0..<12 where !(choice.exists && choice.isHittable) { app.swipeUp() }
+        choice.tap()
+        XCTAssertTrue(app.buttons["event_reminder_lead_2"].waitForExistence(timeout: 5))
+        snap("12-event-reminder-editor")
+        app.buttons["event_reminder_save"].tap()
+        XCTAssertTrue(app.buttons["event_reminder_row_calendar:custom"].waitForExistence(timeout: 5))
+        snap("13-notifications")
+    }
+
     private func result(_ prefix: String) -> XCUIElement {
         app.descendants(matching: .any).matching(NSPredicate(format: "identifier BEGINSWITH %@", prefix)).firstMatch
     }

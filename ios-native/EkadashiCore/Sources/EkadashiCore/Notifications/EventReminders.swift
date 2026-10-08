@@ -192,7 +192,7 @@ public enum EventReminderPlanner {
 /// The events a reminder can be set for, in the app language: festivals
 /// (alphabetical), monthly days (catalogue order) and the user's calendars.
 public struct EventReminderChoice: Equatable, Identifiable, Sendable {
-    public enum Group: String, CaseIterable, Sendable {
+    public enum Kind: String, CaseIterable, Sendable {
         case festival, monthly
         case myCalendar = "my_calendar"
 
@@ -201,7 +201,7 @@ public struct EventReminderChoice: Equatable, Identifiable, Sendable {
 
     public let target: EventReminderTarget
     public let title: String
-    public let group: Group
+    public let group: Kind
 
     public var id: String { target.key }
     public var requiresPremium: Bool { target.requiresPremium }
@@ -231,5 +231,25 @@ public struct EventReminderChoice: Equatable, Identifiable, Sendable {
         case .observance(let key): return catalog.observances.first { $0.key == key }?.name(language) ?? key
         case .calendar(let source): return localizer.translate("event_reminder_all_\(source.rawValue)", language: language)
         }
+    }
+}
+
+/// A local notification to schedule: Ekadashi and event reminders merged,
+/// soonest first, within iOS's limit of 64 pending notifications.
+public struct PendingNotification: Equatable, Sendable, Identifiable {
+    public let id: String
+    public let fireDate: Date
+    public let title: String
+    public let body: String
+    public let url: URL
+
+    public static func merge(ekadashi: [PlannedReminder], events: [PlannedEventReminder],
+                             limit: Int = ReminderPlanner.iosPendingLimit) -> [PendingNotification] {
+        let fasts = ekadashi.map {
+            PendingNotification(id: "\($0.id)", fireDate: $0.fireDate, title: $0.title, body: $0.body,
+                                url: $0.kind == .onParana ? AppRoute.paranaURL : AppRoute.todayURL)
+        }
+        let others = events.map { PendingNotification(id: $0.id, fireDate: $0.fireDate, title: $0.title, body: $0.body, url: $0.url) }
+        return Array((fasts + others).sorted { ($0.fireDate, $0.id) < ($1.fireDate, $1.id) }.prefix(max(limit, 0)))
     }
 }

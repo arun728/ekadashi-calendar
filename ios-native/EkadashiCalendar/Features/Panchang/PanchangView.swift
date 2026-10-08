@@ -72,7 +72,11 @@ struct PanchangView: View {
         }
         .sheet(isPresented: $showingNotes) { PanchangNotesSheet() }
         .toast($toast)
-        .onAppear { start() }
+        .onAppear {
+            start()
+            openFocus()
+        }
+        .onChange(of: model.panchangFocus) { _, _ in openFocus() }
         .task(id: "\(city.id)|\(city.latitude)|\(city.longitude)|\(city.timeZoneId)|\(date.iso)") { await recalculate() }
     }
 
@@ -252,6 +256,15 @@ struct PanchangView: View {
         if city == self.city && date == self.date { day = result }
     }
 
+    /// A day opened from an event reminder (the Panchang tab only).
+    private func openFocus() {
+        guard initialDate == nil, let focus = model.panchangFocus else { return }
+        model.panchangFocus = nil
+        date = focus
+        month = focus.firstOfMonth
+        section = .daily
+    }
+
     private func goToToday() {
         date = city.today()
         month = date.firstOfMonth
@@ -266,6 +279,8 @@ struct PanchangView: View {
         guard initialCity == nil else { return }
         do {
             try PanchangLocationStore(store: model.store).save(newCity)
+            // Festival reminders follow the Panchang location.
+            Task { await model.scheduleReminders() }
         } catch {
             toast = ToastMessage(text: model.t("panchang_location_not_saved"))
         }

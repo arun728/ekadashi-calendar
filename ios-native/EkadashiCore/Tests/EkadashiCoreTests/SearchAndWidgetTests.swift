@@ -322,6 +322,9 @@ final class ResourceSyncTests: XCTestCase {
             keys[achievement.descriptionKey] = "Achievements"
         }
         for key in WidgetSnapshot.stringKeys.values { keys[key] = "WidgetSnapshot" }
+        for group in EventReminderChoice.Kind.allCases { keys[group.titleKey] = "EventReminders" }
+        for key in ["event_reminder_today", "event_reminder_tomorrow", "event_reminder_in_days", "event_reminder_all_custom",
+                    "event_reminder_all_google"] { keys[key] = "EventReminders" }
         XCTAssertGreaterThan(keys.count, 150)
         var missing: [String] = []
         for language in Localizer.languages {

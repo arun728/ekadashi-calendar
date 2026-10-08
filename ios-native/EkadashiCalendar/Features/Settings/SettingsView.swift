@@ -4,7 +4,8 @@ import UserNotifications
 import EkadashiCore
 
 /// Settings (settings_screen.dart): Premium, widget preview, dark mode,
-/// reminders, permissions and about.
+/// notifications (the master switch, then Ekadashi and Festivals and
+/// events), permissions and about.
 struct SettingsView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.requestReview) private var requestReview
@@ -49,10 +50,10 @@ struct SettingsView: View {
                         }
                     }
                 }
-                reminder("notify_2day", \.twoDaysBefore)
-                reminder("notify_1day", \.oneDayBefore)
-                reminder("notify_start", \.onFastingStart)
-                reminder("notify_parana", \.onParana)
+                .accessibilityIdentifier("notifications_master")
+                if hasPermission && !settings.enabled {
+                    Text(model.t("notifications_off_hint")).font(.caption).foregroundStyle(.secondary)
+                }
                 if togglesEnabled {
                     Button {
                         Task {
@@ -67,6 +68,27 @@ struct SettingsView: View {
             }
             .tint(Theme.teal)
             .accessibilityIdentifier("settings_notifications_tube")
+
+            // Sub-sections under the master switch (docs/ROADMAP.md Phase 7).
+            Section {
+                reminder("notify_2day", \.twoDaysBefore)
+                reminder("notify_1day", \.oneDayBefore)
+                reminder("notify_start", \.onFastingStart)
+                reminder("notify_parana", \.onParana)
+            } header: {
+                Text(model.t("notifications_section_ekadashi"))
+            }
+            .tint(Theme.teal)
+            .accessibilityIdentifier("settings_notifications_ekadashi")
+
+            Section {
+                EventReminderRows(enabled: togglesEnabled)
+            } header: {
+                Text(model.t("notifications_section_events"))
+            } footer: {
+                Text(model.t(model.premium.isPremium ? "notifications_events_desc" : "notifications_premium_events"))
+            }
+            .accessibilityIdentifier("settings_notifications_events")
 
             Section(model.t("permissions")) {
                 Button { openSettings() } label: {

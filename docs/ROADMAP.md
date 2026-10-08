@@ -34,7 +34,7 @@ status table as each phase moves forward.
 | 4 | Calendar tab, Home, Journey tab, observance fix, scroll tests | Done | Not started |
 | 5 | Settings and Premium card | Done | Not started |
 | 6 | Widgets (two widgets) | Done | Not started |
-| 7 | Notifications revamp | Not started | Not started |
+| 7 | Notifications revamp | Done | Not started |
 | 8 | Android look and feel parity | n/a | Not started |
 
 ## Phase 0: housekeeping
@@ -172,6 +172,34 @@ results) run by both the Swift and the Dart test suites.
   festivals added in Phase 3.
 - For each, the user chooses when to be reminded (for example 1 or 2 days
   before, at a chosen time) so devotees can plan.
+
+### Phase 7 implementation notes (iOS)
+
+- Settings > Notifications: the master switch, then **Ekadashi** (the four
+  existing switches, unchanged keys) and **Festivals and events**: the user's
+  reminders, each opening an editor, and "Add a reminder".
+- The editor picks an event from a searchable list in the app language:
+  festivals (alphabetical), monthly observances (Purnima, Amavasya,
+  Pradosham, Chaturthis, Masik Shivaratri, the Sankrantis) and My calendar
+  (all custom entries, all Google events). Lead times are on the day, 1, 2,
+  3 or 7 days before (several at once; 1 and 2 days by default) at a chosen
+  time, 7:00 AM by default.
+- Festival and Panchang reminders are Premium, like Key days; reminders for
+  the user's own and Google entries are free. A locked reminder is kept and
+  starts working with Premium.
+- Festival dates are calculated at the saved Panchang location and the
+  reminder fires on that location's clock; entries fire on the phone's
+  clock. Tapping a festival reminder opens that day in Panchang
+  (`ekadashi://panchang?date=YYYY-MM-DD`); an entry reminder opens the
+  Calendar on that day.
+- Stored as JSON under `event_reminders` (the master switch stays
+  `notifications_enabled`). Ekadashi and event reminders share iOS's 64
+  pending notifications, soonest first; the app plans again on launch,
+  background refresh, and when reminders, entries, the Panchang location or
+  Premium change.
+- Core: `EventReminderSettings`, `EventReminderPlanner`,
+  `EventReminderChoice` and `PendingNotification` in `EkadashiCore`
+  (`EventReminderTests`, `PendingNotificationTests`).
 
 ## Phase 8: Android look and feel parity
 

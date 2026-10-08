@@ -3,7 +3,7 @@
 A native Swift/SwiftUI version of the Android app with the same features:
 
 - tabs: Today, Calendar, Vrat, Panchang and Settings, with Search in the top bar;
-- three home-screen widgets and reminder notifications;
+- two home-screen widgets (Ekadashi and Upcoming Ekadashis) and reminder notifications for Ekadashi, festivals, Panchang days and calendar entries;
 - Google Calendar import with the free-sync registry, and App Store premium;
 - English, Tamil, Hindi and Telugu, plus the offline Panchang engine with both Ekadashi traditions.
 
@@ -120,8 +120,9 @@ These follow the Play-only rules in `AGENTS.md`, adapted to StoreKit 2 with no b
 | Panchang, worldwide and English-only: Daily, Muhurta, Ekadashi (Smarta and Gaudiya), Rashi, Festivals and Guide; city search, GPS or manual coordinates and IANA timezone | `PanchangView` and panels, `PanchangEngine`, `CalculatedEkadashiEngine` | Core tests: field-by-field parity with the Flutter engine (112 days in 8 cities, 240 fasts) plus the published Drik, ISKCON Bangalore and GCAL gates; UI not run |
 | One search for the whole app (iOS first, Phase 1 of `docs/ROADMAP.md`; Android port pending): Ekadashis, Panchang festivals and observances (Premium), custom and Google entries, and screens; year filter first, then type chips; aliases and names in all four languages; suggestions and recents (explicit submissions only) | `GlobalSearchView`, `UnifiedSearch`, `SearchCorpus`, `SearchCatalog` | Core tests and the shared golden cases; UI test searches an Ekadashi, a festival and a type word |
 | Reminders: 2 days and 1 day before, fasting start, Parana; test notification | `ReminderPlanner`, `NotificationService` (respects iOS's 64-pending limit) | Core tests for the plan; delivery not run |
+| Festival, Panchang and calendar reminders, chosen days before at a chosen time (iOS first, docs/ROADMAP.md Phase 7) | `EventReminderPlanner`, `PendingNotification.merge`, `EventRemindersView` | Core tests; UI test adds one; delivery not run |
 | Three widgets (next, today, upcoming) with deep links | `EkadashiWidgets`, `WidgetSnapshot` in the App Group | Core tests for snapshot and state; widgets not run |
-| `ekadashi://` links (dashboard, today, parana, calendar?date=, vrat, panchang, more, settings, search) | `AppRoute`, `onOpenURL` and notification taps | Core tests |
+| `ekadashi://` links (dashboard, today, parana, calendar?date=, vrat, panchang, panchang?date=, more, settings, search) | `AppRoute`, `onOpenURL` and notification taps | Core tests |
 | en/ta/hi/te | `Localizer` reads the Android ARB strings, plus an iOS override table for 17 strings that name Google Play or Android settings | Core tests: every key used by the app exists in all four languages |
 | Background refresh (WorkManager) | `BGAppRefreshTask` keeps reminders, widgets and premium current | Not run |
 
