@@ -167,7 +167,7 @@ final class ScreenshotTests: XCTestCase {
     func testLongScreensScrollFromTheTopHalf() {
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 20))
         let screens: [(Int, XCUIElement)] = [
-            // The segmented control is pinned above the scroll view.
+            // The section chips are pinned above each swipeable page.
             (2, app.descendants(matching: .any)["journey_overview_streaks"].firstMatch),
             (3, app.descendants(matching: .any)["panchang_key_day_filters"].firstMatch),
             (4, app.descendants(matching: .any)["settings_premium"].firstMatch),

@@ -4,9 +4,10 @@ import EkadashiCore
 /// Vrat tracker: overview, history, statistics and achievements
 /// (vrat_tracker_screen.dart). Recording, history, streaks and statistics
 /// are free; three entries and three badges are free, more need Premium.
+/// The sections are glass chips, as in Panchang, and change with a swipe.
 struct VratView: View {
     @Environment(AppModel.self) private var model
-    enum Section: CaseIterable { case overview, history, statistics, achievements }
+    enum Section: String, CaseIterable { case overview, history, statistics, achievements }
     @State private var section: Section = .overview
     @State private var selectedYear = CivilDate.today().year
     @State private var statusFilter: ObservanceStatus?
@@ -34,25 +35,24 @@ struct VratView: View {
                     Button(model.t("retry")) { model.vrat.load(events) }.primaryActionStyle()
                 }
             } else {
-                Picker(model.t("journey_tab"), selection: $section) {
-                    Text(model.t("overview")).tag(Section.overview)
-                    Text(model.t("history")).tag(Section.history)
-                    Text(model.t("statistics")).tag(Section.statistics)
-                    Text(model.t("achievements")).tag(Section.achievements)
+                sectionBar
+                TabView(selection: $section) {
+                    overview.tag(Section.overview)
+                    history.tag(Section.history)
+                    statistics.tag(Section.statistics)
+                    achievements.tag(Section.achievements)
                 }
-                .pickerStyle(.segmented)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
-                .accessibilityIdentifier("vrat_tabs_tube")
-                switch section {
-                case .overview: overview
-                case .history: history
-                case .statistics: statistics
-                case .achievements: achievements
-                }
+                .tabViewStyle(.page(indexDisplayMode: .never))
             }
         }
         .sheet(item: $recording) { RecordVratSheet(event: $0) }
+    }
+
+    private var sectionBar: some View {
+        SectionChips(Section.allCases, selection: $section, title: { model.t($0.rawValue) },
+                     identifier: { "journey_tab_\($0.rawValue)" })
+            .accessibilityElement(children: .contain)
+            .accessibilityIdentifier("vrat_tabs_tube")
     }
 
     // MARK: Overview

@@ -5,11 +5,14 @@ import EkadashiCore
 /// Panchang festivals and observances, custom and Google calendar entries,
 /// and app screens. The year filter comes first, then the type chips. Only
 /// an explicit submission is saved to recent searches, never live typing.
+/// The type pages (All, then each type) also change with a horizontal swipe.
 struct GlobalSearchView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
     @State private var query = ""
-    @State private var results: [SearchItem] = []
+    /// The text the results show (live typing settles after 200 ms).
+    @State private var searched = ""
+    @State private var cache = SearchPageCache()
     @State private var suggestions: [String] = []
     @State private var recents: [String] = []
     @State private var category: SearchCategory?
@@ -20,14 +23,19 @@ struct GlobalSearchView: View {
     @State private var showPaywall = false
     @State private var pushed: SearchItem?
 
-    private var hasInput: Bool {
-        !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || category != nil || year != nil
+    private func hasInput(_ page: SearchCategory?) -> Bool {
+        !searched.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || page != nil || year != nil
     }
 
     var body: some View {
         VStack(spacing: 0) {
             filters
-            content
+            TabView(selection: $category) {
+                ForEach(SearchCategory.pages, id: \.self) { page in
+                    content(page).tag(page)
+                }
+            }
+            .tabViewStyle(.page(indexDisplayMode: .never))
         }
         .background(AppBackground())
         .navigationTitle(model.t("search"))
@@ -54,6 +62,7 @@ struct GlobalSearchView: View {
         }
         .onAppear {
             recents = model.recents.all()
+            restore()
             if index == nil { build() }
         }
         .onChange(of: model.entriesRevision) { _, _ in build() }
@@ -63,49 +72,59 @@ struct GlobalSearchView: View {
     // MARK: Filters
 
     private var filters: some View {
-        ScrollView(.horizontal) {
-            GlassGroup(spacing: 8) {
-                HStack(spacing: 8) {
-                    Menu {
-                        Button(model.t("search_all_years")) { year = nil; run() }
-                        ForEach(model.repository?.availableYears ?? [], id: \.self) { value in
-                            Button(String(value)) { year = value; run() }
+        ScrollViewReader { proxy in
+            ScrollView(.horizontal) {
+                GlassGroup(spacing: 8) {
+                    HStack(spacing: 8) {
+                        Menu {
+                            Button(model.t("search_all_years")) { year = nil; run() }
+                            ForEach(model.repository?.availableYears ?? [], id: \.self) { value in
+                                Button(String(value)) { year = value; run() }
+                            }
+                        } label: {
+                            Label(year.map(String.init) ?? model.t("year"), systemImage: "calendar")
+                                .font(.subheadline.weight(year == nil ? .regular : .semibold))
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 8)
                         }
-                    } label: {
-                        Label(year.map(String.init) ?? model.t("year"), systemImage: "calendar")
-                            .font(.subheadline.weight(year == nil ? .regular : .semibold))
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 8)
-                    }
-                    .tint(year == nil ? .primary : Theme.teal)
-                    .glassPanel(cornerRadius: 18)
-                    .accessibilityIdentifier("search_year_selector")
-                    GlassChip(title: model.t("filter_all"), systemImage: "square.grid.2x2", selected: category == nil) {
-                        category = nil
-                        run()
-                    }
-                    ForEach(SearchCategory.filters, id: \.self) { type in
-                        GlassChip(title: model.t(type.localizationKey), systemImage: type.symbol, color: Theme.hex(type.colorHex),
-                                  selected: category == type) {
-                            category = category == type ? nil : type
-                            run()
+                        .tint(year == nil ? .primary : Theme.teal)
+                        .glassPanel(cornerRadius: 18)
+                        .accessibilityIdentifier("search_year_selector")
+                        ForEach(SearchCategory.pages, id: \.self) { type in
+                            GlassChip(title: model.t(type?.localizationKey ?? "filter_all"),
+                                      systemImage: type?.symbol ?? "square.grid.2x2",
+                                      color: type.map { Theme.hex($0.colorHex) } ?? Theme.teal,
+                                      selected: category == type) {
+                                // The selected type's chip goes back to All.
+                                show(category == type ? nil : type)
+                            }
+                            .id(type)
+                            .accessibilityIdentifier("search_filter_\(type?.rawValue ?? "all")")
                         }
                     }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
+            }
+            .scrollIndicators(.hidden)
+            .onChange(of: category) { _, value in
+                withAnimation { proxy.scrollTo(value, anchor: .center) }
             }
         }
-        .scrollIndicators(.hidden)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("search_categories_tube")
+    }
+
+    private func show(_ page: SearchCategory?) {
+        withAnimation(.snappy) { category = page }
     }
 
     // MARK: Content
 
     @ViewBuilder
-    private var content: some View {
-        if !hasInput {
+    private func content(_ page: SearchCategory?) -> some View {
+        let results = self.results(page)
+        if !hasInput(page) {
             start
         } else if results.isEmpty {
             ContentUnavailableView {
@@ -158,10 +177,7 @@ struct GlobalSearchView: View {
                 FlowLayout(spacing: 8) {
                     ForEach(SearchCategory.filters, id: \.self) { type in
                         GlassChip(title: model.t(type.localizationKey), systemImage: type.symbol, color: Theme.hex(type.colorHex),
-                                  selected: false) {
-                            category = type
-                            run()
-                        }
+                                  selected: false) { show(type) }
                     }
                 }
                 .accessibilityElement(children: .contain)
@@ -185,6 +201,18 @@ struct GlobalSearchView: View {
             loadingObservances = false
             run()
         }
+    }
+
+    /// Back from a screen a result opened: the same text, type and year.
+    private func restore() {
+        guard let session = model.restoredSearch else { return }
+        model.restoredSearch = nil
+        query = session.query
+        searched = session.query
+        category = session.category
+        year = session.year
+        debounce?.cancel()
+        run()
     }
 
     private func changed(_ value: String) {
@@ -216,11 +244,21 @@ struct GlobalSearchView: View {
         recents = model.recents.all()
     }
 
+    /// Shows the typed text; each page's results are worked out when shown.
     private func run() {
-        results = index?.search(query, category: category, year: year, today: model.today) ?? []
+        searched = query
+        cache.clear()
+    }
+
+    private func results(_ page: SearchCategory?) -> [SearchItem] {
+        guard let index else { return [] }
+        let key = SearchPageCache.Key(query: searched, category: page, year: year, index: ObjectIdentifier(index))
+        return cache.results(key) { index.search(searched, category: page, year: year, today: model.today) }
     }
 
     // MARK: Opening results
+
+    private var session: SearchSession { SearchSession(query: searched, category: category, year: year) }
 
     private func isLocked(_ item: SearchItem) -> Bool { item.requiresPremium && !model.premium.isPremium }
 
@@ -233,9 +271,9 @@ struct GlobalSearchView: View {
         case .ekadashi, .observance, .widgetPreview:
             pushed = item
         case .entry(_, let date):
-            model.open(.calendar(date))
+            model.open(.calendar(date), from: session)
         case .tab(let tab):
-            model.open(.tab(tab))
+            model.open(.tab(tab), from: session)
         case .paywall:
             showPaywall = true
         }
@@ -259,6 +297,28 @@ struct GlobalSearchView: View {
             EmptyView()
         }
     }
+}
+
+/// Each search page's results, worked out once per text, type and year.
+/// Not observed: it only saves repeating a search while a page redraws.
+final class SearchPageCache {
+    struct Key: Hashable {
+        let query: String
+        let category: SearchCategory?
+        let year: Int?
+        let index: ObjectIdentifier
+    }
+
+    private var pages: [Key: [SearchItem]] = [:]
+
+    func results(_ key: Key, _ make: () -> [SearchItem]) -> [SearchItem] {
+        if let cached = pages[key] { return cached }
+        let made = make()
+        pages[key] = made
+        return made
+    }
+
+    func clear() { pages = [:] }
 }
 
 struct SearchResultRow: View {

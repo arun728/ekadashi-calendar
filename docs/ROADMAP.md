@@ -36,6 +36,7 @@ status table as each phase moves forward.
 | 6 | Widgets (two widgets) | Done | Not started |
 | 7 | Notifications revamp | Done | Not started |
 | 8 | Android look and feel parity | n/a | Not started |
+| 9 | Swipeable sub-sections and back to search | Done | Not started |
 
 ## Phase 0: housekeeping
 
@@ -205,6 +206,20 @@ results) run by both the Swift and the Dart test suites.
 
 - The iOS green-to-black gradient on every Android tab.
 - Matching colours, type and spacing, checked with side-by-side screenshots.
+
+## Phase 9: swipeable sub-sections and back to search
+
+- Panchang, Journey and Search sub-sections change with a horizontal swipe
+  as well as their chips (iOS: a page-style `TabView`; Android: a
+  `PageView`), and the chip bar scrolls to keep the selected chip in view.
+  Calendar keeps its swipe between months.
+- Journey's sections are glass chips like Panchang's (no segmented control).
+- A search result that opens a tab or a calendar day leaves the search, so
+  that screen's top bar shows "‹ Search" (`search_return`), which reopens
+  the search with the same text, type page and year. Choosing another tab,
+  a deep link or a new search forgets it. Results that push a screen
+  (Ekadashi, festival, widget preview) keep the system back button.
+- Core: `SearchReturn` and `SearchSession` (`SearchReturnTests`).
 
 ## Testing and CI
 

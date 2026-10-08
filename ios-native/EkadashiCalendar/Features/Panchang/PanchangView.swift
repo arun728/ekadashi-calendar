@@ -39,16 +39,20 @@ struct PanchangView: View {
     var body: some View {
         VStack(spacing: 0) {
             sectionBar
-            ScrollViewReader { proxy in
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 16) {
-                        controls.id("top")
-                        content
+            // The sections also change with a horizontal swipe.
+            TabView(selection: $section) {
+                ForEach(Page.allCases, id: \.self) { page in
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 16) {
+                            controls(page)
+                            content(page)
+                        }
+                        .padding(EdgeInsets(top: 8, leading: 16, bottom: 100, trailing: 16))
                     }
-                    .padding(EdgeInsets(top: 8, leading: 16, bottom: 100, trailing: 16))
+                    .tag(page)
                 }
-                .onChange(of: section) { _, _ in proxy.scrollTo("top", anchor: .top) }
             }
+            .tabViewStyle(.page(indexDisplayMode: .never))
         }
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
@@ -83,23 +87,12 @@ struct PanchangView: View {
     // MARK: Header
 
     private var sectionBar: some View {
-        ScrollView(.horizontal) {
-            GlassGroup(spacing: 8) {
-                HStack(spacing: 8) {
-                    ForEach(Page.allCases, id: \.self) { item in
-                        GlassChip(title: model.t(item.titleKey), selected: section == item) { section = item }
-                            .accessibilityIdentifier("panchang_tab_\(item.rawValue)")
-                    }
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-            }
-        }
-        .scrollIndicators(.hidden)
+        SectionChips(Page.allCases, selection: $section, title: { model.t($0.titleKey) },
+                     identifier: { "panchang_tab_\($0.rawValue)" })
     }
 
     /// The location, then the month or day being shown.
-    private var controls: some View {
+    private func controls(_ page: Page) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
                 locationMenu
@@ -108,12 +101,12 @@ struct PanchangView: View {
                     Text(city.timezoneLabel).font(.caption).foregroundStyle(.secondary).lineLimit(1)
                 }
             }
-            if section.isMonthly {
-                stepper(title: PanchangFormat.monthTitle(month, language: language), symbol: "calendar",
+            if page.isMonthly {
+                stepper(title: PanchangFormat.monthTitle(month, language: language), symbol: "calendar", monthly: true,
                         previous: { month = month.adding(months: -1) }, next: { month = month.adding(months: 1) },
                         pick: { pickingMonth = true }, id: "panchang_selected_month")
             } else {
-                stepper(title: PanchangFormat.date(date, language: language), symbol: "calendar",
+                stepper(title: PanchangFormat.date(date, language: language), symbol: "calendar", monthly: false,
                         previous: { date = date.adding(days: -1) }, next: { date = date.adding(days: 1) },
                         pick: { pickingDate = true }, id: "panchang_selected_date")
             }
@@ -148,12 +141,12 @@ struct PanchangView: View {
         .accessibilityIdentifier("panchang_city_selector")
     }
 
-    private func stepper(title: String, symbol: String, previous: @escaping () -> Void, next: @escaping () -> Void,
+    private func stepper(title: String, symbol: String, monthly: Bool, previous: @escaping () -> Void, next: @escaping () -> Void,
                          pick: @escaping () -> Void, id: String) -> some View {
         HStack(spacing: 0) {
             Button(action: previous) { Image(systemName: "chevron.left").frame(width: 44, height: 44) }
                 .accessibilityLabel(model.t("panchang_previous"))
-                .accessibilityIdentifier(section.isMonthly ? "panchang_previous_month" : "panchang_previous_day")
+                .accessibilityIdentifier(monthly ? "panchang_previous_month" : "panchang_previous_day")
             Spacer(minLength: 4)
             Button(action: pick) {
                 HStack(spacing: 6) {
@@ -166,7 +159,7 @@ struct PanchangView: View {
             Spacer(minLength: 4)
             Button(action: next) { Image(systemName: "chevron.right").frame(width: 44, height: 44) }
                 .accessibilityLabel(model.t("panchang_next"))
-                .accessibilityIdentifier(section.isMonthly ? "panchang_next_month" : "panchang_next_day")
+                .accessibilityIdentifier(monthly ? "panchang_next_month" : "panchang_next_day")
         }
         .foregroundStyle(Theme.teal)
         .padding(.horizontal, 4)
@@ -199,12 +192,12 @@ struct PanchangView: View {
     // MARK: Content
 
     @ViewBuilder
-    private var content: some View {
-        switch section {
+    private func content(_ page: Page) -> some View {
+        switch page {
         case .keyDays:
             PanchangKeyDaysView(month: month, city: city) { selected in
                 date = selected
-                section = .daily
+                withAnimation(.snappy) { section = .daily }
             }
         case .ekadashi:
             PanchangEkadashiPanel(month: month, city: city, tradition: $tradition)
