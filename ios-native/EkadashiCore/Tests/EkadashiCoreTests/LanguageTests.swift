@@ -84,3 +84,78 @@ final class PanchangTermsTests: XCTestCase {
         XCTAssertEqual(missing.sorted(), [])
     }
 }
+
+final class PanchangLocalizationTests: XCTestCase {
+    /// Calculated fasts (both traditions) read fully in every language.
+    func testCalculatedEkadashiNamesRulesAndReasonsAreTranslated() throws {
+        var missing: Set<String> = []
+        for tradition in EkadashiTradition.allCases {
+            let fasts = try CalculatedEkadashiEngine().calculate(start: CivilDate(2026, 1, 1), count: 365, city: .newDelhi,
+                                                                tradition: tradition)
+            XCTAssertGreaterThan(fasts.count, 20)
+            for fast in fasts {
+                for language in Localizer.languages where language != "en" {
+                    let terms = PanchangTerms.shared
+                    if terms.translate(fast.name, .ekadashiName, language: language) == fast.name { missing.insert("\(language) \(fast.name)") }
+                    if terms.ekadashiNote(fast.rule, language: language) == fast.rule { missing.insert("\(language) \(fast.rule)") }
+                    if terms.ekadashiNote(fast.paranaReason, language: language) == fast.paranaReason {
+                        missing.insert("\(language) \(fast.paranaReason)")
+                    }
+                }
+            }
+        }
+        XCTAssertEqual(missing.sorted(), [])
+        XCTAssertEqual(PanchangTerms.shared.ekadashiNote("Jaya: nakshatra end, Dwadashi end and morning limit evaluated together",
+                                                         language: "hi"),
+                       "जया: नक्षत्र समाप्ति, द्वादशी समाप्ति और प्रातः सीमा साथ में")
+    }
+
+    func testTimesAndDatesFollowTheLanguage() {
+        let city = PanchangCity.newDelhi
+        let date = CivilDate(2026, 10, 8)
+        let evening = city.dateAtHour(date, 18).addingTimeInterval(24 * 60)
+        XCTAssertEqual(PanchangFormat.time(evening, city: city, date: date, language: "en"), "6:24 PM")
+        XCTAssertEqual(PanchangFormat.time(evening.addingTimeInterval(86400), city: city, date: date, language: "en"),
+                       "6:24 PM (next day)")
+        XCTAssertEqual(PanchangFormat.time(nil, city: city, date: date, language: "en"), "—")
+        let hindi = PanchangFormat.time(evening, city: city, date: date, language: "hi")
+        XCTAssertTrue(hindi.contains("6:24"), hindi)
+        XCTAssertNotEqual(hindi, "6:24 PM")
+        XCTAssertEqual(PanchangFormat.date(date, language: "en"), "Thu, 8 Oct 2026")
+        XCTAssertNotEqual(PanchangFormat.date(date, language: "ta"), "Thu, 8 Oct 2026")
+        XCTAssertEqual(PanchangFormat.monthTitle(date, language: "en"), "October 2026")
+    }
+}
+
+final class KeyDaysTests: XCTestCase {
+    private func ekadashis() throws -> [EkadashiOccurrence] {
+        try CalendarRepository.bundled().ekadashis(timezone: "IST", language: "en")
+    }
+
+    func testAMonthListsPublishedEkadashisAndCataloguedObservancesInDateOrder() throws {
+        let month = CivilDate(2026, 11, 1)
+        let days = PanchangKeyDays.month(month, observances: PanchangEngine().observanceCalendar(year: 2026, city: .newDelhi),
+                                         ekadashis: try ekadashis(), language: "en")
+        XCTAssertTrue(days.allSatisfy { $0.date.year == 2026 && $0.date.month == 11 })
+        XCTAssertEqual(days.map(\.date), days.map(\.date).sorted())
+        let ekadashiDays = days.filter { $0.categories.contains(.ekadashi) }
+        XCTAssertEqual(ekadashiDays.count, 2)
+        XCTAssertTrue(ekadashiDays.allSatisfy { !$0.requiresPremium }, "published Ekadashis are free")
+        XCTAssertTrue(days.contains { $0.key == "deepavali" && $0.date == CivilDate(2026, 11, 8) && $0.requiresPremium })
+        XCTAssertFalse(days.contains { $0.key == "ekadashi" }, "the engine's Smarta Ekadashi defers to the published data")
+        XCTAssertFalse(days.contains { $0.key == nil && !$0.categories.contains(.ekadashi) })
+    }
+
+    func testTitlesFollowTheLanguageAndFiltersWork() throws {
+        let month = CivilDate(2026, 11, 1)
+        let observances = PanchangEngine().observanceCalendar(year: 2026, city: .newDelhi)
+        let hindi = PanchangKeyDays.month(month, observances: observances,
+                                          ekadashis: try CalendarRepository.bundled().ekadashis(timezone: "IST", language: "hi"),
+                                          language: "hi")
+        XCTAssertEqual(hindi.first { $0.key == "deepavali" }?.title, "दीपावली (लक्ष्मी पूजा)")
+        let festivals = PanchangKeyDays.filter(hindi, category: .festival)
+        XCTAssertFalse(festivals.isEmpty)
+        XCTAssertTrue(festivals.allSatisfy { $0.categories.contains(.festival) })
+        XCTAssertEqual(PanchangKeyDays.filter(hindi, category: nil).count, hindi.count)
+    }
+}
