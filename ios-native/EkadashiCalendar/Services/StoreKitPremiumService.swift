@@ -179,7 +179,6 @@ final class StoreKitPremiumService {
         guard let product = products[plan], canBuy(plan) else { return }
         do {
             let outcome = try await product.purchase()
-            logger.info("Purchase result for \(product.id, privacy: .public): \(String(describing: outcome), privacy: .public)")
             switch outcome {
             case .success(let verification):
                 // Never grant an unverified transaction.

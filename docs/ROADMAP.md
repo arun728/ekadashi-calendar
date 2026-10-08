@@ -1,0 +1,171 @@
+# v2 improvement roadmap (iOS and Android)
+
+This file tracks the phased plan agreed with Arun on 8 October 2026. Update the
+status table as each phase moves forward.
+
+## Working rules
+
+- **iOS first, then Android.** Each phase is built and tested in `ios-native/`
+  first. Once Arun approves it on his iPhone, it is ported to the Flutter app
+  for parity. Small features go to both platforms at once only when Arun says
+  so. Apart from platform-specific look (Liquid Glass on iOS), features, content
+  and behaviour stay identical.
+- **One branch and one draft PR per phase.** Branch from the latest `dev`, open
+  the PR to `dev` as a draft, and never push or merge to `dev` (or `main`)
+  until Arun says so explicitly.
+- **Skip CI on request.** When Arun says "skip ci", put `[skip ci]` in the
+  commit messages pushed to that PR.
+- **Shared fixtures keep parity.** Search queries, translations and festival
+  dates live in shared JSON fixtures that both the Dart and the Swift tests
+  read.
+- **TDD.** Write the failing test first, then implement, then run the full
+  suites.
+- **Languages** are always ordered English, Hindi, Tamil, Telugu. New
+  languages (Bengali, Gujarati, ...) are added at the end, never earlier.
+
+## Status
+
+| Phase | Scope | iOS | Android |
+| --- | --- | --- | --- |
+| 0 | Housekeeping | Done | Done (same commits) |
+| 1 | One search for the whole app | In progress | Not started |
+| 2 | One app language and Sarvam translation | Not started | Not started |
+| 3 | Panchang redesign, missing festivals, regional names | Not started | Not started |
+| 4 | Calendar tab, Home, Journey tab, observance fix, scroll tests | Not started | Not started |
+| 5 | Settings and Premium card | Not started | Not started |
+| 6 | Widgets (two widgets) | Not started | Not started |
+| 7 | Notifications revamp | Not started | Not started |
+| 8 | Android look and feel parity | n/a | Not started |
+
+## Phase 0: housekeeping
+
+- Fixes from iPhone testing on `feature/ios-native`:
+  - Google sign-in crash (calls now run on the main thread);
+  - Premium now unlocks after a purchase (entitlements also read from each
+    product's latest transaction);
+  - Disconnect-Google icon;
+  - generated Info.plist files are ignored.
+- Verbose StoreKit debug logging removed; the one-line `Premium refresh:`
+  summary stays.
+- This roadmap and the new rules in `AGENTS.md`.
+- Merged straight to `dev` without a PR, at Arun's request.
+
+## Phase 1: one search for the whole app
+
+**Sources** (one index):
+- published Ekadashi days with fasting and Parana times, for every data year;
+- Panchang observances for every data year: festivals, Amavasya, Purnima,
+  Shivaratri, Pradosham, Sankashti and Sankranti;
+- custom calendar entries and imported Google events (on the phone only);
+- screens and settings (notifications, premium, widgets, language, ...).
+
+**Removed** from search: katha, mantra, food and vrat-info content, the
+content-download button, and the "More" sheet.
+
+**Matching**
+- Keep the current scorer (exact, prefix, contains, every word matched,
+  Damerau-Levenshtein typos).
+- Add an in-order-letters tier (from vault-hub's `Fuzzy.isSubsequence`), ranked
+  below typos, for queries of 3 or more letters.
+- One alias table maps every spelling, regional name and the Hindi, Tamil and
+  Telugu names to one canonical observance. For example, Diwali, Deepawali and
+  दीपावली all find Deepavali; Pongal and Lohri find Makar Sankranti.
+- The query is parsed: a year ("2027") becomes the year filter, and a type word
+  ("amavasai") becomes the type filter.
+
+**Filters**: Year first, then All, Ekadashi, Festivals, Amavasya, Purnima,
+Shivaratri, Chaturthi, Pradosham, Navaratri, Sankranti, Jayanti, My calendar.
+
+**Premium**: Ekadashi results are free. Festival and other Panchang
+observance results show a lock; tapping one opens the paywall (the festival
+finder stays Premium).
+
+**Tests**: a shared golden fixture (query, filters, language → expected top
+results) run by both the Swift and the Dart test suites.
+
+## Phase 2: one app language and Sarvam translation
+
+- The Home language picker is the only one; every tab and subtab follows it.
+  Remove the other pickers and the "IST · English" chip on Panchang.
+- One ordered language registry (English, Hindi, Tamil, Telugu); a test fails
+  if the order changes. New languages are appended.
+- Translate all English UI text, including Panchang, with **Sarvam AI**
+  (Mayura) into Hindi, Tamil and Telugu as a trial. Existing translations are
+  set aside and re-translated so the result can be judged. Record the time and
+  cost; Arun's native speakers review. Expand to more languages based on the
+  result.
+- Tests: every key exists in every language, placeholders match, no unintended
+  English left, no hard-coded English in Swift or Dart views, and any language
+  added later is checked automatically.
+
+## Phase 3: Panchang redesign, missing festivals, regional names
+
+- New first screen, "Key days": a standard month and year picker, and the
+  month's important days (Ekadashi, Amavasya, Purnima, Shivaratri, Pradosham
+  and festivals) as cards. Premium, with a lock and the paywall for free users.
+- Daily screen as clean cards: sunrise and sunset; the five limbs with end
+  times; good times and times to avoid as a timeline; the rest behind "More
+  details".
+- Remove the Guide subtab and the "IST · English" chip.
+- Add the missing festivals as reviewed rules, validated against published
+  calendars: Raksha Bandhan, Ugadi/Gudi Padwa, Onam, Durga Ashtami, Karthigai
+  Deepam, Varalakshmi Vratam, Ratha Yatra and Nag Panchami.
+- Festival names follow the app language and region (Tamil: Thai Pongal;
+  Hindi: Makar Sankranti); every name stays searchable.
+
+## Phase 4: Calendar tab, Home, Journey tab
+
+- Calendar: Today at the top left, actions in the toolbar or a menu, tap the
+  month title for a month/year picker, swipe between months.
+- Observance (recording a fast) stays Ekadashi-only, from the Home and Journey
+  tabs. The Calendar tab does not get festival markers or filters.
+- Home shows only Ekadashi; festivals and Amavasya belong in Panchang.
+- Rename the Vrat tab to **Journey**.
+- Bug (both platforms): the observance control is enabled for current and
+  future Ekadashis. It must be enabled only for past Ekadashis, and for the
+  current one once its Parana start time has passed.
+- Android: the Calendar screen must scroll from anywhere, not only from the
+  bottom card. Add scroll tests for every screen on both platforms.
+
+## Phase 5: Settings and Premium card
+
+- Dark mode: white text throughout Settings; teal only for icons and toggles.
+- A prominent Premium card: benefits, store prices, a clear Subscribe button,
+  the subscribed state with Manage, and the renewal terms, Restore and legal
+  links both stores require.
+
+## Phase 6: widgets
+
+- Two widgets:
+  1. **Ekadashi**: on an Ekadashi, "Today is X Ekadashi", progress through the
+     fast and the time left until Parana; otherwise "Next Ekadashi: X" and the
+     days to go.
+  2. **Upcoming Ekadashis**: a list.
+- iOS: redesign to Apple's widget guidelines (glanceable, container
+  background, tinted and clear home screen styles), plus the in-app preview.
+- Android: two widgets with the same behaviour; the retired widget's provider
+  keeps working with the new layout so placed widgets do not break.
+
+## Phase 7: notifications revamp
+
+- The master Notifications toggle gets sub-sections. Today's Ekadashi
+  reminders move under **Ekadashi**.
+- Users pick other events from a list (festivals, Amavasya, Purnima and other
+  Panchang observances, custom entries and Google events), including the
+  festivals added in Phase 3.
+- For each, the user chooses when to be reminded (for example 1 or 2 days
+  before, at a chosen time) so devotees can plan.
+
+## Phase 8: Android look and feel parity
+
+- The iOS green-to-black gradient on every Android tab.
+- Matching colours, type and spacing, checked with side-by-side screenshots.
+
+## Testing and CI
+
+- iOS: XCTest unit and UI tests on CI, with screenshots of every tab in each
+  language, light and dark, on a small and a large iPhone, uploaded as
+  artifacts for review.
+- Android: Flutter tests, golden screenshots and emulator integration tests.
+- The repository is public, so GitHub-hosted runners (including macOS) do not
+  use paid minutes.

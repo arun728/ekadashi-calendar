@@ -172,3 +172,19 @@ follows the Play-only rules adapted to StoreKit 2 (verified entitlements only;
 no stored flags, pending purchases or backend). Panchang stays English-only.
 CI's ios-tests job builds and tests it on macOS. Do not merge it to `dev` or
 `main` without Arun's approval.
+
+## v2 roadmap and working rules (8 October 2026)
+
+Arun approved the phased plan in `docs/ROADMAP.md`; keep its status table
+current. These rules supersede earlier ones where they conflict:
+
+- Build each phase in `ios-native/` first. Port it to the Flutter app only
+  after Arun approves it on iOS, unless he asks for both at once. Features,
+  content and behaviour stay identical across platforms.
+- One branch per phase from the latest `dev`, with a **draft** PR to `dev`.
+  Never push or merge to `dev` or `main` until Arun says so explicitly.
+- When Arun says "skip ci", add `[skip ci]` to the commit messages.
+- Panchang is no longer English-only: it follows the app language (Phase 2).
+- Languages are ordered English, Hindi, Tamil, Telugu; new languages are
+  appended at the end.
+- Search no longer covers katha, mantra, food or vrat-info content.
