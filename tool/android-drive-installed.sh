@@ -21,6 +21,18 @@ for drive_attempt in 1 2 3; do
   # A short emulator disconnect after Flutter's VM transport closes is recoverable.
   timeout 120 adb wait-for-device
   timeout 30 adb shell am force-stop "$package_name"
+  if (( drive_attempt > 1 )) && [[ "${ANDROID_FRESH_RETRY:-}" == granted ]]; then
+    # A fresh attempt starts from fresh app data: the lost attempt may already
+    # have saved entries (SQLite, preferences) that the test then finds twice.
+    # Callers that granted these permissions opt in with ANDROID_FRESH_RETRY.
+    timeout 30 adb shell pm clear "$package_name" >/dev/null
+    for permission in ACCESS_FINE_LOCATION ACCESS_COARSE_LOCATION; do
+      timeout 15 adb shell pm grant "$package_name" "android.permission.$permission"
+    done
+    if (( $(adb shell getprop ro.build.version.sdk | tr -d '\r') >= 33 )); then
+      timeout 15 adb shell pm grant "$package_name" android.permission.POST_NOTIFICATIONS
+    fi
+  fi
   timeout 15 adb logcat -c
   # -W waits for the first frame, but the entry isolate is paused until driven.
   timeout 60 adb shell am start -n "$package_name/.MainActivity" \
