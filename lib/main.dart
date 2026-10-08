@@ -23,6 +23,7 @@ import 'services/native_location_service.dart';
 import 'services/native_notification_service.dart';
 import 'services/native_settings_service.dart';
 import 'services/theme_service.dart';
+import 'l10n/app_language.dart';
 import 'services/language_service.dart';
 import 'screens/calendar_screen.dart';
 import 'screens/settings_screen.dart';
@@ -1310,54 +1311,34 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     );
   }
 
+  /// The app's only language menu (docs/ROADMAP.md Phase 2), in the
+  /// registry's order: English, Hindi, Tamil, Telugu, then new languages.
   Widget _buildLanguageSelector(LanguageService lang, Color tealColor) {
-    String displayLanguage;
-    switch (lang.currentLocale.languageCode) {
-      case 'te':
-        displayLanguage = 'తెలుగు';
-        break;
-      case 'ta':
-        displayLanguage = 'தமிழ்';
-        break;
-      case 'hi':
-        displayLanguage = 'हिंदी';
-        break;
-      default:
-        displayLanguage = 'English';
-    }
-
+    final current = AppLanguage.named(lang.currentLocale.languageCode);
     return PopupMenuButton<String>(
+      key: const Key('language_menu'),
       onSelected: (String newValue) => lang.changeLanguage(newValue),
       color: Theme.of(context).cardColor,
       itemBuilder: (context) => [
-        const PopupMenuItem(value: 'te', child: Text('తెలుగు')),
-        const PopupMenuItem(
-          value: 'en',
-          child: Text(
-            "English",
-            style: TextStyle(fontWeight: FontWeight.normal),
+        for (final language in AppLanguage.all)
+          PopupMenuItem(
+            value: language.code,
+            child: Row(
+              children: [
+                Expanded(child: Text(language.nativeName)),
+                if (language.code == current.code)
+                  Icon(Icons.check, size: 18, color: tealColor),
+              ],
+            ),
           ),
-        ),
-        const PopupMenuItem(
-          value: 'hi',
-          child: Text("हिंदी", style: TextStyle(fontWeight: FontWeight.normal)),
-        ),
-        const PopupMenuItem(
-          value: 'ta',
-          child: Text("தமிழ்", style: TextStyle(fontWeight: FontWeight.normal)),
-        ),
       ],
       offset: const Offset(0, 40),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            displayLanguage,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight:
-                  FontWeight.w500, // Consistent weight for all languages
-            ),
+            current.nativeName,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
           ),
           const SizedBox(width: 6),
           Icon(Icons.language, color: tealColor, size: 20),
