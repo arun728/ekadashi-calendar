@@ -116,13 +116,15 @@ struct HomeHeader: View {
     }
 }
 
-/// తెలుగు / English / हिंदी / தமிழ், as on Android.
+/// The app's only language picker: every tab and subtab, including
+/// Panchang, follows it. Languages appear in registry order (English,
+/// Hindi, Tamil, Telugu, then any added later).
 struct LanguageMenu: View {
     @Environment(AppModel.self) private var model
 
     var body: some View {
         Menu {
-            ForEach(["te", "en", "hi", "ta"], id: \.self) { code in
+            ForEach(Localizer.languages, id: \.self) { code in
                 Button {
                     model.setLanguage(code)
                 } label: {

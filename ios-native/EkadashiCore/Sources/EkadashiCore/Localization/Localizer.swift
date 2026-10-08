@@ -1,6 +1,6 @@
 import Foundation
 
-/// The app's UI strings in English, Tamil, Hindi and Telugu, generated from
+/// The app's UI strings in English, Hindi, Tamil and Telugu, generated from
 /// the Flutter ARB files so both apps say the same thing. The language is
 /// chosen inside the app (as on Android), not only from the system.
 public final class Localizer: @unchecked Sendable {
@@ -13,7 +13,8 @@ public final class Localizer: @unchecked Sendable {
         }
     }()
 
-    public static let languages = ["en", "ta", "hi", "te"]
+    /// Language codes in menu order (see `AppLanguage`).
+    public static let languages = AppLanguage.all.map(\.code)
 
     /// The shared Android strings (lib/l10n/app_*.arb).
     private let table: [String: [String: String]]
@@ -64,11 +65,11 @@ public final class Localizer: @unchecked Sendable {
     }
 
     public static func displayName(_ language: String) -> String {
-        ["en": "English", "ta": "தமிழ்", "hi": "हिंदी", "te": "తెలుగు"][language] ?? "English"
+        AppLanguage.named(language)?.nativeName ?? "English"
     }
 
     /// The Foundation locale for dates and numbers in [language].
     public static func locale(_ language: String) -> Locale {
-        Locale(identifier: ["ta": "ta_IN", "hi": "hi_IN", "te": "te_IN"][language] ?? "en_US")
+        Locale(identifier: AppLanguage.named(language)?.localeIdentifier ?? "en_US")
     }
 }

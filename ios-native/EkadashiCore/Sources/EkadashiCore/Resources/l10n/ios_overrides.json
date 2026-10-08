@@ -35,7 +35,9 @@
   "search_start_all": "Find Ekadashis, festivals, Amavasya, Purnima and your events",
   "search_premium_locked": "Unlock with Premium",
   "search_no_results_hint": "Check the spelling, or try another year or filter.",
-  "search_all_years": "All years"
+  "search_all_years": "All years",
+  "panchang_day": "Day",
+  "panchang_night": "Night"
  },
  "ta": {
   "rate_app_desc": "ஆப் ஸ்டோரில் எங்களை மதிப்பிடவும்",
@@ -72,7 +74,9 @@
   "search_start_all": "ஏகாதசி, பண்டிகைகள், அமாவாசை, பௌர்ணமி மற்றும் உங்கள் நிகழ்வுகளைக் கண்டறியுங்கள்",
   "search_premium_locked": "பிரீமியம் மூலம் திறக்கவும்",
   "search_no_results_hint": "எழுத்துப்பிழையைச் சரிபார்க்கவும் அல்லது வேறு ஆண்டு அல்லது வடிகட்டியை முயற்சிக்கவும்.",
-  "search_all_years": "அனைத்து ஆண்டுகள்"
+  "search_all_years": "அனைத்து ஆண்டுகள்",
+  "panchang_day": "பகல்",
+  "panchang_night": "இரவு"
  },
  "hi": {
   "rate_app_desc": "ऐप स्टोर पर हमें रेट करें",
@@ -109,7 +113,9 @@
   "search_start_all": "एकादशी, त्योहार, अमावस्या, पूर्णिमा और अपने कार्यक्रम खोजें",
   "search_premium_locked": "प्रीमियम से अनलॉक करें",
   "search_no_results_hint": "वर्तनी जाँचें, या कोई दूसरा वर्ष या फ़िल्टर आज़माएँ।",
-  "search_all_years": "सभी वर्ष"
+  "search_all_years": "सभी वर्ष",
+  "panchang_day": "दिन",
+  "panchang_night": "रात"
  },
  "te": {
   "rate_app_desc": "యాప్ స్టోర్‌లో రేట్ చేయండి",
@@ -146,6 +152,8 @@
   "search_start_all": "ఏకాదశి, పండుగలు, అమావాస్య, పౌర్ణమి మరియు మీ కార్యక్రమాలను కనుగొనండి",
   "search_premium_locked": "ప్రీమియంతో అన్‌లాక్ చేయండి",
   "search_no_results_hint": "స్పెల్లింగ్ తనిఖీ చేయండి, లేదా వేరే సంవత్సరం లేదా ఫిల్టర్ ప్రయత్నించండి.",
-  "search_all_years": "అన్ని సంవత్సరాలు"
+  "search_all_years": "అన్ని సంవత్సరాలు",
+  "panchang_day": "పగలు",
+  "panchang_night": "రాత్రి"
  }
 }
