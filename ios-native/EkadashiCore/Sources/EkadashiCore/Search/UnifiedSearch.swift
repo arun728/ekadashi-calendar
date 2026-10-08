@@ -2,7 +2,7 @@ import Foundation
 
 /// One searchable thing: an Ekadashi, a Panchang observance on a date, a
 /// calendar entry or an app screen.
-public struct SearchItem: Identifiable, Equatable, Sendable {
+public struct SearchItem: Identifiable, Hashable, Sendable {
     /// `<occurrence uid>`, `observance:<key>:<date>`, `entry:<id>` or `screen:<key>`.
     public let id: String
     public let target: SearchTarget

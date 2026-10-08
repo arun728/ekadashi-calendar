@@ -1,44 +1,38 @@
 import SwiftUI
 import EkadashiCore
 
-/// Global search over Ekadashis, kathas, mantras, food, vrat rules,
-/// festivals, temples and events (global_search_screen.dart). Only an
-/// explicit submission is saved to recent searches, never live typing.
+/// One search for the whole app (docs/ROADMAP.md Phase 1): Ekadashis,
+/// Panchang festivals and observances, custom and Google calendar entries,
+/// and app screens. The year filter comes first, then the type chips. Only
+/// an explicit submission is saved to recent searches, never live typing.
 struct GlobalSearchView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
     @State private var query = ""
-    @State private var submitted = ""
-    @State private var active = ""
-    @State private var results: [SearchResult] = []
+    @State private var results: [SearchItem] = []
     @State private var suggestions: [String] = []
     @State private var recents: [String] = []
-    @State private var category: SearchContentType = .all
+    @State private var category: SearchCategory?
     @State private var year: Int?
-    @State private var contentLanguage: String?
-    @State private var offline = false
-    @State private var index: SearchIndex?
+    @State private var index: UnifiedSearch?
+    @State private var loadingObservances = false
     @State private var debounce: Task<Void, Never>?
-    @State private var toast: ToastMessage?
+    @State private var showPaywall = false
+    @State private var pushed: SearchItem?
 
-    private var language: String { contentLanguage ?? model.language }
+    private var hasInput: Bool {
+        !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || category != nil || year != nil
+    }
 
     var body: some View {
         VStack(spacing: 0) {
-            if offline {
-                Label(model.t("offline_indicator"), systemImage: "bolt.horizontal.circle")
-                    .font(.caption).foregroundStyle(Theme.amber)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 16).padding(.vertical, 6)
-            }
             filters
-            categories
             content
         }
         .background(AppBackground())
         .navigationTitle(model.t("search"))
         .navigationBarTitleDisplayMode(.inline)
-        .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: model.t("search_hint")) {
+        .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: model.t("search_hint_all")) {
             ForEach(suggestions, id: \.self) { suggestion in
                 Text(suggestion).searchCompletion(suggestion)
             }
@@ -50,78 +44,56 @@ struct GlobalSearchView: View {
                 Button { dismiss() } label: { Image(systemName: "chevron.down") }
                     .accessibilityIdentifier("global_search_back")
             }
-            ToolbarItem(placement: .primaryAction) {
-                Button {
-                    offline.toggle()
-                    rerun()
-                } label: {
-                    Image(systemName: offline ? "wifi.slash" : "wifi").foregroundStyle(offline ? Theme.amber : .secondary)
-                }
-                .accessibilityLabel(model.t(offline ? "offline_mode" : "online_mode"))
+            if loadingObservances {
+                ToolbarItem(placement: .primaryAction) { ProgressView().tint(Theme.teal) }
             }
         }
-        .navigationDestination(for: SearchRoute.self) { route in
-            switch route {
-            case .ekadashi(let event): EkadashiDetailsView(event: event)
-            case .detail(let box): SearchDetailView(result: box.result) { download(box.result) }
-            }
+        .navigationDestination(item: $pushed) { item in destination(item) }
+        .sheet(isPresented: $showPaywall) {
+            NavigationStack { PremiumView(reason: nil) }
         }
-        .toast($toast)
         .onAppear {
             recents = model.recents.all()
-            if index == nil { rebuild() }
+            if index == nil { build() }
         }
+        .onChange(of: model.entriesRevision) { _, _ in build() }
+        .onChange(of: model.language) { _, _ in build() }
     }
 
     // MARK: Filters
 
     private var filters: some View {
-        HStack(spacing: 12) {
-            Menu {
-                Button(model.t("filter_all")) { year = nil; rerun() }
-                ForEach(Array(Set(model.ekadashis.map(\.date.year))).sorted(), id: \.self) { value in
-                    Button(String(value)) { year = value; rerun() }
-                }
-            } label: {
-                Label(year.map(String.init) ?? model.t("year"), systemImage: "calendar")
-            }
-            .accessibilityIdentifier("search_year_selector")
-            Menu {
-                ForEach(Localizer.languages, id: \.self) { code in
-                    Button(Localizer.displayName(code)) {
-                        contentLanguage = code
-                        rebuild()
-                    }
-                }
-            } label: {
-                Label(Localizer.displayName(language), systemImage: "globe")
-            }
-            .accessibilityIdentifier("search_language_selector")
-            Spacer()
-        }
-        .font(.subheadline.weight(.medium))
-        .tint(Theme.teal)
-        .padding(.horizontal, 16)
-        .padding(.vertical, 8)
-        .accessibilityElement(children: .contain)
-        .accessibilityIdentifier("search_filters_tube")
-    }
-
-    private var categories: some View {
         ScrollView(.horizontal) {
             GlassGroup(spacing: 8) {
                 HStack(spacing: 8) {
-                    ForEach(SearchContentType.allCases, id: \.self) { type in
+                    Menu {
+                        Button(model.t("search_all_years")) { year = nil; run() }
+                        ForEach(model.repository?.availableYears ?? [], id: \.self) { value in
+                            Button(String(value)) { year = value; run() }
+                        }
+                    } label: {
+                        Label(year.map(String.init) ?? model.t("year"), systemImage: "calendar")
+                            .font(.subheadline.weight(year == nil ? .regular : .semibold))
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 8)
+                    }
+                    .tint(year == nil ? .primary : Theme.teal)
+                    .glassPanel(cornerRadius: 18)
+                    .accessibilityIdentifier("search_year_selector")
+                    GlassChip(title: model.t("filter_all"), systemImage: "square.grid.2x2", selected: category == nil) {
+                        category = nil
+                        run()
+                    }
+                    ForEach(SearchCategory.filters, id: \.self) { type in
                         GlassChip(title: model.t(type.localizationKey), systemImage: type.symbol, color: Theme.hex(type.colorHex),
                                   selected: category == type) {
-                            guard category != type else { return }
-                            category = type
-                            if !active.isEmpty { run(active, save: false) }
+                            category = category == type ? nil : type
+                            run()
                         }
                     }
                 }
                 .padding(.horizontal, 16)
-                .padding(.vertical, 4)
+                .padding(.vertical, 8)
             }
         }
         .scrollIndicators(.hidden)
@@ -133,26 +105,24 @@ struct GlobalSearchView: View {
 
     @ViewBuilder
     private var content: some View {
-        if active.isEmpty {
+        if !hasInput {
             start
         } else if results.isEmpty {
             ContentUnavailableView {
-                Label("\(model.t("no_results_found")) \"\(submitted.isEmpty ? active : submitted)\"", systemImage: "magnifyingglass")
+                Label(model.t("no_results_found"), systemImage: "magnifyingglass")
             } description: {
-                Text(model.t(offline ? "no_offline_results" : "try_searching"))
+                Text(model.t("search_no_results_hint"))
             }
         } else {
-            List(results) { result in
-                NavigationLink(value: route(result)) { SearchResultRow(result: result, available: isAvailable(result)) }
-                    .swipeActions {
-                        if !isAvailable(result) {
-                            Button(model.t("download")) { download(result) }.tint(Theme.teal)
-                        }
-                    }
+            List(results) { item in
+                Button { open(item) } label: { SearchResultRow(item: item, locked: isLocked(item)) }
+                    .buttonStyle(.plain)
                     .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
+            .accessibilityIdentifier("search_results")
         }
     }
 
@@ -184,13 +154,13 @@ struct GlobalSearchView: View {
                         }
                     }
                 }
-                Text(model.t("search_start")).font(.headline)
+                Text(model.t("search_start_all")).font(.headline)
                 FlowLayout(spacing: 8) {
-                    ForEach(SearchContentType.allCases.filter { $0 != .all }, id: \.self) { type in
+                    ForEach(SearchCategory.filters, id: \.self) { type in
                         GlassChip(title: model.t(type.localizationKey), systemImage: type.symbol, color: Theme.hex(type.colorHex),
                                   selected: false) {
                             category = type
-                            submit(model.t(type.localizationKey))
+                            run()
                         }
                     }
                 }
@@ -203,31 +173,35 @@ struct GlobalSearchView: View {
 
     // MARK: Searching
 
-    private func rebuild() {
-        let built = SearchIndex(downloaded: Set(model.store.stringArray(forKey: "ec2_downloaded_content_ids") ?? []))
-        let events = model.repository?.ekadashis(timezone: model.timezone.rawValue, language: language) ?? model.ekadashis
-        built.build(ekadashis: events, language: language)
-        index = built
-        rerun()
+    /// Ekadashis, entries and screens at once; festivals follow when the
+    /// Panchang calculation for the data years is ready.
+    private func build() {
+        index = model.searchIndex()
+        run()
+        loadingObservances = true
+        Task {
+            let observances = await model.searchObservances()
+            index = model.searchIndex(observances: observances)
+            loadingObservances = false
+            run()
+        }
     }
 
     private func changed(_ value: String) {
         debounce?.cancel()
         let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else {
-            active = ""
-            submitted = ""
-            results = []
             suggestions = []
             recents = model.recents.all()
+            run()
             return
         }
         suggestions = index?.suggestions(trimmed, limit: 5) ?? []
-        // Live results after 250 ms; never saved to recent searches.
+        // Live results after 200 ms; never saved to recent searches.
         debounce = Task {
-            try? await Task.sleep(nanoseconds: 250_000_000)
+            try? await Task.sleep(nanoseconds: 200_000_000)
             guard !Task.isCancelled else { return }
-            run(trimmed, save: false)
+            run()
         }
     }
 
@@ -236,76 +210,93 @@ struct GlobalSearchView: View {
         guard !clean.isEmpty else { return }
         debounce?.cancel()
         query = clean
-        run(clean, save: true)
-    }
-
-    private func run(_ text: String, save: Bool) {
-        active = text
         suggestions = []
-        results = index?.search(text, filter: category, languageCode: language, year: year, offline: offline) ?? []
-        if save {
-            submitted = text
-            model.recents.add(text)
-            recents = model.recents.all()
+        run()
+        model.recents.add(clean)
+        recents = model.recents.all()
+    }
+
+    private func run() {
+        results = index?.search(query, category: category, year: year, today: model.today) ?? []
+    }
+
+    // MARK: Opening results
+
+    private func isLocked(_ item: SearchItem) -> Bool { item.requiresPremium && !model.premium.isPremium }
+
+    private func open(_ item: SearchItem) {
+        if isLocked(item) {
+            showPaywall = true
+            return
+        }
+        switch item.target {
+        case .ekadashi, .observance, .widgetPreview:
+            pushed = item
+        case .entry(_, let date):
+            model.open(.calendar(date))
+        case .tab(let tab):
+            model.open(.tab(tab))
+        case .paywall:
+            showPaywall = true
         }
     }
 
-    private func rerun() { if !active.isEmpty { run(active, save: false) } }
-
-    private func isAvailable(_ result: SearchResult) -> Bool { index?.isDownloaded(result.entry) ?? true }
-
-    private func download(_ result: SearchResult) {
-        model.markDownloaded(result.id)
-        index?.markDownloaded(result.id)
-        toast = ToastMessage(text: model.t("saved_offline"))
-        rerun()
-    }
-
-    private func route(_ result: SearchResult) -> SearchRoute {
-        if result.entry.contentType == .ekadashi {
-            let events = model.ekadashis
-            if let event = events.first(where: { "ekadashi_\($0.id)" == result.id || String($0.id) == result.id
-                || $0.name.lowercased() == result.title.lowercased() }) ?? events.first {
-                return .ekadashi(event)
+    @ViewBuilder
+    private func destination(_ item: SearchItem) -> some View {
+        switch item.target {
+        case .ekadashi(let uid):
+            if let event = model.ekadashis.first(where: { $0.occurrenceUid == uid }) {
+                EkadashiDetailsView(event: event)
             }
+        case .observance(_, let date):
+            PanchangView(initialDate: date, initialCity: model.panchangCity)
+                .background(AppBackground())
+                .navigationTitle(item.title)
+                .navigationBarTitleDisplayMode(.inline)
+        case .widgetPreview:
+            WidgetPreviewView()
+        default:
+            EmptyView()
         }
-        return .detail(SearchResultBox(result: result))
     }
-}
-
-enum SearchRoute: Hashable {
-    case ekadashi(EkadashiOccurrence)
-    case detail(SearchResultBox)
-}
-
-/// A search result as a navigation value, identified by its entry id.
-struct SearchResultBox: Hashable {
-    let result: SearchResult
-    static func == (a: SearchResultBox, b: SearchResultBox) -> Bool { a.result.id == b.result.id }
-    func hash(into hasher: inout Hasher) { hasher.combine(result.id) }
 }
 
 struct SearchResultRow: View {
     @Environment(AppModel.self) private var model
-    let result: SearchResult
-    let available: Bool
+    let item: SearchItem
+    let locked: Bool
+
+    /// Festivals show as festivals even when they are also, say, a Purnima.
+    private var category: SearchCategory {
+        item.categories.contains(.festival) ? .festival : item.categories.first ?? .screen
+    }
 
     var body: some View {
-        let type = result.entry.contentType
-        let color = Theme.hex(type.colorHex)
-        HStack(alignment: .top, spacing: 12) {
-            Image(systemName: type.symbol).foregroundStyle(color).frame(width: 36, height: 36)
-                .background(color.opacity(0.14), in: RoundedRectangle(cornerRadius: 10))
-            VStack(alignment: .leading, spacing: 4) {
-                HStack(spacing: 6) {
-                    StatusPill(text: model.t(type.localizationKey), color: color)
-                    if !available { StatusPill(text: model.t("online_only"), systemImage: "icloud", color: .secondary) }
+        let color = Theme.hex(category.colorHex)
+        HStack(alignment: .center, spacing: 12) {
+            Image(systemName: category.symbol)
+                .foregroundStyle(color)
+                .frame(width: 40, height: 40)
+                .background(color.opacity(0.16), in: RoundedRectangle(cornerRadius: 12))
+            VStack(alignment: .leading, spacing: 3) {
+                Text(item.title).font(.headline).lineLimit(2)
+                if locked {
+                    Label(model.t("search_premium_locked"), systemImage: "lock.fill")
+                        .font(.caption).foregroundStyle(Theme.amber)
+                } else if let date = item.date {
+                    Text(model.format(date, "EEE, d MMM yyyy")).font(.subheadline).foregroundStyle(.secondary)
                 }
-                Text(result.title).font(.headline).lineLimit(2)
-                Text(result.snippet).font(.caption).foregroundStyle(.secondary).lineLimit(3)
+                Text(model.t(category.localizationKey)).font(.caption2.weight(.semibold)).foregroundStyle(color)
             }
+            Spacer(minLength: 8)
+            Image(systemName: locked ? "lock.fill" : "chevron.right")
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(locked ? Theme.amber : Color.secondary)
         }
         .padding(12)
+        .contentShape(Rectangle())
         .glassPanel(cornerRadius: 16)
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("search_result_\(item.id)")
     }
 }

@@ -28,7 +28,7 @@ status table as each phase moves forward.
 | Phase | Scope | iOS | Android |
 | --- | --- | --- | --- |
 | 0 | Housekeeping | Done | Done (same commits) |
-| 1 | One search for the whole app | In progress | Not started |
+| 1 | One search for the whole app | Draft PR, awaiting review | Not started |
 | 2 | One app language and Sarvam translation | Not started | Not started |
 | 3 | Panchang redesign, missing festivals, regional names | Not started | Not started |
 | 4 | Calendar tab, Home, Journey tab, observance fix, scroll tests | Not started | Not started |
@@ -69,7 +69,7 @@ content-download button, and the "More" sheet.
   below typos, for queries of 3 or more letters.
 - One alias table maps every spelling, regional name and the Hindi, Tamil and
   Telugu names to one canonical observance. For example, Diwali, Deepawali and
-  दीपावली all find Deepavali; Pongal and Lohri find Makar Sankranti.
+  दीपावली all find Deepavali; Pongal and Uttarayan find Makar Sankranti.
 - The query is parsed: a year ("2027") becomes the year filter, and a type word
   ("amavasai") becomes the type filter.
 
@@ -82,6 +82,23 @@ finder stays Premium).
 
 **Tests**: a shared golden fixture (query, filters, language → expected top
 results) run by both the Swift and the Dart test suites.
+
+**iOS implementation** (`feature/unified-search`):
+- `assets/search/search_catalog.json`: observance names in four languages,
+  aliases, type words and screens (the iOS copy is checked byte for byte);
+- `test/fixtures/search/search_golden.json`: 32 golden cases;
+- `PanchangEngine.observances(on:city:)` and `observanceCalendar(year:city:)`
+  compute observances only, for the index;
+- `UnifiedSearch`, `SearchCorpus`, `SearchCatalog` and `SearchQueryParser`
+  in EkadashiCore; `GlobalSearchView` in the app.
+
+**Notes for later phases**:
+- Lohri and Bhogi (the day before Makar Sankranti), Puthandu, Vishu and
+  Baisakhi need their own regional rules (Phase 3) and are not aliases yet.
+- Holika Dahan 2026 is calculated on 2 March (Bhadra is not evaluated);
+  published calendars give 3 March. Review in Phase 3.
+- Hindi, Tamil and Telugu names and the new search strings need native
+  review (Phase 2).
 
 ## Phase 2: one app language and Sarvam translation
 

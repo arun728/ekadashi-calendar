@@ -72,6 +72,20 @@ final class ScreenshotTests: XCTestCase {
         XCTAssertTrue(app.searchFields.firstMatch.waitForExistence(timeout: 5))
         app.searchFields.firstMatch.tap()
         app.searchFields.firstMatch.typeText("Mohini\n")
+        XCTAssertTrue(result("search_result_ekadashi:").waitForExistence(timeout: 10))
         snap("09-search")
+
+        // Festivals are calculated in the background, then show locked for free users.
+        app.searchFields.firstMatch.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 6) + "Diwali")
+        XCTAssertTrue(result("search_result_observance:deepavali:").waitForExistence(timeout: 60))
+        snap("10-search-festival")
+
+        app.searchFields.firstMatch.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 6) + "amavasai")
+        XCTAssertTrue(result("search_result_observance:amavasya:").waitForExistence(timeout: 10))
+        snap("11-search-type-word")
+    }
+
+    private func result(_ prefix: String) -> XCUIElement {
+        app.descendants(matching: .any).matching(NSPredicate(format: "identifier BEGINSWITH %@", prefix)).firstMatch
     }
 }

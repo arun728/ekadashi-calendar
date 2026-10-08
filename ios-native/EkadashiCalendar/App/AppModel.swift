@@ -28,7 +28,6 @@ final class AppModel {
     @ObservationIgnored let repository: CalendarRepository?
     @ObservationIgnored let notifications = NotificationService()
     @ObservationIgnored let location = LocationService()
-    @ObservationIgnored let searchIndex: SearchIndex
     @ObservationIgnored let recents: RecentSearches
     @ObservationIgnored let entries: CalendarEntryStore
     @ObservationIgnored let google = GoogleSignInGateway()
@@ -38,6 +37,7 @@ final class AppModel {
     @ObservationIgnored private var pickerContinuation: CheckedContinuation<GoogleCalendarPickerResult, Never>?
     @ObservationIgnored private var started = false
     @ObservationIgnored private var pendingRoute: AppRoute?
+    @ObservationIgnored private var observanceCache: [String: [DatedObservance]] = [:]
 
     let premium: StoreKitPremiumService
     let vrat: VratStore
@@ -77,7 +77,6 @@ final class AppModel {
             ?? AppTimezone.matching(deviceIdentifier: TimeZone.current.identifier)
         reminderSettings = ReminderSettings.load(from: store)
         recents = RecentSearches(store: store)
-        searchIndex = SearchIndex(downloaded: Set(store.stringArray(forKey: "ec2_downloaded_content_ids") ?? []))
         let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         try? FileManager.default.createDirectory(at: support, withIntermediateDirectories: true)
         entries = (try? FileCalendarEntryStore(url: support.appendingPathComponent("calendar_entries.json")))
@@ -204,7 +203,6 @@ final class AppModel {
         } else {
             homeIndex = HomeSelection.index(of: ekadashis, now: Date(), zone: scheduleZone, includeParana: true)
         }
-        searchIndex.build(ekadashis: ekadashis, language: language)
         syncWidgets()
         Task { await scheduleReminders() }
         if let route = pendingRoute {
@@ -409,11 +407,39 @@ final class AppModel {
                              action: upsell ? { [weak self] in self?.openPaywall() } : nil)
     }
 
-    func markDownloaded(_ id: String) {
-        searchIndex.markDownloaded(id)
-        var ids = Set(store.stringArray(forKey: "ec2_downloaded_content_ids") ?? [])
-        ids.insert(id)
-        store.set(ids.sorted(), forKey: "ec2_downloaded_content_ids")
+    // MARK: Search
+
+    /// The saved Panchang location; festival dates in search follow it.
+    var panchangCity: PanchangCity { PanchangLocationStore(store: store).load() ?? .newDelhi }
+
+    /// Search over Ekadashis, entries and screens, plus [observances].
+    func searchIndex(observances: [DatedObservance] = []) -> UnifiedSearch {
+        let repository = repository
+        let zone = timezone.rawValue
+        let items = SearchCorpus.build(
+            ekadashis: { repository?.ekadashis(timezone: zone, language: $0) ?? [] }, observances: observances,
+            entries: (try? entries.all()) ?? [], timeZone: .current, language: language)
+        return UnifiedSearch(items: items)
+    }
+
+    /// Panchang observances for every data year at the Panchang location,
+    /// calculated off the main thread and kept for the session.
+    func searchObservances() async -> [DatedObservance] {
+        let city = panchangCity
+        var result: [DatedObservance] = []
+        for year in repository?.availableYears ?? [] {
+            let key = "\(city.id)|\(city.latitude)|\(city.longitude)|\(year)"
+            if let cached = observanceCache[key] {
+                result += cached
+                continue
+            }
+            let calculated = await Task.detached(priority: .userInitiated) {
+                PanchangEngine().observanceCalendar(year: year, city: city)
+            }.value
+            observanceCache[key] = calculated
+            result += calculated
+        }
+        return result
     }
 
     var calendarYears: ClosedRange<Int>? {
