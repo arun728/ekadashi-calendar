@@ -15,9 +15,6 @@
   "ios_background_refresh": "Background App Refresh",
   "ios_background_refresh_desc": "Keeps reminders and widgets up to date",
   "ios_share_message": "🙏 Ekadashi Calendar - Never miss an Ekadashi!\n\nGet reminders for fasting times, read stories & significance of each Ekadashi.\n\nDownload now: {value0}",
-  "ios_widget_small": "Next Ekadashi",
-  "ios_widget_medium": "Ekadashi Today",
-  "ios_widget_large": "Upcoming Ekadashis",
   "search_filter_ekadashi": "Ekadashi",
   "search_filter_festival": "Festivals",
   "search_filter_amavasya": "Amavasya",
@@ -142,7 +139,14 @@
   "settings_premium_cta": "See plans",
   "settings_premium_plan": "Your plan: {value0}",
   "settings_premium_manage": "Manage",
-  "settings_premium_plans": "Change plan"
+  "settings_premium_plans": "Change plan",
+  "widget_today_is_ekadashi": "Today is Ekadashi",
+  "widget_days_to_go": "{value0} days to go",
+  "widget_fast_done": "{value0}% of the fast done",
+  "widget_name_ekadashi": "Ekadashi",
+  "widget_desc_ekadashi": "Today's Ekadashi with your fast's progress, or the next Ekadashi and the days to go.",
+  "widget_desc_upcoming": "The next Ekadashis at a glance.",
+  "widget_preview_during": "Left: now · Right: during the next Ekadashi"
  },
  "ta": {
   "rate_app_desc": "ஆப் ஸ்டோரில் எங்களை மதிப்பிடவும்",
@@ -159,9 +163,6 @@
   "ios_background_refresh": "பின்னணி ஆப் புதுப்பிப்பு",
   "ios_background_refresh_desc": "நினைவூட்டல்களையும் விட்ஜெட்களையும் புதுப்பித்து வைக்கிறது",
   "ios_share_message": "🙏 ஏகாதசி நாட்காட்டி - எந்த ஏகாதசியையும் தவறவிடாதீர்கள்!\n\nவிரத நேரங்களுக்கான நினைவூட்டல்களைப் பெறுங்கள், ஒவ்வொரு ஏகாதசியின் கதைகளையும் முக்கியத்துவத்தையும் படியுங்கள்.\n\nஇப்போதே பதிவிறக்குங்கள்: {value0}",
-  "ios_widget_small": "அடுத்த ஏகாதசி",
-  "ios_widget_medium": "இன்று ஏகாதசி",
-  "ios_widget_large": "வரவிருக்கும் ஏகாதசிகள்",
   "search_filter_ekadashi": "ஏகாதசி",
   "search_filter_festival": "பண்டிகைகள்",
   "search_filter_amavasya": "அமாவாசை",
@@ -286,7 +287,14 @@
   "settings_premium_cta": "திட்டங்களைப் பார்க்கவும்",
   "settings_premium_plan": "உங்கள் திட்டம்: {value0}",
   "settings_premium_manage": "நிர்வகி",
-  "settings_premium_plans": "திட்டத்தை மாற்று"
+  "settings_premium_plans": "திட்டத்தை மாற்று",
+  "widget_today_is_ekadashi": "இன்று ஏகாதசி",
+  "widget_days_to_go": "இன்னும் {value0} நாட்கள்",
+  "widget_fast_done": "விரதம் {value0}% நிறைவு",
+  "widget_name_ekadashi": "ஏகாதசி",
+  "widget_desc_ekadashi": "இன்றைய ஏகாதசி மற்றும் விரதத்தின் முன்னேற்றம், அல்லது அடுத்த ஏகாதசி மற்றும் மீதமுள்ள நாட்கள்.",
+  "widget_desc_upcoming": "வரவிருக்கும் ஏகாதசிகள் ஒரே பார்வையில்.",
+  "widget_preview_during": "இடம்: இப்போது · வலம்: அடுத்த ஏகாதசியின் போது"
  },
  "hi": {
   "rate_app_desc": "ऐप स्टोर पर हमें रेट करें",
@@ -303,9 +311,6 @@
   "ios_background_refresh": "बैकग्राउंड ऐप रिफ्रेश",
   "ios_background_refresh_desc": "रिमाइंडर और विजेट अपडेट रखता है",
   "ios_share_message": "🙏 एकादशी कैलेंडर - कोई भी एकादशी न चूकें!\n\nव्रत के समय के लिए रिमाइंडर पाएं, हर एकादशी की कथा और महत्व पढ़ें।\n\nअभी डाउनलोड करें: {value0}",
-  "ios_widget_small": "अगली एकादशी",
-  "ios_widget_medium": "आज एकादशी",
-  "ios_widget_large": "आगामी एकादशियाँ",
   "search_filter_ekadashi": "एकादशी",
   "search_filter_festival": "त्योहार",
   "search_filter_amavasya": "अमावस्या",
@@ -430,7 +435,14 @@
   "settings_premium_cta": "प्लान देखें",
   "settings_premium_plan": "आपका प्लान: {value0}",
   "settings_premium_manage": "प्रबंधित करें",
-  "settings_premium_plans": "प्लान बदलें"
+  "settings_premium_plans": "प्लान बदलें",
+  "widget_today_is_ekadashi": "आज एकादशी है",
+  "widget_days_to_go": "{value0} दिन बाकी",
+  "widget_fast_done": "व्रत का {value0}% पूरा",
+  "widget_name_ekadashi": "एकादशी",
+  "widget_desc_ekadashi": "आज की एकादशी और व्रत की प्रगति, या अगली एकादशी और बचे हुए दिन।",
+  "widget_desc_upcoming": "आने वाली एकादशियाँ एक नज़र में।",
+  "widget_preview_during": "बाएँ: अभी · दाएँ: अगली एकादशी के दौरान"
  },
  "te": {
   "rate_app_desc": "యాప్ స్టోర్‌లో రేట్ చేయండి",
@@ -447,9 +459,6 @@
   "ios_background_refresh": "బ్యాక్‌గ్రౌండ్ యాప్ రిఫ్రెష్",
   "ios_background_refresh_desc": "రిమైండర్లు మరియు విడ్జెట్‌లను తాజాగా ఉంచుతుంది",
   "ios_share_message": "🙏 ఏకాదశి క్యాలెండర్ - ఏ ఏకాదశినీ మిస్ అవ్వకండి!\n\nఉపవాస సమయాల రిమైండర్లు పొందండి, ప్రతి ఏకాదశి కథలు మరియు ప్రాముఖ్యత చదవండి.\n\nఇప్పుడే డౌన్‌లోడ్ చేయండి: {value0}",
-  "ios_widget_small": "తదుపరి ఏకాదశి",
-  "ios_widget_medium": "ఈరోజు ఏకాదశి",
-  "ios_widget_large": "రాబోయే ఏకాదశులు",
   "search_filter_ekadashi": "ఏకాదశి",
   "search_filter_festival": "పండుగలు",
   "search_filter_amavasya": "అమావాస్య",
@@ -574,6 +583,13 @@
   "settings_premium_cta": "ప్లాన్‌లు చూడండి",
   "settings_premium_plan": "మీ ప్లాన్: {value0}",
   "settings_premium_manage": "నిర్వహించండి",
-  "settings_premium_plans": "ప్లాన్ మార్చండి"
+  "settings_premium_plans": "ప్లాన్ మార్చండి",
+  "widget_today_is_ekadashi": "ఈరోజు ఏకాదశి",
+  "widget_days_to_go": "ఇంకా {value0} రోజులు",
+  "widget_fast_done": "ఉపవాసం {value0}% పూర్తి",
+  "widget_name_ekadashi": "ఏకాదశి",
+  "widget_desc_ekadashi": "ఈరోజు ఏకాదశి, మీ ఉపవాసం పురోగతి, లేదా తదుపరి ఏకాదశి, మిగిలిన రోజులు.",
+  "widget_desc_upcoming": "రాబోయే ఏకాదశులు ఒక్క చూపులో.",
+  "widget_preview_during": "ఎడమ: ఇప్పుడు · కుడి: తదుపరి ఏకాదశి సమయంలో"
  }
 }

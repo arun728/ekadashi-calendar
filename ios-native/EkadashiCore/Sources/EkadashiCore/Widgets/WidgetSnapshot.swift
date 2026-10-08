@@ -77,7 +77,8 @@ public struct WidgetSnapshot: Codable, Equatable, Sendable {
         "view_details": "view_details", "today_title": "widget_today_title", "parana_in": "widget_parana_in",
         "parana_ends": "widget_parana_ends", "starts_in": "widget_starts_in", "notice": "widget_notice", "now": "widget_now",
         "day_unit": "widget_day_unit", "hour_unit": "widget_hour_unit", "minute_unit": "widget_minute_unit",
-        "no_ekadashi": "no_ekadashi",
+        "no_ekadashi": "no_ekadashi", "today_is_ekadashi": "widget_today_is_ekadashi", "days_to_go": "widget_days_to_go",
+        "fast_done": "widget_fast_done",
     ]
 
     public static func state(of event: EkadashiOccurrence, at now: Date) -> WidgetState {
@@ -157,4 +158,42 @@ public struct WidgetSnapshot: Codable, Equatable, Sendable {
     }
 
     public func remaining(until target: Date?, now: Date) -> String { Self.remaining(until: target, now: now, strings: strings) }
+}
+
+/// What the Ekadashi widget leads with (docs/ROADMAP.md Phase 6).
+public enum WidgetHeadline: Equatable, Sendable {
+    /// Today is an Ekadashi (fasting or Parana): the fast's progress, 0...1.
+    case today(WidgetItem, progress: Double)
+    /// The next Ekadashi and the calendar days until it.
+    case next(WidgetItem, days: Int)
+}
+
+extension WidgetItem {
+    /// How much of the fast (fasting start to Parana start) has passed.
+    public func fastProgress(at now: Date) -> Double {
+        let total = paranaStart.timeIntervalSince(fastingStart)
+        guard total > 0 else { return now >= paranaStart ? 1 : 0 }
+        return min(1, max(0, now.timeIntervalSince(fastingStart) / total))
+    }
+}
+
+extension WidgetSnapshot {
+    public func headline(at now: Date) -> WidgetHeadline? {
+        guard let item = activeItem(at: now) else { return nil }
+        switch item.state(at: now) {
+        case .fastingActive, .paranaAvailable:
+            return .today(item, progress: item.fastProgress(at: now))
+        default:
+            let today = TzDatabase.shared.location(timeZone)?.wallClock(now).date ?? CivilDate(utc: now)
+            let days = CivilDate(iso: item.date).map { today.days(until: $0) } ?? 0
+            return .next(item, days: max(0, days))
+        }
+    }
+
+    /// "Today", "Tomorrow" or "14 days to go".
+    public func daysToGo(_ days: Int) -> String {
+        if days <= 0 { return string("today", "Today") }
+        if days == 1 { return string("tomorrow", "Tomorrow") }
+        return string("days_to_go", "{value0} days to go").replacingOccurrences(of: "{value0}", with: "\(days)")
+    }
 }

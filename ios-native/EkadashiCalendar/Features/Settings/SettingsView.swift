@@ -283,7 +283,8 @@ struct SettingsPremiumCard: View {
     }
 }
 
-/// Live previews of the three widgets with tap-through (widget_preview_screen.dart).
+/// Live previews of the two widgets, now and during the next Ekadashi
+/// (widget_preview_screen.dart).
 struct WidgetPreviewView: View {
     @Environment(AppModel.self) private var model
 
@@ -291,17 +292,33 @@ struct WidgetPreviewView: View {
         let snapshot = WidgetSnapshot.build(occurrences: model.ekadashis, timezone: model.timezone.rawValue,
                                             locationName: model.locationName, language: model.language, now: Date())
         TimelineView(.periodic(from: .now, by: 60)) { context in
+            let during = snapshot.nextEkadashi.map {
+                $0.fastingStart.addingTimeInterval($0.paranaStart.timeIntervalSince($0.fastingStart) * 0.6)
+            }
             ScrollView {
                 VStack(spacing: 16) {
-                    caption("ios_widget_small")
-                    preview(width: 170, height: 170) { NextEkadashiWidgetView(snapshot: snapshot, now: context.date) }
-                        .accessibilityIdentifier("card_next_ekadashi")
-                    caption("ios_widget_medium")
-                    preview(width: 360, height: 170) { TodayEkadashiWidgetView(snapshot: snapshot, now: context.date) }
-                        .accessibilityIdentifier("card_today_ekadashi")
-                    caption("ios_widget_large")
-                    preview(width: 360, height: 380) { UpcomingEkadashiWidgetView(snapshot: snapshot, now: context.date) }
-                        .accessibilityIdentifier("card_upcoming_ekadashi")
+                    caption("widget_name_ekadashi")
+                    HStack(spacing: 16) {
+                        preview(width: 170, height: 170) { EkadashiWidgetView(snapshot: snapshot, now: context.date, family: .systemSmall) }
+                            .accessibilityIdentifier("card_next_ekadashi")
+                        if let during {
+                            preview(width: 170, height: 170) { EkadashiWidgetView(snapshot: snapshot, now: during, family: .systemSmall) }
+                                .accessibilityIdentifier("card_today_ekadashi")
+                        }
+                    }
+                    if during != nil {
+                        Text(model.t("widget_preview_during")).font(.caption).foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .trailing)
+                    }
+                    preview(width: 360, height: 170) { EkadashiWidgetView(snapshot: snapshot, now: context.date, family: .systemMedium) }
+                    caption("upcoming_ekadashis")
+                    preview(width: 360, height: 170) {
+                        UpcomingEkadashiWidgetView(snapshot: snapshot, now: context.date, family: .systemMedium)
+                    }
+                    preview(width: 360, height: 380) {
+                        UpcomingEkadashiWidgetView(snapshot: snapshot, now: context.date, family: .systemLarge)
+                    }
+                    .accessibilityIdentifier("card_upcoming_ekadashi")
                 }
                 .padding(16)
                 .frame(maxWidth: .infinity)

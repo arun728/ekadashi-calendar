@@ -123,7 +123,8 @@ final class WidgetSnapshotTests: XCTestCase {
     func testEveryLanguageProvidesAllWidgetLabels() {
         for language in Localizer.languages {
             let strings = snapshot([event(2027, 1, utc(2027, 1, 5))], utc(2027, 1, 1), language: language).strings
-            XCTAssertEqual(strings.count, 23, language)
+            XCTAssertEqual(strings.count, WidgetSnapshot.stringKeys.count, language)
+            XCTAssertEqual(strings.count, 26, language)
             XCTAssertTrue(strings.values.allSatisfy { !$0.isEmpty && !$0.hasPrefix("widget_") }, language)
             if language != "en" { XCTAssertNotEqual(strings["widget.next_ekadashi"], "Next Ekadashi") }
         }
