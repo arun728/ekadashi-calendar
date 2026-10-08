@@ -91,7 +91,9 @@ void main() {
   Future<void> year2027(WidgetTester tester) async {
     await tester.tap(find.byKey(const Key('calendar_year_selector')));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('2027').last);
+    await tester.tap(find.byKey(const Key('month_picker_year_2027')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(Key('panchang_month_${1}')));
     await tester.pumpAndSettle();
   }
 
@@ -130,10 +132,8 @@ void main() {
       );
 
   int? selectorYear(WidgetTester tester) => tester
-      .widget<DropdownButton<int>>(
-        find.byKey(const Key('calendar_year_selector')),
-      )
-      .value;
+      .state<CalendarScreenState>(find.byType(CalendarScreen))
+      .selectedYear;
 
   testWidgets(
     'The calendar runs across every data year, with the selector following',
@@ -181,7 +181,9 @@ void main() {
     expect([focused.year, focused.month, focused.day], [2027, 1, 1]);
     await tester.tap(find.byKey(const Key('calendar_year_selector')));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('2026').last);
+    await tester.tap(find.byKey(const Key('month_picker_year_2026')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(Key('panchang_month_${DateTime.now().month}')));
     await tester.pumpAndSettle();
     expect(calendarOf(tester).focusedDay.month, 10);
     expect(calendarOf(tester).focusedDay.year, 2026);

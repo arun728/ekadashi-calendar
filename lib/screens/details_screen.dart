@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../services/ekadashi_service.dart';
+import '../services/vrat_recording.dart';
 import '../services/language_service.dart';
 import '../services/vrat_tracker_service.dart';
 import '../models/vrat_tracker_models.dart';
@@ -303,25 +304,32 @@ class DetailsScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    onPressed: () async {
-                      final occurrences = EkadashiService().getEkadashis(
-                        timezone: timezone ?? 'IST',
-                        languageCode: lang.currentLocale.languageCode,
-                      );
-                      final unlocks = await RecordVratDialog.show(
-                        context,
-                        ekadashi: ekadashi,
-                        allOccurrences: occurrences,
-                        currentTimezone: timezone ?? 'IST',
-                      );
-                      if (unlocks != null &&
-                          unlocks.isNotEmpty &&
-                          context.mounted) {
-                        for (final u in unlocks) {
-                          await AchievementUnlockDialog.show(context, u);
-                        }
-                      }
-                    },
+                    onPressed:
+                        !VratRecording.isOpen(
+                          ekadashi,
+                          now: DateTime.now(),
+                          timezone: timezone ?? 'IST',
+                        )
+                        ? null
+                        : () async {
+                            final occurrences = EkadashiService().getEkadashis(
+                              timezone: timezone ?? 'IST',
+                              languageCode: lang.currentLocale.languageCode,
+                            );
+                            final unlocks = await RecordVratDialog.show(
+                              context,
+                              ekadashi: ekadashi,
+                              allOccurrences: occurrences,
+                              currentTimezone: timezone ?? 'IST',
+                            );
+                            if (unlocks != null &&
+                                unlocks.isNotEmpty &&
+                                context.mounted) {
+                              for (final u in unlocks) {
+                                await AchievementUnlockDialog.show(context, u);
+                              }
+                            }
+                          },
                   ),
                 );
               },

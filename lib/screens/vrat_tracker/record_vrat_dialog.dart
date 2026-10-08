@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../models/vrat_tracker_models.dart';
 import '../../services/ekadashi_service.dart';
+import '../../services/vrat_recording.dart';
 import '../../services/language_service.dart';
 import '../../services/vrat_tracker_service.dart';
 import '../../services/premium_service.dart';
@@ -60,17 +61,13 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
     final tracker = Provider.of<VratTrackerService>(context, listen: false);
     _existingRecord = tracker.getRecordByUid(widget.ekadashi.occurrenceUid);
 
-    final today = DateTime(
-      DateTime.now().year,
-      DateTime.now().month,
-      DateTime.now().day,
+    // A fast can be recorded once it is over: past Ekadashis, and today's
+    // once Parana begins (docs/ROADMAP.md Phase 4).
+    _isFutureEvent = !VratRecording.isOpen(
+      widget.ekadashi,
+      now: DateTime.now(),
+      timezone: widget.currentTimezone,
     );
-    final eventDate = DateTime(
-      widget.ekadashi.date.year,
-      widget.ekadashi.date.month,
-      widget.ekadashi.date.day,
-    );
-    _isFutureEvent = eventDate.isAfter(today);
 
     _status =
         _existingRecord?.status ??
@@ -96,7 +93,7 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
       final lang = Provider.of<LanguageService>(context, listen: false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(lang.translate('cannot_record_future')),
+          content: Text(lang.translate('journey_record_after_parana')),
           backgroundColor: Colors.orange.shade800,
           duration: const Duration(seconds: 2),
         ),
@@ -113,7 +110,7 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
       final lang = Provider.of<LanguageService>(context, listen: false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(lang.translate('cannot_record_future')),
+          content: Text(lang.translate('journey_record_after_parana')),
           backgroundColor: Colors.orange.shade800,
         ),
       );
@@ -322,7 +319,7 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        lang.translate('cannot_record_future'),
+                        lang.translate('journey_record_after_parana'),
                         style: const TextStyle(
                           fontSize: 12,
                           color: Colors.orange,

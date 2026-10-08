@@ -123,7 +123,9 @@ void main() {
     expect(find.byType(CalendarScreen).hitTestable(), findsOneWidget);
     await tester.tap(find.byKey(const Key('calendar_year_selector')));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('2027').last);
+    await tester.tap(find.byKey(const Key('month_picker_year_2027')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(Key('panchang_month_${1}')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('glass_tab_2')));
     await tester.pumpAndSettle();
@@ -153,20 +155,16 @@ void main() {
     await tester.pumpAndSettle();
     expect(
       tester
-          .widget<DropdownButton<int>>(
-            find.byKey(const Key('calendar_year_selector')),
-          )
-          .value,
+          .state<CalendarScreenState>(find.byType(CalendarScreen))
+          .selectedYear,
       2027,
     );
     await tester.tap(find.byKey(const Key('glass_tab_1')));
     await tester.pumpAndSettle();
     expect(
       tester
-          .widget<DropdownButton<int>>(
-            find.byKey(const Key('calendar_year_selector')),
-          )
-          .value,
+          .state<CalendarScreenState>(find.byType(CalendarScreen))
+          .selectedYear,
       [2026, 2027].contains(DateTime.now().year) ? DateTime.now().year : 2027,
     );
     final dynamic state = tester.state(find.byType(MainScreen));

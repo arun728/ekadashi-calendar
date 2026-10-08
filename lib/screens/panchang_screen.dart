@@ -495,9 +495,14 @@ class PanchangMonthPickerDialog extends StatefulWidget {
     super.key,
     required this.month,
     required this.language,
+    this.years,
   });
   final DateTime month;
   final String language;
+
+  /// The years offered as chips (the Calendar's data years); any year with
+  /// arrows when null.
+  final List<int>? years;
 
   @override
   State<PanchangMonthPickerDialog> createState() =>
@@ -510,21 +515,42 @@ class _PanchangMonthPickerDialogState extends State<PanchangMonthPickerDialog> {
   @override
   Widget build(BuildContext context) {
     final language = widget.language;
+    final years = widget.years;
     return AlertDialog(
       key: const Key('panchang_month_picker'),
-      title: Row(
-        children: [
-          IconButton(
-            onPressed: _year > 1900 ? () => setState(() => _year--) : null,
-            icon: const Icon(Icons.chevron_left),
-          ),
-          Expanded(child: Text('$_year', textAlign: TextAlign.center)),
-          IconButton(
-            onPressed: _year < 2100 ? () => setState(() => _year++) : null,
-            icon: const Icon(Icons.chevron_right),
-          ),
-        ],
-      ),
+      title: years != null
+          ? Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 8,
+              children: [
+                for (final year in years)
+                  ChoiceChip(
+                    key: Key('month_picker_year_$year'),
+                    label: Text('$year'),
+                    selected: _year == year,
+                    showCheckmark: false,
+                    selectedColor: GlassTubeColors.teal.withValues(alpha: .2),
+                    onSelected: (_) => setState(() => _year = year),
+                  ),
+              ],
+            )
+          : Row(
+              children: [
+                IconButton(
+                  onPressed: _year > 1900
+                      ? () => setState(() => _year--)
+                      : null,
+                  icon: const Icon(Icons.chevron_left),
+                ),
+                Expanded(child: Text('$_year', textAlign: TextAlign.center)),
+                IconButton(
+                  onPressed: _year < 2100
+                      ? () => setState(() => _year++)
+                      : null,
+                  icon: const Icon(Icons.chevron_right),
+                ),
+              ],
+            ),
       content: SizedBox(
         width: 320,
         child: GridView.count(

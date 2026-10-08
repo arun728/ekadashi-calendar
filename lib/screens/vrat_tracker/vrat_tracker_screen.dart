@@ -8,6 +8,7 @@ import '../../models/vrat_tracker_models.dart';
 import '../../services/achievement_evaluator.dart';
 import '../../services/ekadashi_service.dart';
 import '../../services/language_service.dart';
+import '../../services/vrat_recording.dart';
 import '../../services/vrat_statistics_service.dart';
 import '../../services/vrat_tracker_service.dart';
 import 'achievement_unlock_dialog.dart';
@@ -83,7 +84,7 @@ class _VratTrackerScreenState extends State<VratTrackerScreen>
     // 2. ACTIVE TRACKER DASHBOARD
     return Scaffold(
       appBar: AppBar(
-        title: Text(lang.translate('vrat_tracker')),
+        title: Text(lang.translate('journey_tab')),
         centerTitle: true,
         bottom: PreferredSize(
           preferredSize: Size.fromHeight(
@@ -192,6 +193,7 @@ class _VratTrackerScreenState extends State<VratTrackerScreen>
       children: [
         // Streak & Total Cards Grid
         Row(
+          key: const Key('journey_overview_streaks'),
           children: [
             Expanded(
               child: _buildMetricCard(
@@ -623,124 +625,140 @@ class _VratTrackerScreenState extends State<VratTrackerScreen>
     final accessibilityLabel =
         '${ekadashi.name}, $dateStr, $statusLabel. ${lang.translate('tap_to_record_semantics')}';
 
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () async {
-          final unlocks = await RecordVratDialog.show(
-            context,
-            ekadashi: ekadashi,
-            allOccurrences: widget.ekadashiList,
-            currentTimezone: widget.currentTimezone,
-          );
-          if (unlocks != null && unlocks.isNotEmpty && mounted) {
-            for (final u in unlocks) {
-              await AchievementUnlockDialog.show(context, u);
-            }
-          }
-        },
-        child: Semantics(
-          label: accessibilityLabel,
-          button: true,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            child: Row(
-              children: [
-                // Circular indicator on the left
-                Container(
-                  width: 38,
-                  height: 38,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: chipColor.withValues(alpha: 0.12),
-                    border: Border.all(
-                      color: chipColor.withValues(alpha: 0.35),
-                      width: 1.5,
-                    ),
-                  ),
-                  child: Icon(statusIcon, size: 18, color: chipColor),
+    final open = VratRecording.isOpen(
+      ekadashi,
+      now: DateTime.now(),
+      timezone: widget.currentTimezone,
+    );
+    return Opacity(
+      opacity: open ? 1 : .55,
+      child: Card(
+        margin: const EdgeInsets.symmetric(vertical: 6),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () async {
+            if (!open) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(lang.translate('journey_record_after_parana')),
                 ),
-                const SizedBox(width: 12),
+              );
+              return;
+            }
+            final unlocks = await RecordVratDialog.show(
+              context,
+              ekadashi: ekadashi,
+              allOccurrences: widget.ekadashiList,
+              currentTimezone: widget.currentTimezone,
+            );
+            if (unlocks != null && unlocks.isNotEmpty && mounted) {
+              for (final u in unlocks) {
+                await AchievementUnlockDialog.show(context, u);
+              }
+            }
+          },
+          child: Semantics(
+            label: accessibilityLabel,
+            button: true,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              child: Row(
+                children: [
+                  // Circular indicator on the left
+                  Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: chipColor.withValues(alpha: 0.12),
+                      border: Border.all(
+                        color: chipColor.withValues(alpha: 0.35),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Icon(statusIcon, size: 18, color: chipColor),
+                  ),
+                  const SizedBox(width: 12),
 
-                // Center: Ekadashi name & Date
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        ekadashi.name,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                  // Center: Ekadashi name & Date
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          ekadashi.name,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        dateStr,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Theme.of(
-                            context,
-                          ).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
-                        ),
-                      ),
-                      if (record?.note != null && record!.note!.isNotEmpty) ...[
                         const SizedBox(height: 4),
                         Text(
-                          '“${record.note!}”',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontStyle: FontStyle.italic,
-                            color: Colors.grey,
+                          dateStr,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Theme.of(context).textTheme.bodySmall?.color
+                                ?.withValues(alpha: 0.7),
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        ),
+                        if (record?.note != null &&
+                            record!.note!.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            '“${record.note!}”',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontStyle: FontStyle.italic,
+                              color: Colors.grey,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+
+                  // Right: Status Badge + Chevron (NO CHECKBOX)
+                  Flexible(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: chipColor.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: chipColor.withValues(alpha: 0.35),
+                            ),
+                          ),
+                          child: Text(
+                            statusLabel,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: chipColor,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Icon(
+                          Icons.chevron_right,
+                          size: 18,
+                          color: Colors.grey.shade400,
                         ),
                       ],
-                    ],
+                    ),
                   ),
-                ),
-                const SizedBox(width: 8),
-
-                // Right: Status Badge + Chevron (NO CHECKBOX)
-                Flexible(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          color: chipColor.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: chipColor.withValues(alpha: 0.35),
-                          ),
-                        ),
-                        child: Text(
-                          statusLabel,
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: chipColor,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Icon(
-                        Icons.chevron_right,
-                        size: 18,
-                        color: Colors.grey.shade400,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

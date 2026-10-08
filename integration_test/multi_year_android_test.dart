@@ -198,7 +198,9 @@ void main() {
       );
       await tester.tap(find.byKey(const Key('calendar_year_selector')));
       await frames(tester);
-      await tester.tap(find.text('2027').last);
+      await tester.tap(find.byKey(const Key('month_picker_year_2027')));
+      await frames(tester);
+      await tester.tap(find.byKey(const Key('panchang_month_1')));
       await frames(tester);
       await binding.takeScreenshot('v2_calendar_2027');
       await lang.changeLanguage('te');
@@ -269,10 +271,7 @@ void main() {
       await frames(tester, count: 10);
       await until(
         tester,
-        () => find
-            .byKey(const Key('search_results'))
-            .evaluate()
-            .isNotEmpty,
+        () => find.byKey(const Key('search_results')).evaluate().isNotEmpty,
       );
       await binding.takeScreenshot('v2_search_typo');
       await tester.enterText(find.byType(TextField), 'zzzznomatch9999');
@@ -410,7 +409,9 @@ void main() {
       google.min = null;
       await tester.tap(find.byKey(const Key('calendar_year_selector')));
       await frames(tester);
-      await tester.tap(find.text('2027').last);
+      await tester.tap(find.byKey(const Key('month_picker_year_2027')));
+      await frames(tester);
+      await tester.tap(find.byKey(const Key('panchang_month_1')));
       await frames(tester);
       // Select January 1 so deletion is visible in screenshots before/after.
       final state = tester.state<CalendarScreenState>(

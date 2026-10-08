@@ -41,10 +41,8 @@ void main() {
       expect(find.byType(CalendarScreen).hitTestable(), findsOneWidget);
       expect(
         tester
-            .widget<DropdownButton<int>>(
-              find.byKey(const Key('calendar_year_selector')),
-            )
-            .value,
+            .state<CalendarScreenState>(find.byType(CalendarScreen))
+            .selectedYear,
         2027,
       );
       // PR #12's old More tab now lives inside Panchang.

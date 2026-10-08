@@ -75,9 +75,7 @@ void main() {
     );
   });
 
-  testWidgets('Journey scrolls when dragged from the top half', (
-    tester,
-  ) async {
+  testWidgets('Journey scrolls when dragged from the top half', (tester) async {
     await open(tester, 2);
     await expectScrolls(
       tester,

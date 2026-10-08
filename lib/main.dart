@@ -25,6 +25,7 @@ import 'services/native_settings_service.dart';
 import 'services/theme_service.dart';
 import 'l10n/app_language.dart';
 import 'services/language_service.dart';
+import 'services/vrat_recording.dart';
 import 'screens/calendar_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/details_screen.dart';
@@ -986,7 +987,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       BottomNavigationBarItem(
         icon: const Icon(Icons.spa_outlined),
         activeIcon: const Icon(Icons.spa),
-        label: lang.translate('vrat'),
+        label: lang.translate('journey_tab'),
       ),
       const BottomNavigationBarItem(
         icon: Icon(Icons.auto_awesome_outlined),
@@ -1638,24 +1639,33 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                             record == null ? 'record_vrat' : 'edit_record',
                           ),
                           child: OutlinedButton(
-                            onPressed: () async {
-                              final unlocks = await RecordVratDialog.show(
-                                context,
-                                ekadashi: ekadashi,
-                                allOccurrences: _ekadashiList,
-                                currentTimezone: _currentTimezone,
-                              );
-                              if (unlocks != null &&
-                                  unlocks.isNotEmpty &&
-                                  mounted) {
-                                for (final u in unlocks) {
-                                  await AchievementUnlockDialog.show(
-                                    context,
-                                    u,
-                                  );
-                                }
-                              }
-                            },
+                            key: const Key('home_record_vrat'),
+                            // Open once the fast is over: after Parana begins.
+                            onPressed:
+                                !VratRecording.isOpen(
+                                  ekadashi,
+                                  now: DateTime.now(),
+                                  timezone: _currentTimezone,
+                                )
+                                ? null
+                                : () async {
+                                    final unlocks = await RecordVratDialog.show(
+                                      context,
+                                      ekadashi: ekadashi,
+                                      allOccurrences: _ekadashiList,
+                                      currentTimezone: _currentTimezone,
+                                    );
+                                    if (unlocks != null &&
+                                        unlocks.isNotEmpty &&
+                                        mounted) {
+                                      for (final u in unlocks) {
+                                        await AchievementUnlockDialog.show(
+                                          context,
+                                          u,
+                                        );
+                                      }
+                                    }
+                                  },
                             style: OutlinedButton.styleFrom(
                               side: BorderSide.none,
                               shape: RoundedRectangleBorder(

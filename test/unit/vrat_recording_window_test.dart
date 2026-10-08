@@ -40,11 +40,8 @@ void main() {
       DateTime(2026, 10, 22),
       parana: '2026-10-23T06:20:00+05:30',
     );
-    bool open(String now) => VratRecording.isOpen(
-      today,
-      now: DateTime.parse(now),
-      timezone: 'IST',
-    );
+    bool open(String now) =>
+        VratRecording.isOpen(today, now: DateTime.parse(now), timezone: 'IST');
     expect(open('2026-10-22T20:00:00+05:30'), isFalse, reason: 'still fasting');
     expect(open('2026-10-23T06:19:59+05:30'), isFalse);
     expect(open('2026-10-23T06:20:00+05:30'), isTrue);
@@ -76,8 +73,11 @@ void main() {
     for (final e in service.getEkadashis(timezone: 'IST', languageCode: 'en')) {
       expect(
         VratRecording.isOpen(e, now: now, timezone: 'IST'),
-        DateTime(e.date.year, e.date.month, e.date.day)
-            .isBefore(DateTime(2026, 10, 8)),
+        DateTime(
+          e.date.year,
+          e.date.month,
+          e.date.day,
+        ).isBefore(DateTime(2026, 10, 8)),
         reason: e.occurrenceUid,
       );
     }
