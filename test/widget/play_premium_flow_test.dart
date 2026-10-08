@@ -272,7 +272,7 @@ void main() {
     tester.platformDispatcher.textScaleFactorTestValue = 1.6;
     addTearDown(tester.view.reset);
     addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
-    for (final code in ['en', 'ta', 'hi', 'te']) {
+    for (final code in ['en', 'ta', 'hi', 'te', 'gu', 'bn']) {
       await lang.changeLanguage(code);
       await pumpPaywall(tester, freeUser(PremiumFixture()));
       expect(tester.takeException(), isNull, reason: code);

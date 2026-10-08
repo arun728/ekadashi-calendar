@@ -6,7 +6,7 @@ import '../support/app_harness.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  for (final locale in ['en', 'ta', 'hi', 'te']) {
+  for (final locale in ['en', 'ta', 'hi', 'te', 'gu', 'bn']) {
     testWidgets('$locale Home localizes fasting and fast-breaking dates', (
       tester,
     ) async {

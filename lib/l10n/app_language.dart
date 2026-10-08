@@ -4,7 +4,7 @@ import 'generated/app_localizations.dart';
 import 'localized_lookup.dart';
 
 /// The languages the app speaks, in menu order (the Swift `AppLanguage`).
-/// New languages (Bengali, Gujarati, ...) are appended at the end, never
+/// New languages are appended at the end, never
 /// inserted earlier, and need their strings in every ARB file (the tests
 /// check).
 class AppLanguage {
@@ -19,6 +19,8 @@ class AppLanguage {
     AppLanguage('hi', 'हिंदी'),
     AppLanguage('ta', 'தமிழ்'),
     AppLanguage('te', 'తెలుగు'),
+    AppLanguage('gu', 'ગુજરાતી'),
+    AppLanguage('bn', 'বাংলা'),
   ];
 
   static List<String> get codes => [for (final l in all) l.code];

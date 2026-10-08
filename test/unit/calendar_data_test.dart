@@ -85,7 +85,7 @@ void main() {
         }
       },
     );
-    for (final lang in ['en', 'ta', 'hi', 'te']) {
+    for (final lang in ['en', 'ta', 'hi', 'te', 'gu', 'bn']) {
       test(
         '${zone.key}/$lang uses matching translated content without changing occurrence identity',
         () {

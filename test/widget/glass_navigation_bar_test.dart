@@ -73,7 +73,7 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  for (final locale in ['en', 'ta', 'hi', 'te']) {
+  for (final locale in ['en', 'ta', 'hi', 'te', 'gu', 'bn']) {
     for (final width in [320.0, 393.0, 700.0]) {
       for (final scale in [1.0, 2.0]) {
         testWidgets('$locale glass tabs fit ${width}dp at text scale $scale', (

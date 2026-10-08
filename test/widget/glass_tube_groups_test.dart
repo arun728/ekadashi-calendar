@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:provider/provider.dart';
-import 'package:ekadashi_calendar/services/language_service.dart';
 import '../support/app_harness.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  for (final locale in ['en', 'ta', 'hi', 'te']) {
+  for (final locale in ['en', 'ta', 'hi', 'te', 'gu', 'bn']) {
     for (final variant in [
       (true, 393.0, 1.0),
       (false, 393.0, 1.0),
@@ -35,9 +33,6 @@ void main() {
           addTearDown(tester.view.resetDevicePixelRatio);
           await tester.pumpWidget(harness.app());
           await tester.pumpAndSettle();
-          final lang = tester
-              .element(find.byType(MaterialApp))
-              .read<LanguageService>();
           expect(find.byKey(const Key('home_options_tube')), findsOneWidget);
           await tester.tap(find.byKey(const Key('glass_tab_1')));
           await tester.pumpAndSettle();

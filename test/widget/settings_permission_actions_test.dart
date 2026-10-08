@@ -4,7 +4,7 @@ import 'package:ekadashi_calendar/l10n/generated/app_localizations.dart';
 import 'package:ekadashi_calendar/screens/widgets/settings_permission_actions.dart';
 
 void main() {
-  for (final code in ['en', 'ta', 'hi', 'te']) {
+  for (final code in ['en', 'ta', 'hi', 'te', 'gu', 'bn']) {
     testWidgets(
       '$code Android permission actions fit and remain accessible at 2x',
       (tester) async {

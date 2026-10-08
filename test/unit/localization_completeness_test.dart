@@ -1,19 +1,28 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:ekadashi_calendar/l10n/app_language.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   final en =
       jsonDecode(File('lib/l10n/app_en.arb').readAsStringSync())
           as Map<String, dynamic>;
-  for (final language in ['ta', 'hi', 'te']) {
-    final script = RegExp(
-      language == 'ta'
-          ? r'[\u0B80-\u0BFF]'
-          : language == 'hi'
-          ? r'[\u0900-\u097F]'
-          : r'[\u0C00-\u0C7F]',
+  // Each language's own script; a language added to AppLanguage needs one.
+  const scripts = {
+    'ta': r'[\u0B80-\u0BFF]',
+    'hi': r'[\u0900-\u097F]',
+    'te': r'[\u0C00-\u0C7F]',
+    'gu': r'[\u0A80-\u0AFF]',
+    'bn': r'[\u0980-\u09FF]',
+  };
+  test('every app language has a script check', () {
+    expect(
+      AppLanguage.codes.where((c) => c != 'en').toSet(),
+      scripts.keys.toSet(),
     );
+  });
+  for (final language in scripts.keys) {
+    final script = RegExp(scripts[language]!);
     test(
       '$language has every UI key, native script and identical placeholders',
       () {

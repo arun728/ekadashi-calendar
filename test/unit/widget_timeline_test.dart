@@ -95,7 +95,7 @@ void main() {
     final west = await payload([e], DateTime.utc(2027, 1, 4, 20), zone: 'PST');
     expect(west['today']['isEkadashi'], isFalse);
   });
-  for (final language in ['en', 'ta', 'hi', 'te']) {
+  for (final language in ['en', 'ta', 'hi', 'te', 'gu', 'bn']) {
     test(
       '$language provides every widget label without leaking raw keys',
       () async {

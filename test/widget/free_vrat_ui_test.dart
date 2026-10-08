@@ -8,7 +8,7 @@ import 'package:ekadashi_calendar/screens/vrat_tracker/vrat_tracker_screen.dart'
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  for (final code in ['en', 'ta', 'hi', 'te']) {
+  for (final code in ['en', 'ta', 'hi', 'te', 'gu', 'bn']) {
     testWidgets('$code Vrat has all free tabs and no enable/disable controls', (
       tester,
     ) async {

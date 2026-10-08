@@ -22,7 +22,7 @@ void main() {
   late SearchCatalog catalog;
   late List<DatedObservance> observances2026;
   final service = EkadashiService();
-  const others = ['hi', 'ta', 'te'];
+  const others = ['hi', 'ta', 'te', 'gu', 'bn'];
 
   setUpAll(() async {
     tzdata.initializeTimeZones();
@@ -37,8 +37,8 @@ void main() {
   });
 
   test('languages keep their order and new ones are appended', () {
-    // Never reorder: add Bengali, Gujarati, ... after Telugu.
-    expect(AppLanguage.codes.take(4), ['en', 'hi', 'ta', 'te']);
+    // Never reorder: new languages go after Bengali.
+    expect(AppLanguage.codes.take(6), ['en', 'hi', 'ta', 'te', 'gu', 'bn']);
     expect(AppLanguage.codes.toSet(), hasLength(AppLanguage.codes.length));
     for (final language in AppLanguage.all) {
       expect(language.nativeName, isNotEmpty);

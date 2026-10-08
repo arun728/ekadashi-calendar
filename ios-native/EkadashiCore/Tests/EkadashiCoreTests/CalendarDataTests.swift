@@ -185,7 +185,7 @@ final class LocalizationTests: XCTestCase {
         XCTAssertEqual(Localizer.shared.translate("in_days", language: "en", args: ["3"]), "in 3 days")
         XCTAssertEqual(Localizer.shared.translate("no_such_key", language: "en"), "no_such_key")
         XCTAssertEqual(Localizer.shared.translate("home", language: "xx"), Localizer.shared.translate("home", language: "en"))
-        XCTAssertEqual(Localizer.languages, ["en", "hi", "ta", "te"])
+        XCTAssertEqual(Localizer.languages, ["en", "hi", "ta", "te", "gu", "bn"])
         XCTAssertEqual(Localizer.displayName("te"), "తెలుగు")
     }
 

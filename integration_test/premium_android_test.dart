@@ -131,7 +131,7 @@ void main() {
       final context = tester.element(find.byType(app.MainScreen));
       final lang = context.read<LanguageService>();
       final premium = context.read<PremiumService>();
-      for (final locale in ['en', 'ta', 'hi', 'te']) {
+      for (final locale in ['en', 'ta', 'hi', 'te', 'gu', 'bn']) {
         debugPrint('Premium Android flow: fixture locale $locale');
         await lang.changeLanguage(locale);
         await tester.pump(const Duration(milliseconds: 200));

@@ -35,7 +35,7 @@ enum PanchangTermKind {
 
 /// The Panchang in the app language (docs/ROADMAP.md Phase 2), like the
 /// Swift `PanchangTerms`. The engine works in English terms; the shared
-/// table gives each term in Hindi, Tamil and Telugu. Observance names come
+/// table gives each term in every other app language. Observance names come
 /// from the search catalogue. Unknown terms stay in English.
 class PanchangTerms {
   PanchangTerms._(this._table, this._catalog);

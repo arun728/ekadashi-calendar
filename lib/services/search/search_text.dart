@@ -9,10 +9,13 @@ class SearchText {
       (v >= 0x30 && v <= 0x39) ||
       v == 0x5F ||
       (v >= 0x0900 && v <= 0x097F) ||
+      (v >= 0x0980 && v <= 0x09FF) ||
+      (v >= 0x0A80 && v <= 0x0AFF) ||
       (v >= 0x0B80 && v <= 0x0BFF) ||
       (v >= 0x0C00 && v <= 0x0C7F);
 
-  /// Lower case; Latin letters, digits and Devanagari, Tamil and Telugu
+  /// Lower case; Latin letters, digits and Devanagari, Bengali, Gujarati,
+  /// Tamil and Telugu
   /// (with their combining marks) are kept; anything else separates words.
   static String normalize(String text) {
     final out = StringBuffer();

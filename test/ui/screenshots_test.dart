@@ -28,7 +28,7 @@ void main() {
       await loader.load();
     }
   });
-  for (final locale in ['en', 'ta', 'hi', 'te']) {
+  for (final locale in ['en', 'ta', 'hi', 'te', 'gu', 'bn']) {
     testWidgets(
       '$locale Home, Calendar, Settings and Details render and navigate',
       (tester) async {

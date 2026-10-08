@@ -28,7 +28,7 @@ void main() {
       await loader.load();
     }
   });
-  for (final locale in ['en', 'ta', 'hi', 'te']) {
+  for (final locale in ['en', 'ta', 'hi', 'te', 'gu', 'bn']) {
     for (final variant in [
       (1.0, Brightness.dark),
       (2.0, Brightness.dark),

@@ -1,5 +1,5 @@
 {
- "_about": "iOS wording for strings that name Google Play, the Play Store or Android battery settings, and iOS-only keys (prefixed ios_). Everything else comes from lib/l10n/app_*.arb. Tamil, Hindi and Telugu entries need native review like translation_review.json.",
+ "_about": "iOS wording for strings that name Google Play, the Play Store or Android battery settings, and iOS-only keys (prefixed ios_). Everything else comes from lib/l10n/app_*.arb. Tamil, Hindi, Telugu, Gujarati and Bengali entries need native review like translation_review.json.",
  "en": {
   "rate_app_desc": "Rate us on the App Store",
   "app_settings_desc": "Manage permissions and background refresh",
@@ -63,5 +63,37 @@
   "ios_background_refresh": "బ్యాక్‌గ్రౌండ్ యాప్ రిఫ్రెష్",
   "ios_background_refresh_desc": "రిమైండర్లు మరియు విడ్జెట్‌లను తాజాగా ఉంచుతుంది",
   "ios_share_message": "🙏 ఏకాదశి క్యాలెండర్ - ఏ ఏకాదశినీ మిస్ అవ్వకండి!\n\nఉపవాస సమయాల రిమైండర్లు పొందండి, ప్రతి ఏకాదశి కథలు మరియు ప్రాముఖ్యత చదవండి.\n\nఇప్పుడే డౌన్‌లోడ్ చేయండి: {value0}"
+ },
+ "gu": {
+  "rate_app_desc": "App Store પર અમને રેટ કરો",
+  "app_settings_desc": "પરવાનગીઓ અને બેકગ્રાઉન્ડ રિફ્રેશ સંભાળો",
+  "perm_guide_desc": "ચોક્કસ સૂચનાઓ અને સ્થાન સુવિધાઓ માટે કૃપા કરીને મંજૂરી આપો:\n• સૂચનાઓ\n• સ્થાન\n• બેકગ્રાઉન્ડ એપ રિફ્રેશ",
+  "premium_monthly_terms": "દર મહિને પૂરી કિંમત લેવાય છે. તમારી Apple ID સેટિંગ્સમાં રદ ન કરો ત્યાં સુધી આપમેળે નવીકરણ થાય છે.",
+  "premium_yearly_terms": "દર વર્ષે પૂરી કિંમત લેવાય છે. તમારી Apple ID સેટિંગ્સમાં રદ ન કરો ત્યાં સુધી આપમેળે નવીકરણ થાય છે.",
+  "premium_manage": "App Store માં સબ્સ્ક્રિપ્શન સંભાળો",
+  "premium_restore_none": "આ Apple ID માટે કોઈ ખરીદી મળી નથી.",
+  "premium_cancel_subscription_note": "તમારું સબ્સ્ક્રિપ્શન હજી ચાલુ છે. ફરી ચાર્જ ન લાગે તે માટે તેને App Store માં રદ કરો. આજીવન તમારું જ રહેશે.",
+  "premium_cancel_subscription_action": "App Store માં સબ્સ્ક્રિપ્શન રદ કરો",
+  "premium_lifetime_confirm_body": "App Store સબ્સ્ક્રિપ્શન આપમેળે રદ કરતું નથી. આજીવન ખરીદ્યા પછી નવીકરણ રોકવા App Store માં તમારું સબ્સ્ક્રિપ્શન રદ કરો.",
+  "premium_unavailable": "હાલમાં ખરીદી ઉપલબ્ધ નથી. તમારી Apple ID તપાસીને ફરી પ્રયાસ કરો. મફત સુવિધાઓ ચાલુ રહે છે.",
+  "ios_background_refresh": "બેકગ્રાઉન્ડ એપ રિફ્રેશ",
+  "ios_background_refresh_desc": "રિમાઇન્ડર અને વિજેટ અદ્યતન રાખે છે",
+  "ios_share_message": "🙏 એકાદશી કેલેન્ડર - કોઈ એકાદશી ચૂકશો નહીં!\n\nઉપવાસના સમયના રિમાઇન્ડર મેળવો, દરેક એકાદશીની કથા અને મહત્વ વાંચો.\n\nહમણાં ડાઉનલોડ કરો: {value0}"
+ },
+ "bn": {
+  "rate_app_desc": "App Store-এ আমাদের রেট দিন",
+  "app_settings_desc": "অনুমতি ও ব্যাকগ্রাউন্ড রিফ্রেশ পরিচালনা করুন",
+  "perm_guide_desc": "সঠিক বিজ্ঞপ্তি ও অবস্থান সুবিধার জন্য অনুগ্রহ করে অনুমতি দিন:\n• বিজ্ঞপ্তি\n• অবস্থান\n• ব্যাকগ্রাউন্ড অ্যাপ রিফ্রেশ",
+  "premium_monthly_terms": "প্রতি মাসে পুরো মূল্য নেওয়া হয়। আপনার Apple ID সেটিংসে বাতিল না করা পর্যন্ত স্বয়ংক্রিয়ভাবে নবায়ন হয়।",
+  "premium_yearly_terms": "প্রতি বছর পুরো মূল্য নেওয়া হয়। আপনার Apple ID সেটিংসে বাতিল না করা পর্যন্ত স্বয়ংক্রিয়ভাবে নবায়ন হয়।",
+  "premium_manage": "App Store-এ সাবস্ক্রিপশন পরিচালনা করুন",
+  "premium_restore_none": "এই Apple ID-তে কোনো কেনাকাটা পাওয়া যায়নি।",
+  "premium_cancel_subscription_note": "আপনার সাবস্ক্রিপশন এখনও চালু আছে। আবার চার্জ এড়াতে App Store-এ এটি বাতিল করুন। আজীবন আপনারই থাকবে।",
+  "premium_cancel_subscription_action": "App Store-এ সাবস্ক্রিপশন বাতিল করুন",
+  "premium_lifetime_confirm_body": "App Store নিজে থেকে সাবস্ক্রিপশন বাতিল করে না। আজীবন কেনার পর নবায়ন থামাতে App Store-এ আপনার সাবস্ক্রিপশন বাতিল করুন।",
+  "premium_unavailable": "এখন কেনাকাটা করা যাচ্ছে না। আপনার Apple ID যাচাই করে আবার চেষ্টা করুন। বিনামূল্যের সুবিধাগুলো চালু থাকবে।",
+  "ios_background_refresh": "ব্যাকগ্রাউন্ড অ্যাপ রিফ্রেশ",
+  "ios_background_refresh_desc": "রিমাইন্ডার ও উইজেট হালনাগাদ রাখে",
+  "ios_share_message": "🙏 একাদশী ক্যালেন্ডার - কোনো একাদশী আর বাদ যাবে না!\n\nউপবাসের সময়ের রিমাইন্ডার পান, প্রতিটি একাদশীর কথা ও মাহাত্ম্য পড়ুন।\n\nএখনই ডাউনলোড করুন: {value0}"
  }
 }

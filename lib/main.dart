@@ -1416,7 +1416,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   }
 
   /// The app's only language menu (docs/ROADMAP.md Phase 2), in the
-  /// registry's order: English, Hindi, Tamil, Telugu, then new languages.
+  /// registry's order: English, Hindi, Tamil, Telugu, Gujarati, Bengali.
   Widget _buildLanguageSelector(LanguageService lang, Color tealColor) {
     final current = AppLanguage.named(lang.currentLocale.languageCode);
     return PopupMenuButton<String>(

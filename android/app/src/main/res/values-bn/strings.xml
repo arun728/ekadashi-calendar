@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">একাদশী ক্যালেন্ডার</string>
+    <string name="widget_a_title">একাদশী</string>
+    <string name="widget_b_title">আজ একাদশী</string>
+    <string name="widget_c_title">আসন্ন একাদশীগুলো</string>
+    <string name="widget_a_description">পরবর্তী একাদশী</string>
+    <string name="widget_b_description">আজ একাদশী</string>
+    <string name="widget_c_description">আসন্ন একাদশীগুলো</string>
+    <string name="widget_title">একাদশী ক্যালেন্ডার</string>
+    <string name="widget_next_ekadashi">পরবর্তী একাদশী</string>
+    <string name="widget_fasting_active">উপবাস চলছে</string>
+    <string name="widget_parana_available">পারণের সময়</string>
+    <string name="widget_parana_completed">পারণ সম্পন্ন</string>
+    <string name="widget_open_app_to_refresh">সময় হালনাগাদ করতে অ্যাপ খুলুন</string>
+    <string name="widget_fasting_starts">উপবাস শুরু</string>
+    <string name="widget_parana_window">পারণ</string>
+    <string name="widget_upcoming_ekadashis">আসন্ন একাদশীগুলো</string>
+    <string name="widget_today">আজ</string>
+    <string name="widget_today_title">আজ একাদশী</string>
+    <string name="widget_parana_in">পারণে বাকি</string>
+    <string name="widget_parana_ends">পারণ শেষ হতে বাকি</string>
+    <string name="widget_starts_in">শুরু হতে বাকি</string>
+    <string name="widget_notice">বিজ্ঞপ্তি</string>
+    <string name="widget_now">এখন</string>
+    <string name="widget_day_unit">দি</string>
+    <string name="widget_hour_unit">ঘ</string>
+    <string name="widget_minute_unit">মি</string>
+    <string name="widget_no_ekadashi">এই দিনে একাদশী নেই</string>
+    <string name="widget_paksha_krishna">কৃষ্ণ</string>
+    <string name="widget_paksha_shukla">শুক্ল</string>
+    <string name="widget_lunar_month_adhika">অধিক</string>
+    <string name="widget_lunar_month_ashadha">আষাঢ়</string>
+    <string name="widget_lunar_month_ashwin">আশ্বিন</string>
+    <string name="widget_lunar_month_bhadrapada">ভাদ্র</string>
+    <string name="widget_lunar_month_chaitra">চৈত্র</string>
+    <string name="widget_lunar_month_jyeshtha">জ্যৈষ্ঠ</string>
+    <string name="widget_lunar_month_kartik">কার্তিক</string>
+    <string name="widget_lunar_month_magha">মাঘ</string>
+    <string name="widget_lunar_month_margashirsha">অগ্রহায়ণ</string>
+    <string name="widget_lunar_month_pausha">পৌষ</string>
+    <string name="widget_lunar_month_phalguna">ফাল্গুন</string>
+    <string name="widget_lunar_month_shravana">শ্রাবণ</string>
+    <string name="widget_lunar_month_vaishakha">বৈশাখ</string>
+</resources>

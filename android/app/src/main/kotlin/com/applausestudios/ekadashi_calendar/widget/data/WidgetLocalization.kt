@@ -4,7 +4,7 @@ import android.content.res.Configuration
 import com.applausestudios.ekadashi_calendar.R
 import java.util.Locale
 object WidgetLocalization {
- fun locale(context:Context):String = context.getSharedPreferences("FlutterSharedPreferences",Context.MODE_PRIVATE).getString("flutter.language_code",null)?.takeIf { it in listOf("en","ta","hi","te") } ?: "en"
+ fun locale(context:Context):String = context.getSharedPreferences("FlutterSharedPreferences",Context.MODE_PRIVATE).getString("flutter.language_code",null)?.takeIf { it in listOf("en","hi","ta","te","gu","bn") } ?: "en"
  fun strings(context:Context,code:String=locale(context)):Map<String,String> {
   val config=Configuration(context.resources.configuration);config.setLocale(Locale.forLanguageTag(code))
   val localized=context.createConfigurationContext(config)

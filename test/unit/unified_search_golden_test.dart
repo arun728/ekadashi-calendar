@@ -182,7 +182,7 @@ void main() {
     expect(SearchText.tokenDistance('ekadsahi', 'ekadashi'), 1);
     expect(SearchText.tokenDistance('abc', 'abd'), isNull);
     expect(SearchText.isSubsequence('ekdsh', 'ekadashi'), isTrue);
-    expect(AppLanguage.codes, ['en', 'hi', 'ta', 'te']);
+    expect(AppLanguage.codes, ['en', 'hi', 'ta', 'te', 'gu', 'bn']);
   });
 
   test(

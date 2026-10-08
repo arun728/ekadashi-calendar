@@ -240,7 +240,7 @@ void main() {
       await frames(tester);
       await binding.takeScreenshot('v2_home_telugu');
       expect(tester.takeException(), isNull);
-      for (final code in ['en', 'ta', 'hi', 'te']) {
+      for (final code in ['en', 'ta', 'hi', 'te', 'gu', 'bn']) {
         await lang.changeLanguage(code);
         await frames(tester, count: 10);
         final events = EkadashiService().getEkadashis(
