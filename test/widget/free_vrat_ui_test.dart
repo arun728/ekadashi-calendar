@@ -37,9 +37,13 @@ void main() {
         find.text(language.translate('disable_vrat_tracker')),
         findsNothing,
       );
+      // Journey's sections are glass chips, as in Panchang.
       for (final key in ['overview', 'history', 'statistics', 'achievements']) {
         expect(
-          find.widgetWithText(Tab, language.translate(key)),
+          find.descendant(
+            of: find.byKey(Key('journey_tab_$key')),
+            matching: find.text(language.translate(key)),
+          ),
           findsOneWidget,
         );
       }
