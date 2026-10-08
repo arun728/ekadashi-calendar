@@ -602,6 +602,7 @@ class CalendarScreenState extends State<CalendarScreen> {
     const tealColor = Color(0xFF00A19B);
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       body: CustomScrollView(
         slivers: [
           if (_repoError)

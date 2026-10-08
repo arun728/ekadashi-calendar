@@ -5,6 +5,7 @@ import 'widgets/glass_tube.dart';
 import 'package:flutter/foundation.dart';
 import 'widgets/glass_navigation_bar.dart';
 import 'data/calendar_entry_repository.dart';
+import 'widgets/app_background.dart';
 import 'data/sqflite_calendar_entry_repository.dart';
 import 'models/calendar_entry.dart';
 import 'services/notifications/event_reminder_service.dart';
@@ -1046,37 +1047,43 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         label: lang.translate('settings'),
       ),
     ];
-    return Scaffold(
-      extendBody: glass,
-      appBar: AppBar(
-        title: Text(lang.translate('app_title')),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            key: const Key('open_global_search'),
-            tooltip: lang.translate('search'),
-            icon: const Icon(Icons.search),
-            onPressed: _openSearch,
-          ),
-          const SizedBox(width: 4),
-        ],
-      ),
-      body: _buildBody(lang, tealColor),
-      bottomNavigationBar: glass
-          ? (keyboardOpen
-                ? null
-                : GlassNavigationBar(
-                    items: items,
-                    currentIndex: _currentIndex,
-                    onTap: _onBottomNavTapped,
-                  ))
-          : BottomNavigationBar(
-              type: BottomNavigationBarType.fixed,
-              currentIndex: _currentIndex,
-              onTap: _onBottomNavTapped,
-              selectedItemColor: tealColor,
-              items: items,
+    // The iOS gradient behind every tab (docs/ROADMAP.md Phase 8).
+    return AppBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        extendBody: glass,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          surfaceTintColor: Colors.transparent,
+          title: Text(lang.translate('app_title')),
+          centerTitle: true,
+          actions: [
+            IconButton(
+              key: const Key('open_global_search'),
+              tooltip: lang.translate('search'),
+              icon: const Icon(Icons.search),
+              onPressed: _openSearch,
             ),
+            const SizedBox(width: 4),
+          ],
+        ),
+        body: _buildBody(lang, tealColor),
+        bottomNavigationBar: glass
+            ? (keyboardOpen
+                  ? null
+                  : GlassNavigationBar(
+                      items: items,
+                      currentIndex: _currentIndex,
+                      onTap: _onBottomNavTapped,
+                    ))
+            : BottomNavigationBar(
+                type: BottomNavigationBarType.fixed,
+                currentIndex: _currentIndex,
+                onTap: _onBottomNavTapped,
+                selectedItemColor: tealColor,
+                items: items,
+              ),
+      ),
     );
   }
 

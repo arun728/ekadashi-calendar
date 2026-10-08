@@ -83,7 +83,10 @@ class _VratTrackerScreenState extends State<VratTrackerScreen>
 
     // 2. ACTIVE TRACKER DASHBOARD
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
         title: Text(lang.translate('journey_tab')),
         centerTitle: true,
         bottom: PreferredSize(
