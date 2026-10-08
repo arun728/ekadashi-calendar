@@ -79,7 +79,6 @@ struct SettingsView: View {
                 Text(model.t("notifications_section_ekadashi"))
             }
             .tint(Theme.teal)
-            .accessibilityIdentifier("settings_notifications_ekadashi")
 
             Section {
                 EventReminderRows(enabled: togglesEnabled)
@@ -88,7 +87,6 @@ struct SettingsView: View {
             } footer: {
                 Text(model.t(model.premium.isPremium ? "notifications_events_desc" : "notifications_premium_events"))
             }
-            .accessibilityIdentifier("settings_notifications_events")
 
             Section(model.t("permissions")) {
                 Button { openSettings() } label: {
