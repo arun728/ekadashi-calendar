@@ -119,7 +119,10 @@ void main() {
         .controller!
         .text;
     expect(text(), 'settings');
-    expect(find.byKey(const Key('search_result_screen:settings')), findsOneWidget);
+    expect(
+      find.byKey(const Key('search_result_screen:settings')),
+      findsOneWidget,
+    );
     await tester.tap(find.byKey(const Key('global_search_back')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('search_return')), findsNothing);

@@ -96,7 +96,12 @@ void main() {
           await tester.tap(find.byKey(const Key('glass_tab_2')));
           await tester.pumpAndSettle();
           expect(find.byKey(const Key('vrat_tabs_tube')), findsOneWidget);
-          await tester.tap(find.text(lang.translate('history')));
+          // Journey's chips scroll sideways on narrow screens, as Panchang's.
+          await tester.ensureVisible(
+            find.byKey(const Key('journey_tab_history')),
+          );
+          await tester.pumpAndSettle();
+          await tester.tap(find.byKey(const Key('journey_tab_history')));
           await tester.pumpAndSettle();
           expect(
             find.byKey(const Key('vrat_history_filters_tube')),

@@ -13,6 +13,7 @@ import '../services/panchang/panchang_models.dart';
 import '../services/panchang/panchang_terms.dart';
 import '../services/premium_service.dart';
 import '../widgets/glass_tube.dart';
+import '../widgets/section_pager.dart';
 import 'panchang_location_dialog.dart';
 import 'panchang_pages.dart';
 
@@ -39,6 +40,7 @@ enum PanchangPage {
 /// Free: published Ekadashis in Key days, the day's tithi, sun and moon
 /// times, the day's festival names and the calculated Ekadashi list.
 /// Premium: the other Key days, the five limbs, timings, Muhurta and Rashi.
+/// The sections change with their chips or a horizontal swipe.
 class PanchangScreen extends StatefulWidget {
   const PanchangScreen({
     super.key,
@@ -68,7 +70,12 @@ class PanchangScreenState extends State<PanchangScreen> {
   PanchangPage _page = PanchangPage.keyDays;
   EkadashiTradition _tradition = EkadashiTradition.smarta;
   final _locationStore = PanchangLocationStore();
-  final _scrollController = ScrollController();
+  late final PageController _pages;
+
+  /// Each page keeps its own scroll position while it is shown.
+  final _scrollControllers = {
+    for (final page in PanchangPage.values) page: ScrollController(),
+  };
   bool _locationChanged = false;
 
   @override
@@ -79,6 +86,7 @@ class PanchangScreenState extends State<PanchangScreen> {
     _date = DateTime.utc(start.year, start.month, start.day);
     _month = DateTime.utc(_date.year, _date.month);
     if (widget.initialDate != null) _page = PanchangPage.daily;
+    _pages = PageController(initialPage: _page.index);
     _recalculate();
     PanchangTerms.load().then((terms) {
       if (mounted) setState(() => _terms = terms);
@@ -88,7 +96,10 @@ class PanchangScreenState extends State<PanchangScreen> {
 
   @override
   void dispose() {
-    _scrollController.dispose();
+    _pages.dispose();
+    for (final controller in _scrollControllers.values) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
@@ -97,10 +108,17 @@ class PanchangScreenState extends State<PanchangScreen> {
     setState(() {
       _date = DateTime.utc(date.year, date.month, date.day);
       _month = DateTime.utc(_date.year, _date.month);
-      _page = PanchangPage.daily;
       _recalculate();
     });
-    _scrollToTop();
+    _showPage(PanchangPage.daily);
+    final daily = _scrollControllers[PanchangPage.daily]!;
+    if (daily.hasClients) daily.jumpTo(0);
+  }
+
+  /// A chip, a Key day or a deep link chose [page].
+  void _showPage(PanchangPage page) {
+    setState(() => _page = page);
+    showSectionPage(_pages, page.index);
   }
 
   void _recalculate() => _day = widget.engine.calculate(_date, city: _city);
@@ -110,13 +128,9 @@ class PanchangScreenState extends State<PanchangScreen> {
     return DateTime.utc(now.year, now.month, now.day);
   }
 
-  bool get _isToday => _page.isMonthly
+  bool _isToday(PanchangPage page) => page.isMonthly
       ? _month == DateTime.utc(_today().year, _today().month)
       : _date == _today();
-
-  void _scrollToTop() {
-    if (_scrollController.hasClients) _scrollController.jumpTo(0);
-  }
 
   Future<void> _restoreLocation() async {
     final city = await _locationStore.load();
@@ -169,8 +183,8 @@ class PanchangScreenState extends State<PanchangScreen> {
     _recalculate();
   });
 
-  void _step(int offset) => setState(() {
-    if (_page.isMonthly) {
+  void _step(PanchangPage page, int offset) => setState(() {
+    if (page.isMonthly) {
       _month = DateTime.utc(_month.year, _month.month + offset);
     } else {
       _date = _date.add(Duration(days: offset));
@@ -178,9 +192,9 @@ class PanchangScreenState extends State<PanchangScreen> {
     }
   });
 
-  Future<void> _pick() async {
+  Future<void> _pick(PanchangPage page) async {
     final language = _language;
-    if (_page.isMonthly) {
+    if (page.isMonthly) {
       final month = await showDialog<DateTime>(
         context: context,
         builder: (_) =>
@@ -225,21 +239,33 @@ class PanchangScreenState extends State<PanchangScreen> {
         children: [
           _sectionBar(t),
           Expanded(
-            child: CustomScrollView(
-              controller: _scrollController,
-              key: const Key('panchang_scroll_view'),
-              slivers: [
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
-                  sliver: SliverList.list(
-                    children: [
-                      _controls(t, language),
-                      const SizedBox(height: 16),
-                      _content(premium),
+            child: PageView.builder(
+              controller: _pages,
+              itemCount: PanchangPage.values.length,
+              onPageChanged: (index) =>
+                  setState(() => _page = PanchangPage.values[index]),
+              itemBuilder: (_, index) {
+                final page = PanchangPage.values[index];
+                return KeyedSubtree(
+                  key: ValueKey(page),
+                  child: CustomScrollView(
+                    controller: _scrollControllers[page],
+                    key: const Key('panchang_scroll_view'),
+                    slivers: [
+                      SliverPadding(
+                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
+                        sliver: SliverList.list(
+                          children: [
+                            _controls(t, language, page),
+                            const SizedBox(height: 16),
+                            _content(premium, page),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
-                ),
-              ],
+                );
+              },
             ),
           ),
         ],
@@ -247,38 +273,22 @@ class PanchangScreenState extends State<PanchangScreen> {
     );
   }
 
-  Widget _sectionBar(String Function(String) t) => Padding(
-    padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
-    child: GlassTube(
-      key: const Key('panchang_sections_tube'),
-      optionCount: PanchangPage.values.length,
-      padding: const EdgeInsets.all(3),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            for (final page in PanchangPage.values)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 2),
-                child: GlassFilterChip(
-                  key: Key('panchang_tab_${page.raw}'),
-                  label: Text(t(page.titleKey)),
-                  selected: _page == page,
-                  showCheckmark: false,
-                  onSelected: (_) {
-                    setState(() => _page = page);
-                    _scrollToTop();
-                  },
-                ),
-              ),
-          ],
-        ),
-      ),
-    ),
+  Widget _sectionBar(String Function(String) t) => SectionChipBar(
+    key: const Key('panchang_sections_tube'),
+    labels: [for (final page in PanchangPage.values) t(page.titleKey)],
+    chipKeys: [
+      for (final page in PanchangPage.values) Key('panchang_tab_${page.raw}'),
+    ],
+    selected: _page.index,
+    onSelected: (index) => _showPage(PanchangPage.values[index]),
   );
 
   /// The location and notes, then the month or day being shown and Today.
-  Widget _controls(String Function(String) t, String language) => Column(
+  Widget _controls(
+    String Function(String) t,
+    String language,
+    PanchangPage page,
+  ) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Row(
@@ -311,11 +321,11 @@ class PanchangScreenState extends State<PanchangScreen> {
       const SizedBox(height: 8),
       Row(
         children: [
-          Expanded(child: _stepper(t, language)),
+          Expanded(child: _stepper(t, language, page)),
           const SizedBox(width: 6),
           TextButton(
             key: const Key('panchang_today'),
-            onPressed: _isToday ? null : _goToToday,
+            onPressed: _isToday(page) ? null : _goToToday,
             child: Text(t('today')),
           ),
         ],
@@ -392,8 +402,12 @@ class PanchangScreenState extends State<PanchangScreen> {
     );
   }
 
-  Widget _stepper(String Function(String) t, String language) {
-    final monthly = _page.isMonthly;
+  Widget _stepper(
+    String Function(String) t,
+    String language,
+    PanchangPage page,
+  ) {
+    final monthly = page.isMonthly;
     final title = monthly
         ? PanchangFormat.monthTitle(_month, language)
         : PanchangFormat.date(_date, language);
@@ -410,14 +424,14 @@ class PanchangScreenState extends State<PanchangScreen> {
             ),
             tooltip: t('panchang_previous'),
             icon: const Icon(Icons.chevron_left, color: GlassTubeColors.teal),
-            onPressed: () => _step(-1),
+            onPressed: () => _step(page, -1),
           ),
           Expanded(
             child: TextButton(
               key: Key(
                 monthly ? 'panchang_selected_month' : 'panchang_selected_date',
               ),
-              onPressed: _pick,
+              onPressed: () => _pick(page),
               style: TextButton.styleFrom(
                 foregroundColor: GlassTubeColors.foreground(context),
                 padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -445,14 +459,14 @@ class PanchangScreenState extends State<PanchangScreen> {
             key: Key(monthly ? 'panchang_next_month' : 'panchang_next_day'),
             tooltip: t('panchang_next'),
             icon: const Icon(Icons.chevron_right, color: GlassTubeColors.teal),
-            onPressed: () => _step(1),
+            onPressed: () => _step(page, 1),
           ),
         ],
       ),
     );
   }
 
-  Widget _content(bool premium) {
+  Widget _content(bool premium, PanchangPage page) {
     final terms = _terms;
     if (terms == null) {
       return const Padding(
@@ -462,7 +476,7 @@ class PanchangScreenState extends State<PanchangScreen> {
         ),
       );
     }
-    switch (_page) {
+    switch (page) {
       case PanchangPage.keyDays:
         return PanchangKeyDaysView(
           month: _month,

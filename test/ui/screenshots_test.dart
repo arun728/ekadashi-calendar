@@ -102,7 +102,11 @@ void main() {
         await tester.tap(find.byKey(const Key('glass_tab_2')));
         await tester.pumpAndSettle();
         await capture('vrat');
-        await tester.tap(find.text(language.translate('history')));
+        await tester.ensureVisible(
+          find.byKey(const Key('journey_tab_history')),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const Key('journey_tab_history')));
         await tester.pumpAndSettle();
         await capture('vrat_history');
         await tester.tap(find.byType(Card).first);

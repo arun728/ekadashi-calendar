@@ -55,6 +55,14 @@ void main() {
   bool selected(WidgetTester tester, String key) =>
       tester.widget<GlassFilterChip>(find.byKey(Key(key))).selected;
 
+  /// Chips past the screen edge are scrolled into view first, as by hand.
+  Future<void> tapChip(WidgetTester tester, String key) async {
+    await tester.ensureVisible(find.byKey(Key(key)));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(Key(key)));
+    await tester.pumpAndSettle();
+  }
+
   Future<void> swipe(WidgetTester tester, {required bool left}) async {
     await tester.fling(
       find.byType(PageView),
@@ -103,8 +111,7 @@ void main() {
     expect(selected(tester, 'panchang_tab_keydays'), isTrue);
 
     // A chip still jumps straight to its section.
-    await tester.tap(find.byKey(const Key('panchang_tab_rashi')));
-    await tester.pumpAndSettle();
+    await tapChip(tester, 'panchang_tab_rashi');
     expect(selected(tester, 'panchang_tab_rashi'), isTrue);
     expect(find.byKey(const Key('panchang_unlock_button')), findsOneWidget);
     expect(tester.takeException(), isNull);
@@ -147,8 +154,7 @@ void main() {
     expect(find.byKey(const Key('vrat_history_filters_tube')), findsOneWidget);
     await swipe(tester, left: true);
     expect(selected(tester, 'journey_tab_statistics'), isTrue);
-    await tester.tap(find.byKey(const Key('journey_tab_achievements')));
-    await tester.pumpAndSettle();
+    await tapChip(tester, 'journey_tab_achievements');
     expect(selected(tester, 'journey_tab_achievements'), isTrue);
     expect(find.text('First Vrat'), findsOneWidget);
     await swipe(tester, left: false);
@@ -199,11 +205,9 @@ void main() {
     expect(selected(tester, 'search_filter_all'), isTrue);
 
     // The selected type's chip goes back to All.
-    await tester.tap(find.byKey(const Key('search_filter_festival')));
-    await tester.pumpAndSettle();
+    await tapChip(tester, 'search_filter_festival');
     expect(selected(tester, 'search_filter_festival'), isTrue);
-    await tester.tap(find.byKey(const Key('search_filter_festival')));
-    await tester.pumpAndSettle();
+    await tapChip(tester, 'search_filter_festival');
     expect(selected(tester, 'search_filter_all'), isTrue);
     expect(tester.takeException(), isNull);
   });

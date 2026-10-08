@@ -62,10 +62,15 @@ void main() {
     await binding.takeScreenshot('free_vrat_initial');
     await binding.takeScreenshot('pr4_tracker_overview');
     for (final tab in ['history', 'statistics', 'achievements']) {
+      // A narrow screen scrolls the chip row to the later sections.
+      await tester.ensureVisible(find.byKey(Key('journey_tab_$tab')));
+      await pumpUi(tester);
       await tester.tap(find.byKey(Key('journey_tab_$tab')));
       await pumpUi(tester);
       await binding.takeScreenshot('pr4_tracker_$tab');
     }
+    await tester.ensureVisible(find.byKey(const Key('journey_tab_history')));
+    await pumpUi(tester);
     await tester.tap(find.byKey(const Key('journey_tab_history')));
     await pumpUi(tester);
     final occurrences = tester.widget<VratTrackerScreen>(screen).ekadashiList;

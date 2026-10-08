@@ -5,6 +5,8 @@ import 'dart:io';
 import 'package:sqflite/sqflite.dart' show getDatabasesPath;
 import 'package:table_calendar/table_calendar.dart';
 import 'package:ekadashi_calendar/screens/global_search_screen.dart';
+import 'package:ekadashi_calendar/screens/panchang_screen.dart';
+import 'package:ekadashi_calendar/widgets/glass_tube.dart';
 import 'package:ekadashi_calendar/services/widget_sync_manager.dart';
 import 'package:ekadashi_calendar/services/native_widget_service.dart';
 import 'dart:convert';
@@ -124,6 +126,20 @@ void main() {
             .isNotEmpty,
       );
       await binding.takeScreenshot('v2_panchang_free');
+      // The sections also change with a horizontal swipe (Phase 9).
+      bool chipSelected(String key) =>
+          tester.widget<GlassFilterChip>(find.byKey(Key(key))).selected;
+      final panchangPages = find.descendant(
+        of: find.byType(PanchangScreen),
+        matching: find.byType(PageView),
+      );
+      await tester.fling(panchangPages, const Offset(-400, 0), 1500);
+      await frames(tester);
+      await until(tester, () => chipSelected('panchang_tab_muhurta'));
+      await binding.takeScreenshot('v2_panchang_swiped');
+      await tester.fling(panchangPages, const Offset(400, 0), 1500);
+      await frames(tester);
+      await until(tester, () => chipSelected('panchang_tab_daily'));
       await tester.tap(find.byKey(const Key('panchang_city_selector')));
       await frames(tester);
       await tester.tap(find.byKey(const Key('panchang_edit_location')));
@@ -183,7 +199,9 @@ void main() {
       await tester.tap(find.byKey(const Key('glass_tab_2')));
       await frames(tester);
       await binding.takeScreenshot('v2_tracker_retained');
-      await tester.tap(find.text('History'));
+      await tester.ensureVisible(find.byKey(const Key('journey_tab_history')));
+      await frames(tester);
+      await tester.tap(find.byKey(const Key('journey_tab_history')));
       await frames(tester);
       await binding.takeScreenshot('v2_history_2026');
       await tester.tap(find.byIcon(Icons.calendar_month));
@@ -302,6 +320,33 @@ void main() {
         'zzzznomatch9999',
       );
       debugPrint("Android Search typo and no-match UI verified");
+      // A result that opens a tab shows a top-bar back to the same search
+      // (Phase 9).
+      await tester.enterText(find.byType(TextField), 'settings');
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.testTextInput.receiveAction(TextInputAction.search);
+      await frames(tester);
+      final settingsResult = find.byKey(
+        const Key('search_result_screen:settings'),
+      );
+      await until(tester, () => settingsResult.evaluate().isNotEmpty);
+      await tester.tap(settingsResult);
+      await frames(tester);
+      final searchReturn = find.byKey(const Key('search_return'));
+      await until(tester, () => searchReturn.evaluate().isNotEmpty);
+      await binding.takeScreenshot('v2_search_return');
+      await tester.tap(searchReturn);
+      await frames(tester);
+      await until(
+        tester,
+        () => find.byType(GlobalSearchScreen).evaluate().isNotEmpty,
+      );
+      expect(
+        tester.widget<TextField>(find.byType(TextField)).controller!.text,
+        'settings',
+      );
+      expect(settingsResult, findsOneWidget);
+      debugPrint("Android Search return verified");
       // Real Android SQLite + app screens, deterministic fake Google account.
       // OAuth consent and a real Google deletion remain an account/device check.
       final fixtureLang = LanguageService();

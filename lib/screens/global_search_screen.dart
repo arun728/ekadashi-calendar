@@ -16,8 +16,10 @@ import '../services/premium_service.dart';
 import '../services/recent_search_repository.dart';
 import '../services/search/search_catalog.dart';
 import '../services/search/search_corpus.dart';
+import '../services/search/search_return.dart';
 import '../services/search/unified_search.dart';
 import '../widgets/glass_tube.dart';
+import '../widgets/section_pager.dart';
 import 'details_screen.dart';
 import 'panchang_screen.dart';
 import 'premium_screen.dart';
@@ -43,6 +45,7 @@ IconData searchCategoryIcon(SearchCategory category) => switch (category) {
 /// Panchang festivals and observances (Premium), custom and Google
 /// calendar entries, and app screens. The year filter comes first, then
 /// the type chips. Only an explicit submission is saved to recent searches.
+/// The type pages (All, then each type) also change with a horizontal swipe.
 class GlobalSearchScreen extends StatefulWidget {
   const GlobalSearchScreen({
     super.key,
@@ -52,6 +55,7 @@ class GlobalSearchScreen extends StatefulWidget {
     this.availableYears = const [],
     this.onOpenTab,
     this.onOpenCalendar,
+    this.initialSession,
   });
 
   /// The schedule in the app language (Ekadashi details open from it).
@@ -64,11 +68,15 @@ class GlobalSearchScreen extends StatefulWidget {
   /// The data years, for the year filter and festival dates.
   final List<int> availableYears;
 
-  /// Called after the search closes: switch to bottom tab [index].
-  final ValueChanged<int>? onOpenTab;
+  /// Called after the search closes: switch to bottom tab [tab]. The
+  /// session is what the search showed, so that tab can come back to it.
+  final void Function(int tab, SearchSession session)? onOpenTab;
 
   /// Called after the search closes: show [day] in the Calendar tab.
-  final ValueChanged<DateTime>? onOpenCalendar;
+  final void Function(DateTime day, SearchSession session)? onOpenCalendar;
+
+  /// Reopens the search a result left (the text, type page and year).
+  final SearchSession? initialSession;
 
   @override
   State<GlobalSearchScreen> createState() => _GlobalSearchScreenState();
@@ -80,7 +88,13 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
   final _recentRepo = RecentSearchRepository();
   SearchCatalog? _catalog;
   UnifiedSearch? _index;
-  List<SearchItem> _results = const [];
+
+  /// The text the results show (live typing settles after 200 ms).
+  String _searched = '';
+
+  /// Each page's results, worked out when the page is shown.
+  final Map<SearchCategory?, List<SearchItem>> _pageResults = {};
+  late final PageController _pages;
   List<String> _suggestions = const [];
   List<String> _recents = const [];
   SearchCategory? _category;
@@ -90,12 +104,25 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
   String _language = '';
   int _build = 0;
 
-  bool get _hasInput =>
-      _controller.text.trim().isNotEmpty || _category != null || _year != null;
+  bool _hasInput(SearchCategory? page) =>
+      _searched.trim().isNotEmpty || page != null || _year != null;
+
+  SearchSession get _session =>
+      SearchSession(query: _searched, category: _category, year: _year);
 
   @override
   void initState() {
     super.initState();
+    final session = widget.initialSession;
+    if (session != null) {
+      _controller.text = session.query;
+      _searched = session.query;
+      _category = session.category;
+      _year = session.year;
+    }
+    _pages = PageController(
+      initialPage: SearchCategory.pages.indexOf(_category),
+    );
     _recentRepo.getRecentSearches().then((list) {
       if (mounted) setState(() => _recents = list);
     });
@@ -119,6 +146,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
     _debounce?.cancel();
     _controller.dispose();
     _focus.dispose();
+    _pages.dispose();
     super.dispose();
   }
 
@@ -165,18 +193,32 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
     _run();
   }
 
+  /// Shows the typed text; each page's results are worked out when shown.
   void _run() {
-    final now = DateTime.now();
     setState(() {
-      _results =
-          _index?.search(
-            _controller.text,
-            category: _category,
-            year: _year,
-            today: DateTime.utc(now.year, now.month, now.day),
-          ) ??
-          const [];
+      _searched = _controller.text;
+      _pageResults.clear();
     });
+  }
+
+  List<SearchItem> _results(SearchCategory? page) {
+    final index = _index;
+    if (index == null) return const [];
+    return _pageResults.putIfAbsent(page, () {
+      final now = DateTime.now();
+      return index.search(
+        _searched,
+        category: page,
+        year: _year,
+        today: DateTime.utc(now.year, now.month, now.day),
+      );
+    });
+  }
+
+  /// A chip or an explore suggestion chose the [page] of results.
+  void _showCategory(SearchCategory? page) {
+    setState(() => _category = page);
+    showSectionPage(_pages, SearchCategory.pages.indexOf(page));
   }
 
   void _changed(String value) {
@@ -245,11 +287,13 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
           ),
         );
       case SearchTargetKind.entry:
+        final session = _session;
         Navigator.of(context).pop();
-        widget.onOpenCalendar?.call(target.date!);
+        widget.onOpenCalendar?.call(target.date!, session);
       case SearchTargetKind.tab:
+        final session = _session;
         Navigator.of(context).pop();
-        widget.onOpenTab?.call(target.tab!);
+        widget.onOpenTab?.call(target.tab!, session);
       case SearchTargetKind.paywall:
         await openPremium(context, currentTimezone: widget.currentTimezone);
       case SearchTargetKind.widgetPreview:
@@ -318,7 +362,18 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
         children: [
           _filters(lang),
           if (_suggestions.isNotEmpty && _focus.hasFocus) _suggestionList(),
-          Expanded(child: _content(lang)),
+          Expanded(
+            child: PageView.builder(
+              controller: _pages,
+              itemCount: SearchCategory.pages.length,
+              onPageChanged: (index) =>
+                  setState(() => _category = SearchCategory.pages[index]),
+              itemBuilder: (_, index) => KeyedSubtree(
+                key: ValueKey('search_page_$index'),
+                child: _content(lang, SearchCategory.pages[index]),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -398,16 +453,17 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
     final color = type == null ? GlassTubeColors.teal : Color(type.color);
     return Padding(
       padding: const EdgeInsets.only(right: 4),
-      child: GlassFilterChip(
-        key: Key('search_filter_${type?.raw ?? 'all'}'),
-        avatar: Icon(icon, size: 16, color: color),
-        label: Text(label),
+      child: SelectedChipAnchor(
         selected: selected,
-        showCheckmark: false,
-        onSelected: (_) {
-          setState(() => _category = type == null || selected ? null : type);
-          _run();
-        },
+        child: GlassFilterChip(
+          key: Key('search_filter_${type?.raw ?? 'all'}'),
+          avatar: Icon(icon, size: 16, color: color),
+          label: Text(label),
+          selected: selected,
+          showCheckmark: false,
+          // The selected type's chip goes back to All.
+          onSelected: (_) => _showCategory(selected ? null : type),
+        ),
       ),
     );
   }
@@ -427,9 +483,10 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
     ),
   );
 
-  Widget _content(LanguageService lang) {
-    if (!_hasInput) return _start(lang);
-    if (_results.isEmpty) {
+  Widget _content(LanguageService lang, SearchCategory? page) {
+    if (!_hasInput(page)) return _start(lang);
+    final results = _results(page);
+    if (results.isEmpty) {
       return Center(
         key: const Key('search_no_results'),
         child: Padding(
@@ -458,9 +515,9 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
     return ListView.separated(
       key: const Key('search_results'),
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-      itemCount: _results.length,
+      itemCount: results.length,
       separatorBuilder: (_, _) => const SizedBox(height: 8),
-      itemBuilder: (_, i) => _row(_results[i], lang),
+      itemBuilder: (_, i) => _row(results[i], lang),
     );
   }
 
@@ -525,10 +582,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
               ),
               label: Text(lang.translate(type.localizationKey)),
               shape: const StadiumBorder(),
-              onPressed: () {
-                setState(() => _category = type);
-                _run();
-              },
+              onPressed: () => _showCategory(type),
             ),
         ],
       ),

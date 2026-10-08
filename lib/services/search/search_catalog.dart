@@ -30,6 +30,9 @@ enum SearchCategory {
   static List<SearchCategory> get filters =>
       values.where((c) => c != screen).toList();
 
+  /// The search pages, in chip order: All (null), then each type.
+  static List<SearchCategory?> get pages => [null, ...filters];
+
   String get localizationKey => 'search_filter_$raw';
 
   static SearchCategory? parse(String raw) {

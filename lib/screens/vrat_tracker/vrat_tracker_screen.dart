@@ -1,6 +1,7 @@
 import '../premium_screen.dart';
 import '../../services/premium_service.dart';
 import '../../widgets/glass_tube.dart';
+import '../../widgets/section_pager.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -30,18 +31,20 @@ class VratTrackerScreen extends StatefulWidget {
   State<VratTrackerScreen> createState() => _VratTrackerScreenState();
 }
 
-class _VratTrackerScreenState extends State<VratTrackerScreen>
-    with SingleTickerProviderStateMixin {
+/// Journey's sections; each name is also its label key.
+enum _JourneySection { overview, history, statistics, achievements }
+
+class _VratTrackerScreenState extends State<VratTrackerScreen> {
   static const Color tealColor = Color(0xFF00A19B);
 
-  late TabController _tabController;
+  final _pages = PageController();
+  var _section = _JourneySection.overview;
   int _selectedYear = DateTime.now().year;
   ObservanceStatus? _historyStatusFilter;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
 
     // Initialize tracker service with occurrences if not already done
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -54,7 +57,7 @@ class _VratTrackerScreenState extends State<VratTrackerScreen>
 
   @override
   void dispose() {
-    _tabController.dispose();
+    _pages.dispose();
     super.dispose();
   }
 
@@ -81,86 +84,47 @@ class _VratTrackerScreenState extends State<VratTrackerScreen>
       );
     }
 
-    // 2. ACTIVE TRACKER DASHBOARD
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        surfaceTintColor: Colors.transparent,
-        title: Text(lang.translate('journey_tab')),
-        centerTitle: true,
-        bottom: PreferredSize(
-          preferredSize: Size.fromHeight(
-            60 + MediaQuery.textScalerOf(context).scale(12),
+    // 2. ACTIVE TRACKER DASHBOARD: the sections are glass chips, as in
+    // Panchang, and also change with a horizontal swipe.
+    const sections = _JourneySection.values;
+    // Chips need a Material; the shell's Scaffold is not always above.
+    return Material(
+      type: MaterialType.transparency,
+      child: Column(
+        children: [
+          SectionChipBar(
+            key: const Key('vrat_tabs_tube'),
+            labels: [for (final s in sections) lang.translate(s.name)],
+            chipKeys: [for (final s in sections) Key('journey_tab_${s.name}')],
+            selected: _section.index,
+            onSelected: (index) {
+              setState(() => _section = sections[index]);
+              showSectionPage(_pages, index);
+            },
           ),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
-            child: GlassTube(
-              key: const Key('vrat_tabs_tube'),
-              optionCount: 4,
-              child: TabBar(
-                controller: _tabController,
-                indicator: BoxDecoration(
-                  color: GlassTubeColors.optionSelection(context),
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                indicatorSize: TabBarIndicatorSize.tab,
-                indicatorPadding: const EdgeInsets.all(3),
-                dividerColor: Colors.transparent,
-                labelPadding: const EdgeInsets.symmetric(horizontal: 2),
-                labelStyle: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
-                labelColor: tealColor,
-                unselectedLabelColor: GlassTubeColors.foreground(context),
-                isScrollable: false,
-                tabs: [
-                  Tab(
-                    child: Text(
-                      lang.translate('overview'),
-                      maxLines: 2,
-                      textAlign: TextAlign.center,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+          Expanded(
+            child: PageView.builder(
+              controller: _pages,
+              itemCount: sections.length,
+              onPageChanged: (index) =>
+                  setState(() => _section = sections[index]),
+              itemBuilder: (_, index) => KeyedSubtree(
+                key: ValueKey(sections[index]),
+                child: switch (sections[index]) {
+                  _JourneySection.overview => _buildOverviewTab(lang, tracker),
+                  _JourneySection.history => _buildHistoryTab(lang, tracker),
+                  _JourneySection.statistics => _buildStatisticsTab(
+                    lang,
+                    tracker,
                   ),
-                  Tab(
-                    child: Text(
-                      lang.translate('history'),
-                      maxLines: 2,
-                      textAlign: TextAlign.center,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                  _JourneySection.achievements => _buildAchievementsTab(
+                    lang,
+                    tracker,
                   ),
-                  Tab(
-                    child: Text(
-                      lang.translate('statistics'),
-                      maxLines: 2,
-                      textAlign: TextAlign.center,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  Tab(
-                    child: Text(
-                      lang.translate('achievements'),
-                      maxLines: 2,
-                      textAlign: TextAlign.center,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
+                },
               ),
             ),
           ),
-        ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildOverviewTab(lang, tracker),
-          _buildHistoryTab(lang, tracker),
-          _buildStatisticsTab(lang, tracker),
-          _buildAchievementsTab(lang, tracker),
         ],
       ),
     );

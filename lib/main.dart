@@ -14,6 +14,7 @@ import 'services/panchang/panchang_location_store.dart';
 import 'services/native_widget_service.dart';
 import 'services/widget_sync_manager.dart';
 import 'screens/global_search_screen.dart';
+import 'services/search/search_return.dart';
 import 'screens/panchang_screen.dart';
 import 'l10n/generated/app_localizations.dart';
 import 'dart:async';
@@ -172,6 +173,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   bool _isResuming = false;
   bool _isPermanentDenial = false;
   bool _searchOpen = false;
+
+  /// The way back to a search whose result opened a tab or calendar day.
+  final _searchReturn = SearchReturn();
 
   /// Re-checks Google Play while the app stays open, so an ended
   /// subscription is noticed without leaving the app.
@@ -825,6 +829,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       'settings': 4,
     }[uri.host];
     if (tab == null) return;
+    // A deep link is not a search result.
+    _searchReturn.clear();
     if (_searchOpen && Navigator.of(context).canPop()) {
       Navigator.of(context).pop();
     }
@@ -839,8 +845,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     });
   }
 
-  Future<void> _openSearch() async {
+  /// Opens the search; [restore] reopens the one a result left.
+  Future<void> _openSearch({SearchSession? restore}) async {
     if (!mounted || _searchOpen) return;
+    if (restore == null) setState(_searchReturn.clear);
     _searchOpen = true;
     try {
       await Navigator.of(context).push<void>(
@@ -853,13 +861,20 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             ),
             currentTimezone: _currentTimezone,
             availableYears: _ekadashiService.availableYears,
-            onOpenTab: (tab) {
+            initialSession: restore,
+            onOpenTab: (tab, session) {
               if (!mounted) return;
-              setState(() => _currentIndex = tab);
+              setState(() {
+                _currentIndex = tab;
+                _searchReturn.opened(tab, session);
+              });
             },
-            onOpenCalendar: (day) {
+            onOpenCalendar: (day, session) {
               if (!mounted) return;
-              setState(() => _currentIndex = 1);
+              setState(() {
+                _currentIndex = 1;
+                _searchReturn.opened(1, session);
+              });
               WidgetsBinding.instance.addPostFrameCallback(
                 (_) => _calendarKey.currentState?.selectDate(day),
               );
@@ -886,8 +901,17 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     if (pending != null && mounted) handleDeepLink(pending);
   }
 
+  /// Back from a screen a search result opened: the same search again.
+  void _returnToSearch() {
+    final session = _searchReturn.goBack();
+    setState(() {});
+    if (session != null) _openSearch(restore: session);
+  }
+
   /// Handle bottom navigation taps
   void _onBottomNavTapped(int index) {
+    // Another tab forgets the way back to a search.
+    _searchReturn.selected(index);
     if (index == _currentIndex) {
       // Already on this tab - special actions
       if (index == 0) {
@@ -1047,42 +1071,59 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         label: lang.translate('settings'),
       ),
     ];
+    // A search result opened this tab: the top bar's back arrow and the
+    // system back reopen its results (docs/ROADMAP.md Phase 9).
+    final searchBack = _searchReturn.showsBack(_currentIndex);
     // The iOS gradient behind every tab (docs/ROADMAP.md Phase 8).
-    return AppBackground(
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        extendBody: glass,
-        appBar: AppBar(
+    return PopScope(
+      canPop: !searchBack,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && searchBack) _returnToSearch();
+      },
+      child: AppBackground(
+        child: Scaffold(
           backgroundColor: Colors.transparent,
-          surfaceTintColor: Colors.transparent,
-          title: Text(lang.translate('app_title')),
-          centerTitle: true,
-          actions: [
-            IconButton(
-              key: const Key('open_global_search'),
-              tooltip: lang.translate('search'),
-              icon: const Icon(Icons.search),
-              onPressed: _openSearch,
-            ),
-            const SizedBox(width: 4),
-          ],
-        ),
-        body: _buildBody(lang, tealColor),
-        bottomNavigationBar: glass
-            ? (keyboardOpen
-                  ? null
-                  : GlassNavigationBar(
-                      items: items,
-                      currentIndex: _currentIndex,
-                      onTap: _onBottomNavTapped,
-                    ))
-            : BottomNavigationBar(
-                type: BottomNavigationBarType.fixed,
-                currentIndex: _currentIndex,
-                onTap: _onBottomNavTapped,
-                selectedItemColor: tealColor,
-                items: items,
+          extendBody: glass,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            surfaceTintColor: Colors.transparent,
+            leading: searchBack
+                ? IconButton(
+                    key: const Key('search_return'),
+                    tooltip: lang.translate('search'),
+                    icon: const BackButtonIcon(),
+                    onPressed: _returnToSearch,
+                  )
+                : null,
+            title: Text(lang.translate('app_title')),
+            centerTitle: true,
+            actions: [
+              IconButton(
+                key: const Key('open_global_search'),
+                tooltip: lang.translate('search'),
+                icon: const Icon(Icons.search),
+                onPressed: _openSearch,
               ),
+              const SizedBox(width: 4),
+            ],
+          ),
+          body: _buildBody(lang, tealColor),
+          bottomNavigationBar: glass
+              ? (keyboardOpen
+                    ? null
+                    : GlassNavigationBar(
+                        items: items,
+                        currentIndex: _currentIndex,
+                        onTap: _onBottomNavTapped,
+                      ))
+              : BottomNavigationBar(
+                  type: BottomNavigationBarType.fixed,
+                  currentIndex: _currentIndex,
+                  onTap: _onBottomNavTapped,
+                  selectedItemColor: tealColor,
+                  items: items,
+                ),
+        ),
       ),
     );
   }
