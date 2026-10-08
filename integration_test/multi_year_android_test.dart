@@ -247,7 +247,7 @@ void main() {
         await tester.tap(find.byIcon(Icons.spa_outlined));
         await frames(tester);
         await binding.takeScreenshot('v2_vrat_$code');
-        expect(find.text(lang.translate('vrat')), findsWidgets);
+        expect(find.text(lang.translate('journey_tab')), findsWidgets);
         await tester.tap(find.byIcon(Icons.search));
         await frames(tester);
         expect(find.byType(GlobalSearchScreen).hitTestable(), findsOneWidget);
