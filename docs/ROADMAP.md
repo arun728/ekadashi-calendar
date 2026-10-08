@@ -28,14 +28,14 @@ status table as each phase moves forward.
 | Phase | Scope | iOS | Android |
 | --- | --- | --- | --- |
 | 0 | Housekeeping | Done | Done (same commits) |
-| 1 | One search for the whole app | Done (PR #17) | Not started |
-| 2 | One app language and Sarvam translation | Done; Sarvam run needs an API key | Not started |
-| 3 | Panchang redesign, missing festivals, regional names | Done | Not started |
-| 4 | Calendar tab, Home, Journey tab, observance fix, scroll tests | Done | Not started |
-| 5 | Settings and Premium card | Done | Not started |
-| 6 | Widgets (two widgets) | Done | Not started |
-| 7 | Notifications revamp | Done | Not started |
-| 8 | Android look and feel parity | n/a | Not started |
+| 1 | One search for the whole app | Done (PR #17) | Done (`feature/android-v2`) |
+| 2 | One app language and Sarvam translation | Done; Sarvam run needs an API key | Done (`feature/android-v2`) |
+| 3 | Panchang redesign, missing festivals, regional names | Done | Done (`feature/android-v2`) |
+| 4 | Calendar tab, Home, Journey tab, observance fix, scroll tests | Done | Done (`feature/android-v2`) |
+| 5 | Settings and Premium card | Done | Done (`feature/android-v2`) |
+| 6 | Widgets (two widgets) | Done | Done (`feature/android-v2`) |
+| 7 | Notifications revamp | Done | Done (`feature/android-v2`) |
+| 8 | Android look and feel parity | n/a | Done (`feature/android-v2`) |
 
 ## Phase 0: housekeeping
 
@@ -200,6 +200,32 @@ results) run by both the Swift and the Dart test suites.
 - Core: `EventReminderSettings`, `EventReminderPlanner`,
   `EventReminderChoice` and `PendingNotification` in `EkadashiCore`
   (`EventReminderTests`, `PendingNotificationTests`).
+
+### Android implementation notes (Phases 1–8)
+
+Built on `feature/android-v2` (from `feature/unified-search`) with the same
+behaviour as iOS; shared data stays shared (`assets/search/search_catalog.json`
+and the search golden cases, `lib/l10n/` strings, the Panchang engine rules).
+
+- Phase 6: the Ekadashi widget is the original "Next Ekadashi" provider
+  (`NextEkadashiWidgetReceiver`), so placed widgets become it. It leads with
+  "Today is Ekadashi" and a progress bar through the fast (Parana in / Parana
+  ends), or the next Ekadashi and the days to go; wide placements add the
+  timings. Upcoming is a list that starts with the next Ekadashi. The retired
+  "Ekadashi Today" provider is hidden from the picker
+  (`widgetFeatures="hide_from_picker"`, Android 12+) and renders the Ekadashi
+  widget. Tests: `WidgetRedesignTest`, `WidgetBehaviorTest`,
+  `widget_preview_test`.
+- Phase 7: `EventReminderPlanner` and friends are ported to Dart
+  (`lib/services/notifications/event_reminders.dart`, same JSON under
+  `event_reminders`, same results as `EventReminderTests`). Native
+  `scheduleEventReminders` replaces all WorkManager jobs tagged
+  `event_reminder` (the Ekadashi jobs are untouched); a tap opens the
+  reminder's `ekadashi://panchang?date=` or `ekadashi://calendar?date=` link.
+  Up to 64 event reminders are kept scheduled.
+- Phase 8: `AppBackground` (`lib/widgets/app_background.dart`) mirrors the
+  iOS one and is painted once behind the app bar and the five tabs, whose
+  pages are transparent (`app_background_test`).
 
 ## Phase 8: Android look and feel parity
 

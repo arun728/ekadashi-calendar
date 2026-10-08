@@ -193,3 +193,7 @@ current. These rules supersede earlier ones where they conflict:
 - Languages are ordered English, Hindi, Tamil, Telugu; new languages are
   appended at the end.
 - Search no longer covers katha, mantra, food or vrat-info content.
+- On 8 October 2026 Arun asked for every phase to be built for Android on a
+  new branch from `feature/unified-search` (`feature/android-v2`), with CI run
+  on its PR to `dev` and the PR marked ready for review once every check
+  passes. Do not merge it without his approval.
