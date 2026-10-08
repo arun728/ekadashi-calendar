@@ -34,21 +34,22 @@ class WidgetBehaviorTest {
   provider.onUpdate(context,manager,intArrayOf(id));return host.getViewFor(id)
  }
  @Test fun allThreeProvidersUseTranslatedHeadingsAndNames() {
-  val strings=mapOf("widget.next_ekadashi" to "తదుపరి ఏకాదశి","widget.today_title" to "నేటి ఏకాదశి","widget.fasting_starts" to "ఉపవాస ప్రారంభం","widget.parana_window" to "పారణ సమయం","widget.starts_in" to "ప్రారంభానికి మిగిలిన సమయం")
-  val p=payload(event(2027001,86400),strings)
-  val small=render(NextEkadashiWidgetReceiver(),R.layout.widget_small,p)
-  assertEquals(strings["widget.next_ekadashi"],small.findViewById<TextView>(R.id.widget_small_badge).text.toString())
-  assertEquals("వైకుంఠ ఏకాదశి",small.findViewById<TextView>(R.id.widget_small_name).text.toString())
-  val medium=render(EkadashiTodayWidgetReceiver(),R.layout.widget_medium,p)
-  assertEquals(strings["widget.fasting_starts"],medium.findViewById<TextView>(R.id.widget_medium_fasting_label).text.toString())
+  val strings=mapOf("widget.next_ekadashi" to "తదుపరి ఏకాదశి","widget.upcoming_ekadashis" to "రాబోయే ఏకాదశులు","widget.tomorrow" to "రేపు","widget.days_to_go" to "ఇంకా {value0} రోజులు")
+  val p=payload(event(2027001,3*86400L),strings)
+  // The retired Today provider renders the Ekadashi widget (docs/ROADMAP.md Phase 6).
+  for(provider in listOf(NextEkadashiWidgetReceiver(),EkadashiTodayWidgetReceiver())) {
+   val small=render(provider,R.layout.widget_small,p)
+   assertEquals(strings["widget.next_ekadashi"],small.findViewById<TextView>(R.id.widget_small_badge).text.toString())
+   assertEquals("వైకుంఠ ఏకాదశి",small.findViewById<TextView>(R.id.widget_small_name).text.toString())
+   assertTrue(small.findViewById<TextView>(R.id.widget_small_countdown_value).text.toString().startsWith("ఇంకా"))
+  }
   val large=render(UpcomingEkadashisWidgetReceiver(),R.layout.widget_large,p)
-  assertEquals(strings["widget.next_ekadashi"],large.findViewById<TextView>(R.id.widget_large_hero_title).text.toString())
-  assertEquals(strings["widget.parana_window"],large.findViewById<TextView>(R.id.widget_large_parana_label).text.toString())
+  assertEquals(strings["widget.upcoming_ekadashis"],large.findViewById<TextView>(R.id.widget_large_upcoming_header).text.toString())
  }
  @Test fun allThreeProvidersShowSafeTranslatedEmptyState() {
   val p=payload(null,mapOf("widget.notice" to "సూచన","widget.title" to "ఏకాదశి క్యాలెండర్","widget.open_app_to_refresh" to "యాప్ తెరవండి"))
-  val modes=listOf(Triple(NextEkadashiWidgetReceiver(),R.layout.widget_small,R.id.widget_small_name),Triple(EkadashiTodayWidgetReceiver(),R.layout.widget_medium,R.id.widget_medium_name),Triple(UpcomingEkadashisWidgetReceiver(),R.layout.widget_large,R.id.widget_large_hero_name))
-  modes.forEach { (provider,layout,name) -> assertEquals("ఏకాదశి క్యాలెండర్",render(provider,layout,p).findViewById<TextView>(name).text.toString()) }
+  val modes=listOf(Triple(NextEkadashiWidgetReceiver(),R.layout.widget_small,R.id.widget_small_name),Triple(EkadashiTodayWidgetReceiver(),R.layout.widget_small,R.id.widget_small_name),Triple(UpcomingEkadashisWidgetReceiver(),R.layout.widget_large,R.id.widget_large_empty))
+  modes.forEach { (provider,layout,name) -> assertEquals(if(name==R.id.widget_large_empty)"యాప్ తెరవండి" else "ఏకాదశి క్యాలెండర్",render(provider,layout,p).findViewById<TextView>(name).text.toString()) }
  }
  @Test fun transitionBoundariesAreExclusiveAtParanaEnd() {
   val e=event(1,-100)
