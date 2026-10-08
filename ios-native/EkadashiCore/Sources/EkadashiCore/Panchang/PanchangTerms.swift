@@ -9,6 +9,8 @@ public final class PanchangTerms: @unchecked Sendable {
         case tithi, paksha, nakshatra, yoga, karana, month, vara, rashi, ritu, ayana, period, choghadiya, hora, anandadi
         case specialYoga = "special_yoga"
         case observance
+        case ekadashiName = "ekadashi_name"
+        case ekadashiRule = "ekadashi_rule"
     }
 
     public static let shared: PanchangTerms = {
@@ -71,6 +73,27 @@ public final class PanchangTerms: @unchecked Sendable {
         if let entry = catalog.observance(engineId: observance.id, name: observance.name) { return entry.name(language) }
         return translate(observance.name, .observance, language: language)
     }
+
+    /// A calculated fast's rule or Parana reason; "Jaya: nakshatra end, ..."
+    /// is translated through its "{rule}: ..." template.
+    public func ekadashiNote(_ text: String, language: String) -> String {
+        // Reasons are built from a base plus suffixes; translate each part.
+        for suffix in Self.noteSuffixes where text.hasSuffix(suffix) && text != suffix {
+            let base = String(text.dropLast(suffix.count))
+            return ekadashiNote(base, language: language) + translate(suffix, .ekadashiRule, language: language)
+        }
+        let direct = translate(text, .ekadashiRule, language: language)
+        if direct != text || language == "en" { return direct }
+        guard let colon = text.range(of: ": ") else { return text }
+        let rule = String(text[..<colon.lowerBound])
+        let template = "{rule}: " + text[colon.upperBound...]
+        let translated = translate(template, .ekadashiRule, language: language)
+        guard translated != template else { return text }
+        return translated.replacingOccurrences(of: "{rule}", with: translate(rule, .ekadashiRule, language: language))
+    }
+
+    static let noteSuffixes = [". No bounded window; shown as after-only.", ". No bounded morning window; shown as after-only.",
+                               ", before Dwadashi ends"]
 
     /// A period name (Rahu Kalam ...), choghadiya, hora planet or lagna rashi.
     public func period(_ name: String, language: String) -> String {
