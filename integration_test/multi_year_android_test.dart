@@ -249,6 +249,8 @@ void main() {
         await tester.tap(find.byIcon(Icons.settings));
         await frames(tester);
         await binding.takeScreenshot('glass_settings_dark_$code');
+        await tester.ensureVisible(find.byType(SwitchListTile).first);
+        await frames(tester);
         await tester.tap(find.byType(SwitchListTile).first);
         await frames(tester);
         await binding.takeScreenshot('glass_settings_light_$code');

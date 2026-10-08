@@ -1,4 +1,4 @@
-import 'premium_screen.dart';
+import 'widgets/settings_premium_card.dart';
 import 'widgets/settings_permission_actions.dart';
 import '../widgets/glass_tube.dart';
 import 'widget_preview_screen.dart';
@@ -248,6 +248,14 @@ class _SettingsScreenState extends State<SettingsScreen>
     _rescheduleNotifications();
   }
 
+  /// Section headers in the secondary text colour; teal is kept for icons
+  /// and switches (docs/ROADMAP.md Phase 5).
+  TextStyle _sectionStyle(BuildContext context) => TextStyle(
+    color: Theme.of(context).textTheme.bodySmall?.color,
+    fontWeight: FontWeight.w700,
+    letterSpacing: .4,
+  );
+
   // ============================================================
   // BUILD UI
   // ============================================================
@@ -275,15 +283,8 @@ class _SettingsScreenState extends State<SettingsScreen>
         16 + MediaQuery.paddingOf(context).bottom,
       ),
       children: [
-        Card(
-          child: ListTile(
-            leading: const Icon(Icons.workspace_premium, color: tealColor),
-            title: Text(lang.translate('premium_title')),
-            subtitle: Text(lang.translate('premium_free_achievements')),
-            onTap: () =>
-                openPremium(context, currentTimezone: widget.currentTimezone),
-          ),
-        ),
+        SettingsPremiumCard(currentTimezone: widget.currentTimezone),
+        const SizedBox(height: 16),
         GlassTube(
           key: const Key('settings_appearance_tube'),
           optionCount: 2,
@@ -332,10 +333,7 @@ class _SettingsScreenState extends State<SettingsScreen>
         const Divider(),
 
         // ==================== NOTIFICATIONS ====================
-        Text(
-          lang.translate('notifications'),
-          style: const TextStyle(color: tealColor, fontWeight: FontWeight.bold),
-        ),
+        Text(lang.translate('notifications'), style: _sectionStyle(context)),
 
         GlassTube(
           key: const Key('settings_notifications_tube'),
@@ -513,10 +511,7 @@ class _SettingsScreenState extends State<SettingsScreen>
         const Divider(height: 32),
 
         // ==================== ABOUT ====================
-        Text(
-          lang.translate('about'),
-          style: const TextStyle(color: tealColor, fontWeight: FontWeight.bold),
-        ),
+        Text(lang.translate('about'), style: _sectionStyle(context)),
         GlassTube(
           key: const Key('settings_about_tube'),
           optionCount: 2,
