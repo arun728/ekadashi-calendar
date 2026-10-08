@@ -6,7 +6,6 @@ import 'package:ekadashi_calendar/screens/global_search_screen.dart';
 import 'package:ekadashi_calendar/screens/calendar_screen.dart';
 import 'package:ekadashi_calendar/screens/panchang_screen.dart';
 import 'package:ekadashi_calendar/screens/vrat_tracker/vrat_tracker_screen.dart';
-import 'package:ekadashi_calendar/services/search_index_manager.dart';
 import '../support/app_harness.dart';
 
 void main() {
@@ -36,7 +35,6 @@ void main() {
       await tester.enterText(find.byType(TextField), 'zzzznomatch9999');
       await tester.pump(const Duration(milliseconds: 400));
       await tester.pumpAndSettle();
-      expect(SearchIndexManager().search('zzzznomatch9999'), isEmpty);
       expect(find.textContaining('No results found'), findsOneWidget);
       state.handleDeepLink(Uri.parse('ekadashi://calendar?date=2027-01-07'));
       await tester.pumpAndSettle();

@@ -75,9 +75,9 @@ void main() {
           await tester.enterText(find.byType(TextField), 'nirjla');
           await tester.pump(const Duration(milliseconds: 450));
           await tester.pumpAndSettle();
-          expect(find.byKey(const Key('search_submit_tube')), findsOneWidget);
+          expect(find.byKey(const Key('search_results')), findsOneWidget);
           expect(
-            tester.getSize(find.byKey(const Key('search_submit_tube'))).height,
+            tester.getSize(find.byKey(const Key('search_filters_tube'))).height,
             greaterThanOrEqualTo(48),
           );
           await tester.binding.handlePopRoute();

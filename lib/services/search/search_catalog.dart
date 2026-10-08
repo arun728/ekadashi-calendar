@@ -135,8 +135,16 @@ class SearchCatalog {
   static SearchCatalog get bundled =>
       _bundled ?? (throw StateError('SearchCatalog.load() has not run'));
 
-  static Future<SearchCatalog> load() async =>
-      _bundled ??= SearchCatalog.parse(await rootBundle.loadString(asset));
+  /// Decoded here rather than with `loadString`, which hands large assets to
+  /// another isolate (that never finishes under widget tests' fake async).
+  static Future<SearchCatalog> load() async {
+    final data = await rootBundle.load(asset);
+    return _bundled ??= SearchCatalog.parse(
+      utf8.decode(
+        data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes),
+      ),
+    );
+  }
 
   final List<CatalogObservance> observances;
   final List<CatalogScreen> screens;

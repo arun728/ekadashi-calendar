@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:ekadashi_calendar/services/search_index_manager.dart';
 import 'package:ekadashi_calendar/services/widget_sync_manager.dart';
 import 'package:ekadashi_calendar/services/ekadashi_service.dart';
 import 'package:ekadashi_calendar/services/language_service.dart';
@@ -13,12 +12,6 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   tz.initializeTimeZones();
   setUp(() => SharedPreferences.setMockInitialValues({}));
-  test('Unmatched query must return zero results', () async {
-    final s = SearchIndexManager();
-    await s.buildIndexFromEkadashis([]);
-    final results = s.search('zzzzreviewnomatch9999');
-    expect(results, isEmpty);
-  });
   test(
     'Canonical upcoming payload must contain all nonoptional Swift Codable fields',
     () async {

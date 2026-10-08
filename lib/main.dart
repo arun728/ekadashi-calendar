@@ -7,7 +7,6 @@ import 'widgets/glass_navigation_bar.dart';
 import 'data/calendar_entry_repository.dart';
 import 'services/native_widget_service.dart';
 import 'services/widget_sync_manager.dart';
-import 'services/search_index_manager.dart';
 import 'screens/global_search_screen.dart';
 import 'screens/panchang_screen.dart';
 import 'l10n/generated/app_localizations.dart';
@@ -835,7 +834,23 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         MaterialPageRoute<void>(
           builder: (_) => GlobalSearchScreen(
             ekadashiList: _ekadashiList,
+            ekadashisFor: (code) => _ekadashiService.getEkadashis(
+              timezone: _currentTimezone,
+              languageCode: code,
+            ),
             currentTimezone: _currentTimezone,
+            availableYears: _ekadashiService.availableYears,
+            onOpenTab: (tab) {
+              if (!mounted) return;
+              setState(() => _currentIndex = tab);
+            },
+            onOpenCalendar: (day) {
+              if (!mounted) return;
+              setState(() => _currentIndex = 1);
+              WidgetsBinding.instance.addPostFrameCallback(
+                (_) => _calendarKey.currentState?.selectDate(day),
+              );
+            },
           ),
         ),
       );
@@ -847,11 +862,6 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   Future<void> _syncSearchAndWidgets() async {
     if (!mounted || _ekadashiList.isEmpty) return;
     final lang = context.read<LanguageService>();
-    await SearchIndexManager().initializeIndex(
-      ekadashiList: _ekadashiList,
-      language: lang.currentLocale.languageCode,
-    );
-    if (!mounted) return;
     await WidgetSyncManager().syncWidgetData(
       ekadashiList: _ekadashiList,
       timezone: _currentTimezone,

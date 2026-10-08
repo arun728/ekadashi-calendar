@@ -7,7 +7,6 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:ekadashi_calendar/screens/global_search_screen.dart';
 import 'package:ekadashi_calendar/services/widget_sync_manager.dart';
 import 'package:ekadashi_calendar/services/native_widget_service.dart';
-import 'package:ekadashi_calendar/services/search_index_manager.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -266,16 +265,19 @@ void main() {
       await frames(tester, count: 10);
       await tester.enterText(find.byType(TextField), 'nirjla');
       await tester.pump(const Duration(milliseconds: 400));
-      await tester.tap(find.byIcon(Icons.arrow_forward).first);
+      await tester.testTextInput.receiveAction(TextInputAction.search);
       await frames(tester, count: 10);
-      expect(
-        SearchIndexManager().search('nirjla', languageCode: 'en'),
-        isNotEmpty,
+      await until(
+        tester,
+        () => find
+            .byKey(const Key('search_results'))
+            .evaluate()
+            .isNotEmpty,
       );
       await binding.takeScreenshot('v2_search_typo');
       await tester.enterText(find.byType(TextField), 'zzzznomatch9999');
       await tester.pump(const Duration(milliseconds: 400));
-      await tester.tap(find.byIcon(Icons.arrow_forward).first);
+      await tester.testTextInput.receiveAction(TextInputAction.search);
       await frames(tester);
       await binding.takeScreenshot('v2_search_no_match');
       await until(

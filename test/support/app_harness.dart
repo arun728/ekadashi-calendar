@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ekadashi_calendar/main.dart';
 import 'package:ekadashi_calendar/services/ekadashi_service.dart';
+import 'package:ekadashi_calendar/services/panchang/observance_calendar_service.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:timezone/data/latest.dart' as tz;
 
@@ -41,6 +42,8 @@ class AppHarness {
 
   Future<void> install({Map<String, Object> preferences = const {}}) async {
     await EkadashiService().initializeData();
+    // Isolates do not run under the widget tests' fake async.
+    ObservanceCalendarService.calculateInline = true;
     await initializeDateFormatting();
     tz.initializeTimeZones();
     AndroidFlutterLocalNotificationsPlugin.registerWith();

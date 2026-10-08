@@ -1,65 +1,104 @@
-import '../widgets/glass_tube.dart';
 import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import '../models/search_content_type.dart';
-import '../models/search_result.dart';
+
+import '../data/calendar_entry_repository.dart';
+import '../models/calendar_entry.dart';
 import '../services/ekadashi_service.dart';
 import '../services/language_service.dart';
+import '../services/panchang/observance_calendar_service.dart';
+import '../services/panchang/panchang_city.dart';
+import '../services/panchang/panchang_location_store.dart';
+import '../services/panchang/panchang_models.dart';
+import '../services/premium_service.dart';
 import '../services/recent_search_repository.dart';
-import '../services/search_index_manager.dart';
+import '../services/search/search_catalog.dart';
+import '../services/search/search_corpus.dart';
+import '../services/search/unified_search.dart';
+import '../widgets/glass_tube.dart';
 import 'details_screen.dart';
-import 'search_detail_screen.dart';
+import 'panchang_screen.dart';
+import 'premium_screen.dart';
+import 'widget_preview_screen.dart';
 
-/// Module 19 — Global Search Screen
-/// Single unified search interface across all 8 indexed content types:
-/// Ekadashi, Katha, Mantra, Food, Vrat Info, Festival, Temple, Event.
+/// Icons for the search categories (the iOS SF Symbols).
+IconData searchCategoryIcon(SearchCategory category) => switch (category) {
+  SearchCategory.ekadashi => Icons.spa_outlined,
+  SearchCategory.festival => Icons.auto_awesome,
+  SearchCategory.amavasya => Icons.dark_mode_outlined,
+  SearchCategory.purnima => Icons.brightness_1,
+  SearchCategory.shivaratri => Icons.nights_stay_outlined,
+  SearchCategory.chaturthi => Icons.verified_outlined,
+  SearchCategory.pradosham => Icons.wb_twilight,
+  SearchCategory.navaratri => Icons.local_fire_department_outlined,
+  SearchCategory.sankranti => Icons.wb_sunny_outlined,
+  SearchCategory.jayanti => Icons.star_outline,
+  SearchCategory.myCalendar => Icons.event_outlined,
+  SearchCategory.screen => Icons.open_in_new,
+};
+
+/// One search for the whole app (docs/ROADMAP.md Phase 1): Ekadashis,
+/// Panchang festivals and observances (Premium), custom and Google
+/// calendar entries, and app screens. The year filter comes first, then
+/// the type chips. Only an explicit submission is saved to recent searches.
 class GlobalSearchScreen extends StatefulWidget {
-  final List<EkadashiDate> ekadashiList;
-  final String? currentTimezone;
-  final bool showBackButton;
-  final VoidCallback? onBackToHome;
-
   const GlobalSearchScreen({
     super.key,
     required this.ekadashiList,
-    this.currentTimezone,
-    this.showBackButton = true,
-    this.onBackToHome,
+    required this.ekadashisFor,
+    this.currentTimezone = 'IST',
+    this.availableYears = const [],
+    this.onOpenTab,
+    this.onOpenCalendar,
   });
+
+  /// The schedule in the app language (Ekadashi details open from it).
+  final List<EkadashiDate> ekadashiList;
+
+  /// The published schedule in any language (every name is searchable).
+  final List<EkadashiDate> Function(String language) ekadashisFor;
+  final String currentTimezone;
+
+  /// The data years, for the year filter and festival dates.
+  final List<int> availableYears;
+
+  /// Called after the search closes: switch to bottom tab [index].
+  final ValueChanged<int>? onOpenTab;
+
+  /// Called after the search closes: show [day] in the Calendar tab.
+  final ValueChanged<DateTime>? onOpenCalendar;
 
   @override
   State<GlobalSearchScreen> createState() => _GlobalSearchScreenState();
 }
 
 class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
-  final TextEditingController _searchController = TextEditingController();
-  final FocusNode _focusNode = FocusNode();
-  final SearchIndexManager _indexManager = SearchIndexManager();
-  final RecentSearchRepository _recentRepo = RecentSearchRepository();
+  final _controller = TextEditingController();
+  final _focus = FocusNode();
+  final _recentRepo = RecentSearchRepository();
+  SearchCatalog? _catalog;
+  UnifiedSearch? _index;
+  List<SearchItem> _results = const [];
+  List<String> _suggestions = const [];
+  List<String> _recents = const [];
+  SearchCategory? _category;
+  int? _year;
+  bool _loadingObservances = false;
+  Timer? _debounce;
+  String _language = '';
+  int _build = 0;
 
-  String _indexedLanguage = '';
-  int? _selectedYear;
-  String? _contentLanguage;
-  SearchContentType _selectedCategory = SearchContentType.all;
-  List<SearchResult> _results = [];
-  List<String> _recentSearches = [];
-  List<String> _liveSuggestions = [];
-
-  bool _isLoading = false;
-  bool _isOffline = false;
-  String _activeQuery = '';
-  String _submittedQuery = '';
-  Timer? _debounceTimer;
-
-  static const Color _tealColor = Color(0xFF00A19B);
-  static const Color _accentGold = Color(0xFFFFB300);
+  bool get _hasInput =>
+      _controller.text.trim().isNotEmpty || _category != null || _year != null;
 
   @override
   void initState() {
     super.initState();
-    _isOffline = _indexManager.isOffline;
-    _loadRecentSearches();
+    _recentRepo.getRecentSearches().then((list) {
+      if (mounted) setState(() => _recents = list);
+    });
   }
 
   @override
@@ -69,973 +108,523 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
         .watch<LanguageService>()
         .currentLocale
         .languageCode;
-    if (language != _indexedLanguage) {
-      _indexedLanguage = language;
-      _contentLanguage = language;
-      _ensureIndexReady();
+    if (language != _language) {
+      _language = language;
+      _rebuild();
     }
-  }
-
-  @override
-  void didUpdateWidget(covariant GlobalSearchScreen oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.ekadashiList != widget.ekadashiList) _ensureIndexReady();
   }
 
   @override
   void dispose() {
-    _debounceTimer?.cancel();
-    _searchController.dispose();
-    _focusNode.dispose();
+    _debounce?.cancel();
+    _controller.dispose();
+    _focus.dispose();
     super.dispose();
   }
 
-  Future<void> _ensureIndexReady() async {
-    final lang = Provider.of<LanguageService>(context, listen: false);
-    final langCode = _contentLanguage ?? lang.currentLocale.languageCode;
-    final events = langCode == lang.currentLocale.languageCode
-        ? widget.ekadashiList
-        : EkadashiService().getEkadashis(
-            timezone: widget.currentTimezone ?? 'IST',
-            languageCode: langCode,
-          );
-    await _indexManager.buildIndexFromEkadashis(events, languageCode: langCode);
-    if (mounted && _activeQuery.isNotEmpty) _executeSearch(_activeQuery);
+  /// Ekadashis, entries and screens at once; festivals follow when the
+  /// Panchang calculation for the data years is ready.
+  Future<void> _rebuild() async {
+    final generation = ++_build;
+    final catalog = _catalog ??= await SearchCatalog.load();
+    if (!mounted) return;
+    final repository = context.read<CalendarEntryRepository?>();
+    List<CalendarEntry> entries = const [];
+    try {
+      entries = await repository?.getAll() ?? const [];
+    } catch (_) {}
+    UnifiedSearch index(List<DatedObservance> observances) => UnifiedSearch(
+      SearchCorpus.build(
+        ekadashis: widget.ekadashisFor,
+        observances: observances,
+        entries: entries,
+        language: _language,
+        catalog: catalog,
+      ),
+      catalog,
+    );
+    if (!mounted || generation != _build) return;
+    setState(() {
+      _index = index(const []);
+      _loadingObservances = true;
+    });
+    _run();
+    final city = await PanchangLocationStore().load() ?? PanchangCity.newDelhi;
+    final years = widget.availableYears.isNotEmpty
+        ? widget.availableYears
+        : [DateTime.now().year];
+    final observances = await ObservanceCalendarService.instance.years(
+      years,
+      city,
+    );
+    if (!mounted || generation != _build) return;
+    setState(() {
+      _index = index(observances);
+      _loadingObservances = false;
+    });
+    _run();
   }
 
-  Future<void> _loadRecentSearches() async {
-    final recents = await _recentRepo.getRecentSearches();
-    if (mounted) {
-      setState(() {
-        _recentSearches = recents;
-      });
-    }
+  void _run() {
+    final now = DateTime.now();
+    setState(() {
+      _results =
+          _index?.search(
+            _controller.text,
+            category: _category,
+            year: _year,
+            today: DateTime.utc(now.year, now.month, now.day),
+          ) ??
+          const [];
+    });
   }
 
-  void _onSearchChanged(String query) {
-    _debounceTimer?.cancel();
-
-    if (query.trim().isEmpty) {
-      setState(() {
-        _activeQuery = '';
-        _submittedQuery = '';
-        _results = [];
-        _liveSuggestions = [];
-        _isLoading = false;
-      });
-      _loadRecentSearches();
+  void _changed(String value) {
+    _debounce?.cancel();
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) {
+      setState(() => _suggestions = const []);
+      _run();
       return;
     }
-
-    // Live suggestions update immediately (does NOT write to Recent Search History)
-    final suggestions = _indexManager.getLiveSuggestions(query, limit: 5);
-    setState(() {
-      _liveSuggestions = suggestions;
-    });
-
-    // Debounce the heavier live search ranking (250ms)
-    // CRITICAL: Live typing search MUST NOT save to Recent Search History
-    _debounceTimer = Timer(const Duration(milliseconds: 250), () {
-      _executeSearch(query, isExplicitSubmission: false);
-    });
+    setState(() => _suggestions = _index?.suggestions(trimmed) ?? const []);
+    // Live results after 200 ms; never saved to recent searches.
+    _debounce = Timer(const Duration(milliseconds: 200), _run);
   }
 
-  /// Centralized search submission handler (EC2-FR-082).
-  /// A search query is ONLY recorded into Recent Search History when the user
-  /// explicitly submits the search (e.g. keyboard Search action, Search button,
-  /// tapping an explicit suggestion, or selecting a recent search).
-  void submitSearch(String query) {
-    final cleanQuery = query.trim();
-    if (cleanQuery.isEmpty) return;
-
-    _focusNode.unfocus();
-    _searchController.text = cleanQuery;
-    _searchController.selection = TextSelection.fromPosition(
-      TextPosition(offset: cleanQuery.length),
-    );
-
-    _debounceTimer?.cancel();
-    _executeSearch(cleanQuery, isExplicitSubmission: true);
+  Future<void> _submit(String text) async {
+    final clean = text.trim();
+    if (clean.isEmpty) return;
+    _debounce?.cancel();
+    _controller.text = clean;
+    setState(() => _suggestions = const []);
+    _run();
+    await _recentRepo.addSearch(clean);
+    final list = await _recentRepo.getRecentSearches();
+    if (mounted) setState(() => _recents = list);
   }
 
-  void _executeSearch(String query, {bool isExplicitSubmission = false}) {
-    final cleanQuery = query.trim();
-    if (cleanQuery.isEmpty) return;
+  bool _locked(SearchItem item) =>
+      item.requiresPremium &&
+      !(context.read<PremiumService?>()?.isPremium ?? false);
 
-    setState(() {
-      _isLoading = true;
-      _activeQuery = cleanQuery;
-      _liveSuggestions = [];
-    });
-
-    final lang = Provider.of<LanguageService>(context, listen: false);
-    final langCode = lang.currentLocale.languageCode;
-
-    final results = _indexManager.search(
-      cleanQuery,
-      contentType: _selectedCategory,
-      languageCode: _contentLanguage ?? langCode,
-      year: _selectedYear,
-    );
-
-    // CRITICAL BUG FIX: Recent search is ONLY saved on explicit submission.
-    // Typing keystrokes, debounced live results, live suggestions, and filter toggles
-    // NEVER save intermediate entries to Recent Search History.
-    if (isExplicitSubmission) {
-      _submittedQuery = cleanQuery;
-      _recentRepo.addSearch(cleanQuery).then((_) => _loadRecentSearches());
-    }
-
-    if (mounted) {
-      setState(() {
-        _results = results;
-        _isLoading = false;
-      });
-    }
-  }
-
-  void _onFilterSelected(SearchContentType type) {
-    if (_selectedCategory == type) return;
-
-    setState(() {
-      _selectedCategory = type;
-    });
-
-    if (_activeQuery.isNotEmpty) {
-      _executeSearch(_activeQuery, isExplicitSubmission: false);
-    }
-  }
-
-  void _onRecentSearchTapped(String term) {
-    submitSearch(term);
-  }
-
-  Future<void> _deleteRecentSearch(String term) async {
-    await _recentRepo.deleteSearch(term);
-    await _loadRecentSearches();
-  }
-
-  Future<void> _clearAllRecentSearches() async {
-    await _recentRepo.clearAll();
-    await _loadRecentSearches();
-  }
-
-  void _handleBack() {
-    _focusNode.unfocus();
-    if (Navigator.canPop(context)) {
-      Navigator.pop(context);
-    } else {
-      widget.onBackToHome?.call();
-    }
-  }
-
-  void _handleDownload(SearchResult item) async {
-    final success = await _indexManager.downloadContent(item.id);
-    if (!mounted) return;
-
-    if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            context.read<LanguageService>().translate('saved_offline'),
-          ),
-          backgroundColor: _tealColor,
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 2),
-        ),
+  Future<void> _open(SearchItem item) async {
+    if (_locked(item)) {
+      await openPremium(
+        context,
+        currentTimezone: widget.currentTimezone,
+        reasonKey: 'search_premium_locked',
       );
-
-      // Re-run search so the result card shows as downloaded
-      if (_activeQuery.isNotEmpty) {
-        _executeSearch(_activeQuery, isExplicitSubmission: false);
-      }
+      return;
     }
-  }
-
-  void _navigateToDetail(SearchResult result) {
-    if (result.contentType == SearchContentType.ekadashi) {
-      // Find matching EkadashiDate from list
-      EkadashiDate? match;
-      try {
-        match = widget.ekadashiList.firstWhere(
-          (e) =>
-              e.id.toString() == result.id ||
-              'ekadashi_${e.id}' == result.id ||
-              e.name.toLowerCase() == result.title.toLowerCase(),
-        );
-      } catch (_) {
-        if (widget.ekadashiList.isNotEmpty) {
-          match = widget.ekadashiList.first;
-        }
-      }
-
-      if (match != null) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => DetailsScreen(
-              ekadashi: match!,
+    final target = item.target;
+    switch (target.kind) {
+      case SearchTargetKind.ekadashi:
+        final event = widget.ekadashiList
+            .where((e) => e.occurrenceUid == target.id)
+            .firstOrNull;
+        if (event == null) return;
+        await Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (_) => DetailsScreen(
+              ekadashi: event,
               timezone: widget.currentTimezone,
             ),
           ),
         );
-        return;
-      }
+      case SearchTargetKind.observance:
+        final city =
+            await PanchangLocationStore().load() ?? PanchangCity.newDelhi;
+        if (!mounted) return;
+        await Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (_) => Scaffold(
+              appBar: AppBar(title: Text(item.title)),
+              body: PanchangScreen(initialDate: target.date, initialCity: city),
+            ),
+          ),
+        );
+      case SearchTargetKind.entry:
+        Navigator.of(context).pop();
+        widget.onOpenCalendar?.call(target.date!);
+      case SearchTargetKind.tab:
+        Navigator.of(context).pop();
+        widget.onOpenTab?.call(target.tab!);
+      case SearchTargetKind.paywall:
+        await openPremium(context, currentTimezone: widget.currentTimezone);
+      case SearchTargetKind.widgetPreview:
+        await Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (_) => WidgetPreviewScreen(
+              ekadashiList: widget.ekadashiList,
+              currentTimezone: widget.currentTimezone,
+            ),
+          ),
+        );
     }
-
-    // For Katha, Mantra, Food, Vrat Info, Festival, Temple, Event:
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => SearchDetailScreen(
-          result: result,
-          onDownload: () => _handleDownload(result),
-        ),
-      ),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final lang = Provider.of<LanguageService>(context);
-
+    final lang = context.watch<LanguageService>();
+    context.watch<PremiumService?>();
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF121212) : Colors.grey.shade100,
       appBar: AppBar(
-        toolbarHeight:
-            56 +
-            (MediaQuery.textScalerOf(context).scale(15) - 15).clamp(
-              0,
-              double.infinity,
-            ),
-        elevation: 0,
-        backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        automaticallyImplyLeading: false,
-        leading: (widget.showBackButton && Navigator.canPop(context))
-            ? IconButton(
-                key: const Key('global_search_back'),
-                icon: const Icon(Icons.arrow_back),
-                onPressed: _handleBack,
-              )
-            : (widget.onBackToHome != null
-                  ? IconButton(
-                      key: const Key('global_search_back'),
-                      icon: const Icon(Icons.arrow_back),
-                      onPressed: _handleBack,
-                    )
-                  : null),
-        title: _buildSearchBar(isDark, lang),
-        actions: [
-          // Offline indicator toggle / status
-          IconButton(
-            tooltip: lang.translate(
-              _isOffline ? 'offline_mode' : 'online_mode',
-            ),
-            icon: Icon(
-              _isOffline ? Icons.wifi_off : Icons.wifi,
-              size: 20,
-              color: _isOffline ? Colors.amber : Colors.grey.shade400,
-            ),
-            onPressed: () {
-              setState(() {
-                _isOffline = !_isOffline;
-                _indexManager.setForcedOffline(_isOffline);
-              });
-              if (_activeQuery.isNotEmpty) {
-                _executeSearch(_activeQuery, isExplicitSubmission: false);
-              }
-            },
+        leading: IconButton(
+          key: const Key('global_search_back'),
+          icon: const Icon(Icons.arrow_back),
+          tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+          onPressed: () => Navigator.of(context).maybePop(),
+        ),
+        titleSpacing: 0,
+        title: TextField(
+          key: const Key('global_search_field'),
+          controller: _controller,
+          focusNode: _focus,
+          autofocus: true,
+          textInputAction: TextInputAction.search,
+          decoration: InputDecoration(
+            hintText: lang.translate('search_hint_all'),
+            border: InputBorder.none,
+            suffixIcon: _controller.text.isEmpty
+                ? null
+                : IconButton(
+                    key: const Key('global_search_clear'),
+                    icon: const Icon(Icons.close),
+                    onPressed: () {
+                      _controller.clear();
+                      _changed('');
+                    },
+                  ),
           ),
+          onChanged: _changed,
+          onSubmitted: _submit,
+        ),
+        actions: [
+          if (_loadingObservances)
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: SizedBox.square(
+                dimension: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: GlassTubeColors.teal,
+                ),
+              ),
+            ),
         ],
       ),
       body: Column(
         children: [
-          // Offline indicator banner (EC2-FR-081)
-          if (_isOffline) _buildOfflineBanner(lang),
-
-          // Horizontal Filter Chips (EC2-FR-080)
-          _buildFilterChipRow(lang, isDark),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: GlassTube(
-              key: const Key('search_filters_tube'),
-              optionCount: 2,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: DropdownButton<int>(
-                      dropdownColor: Theme.of(context).colorScheme.surface,
-                      key: const Key('search_year_selector'),
-                      isExpanded: true,
-                      value: _selectedYear,
-                      hint: Text(lang.translate('year')),
-                      items: [
-                        DropdownMenuItem<int>(
-                          value: null,
-                          child: Text(lang.translate('filter_all')),
-                        ),
-                        for (final year
-                            in (widget.ekadashiList
-                                .map((e) => e.date.year)
-                                .toSet()
-                                .toList()
-                              ..sort()))
-                          DropdownMenuItem(value: year, child: Text('$year')),
-                      ],
-                      onChanged: (year) {
-                        setState(() => _selectedYear = year);
-                        if (_activeQuery.isNotEmpty) {
-                          _executeSearch(_activeQuery);
-                        }
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: DropdownButton<String>(
-                      dropdownColor: Theme.of(context).colorScheme.surface,
-                      key: const Key('search_language_selector'),
-                      isExpanded: true,
-                      value:
-                          _contentLanguage ?? lang.currentLocale.languageCode,
-                      items: [
-                        for (final code in ['en', 'ta', 'hi', 'te'])
-                          DropdownMenuItem(
-                            value: code,
-                            child: Text(
-                              {
-                                'en': 'English',
-                                'ta': 'தமிழ்',
-                                'hi': 'हिन्दी',
-                                'te': 'తెలుగు',
-                              }[code]!,
-                            ),
-                          ),
-                      ],
-                      onChanged: (code) async {
-                        if (code == null) return;
-                        setState(() => _contentLanguage = code);
-                        final events = EkadashiService().getEkadashis(
-                          timezone: widget.currentTimezone ?? 'IST',
-                          languageCode: code,
-                        );
-                        await _indexManager.buildIndexFromEkadashis(
-                          events,
-                          languageCode: code,
-                        );
-                        if (mounted && _activeQuery.isNotEmpty) {
-                          _executeSearch(_activeQuery);
-                        }
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // Main Search Content
-          Expanded(child: _buildSearchBody(isDark, lang)),
+          _filters(lang),
+          if (_suggestions.isNotEmpty && _focus.hasFocus) _suggestionList(),
+          Expanded(child: _content(lang)),
         ],
       ),
     );
   }
 
-  Widget _buildSearchBar(bool isDark, LanguageService lang) {
-    return Container(
-      height:
-          48 +
-          (MediaQuery.textScalerOf(context).scale(15) - 15).clamp(
-            0,
-            double.infinity,
-          ),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF2A2A2A) : Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: TextField(
-        controller: _searchController,
-        focusNode: _focusNode,
-        autofocus: widget.showBackButton,
-        textInputAction: TextInputAction.search,
-        onChanged: _onSearchChanged,
-        onSubmitted: (query) => submitSearch(query),
-        style: TextStyle(
-          fontSize: 15,
-          color: isDark ? Colors.white : Colors.black87,
-        ),
-        decoration: InputDecoration(
-          hintText: lang.translate('search_hint'),
-          hintStyle: TextStyle(
-            fontSize: 14,
-            color: isDark ? Colors.grey.shade500 : Colors.grey.shade500,
-          ),
-          prefixIcon: IconButton(
-            icon: const Icon(Icons.search, size: 20, color: _tealColor),
-            tooltip: lang.translate('search'),
-            onPressed: () => submitSearch(_searchController.text),
-          ),
-          suffixIcon: _searchController.text.isNotEmpty
-              ? GlassTube(
-                  key: const Key('search_submit_tube'),
-                  optionCount: 2,
-                  padding: EdgeInsets.zero,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        key: const Key('clear_search_query'),
-                        tooltip: lang.translate('clear_all'),
-                        icon: const Icon(Icons.clear, size: 18),
-                        color: Colors.grey.shade500,
-                        onPressed: () {
-                          _searchController.clear();
-                          _onSearchChanged('');
-                        },
-                      ),
-                      IconButton(
-                        key: const Key('submit_search_query'),
-                        icon: const Icon(
-                          Icons.arrow_forward,
-                          size: 18,
-                          color: _tealColor,
-                        ),
-                        tooltip: lang.translate('search'),
-                        onPressed: () => submitSearch(_searchController.text),
-                      ),
-                    ],
-                  ),
-                )
-              : null,
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 12,
-            vertical: 12,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildOfflineBanner(LanguageService lang) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      color: Colors.amber.shade900.withValues(alpha: 0.2),
-      child: Row(
-        children: [
-          const Icon(Icons.offline_bolt_outlined, size: 16, color: _accentGold),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              lang.translate('offline_indicator'),
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: _accentGold,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFilterChipRow(LanguageService lang, bool isDark) {
+  Widget _filters(LanguageService lang) {
+    final years = widget.availableYears;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
+      padding: const EdgeInsets.fromLTRB(12, 6, 12, 6),
       child: GlassTube(
-        key: const Key('search_categories_tube'),
-        optionCount: SearchContentType.values.length,
+        key: const Key('search_filters_tube'),
+        optionCount: 2,
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
         child: SingleChildScrollView(
+          key: const Key('search_categories_tube'),
           scrollDirection: Axis.horizontal,
           child: Row(
             children: [
-              for (final cat in SearchContentType.values)
-                GlassFilterChip(
-                  label: Text(lang.translate(cat.localizationKey)),
-                  selected: _selectedCategory == cat,
-                  showCheckmark: false,
-                  avatar: Icon(cat.icon, size: 16, color: GlassTubeColors.teal),
-                  onSelected: (_) => _onFilterSelected(cat),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSearchBody(bool isDark, LanguageService lang) {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator(color: _tealColor));
-    }
-
-    // 1. Live suggestions state (while typing before search enter or debounced result)
-    if (_liveSuggestions.isNotEmpty && _activeQuery.isEmpty) {
-      return _buildSuggestionsList(isDark);
-    }
-
-    // 2. Active Query Results
-    if (_activeQuery.isNotEmpty) {
-      if (_results.isEmpty) {
-        return _buildNoResultsState(isDark, lang);
-      }
-      return _buildResultsList(isDark, lang);
-    }
-
-    // 3. Empty Query: Show Recent Searches and Quick Exploration
-    return _buildRecentSearchesAndSuggestions(isDark, lang);
-  }
-
-  Widget _buildSuggestionsList(bool isDark) {
-    return ListView.builder(
-      itemCount: _liveSuggestions.length,
-      itemBuilder: (context, index) {
-        final suggestion = _liveSuggestions[index];
-        return ListTile(
-          leading: const Icon(Icons.search, size: 20, color: _tealColor),
-          title: Text(suggestion),
-          onTap: () {
-            submitSearch(suggestion);
-          },
-        );
-      },
-    );
-  }
-
-  Widget _buildRecentSearchesAndSuggestions(bool isDark, LanguageService lang) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (_recentSearches.isNotEmpty) ...[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  lang.translate('recent_searches').toUpperCase(),
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.1,
-                    color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+              PopupMenuButton<int>(
+                key: const Key('search_year_selector'),
+                tooltip: lang.translate('year'),
+                onSelected: (value) {
+                  setState(() => _year = value == 0 ? null : value);
+                  _run();
+                },
+                itemBuilder: (_) => [
+                  PopupMenuItem(
+                    value: 0,
+                    child: Text(lang.translate('search_all_years')),
                   ),
-                ),
-                TextButton(
-                  onPressed: _clearAllRecentSearches,
-                  style: TextButton.styleFrom(
-                    visualDensity: VisualDensity.compact,
-                    foregroundColor: Colors.grey.shade500,
-                  ),
-                  child: Text(
-                    lang.translate('clear_all'),
-                    style: const TextStyle(fontSize: 12),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            ..._recentSearches.map(
-              (term) => Container(
-                margin: const EdgeInsets.only(bottom: 6),
-                child: Material(
-                  color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    side: BorderSide(
-                      color: isDark ? Colors.white10 : Colors.grey.shade200,
-                    ),
-                  ),
-                  child: ListTile(
-                    dense: true,
-                    leading: Icon(
-                      Icons.history,
-                      size: 20,
-                      color: isDark
-                          ? Colors.grey.shade400
-                          : Colors.grey.shade600,
-                    ),
-                    title: Text(
-                      term,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: isDark ? Colors.white : Colors.black87,
-                      ),
-                    ),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.close, size: 16),
-                      color: Colors.grey.shade500,
-                      onPressed: () => _deleteRecentSearch(term),
-                    ),
-                    onTap: () => _onRecentSearchTapped(term),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-          ],
-
-          // Quick Category Exploration
-          Text(
-            lang.translate('search_start'),
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.1,
-              color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
-            ),
-          ),
-          const SizedBox(height: 12),
-          GlassTube(
-            key: const Key('search_explore_tube'),
-            optionCount: SearchContentType.values.length - 1,
-            child: Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final type in SearchContentType.values.where(
-                  (t) => t != SearchContentType.all,
-                ))
-                  _buildExploreChip(
-                    lang.translate(type.localizationKey),
-                    type.icon,
-                  ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildExploreChip(String label, IconData icon) {
-    return ActionChip(
-      avatar: Icon(icon, size: 16, color: _tealColor),
-      label: Text(label),
-      backgroundColor: Colors.transparent,
-      surfaceTintColor: Colors.transparent,
-      side: BorderSide.none,
-      labelStyle: const TextStyle(fontSize: 12, color: GlassTubeColors.teal),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      onPressed: () {
-        submitSearch(label);
-      },
-    );
-  }
-
-  Widget _buildResultsList(bool isDark, LanguageService lang) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-          child: Text(
-            lang.translateWithArgs('results_count', ['${_results.length}']),
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
-            ),
-          ),
-        ),
-        Expanded(
-          child: ListView.separated(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            itemCount: _results.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 10),
-            itemBuilder: (context, index) {
-              final item = _results[index];
-              return _buildResultCard(item, isDark, lang);
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildResultCard(
-    SearchResult item,
-    bool isDark,
-    LanguageService lang,
-  ) {
-    return InkWell(
-      onTap: () => _navigateToDetail(item),
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isDark ? Colors.white10 : Colors.grey.shade200,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header Row: Category Badge + Online/Offline status
-            Wrap(
-              spacing: 8,
-              runSpacing: 6,
-              alignment: WrapAlignment.spaceBetween,
-              children: [
-                Container(
+                  for (final y in years)
+                    PopupMenuItem(value: y, child: Text('$y')),
+                ],
+                child: Padding(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
+                    horizontal: 12,
+                    vertical: 14,
                   ),
-                  decoration: BoxDecoration(
-                    color: item.contentType.badgeColor.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Wrap(
-                    crossAxisAlignment: WrapCrossAlignment.center,
+                  child: Row(
                     children: [
                       Icon(
-                        item.contentType.icon,
-                        size: 14,
-                        color: item.contentType.badgeColor,
+                        Icons.calendar_today,
+                        size: 16,
+                        color: _year == null ? null : GlassTubeColors.teal,
                       ),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: 6),
                       Text(
-                        lang
-                            .translate(item.contentType.localizationKey)
-                            .toUpperCase(),
+                        _year?.toString() ?? lang.translate('year'),
                         style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: item.contentType.badgeColor,
-                          letterSpacing: 0.5,
+                          fontWeight: _year == null
+                              ? FontWeight.w500
+                              : FontWeight.w700,
+                          color: _year == null ? null : GlassTubeColors.teal,
                         ),
                       ),
+                      const Icon(Icons.arrow_drop_down, size: 18),
                     ],
                   ),
                 ),
-                if (item.isOnlineOnly && !item.isDownloaded)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.orange.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      lang.translate('online_only'),
-                      style: const TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.orange,
-                      ),
-                    ),
-                  )
-                else if (item.date != null && item.date!.isNotEmpty)
-                  Text(
-                    item.date!,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: isDark
-                          ? Colors.grey.shade400
-                          : Colors.grey.shade600,
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 8),
-
-            // Title with query highlighting
-            _buildHighlightedText(
-              item.title,
-              _activeQuery,
-              TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : Colors.black87,
               ),
-              highlightColor: _accentGold,
-            ),
-            const SizedBox(height: 4),
+              _chip(lang.translate('filter_all'), Icons.grid_view, null),
+              for (final type in SearchCategory.filters)
+                _chip(
+                  lang.translate(type.localizationKey),
+                  searchCategoryIcon(type),
+                  type,
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
-            // Subtitle / snippet with query highlighting
-            _buildHighlightedText(
-              item.subtitle,
-              _activeQuery,
-              TextStyle(
-                fontSize: 13,
-                color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
-                height: 1.3,
+  Widget _chip(String label, IconData icon, SearchCategory? type) {
+    final selected = _category == type;
+    final color = type == null ? GlassTubeColors.teal : Color(type.color);
+    return Padding(
+      padding: const EdgeInsets.only(right: 4),
+      child: GlassFilterChip(
+        key: Key('search_filter_${type?.raw ?? 'all'}'),
+        avatar: Icon(icon, size: 16, color: color),
+        label: Text(label),
+        selected: selected,
+        showCheckmark: false,
+        onSelected: (_) {
+          setState(() => _category = type == null || selected ? null : type);
+          _run();
+        },
+      ),
+    );
+  }
+
+  Widget _suggestionList() => Material(
+    elevation: 2,
+    child: Column(
+      children: [
+        for (final s in _suggestions)
+          ListTile(
+            dense: true,
+            leading: const Icon(Icons.search, size: 18),
+            title: Text(s),
+            onTap: () => _submit(s),
+          ),
+      ],
+    ),
+  );
+
+  Widget _content(LanguageService lang) {
+    if (!_hasInput) return _start(lang);
+    if (_results.isEmpty) {
+      return Center(
+        key: const Key('search_no_results'),
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.search_off, size: 48, color: Colors.grey.shade500),
+              const SizedBox(height: 12),
+              Text(
+                '${lang.translate('no_results_found')} "${_controller.text.trim()}"',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleMedium,
               ),
-              highlightColor: _accentGold,
-              maxLines: 2,
-            ),
-
-            // Download action row if online only
-            if (item.isOnlineOnly && !item.isDownloaded) ...[
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  OutlinedButton.icon(
-                    icon: const Icon(Icons.download_rounded, size: 16),
-                    label: Text(lang.translate('download')),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: _tealColor,
-                      side: const BorderSide(color: _tealColor),
-                      visualDensity: VisualDensity.compact,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    onPressed: () => _handleDownload(item),
-                  ),
-                ],
+              const SizedBox(height: 6),
+              Text(
+                lang.translate('search_no_results_hint'),
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey.shade500),
               ),
             ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNoResultsState(bool isDark, LanguageService lang) {
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.search_off_rounded,
-              size: 64,
-              color: Colors.grey.shade400,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              '${lang.translate('no_results_found')} "${_submittedQuery.isNotEmpty ? _submittedQuery : _activeQuery}"',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white70 : Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 8),
-            if (_isOffline)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  lang.translate('no_offline_results'),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 13, color: Colors.amber.shade700),
-                ),
-              ),
-            const SizedBox(height: 24),
-            Text(
-              lang.translate('try_searching'),
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              alignment: WrapAlignment.center,
-              children: [
-                _buildExploreChip(
-                  lang.translate('category_ekadashi'),
-                  Icons.brightness_7,
-                ),
-                _buildExploreChip(
-                  lang.translate('category_katha'),
-                  Icons.menu_book,
-                ),
-                _buildExploreChip(
-                  lang.translate('category_mantra'),
-                  Icons.record_voice_over,
-                ),
-                _buildExploreChip(
-                  lang.translate('category_food'),
-                  Icons.restaurant,
-                ),
-                _buildExploreChip(lang.translate('category_vrat'), Icons.rule),
-                _buildExploreChip(
-                  lang.translate('category_festival'),
-                  Icons.celebration,
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHighlightedText(
-    String text,
-    String query,
-    TextStyle baseStyle, {
-    required Color highlightColor,
-    int? maxLines,
-  }) {
-    if (query.trim().isEmpty ||
-        !text.toLowerCase().contains(query.toLowerCase())) {
-      return Text(
-        text,
-        style: baseStyle,
-        maxLines: maxLines,
-        overflow: maxLines != null ? TextOverflow.ellipsis : null,
-      );
-    }
-
-    final spans = <TextSpan>[];
-    final lowerText = text.toLowerCase();
-    final lowerQuery = query.toLowerCase().trim();
-
-    int start = 0;
-    while (start < text.length) {
-      final matchIndex = lowerText.indexOf(lowerQuery, start);
-      if (matchIndex == -1) {
-        spans.add(TextSpan(text: text.substring(start), style: baseStyle));
-        break;
-      }
-
-      if (matchIndex > start) {
-        spans.add(
-          TextSpan(text: text.substring(start, matchIndex), style: baseStyle),
-        );
-      }
-
-      spans.add(
-        TextSpan(
-          text: text.substring(matchIndex, matchIndex + lowerQuery.length),
-          style: baseStyle.copyWith(
-            color: highlightColor,
-            fontWeight: FontWeight.bold,
           ),
         ),
       );
-
-      start = matchIndex + lowerQuery.length;
     }
+    return ListView.separated(
+      key: const Key('search_results'),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+      itemCount: _results.length,
+      separatorBuilder: (_, _) => const SizedBox(height: 8),
+      itemBuilder: (_, i) => _row(_results[i], lang),
+    );
+  }
 
-    return RichText(
-      text: TextSpan(children: spans),
-      maxLines: maxLines,
-      overflow: maxLines != null ? TextOverflow.ellipsis : TextOverflow.clip,
+  Widget _start(LanguageService lang) => ListView(
+    key: const Key('search_start'),
+    padding: const EdgeInsets.all(16),
+    children: [
+      if (_recents.isNotEmpty) ...[
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                lang.translate('recent_searches').toUpperCase(),
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: Colors.grey.shade500,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () async {
+                await _recentRepo.clearAll();
+                if (mounted) setState(() => _recents = const []);
+              },
+              child: Text(lang.translate('clear_all')),
+            ),
+          ],
+        ),
+        for (final term in _recents)
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.history),
+            title: Text(term),
+            onTap: () => _submit(term),
+            trailing: IconButton(
+              icon: const Icon(Icons.close, size: 18),
+              onPressed: () async {
+                await _recentRepo.deleteSearch(term);
+                final list = await _recentRepo.getRecentSearches();
+                if (mounted) setState(() => _recents = list);
+              },
+            ),
+          ),
+        const SizedBox(height: 12),
+      ],
+      Text(
+        lang.translate('search_start_all'),
+        style: Theme.of(context).textTheme.titleMedium,
+      ),
+      const SizedBox(height: 12),
+      Wrap(
+        key: const Key('search_explore_tube'),
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          for (final type in SearchCategory.filters)
+            ActionChip(
+              avatar: Icon(
+                searchCategoryIcon(type),
+                size: 16,
+                color: Color(type.color),
+              ),
+              label: Text(lang.translate(type.localizationKey)),
+              shape: const StadiumBorder(),
+              onPressed: () {
+                setState(() => _category = type);
+                _run();
+              },
+            ),
+        ],
+      ),
+    ],
+  );
+
+  Widget _row(SearchItem item, LanguageService lang) {
+    final locked = _locked(item);
+    final category = item.categories.contains(SearchCategory.festival)
+        ? SearchCategory.festival
+        : item.categories.firstOrNull ?? SearchCategory.screen;
+    final color = Color(category.color);
+    final date = item.date;
+    return Material(
+      key: Key('search_result_${item.id}'),
+      color: Theme.of(context).cardColor,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () => _open(item),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: .16),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  searchCategoryIcon(category),
+                  color: color,
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    if (locked)
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.lock,
+                            size: 13,
+                            color: Color(0xFFF59E0B),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            lang.translate('search_premium_locked'),
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFFF59E0B),
+                            ),
+                          ),
+                        ],
+                      )
+                    else if (date != null)
+                      Text(
+                        DateFormat('EEE, d MMM yyyy', _language).format(date),
+                        style: TextStyle(
+                          color: Colors.grey.shade500,
+                          fontSize: 13,
+                        ),
+                      ),
+                    Text(
+                      lang.translate(category.localizationKey),
+                      style: TextStyle(
+                        color: color,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                locked ? Icons.lock : Icons.chevron_right,
+                size: 18,
+                color: locked ? const Color(0xFFF59E0B) : Colors.grey.shade500,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
