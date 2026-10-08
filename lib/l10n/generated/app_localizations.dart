@@ -2051,6 +2051,948 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your Premium has ended, so the Google events it synced were removed. Renew to sync again.'**
   String get google_premium_events_removed;
+
+  /// No description provided for @search_filter_ekadashi.
+  ///
+  /// In en, this message translates to:
+  /// **'Ekadashi'**
+  String get search_filter_ekadashi;
+
+  /// No description provided for @search_filter_festival.
+  ///
+  /// In en, this message translates to:
+  /// **'Festivals'**
+  String get search_filter_festival;
+
+  /// No description provided for @search_filter_amavasya.
+  ///
+  /// In en, this message translates to:
+  /// **'Amavasya'**
+  String get search_filter_amavasya;
+
+  /// No description provided for @search_filter_purnima.
+  ///
+  /// In en, this message translates to:
+  /// **'Purnima'**
+  String get search_filter_purnima;
+
+  /// No description provided for @search_filter_shivaratri.
+  ///
+  /// In en, this message translates to:
+  /// **'Shivaratri'**
+  String get search_filter_shivaratri;
+
+  /// No description provided for @search_filter_chaturthi.
+  ///
+  /// In en, this message translates to:
+  /// **'Chaturthi'**
+  String get search_filter_chaturthi;
+
+  /// No description provided for @search_filter_pradosham.
+  ///
+  /// In en, this message translates to:
+  /// **'Pradosham'**
+  String get search_filter_pradosham;
+
+  /// No description provided for @search_filter_navaratri.
+  ///
+  /// In en, this message translates to:
+  /// **'Navaratri'**
+  String get search_filter_navaratri;
+
+  /// No description provided for @search_filter_sankranti.
+  ///
+  /// In en, this message translates to:
+  /// **'Sankranti'**
+  String get search_filter_sankranti;
+
+  /// No description provided for @search_filter_jayanti.
+  ///
+  /// In en, this message translates to:
+  /// **'Jayanti'**
+  String get search_filter_jayanti;
+
+  /// No description provided for @search_filter_my_calendar.
+  ///
+  /// In en, this message translates to:
+  /// **'My calendar'**
+  String get search_filter_my_calendar;
+
+  /// No description provided for @search_filter_screen.
+  ///
+  /// In en, this message translates to:
+  /// **'In the app'**
+  String get search_filter_screen;
+
+  /// No description provided for @search_screen_panchang.
+  ///
+  /// In en, this message translates to:
+  /// **'Panchang'**
+  String get search_screen_panchang;
+
+  /// No description provided for @search_hint_all.
+  ///
+  /// In en, this message translates to:
+  /// **'Search Ekadashi, festivals, events…'**
+  String get search_hint_all;
+
+  /// No description provided for @search_start_all.
+  ///
+  /// In en, this message translates to:
+  /// **'Find Ekadashis, festivals, Amavasya, Purnima and your events'**
+  String get search_start_all;
+
+  /// No description provided for @search_premium_locked.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock with Premium'**
+  String get search_premium_locked;
+
+  /// No description provided for @search_no_results_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the spelling, or try another year or filter.'**
+  String get search_no_results_hint;
+
+  /// No description provided for @search_all_years.
+  ///
+  /// In en, this message translates to:
+  /// **'All years'**
+  String get search_all_years;
+
+  /// No description provided for @panchang_day.
+  ///
+  /// In en, this message translates to:
+  /// **'Day'**
+  String get panchang_day;
+
+  /// No description provided for @panchang_night.
+  ///
+  /// In en, this message translates to:
+  /// **'Night'**
+  String get panchang_night;
+
+  /// No description provided for @panchang_am.
+  ///
+  /// In en, this message translates to:
+  /// **'AM'**
+  String get panchang_am;
+
+  /// No description provided for @panchang_pm.
+  ///
+  /// In en, this message translates to:
+  /// **'PM'**
+  String get panchang_pm;
+
+  /// No description provided for @panchang_next_day_marker.
+  ///
+  /// In en, this message translates to:
+  /// **'(next day)'**
+  String get panchang_next_day_marker;
+
+  /// No description provided for @panchang_previous_day_marker.
+  ///
+  /// In en, this message translates to:
+  /// **'(previous day)'**
+  String get panchang_previous_day_marker;
+
+  /// No description provided for @panchang_section_keydays.
+  ///
+  /// In en, this message translates to:
+  /// **'Key days'**
+  String get panchang_section_keydays;
+
+  /// No description provided for @panchang_section_daily.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily'**
+  String get panchang_section_daily;
+
+  /// No description provided for @panchang_section_muhurta.
+  ///
+  /// In en, this message translates to:
+  /// **'Muhurta'**
+  String get panchang_section_muhurta;
+
+  /// No description provided for @panchang_section_ekadashi.
+  ///
+  /// In en, this message translates to:
+  /// **'Ekadashi'**
+  String get panchang_section_ekadashi;
+
+  /// No description provided for @panchang_section_rashi.
+  ///
+  /// In en, this message translates to:
+  /// **'Rashi'**
+  String get panchang_section_rashi;
+
+  /// No description provided for @panchang_search_location.
+  ///
+  /// In en, this message translates to:
+  /// **'Search city or use location'**
+  String get panchang_search_location;
+
+  /// No description provided for @panchang_previous.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous'**
+  String get panchang_previous;
+
+  /// No description provided for @panchang_next.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get panchang_next;
+
+  /// No description provided for @panchang_pick_date.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get panchang_pick_date;
+
+  /// No description provided for @panchang_month.
+  ///
+  /// In en, this message translates to:
+  /// **'Month'**
+  String get panchang_month;
+
+  /// No description provided for @panchang_done.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get panchang_done;
+
+  /// No description provided for @panchang_location_not_saved.
+  ///
+  /// In en, this message translates to:
+  /// **'Location changed, but could not be saved.'**
+  String get panchang_location_not_saved;
+
+  /// No description provided for @panchang_notes_title.
+  ///
+  /// In en, this message translates to:
+  /// **'How the Panchang is calculated'**
+  String get panchang_notes_title;
+
+  /// No description provided for @panchang_notes_body.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything is calculated on your phone for the chosen location, with its own time zone. Tithi, nakshatra, yoga and karana are taken at local sunrise; times after midnight are marked as the next day. Sunrise and sunset use the visible upper edge of the Sun at sea level, so hills and buildings can shift them by a few minutes.'**
+  String get panchang_notes_body;
+
+  /// No description provided for @panchang_notes_traditions.
+  ///
+  /// In en, this message translates to:
+  /// **'Festival dates follow the traditional time-of-day rules and published calendars; regional and family traditions can differ. Months are shown in both the Amanta and Purnimanta systems. Ekadashi dates in Key days, the calendar, reminders and Journey come from the published schedule.'**
+  String get panchang_notes_traditions;
+
+  /// No description provided for @panchang_notes_sources.
+  ///
+  /// In en, this message translates to:
+  /// **'Astronomy: VSOP87 and ELP 2000-82B with the Lahiri ayanamsa. Cities: GeoNames (CC BY 4.0). Time zones: IANA database.'**
+  String get panchang_notes_sources;
+
+  /// No description provided for @panchang_premium_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Panchang is part of Premium'**
+  String get panchang_premium_title;
+
+  /// No description provided for @panchang_premium_body.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock the five limbs, good times and times to avoid, Choghadiya, Hora, Rashi, and every festival and observance in Key days.'**
+  String get panchang_premium_body;
+
+  /// No description provided for @panchang_unlock.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock full Panchang'**
+  String get panchang_unlock;
+
+  /// No description provided for @panchang_unlock_short.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock'**
+  String get panchang_unlock_short;
+
+  /// No description provided for @panchang_key_days_locked.
+  ///
+  /// In en, this message translates to:
+  /// **'Festivals and observances are part of Premium. Ekadashis are free.'**
+  String get panchang_key_days_locked;
+
+  /// No description provided for @panchang_no_key_days.
+  ///
+  /// In en, this message translates to:
+  /// **'No key days this month for this filter.'**
+  String get panchang_no_key_days;
+
+  /// No description provided for @panchang_days_ago.
+  ///
+  /// In en, this message translates to:
+  /// **'{value0} days ago'**
+  String panchang_days_ago(String value0);
+
+  /// No description provided for @panchang_tithi_at_sunrise.
+  ///
+  /// In en, this message translates to:
+  /// **'Tithi at sunrise'**
+  String get panchang_tithi_at_sunrise;
+
+  /// No description provided for @panchang_tithi_at_six.
+  ///
+  /// In en, this message translates to:
+  /// **'Tithi at 6 AM (no sunrise)'**
+  String get panchang_tithi_at_six;
+
+  /// No description provided for @panchang_until.
+  ///
+  /// In en, this message translates to:
+  /// **'until {value0}'**
+  String panchang_until(String value0);
+
+  /// No description provided for @panchang_after.
+  ///
+  /// In en, this message translates to:
+  /// **'after {value0}'**
+  String panchang_after(String value0);
+
+  /// No description provided for @panchang_starts_at.
+  ///
+  /// In en, this message translates to:
+  /// **'starts {value0}'**
+  String panchang_starts_at(String value0);
+
+  /// No description provided for @panchang_amanta.
+  ///
+  /// In en, this message translates to:
+  /// **'Amanta'**
+  String get panchang_amanta;
+
+  /// No description provided for @panchang_purnimanta.
+  ///
+  /// In en, this message translates to:
+  /// **'Purnimanta'**
+  String get panchang_purnimanta;
+
+  /// No description provided for @panchang_sunrise.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunrise'**
+  String get panchang_sunrise;
+
+  /// No description provided for @panchang_sunset.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunset'**
+  String get panchang_sunset;
+
+  /// No description provided for @panchang_moonrise.
+  ///
+  /// In en, this message translates to:
+  /// **'Moonrise'**
+  String get panchang_moonrise;
+
+  /// No description provided for @panchang_moonset.
+  ///
+  /// In en, this message translates to:
+  /// **'Moonset'**
+  String get panchang_moonset;
+
+  /// No description provided for @panchang_five_limbs.
+  ///
+  /// In en, this message translates to:
+  /// **'Five limbs'**
+  String get panchang_five_limbs;
+
+  /// No description provided for @panchang_tithi.
+  ///
+  /// In en, this message translates to:
+  /// **'Tithi'**
+  String get panchang_tithi;
+
+  /// No description provided for @panchang_nakshatra.
+  ///
+  /// In en, this message translates to:
+  /// **'Nakshatra'**
+  String get panchang_nakshatra;
+
+  /// No description provided for @panchang_yoga.
+  ///
+  /// In en, this message translates to:
+  /// **'Yoga'**
+  String get panchang_yoga;
+
+  /// No description provided for @panchang_karana.
+  ///
+  /// In en, this message translates to:
+  /// **'Karana'**
+  String get panchang_karana;
+
+  /// No description provided for @panchang_vara.
+  ///
+  /// In en, this message translates to:
+  /// **'Vara'**
+  String get panchang_vara;
+
+  /// No description provided for @panchang_timings.
+  ///
+  /// In en, this message translates to:
+  /// **'Timings'**
+  String get panchang_timings;
+
+  /// No description provided for @panchang_good_times.
+  ///
+  /// In en, this message translates to:
+  /// **'Good times'**
+  String get panchang_good_times;
+
+  /// No description provided for @panchang_avoid_times.
+  ///
+  /// In en, this message translates to:
+  /// **'Times to avoid'**
+  String get panchang_avoid_times;
+
+  /// No description provided for @panchang_observances.
+  ///
+  /// In en, this message translates to:
+  /// **'Observances'**
+  String get panchang_observances;
+
+  /// No description provided for @panchang_more_details.
+  ///
+  /// In en, this message translates to:
+  /// **'More details'**
+  String get panchang_more_details;
+
+  /// No description provided for @panchang_sun_rashi.
+  ///
+  /// In en, this message translates to:
+  /// **'Sun rashi'**
+  String get panchang_sun_rashi;
+
+  /// No description provided for @panchang_moon_rashi.
+  ///
+  /// In en, this message translates to:
+  /// **'Moon rashi'**
+  String get panchang_moon_rashi;
+
+  /// No description provided for @panchang_nakshatra_pada.
+  ///
+  /// In en, this message translates to:
+  /// **'Nakshatra pada'**
+  String get panchang_nakshatra_pada;
+
+  /// No description provided for @panchang_ritu.
+  ///
+  /// In en, this message translates to:
+  /// **'Ritu'**
+  String get panchang_ritu;
+
+  /// No description provided for @panchang_ayana.
+  ///
+  /// In en, this message translates to:
+  /// **'Ayana'**
+  String get panchang_ayana;
+
+  /// No description provided for @panchang_samvat.
+  ///
+  /// In en, this message translates to:
+  /// **'Samvat'**
+  String get panchang_samvat;
+
+  /// No description provided for @panchang_samvat_value.
+  ///
+  /// In en, this message translates to:
+  /// **'Shaka {value0} · Vikrama {value1}'**
+  String panchang_samvat_value(String value0, String value1);
+
+  /// No description provided for @panchang_anandadi.
+  ///
+  /// In en, this message translates to:
+  /// **'Anandadi yoga'**
+  String get panchang_anandadi;
+
+  /// No description provided for @panchang_special_yogas.
+  ///
+  /// In en, this message translates to:
+  /// **'Special yogas'**
+  String get panchang_special_yogas;
+
+  /// No description provided for @panchang_none.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get panchang_none;
+
+  /// No description provided for @panchang_ayanamsa.
+  ///
+  /// In en, this message translates to:
+  /// **'Lahiri ayanamsa'**
+  String get panchang_ayanamsa;
+
+  /// No description provided for @panchang_no_solar_day.
+  ///
+  /// In en, this message translates to:
+  /// **'No complete solar day here today, so sunrise-based periods are unavailable.'**
+  String get panchang_no_solar_day;
+
+  /// No description provided for @panchang_transitions.
+  ///
+  /// In en, this message translates to:
+  /// **'Changes until the next sunrise'**
+  String get panchang_transitions;
+
+  /// No description provided for @panchang_choghadiya.
+  ///
+  /// In en, this message translates to:
+  /// **'Choghadiya'**
+  String get panchang_choghadiya;
+
+  /// No description provided for @panchang_choghadiya_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Amrit, Shubh and Labh are favourable; Chal is neutral; Rog, Kaal and Udveg are best avoided.'**
+  String get panchang_choghadiya_hint;
+
+  /// No description provided for @panchang_hora.
+  ///
+  /// In en, this message translates to:
+  /// **'Hora'**
+  String get panchang_hora;
+
+  /// No description provided for @panchang_lagna.
+  ///
+  /// In en, this message translates to:
+  /// **'Udaya Lagna'**
+  String get panchang_lagna;
+
+  /// No description provided for @panchang_unavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Unavailable for this day and place.'**
+  String get panchang_unavailable;
+
+  /// No description provided for @panchang_now.
+  ///
+  /// In en, this message translates to:
+  /// **'Now'**
+  String get panchang_now;
+
+  /// No description provided for @panchang_rashi.
+  ///
+  /// In en, this message translates to:
+  /// **'Rashi'**
+  String get panchang_rashi;
+
+  /// No description provided for @panchang_rashi_note.
+  ///
+  /// In en, this message translates to:
+  /// **'These are the Sun and Moon positions for the day (sidereal, Lahiri). Your personal birth rashi needs your birth date, time and place.'**
+  String get panchang_rashi_note;
+
+  /// No description provided for @panchang_smarta.
+  ///
+  /// In en, this message translates to:
+  /// **'Smarta'**
+  String get panchang_smarta;
+
+  /// No description provided for @panchang_gaudiya.
+  ///
+  /// In en, this message translates to:
+  /// **'Vaishnava · Gaudiya/ISKCON'**
+  String get panchang_gaudiya;
+
+  /// No description provided for @panchang_smarta_rule.
+  ///
+  /// In en, this message translates to:
+  /// **'Householders: the Ekadashi at sunrise; when it touches two sunrises, the first day.'**
+  String get panchang_smarta_rule;
+
+  /// No description provided for @panchang_gaudiya_rule.
+  ///
+  /// In en, this message translates to:
+  /// **'Gaudiya/ISKCON: Ekadashi must hold 96 minutes before sunrise (Arunodaya), with Mahadvadashi rules.'**
+  String get panchang_gaudiya_rule;
+
+  /// No description provided for @panchang_calculation_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not calculate this month.'**
+  String get panchang_calculation_failed;
+
+  /// No description provided for @panchang_no_calculated_fast.
+  ///
+  /// In en, this message translates to:
+  /// **'No calculated fast for this month and place; a local sunrise is needed.'**
+  String get panchang_no_calculated_fast;
+
+  /// No description provided for @panchang_calculated_preview.
+  ///
+  /// In en, this message translates to:
+  /// **'A calculated preview: the calendar, reminders and Journey keep using the published Ekadashi schedule.'**
+  String get panchang_calculated_preview;
+
+  /// No description provided for @panchang_fast_day.
+  ///
+  /// In en, this message translates to:
+  /// **'Fast'**
+  String get panchang_fast_day;
+
+  /// No description provided for @panchang_parana.
+  ///
+  /// In en, this message translates to:
+  /// **'Parana'**
+  String get panchang_parana;
+
+  /// No description provided for @panchang_near_boundary.
+  ///
+  /// In en, this message translates to:
+  /// **'A change of tithi or nakshatra is within five minutes of a deciding moment. Check this date with your tradition\'s calendar.'**
+  String get panchang_near_boundary;
+
+  /// No description provided for @panchang_calculation_details.
+  ///
+  /// In en, this message translates to:
+  /// **'Calculation details'**
+  String get panchang_calculation_details;
+
+  /// No description provided for @panchang_rule.
+  ///
+  /// In en, this message translates to:
+  /// **'Rule'**
+  String get panchang_rule;
+
+  /// No description provided for @panchang_hari_vasara_ends.
+  ///
+  /// In en, this message translates to:
+  /// **'Hari Vasara ends'**
+  String get panchang_hari_vasara_ends;
+
+  /// No description provided for @panchang_search_cities.
+  ///
+  /// In en, this message translates to:
+  /// **'Search cities worldwide'**
+  String get panchang_search_cities;
+
+  /// No description provided for @panchang_locating.
+  ///
+  /// In en, this message translates to:
+  /// **'Locating…'**
+  String get panchang_locating;
+
+  /// No description provided for @panchang_use_current_location.
+  ///
+  /// In en, this message translates to:
+  /// **'Use current location'**
+  String get panchang_use_current_location;
+
+  /// No description provided for @panchang_location_name.
+  ///
+  /// In en, this message translates to:
+  /// **'Location name'**
+  String get panchang_location_name;
+
+  /// No description provided for @panchang_latitude.
+  ///
+  /// In en, this message translates to:
+  /// **'Latitude'**
+  String get panchang_latitude;
+
+  /// No description provided for @panchang_longitude.
+  ///
+  /// In en, this message translates to:
+  /// **'Longitude'**
+  String get panchang_longitude;
+
+  /// No description provided for @panchang_timezone.
+  ///
+  /// In en, this message translates to:
+  /// **'Time zone (IANA)'**
+  String get panchang_timezone;
+
+  /// No description provided for @panchang_location_footer.
+  ///
+  /// In en, this message translates to:
+  /// **'Example: Asia/Kolkata or America/New_York. City data: GeoNames (CC BY 4.0). Calculations and city search work offline.'**
+  String get panchang_location_footer;
+
+  /// No description provided for @panchang_location_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Panchang location'**
+  String get panchang_location_title;
+
+  /// No description provided for @panchang_save_location.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get panchang_save_location;
+
+  /// No description provided for @panchang_location_denied.
+  ///
+  /// In en, this message translates to:
+  /// **'Location permission denied. Search or enter a location instead.'**
+  String get panchang_location_denied;
+
+  /// No description provided for @panchang_location_unavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Location unavailable. Search or enter a location instead.'**
+  String get panchang_location_unavailable;
+
+  /// No description provided for @panchang_location_received.
+  ///
+  /// In en, this message translates to:
+  /// **'Coordinates received. Check the time zone before saving.'**
+  String get panchang_location_received;
+
+  /// No description provided for @journey_tab.
+  ///
+  /// In en, this message translates to:
+  /// **'Journey'**
+  String get journey_tab;
+
+  /// No description provided for @journey_record_after_parana.
+  ///
+  /// In en, this message translates to:
+  /// **'You can record this fast once Parana begins'**
+  String get journey_record_after_parana;
+
+  /// No description provided for @settings_premium_subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything for your Ekadashi journey'**
+  String get settings_premium_subtitle;
+
+  /// No description provided for @premium_feature_panchang_v2.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Panchang: every festival in Key days, the five limbs, timings, Muhurta and Rashi'**
+  String get premium_feature_panchang_v2;
+
+  /// No description provided for @settings_premium_from.
+  ///
+  /// In en, this message translates to:
+  /// **'From {value0} a month · Lifetime {value1}'**
+  String settings_premium_from(String value0, String value1);
+
+  /// No description provided for @settings_premium_cta.
+  ///
+  /// In en, this message translates to:
+  /// **'See plans'**
+  String get settings_premium_cta;
+
+  /// No description provided for @settings_premium_plan.
+  ///
+  /// In en, this message translates to:
+  /// **'Your plan: {value0}'**
+  String settings_premium_plan(String value0);
+
+  /// No description provided for @settings_premium_manage.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage'**
+  String get settings_premium_manage;
+
+  /// No description provided for @settings_premium_plans.
+  ///
+  /// In en, this message translates to:
+  /// **'Change plan'**
+  String get settings_premium_plans;
+
+  /// No description provided for @widget_today_is_ekadashi.
+  ///
+  /// In en, this message translates to:
+  /// **'Today is Ekadashi'**
+  String get widget_today_is_ekadashi;
+
+  /// No description provided for @widget_days_to_go.
+  ///
+  /// In en, this message translates to:
+  /// **'{value0} days to go'**
+  String widget_days_to_go(String value0);
+
+  /// No description provided for @widget_fast_done.
+  ///
+  /// In en, this message translates to:
+  /// **'{value0}% of the fast done'**
+  String widget_fast_done(String value0);
+
+  /// No description provided for @widget_name_ekadashi.
+  ///
+  /// In en, this message translates to:
+  /// **'Ekadashi'**
+  String get widget_name_ekadashi;
+
+  /// No description provided for @widget_desc_ekadashi.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s Ekadashi with your fast\'s progress, or the next Ekadashi and the days to go.'**
+  String get widget_desc_ekadashi;
+
+  /// No description provided for @widget_desc_upcoming.
+  ///
+  /// In en, this message translates to:
+  /// **'The next Ekadashis at a glance.'**
+  String get widget_desc_upcoming;
+
+  /// No description provided for @widget_preview_during.
+  ///
+  /// In en, this message translates to:
+  /// **'Left: now · Right: during the next Ekadashi'**
+  String get widget_preview_during;
+
+  /// No description provided for @event_reminder_today.
+  ///
+  /// In en, this message translates to:
+  /// **'{value0} is today ({value1})'**
+  String event_reminder_today(String value0, String value1);
+
+  /// No description provided for @event_reminder_tomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'{value0} is tomorrow ({value1})'**
+  String event_reminder_tomorrow(String value0, String value1);
+
+  /// No description provided for @event_reminder_in_days.
+  ///
+  /// In en, this message translates to:
+  /// **'{value0} is in {value2} days ({value1})'**
+  String event_reminder_in_days(String value0, String value1, String value2);
+
+  /// No description provided for @event_reminder_all_custom.
+  ///
+  /// In en, this message translates to:
+  /// **'All my entries'**
+  String get event_reminder_all_custom;
+
+  /// No description provided for @event_reminder_all_google.
+  ///
+  /// In en, this message translates to:
+  /// **'All Google Calendar events'**
+  String get event_reminder_all_google;
+
+  /// No description provided for @event_reminder_group_festival.
+  ///
+  /// In en, this message translates to:
+  /// **'Festivals'**
+  String get event_reminder_group_festival;
+
+  /// No description provided for @event_reminder_group_monthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly observances'**
+  String get event_reminder_group_monthly;
+
+  /// No description provided for @event_reminder_group_my_calendar.
+  ///
+  /// In en, this message translates to:
+  /// **'My calendar'**
+  String get event_reminder_group_my_calendar;
+
+  /// No description provided for @notifications_section_ekadashi.
+  ///
+  /// In en, this message translates to:
+  /// **'Ekadashi'**
+  String get notifications_section_ekadashi;
+
+  /// No description provided for @notifications_section_events.
+  ///
+  /// In en, this message translates to:
+  /// **'Festivals and events'**
+  String get notifications_section_events;
+
+  /// No description provided for @notifications_events_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Get reminded before festivals, Panchang days and your calendar entries.'**
+  String get notifications_events_desc;
+
+  /// No description provided for @notifications_add_event.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a reminder'**
+  String get notifications_add_event;
+
+  /// No description provided for @notifications_edit_event.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit reminder'**
+  String get notifications_edit_event;
+
+  /// No description provided for @notifications_choose_event.
+  ///
+  /// In en, this message translates to:
+  /// **'Event'**
+  String get notifications_choose_event;
+
+  /// No description provided for @notifications_lead_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Remind me'**
+  String get notifications_lead_title;
+
+  /// No description provided for @notifications_lead_0.
+  ///
+  /// In en, this message translates to:
+  /// **'On the day'**
+  String get notifications_lead_0;
+
+  /// No description provided for @notifications_lead_1.
+  ///
+  /// In en, this message translates to:
+  /// **'1 day before'**
+  String get notifications_lead_1;
+
+  /// No description provided for @notifications_lead_n.
+  ///
+  /// In en, this message translates to:
+  /// **'{value0} days before'**
+  String notifications_lead_n(String value0);
+
+  /// No description provided for @notifications_time.
+  ///
+  /// In en, this message translates to:
+  /// **'At'**
+  String get notifications_time;
+
+  /// No description provided for @notifications_delete_event.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete reminder'**
+  String get notifications_delete_event;
+
+  /// No description provided for @notifications_lead_required.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose at least one day'**
+  String get notifications_lead_required;
+
+  /// No description provided for @notifications_premium_events.
+  ///
+  /// In en, this message translates to:
+  /// **'Festival and Panchang reminders are part of Premium. Reminders for your calendar entries are free.'**
+  String get notifications_premium_events;
+
+  /// No description provided for @notifications_no_events.
+  ///
+  /// In en, this message translates to:
+  /// **'No reminders yet'**
+  String get notifications_no_events;
+
+  /// No description provided for @notifications_off_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on notifications to use reminders.'**
+  String get notifications_off_hint;
+
+  /// No description provided for @notifications_search_events.
+  ///
+  /// In en, this message translates to:
+  /// **'Search events'**
+  String get notifications_search_events;
 }
 
 class _AppLocalizationsDelegate

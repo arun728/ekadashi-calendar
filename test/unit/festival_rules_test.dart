@@ -6,7 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 /// Phase 3 festivals (docs/ROADMAP.md), the same published New Delhi dates
 /// as the iOS FestivalRuleTests (sources in docs/PANCHANG_VALIDATION.md).
 void main() {
-  final engine = PanchangEngine();
+  const engine = PanchangEngine();
   final calendars = <int, List<DatedObservance>>{};
   List<DatedObservance> calendar(int year) => calendars[year] ??= engine
       .observanceCalendar(year, city: PanchangCity.newDelhi);

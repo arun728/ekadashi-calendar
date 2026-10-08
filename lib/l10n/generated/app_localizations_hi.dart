@@ -1044,4 +1044,527 @@ class AppLocalizationsHi extends AppLocalizations {
   @override
   String get google_premium_events_removed =>
       'आपका प्रीमियम समाप्त हो गया है, इसलिए उससे सिंक किए गए Google इवेंट हटा दिए गए। फिर से सिंक करने के लिए नवीनीकरण करें।';
+
+  @override
+  String get search_filter_ekadashi => 'एकादशी';
+
+  @override
+  String get search_filter_festival => 'त्योहार';
+
+  @override
+  String get search_filter_amavasya => 'अमावस्या';
+
+  @override
+  String get search_filter_purnima => 'पूर्णिमा';
+
+  @override
+  String get search_filter_shivaratri => 'शिवरात्रि';
+
+  @override
+  String get search_filter_chaturthi => 'चतुर्थी';
+
+  @override
+  String get search_filter_pradosham => 'प्रदोष';
+
+  @override
+  String get search_filter_navaratri => 'नवरात्रि';
+
+  @override
+  String get search_filter_sankranti => 'संक्रांति';
+
+  @override
+  String get search_filter_jayanti => 'जयंती';
+
+  @override
+  String get search_filter_my_calendar => 'मेरा कैलेंडर';
+
+  @override
+  String get search_filter_screen => 'ऐप में';
+
+  @override
+  String get search_screen_panchang => 'पंचांग';
+
+  @override
+  String get search_hint_all => 'एकादशी, त्योहार, कार्यक्रम खोजें…';
+
+  @override
+  String get search_start_all =>
+      'एकादशी, त्योहार, अमावस्या, पूर्णिमा और अपने कार्यक्रम खोजें';
+
+  @override
+  String get search_premium_locked => 'प्रीमियम से अनलॉक करें';
+
+  @override
+  String get search_no_results_hint =>
+      'वर्तनी जाँचें, या कोई दूसरा वर्ष या फ़िल्टर आज़माएँ।';
+
+  @override
+  String get search_all_years => 'सभी वर्ष';
+
+  @override
+  String get panchang_day => 'दिन';
+
+  @override
+  String get panchang_night => 'रात';
+
+  @override
+  String get panchang_am => 'पूर्वाह्न';
+
+  @override
+  String get panchang_pm => 'अपराह्न';
+
+  @override
+  String get panchang_next_day_marker => '(अगले दिन)';
+
+  @override
+  String get panchang_previous_day_marker => '(पिछले दिन)';
+
+  @override
+  String get panchang_section_keydays => 'मुख्य दिन';
+
+  @override
+  String get panchang_section_daily => 'दैनिक';
+
+  @override
+  String get panchang_section_muhurta => 'मुहूर्त';
+
+  @override
+  String get panchang_section_ekadashi => 'एकादशी';
+
+  @override
+  String get panchang_section_rashi => 'राशि';
+
+  @override
+  String get panchang_search_location => 'शहर खोजें या स्थान का उपयोग करें';
+
+  @override
+  String get panchang_previous => 'पिछला';
+
+  @override
+  String get panchang_next => 'अगला';
+
+  @override
+  String get panchang_pick_date => 'तारीख';
+
+  @override
+  String get panchang_month => 'महीना';
+
+  @override
+  String get panchang_done => 'हो गया';
+
+  @override
+  String get panchang_location_not_saved =>
+      'स्थान बदल गया, पर सहेजा नहीं जा सका।';
+
+  @override
+  String get panchang_notes_title => 'पंचांग की गणना कैसे होती है';
+
+  @override
+  String get panchang_notes_body =>
+      'सब कुछ चुने गए स्थान और उसके समय क्षेत्र के अनुसार आपके फ़ोन पर ही गणना होता है। तिथि, नक्षत्र, योग और करण स्थानीय सूर्योदय के समय लिए जाते हैं; आधी रात के बाद के समय अगले दिन के रूप में दिखाए जाते हैं। सूर्योदय और सूर्यास्त समुद्र तल पर सूर्य के ऊपरी किनारे से गिने जाते हैं, इसलिए पहाड़ और इमारतें इन्हें कुछ मिनट बदल सकती हैं।';
+
+  @override
+  String get panchang_notes_traditions =>
+      'त्योहारों की तिथियाँ पारंपरिक काल-नियमों और प्रकाशित पंचांगों के अनुसार हैं; क्षेत्रीय और पारिवारिक परंपराएँ अलग हो सकती हैं। महीने अमांत और पूर्णिमांत दोनों पद्धतियों में दिखाए जाते हैं। मुख्य दिन, कैलेंडर, अनुस्मारक और यात्रा में एकादशी की तिथियाँ प्रकाशित सूची से आती हैं।';
+
+  @override
+  String get panchang_notes_sources =>
+      'खगोल गणना: VSOP87 और ELP 2000-82B, लाहिड़ी अयनांश के साथ। शहर: GeoNames (CC BY 4.0)। समय क्षेत्र: IANA डेटाबेस।';
+
+  @override
+  String get panchang_premium_title => 'पूरा पंचांग प्रीमियम में है';
+
+  @override
+  String get panchang_premium_body =>
+      'पाँचों अंग, शुभ और वर्जित समय, चौघड़िया, होरा, राशि, और मुख्य दिनों में हर त्योहार व व्रत अनलॉक करें।';
+
+  @override
+  String get panchang_unlock => 'पूरा पंचांग अनलॉक करें';
+
+  @override
+  String get panchang_unlock_short => 'अनलॉक';
+
+  @override
+  String get panchang_key_days_locked =>
+      'त्योहार और व्रत प्रीमियम में हैं। एकादशी मुफ़्त है।';
+
+  @override
+  String get panchang_no_key_days =>
+      'इस फ़िल्टर के लिए इस महीने कोई मुख्य दिन नहीं।';
+
+  @override
+  String panchang_days_ago(String value0) {
+    return '$value0 दिन पहले';
+  }
+
+  @override
+  String get panchang_tithi_at_sunrise => 'सूर्योदय पर तिथि';
+
+  @override
+  String get panchang_tithi_at_six => 'सुबह 6 बजे की तिथि (सूर्योदय नहीं)';
+
+  @override
+  String panchang_until(String value0) {
+    return '$value0 तक';
+  }
+
+  @override
+  String panchang_after(String value0) {
+    return '$value0 के बाद';
+  }
+
+  @override
+  String panchang_starts_at(String value0) {
+    return '$value0 से आरंभ';
+  }
+
+  @override
+  String get panchang_amanta => 'अमांत';
+
+  @override
+  String get panchang_purnimanta => 'पूर्णिमांत';
+
+  @override
+  String get panchang_sunrise => 'सूर्योदय';
+
+  @override
+  String get panchang_sunset => 'सूर्यास्त';
+
+  @override
+  String get panchang_moonrise => 'चंद्रोदय';
+
+  @override
+  String get panchang_moonset => 'चंद्रास्त';
+
+  @override
+  String get panchang_five_limbs => 'पाँच अंग';
+
+  @override
+  String get panchang_tithi => 'तिथि';
+
+  @override
+  String get panchang_nakshatra => 'नक्षत्र';
+
+  @override
+  String get panchang_yoga => 'योग';
+
+  @override
+  String get panchang_karana => 'करण';
+
+  @override
+  String get panchang_vara => 'वार';
+
+  @override
+  String get panchang_timings => 'समय';
+
+  @override
+  String get panchang_good_times => 'शुभ समय';
+
+  @override
+  String get panchang_avoid_times => 'वर्जित समय';
+
+  @override
+  String get panchang_observances => 'व्रत और पर्व';
+
+  @override
+  String get panchang_more_details => 'अधिक विवरण';
+
+  @override
+  String get panchang_sun_rashi => 'सूर्य राशि';
+
+  @override
+  String get panchang_moon_rashi => 'चंद्र राशि';
+
+  @override
+  String get panchang_nakshatra_pada => 'नक्षत्र पद';
+
+  @override
+  String get panchang_ritu => 'ऋतु';
+
+  @override
+  String get panchang_ayana => 'अयन';
+
+  @override
+  String get panchang_samvat => 'संवत्';
+
+  @override
+  String panchang_samvat_value(String value0, String value1) {
+    return 'शक $value0 · विक्रम $value1';
+  }
+
+  @override
+  String get panchang_anandadi => 'आनंदादि योग';
+
+  @override
+  String get panchang_special_yogas => 'विशेष योग';
+
+  @override
+  String get panchang_none => 'कोई नहीं';
+
+  @override
+  String get panchang_ayanamsa => 'लाहिड़ी अयनांश';
+
+  @override
+  String get panchang_no_solar_day =>
+      'आज यहाँ पूरा सौर दिवस नहीं है, इसलिए सूर्योदय पर आधारित समय उपलब्ध नहीं हैं।';
+
+  @override
+  String get panchang_transitions => 'अगले सूर्योदय तक परिवर्तन';
+
+  @override
+  String get panchang_choghadiya => 'चौघड़िया';
+
+  @override
+  String get panchang_choghadiya_hint =>
+      'अमृत, शुभ और लाभ अनुकूल हैं; चल सामान्य है; रोग, काल और उद्वेग से बचें।';
+
+  @override
+  String get panchang_hora => 'होरा';
+
+  @override
+  String get panchang_lagna => 'उदय लग्न';
+
+  @override
+  String get panchang_unavailable => 'इस दिन और स्थान के लिए उपलब्ध नहीं।';
+
+  @override
+  String get panchang_now => 'अभी';
+
+  @override
+  String get panchang_rashi => 'राशि';
+
+  @override
+  String get panchang_rashi_note =>
+      'ये उस दिन सूर्य और चंद्रमा की स्थितियाँ हैं (निरयण, लाहिड़ी)। आपकी जन्म राशि के लिए जन्म तिथि, समय और स्थान चाहिए।';
+
+  @override
+  String get panchang_smarta => 'स्मार्त';
+
+  @override
+  String get panchang_gaudiya => 'वैष्णव · गौड़ीय/इस्कॉन';
+
+  @override
+  String get panchang_smarta_rule =>
+      'गृहस्थ: सूर्योदय वाली एकादशी; दो सूर्योदयों को छूने पर पहला दिन।';
+
+  @override
+  String get panchang_gaudiya_rule =>
+      'गौड़ीय/इस्कॉन: सूर्योदय से 96 मिनट पहले (अरुणोदय) एकादशी होनी चाहिए, महाद्वादशी नियमों सहित।';
+
+  @override
+  String get panchang_calculation_failed => 'इस महीने की गणना नहीं हो सकी।';
+
+  @override
+  String get panchang_no_calculated_fast =>
+      'इस महीने और स्थान के लिए कोई गणना किया गया व्रत नहीं; स्थानीय सूर्योदय आवश्यक है।';
+
+  @override
+  String get panchang_calculated_preview =>
+      'गणना का पूर्वावलोकन: कैलेंडर, अनुस्मारक और यात्रा प्रकाशित एकादशी सूची का ही उपयोग करते हैं।';
+
+  @override
+  String get panchang_fast_day => 'व्रत';
+
+  @override
+  String get panchang_parana => 'पारण';
+
+  @override
+  String get panchang_near_boundary =>
+      'तिथि या नक्षत्र का परिवर्तन निर्णायक क्षण से पाँच मिनट के भीतर है। इस तिथि को अपनी परंपरा के पंचांग से मिलाएँ।';
+
+  @override
+  String get panchang_calculation_details => 'गणना विवरण';
+
+  @override
+  String get panchang_rule => 'नियम';
+
+  @override
+  String get panchang_hari_vasara_ends => 'हरि वासर समाप्त';
+
+  @override
+  String get panchang_search_cities => 'दुनिया भर के शहर खोजें';
+
+  @override
+  String get panchang_locating => 'स्थान खोजा जा रहा है…';
+
+  @override
+  String get panchang_use_current_location => 'वर्तमान स्थान का उपयोग करें';
+
+  @override
+  String get panchang_location_name => 'स्थान का नाम';
+
+  @override
+  String get panchang_latitude => 'अक्षांश';
+
+  @override
+  String get panchang_longitude => 'देशांतर';
+
+  @override
+  String get panchang_timezone => 'समय क्षेत्र (IANA)';
+
+  @override
+  String get panchang_location_footer =>
+      'उदाहरण: Asia/Kolkata या America/New_York। शहर डेटा: GeoNames (CC BY 4.0)। गणना और शहर खोज ऑफ़लाइन काम करते हैं।';
+
+  @override
+  String get panchang_location_title => 'पंचांग स्थान';
+
+  @override
+  String get panchang_save_location => 'सहेजें';
+
+  @override
+  String get panchang_location_denied =>
+      'स्थान की अनुमति नहीं मिली। इसके बजाय कोई स्थान खोजें या दर्ज करें।';
+
+  @override
+  String get panchang_location_unavailable =>
+      'स्थान उपलब्ध नहीं। इसके बजाय कोई स्थान खोजें या दर्ज करें।';
+
+  @override
+  String get panchang_location_received =>
+      'निर्देशांक मिल गए। सहेजने से पहले समय क्षेत्र जाँच लें।';
+
+  @override
+  String get journey_tab => 'यात्रा';
+
+  @override
+  String get journey_record_after_parana =>
+      'पारण शुरू होने के बाद आप यह व्रत दर्ज कर सकते हैं';
+
+  @override
+  String get settings_premium_subtitle => 'आपकी एकादशी यात्रा के लिए सब कुछ';
+
+  @override
+  String get premium_feature_panchang_v2 =>
+      'पूरा पंचांग: मुख्य दिनों में हर त्योहार, पाँच अंग, समय, मुहूर्त और राशि';
+
+  @override
+  String settings_premium_from(String value0, String value1) {
+    return '$value0 प्रति माह से · आजीवन $value1';
+  }
+
+  @override
+  String get settings_premium_cta => 'प्लान देखें';
+
+  @override
+  String settings_premium_plan(String value0) {
+    return 'आपका प्लान: $value0';
+  }
+
+  @override
+  String get settings_premium_manage => 'प्रबंधित करें';
+
+  @override
+  String get settings_premium_plans => 'प्लान बदलें';
+
+  @override
+  String get widget_today_is_ekadashi => 'आज एकादशी है';
+
+  @override
+  String widget_days_to_go(String value0) {
+    return '$value0 दिन बाकी';
+  }
+
+  @override
+  String widget_fast_done(String value0) {
+    return 'व्रत का $value0% पूरा';
+  }
+
+  @override
+  String get widget_name_ekadashi => 'एकादशी';
+
+  @override
+  String get widget_desc_ekadashi =>
+      'आज की एकादशी और व्रत की प्रगति, या अगली एकादशी और बचे हुए दिन।';
+
+  @override
+  String get widget_desc_upcoming => 'आने वाली एकादशियाँ एक नज़र में।';
+
+  @override
+  String get widget_preview_during => 'बाएँ: अभी · दाएँ: अगली एकादशी के दौरान';
+
+  @override
+  String event_reminder_today(String value0, String value1) {
+    return '$value0 आज है ($value1)';
+  }
+
+  @override
+  String event_reminder_tomorrow(String value0, String value1) {
+    return '$value0 कल है ($value1)';
+  }
+
+  @override
+  String event_reminder_in_days(String value0, String value1, String value2) {
+    return '$value0 $value2 दिन बाद है ($value1)';
+  }
+
+  @override
+  String get event_reminder_all_custom => 'मेरी सभी प्रविष्टियाँ';
+
+  @override
+  String get event_reminder_all_google => 'Google कैलेंडर के सभी इवेंट';
+
+  @override
+  String get event_reminder_group_festival => 'त्योहार';
+
+  @override
+  String get event_reminder_group_monthly => 'मासिक व्रत-तिथियाँ';
+
+  @override
+  String get event_reminder_group_my_calendar => 'मेरा कैलेंडर';
+
+  @override
+  String get notifications_section_ekadashi => 'एकादशी';
+
+  @override
+  String get notifications_section_events => 'त्योहार और इवेंट';
+
+  @override
+  String get notifications_events_desc =>
+      'त्योहारों, पंचांग तिथियों और अपने कैलेंडर की प्रविष्टियों से पहले रिमाइंडर पाएँ।';
+
+  @override
+  String get notifications_add_event => 'रिमाइंडर जोड़ें';
+
+  @override
+  String get notifications_edit_event => 'रिमाइंडर बदलें';
+
+  @override
+  String get notifications_choose_event => 'इवेंट';
+
+  @override
+  String get notifications_lead_title => 'मुझे याद दिलाएँ';
+
+  @override
+  String get notifications_lead_0 => 'उसी दिन';
+
+  @override
+  String get notifications_lead_1 => '1 दिन पहले';
+
+  @override
+  String notifications_lead_n(String value0) {
+    return '$value0 दिन पहले';
+  }
+
+  @override
+  String get notifications_time => 'समय';
+
+  @override
+  String get notifications_delete_event => 'रिमाइंडर हटाएँ';
+
+  @override
+  String get notifications_lead_required => 'कम से कम एक दिन चुनें';
+
+  @override
+  String get notifications_premium_events =>
+      'त्योहार और पंचांग रिमाइंडर प्रीमियम का हिस्सा हैं। आपके कैलेंडर की प्रविष्टियों के रिमाइंडर मुफ़्त हैं।';
+
+  @override
+  String get notifications_no_events => 'अभी कोई रिमाइंडर नहीं';
+
+  @override
+  String get notifications_off_hint => 'रिमाइंडर के लिए सूचनाएँ चालू करें।';
+
+  @override
+  String get notifications_search_events => 'इवेंट खोजें';
 }

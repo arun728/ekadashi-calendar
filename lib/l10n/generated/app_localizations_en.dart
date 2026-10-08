@@ -1051,4 +1051,529 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get google_premium_events_removed =>
       'Your Premium has ended, so the Google events it synced were removed. Renew to sync again.';
+
+  @override
+  String get search_filter_ekadashi => 'Ekadashi';
+
+  @override
+  String get search_filter_festival => 'Festivals';
+
+  @override
+  String get search_filter_amavasya => 'Amavasya';
+
+  @override
+  String get search_filter_purnima => 'Purnima';
+
+  @override
+  String get search_filter_shivaratri => 'Shivaratri';
+
+  @override
+  String get search_filter_chaturthi => 'Chaturthi';
+
+  @override
+  String get search_filter_pradosham => 'Pradosham';
+
+  @override
+  String get search_filter_navaratri => 'Navaratri';
+
+  @override
+  String get search_filter_sankranti => 'Sankranti';
+
+  @override
+  String get search_filter_jayanti => 'Jayanti';
+
+  @override
+  String get search_filter_my_calendar => 'My calendar';
+
+  @override
+  String get search_filter_screen => 'In the app';
+
+  @override
+  String get search_screen_panchang => 'Panchang';
+
+  @override
+  String get search_hint_all => 'Search Ekadashi, festivals, events…';
+
+  @override
+  String get search_start_all =>
+      'Find Ekadashis, festivals, Amavasya, Purnima and your events';
+
+  @override
+  String get search_premium_locked => 'Unlock with Premium';
+
+  @override
+  String get search_no_results_hint =>
+      'Check the spelling, or try another year or filter.';
+
+  @override
+  String get search_all_years => 'All years';
+
+  @override
+  String get panchang_day => 'Day';
+
+  @override
+  String get panchang_night => 'Night';
+
+  @override
+  String get panchang_am => 'AM';
+
+  @override
+  String get panchang_pm => 'PM';
+
+  @override
+  String get panchang_next_day_marker => '(next day)';
+
+  @override
+  String get panchang_previous_day_marker => '(previous day)';
+
+  @override
+  String get panchang_section_keydays => 'Key days';
+
+  @override
+  String get panchang_section_daily => 'Daily';
+
+  @override
+  String get panchang_section_muhurta => 'Muhurta';
+
+  @override
+  String get panchang_section_ekadashi => 'Ekadashi';
+
+  @override
+  String get panchang_section_rashi => 'Rashi';
+
+  @override
+  String get panchang_search_location => 'Search city or use location';
+
+  @override
+  String get panchang_previous => 'Previous';
+
+  @override
+  String get panchang_next => 'Next';
+
+  @override
+  String get panchang_pick_date => 'Date';
+
+  @override
+  String get panchang_month => 'Month';
+
+  @override
+  String get panchang_done => 'Done';
+
+  @override
+  String get panchang_location_not_saved =>
+      'Location changed, but could not be saved.';
+
+  @override
+  String get panchang_notes_title => 'How the Panchang is calculated';
+
+  @override
+  String get panchang_notes_body =>
+      'Everything is calculated on your phone for the chosen location, with its own time zone. Tithi, nakshatra, yoga and karana are taken at local sunrise; times after midnight are marked as the next day. Sunrise and sunset use the visible upper edge of the Sun at sea level, so hills and buildings can shift them by a few minutes.';
+
+  @override
+  String get panchang_notes_traditions =>
+      'Festival dates follow the traditional time-of-day rules and published calendars; regional and family traditions can differ. Months are shown in both the Amanta and Purnimanta systems. Ekadashi dates in Key days, the calendar, reminders and Journey come from the published schedule.';
+
+  @override
+  String get panchang_notes_sources =>
+      'Astronomy: VSOP87 and ELP 2000-82B with the Lahiri ayanamsa. Cities: GeoNames (CC BY 4.0). Time zones: IANA database.';
+
+  @override
+  String get panchang_premium_title => 'Full Panchang is part of Premium';
+
+  @override
+  String get panchang_premium_body =>
+      'Unlock the five limbs, good times and times to avoid, Choghadiya, Hora, Rashi, and every festival and observance in Key days.';
+
+  @override
+  String get panchang_unlock => 'Unlock full Panchang';
+
+  @override
+  String get panchang_unlock_short => 'Unlock';
+
+  @override
+  String get panchang_key_days_locked =>
+      'Festivals and observances are part of Premium. Ekadashis are free.';
+
+  @override
+  String get panchang_no_key_days => 'No key days this month for this filter.';
+
+  @override
+  String panchang_days_ago(String value0) {
+    return '$value0 days ago';
+  }
+
+  @override
+  String get panchang_tithi_at_sunrise => 'Tithi at sunrise';
+
+  @override
+  String get panchang_tithi_at_six => 'Tithi at 6 AM (no sunrise)';
+
+  @override
+  String panchang_until(String value0) {
+    return 'until $value0';
+  }
+
+  @override
+  String panchang_after(String value0) {
+    return 'after $value0';
+  }
+
+  @override
+  String panchang_starts_at(String value0) {
+    return 'starts $value0';
+  }
+
+  @override
+  String get panchang_amanta => 'Amanta';
+
+  @override
+  String get panchang_purnimanta => 'Purnimanta';
+
+  @override
+  String get panchang_sunrise => 'Sunrise';
+
+  @override
+  String get panchang_sunset => 'Sunset';
+
+  @override
+  String get panchang_moonrise => 'Moonrise';
+
+  @override
+  String get panchang_moonset => 'Moonset';
+
+  @override
+  String get panchang_five_limbs => 'Five limbs';
+
+  @override
+  String get panchang_tithi => 'Tithi';
+
+  @override
+  String get panchang_nakshatra => 'Nakshatra';
+
+  @override
+  String get panchang_yoga => 'Yoga';
+
+  @override
+  String get panchang_karana => 'Karana';
+
+  @override
+  String get panchang_vara => 'Vara';
+
+  @override
+  String get panchang_timings => 'Timings';
+
+  @override
+  String get panchang_good_times => 'Good times';
+
+  @override
+  String get panchang_avoid_times => 'Times to avoid';
+
+  @override
+  String get panchang_observances => 'Observances';
+
+  @override
+  String get panchang_more_details => 'More details';
+
+  @override
+  String get panchang_sun_rashi => 'Sun rashi';
+
+  @override
+  String get panchang_moon_rashi => 'Moon rashi';
+
+  @override
+  String get panchang_nakshatra_pada => 'Nakshatra pada';
+
+  @override
+  String get panchang_ritu => 'Ritu';
+
+  @override
+  String get panchang_ayana => 'Ayana';
+
+  @override
+  String get panchang_samvat => 'Samvat';
+
+  @override
+  String panchang_samvat_value(String value0, String value1) {
+    return 'Shaka $value0 · Vikrama $value1';
+  }
+
+  @override
+  String get panchang_anandadi => 'Anandadi yoga';
+
+  @override
+  String get panchang_special_yogas => 'Special yogas';
+
+  @override
+  String get panchang_none => 'None';
+
+  @override
+  String get panchang_ayanamsa => 'Lahiri ayanamsa';
+
+  @override
+  String get panchang_no_solar_day =>
+      'No complete solar day here today, so sunrise-based periods are unavailable.';
+
+  @override
+  String get panchang_transitions => 'Changes until the next sunrise';
+
+  @override
+  String get panchang_choghadiya => 'Choghadiya';
+
+  @override
+  String get panchang_choghadiya_hint =>
+      'Amrit, Shubh and Labh are favourable; Chal is neutral; Rog, Kaal and Udveg are best avoided.';
+
+  @override
+  String get panchang_hora => 'Hora';
+
+  @override
+  String get panchang_lagna => 'Udaya Lagna';
+
+  @override
+  String get panchang_unavailable => 'Unavailable for this day and place.';
+
+  @override
+  String get panchang_now => 'Now';
+
+  @override
+  String get panchang_rashi => 'Rashi';
+
+  @override
+  String get panchang_rashi_note =>
+      'These are the Sun and Moon positions for the day (sidereal, Lahiri). Your personal birth rashi needs your birth date, time and place.';
+
+  @override
+  String get panchang_smarta => 'Smarta';
+
+  @override
+  String get panchang_gaudiya => 'Vaishnava · Gaudiya/ISKCON';
+
+  @override
+  String get panchang_smarta_rule =>
+      'Householders: the Ekadashi at sunrise; when it touches two sunrises, the first day.';
+
+  @override
+  String get panchang_gaudiya_rule =>
+      'Gaudiya/ISKCON: Ekadashi must hold 96 minutes before sunrise (Arunodaya), with Mahadvadashi rules.';
+
+  @override
+  String get panchang_calculation_failed => 'Could not calculate this month.';
+
+  @override
+  String get panchang_no_calculated_fast =>
+      'No calculated fast for this month and place; a local sunrise is needed.';
+
+  @override
+  String get panchang_calculated_preview =>
+      'A calculated preview: the calendar, reminders and Journey keep using the published Ekadashi schedule.';
+
+  @override
+  String get panchang_fast_day => 'Fast';
+
+  @override
+  String get panchang_parana => 'Parana';
+
+  @override
+  String get panchang_near_boundary =>
+      'A change of tithi or nakshatra is within five minutes of a deciding moment. Check this date with your tradition\'s calendar.';
+
+  @override
+  String get panchang_calculation_details => 'Calculation details';
+
+  @override
+  String get panchang_rule => 'Rule';
+
+  @override
+  String get panchang_hari_vasara_ends => 'Hari Vasara ends';
+
+  @override
+  String get panchang_search_cities => 'Search cities worldwide';
+
+  @override
+  String get panchang_locating => 'Locating…';
+
+  @override
+  String get panchang_use_current_location => 'Use current location';
+
+  @override
+  String get panchang_location_name => 'Location name';
+
+  @override
+  String get panchang_latitude => 'Latitude';
+
+  @override
+  String get panchang_longitude => 'Longitude';
+
+  @override
+  String get panchang_timezone => 'Time zone (IANA)';
+
+  @override
+  String get panchang_location_footer =>
+      'Example: Asia/Kolkata or America/New_York. City data: GeoNames (CC BY 4.0). Calculations and city search work offline.';
+
+  @override
+  String get panchang_location_title => 'Panchang location';
+
+  @override
+  String get panchang_save_location => 'Save';
+
+  @override
+  String get panchang_location_denied =>
+      'Location permission denied. Search or enter a location instead.';
+
+  @override
+  String get panchang_location_unavailable =>
+      'Location unavailable. Search or enter a location instead.';
+
+  @override
+  String get panchang_location_received =>
+      'Coordinates received. Check the time zone before saving.';
+
+  @override
+  String get journey_tab => 'Journey';
+
+  @override
+  String get journey_record_after_parana =>
+      'You can record this fast once Parana begins';
+
+  @override
+  String get settings_premium_subtitle =>
+      'Everything for your Ekadashi journey';
+
+  @override
+  String get premium_feature_panchang_v2 =>
+      'Full Panchang: every festival in Key days, the five limbs, timings, Muhurta and Rashi';
+
+  @override
+  String settings_premium_from(String value0, String value1) {
+    return 'From $value0 a month · Lifetime $value1';
+  }
+
+  @override
+  String get settings_premium_cta => 'See plans';
+
+  @override
+  String settings_premium_plan(String value0) {
+    return 'Your plan: $value0';
+  }
+
+  @override
+  String get settings_premium_manage => 'Manage';
+
+  @override
+  String get settings_premium_plans => 'Change plan';
+
+  @override
+  String get widget_today_is_ekadashi => 'Today is Ekadashi';
+
+  @override
+  String widget_days_to_go(String value0) {
+    return '$value0 days to go';
+  }
+
+  @override
+  String widget_fast_done(String value0) {
+    return '$value0% of the fast done';
+  }
+
+  @override
+  String get widget_name_ekadashi => 'Ekadashi';
+
+  @override
+  String get widget_desc_ekadashi =>
+      'Today\'s Ekadashi with your fast\'s progress, or the next Ekadashi and the days to go.';
+
+  @override
+  String get widget_desc_upcoming => 'The next Ekadashis at a glance.';
+
+  @override
+  String get widget_preview_during =>
+      'Left: now · Right: during the next Ekadashi';
+
+  @override
+  String event_reminder_today(String value0, String value1) {
+    return '$value0 is today ($value1)';
+  }
+
+  @override
+  String event_reminder_tomorrow(String value0, String value1) {
+    return '$value0 is tomorrow ($value1)';
+  }
+
+  @override
+  String event_reminder_in_days(String value0, String value1, String value2) {
+    return '$value0 is in $value2 days ($value1)';
+  }
+
+  @override
+  String get event_reminder_all_custom => 'All my entries';
+
+  @override
+  String get event_reminder_all_google => 'All Google Calendar events';
+
+  @override
+  String get event_reminder_group_festival => 'Festivals';
+
+  @override
+  String get event_reminder_group_monthly => 'Monthly observances';
+
+  @override
+  String get event_reminder_group_my_calendar => 'My calendar';
+
+  @override
+  String get notifications_section_ekadashi => 'Ekadashi';
+
+  @override
+  String get notifications_section_events => 'Festivals and events';
+
+  @override
+  String get notifications_events_desc =>
+      'Get reminded before festivals, Panchang days and your calendar entries.';
+
+  @override
+  String get notifications_add_event => 'Add a reminder';
+
+  @override
+  String get notifications_edit_event => 'Edit reminder';
+
+  @override
+  String get notifications_choose_event => 'Event';
+
+  @override
+  String get notifications_lead_title => 'Remind me';
+
+  @override
+  String get notifications_lead_0 => 'On the day';
+
+  @override
+  String get notifications_lead_1 => '1 day before';
+
+  @override
+  String notifications_lead_n(String value0) {
+    return '$value0 days before';
+  }
+
+  @override
+  String get notifications_time => 'At';
+
+  @override
+  String get notifications_delete_event => 'Delete reminder';
+
+  @override
+  String get notifications_lead_required => 'Choose at least one day';
+
+  @override
+  String get notifications_premium_events =>
+      'Festival and Panchang reminders are part of Premium. Reminders for your calendar entries are free.';
+
+  @override
+  String get notifications_no_events => 'No reminders yet';
+
+  @override
+  String get notifications_off_hint =>
+      'Turn on notifications to use reminders.';
+
+  @override
+  String get notifications_search_events => 'Search events';
 }
