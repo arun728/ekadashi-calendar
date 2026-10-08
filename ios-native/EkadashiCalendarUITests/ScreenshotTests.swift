@@ -80,11 +80,11 @@ final class ScreenshotTests: XCTestCase {
         snap("09-search")
 
         // Festivals are calculated in the background, then show locked for free users.
-        app.searchFields.firstMatch.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 6) + "Diwali")
+        replaceSearch(with: "Diwali")
         XCTAssertTrue(result("search_result_observance:deepavali:").waitForExistence(timeout: 60))
         snap("10-search-festival")
 
-        app.searchFields.firstMatch.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 6) + "amavasai")
+        replaceSearch(with: "amavasai")
         XCTAssertTrue(result("search_result_observance:amavasya:").waitForExistence(timeout: 10))
         snap("11-search-type-word")
     }
@@ -140,6 +140,15 @@ final class ScreenshotTests: XCTestCase {
         app.buttons["event_reminder_save"].tap()
         XCTAssertTrue(app.buttons["event_reminder_row_calendar:custom"].waitForExistence(timeout: 5))
         snap("13-notifications")
+    }
+
+    /// Return ends editing, so focus the field again before replacing its text.
+    private func replaceSearch(with text: String) {
+        let field = app.searchFields.firstMatch
+        field.tap()
+        let value = field.value as? String ?? ""
+        let count = value == field.placeholderValue ? 0 : value.count
+        field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: count) + text)
     }
 
     private func result(_ prefix: String) -> XCUIElement {
