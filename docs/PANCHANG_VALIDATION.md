@@ -73,3 +73,34 @@ run are recorded in the PR. No local Android SDK or iOS build result is claimed.
 Existing published schedules, tracker identities, reminders and widgets remain
 in production use. Replacing those schedules needs wider calendar validation
 and explicit history/reminder migration tests; calculated data stays a preview.
+
+## Festivals added on iOS first (Phase 3, 8 October 2026)
+
+`FestivalRuleTests` checks these against dates published for New Delhi.
+They are calculated by the Swift engine only for now
+(`PanchangEngine.iosFirstObservanceIds`); the Dart engine gains them with
+the Android port, and the Dart parity test skips them until then.
+
+| Festival | Rule (Amanta months) | 2026 | 2027 |
+| --- | --- | --- | --- |
+| Raksha Bandhan | Shravana Purnima on the day it lasts six ghatis after sunrise (the first half is Bhadra), else Aparahna | 28 Aug | 17 Aug |
+| Nag Panchami | Shravana Shukla Panchami in Purvahna | 17 Aug | 6 Aug |
+| Ratha Yatra | Ashadha Shukla Dwitiya at sunrise | 16 Jul | 5 Jul |
+| Durga Ashtami | Ashvina Shukla Ashtami at sunrise | 19 Oct | 7 Oct |
+| Varalakshmi Vratam | Shravana Shukla Friday whose next Friday is after Purnima (Drik, New Delhi); many South Indian calendars keep the Friday before | 28 Aug | 13 Aug (from the rule) |
+| Onam (Thiruvonam) | Shravana nakshatra six nazhika after sunrise in solar Simha (Chingam); the later one if it occurs twice | 26 Aug | 12 Sep |
+| Karthigai Deepam | First day in solar Vrischika with Krittika during Pradosh | 24 Nov | 11 Dec (from the rule) |
+
+Sources for the published dates: [Raksha Bandhan](https://publicholidays.in/raksha-bandhan/),
+[Nag Panchami](https://dekhopanchang.com/en/festivals/nag-panchami),
+[Onam](https://www.drikpanchang.com/festivals/onam/onam-thiruvonam-date.html?year=2027),
+[Ratha Yatra](https://www.drikpanchang.com/festivals/ratha-yatra/jagannatha-rathayatra-date-time.html?year=2027),
+[Durga Ashtami](https://dekhopanchang.com/en/festivals/durga-ashtami/2027),
+[Varalakshmi Vratam](https://dekhopanchang.com/en/festivals/varalakshmi-vratam),
+[Karthigai Deepam](https://www.drikpanchang.com/festivals/karthigai-deepam/karthigai-deepam-date-time.html?year=2026).
+Only dates were compared; no text or data was copied.
+
+Known gaps: Holika Dahan 2026 is calculated on 2 March while published
+calendars give 3 March (Bhadra and the eclipse are not evaluated). Lohri,
+Bhogi, Puthandu, Vishu and Baisakhi need regional solar rules and are not
+calculated yet.

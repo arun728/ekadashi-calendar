@@ -887,6 +887,151 @@
     "te": "మీన సంక్రాంతి"
    },
    "aliases": []
+  },
+  {
+   "key": "raksha-bandhan",
+   "engine": {
+    "id": "raksha-bandhan"
+   },
+   "categories": [
+    "festival",
+    "purnima"
+   ],
+   "names": {
+    "en": "Raksha Bandhan",
+    "hi": "रक्षा बंधन",
+    "ta": "ரக்ஷா பந்தன்",
+    "te": "రక్షా బంధన్"
+   },
+   "aliases": [
+    "rakhi",
+    "rakhri",
+    "raksha bandhan",
+    "shravana purnima",
+    "narali purnima"
+   ]
+  },
+  {
+   "key": "nag-panchami",
+   "engine": {
+    "id": "nag-panchami"
+   },
+   "categories": [
+    "festival"
+   ],
+   "names": {
+    "en": "Nag Panchami",
+    "hi": "नाग पंचमी",
+    "ta": "நாக பஞ்சமி",
+    "te": "నాగ పంచమి"
+   },
+   "aliases": [
+    "naga panchami",
+    "nag pancham"
+   ]
+  },
+  {
+   "key": "ratha-yatra",
+   "engine": {
+    "id": "ratha-yatra"
+   },
+   "categories": [
+    "festival"
+   ],
+   "names": {
+    "en": "Ratha Yatra",
+    "hi": "रथ यात्रा",
+    "ta": "ரத யாத்திரை",
+    "te": "రథ యాత్ర"
+   },
+   "aliases": [
+    "rath yatra",
+    "jagannath rath yatra",
+    "jagannatha rathayatra",
+    "puri rath yatra"
+   ]
+  },
+  {
+   "key": "durga-ashtami",
+   "engine": {
+    "id": "durga-ashtami"
+   },
+   "categories": [
+    "festival",
+    "navaratri"
+   ],
+   "names": {
+    "en": "Durga Ashtami",
+    "hi": "दुर्गा अष्टमी",
+    "ta": "துர்காஷ்டமி",
+    "te": "దుర్గాష్టమి"
+   },
+   "aliases": [
+    "durgashtami",
+    "maha ashtami",
+    "durga puja ashtami"
+   ]
+  },
+  {
+   "key": "varalakshmi-vratam",
+   "engine": {
+    "id": "varalakshmi-vratam"
+   },
+   "categories": [
+    "festival"
+   ],
+   "names": {
+    "en": "Varalakshmi Vratam",
+    "hi": "वरलक्ष्मी व्रत",
+    "ta": "வரலட்சுமி விரதம்",
+    "te": "వరలక్ష్మీ వ్రతం"
+   },
+   "aliases": [
+    "varalakshmi vratham",
+    "varamahalakshmi",
+    "vara lakshmi"
+   ]
+  },
+  {
+   "key": "onam",
+   "engine": {
+    "id": "onam"
+   },
+   "categories": [
+    "festival"
+   ],
+   "names": {
+    "en": "Onam (Thiruvonam)",
+    "hi": "ओणम",
+    "ta": "ஓணம்",
+    "te": "ఓణం"
+   },
+   "aliases": [
+    "thiruvonam",
+    "thiru onam",
+    "onam festival"
+   ]
+  },
+  {
+   "key": "karthigai-deepam",
+   "engine": {
+    "id": "karthigai-deepam"
+   },
+   "categories": [
+    "festival"
+   ],
+   "names": {
+    "en": "Karthigai Deepam",
+    "hi": "कार्तिगई दीपम",
+    "ta": "கார்த்திகை தீபம்",
+    "te": "కార్తీక దీపం"
+   },
+   "aliases": [
+    "karthika deepam",
+    "kartika deepam",
+    "thiruvannamalai deepam",
+    "karthigai deepam"
+   ]
   }
  ],
  "screens": [
