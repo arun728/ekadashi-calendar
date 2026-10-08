@@ -159,3 +159,23 @@ final class KeyDaysTests: XCTestCase {
         XCTAssertEqual(PanchangKeyDays.filter(hindi, category: nil).count, hindi.count)
     }
 }
+
+final class EnglishFallbackTests: XCTestCase {
+    /// Words that stay the same in every language (brand names).
+    static let sameEverywhere: Set<String> = ["filter_google"]
+
+    /// No string is left in English in another language by mistake; a new
+    /// language that copies English strings fails here too.
+    func testNoStringIsAccidentallyEnglish() {
+        let english = Set(Localizer.shared.keys(language: "en")).union(Localizer.shared.overrideKeys(language: "en"))
+        var same: [String] = []
+        for language in Localizer.languages where language != "en" {
+            for key in english.sorted() where !Self.sameEverywhere.contains(key) {
+                let source = Localizer.shared.translate(key, language: "en")
+                guard source.contains(where: \.isLetter) else { continue }
+                if Localizer.shared.translate(key, language: language) == source { same.append("\(language) \(key)") }
+            }
+        }
+        XCTAssertEqual(same, [])
+    }
+}
