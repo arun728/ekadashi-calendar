@@ -82,6 +82,16 @@ void main() {
       }
       expect(scrollView, findsOneWidget);
       expect(loading, findsNothing);
+      // Key days opens first; the full upgrade card is on the Daily page.
+      await tester.tap(find.byKey(const Key('panchang_tab_daily')));
+      for (
+        var i = 0;
+        i < 30 &&
+            find.byKey(const Key('panchang_unlock_button')).evaluate().isEmpty;
+        i++
+      ) {
+        await tester.pump(const Duration(seconds: 1));
+      }
       // The unlock card is below the fold in Panchang's lazy list.
       final unlock = find.byKey(const Key('panchang_unlock_button'));
       await tester.scrollUntilVisible(
