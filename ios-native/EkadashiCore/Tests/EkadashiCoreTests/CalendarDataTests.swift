@@ -159,7 +159,9 @@ final class LocalizationTests: XCTestCase {
     func testEveryLanguageHasEveryKeyNativeScriptAndPlaceholders() {
         let scripts = ["ta": "\u{0B80}"..."\u{0BFF}", "hi": "\u{0900}"..."\u{097F}", "te": "\u{0C00}"..."\u{0C7F}"]
         let english = Localizer.shared.keys(language: "en")
-        XCTAssertEqual(english.count, 325)
+        // 325 shared keys, plus the 157 iOS strings moved into lib/l10n and the
+        // four Panchang location strings (docs/ROADMAP.md Phase 2, Android).
+        XCTAssertEqual(english.count, 486)
         var problems: [String] = []
         for language in ["ta", "hi", "te"] {
             for key in english {
