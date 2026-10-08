@@ -111,3 +111,29 @@ final class EventReminderTests: XCTestCase {
         XCTAssertTrue(settings.reminders.isEmpty)
     }
 }
+
+/// Ekadashi and event reminders share iOS's 64 pending notifications.
+final class PendingNotificationTests: XCTestCase {
+    func testMergeKeepsTheSoonestAcrossBothKinds() {
+        let now = instant("2026-10-08T10:00:00+05:30")
+        let ekadashi: [PlannedReminder] = (0..<40).map { (index: Int) -> PlannedReminder in
+            let kind: PlannedReminder.Kind = index % 2 == 0 ? .onFastingStart : .onParana
+            let fire = now.addingTimeInterval(Double(index * 2 + 1) * 3600)
+            return PlannedReminder(id: 1000 + index, ekadashiId: 100 + index, kind: kind, fireDate: fire, title: "E\(index)", body: "")
+        }
+        let day = CivilDate(2026, 10, 9)
+        let events: [PlannedEventReminder] = (0..<40).map { (index: Int) -> PlannedEventReminder in
+            let fire = now.addingTimeInterval(Double(index * 2 + 2) * 3600)
+            return PlannedEventReminder(id: "event.e\(index)", target: .calendar(.custom), eventDate: day, fireDate: fire,
+                                        title: "V\(index)", body: "", url: AppRoute.calendarURL(day))
+        }
+        let merged = PendingNotification.merge(ekadashi: ekadashi, events: events, limit: 64)
+        XCTAssertEqual(merged.count, 64)
+        XCTAssertEqual(merged.map(\.fireDate), merged.map(\.fireDate).sorted())
+        XCTAssertEqual(merged.filter { $0.id.hasPrefix("event.") }.count, 32)
+        XCTAssertEqual(merged.first?.id, "1000")
+        XCTAssertEqual(merged.first?.url, AppRoute.todayURL)
+        XCTAssertEqual(merged[2].url, AppRoute.paranaURL, "Parana opens the Parana card")
+        XCTAssertEqual(merged[1].url, AppRoute.calendarURL(CivilDate(2026, 10, 9)))
+    }
+}
