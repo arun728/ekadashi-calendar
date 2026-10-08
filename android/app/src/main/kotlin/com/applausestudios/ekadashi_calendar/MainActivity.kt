@@ -374,6 +374,17 @@ class MainActivity: FlutterActivity() {
                     }
                 }
 
+                "scheduleEventReminders" -> {
+                    try {
+                        @Suppress("UNCHECKED_CAST")
+                        val reminders = call.argument<List<Map<String, Any?>>>("reminders") ?: emptyList()
+                        result.success(notifScheduler.scheduleEventReminders(reminders))
+                    } catch (e: Exception) {
+                        Log.e(TAG, "scheduleEventReminders error: ${e.message}")
+                        result.error("SCHEDULE_ERROR", e.message, null)
+                    }
+                }
+
                 "cancelAllNotifications" -> {
                     notifScheduler.cancelAllNotifications()
                     result.success(true)

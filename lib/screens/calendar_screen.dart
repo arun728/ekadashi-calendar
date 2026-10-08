@@ -16,6 +16,7 @@ import 'widgets/day_entries_list.dart';
 import 'widgets/add_edit_entry_sheet.dart';
 import 'widgets/google_calendar_picker_sheet.dart';
 import 'package:flutter/material.dart';
+import '../services/notifications/event_reminder_service.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -210,6 +211,7 @@ class CalendarScreenState extends State<CalendarScreen> {
       );
     }
     await prefs.remove(CalendarScreen.premiumSyncKey);
+    EventReminderService.instance.changed();
     if (notify) {
       await _reloadEntries();
       _showMessage('google_premium_events_removed');
@@ -262,6 +264,7 @@ class CalendarScreenState extends State<CalendarScreen> {
     try {
       await _repo.upsert(result);
       await _reloadEntries();
+      EventReminderService.instance.changed();
       if (mounted) setState(() => _filter = CalendarFilter.custom);
     } catch (_) {
       _showMessage('storage_failed');
@@ -957,6 +960,7 @@ class CalendarScreenState extends State<CalendarScreen> {
                       try {
                         await _repo.delete(item.entryId!);
                         await _reloadEntries();
+                        EventReminderService.instance.changed();
                       } catch (_) {
                         _showMessage('storage_failed');
                       }

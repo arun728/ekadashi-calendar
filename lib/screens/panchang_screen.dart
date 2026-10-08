@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/notifications/event_reminder_service.dart';
 import 'package:provider/provider.dart';
 
 import '../l10n/app_language.dart';
@@ -143,6 +144,8 @@ class PanchangScreenState extends State<PanchangScreen> {
     if (widget.initialCity != null) return;
     try {
       await _locationStore.save(city);
+      // Festival reminders follow the Panchang location.
+      EventReminderService.instance.changed();
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

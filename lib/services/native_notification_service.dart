@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
+import 'notifications/event_reminders.dart';
+
 /// Native notification service using Kotlin WorkManager
 /// More reliable than AlarmManager - guarantees notification delivery
 class NativeNotificationService {
@@ -66,6 +68,34 @@ class NativeNotificationService {
       return result ?? 0;
     } catch (e) {
       debugPrint('scheduleAllNotifications error: $e');
+      return 0;
+    }
+  }
+
+  /// Replaces every scheduled festival, Panchang and calendar reminder with
+  /// [reminders] (docs/ROADMAP.md Phase 7); an empty list clears them.
+  Future<int> scheduleEventReminders(
+    List<PlannedEventReminder> reminders,
+  ) async {
+    try {
+      final result = await _channel.invokeMethod<Object?>(
+        'scheduleEventReminders',
+        {
+          'reminders': [
+            for (final r in reminders)
+              {
+                'id': r.id,
+                'fireAt': r.fireDate.millisecondsSinceEpoch,
+                'title': r.title,
+                'body': r.body,
+                'url': r.url,
+              },
+          ],
+        },
+      );
+      return result is int ? result : 0;
+    } catch (e) {
+      debugPrint('scheduleEventReminders error: $e');
       return 0;
     }
   }

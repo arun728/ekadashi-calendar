@@ -55,7 +55,9 @@ void main() {
           minute: 30,
         ),
         EventReminder(
-          target: const EventReminderTarget.calendar(CalendarEntrySource.custom),
+          target: const EventReminderTarget.calendar(
+            CalendarEntrySource.custom,
+          ),
           daysBefore: const [0],
           hour: 6,
         ),
@@ -186,7 +188,9 @@ void main() {
       choices.any(
         (c) =>
             c.target ==
-                const EventReminderTarget.calendar(CalendarEntrySource.google) &&
+                const EventReminderTarget.calendar(
+                  CalendarEntrySource.google,
+                ) &&
             c.group == EventReminderGroup.myCalendar,
       ),
       isTrue,

@@ -38,6 +38,8 @@ class EkadashiNotificationWorker(
         const val KEY_EKADASHI_ID = "ekadashi_id"
         const val KEY_NOTIFICATION_TYPE = "notification_type"
         const val KEY_NOTIFICATION_ID = "notification_id"
+        /** Optional ekadashi:// link the notification opens (event reminders). */
+        const val KEY_URL = "url"
     }
 
     override suspend fun doWork(): Result {
@@ -48,7 +50,7 @@ class EkadashiNotificationWorker(
         Log.d(TAG, "Showing notification: $title")
 
         return try {
-            showNotification(title, body, notificationId)
+            showNotification(title, body, notificationId, inputData.getString(KEY_URL))
             Result.success()
         } catch (e: Exception) {
             Log.e(TAG, "Error showing notification: ${e.message}")
@@ -61,7 +63,7 @@ class EkadashiNotificationWorker(
         }
     }
 
-    private fun showNotification(title: String, body: String, notificationId: Int) {
+    private fun showNotification(title: String, body: String, notificationId: Int, url: String? = null) {
         val notificationManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         // Create notification channel for Android O+
@@ -81,6 +83,10 @@ class EkadashiNotificationWorker(
         // Create intent to open app when notification is tapped
         val intent = Intent(applicationContext, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            if (url != null) {
+                action = Intent.ACTION_VIEW
+                data = android.net.Uri.parse(url)
+            }
         }
 
         val pendingIntent = PendingIntent.getActivity(

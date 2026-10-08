@@ -35,6 +35,8 @@ class NotificationScheduler(private val context: Context) {
 
         // Work tags
         private const val TAG_EKADASHI_NOTIFICATION = "ekadashi_notification"
+        /** Festival, Panchang and calendar entry reminders (docs/ROADMAP.md Phase 7). */
+        const val TAG_EVENT_REMINDER = "event_reminder"
     }
 
     private val workManager = WorkManager.getInstance(context)
@@ -188,6 +190,41 @@ class NotificationScheduler(private val context: Context) {
         workManager.cancelAllWorkByTag(TAG_EKADASHI_NOTIFICATION)
         Log.d(TAG, "Cancelled all Ekadashi notifications")
     }
+
+    /**
+     * Replaces every scheduled event reminder with [reminders]: maps with an
+     * "id", "fireAt" (epoch milliseconds), "title", "body" and "url". The app
+     * plans them; an empty list clears them. Returns how many were scheduled.
+     */
+    fun scheduleEventReminders(reminders: List<Map<String, Any?>>, now: Long = System.currentTimeMillis()): Int {
+        workManager.cancelAllWorkByTag(TAG_EVENT_REMINDER)
+        var count = 0
+        for (reminder in reminders) {
+            val id = reminder["id"] as? String ?: continue
+            val fireAt = (reminder["fireAt"] as? Number)?.toLong() ?: continue
+            val title = reminder["title"] as? String ?: continue
+            val body = reminder["body"] as? String ?: continue
+            if (fireAt <= now) continue
+            val data = Data.Builder()
+                .putString(EkadashiNotificationWorker.KEY_TITLE, title)
+                .putString(EkadashiNotificationWorker.KEY_BODY, body)
+                .putInt(EkadashiNotificationWorker.KEY_NOTIFICATION_ID, eventNotificationId(id))
+                .putString(EkadashiNotificationWorker.KEY_URL, reminder["url"] as? String)
+                .build()
+            val request = OneTimeWorkRequestBuilder<EkadashiNotificationWorker>()
+                .setInitialDelay(fireAt - now, TimeUnit.MILLISECONDS)
+                .setInputData(data)
+                .addTag(TAG_EVENT_REMINDER)
+                .build()
+            workManager.enqueueUniqueWork(id, ExistingWorkPolicy.REPLACE, request)
+            count++
+        }
+        Log.d(TAG, "Scheduled $count event reminders")
+        return count
+    }
+
+    /** Event reminder ids stay clear of the Ekadashi ones (id * 10 + type). */
+    private fun eventNotificationId(id: String): Int = (id.hashCode() and 0x3FFFFFFF) or 0x40000000
 
     /**
      * Cancel notifications for a specific Ekadashi

@@ -5,6 +5,11 @@ import 'widgets/glass_tube.dart';
 import 'package:flutter/foundation.dart';
 import 'widgets/glass_navigation_bar.dart';
 import 'data/calendar_entry_repository.dart';
+import 'data/sqflite_calendar_entry_repository.dart';
+import 'models/calendar_entry.dart';
+import 'services/notifications/event_reminder_service.dart';
+import 'services/panchang/panchang_city.dart';
+import 'services/panchang/panchang_location_store.dart';
 import 'services/native_widget_service.dart';
 import 'services/widget_sync_manager.dart';
 import 'screens/global_search_screen.dart';
@@ -138,6 +143,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     if (premium == null) return;
     if (premium.isPremium != _lastPremium) {
       _lastPremium = premium.isPremium;
+      // Festival and Panchang reminders start or stop with Premium.
+      EventReminderService.instance.changed();
       if (_achievementTracker?.isInitialized == true &&
           _ekadashiList.isNotEmpty) {
         _achievementTracker!
@@ -181,6 +188,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     NativeWidgetService().initializeDeepLinkListener(handleDeepLink);
+    EventReminderService.instance.attach(_scheduleEventReminders);
     // Defer initialization to prevent freeze on process restoration
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeApp();
@@ -900,8 +908,47 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     }
   }
 
+  /// Plans the festival, Panchang and calendar reminders (docs/ROADMAP.md
+  /// Phase 7) with the current Premium, language, Panchang location and
+  /// entries; clears them while notifications are off.
+  Future<void> _scheduleEventReminders() async {
+    final service = EventReminderService.instance;
+    final settings = await service.load();
+    var enabled = false;
+    try {
+      final native = NativeSettingsService();
+      enabled =
+          (await native.getNotificationSettings()).enabled &&
+          (await native.checkAllPermissions()).hasNotificationPermission;
+    } catch (e) {
+      debugPrint('Event reminders: notification state unavailable: $e');
+    }
+    if (!mounted) return;
+    final language = context.read<LanguageService>().currentLocale.languageCode;
+    final repository = context.read<CalendarEntryRepository?>();
+    final city = await PanchangLocationStore().load() ?? PanchangCity.newDelhi;
+    var entries = const <CalendarEntry>[];
+    if (enabled && settings.reminders.any((r) => r.target.source != null)) {
+      try {
+        final repo = repository ?? SqfliteCalendarEntryRepository();
+        await repo.init();
+        entries = await repo.getAll();
+      } catch (e) {
+        debugPrint('Event reminders: entries unavailable: $e');
+      }
+    }
+    await service.schedule(
+      enabled: enabled,
+      premium: _premium?.isPremium ?? false,
+      language: language,
+      city: city,
+      entries: entries,
+    );
+  }
+
   /// Schedule notifications for all Ekadashis
   Future<void> _scheduleNotifications() async {
+    _scheduleEventReminders();
     if (_ekadashiList.isEmpty) return;
 
     final settingsService = NativeSettingsService();
