@@ -83,7 +83,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(Tab, 'History'));
+    await tester.tap(find.byKey(const Key('journey_tab_history')));
     await tester.pumpAndSettle();
     await tester.tap(find.text(e.name).hitTestable());
     await tester.pumpAndSettle();
@@ -116,13 +116,13 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(Tab, 'History'));
+    await tester.tap(find.byKey(const Key('journey_tab_history')));
     await tester.pumpAndSettle();
     final historyYear = tester.widget<DropdownButton<int>>(
       find.byType(DropdownButton<int>).first,
     );
     expect(historyYear.value, DateTime.now().year);
-    await tester.tap(find.widgetWithText(Tab, 'Statistics'));
+    await tester.tap(find.byKey(const Key('journey_tab_statistics')));
     await tester.pumpAndSettle();
     final statisticsYear = tester.widget<DropdownButton<int>>(
       find.byType(DropdownButton<int>).last,
