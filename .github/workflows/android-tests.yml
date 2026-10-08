@@ -62,7 +62,9 @@ jobs:
     # Keep collecting native/UI evidence while required Flutter gates are red.
     if: always() && !cancelled()
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    # A cold Gradle build has taken over 30 minutes on a slow runner, which
+    # left too little time for the emulator suites within 45 minutes.
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
