@@ -197,3 +197,14 @@ current. These rules supersede earlier ones where they conflict:
   new branch from `feature/unified-search` (`feature/android-v2`), with CI run
   on its PR to `dev` and the PR marked ready for review once every check
   passes. Do not merge it without his approval.
+
+## Tests follow every change (8 October 2026)
+
+Arun's standing rule for every agent and chat: when you change a screen,
+label, key, flow, default page, widget or anything else a test can observe,
+update **every** test that refers to it in the same change, before pushing.
+That includes the tests you cannot run locally: `integration_test/*.dart`,
+`android/app/src/androidTest/`, the counts in `tool/android-*.sh`, and
+`ios-native/*UITests/`. Search them for each renamed or moved label, key and
+step (for example `grep -rn "'Vrat'" integration_test`). Never leave an
+out-of-date test for CI to find one round at a time.
