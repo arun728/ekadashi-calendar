@@ -3,7 +3,7 @@
 A native Swift/SwiftUI version of the Android app with the same features:
 
 - tabs: Today, Calendar, Vrat, Panchang and Settings, with Search in the top bar;
-- three home-screen widgets and reminder notifications;
+- two home-screen widgets (Ekadashi and Upcoming Ekadashis) and reminder notifications for Ekadashi, festivals, Panchang days and calendar entries;
 - Google Calendar import with the free-sync registry, and App Store premium;
 - English, Tamil, Hindi and Telugu, plus the offline Panchang engine with both Ekadashi traditions.
 
@@ -47,11 +47,12 @@ xcodebuild test -project EkadashiCalendar.xcodeproj -scheme EkadashiCalendar \
   -destination 'platform=iOS Simulator,name=iPhone 17'
 ```
 
-The core tests read the repository's `assets/` and `lib/l10n/` files. They fail if the iOS copies drift from Android. In the Flutter suite, `test/tool/dump_search_catalog_test.dart` and `test/tool/dump_panchang_parity_test.dart` fail if the iOS search catalog or the Panchang parity fixture no longer match the Dart code.
+The core tests read the repository's `assets/`, `lib/l10n/` and `test/fixtures/` files. They fail if the iOS copies drift from Android (including `assets/search/search_catalog.json`). The search tests run the shared golden cases in `test/fixtures/search/search_golden.json`, which the Flutter port of the search will run too. In the Flutter suite, `test/tool/dump_panchang_parity_test.dart` fails if the Panchang parity fixture no longer matches the Dart code.
 
 To regenerate the copies:
 - data and Swift series files: `python3 tool/ios/generate_core_resources.py`;
-- search catalog and parity fixture: run those two tests with `UPDATE_IOS_FIXTURES=1`.
+- search catalog: copy `assets/search/search_catalog.json` to `EkadashiCore/Sources/EkadashiCore/Resources/search/`;
+- parity fixture: run `test/tool/dump_panchang_parity_test.dart` with `UPDATE_IOS_FIXTURES=1`.
 
 CI runs the iOS job in `.github/workflows/android-tests.yml` on macOS with Xcode 26. It runs the package tests, then builds the app and widgets and runs the unit and UI tests on the newest iPhone simulator. The UI screenshots are uploaded as an artifact.
 
@@ -117,10 +118,11 @@ These follow the Play-only rules in `AGENTS.md`, adapted to StoreKit 2 with no b
 | Calendar: every data year, month grid, Ekadashi/Google/custom filters, custom entries, Google import and disconnect | `CalendarView`, `EntryEditorView`, `GoogleCalendarPickerView`, `GoogleSyncCoordinator` | Core tests for the sync, free-registry and deletion-reconciliation rules; UI not run |
 | Vrat tracker: overview, history, statistics, achievements, record sheet, unlock dialog | `VratView`, `RecordVratSheet`, `VratTracker` | Core tests (Android JSON schema, streaks, 3 free entries/badges); UI not run |
 | Panchang, worldwide and English-only: Daily, Muhurta, Ekadashi (Smarta and Gaudiya), Rashi, Festivals and Guide; city search, GPS or manual coordinates and IANA timezone | `PanchangView` and panels, `PanchangEngine`, `CalculatedEkadashiEngine` | Core tests: field-by-field parity with the Flutter engine (112 days in 8 cities, 240 fasts) plus the published Drik, ISKCON Bangalore and GCAL gates; UI not run |
-| Global search with suggestions, recents (explicit submissions only), categories, year and content language, offline and download | `GlobalSearchView`, `SearchDetailView`, `SearchIndex` | Core tests; UI not run |
+| One search for the whole app (iOS first, Phase 1 of `docs/ROADMAP.md`; Android port pending): Ekadashis, Panchang festivals and observances (Premium), custom and Google entries, and screens; year filter first, then type chips; aliases and names in all four languages; suggestions and recents (explicit submissions only) | `GlobalSearchView`, `UnifiedSearch`, `SearchCorpus`, `SearchCatalog` | Core tests and the shared golden cases; UI test searches an Ekadashi, a festival and a type word |
 | Reminders: 2 days and 1 day before, fasting start, Parana; test notification | `ReminderPlanner`, `NotificationService` (respects iOS's 64-pending limit) | Core tests for the plan; delivery not run |
+| Festival, Panchang and calendar reminders, chosen days before at a chosen time (iOS first, docs/ROADMAP.md Phase 7) | `EventReminderPlanner`, `PendingNotification.merge`, `EventRemindersView` | Core tests; UI test adds one; delivery not run |
 | Three widgets (next, today, upcoming) with deep links | `EkadashiWidgets`, `WidgetSnapshot` in the App Group | Core tests for snapshot and state; widgets not run |
-| `ekadashi://` links (dashboard, today, parana, calendar?date=, vrat, panchang, more, settings, search) | `AppRoute`, `onOpenURL` and notification taps | Core tests |
+| `ekadashi://` links (dashboard, today, parana, calendar?date=, vrat, panchang, panchang?date=, more, settings, search) | `AppRoute`, `onOpenURL` and notification taps | Core tests |
 | en/ta/hi/te | `Localizer` reads the Android ARB strings, plus an iOS override table for 17 strings that name Google Play or Android settings | Core tests: every key used by the app exists in all four languages |
 | Background refresh (WorkManager) | `BGAppRefreshTask` keeps reminders, widgets and premium current | Not run |
 

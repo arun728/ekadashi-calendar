@@ -184,7 +184,52 @@ current. These rules supersede earlier ones where they conflict:
 - One branch per phase from the latest `dev`, with a **draft** PR to `dev`.
   Never push or merge to `dev` or `main` until Arun says so explicitly.
 - When Arun says "skip ci", add `[skip ci]` to the commit messages.
+- Do not run CI until Arun explicitly asks (8 October 2026): every pushed
+  commit carries `[skip ci]` until then. All phases go on
+  `feature/unified-search` (PR #17) for his review. On 8 October 2026 Arun
+  asked for CI on PR #17 and for it to be marked ready for review once every
+  check passes.
 - Panchang is no longer English-only: it follows the app language (Phase 2).
-- Languages are ordered English, Hindi, Tamil, Telugu; new languages are
-  appended at the end.
+- Languages are ordered English, Hindi, Tamil, Telugu, Gujarati, Bengali; new
+  languages are appended at the end.
 - Search no longer covers katha, mantra, food or vrat-info content.
+
+## No more CI (8 October 2026)
+
+Arun said "No more ci": until he explicitly asks for CI again, every pushed
+commit on every branch carries `[skip ci]`, nobody re-runs or triggers
+workflows, and nobody schedules check-ins to watch CI. Run the local checks
+(analyzer, Flutter tests, `swift test`) before pushing instead.
+
+## iOS first, then Android, always in sync (9 October 2026)
+
+Arun's standing rule for every change, not only roadmap phases: build and
+test it in `ios-native/` on `feature/unified-search` first, push that, then
+port the same change to the Flutter app on `feature/android-v2` and push
+that. Do not start on Android before the iOS commit is pushed. After each
+change both branches must be in sync: the app code in `ios-native/`
+(EkadashiCalendar, Shared, EkadashiCore sources and tests) and the shared
+assets (`assets/calendar`, `assets/panchang/terms.json`, `place_names.json`,
+`cities.json`, `search_catalog.json`) are byte-identical on both, and every
+string the iOS app shows is the same on both. Only the generated
+`strings.json`/`ios_overrides.json` split, key-count tests and the Phase 3
+festival parity flag may differ, because the Android branch's Dart code and
+ARB files are ahead. Every commit carries `[skip ci]`.
+
+## Every word in the app language (9 October 2026)
+
+In Hindi, Tamil, Telugu, Gujarati and Bengali no English or Latin letters
+appear anywhere on screen, widgets or notifications: brand names, units, AM
+and PM, time zones, city and country names are written in that language's
+script (`assets/panchang/place_names.json` for places; the device geocoder
+in the app language for a detected city). Translations are written by
+Claude, not Sarvam. Only a user's typed text and IANA time-zone ids may stay
+Latin. Keep `test/ui/no_english_ui_test.dart` and the Swift LanguageTests
+green.
+
+## One date format (9 October 2026)
+
+Every tab and sub-tab shows dates as weekday, date, month and year ("Thu, 8
+Oct 2026") in the app language: `AppModel.fullDate` on iOS and
+`AppStrings.fullDate` on Android. The Calendar header and all Panchang
+sub-tabs show the selected date; month steps keep the day of the month.

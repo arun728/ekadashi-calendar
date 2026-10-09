@@ -39,6 +39,10 @@ struct EkadashiCalendarApp: App {
                     delegate.model.open(url)
                 }
                 .task { await delegate.model.start() }
+                // Festival and Panchang reminders follow Premium.
+                .onChange(of: delegate.model.premium.isPremium) { _, _ in
+                    Task { await delegate.model.scheduleReminders() }
+                }
         }
         .onChange(of: scenePhase) { _, phase in delegate.model.scenePhaseChanged(phase) }
         .backgroundTask(.appRefresh(AppModel.refreshTaskId)) {

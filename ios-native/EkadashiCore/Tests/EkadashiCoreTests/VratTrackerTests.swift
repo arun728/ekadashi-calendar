@@ -231,3 +231,42 @@ final class VratTrackerTests: XCTestCase {
         XCTAssertTrue(try record(service, 1, "2025-01-01", uid: events()[0].occurrenceUid, occurrences: events()).isEmpty)
     }
 }
+
+/// Phase 4 bug fix: a fast can be recorded only once it has happened.
+final class VratRecordingWindowTests: XCTestCase {
+    private let zone = AppTimezone.ist.location
+
+    private func event(date: CivilDate, parana: String = "") -> EkadashiOccurrence {
+        EkadashiOccurrence(id: 1, occurrenceUid: "ekadashi:2026:20", name: "Papankusha Ekadashi", date: date,
+                           paranaStartISO: parana)
+    }
+
+    func testFutureEkadashiCannotBeRecorded() {
+        let future = event(date: CivilDate(2026, 10, 22), parana: "2026-10-23T06:20:00+05:30")
+        XCTAssertFalse(VratRecording.isOpen(future, now: instant("2026-10-08T10:00:00+05:30"), zone: zone))
+    }
+
+    func testTodaysEkadashiOpensAtParanaStart() {
+        let today = event(date: CivilDate(2026, 10, 22), parana: "2026-10-23T06:20:00+05:30")
+        XCTAssertFalse(VratRecording.isOpen(today, now: instant("2026-10-22T20:00:00+05:30"), zone: zone), "still fasting")
+        XCTAssertFalse(VratRecording.isOpen(today, now: instant("2026-10-23T06:19:59+05:30"), zone: zone))
+        XCTAssertTrue(VratRecording.isOpen(today, now: instant("2026-10-23T06:20:00+05:30"), zone: zone))
+    }
+
+    func testPastEkadashiIsOpenEvenWithoutParanaTime() {
+        let past = event(date: CivilDate(2026, 9, 7))
+        XCTAssertTrue(VratRecording.isOpen(past, now: instant("2026-10-08T10:00:00+05:30"), zone: zone))
+        let todayWithoutParana = event(date: CivilDate(2026, 10, 8))
+        XCTAssertFalse(VratRecording.isOpen(todayWithoutParana, now: instant("2026-10-08T23:00:00+05:30"), zone: zone))
+    }
+
+    /// The bundled schedule: every Ekadashi before today is open, none after.
+    func testBundledScheduleOpensOnlyPastFasts() throws {
+        let events = try CalendarRepository.bundled().ekadashis(timezone: "IST", language: "en")
+        let now = instant("2026-10-08T10:00:00+05:30")
+        for event in events {
+            let open = VratRecording.isOpen(event, now: now, zone: zone)
+            XCTAssertEqual(open, event.date < CivilDate(2026, 10, 8), event.occurrenceUid)
+        }
+    }
+}

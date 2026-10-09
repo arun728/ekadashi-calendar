@@ -1,0 +1,1366 @@
+{
+ "_about": "Search catalog shared by the iOS (EkadashiCore) and Flutter apps. Observances map Panchang engine ids to canonical keys, categories, names per language (English, Hindi, Tamil, Telugu, Gujarati, Bengali) and aliases; categories hold the words that act as type filters; screens are app destinations. Names and aliases need native-speaker review (docs/ROADMAP.md Phase 2).",
+ "version": 1,
+ "excludedEngineIds": [
+  "ekadashi",
+  "dwadashi",
+  "ashtami",
+  "navami",
+  "pongal"
+ ],
+ "categories": {
+  "ekadashi": [
+   "ekadashi",
+   "ekadasi",
+   "ekadeshi",
+   "एकादशी",
+   "ஏகாதசி",
+   "ఏకాదశి",
+   "એકાદશી",
+   "અગિયારસ",
+   "একাদশী"
+  ],
+  "festival": [
+   "festival",
+   "festivals",
+   "utsav",
+   "tyohar",
+   "त्योहार",
+   "त्यौहार",
+   "पर्व",
+   "பண்டிகை",
+   "பண்டிகைகள்",
+   "పండుగ",
+   "పండుగలు",
+   "તહેવાર",
+   "તહેવારો",
+   "પર્વ",
+   "উৎসব",
+   "পার্বণ",
+   "পরব"
+  ],
+  "amavasya": [
+   "amavasya",
+   "amavasai",
+   "amawasya",
+   "amavas",
+   "अमावस्या",
+   "अमावस",
+   "அமாவாசை",
+   "అమావాస్య",
+   "અમાસ",
+   "અમાવસ્યા",
+   "অমাবস্যা",
+   "অমাবস্যে"
+  ],
+  "purnima": [
+   "purnima",
+   "poornima",
+   "pournami",
+   "purnami",
+   "pournima",
+   "punnami",
+   "पूर्णिमा",
+   "पूनम",
+   "பௌர்ணமி",
+   "பூர்ணிமா",
+   "పౌర్ణమి",
+   "పూర్ణిమ",
+   "પૂનમ",
+   "પૂર્ણિમા",
+   "পূর্ণিমা",
+   "পূর্ণিমে"
+  ],
+  "shivaratri": [
+   "shivaratri",
+   "shivratri",
+   "sivaratri",
+   "sivarathri",
+   "शिवरात्रि",
+   "சிவராத்திரி",
+   "శివరాత్రి",
+   "શિવરાત્રી",
+   "শিবরাত্রি"
+  ],
+  "chaturthi": [
+   "chaturthi",
+   "chathurthi",
+   "chavithi",
+   "चतुर्थी",
+   "சதுர்த்தி",
+   "చవితి",
+   "చతుర్థి",
+   "ચતુર્થી",
+   "ચોથ",
+   "চতুর্থী"
+  ],
+  "pradosham": [
+   "pradosham",
+   "pradosh",
+   "pradosha",
+   "pradosam",
+   "प्रदोष",
+   "பிரதோஷம்",
+   "ప్రదోషం",
+   "પ્રદોષ",
+   "প্রদোষ"
+  ],
+  "navaratri": [
+   "navaratri",
+   "navratri",
+   "navarathri",
+   "नवरात्रि",
+   "नवरात्र",
+   "நவராத்திரி",
+   "నవరాత్రి",
+   "నవరాత్రులు",
+   "નવરાત્રી",
+   "নবরাত্রি"
+  ],
+  "sankranti": [
+   "sankranti",
+   "sankranthi",
+   "sankaranthi",
+   "संक्रांति",
+   "சங்கராந்தி",
+   "సంక్రాంతి",
+   "સંક્રાંતિ",
+   "সংক্রান্তি"
+  ],
+  "jayanti": [
+   "jayanti",
+   "jayanthi",
+   "जयंती",
+   "ஜெயந்தி",
+   "జయంతి",
+   "જયંતી",
+   "জয়ন্তী"
+  ],
+  "my_calendar": []
+ },
+ "observances": [
+  {
+   "key": "ugadi",
+   "engine": {
+    "id": "ugadi"
+   },
+   "categories": [
+    "festival"
+   ],
+   "names": {
+    "en": "Ugadi / Gudi Padwa",
+    "hi": "गुड़ी पड़वा / उगादि",
+    "ta": "யுகாதி",
+    "te": "ఉగాది",
+    "gu": "ગુડી પડવો / ઉગાદિ",
+    "bn": "গুড়ি পাড়ওয়া / উগাদি"
+   },
+   "aliases": [
+    "yugadi",
+    "gudi padwa",
+    "gudhi padwa",
+    "hindu new year",
+    "telugu new year",
+    "kannada new year",
+    "marathi new year",
+    "nav samvatsar",
+    "gudi padvo",
+    "ગુડી પડવો",
+    "ગુડી પાડવો",
+    "নববর্ষ"
+   ]
+  },
+  {
+   "key": "chaitra-navratri",
+   "engine": {
+    "id": "chaitra-navratri"
+   },
+   "categories": [
+    "festival",
+    "navaratri"
+   ],
+   "names": {
+    "en": "Chaitra Navaratri begins",
+    "hi": "चैत्र नवरात्रि प्रारंभ",
+    "ta": "சைத்ர நவராத்திரி ஆரம்பம்",
+    "te": "చైత్ర నవరాత్రులు ప్రారంభం",
+    "gu": "ચૈત્રી નવરાત્રી પ્રારંભ",
+    "bn": "চৈত্র নবরাত্রি শুরু"
+   },
+   "aliases": [
+    "chaitra navratri",
+    "vasant navratri",
+    "ghatasthapana",
+    "ચૈત્રી નવરાત્રી",
+    "বাসন্তী পূজা",
+    "basanti puja"
+   ]
+  },
+  {
+   "key": "vasant-panchami",
+   "engine": {
+    "id": "vasant-panchami"
+   },
+   "categories": [
+    "festival"
+   ],
+   "names": {
+    "en": "Vasant Panchami",
+    "hi": "वसंत पंचमी",
+    "ta": "வசந்த பஞ்சமி",
+    "te": "వసంత పంచమి",
+    "gu": "વસંત પંચમી",
+    "bn": "বসন্ত পঞ্চমী (সরস্বতী পূজা)"
+   },
+   "aliases": [
+    "basant panchami",
+    "saraswati puja",
+    "sri panchami",
+    "shri panchami",
+    "સરસ્વતી પૂજા",
+    "সরস্বতী পূজা",
+    "শ্রী পঞ্চমী"
+   ]
+  },
+  {
+   "key": "rama-navami",
+   "engine": {
+    "id": "rama-navami"
+   },
+   "categories": [
+    "festival",
+    "jayanti"
+   ],
+   "names": {
+    "en": "Rama Navami",
+    "hi": "राम नवमी",
+    "ta": "ராம நவமி",
+    "te": "శ్రీరామ నవమి",
+    "gu": "રામ નવમી",
+    "bn": "রাম নবমী"
+   },
+   "aliases": [
+    "ram navami",
+    "sri rama navami",
+    "shri ram navami"
+   ]
+  },
+  {
+   "key": "hanuman-jayanti",
+   "engine": {
+    "id": "hanuman-jayanti"
+   },
+   "categories": [
+    "festival",
+    "jayanti"
+   ],
+   "names": {
+    "en": "Hanuman Jayanti",
+    "hi": "हनुमान जयंती",
+    "ta": "அனுமன் ஜெயந்தி",
+    "te": "హనుమాన్ జయంతి",
+    "gu": "હનુમાન જયંતી",
+    "bn": "হনুমান জয়ন্তী"
+   },
+   "aliases": [
+    "hanuman janmotsav"
+   ]
+  },
+  {
+   "key": "akshaya-tritiya",
+   "engine": {
+    "id": "akshaya-tritiya"
+   },
+   "categories": [
+    "festival"
+   ],
+   "names": {
+    "en": "Akshaya Tritiya",
+    "hi": "अक्षय तृतीया",
+    "ta": "அட்சய திருதியை",
+    "te": "అక్షయ తృతీయ",
+    "gu": "અખાત્રીજ (અક્ષય તૃતીયા)",
+    "bn": "অক্ষয় তৃতীয়া"
+   },
+   "aliases": [
+    "akha teej",
+    "akshaya trithiya",
+    "akshaya thiruthiyai",
+    "akhatrij",
+    "અખાત્રીજ",
+    "অক্ষয় তৃতীয়া"
+   ]
+  },
+  {
+   "key": "guru-purnima",
+   "engine": {
+    "id": "guru-purnima"
+   },
+   "categories": [
+    "festival",
+    "purnima"
+   ],
+   "names": {
+    "en": "Guru Purnima",
+    "hi": "गुरु पूर्णिमा",
+    "ta": "குரு பூர்ணிமா",
+    "te": "గురు పౌర్ణమి",
+    "gu": "ગુરુ પૂર્ણિમા",
+    "bn": "গুরু পূর্ণিমা"
+   },
+   "aliases": [
+    "vyasa purnima",
+    "vyasa pournami"
+   ]
+  },
+  {
+   "key": "janmashtami",
+   "engine": {
+    "id": "janmashtami"
+   },
+   "categories": [
+    "festival",
+    "jayanti"
+   ],
+   "names": {
+    "en": "Krishna Janmashtami",
+    "hi": "कृष्ण जन्माष्टमी",
+    "ta": "கிருஷ்ண ஜெயந்தி",
+    "te": "శ్రీ కృష్ణ జన్మాష్టమి",
+    "gu": "જન્માષ્ટમી",
+    "bn": "জন্মাষ্টমী"
+   },
+   "aliases": [
+    "janmashtami",
+    "gokulashtami",
+    "gokula ashtami",
+    "krishna jayanti",
+    "sri jayanti",
+    "krishnashtami",
+    "ગોકુળ આઠમ",
+    "gokul atham",
+    "জন্মাষ্টমী"
+   ]
+  },
+  {
+   "key": "ganesh-chaturthi",
+   "engine": {
+    "id": "vinayaka-chaturthi",
+    "name": "Ganesh Chaturthi"
+   },
+   "categories": [
+    "festival",
+    "chaturthi"
+   ],
+   "names": {
+    "en": "Ganesh Chaturthi",
+    "hi": "गणेश चतुर्थी",
+    "ta": "விநாயகர் சதுர்த்தி",
+    "te": "వినాయక చవితి",
+    "gu": "ગણેશ ચતુર્થી",
+    "bn": "গণেশ চতুর্থী"
+   },
+   "aliases": [
+    "vinayaka chavithi",
+    "vinayagar chathurthi",
+    "ganeshotsav",
+    "ganpati"
+   ]
+  },
+  {
+   "key": "vinayaka-chaturthi",
+   "engine": {
+    "id": "vinayaka-chaturthi"
+   },
+   "categories": [
+    "chaturthi"
+   ],
+   "names": {
+    "en": "Vinayaka Chaturthi",
+    "hi": "विनायक चतुर्थी",
+    "ta": "விநாயக சதுர்த்தி",
+    "te": "వినాయక చతుర్థి",
+    "gu": "વિનાયક ચતુર્થી",
+    "bn": "বিনায়ক চতুর্থী"
+   },
+   "aliases": [
+    "masik vinayaka chaturthi",
+    "monthly chaturthi"
+   ]
+  },
+  {
+   "key": "sankashti-chaturthi",
+   "engine": {
+    "id": "sankashti-chaturthi"
+   },
+   "categories": [
+    "chaturthi"
+   ],
+   "names": {
+    "en": "Sankashti Chaturthi",
+    "hi": "संकष्टी चतुर्थी",
+    "ta": "சங்கடஹர சதுர்த்தி",
+    "te": "సంకటహర చతుర్థి",
+    "gu": "સંકષ્ટી ચતુર્થી",
+    "bn": "সংকষ্টী চতুর্থী"
+   },
+   "aliases": [
+    "sankatahara chaturthi",
+    "sakat chauth",
+    "sankashti"
+   ]
+  },
+  {
+   "key": "sharad-navratri",
+   "engine": {
+    "id": "sharad-navratri"
+   },
+   "categories": [
+    "festival",
+    "navaratri"
+   ],
+   "names": {
+    "en": "Sharad Navaratri begins",
+    "hi": "शारदीय नवरात्रि प्रारंभ",
+    "ta": "நவராத்திரி ஆரம்பம்",
+    "te": "దసరా నవరాత్రులు ప్రారంభం",
+    "gu": "શારદીય નવરાત્રી પ્રારંભ",
+    "bn": "শারদীয় নবরাত্রি শুরু"
+   },
+   "aliases": [
+    "sharad navratri",
+    "durga puja",
+    "golu",
+    "bommai kolu",
+    "bathukamma",
+    "dasara navaratri",
+    "ghatasthapana",
+    "નવરાત્રી",
+    "ગરબા",
+    "garba",
+    "দুর্গা পূজা",
+    "durga pujo",
+    "দুর্গোৎসব"
+   ]
+  },
+  {
+   "key": "vijayadashami",
+   "engine": {
+    "id": "vijayadashami"
+   },
+   "categories": [
+    "festival",
+    "navaratri"
+   ],
+   "names": {
+    "en": "Vijayadashami (Dussehra)",
+    "hi": "विजयादशमी (दशहरा)",
+    "ta": "விஜயதசமி",
+    "te": "విజయదశమి (దసరా)",
+    "gu": "વિજયા દશમી (દશેરા)",
+    "bn": "বিজয়া দশমী (দশেরা)"
+   },
+   "aliases": [
+    "dussehra",
+    "dasara",
+    "dussera",
+    "dasha hara",
+    "vidyarambham",
+    "દશેરા",
+    "dashera",
+    "বিজয়া দশমী",
+    "bijoya dashami"
+   ]
+  },
+  {
+   "key": "karwa-chauth",
+   "engine": {
+    "id": "karwa-chauth"
+   },
+   "categories": [
+    "festival",
+    "chaturthi"
+   ],
+   "names": {
+    "en": "Karwa Chauth",
+    "hi": "करवा चौथ",
+    "ta": "கர்வா சௌத்",
+    "te": "కర్వా చౌత్",
+    "gu": "કરવા ચોથ",
+    "bn": "করবা চৌথ"
+   },
+   "aliases": [
+    "karva chauth",
+    "karak chaturthi"
+   ]
+  },
+  {
+   "key": "dhanteras",
+   "engine": {
+    "id": "dhanteras"
+   },
+   "categories": [
+    "festival"
+   ],
+   "names": {
+    "en": "Dhanteras",
+    "hi": "धनतेरस",
+    "ta": "தன்தேரஸ்",
+    "te": "ధన త్రయోదశి",
+    "gu": "ધનતેરસ",
+    "bn": "ধনতেরাস"
+   },
+   "aliases": [
+    "dhanatrayodashi",
+    "dhan teras",
+    "dhanvantari jayanti"
+   ]
+  },
+  {
+   "key": "naraka-chaturdashi",
+   "engine": {
+    "id": "naraka-chaturdashi"
+   },
+   "categories": [
+    "festival"
+   ],
+   "names": {
+    "en": "Naraka Chaturdashi",
+    "hi": "नरक चतुर्दशी",
+    "ta": "நரக சதுர்த்தசி",
+    "te": "నరక చతుర్దశి",
+    "gu": "કાળી ચૌદસ (નરક ચતુર્દશી)",
+    "bn": "নরক চতুর্দশী (ভূত চতুর্দশী)"
+   },
+   "aliases": [
+    "choti diwali",
+    "chhoti diwali",
+    "roop chaudas",
+    "kali chaudas",
+    "કાળી ચૌદસ",
+    "ভূত চতুর্দশী",
+    "bhoot chaturdashi"
+   ]
+  },
+  {
+   "key": "deepavali",
+   "engine": {
+    "id": "deepavali"
+   },
+   "categories": [
+    "festival"
+   ],
+   "names": {
+    "en": "Deepavali (Lakshmi Puja)",
+    "hi": "दीपावली (लक्ष्मी पूजा)",
+    "ta": "தீபாவளி",
+    "te": "దీపావళి",
+    "gu": "દિવાળી (લક્ષ્મી પૂજન)",
+    "bn": "দীপাবলি (লক্ষ্মী পূজা)"
+   },
+   "aliases": [
+    "diwali",
+    "deepawali",
+    "divali",
+    "dipawali",
+    "lakshmi puja",
+    "laxmi puja",
+    "દિવાળી",
+    "দীপাবলি",
+    "কালী পূজা",
+    "kali puja"
+   ]
+  },
+  {
+   "key": "govardhan-puja",
+   "engine": {
+    "id": "govardhan-puja"
+   },
+   "categories": [
+    "festival"
+   ],
+   "names": {
+    "en": "Govardhan Puja",
+    "hi": "गोवर्धन पूजा",
+    "ta": "கோவர்தன பூஜை",
+    "te": "గోవర్ధన పూజ",
+    "gu": "ગોવર્ધન પૂજા (બેસતું વર્ષ)",
+    "bn": "গোবর্ধন পূজা"
+   },
+   "aliases": [
+    "annakut",
+    "annakoot",
+    "bali pratipada",
+    "બેસતું વર્ષ",
+    "besatu varas",
+    "ગુજરાતી નવું વર્ષ",
+    "gujarati new year"
+   ]
+  },
+  {
+   "key": "bhai-dooj",
+   "engine": {
+    "id": "bhai-dooj"
+   },
+   "categories": [
+    "festival"
+   ],
+   "names": {
+    "en": "Bhai Dooj",
+    "hi": "भाई दूज",
+    "ta": "பாய் தூஜ்",
+    "te": "భగినీ హస్త భోజనం",
+    "gu": "ભાઈબીજ",
+    "bn": "ভাইফোঁটা"
+   },
+   "aliases": [
+    "bhaiya dooj",
+    "bhau beej",
+    "bhai tika",
+    "yama dwitiya",
+    "bhratri dwitiya",
+    "ભાઈબીજ",
+    "bhai bij",
+    "ভাইফোঁটা",
+    "bhai phonta",
+    "bhai phota"
+   ]
+  },
+  {
+   "key": "chhath-puja",
+   "engine": {
+    "id": "chhath-puja"
+   },
+   "categories": [
+    "festival"
+   ],
+   "names": {
+    "en": "Chhath Puja",
+    "hi": "छठ पूजा",
+    "ta": "சத் பூஜை",
+    "te": "ఛఠ్ పూజ",
+    "gu": "છઠ પૂજા",
+    "bn": "ছট পূজা"
+   },
+   "aliases": [
+    "chhath",
+    "surya shashthi"
+   ]
+  },
+  {
+   "key": "holika-dahan",
+   "engine": {
+    "id": "holika-dahan"
+   },
+   "categories": [
+    "festival",
+    "purnima"
+   ],
+   "names": {
+    "en": "Holika Dahan",
+    "hi": "होलिका दहन",
+    "ta": "ஹோலிகா தகனம்",
+    "te": "హోలికా దహనం",
+    "gu": "હોળિકા દહન",
+    "bn": "হোলিকা দহন"
+   },
+   "aliases": [
+    "choti holi",
+    "kama dahanam",
+    "holika",
+    "હોળી",
+    "হোলিকা দহন",
+    "ন্যাড়াপোড়া"
+   ]
+  },
+  {
+   "key": "holi",
+   "engine": {
+    "id": "holi"
+   },
+   "categories": [
+    "festival"
+   ],
+   "names": {
+    "en": "Holi",
+    "hi": "होली",
+    "ta": "ஹோலி",
+    "te": "హోలీ",
+    "gu": "ધુળેટી (હોળી)",
+    "bn": "দোল / হোলি"
+   },
+   "aliases": [
+    "rangwali holi",
+    "dhulandi",
+    "dhuleti",
+    "phagwah",
+    "ધુળેટી",
+    "দোলযাত্রা",
+    "dol jatra",
+    "dol purnima",
+    "দোল পূর্ণিমা"
+   ]
+  },
+  {
+   "key": "maha-shivaratri",
+   "engine": {
+    "id": "maha-shivaratri"
+   },
+   "categories": [
+    "festival",
+    "shivaratri"
+   ],
+   "names": {
+    "en": "Maha Shivaratri",
+    "hi": "महाशिवरात्रि",
+    "ta": "மகா சிவராத்திரி",
+    "te": "మహా శివరాత్రి",
+    "gu": "મહાશિવરાત્રી",
+    "bn": "মহাশিবরাত্রি"
+   },
+   "aliases": [
+    "mahashivratri",
+    "maha shivratri",
+    "maha sivaratri",
+    "મહાશિવરાત્રી",
+    "মহাশিবরাত্রি"
+   ]
+  },
+  {
+   "key": "masik-shivaratri",
+   "engine": {
+    "id": "masik-shivaratri"
+   },
+   "categories": [
+    "shivaratri"
+   ],
+   "names": {
+    "en": "Masik Shivaratri",
+    "hi": "मासिक शिवरात्रि",
+    "ta": "மாத சிவராத்திரி",
+    "te": "మాస శివరాత్రి",
+    "gu": "માસિક શિવરાત્રી",
+    "bn": "মাসিক শিবরাত্রি"
+   },
+   "aliases": [
+    "masa shivaratri",
+    "monthly shivaratri"
+   ]
+  },
+  {
+   "key": "purnima",
+   "engine": {
+    "id": "purnima"
+   },
+   "categories": [
+    "purnima"
+   ],
+   "names": {
+    "en": "Purnima",
+    "hi": "पूर्णिमा",
+    "ta": "பௌர்ணமி",
+    "te": "పౌర్ణమి",
+    "gu": "પૂનમ",
+    "bn": "পূর্ণিমা"
+   },
+   "aliases": [
+    "full moon",
+    "poornima",
+    "pournami",
+    "purnami",
+    "punnami"
+   ]
+  },
+  {
+   "key": "amavasya",
+   "engine": {
+    "id": "amavasya"
+   },
+   "categories": [
+    "amavasya"
+   ],
+   "names": {
+    "en": "Amavasya",
+    "hi": "अमावस्या",
+    "ta": "அமாவாசை",
+    "te": "అమావాస్య",
+    "gu": "અમાસ",
+    "bn": "অমাবস্যা"
+   },
+   "aliases": [
+    "new moon",
+    "amavasai",
+    "amawasya",
+    "amavas"
+   ]
+  },
+  {
+   "key": "pradosham",
+   "engine": {
+    "id": "pradosham"
+   },
+   "categories": [
+    "pradosham"
+   ],
+   "names": {
+    "en": "Pradosham",
+    "hi": "प्रदोष व्रत",
+    "ta": "பிரதோஷம்",
+    "te": "ప్రదోషం",
+    "gu": "પ્રદોષ વ્રત",
+    "bn": "প্রদোষ ব্রত"
+   },
+   "aliases": [
+    "pradosh vrat",
+    "pradosha"
+   ]
+  },
+  {
+   "key": "makar-sankranti",
+   "engine": {
+    "id": "sankranti-9"
+   },
+   "categories": [
+    "festival",
+    "sankranti"
+   ],
+   "names": {
+    "en": "Makar Sankranti",
+    "hi": "मकर संक्रांति",
+    "ta": "தைப் பொங்கல்",
+    "te": "మకర సంక్రాంతి",
+    "gu": "મકર સંક્રાંતિ (ઉત્તરાયણ)",
+    "bn": "মকর সংক্রান্তি (পৌষ সংক্রান্তি)"
+   },
+   "aliases": [
+    "pongal",
+    "thai pongal",
+    "uttarayan",
+    "uttarayana",
+    "khichdi",
+    "maghi",
+    "makara sankranti",
+    "makara sankranthi",
+    "ઉત્તરાયણ",
+    "પતંગ",
+    "পৌষ সংক্রান্তি",
+    "poush sankranti",
+    "পিঠে পার্বণ"
+   ]
+  },
+  {
+   "key": "mesha-sankranti",
+   "engine": {
+    "id": "sankranti-0"
+   },
+   "categories": [
+    "sankranti"
+   ],
+   "names": {
+    "en": "Mesha Sankranti",
+    "hi": "मेष संक्रांति",
+    "ta": "மேஷ சங்கராந்தி",
+    "te": "మేష సంక్రాంతి",
+    "gu": "મેષ સંક્રાંતિ",
+    "bn": "মেষ সংক্রান্তি"
+   },
+   "aliases": [
+    "mesh sankranti",
+    "পহেলা বৈশাখ",
+    "pohela boishakh",
+    "bengali new year"
+   ]
+  },
+  {
+   "key": "vrishabha-sankranti",
+   "engine": {
+    "id": "sankranti-1"
+   },
+   "categories": [
+    "sankranti"
+   ],
+   "names": {
+    "en": "Vrishabha Sankranti",
+    "hi": "वृषभ संक्रांति",
+    "ta": "ரிஷப சங்கராந்தி",
+    "te": "వృషభ సంక్రాంతి",
+    "gu": "વૃષભ સંક્રાંતિ",
+    "bn": "বৃষ সংক্রান্তি"
+   },
+   "aliases": []
+  },
+  {
+   "key": "mithuna-sankranti",
+   "engine": {
+    "id": "sankranti-2"
+   },
+   "categories": [
+    "sankranti"
+   ],
+   "names": {
+    "en": "Mithuna Sankranti",
+    "hi": "मिथुन संक्रांति",
+    "ta": "மிதுன சங்கராந்தி",
+    "te": "మిథున సంక్రాంతి",
+    "gu": "મિથુન સંક્રાંતિ",
+    "bn": "মিথুন সংক্রান্তি"
+   },
+   "aliases": []
+  },
+  {
+   "key": "karka-sankranti",
+   "engine": {
+    "id": "sankranti-3"
+   },
+   "categories": [
+    "sankranti"
+   ],
+   "names": {
+    "en": "Karka Sankranti",
+    "hi": "कर्क संक्रांति",
+    "ta": "கடக சங்கராந்தி",
+    "te": "కర్కాటక సంక్రాంతి",
+    "gu": "કર્ક સંક્રાંતિ",
+    "bn": "কর্কট সংক্রান্তি"
+   },
+   "aliases": [
+    "karkataka sankranti",
+    "dakshinayana sankranti"
+   ]
+  },
+  {
+   "key": "simha-sankranti",
+   "engine": {
+    "id": "sankranti-4"
+   },
+   "categories": [
+    "sankranti"
+   ],
+   "names": {
+    "en": "Simha Sankranti",
+    "hi": "सिंह संक्रांति",
+    "ta": "சிம்ம சங்கராந்தி",
+    "te": "సింహ సంక్రాంతి",
+    "gu": "સિંહ સંક્રાંતિ",
+    "bn": "সিংহ সংক্রান্তি"
+   },
+   "aliases": [
+    "singh sankranti"
+   ]
+  },
+  {
+   "key": "kanya-sankranti",
+   "engine": {
+    "id": "sankranti-5"
+   },
+   "categories": [
+    "sankranti"
+   ],
+   "names": {
+    "en": "Kanya Sankranti",
+    "hi": "कन्या संक्रांति",
+    "ta": "கன்னி சங்கராந்தி",
+    "te": "కన్యా సంక్రాంతి",
+    "gu": "કન્યા સંક્રાંતિ",
+    "bn": "কন্যা সংক্রান্তি"
+   },
+   "aliases": []
+  },
+  {
+   "key": "tula-sankranti",
+   "engine": {
+    "id": "sankranti-6"
+   },
+   "categories": [
+    "sankranti"
+   ],
+   "names": {
+    "en": "Tula Sankranti",
+    "hi": "तुला संक्रांति",
+    "ta": "துலா சங்கராந்தி",
+    "te": "తులా సంక్రాంతి",
+    "gu": "તુલા સંક્રાંતિ",
+    "bn": "তুলা সংক্রান্তি"
+   },
+   "aliases": []
+  },
+  {
+   "key": "vrischika-sankranti",
+   "engine": {
+    "id": "sankranti-7"
+   },
+   "categories": [
+    "sankranti"
+   ],
+   "names": {
+    "en": "Vrischika Sankranti",
+    "hi": "वृश्चिक संक्रांति",
+    "ta": "விருச்சிக சங்கராந்தி",
+    "te": "వృశ్చిక సంక్రాంతి",
+    "gu": "વૃશ્ચિક સંક્રાંતિ",
+    "bn": "বৃশ্চিক সংক্রান্তি"
+   },
+   "aliases": []
+  },
+  {
+   "key": "dhanu-sankranti",
+   "engine": {
+    "id": "sankranti-8"
+   },
+   "categories": [
+    "sankranti"
+   ],
+   "names": {
+    "en": "Dhanu Sankranti",
+    "hi": "धनु संक्रांति",
+    "ta": "தனுசு சங்கராந்தி",
+    "te": "ధనుస్సు సంక్రాంతి",
+    "gu": "ધન સંક્રાંતિ",
+    "bn": "ধনু সংক্রান্তি"
+   },
+   "aliases": []
+  },
+  {
+   "key": "kumbha-sankranti",
+   "engine": {
+    "id": "sankranti-10"
+   },
+   "categories": [
+    "sankranti"
+   ],
+   "names": {
+    "en": "Kumbha Sankranti",
+    "hi": "कुंभ संक्रांति",
+    "ta": "கும்ப சங்கராந்தி",
+    "te": "కుంభ సంక్రాంతి",
+    "gu": "કુંભ સંક્રાંતિ",
+    "bn": "কুম্ভ সংক্রান্তি"
+   },
+   "aliases": []
+  },
+  {
+   "key": "meena-sankranti",
+   "engine": {
+    "id": "sankranti-11"
+   },
+   "categories": [
+    "sankranti"
+   ],
+   "names": {
+    "en": "Meena Sankranti",
+    "hi": "मीन संक्रांति",
+    "ta": "மீன சங்கராந்தி",
+    "te": "మీన సంక్రాంతి",
+    "gu": "મીન સંક્રાંતિ",
+    "bn": "মীন সংক্রান্তি"
+   },
+   "aliases": []
+  },
+  {
+   "key": "raksha-bandhan",
+   "engine": {
+    "id": "raksha-bandhan"
+   },
+   "categories": [
+    "festival",
+    "purnima"
+   ],
+   "names": {
+    "en": "Raksha Bandhan",
+    "hi": "रक्षा बंधन",
+    "ta": "ரக்ஷா பந்தன்",
+    "te": "రక్షా బంధన్",
+    "gu": "રક્ષાબંધન",
+    "bn": "রাখী বন্ধন"
+   },
+   "aliases": [
+    "rakhi",
+    "rakhri",
+    "raksha bandhan",
+    "shravana purnima",
+    "narali purnima",
+    "રાખડી",
+    "rakhdi",
+    "রাখী",
+    "rakhi purnima"
+   ]
+  },
+  {
+   "key": "nag-panchami",
+   "engine": {
+    "id": "nag-panchami"
+   },
+   "categories": [
+    "festival"
+   ],
+   "names": {
+    "en": "Nag Panchami",
+    "hi": "नाग पंचमी",
+    "ta": "நாக பஞ்சமி",
+    "te": "నాగ పంచమి",
+    "gu": "નાગ પંચમી",
+    "bn": "নাগ পঞ্চমী"
+   },
+   "aliases": [
+    "naga panchami",
+    "nag pancham"
+   ]
+  },
+  {
+   "key": "ratha-yatra",
+   "engine": {
+    "id": "ratha-yatra"
+   },
+   "categories": [
+    "festival"
+   ],
+   "names": {
+    "en": "Ratha Yatra",
+    "hi": "रथ यात्रा",
+    "ta": "ரத யாத்திரை",
+    "te": "రథ యాత్ర",
+    "gu": "રથયાત્રા",
+    "bn": "রথযাত্রা"
+   },
+   "aliases": [
+    "rath yatra",
+    "jagannath rath yatra",
+    "jagannatha rathayatra",
+    "puri rath yatra",
+    "રથયાત્રા",
+    "রথযাত্রা",
+    "rathayatra"
+   ]
+  },
+  {
+   "key": "durga-ashtami",
+   "engine": {
+    "id": "durga-ashtami"
+   },
+   "categories": [
+    "festival",
+    "navaratri"
+   ],
+   "names": {
+    "en": "Durga Ashtami",
+    "hi": "दुर्गा अष्टमी",
+    "ta": "துர்காஷ்டமி",
+    "te": "దుర్గాష్టమి",
+    "gu": "દુર્ગા અષ્ટમી",
+    "bn": "দুর্গা অষ্টমী"
+   },
+   "aliases": [
+    "durgashtami",
+    "maha ashtami",
+    "durga puja ashtami",
+    "મહા અષ્ટમી",
+    "মহাষ্টমী"
+   ]
+  },
+  {
+   "key": "varalakshmi-vratam",
+   "engine": {
+    "id": "varalakshmi-vratam"
+   },
+   "categories": [
+    "festival"
+   ],
+   "names": {
+    "en": "Varalakshmi Vratam",
+    "hi": "वरलक्ष्मी व्रत",
+    "ta": "வரலட்சுமி விரதம்",
+    "te": "వరలక్ష్మీ వ్రతం",
+    "gu": "વરલક્ષ્મી વ્રત",
+    "bn": "বরলক্ষ্মী ব্রত"
+   },
+   "aliases": [
+    "varalakshmi vratham",
+    "varamahalakshmi",
+    "vara lakshmi"
+   ]
+  },
+  {
+   "key": "onam",
+   "engine": {
+    "id": "onam"
+   },
+   "categories": [
+    "festival"
+   ],
+   "names": {
+    "en": "Onam (Thiruvonam)",
+    "hi": "ओणम",
+    "ta": "ஓணம்",
+    "te": "ఓణం",
+    "gu": "ઓણમ",
+    "bn": "ওণম"
+   },
+   "aliases": [
+    "thiruvonam",
+    "thiru onam",
+    "onam festival"
+   ]
+  },
+  {
+   "key": "karthigai-deepam",
+   "engine": {
+    "id": "karthigai-deepam"
+   },
+   "categories": [
+    "festival"
+   ],
+   "names": {
+    "en": "Karthigai Deepam",
+    "hi": "कार्तिगई दीपम",
+    "ta": "கார்த்திகை தீபம்",
+    "te": "కార్తీక దీపం",
+    "gu": "કાર્તિગઈ દીપમ",
+    "bn": "কার্তিগাই দীপম"
+   },
+   "aliases": [
+    "karthika deepam",
+    "kartika deepam",
+    "thiruvannamalai deepam",
+    "karthigai deepam"
+   ]
+  }
+ ],
+ "screens": [
+  {
+   "key": "today",
+   "titleKey": "home",
+   "target": "tab:today",
+   "aliases": [
+    "today",
+    "home",
+    "dashboard",
+    "countdown"
+   ]
+  },
+  {
+   "key": "calendar",
+   "titleKey": "calendar",
+   "target": "tab:calendar",
+   "aliases": [
+    "calendar",
+    "month"
+   ]
+  },
+  {
+   "key": "vrat",
+   "titleKey": "journey_tab",
+   "target": "tab:vrat",
+   "aliases": [
+    "vrat",
+    "journey",
+    "tracker",
+    "history",
+    "streak",
+    "statistics",
+    "observance"
+   ]
+  },
+  {
+   "key": "achievements",
+   "titleKey": "achievements",
+   "target": "tab:vrat",
+   "aliases": [
+    "badges",
+    "achievements",
+    "rewards"
+   ]
+  },
+  {
+   "key": "panchang",
+   "titleKey": "search_screen_panchang",
+   "target": "tab:panchang",
+   "aliases": [
+    "panchang",
+    "panchangam",
+    "tithi",
+    "nakshatra",
+    "rahu kalam",
+    "rahukalam",
+    "muhurta",
+    "choghadiya"
+   ]
+  },
+  {
+   "key": "settings",
+   "titleKey": "settings",
+   "target": "tab:settings",
+   "aliases": [
+    "settings",
+    "preferences",
+    "options"
+   ]
+  },
+  {
+   "key": "notifications",
+   "titleKey": "notifications",
+   "target": "tab:settings",
+   "aliases": [
+    "notifications",
+    "reminders",
+    "reminder",
+    "alerts",
+    "alarm"
+   ]
+  },
+  {
+   "key": "premium",
+   "titleKey": "premium_title",
+   "target": "paywall",
+   "aliases": [
+    "premium",
+    "subscribe",
+    "subscription",
+    "lifetime",
+    "upgrade",
+    "buy",
+    "purchase"
+   ]
+  },
+  {
+   "key": "widgets",
+   "titleKey": "widget_preview",
+   "target": "widget_preview",
+   "aliases": [
+    "widget",
+    "widgets",
+    "home screen"
+   ]
+  },
+  {
+   "key": "google_calendar",
+   "titleKey": "google_calendar",
+   "target": "tab:calendar",
+   "aliases": [
+    "google",
+    "sync",
+    "import"
+   ]
+  },
+  {
+   "key": "dark_mode",
+   "titleKey": "dark_mode",
+   "target": "tab:settings",
+   "aliases": [
+    "theme",
+    "dark",
+    "light"
+   ]
+  },
+  {
+   "key": "location",
+   "titleKey": "location",
+   "target": "tab:today",
+   "aliases": [
+    "location",
+    "city",
+    "gps",
+    "place"
+   ]
+  }
+ ]
+}
