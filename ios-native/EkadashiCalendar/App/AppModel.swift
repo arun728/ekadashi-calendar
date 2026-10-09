@@ -108,6 +108,11 @@ final class AppModel {
     func t(_ key: String) -> String { Localizer.shared.translate(key, language: language) }
     func t(_ key: String, _ args: String...) -> String { Localizer.shared.translate(key, language: language, args: args) }
     var locale: Locale { Localizer.locale(language) }
+    /// Time pickers use the 24-hour clock outside English, since iOS writes
+    /// AM and PM in Latin letters for most Indian languages.
+    var timePickerLocale: Locale {
+        language == "en" ? locale : Locale(identifier: "\(locale.identifier)@hours=h23")
+    }
 
     /// The one way every tab shows a date: weekday, date, month and year
     /// ("Thu, 8 Oct 2026"), as AppStrings.fullDate on Android.
@@ -124,6 +129,34 @@ final class AppModel {
     var scheduleZone: TzLocation { timezone.location }
     var today: CivilDate { scheduleZone.wallClock(Date()).date }
     var locationName: String { if case .located(let city) = locationState { return city }; return "" }
+
+    /// The detected place in the app language: the shared table first, then
+    /// Apple's geocoder in that language, then the English name.
+    private(set) var geocodedCityNames: [String: String] = [:]
+    @ObservationIgnored private var cityLookups: Set<String> = []
+    @ObservationIgnored private var lastCoordinate: (Double, Double)?
+
+    func cityLabel(_ city: String) -> String {
+        let table = PlaceNames.shared.place(city, language: language)
+        guard language != "en", table == city else { return table }
+        let key = "\(language)|\(city)"
+        if let known = geocodedCityNames[key] { return known }
+        if let coordinate = lastCoordinate, !cityLookups.contains(key) {
+            cityLookups.insert(key)
+            let language = self.language
+            Task { [weak self] in
+                // Only a name in the language's own script replaces English.
+                guard let name = await self?.location.localizedName(latitude: coordinate.0, longitude: coordinate.1,
+                                                                    language: language),
+                      name.range(of: "[A-Za-z]", options: .regularExpression) == nil else { return }
+                self?.geocodedCityNames[key] = name
+            }
+        }
+        return city
+    }
+
+    /// The app time zone in the app language ("भारतीय समय" for IST).
+    var timeZoneLabel: String { Localizer.shared.timeZoneName(timezone.rawValue, language: language) }
 
     // MARK: Launch
 
@@ -163,6 +196,7 @@ final class AppModel {
         locationState = .detecting
         if let fix = await location.currentFix(store: store) {
             setTimezone(fix.timezone)
+            lastCoordinate = (fix.latitude, fix.longitude)
             locationState = .located(fix.city)
         } else if location.isDenied {
             setTimezone(AppTimezone.matching(deviceIdentifier: TimeZone.current.identifier))
@@ -174,6 +208,7 @@ final class AppModel {
             locationState = .unknown
         } else if let cached = location.cachedFix(store: store) {
             setTimezone(cached.timezone)
+            lastCoordinate = (cached.latitude, cached.longitude)
             locationState = .located(cached.city)
         } else {
             setTimezone(AppTimezone.matching(deviceIdentifier: TimeZone.current.identifier))

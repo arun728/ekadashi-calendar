@@ -87,14 +87,9 @@ enum EventReminderText {
 
     @MainActor
     static func time(hour: Int, minute: Int, model: AppModel) -> String {
-        let formatter = DateFormatter()
-        formatter.locale = model.locale
-        formatter.timeStyle = .short
-        formatter.dateStyle = .none
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = .current
-        let date = calendar.date(from: DateComponents(year: 2026, month: 1, day: 1, hour: hour, minute: minute)) ?? Date()
-        return formatter.string(from: date)
+        // The app language's own AM/PM words (Foundation writes them in
+        // Latin letters for most languages).
+        Localizer.shared.clock(hour: hour, minute: minute, language: model.language)
     }
 
     /// "1 day before, 2 days before · 7:00 AM".
@@ -167,6 +162,7 @@ struct EventReminderEditor: View {
 
                 Section {
                     DatePicker(model.t("notifications_time"), selection: $time, displayedComponents: .hourAndMinute)
+                        .environment(\.locale, model.timePickerLocale)
                         .tint(Theme.teal)
                 }
 

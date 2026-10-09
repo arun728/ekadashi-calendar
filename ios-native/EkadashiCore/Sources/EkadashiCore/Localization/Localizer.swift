@@ -54,6 +54,37 @@ public final class Localizer: @unchecked Sendable {
         return text
     }
 
+    /// A clock time such as "6:24 PM" with [language]'s own words for AM and
+    /// PM (Foundation writes them in Latin letters for most languages).
+    public func clock(hour: Int, minute: Int, language: String) -> String {
+        let shown = hour % 12 == 0 ? 12 : hour % 12
+        let marker = translate(hour < 12 ? "panchang_am" : "panchang_pm", language: language)
+        return "\(shown):\(minute < 10 ? "0" : "")\(minute) \(marker)"
+    }
+
+    /// Stored times such as "06:00 AM - 08:21 AM" with [language]'s AM and PM.
+    public func localizeClock(_ text: String, language: String) -> String {
+        guard language != "en" else { return text }
+        return text
+            .replacingOccurrences(of: #"\bAM\b"#, with: translate("panchang_am", language: language), options: .regularExpression)
+            .replacingOccurrences(of: #"\bPM\b"#, with: translate("panchang_pm", language: language), options: .regularExpression)
+    }
+
+    /// "UTC+5:30" for a UTC offset in minutes, in [language]'s script.
+    public func utcOffset(minutes: Int, language: String) -> String {
+        let sign = minutes < 0 ? "−" : "+"
+        let total = abs(minutes), hours = total / 60, rest = total % 60
+        let value = rest == 0 ? "\(sign)\(hours)" : "\(sign)\(hours):\(rest < 10 ? "0" : "")\(rest)"
+        return translate("utc_offset", language: language, args: [value])
+    }
+
+    /// The app time zone (IST, EST, ...) as [language] names it.
+    public func timeZoneName(_ code: String, language: String) -> String {
+        let key = "timezone_\(code)"
+        let text = translate(key, language: language)
+        return text == key ? code : text
+    }
+
     public static func placeholders(_ text: String) -> [String] {
         var result: [String] = []
         var rest = Substring(text)

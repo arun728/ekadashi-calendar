@@ -219,7 +219,7 @@ class AppLocalizationsHi extends AppLocalizations {
       '1. सेटिंग्स पर जाने के लिए \"खोलें\" टैप करें';
 
   @override
-  String get alarms_info_step2 => '2. \"अलार्म सेट करने की अनुमति\" ON करें';
+  String get alarms_info_step2 => '2. \"अलार्म सेट करने की अनुमति\" चालू करें';
 
   @override
   String get alarms_info_note =>
@@ -233,7 +233,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get battery_info_why_desc =>
-      'अगर बैटरी ऑप्टिमाइज़ेशन सक्षम है, तो Android आपके एकादशी रिमाइंडर में देरी कर सकता है या छोड़ सकता है।';
+      'अगर बैटरी ऑप्टिमाइज़ेशन सक्षम है, तो एंड्रॉइड आपके एकादशी रिमाइंडर में देरी कर सकता है या छोड़ सकता है।';
 
   @override
   String get battery_info_steps => 'बैकग्राउंड उपयोग कैसे अनुमति दें';
@@ -272,7 +272,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get auto_detect_location => 'स्थान स्वतः पता लगाएं';
 
   @override
-  String get auto_detect_desc => 'अपना शहर खोजने के लिए GPS का उपयोग करें';
+  String get auto_detect_desc => 'अपना शहर खोजने के लिए जीपीएस का उपयोग करें';
 
   @override
   String get using_auto_location =>
@@ -507,7 +507,7 @@ class AppLocalizationsHi extends AppLocalizations {
       'एक पूरे वर्ष की सभी एकादशियों का विधिवत पालन किया।';
 
   @override
-  String get filter_google => 'Google';
+  String get filter_google => 'गूगल';
 
   @override
   String get filter_custom => 'निजी';
@@ -543,28 +543,28 @@ class AppLocalizationsHi extends AppLocalizations {
   String get invalid_entry => 'शीर्षक और आरंभ के बाद का समाप्ति समय दर्ज करें।';
 
   @override
-  String get sync_google => 'Google कैलेंडर आयात करें';
+  String get sync_google => 'गूगल कैलेंडर आयात करें';
 
   @override
-  String get disconnect_google => 'Google कैलेंडर का कनेक्शन हटाएँ';
+  String get disconnect_google => 'गूगल कैलेंडर का कनेक्शन हटाएँ';
 
   @override
-  String get sign_in_cancelled => 'Google साइन इन रद्द किया गया';
+  String get sign_in_cancelled => 'गूगल साइन इन रद्द किया गया';
 
   @override
-  String get no_google_calendars => 'कोई Google कैलेंडर नहीं मिला';
+  String get no_google_calendars => 'कोई गूगल कैलेंडर नहीं मिला';
 
   @override
   String get no_google_events => 'इस वर्ष चयनित कैलेंडर में कोई कार्यक्रम नहीं';
 
   @override
   String imported_google_events(String value0) {
-    return '$value0 Google कार्यक्रम आयात किए गए';
+    return '$value0 गूगल कार्यक्रम आयात किए गए';
   }
 
   @override
   String imported_google_range(String value0, String value1, String value2) {
-    return '$value0 Google इवेंट आयात किए गए ($value1 – $value2)';
+    return '$value0 गूगल इवेंट आयात किए गए ($value1 – $value2)';
   }
 
   @override
@@ -582,13 +582,13 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get choose_calendars_help =>
-      'ऐप में दिखाने के लिए कैलेंडर चुनें। आयात आपके Google कार्यक्रम नहीं बदलता।';
+      'ऐप में दिखाने के लिए कैलेंडर चुनें। आयात आपके गूगल कार्यक्रम नहीं बदलता।';
 
   @override
   String get switch_google_account => 'दूसरा खाता इस्तेमाल करें';
 
   @override
-  String get google_calendar => 'Google कैलेंडर';
+  String get google_calendar => 'गूगल कैलेंडर';
 
   @override
   String get primary_calendar => 'प्राथमिक';
@@ -905,59 +905,59 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get premium_cancelled_body =>
-      'भुगतान की गई अवधि के अंत तक Premium चालू रहेगा। इसे बनाए रखने के लिए कभी भी फिर से चालू करें।';
+      'भुगतान की गई अवधि के अंत तक प्रीमियम चालू रहेगा। इसे बनाए रखने के लिए कभी भी फिर से चालू करें।';
 
   @override
   String get premium_reactivate => 'फिर से चालू करें';
 
   @override
   String get free_sync_unverified =>
-      'आपका मुफ़्त सिंक जाँचा नहीं जा सका। अपना कनेक्शन जाँचें, या Premium लें।';
+      'आपका मुफ़्त सिंक जाँचा नहीं जा सका। अपना कनेक्शन जाँचें, या प्रीमियम लें।';
 
   @override
   String get premium_upgrade => 'अपग्रेड';
 
   @override
-  String get premium_restored => 'खरीदारी बहाल हो गई। Premium सक्रिय है।';
+  String get premium_restored => 'खरीदारी बहाल हो गई। प्रीमियम सक्रिय है।';
 
   @override
   String get premium_restore_none =>
-      'इस Google Play खाते के लिए कोई खरीदारी नहीं मिली।';
+      'इस गूगल प्ले खाते के लिए कोई खरीदारी नहीं मिली।';
 
   @override
   String get premium_lifetime_thanks_title => 'धन्यवाद, आजीवन सदस्य! 🙏';
 
   @override
   String get premium_lifetime_thanks_body =>
-      'हर Premium सुविधा जीवनभर आपकी है, आने वाली सभी नई सुविधाओं और अपडेट सहित। हम वर्षों तक आपकी सेवा करने के लिए उत्सुक हैं।';
+      'हर प्रीमियम सुविधा जीवनभर आपकी है, आने वाली सभी नई सुविधाओं और अपडेट सहित। हम वर्षों तक आपकी सेवा करने के लिए उत्सुक हैं।';
 
   @override
-  String get premium_subscriber_title => 'आपके पास Premium है ✨';
+  String get premium_subscriber_title => 'आपके पास प्रीमियम है ✨';
 
   @override
   String get premium_subscriber_body => 'कभी भी प्लान बदलें या आजीवन लें।';
 
   @override
   String get premium_cancel_subscription_note =>
-      'आपकी सदस्यता अभी भी सक्रिय है। दोबारा शुल्क से बचने के लिए इसे Google Play में रद्द करें। आजीवन प्लान आपका ही रहेगा।';
+      'आपकी सदस्यता अभी भी सक्रिय है। दोबारा शुल्क से बचने के लिए इसे गूगल प्ले में रद्द करें। आजीवन प्लान आपका ही रहेगा।';
 
   @override
   String get premium_cancel_subscription_action =>
-      'Google Play में सदस्यता रद्द करें';
+      'गूगल प्ले में सदस्यता रद्द करें';
 
   @override
   String get premium_lifetime_confirm_title => 'आपकी सदस्यता पहले से है';
 
   @override
   String get premium_lifetime_confirm_body =>
-      'Google Play सदस्यता अपने आप रद्द नहीं करता। आजीवन खरीदने के बाद, नवीनीकरण रोकने के लिए Google Play में अपनी सदस्यता रद्द करें।';
+      'गूगल प्ले सदस्यता अपने आप रद्द नहीं करता। आजीवन खरीदने के बाद, नवीनीकरण रोकने के लिए गूगल प्ले में अपनी सदस्यता रद्द करें।';
 
   @override
   String get premium_buy_lifetime_anyway => 'आजीवन खरीदें';
 
   @override
   String get premium_unavailable =>
-      'अभी खरीदारी उपलब्ध नहीं है। ऐप Google Play से इंस्टॉल करके फिर प्रयास करें। मुफ़्त सुविधाएँ काम करती रहेंगी।';
+      'अभी खरीदारी उपलब्ध नहीं है। ऐप गूगल प्ले से इंस्टॉल करके फिर प्रयास करें। मुफ़्त सुविधाएँ काम करती रहेंगी।';
 
   @override
   String get premium_verification_failed =>
@@ -1013,7 +1013,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get premium_feature_calendar =>
-      'आपके पूरे सदस्यता वर्ष के लिए Google कैलेंडर सिंक (एक महीने का सिंक मुफ़्त)';
+      'आपके पूरे सदस्यता वर्ष के लिए गूगल कैलेंडर सिंक (एक महीने का सिंक मुफ़्त)';
 
   @override
   String get premium_feature_vrat =>
@@ -1035,7 +1035,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get google_sign_in_failed =>
-      'Google साइन इन विफल रहा। अपना कनेक्शन जाँचें और फिर प्रयास करें।';
+      'गूगल साइन इन विफल रहा। अपना कनेक्शन जाँचें और फिर प्रयास करें।';
 
   @override
   String get vrat_free_limit_reached =>
@@ -1043,5 +1043,30 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get google_premium_events_removed =>
-      'आपका प्रीमियम समाप्त हो गया है, इसलिए उससे सिंक किए गए Google इवेंट हटा दिए गए। फिर से सिंक करने के लिए नवीनीकरण करें।';
+      'आपका प्रीमियम समाप्त हो गया है, इसलिए उससे सिंक किए गए गूगल इवेंट हटा दिए गए। फिर से सिंक करने के लिए नवीनीकरण करें।';
+
+  @override
+  String observed_of_total(String value0, String value1) {
+    return '$value1 में से $value0 एकादशियां';
+  }
+
+  @override
+  String get timezone_IST => 'भारतीय समय';
+
+  @override
+  String get timezone_EST => 'अमेरिकी पूर्वी समय';
+
+  @override
+  String get timezone_CST => 'अमेरिकी मध्य समय';
+
+  @override
+  String get timezone_MST => 'अमेरिकी पर्वतीय समय';
+
+  @override
+  String get timezone_PST => 'अमेरिकी प्रशांत समय';
+
+  @override
+  String utc_offset(String value0) {
+    return 'यूटीसी $value0';
+  }
 }

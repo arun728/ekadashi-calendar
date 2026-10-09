@@ -124,7 +124,7 @@ final class WidgetSnapshotTests: XCTestCase {
         for language in Localizer.languages {
             let strings = snapshot([event(2027, 1, utc(2027, 1, 5))], utc(2027, 1, 1), language: language).strings
             XCTAssertEqual(strings.count, WidgetSnapshot.stringKeys.count, language)
-            XCTAssertEqual(strings.count, 26, language)
+            XCTAssertEqual(strings.count, 28, language)
             XCTAssertTrue(strings.values.allSatisfy { !$0.isEmpty && !$0.hasPrefix("widget_") }, language)
             if language != "en" { XCTAssertNotEqual(strings["widget.next_ekadashi"], "Next Ekadashi") }
         }
@@ -241,6 +241,7 @@ final class ResourceSyncTests: XCTestCase {
             XCTAssertEqual(try resource("calendar/\(name)"), try Repo.data("assets/calendar/\(name)"), name)
         }
         XCTAssertEqual(try resource("panchang/cities.json"), try Repo.data("assets/panchang/cities.json"))
+        XCTAssertEqual(try resource("panchang/place_names.json"), try Repo.data("assets/panchang/place_names.json"))
     }
 
     func testStringsMatchTheArbFiles() throws {

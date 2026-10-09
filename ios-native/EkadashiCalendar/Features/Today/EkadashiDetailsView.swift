@@ -14,7 +14,7 @@ struct EkadashiDetailsView: View {
                 VStack(spacing: 4) {
                     Text(model.fullDate(event.date)).font(.title2.weight(.light))
                     Text(event.name).font(.largeTitle.bold()).foregroundStyle(Theme.teal).multilineTextAlignment(.center)
-                    StatusPill(text: model.timezone.rawValue, color: Theme.teal)
+                    StatusPill(text: model.timeZoneLabel, color: Theme.teal)
                 }
                 .frame(maxWidth: .infinity)
                 if event.usesContentFallback {
@@ -54,7 +54,7 @@ struct EkadashiDetailsView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(title).bold().foregroundStyle(Theme.teal)
                 Text(model.fullDate(date)).font(.footnote).foregroundStyle(.secondary)
-                Text(time).font(.title3)
+                Text(Localizer.shared.localizeClock(time, language: model.language)).font(.title3)
             }
             Spacer(minLength: 0)
         }

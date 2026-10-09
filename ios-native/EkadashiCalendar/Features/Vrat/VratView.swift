@@ -224,7 +224,7 @@ struct VratView: View {
                         Text("\(Int(stats.completionPercentage.rounded()))%").font(.title.bold()).foregroundStyle(Theme.teal)
                     }
                     .frame(width: 130, height: 130)
-                    Text("\(stats.observedCount) of \(stats.totalOccurrences) \(model.t("ekadashis_unit"))")
+                    Text(model.t("observed_of_total", "\(stats.observedCount)", "\(stats.totalOccurrences)"))
                         .font(.subheadline).foregroundStyle(.secondary)
                 }
                 .frame(maxWidth: .infinity)

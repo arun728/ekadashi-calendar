@@ -157,11 +157,14 @@ final class CalendarDataTests: XCTestCase {
 
 final class LocalizationTests: XCTestCase {
     func testEveryLanguageHasEveryKeyNativeScriptAndPlaceholders() {
-        let scripts = ["ta": "\u{0B80}"..."\u{0BFF}", "hi": "\u{0900}"..."\u{097F}", "te": "\u{0C00}"..."\u{0C7F}"]
+        let scripts = ["ta": "\u{0B80}"..."\u{0BFF}", "hi": "\u{0900}"..."\u{097F}", "te": "\u{0C00}"..."\u{0C7F}",
+                       "gu": "\u{0A80}"..."\u{0AFF}", "bn": "\u{0980}"..."\u{09FF}"]
         let english = Localizer.shared.keys(language: "en")
-        XCTAssertEqual(english.count, 325)
+        // 325 shared keys, plus "X of Y Ekadashis", the five time zone
+        // names and the UTC offset (no English left, 9 October 2026).
+        XCTAssertEqual(english.count, 332)
         var problems: [String] = []
-        for language in ["ta", "hi", "te"] {
+        for language in ["ta", "hi", "te", "gu", "bn"] {
             for key in english {
                 let value = Localizer.shared.translate(key, language: language)
                 if value == key || value.trimmingCharacters(in: .whitespaces).isEmpty {

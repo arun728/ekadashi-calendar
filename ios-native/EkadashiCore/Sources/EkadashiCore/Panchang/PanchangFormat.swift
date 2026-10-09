@@ -8,10 +8,7 @@ public enum PanchangFormat {
     public static func time(_ instant: Date?, city: PanchangCity, date: CivilDate, language: String) -> String {
         guard let instant else { return "—" }
         let local = city.wallClock(instant)
-        let hour = local.hour % 12 == 0 ? 12 : local.hour % 12
-        let minute = local.minute < 10 ? "0\(local.minute)" : "\(local.minute)"
-        let marker = Localizer.shared.translate(local.hour < 12 ? "panchang_am" : "panchang_pm", language: language)
-        var text = "\(hour):\(minute) \(marker)"
+        var text = Localizer.shared.clock(hour: local.hour, minute: local.minute, language: language)
         let delta = date.days(until: local.date)
         if delta == 1 {
             text += " " + Localizer.shared.translate("panchang_next_day_marker", language: language)
