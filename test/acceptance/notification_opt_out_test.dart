@@ -19,6 +19,10 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byIcon(Icons.settings));
       await tester.pumpAndSettle();
+      await tester.ensureVisible(
+        find.widgetWithText(SwitchListTile, 'Enable Notifications'),
+      );
+      await tester.pumpAndSettle();
       await tester.tap(
         find.widgetWithText(SwitchListTile, 'Enable Notifications'),
       );

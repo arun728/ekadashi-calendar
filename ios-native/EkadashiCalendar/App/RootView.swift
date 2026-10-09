@@ -1,7 +1,7 @@
 import SwiftUI
 import EkadashiCore
 
-/// Five tabs (Today, Calendar, Vrat, Panchang, Settings) with Search in the
+/// Five tabs (Home, Calendar, Journey, Panchang, Settings) with Search in the
 /// top bar, as on Android. On iOS 26 the system tab bar and toolbars are
 /// Liquid Glass.
 struct RootView: View {
@@ -10,20 +10,20 @@ struct RootView: View {
     var body: some View {
         @Bindable var model = model
         TabView(selection: tabSelection) {
-            screen(TodayView())
+            screen(TodayView(), tab: .today)
                 .tabItem { Label(model.t("home"), systemImage: "house.fill") }
                 .tag(AppTab.today)
-            screen(CalendarView())
+            screen(CalendarView(), tab: .calendar)
                 .tabItem { Label(model.t("calendar"), systemImage: "calendar") }
                 .tag(AppTab.calendar)
-            screen(VratView())
-                .tabItem { Label(model.t("vrat"), systemImage: "leaf") }
+            screen(VratView(), tab: .vrat)
+                .tabItem { Label(model.t("journey_tab"), systemImage: "leaf") }
                 .tag(AppTab.vrat)
             // Panchang is English-only by design.
-            screen(PanchangView())
-                .tabItem { Label("Panchang", systemImage: "sparkles") }
+            screen(PanchangView(), tab: .panchang)
+                .tabItem { Label(model.t("search_screen_panchang"), systemImage: "sparkles") }
                 .tag(AppTab.panchang)
-            screen(SettingsView())
+            screen(SettingsView(), tab: .settings)
                 .tabItem { Label(model.t("settings"), systemImage: "gearshape.fill") }
                 .tag(AppTab.settings)
         }
@@ -50,10 +50,7 @@ struct RootView: View {
 
     /// Re-selecting a tab runs its "go to now" action.
     private var tabSelection: Binding<AppTab> {
-        Binding(get: { model.selectedTab }, set: { tab in
-            if tab == model.selectedTab { model.reselect(tab) }
-            model.selectedTab = tab
-        })
+        Binding(get: { model.selectedTab }, set: { model.select($0) })
     }
 
     private var unlockBinding: Binding<Achievement?> {
@@ -63,7 +60,7 @@ struct RootView: View {
     }
 
     @ViewBuilder
-    private func screen(_ content: some View) -> some View {
+    private func screen(_ content: some View, tab: AppTab) -> some View {
         NavigationStack {
             Group {
                 if model.isLoading {
@@ -86,9 +83,22 @@ struct RootView: View {
             .navigationTitle(model.t("app_title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                // A search result opened this tab: go back to its results,
+                // like a back button (the result was not pushed here).
+                if model.searchReturn.showsBack(on: tab) {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button { model.returnToSearch() } label: {
+                            HStack(spacing: 3) {
+                                Image(systemName: "chevron.backward").fontWeight(.semibold)
+                                Text(model.t("search"))
+                            }
+                        }
+                        .accessibilityIdentifier("search_return")
+                    }
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        model.showSearch = true
+                        model.open(.search)
                     } label: {
                         Image(systemName: "magnifyingglass")
                     }

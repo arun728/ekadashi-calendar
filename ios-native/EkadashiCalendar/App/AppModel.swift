@@ -26,9 +26,10 @@ final class AppModel {
 
     @ObservationIgnored let store: KeyValueStore
     @ObservationIgnored let repository: CalendarRepository?
-    @ObservationIgnored let notifications = NotificationService()
+    /// UI tests cannot answer the system permission alert, so they run as if allowed.
+    @ObservationIgnored let notifications = NotificationService(
+        assumeAuthorized: ProcessInfo.processInfo.arguments.contains("-ui-testing"))
     @ObservationIgnored let location = LocationService()
-    @ObservationIgnored let searchIndex: SearchIndex
     @ObservationIgnored let recents: RecentSearches
     @ObservationIgnored let entries: CalendarEntryStore
     @ObservationIgnored let google = GoogleSignInGateway()
@@ -38,6 +39,8 @@ final class AppModel {
     @ObservationIgnored private var pickerContinuation: CheckedContinuation<GoogleCalendarPickerResult, Never>?
     @ObservationIgnored private var started = false
     @ObservationIgnored private var pendingRoute: AppRoute?
+    @ObservationIgnored private var observanceCache: [String: [DatedObservance]] = [:]
+    @ObservationIgnored private var schedulingTask: Task<Void, Never>?
 
     let premium: StoreKitPremiumService
     let vrat: VratStore
@@ -50,11 +53,18 @@ final class AppModel {
     private(set) var loadError: String?
     private(set) var isLoading = true
     private(set) var reminderSettings: ReminderSettings
+    private(set) var eventReminders: EventReminderSettings
     private(set) var entriesRevision = 0
     var selectedTab: AppTab = .today
     var showSearch = false
+    /// The way back to a search whose result opened a tab or calendar day.
+    private(set) var searchReturn = SearchReturn()
+    /// The search to show again when it reopens from that way back.
+    var restoredSearch: SearchSession?
     var homeIndex = 0
     var calendarFocus: CivilDate?
+    /// A day to open in Panchang (from an event reminder).
+    var panchangFocus: CivilDate?
     var toast: ToastMessage?
     var paywall: PaywallRequest?
     var googlePicker: GooglePickerRequest?
@@ -76,8 +86,8 @@ final class AppModel {
         timezone = store.string(forKey: "app_timezone").flatMap(AppTimezone.init(rawValue:))
             ?? AppTimezone.matching(deviceIdentifier: TimeZone.current.identifier)
         reminderSettings = ReminderSettings.load(from: store)
+        eventReminders = EventReminderSettings.load(from: store)
         recents = RecentSearches(store: store)
-        searchIndex = SearchIndex(downloaded: Set(store.stringArray(forKey: "ec2_downloaded_content_ids") ?? []))
         let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         try? FileManager.default.createDirectory(at: support, withIntermediateDirectories: true)
         entries = (try? FileCalendarEntryStore(url: support.appendingPathComponent("calendar_entries.json")))
@@ -98,6 +108,15 @@ final class AppModel {
     func t(_ key: String) -> String { Localizer.shared.translate(key, language: language) }
     func t(_ key: String, _ args: String...) -> String { Localizer.shared.translate(key, language: language, args: args) }
     var locale: Locale { Localizer.locale(language) }
+    /// Time pickers use the 24-hour clock outside English, since iOS writes
+    /// AM and PM in Latin letters for most Indian languages.
+    var timePickerLocale: Locale {
+        language == "en" ? locale : Locale(identifier: "\(locale.identifier)@hours=h23")
+    }
+
+    /// The one way every tab shows a date: weekday, date, month and year
+    /// ("Thu, 8 Oct 2026"), as AppStrings.fullDate on Android.
+    func fullDate(_ date: CivilDate) -> String { PanchangFormat.date(date, language: language) }
 
     func format(_ date: CivilDate, _ pattern: String) -> String {
         let formatter = DateFormatter()
@@ -110,6 +129,34 @@ final class AppModel {
     var scheduleZone: TzLocation { timezone.location }
     var today: CivilDate { scheduleZone.wallClock(Date()).date }
     var locationName: String { if case .located(let city) = locationState { return city }; return "" }
+
+    /// The detected place in the app language: the shared table first, then
+    /// Apple's geocoder in that language, then the English name.
+    private(set) var geocodedCityNames: [String: String] = [:]
+    @ObservationIgnored private var cityLookups: Set<String> = []
+    @ObservationIgnored private var lastCoordinate: (Double, Double)?
+
+    func cityLabel(_ city: String) -> String {
+        let table = PlaceNames.shared.place(city, language: language)
+        guard language != "en", table == city else { return table }
+        let key = "\(language)|\(city)"
+        if let known = geocodedCityNames[key] { return known }
+        if let coordinate = lastCoordinate, !cityLookups.contains(key) {
+            cityLookups.insert(key)
+            let language = self.language
+            Task { [weak self] in
+                // Only a name in the language's own script replaces English.
+                guard let name = await self?.location.localizedName(latitude: coordinate.0, longitude: coordinate.1,
+                                                                    language: language),
+                      name.range(of: "[A-Za-z]", options: .regularExpression) == nil else { return }
+                self?.geocodedCityNames[key] = name
+            }
+        }
+        return city
+    }
+
+    /// The app time zone in the app language ("भारतीय समय" for IST).
+    var timeZoneLabel: String { Localizer.shared.timeZoneName(timezone.rawValue, language: language) }
 
     // MARK: Launch
 
@@ -149,6 +196,7 @@ final class AppModel {
         locationState = .detecting
         if let fix = await location.currentFix(store: store) {
             setTimezone(fix.timezone)
+            lastCoordinate = (fix.latitude, fix.longitude)
             locationState = .located(fix.city)
         } else if location.isDenied {
             setTimezone(AppTimezone.matching(deviceIdentifier: TimeZone.current.identifier))
@@ -160,6 +208,7 @@ final class AppModel {
             locationState = .unknown
         } else if let cached = location.cachedFix(store: store) {
             setTimezone(cached.timezone)
+            lastCoordinate = (cached.latitude, cached.longitude)
             locationState = .located(cached.city)
         } else {
             setTimezone(AppTimezone.matching(deviceIdentifier: TimeZone.current.identifier))
@@ -204,7 +253,6 @@ final class AppModel {
         } else {
             homeIndex = HomeSelection.index(of: ekadashis, now: Date(), zone: scheduleZone, includeParana: true)
         }
-        searchIndex.build(ekadashis: ekadashis, language: language)
         syncWidgets()
         Task { await scheduleReminders() }
         if let route = pendingRoute {
@@ -227,22 +275,57 @@ final class AppModel {
 
     // MARK: Reminders and widgets
 
+    /// The Ekadashi switches; the master switch also covers event reminders.
     func updateReminders(_ settings: ReminderSettings) {
         reminderSettings = settings
+        settings.save(to: store)
+        eventReminders.enabled = settings.enabled
+        Task { await scheduleReminders() }
+    }
+
+    /// Festival, Panchang and calendar reminders (docs/ROADMAP.md Phase 7).
+    func updateEventReminders(_ settings: EventReminderSettings) {
+        eventReminders = settings
         settings.save(to: store)
         Task { await scheduleReminders() }
     }
 
+    /// Plans every reminder again, one run at a time so a slower run cannot
+    /// leave its older plan behind.
     func scheduleReminders() async {
+        let previous = schedulingTask
+        let task = Task { @MainActor in
+            await previous?.value
+            await scheduleRemindersNow()
+        }
+        schedulingTask = task
+        await task.value
+    }
+
+    private func scheduleRemindersNow() async {
         let settings = ReminderSettings.load(from: store)
         guard settings.enabled, await notifications.isAuthorized() else {
             await notifications.cancelAll()
             return
         }
-        let language = self.language
-        let plan = ReminderPlanner.plan(occurrences: ekadashis, settings: settings,
-                                        texts: { Localizer.shared.translate($0, language: language) }, now: Date())
-        await notifications.schedule(plan)
+        let language = self.language, now = Date()
+        let fasts = ReminderPlanner.plan(occurrences: ekadashis, settings: settings,
+                                         texts: { Localizer.shared.translate($0, language: language) }, now: now)
+        let events = EventReminderSettings.load(from: store)
+        let premium = self.premium.isPremium
+        let city = panchangCity
+        var observances: [DatedObservance] = []
+        if premium && events.reminders.contains(where: \.target.requiresPremium) {
+            let year = city.today().year
+            observances = await panchangObservances(year: year, city: city)
+            // Near the year's end the next year's festivals are within reach.
+            if city.today().month >= 11 { observances += await panchangObservances(year: year + 1, city: city) }
+        }
+        let planned = EventReminderPlanner.plan(
+            settings: events, observances: observances, entries: (try? entries.all()) ?? [],
+            observanceZone: TimeZone(identifier: city.timeZoneId) ?? .current, entryZone: .current,
+            language: language, premium: premium, now: now)
+        await notifications.schedule(PendingNotification.merge(ekadashi: fasts, events: planned))
     }
 
     func syncWidgets() {
@@ -260,9 +343,9 @@ final class AppModel {
     /// Background App Refresh: keep reminders and widgets current.
     func backgroundRefresh() async {
         reload()
-        await scheduleReminders()
         await premium.refresh()
         removeLapsedPremiumImports()
+        await scheduleReminders()
         scheduleBackgroundRefresh()
     }
 
@@ -295,8 +378,10 @@ final class AppModel {
             pendingRoute = route
             return
         }
+        searchReturn.clear()
         switch route {
         case .search:
+            restoredSearch = nil
             showSearch = true
         case .tab(let tab):
             showSearch = false
@@ -306,7 +391,31 @@ final class AppModel {
             showSearch = false
             selectedTab = .calendar
             calendarFocus = date
+        case .panchang(let date):
+            showSearch = false
+            selectedTab = .panchang
+            panchangFocus = date
         }
+    }
+
+    /// A search result that opens a tab or calendar day; that screen's top
+    /// bar can go back to the same search.
+    func open(_ route: AppRoute, from session: SearchSession) {
+        open(route)
+        searchReturn.opened(route, from: session)
+    }
+
+    func returnToSearch() {
+        guard let session = searchReturn.goBack() else { return }
+        restoredSearch = session
+        showSearch = true
+    }
+
+    /// The user chose a tab in the tab bar.
+    func select(_ tab: AppTab) {
+        searchReturn.selected(tab)
+        if tab == selectedTab { reselect(tab) }
+        selectedTab = tab
     }
 
     /// Tapping the selected tab again: Today skips to the strictly next
@@ -333,6 +442,12 @@ final class AppModel {
             try? await Task.sleep(nanoseconds: 600_000_000)
             unlockQueue.append(contentsOf: achievements)
         }
+    }
+
+    /// Recording opens once the fast has happened (Parana started, or the
+    /// day after); an existing record stays editable.
+    func canRecord(_ event: EkadashiOccurrence) -> Bool {
+        vrat.record(for: event.occurrenceUid) != nil || VratRecording.isOpen(event, now: Date(), zone: scheduleZone)
     }
 
     // MARK: Premium paywall
@@ -392,7 +507,10 @@ final class AppModel {
         pickerContinuation = nil
     }
 
-    func entriesChanged() { entriesRevision += 1 }
+    func entriesChanged() {
+        entriesRevision += 1
+        if eventReminders.reminders.contains(where: { !$0.target.requiresPremium }) { Task { await scheduleReminders() } }
+    }
 
     func removeLapsedPremiumImports() {
         if (try? coordinator.removeLapsedPremiumSync()) == true {
@@ -409,11 +527,39 @@ final class AppModel {
                              action: upsell ? { [weak self] in self?.openPaywall() } : nil)
     }
 
-    func markDownloaded(_ id: String) {
-        searchIndex.markDownloaded(id)
-        var ids = Set(store.stringArray(forKey: "ec2_downloaded_content_ids") ?? [])
-        ids.insert(id)
-        store.set(ids.sorted(), forKey: "ec2_downloaded_content_ids")
+    // MARK: Search
+
+    /// The saved Panchang location; festival dates in search follow it.
+    var panchangCity: PanchangCity { PanchangLocationStore(store: store).load() ?? .newDelhi }
+
+    /// Search over Ekadashis, entries and screens, plus [observances].
+    func searchIndex(observances: [DatedObservance] = []) -> UnifiedSearch {
+        let repository = repository
+        let zone = timezone.rawValue
+        let items = SearchCorpus.build(
+            ekadashis: { repository?.ekadashis(timezone: zone, language: $0) ?? [] }, observances: observances,
+            entries: (try? entries.all()) ?? [], timeZone: .current, language: language)
+        return UnifiedSearch(items: items)
+    }
+
+    /// Panchang observances for every data year at the Panchang location.
+    func searchObservances() async -> [DatedObservance] {
+        let city = panchangCity
+        var result: [DatedObservance] = []
+        for year in repository?.availableYears ?? [] { result += await panchangObservances(year: year, city: city) }
+        return result
+    }
+
+    /// A year of observances at [city], calculated off the main thread and
+    /// kept for the session (Key days and search share it).
+    func panchangObservances(year: Int, city: PanchangCity) async -> [DatedObservance] {
+        let key = "\(city.id)|\(city.latitude)|\(city.longitude)|\(city.timeZoneId)|\(year)"
+        if let cached = observanceCache[key] { return cached }
+        let calculated = await Task.detached(priority: .userInitiated) {
+            PanchangEngine().observanceCalendar(year: year, city: city)
+        }.value
+        observanceCache[key] = calculated
+        return calculated
     }
 
     var calendarYears: ClosedRange<Int>? {

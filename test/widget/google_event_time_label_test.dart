@@ -3,10 +3,10 @@ import 'package:ekadashi_calendar/models/calendar_entry.dart';
 import 'package:ekadashi_calendar/screens/widgets/day_entries_list.dart';
 import 'package:ekadashi_calendar/services/google_event_mapper.dart';
 import 'package:ekadashi_calendar/services/language_service.dart';
+import 'package:ekadashi_calendar/l10n/app_language.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -40,15 +40,15 @@ void main() {
         ),
       ),
     );
-    final fmt = DateFormat.jm('en');
+    // The shared clock format (AppStrings.clock), in the phone's time zone.
+    String fmt(DateTime t) => AppStrings.clock(t.hour, t.minute, 'en');
     final instantStart = DateTime.utc(2026, 10, 6, 11, 0).toLocal();
     final instantEnd = DateTime.utc(2026, 10, 6, 12, 0).toLocal();
-    final expected = '${fmt.format(instantStart)} – ${fmt.format(instantEnd)}';
+    final expected = '${fmt(instantStart)} – ${fmt(instantEnd)}';
     expect(find.textContaining(expected), findsOneWidget);
     if (DateTime.now().timeZoneOffset ==
         const Duration(hours: 5, minutes: 30)) {
       // On an IST phone this is exactly what the user created.
-      // intl separates "PM" with a narrow no-break space (U+202F).
       expect(
         find.byWidgetPredicate(
           (w) =>

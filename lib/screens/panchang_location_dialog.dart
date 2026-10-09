@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:provider/provider.dart';
+import '../l10n/app_language.dart';
+import '../l10n/place_names.dart';
+import '../services/language_service.dart';
 import '../services/native_location_service.dart';
 import '../services/panchang/panchang_city.dart';
 import '../services/panchang/panchang_location_store.dart';
@@ -34,9 +38,7 @@ class _PanchangLocationDialogState extends State<PanchangLocationDialog> {
       if (mounted) setState(() => _catalog = cities);
     } catch (_) {
       if (mounted) {
-        setState(
-          () => _message = 'City search unavailable. Enter coordinates below.',
-        );
+        setState(() => _message = _t('panchang_city_search_unavailable'));
       }
     }
   }
@@ -70,15 +72,11 @@ class _PanchangLocationDialogState extends State<PanchangLocationDialog> {
           await service.hasLocationPermission() ||
           await service.requestLocationPermission();
       if (!granted) {
-        throw StateError(
-          'Location permission denied. Search or enter a location instead.',
-        );
+        throw StateError(_t('panchang_location_denied'));
       }
       final data = await service.getCurrentLocation();
       if (data == null) {
-        throw StateError(
-          'Location unavailable. Search or enter a location instead.',
-        );
+        throw StateError(_t('panchang_location_unavailable'));
       }
       // The legacy service only returns coarse US/India timezone groups.
       // Use the device IANA zone as a suggestion, visibly requiring review.
@@ -93,10 +91,7 @@ class _PanchangLocationDialogState extends State<PanchangLocationDialog> {
       _lat.text = '${data.latitude}';
       _lon.text = '${data.longitude}';
       _zone.text = zone ?? '';
-      setState(
-        () => _message =
-            'Coordinates received. Check the timezone before saving; the device timezone may differ from this location.',
-      );
+      setState(() => _message = _t('panchang_location_received'));
     } catch (e) {
       if (mounted) {
         setState(() => _message = e.toString().replaceFirst('Bad state: ', ''));
@@ -108,7 +103,7 @@ class _PanchangLocationDialogState extends State<PanchangLocationDialog> {
 
   @override
   Widget build(BuildContext context) => AlertDialog(
-    title: const Text('Panchang location'),
+    title: Text(_t('panchang_location_title')),
     content: SizedBox(
       width: 420,
       child: SingleChildScrollView(
@@ -119,9 +114,10 @@ class _PanchangLocationDialogState extends State<PanchangLocationDialog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               TextField(
-                decoration: const InputDecoration(
-                  labelText: 'Search cities worldwide',
-                  prefixIcon: Icon(Icons.search),
+                key: const Key('location_search'),
+                decoration: InputDecoration(
+                  labelText: _t('panchang_search_cities'),
+                  prefixIcon: const Icon(Icons.search),
                 ),
                 onChanged: (value) {
                   final q = value.trim().toLowerCase();
@@ -131,7 +127,9 @@ class _PanchangLocationDialogState extends State<PanchangLocationDialog> {
                         : _catalog
                               .where(
                                 (c) =>
-                                    '${c.label.toLowerCase()} ${c.searchTerms}'
+                                    // Names typed in the app language
+                                    // match too.
+                                    '${c.label.toLowerCase()} ${c.searchTerms} ${PlaceNames.label(c.label, _language)}'
                                         .contains(q),
                               )
                               .take(12)
@@ -142,51 +140,59 @@ class _PanchangLocationDialogState extends State<PanchangLocationDialog> {
               for (final city in _matches)
                 ListTile(
                   dense: true,
-                  title: Text(city.label),
-                  subtitle: Text(city.timeZoneId),
+                  title: Text(PlaceNames.label(city.label, _language)),
+                  subtitle: Text(city.timeZoneLabel(_language)),
                   onTap: () => _select(city),
                 ),
               TextButton.icon(
                 onPressed: _busy ? null : _gps,
                 icon: const Icon(Icons.my_location),
-                label: Text(_busy ? 'Locating…' : 'Use current location'),
+                label: Text(
+                  _t(
+                    _busy
+                        ? 'panchang_locating'
+                        : 'panchang_use_current_location',
+                  ),
+                ),
               ),
               if (_message != null)
                 Text(_message!, style: Theme.of(context).textTheme.bodySmall),
               TextFormField(
                 key: const Key('location_name'),
                 controller: _name,
-                decoration: const InputDecoration(labelText: 'Location name'),
-                validator: (v) =>
-                    v == null || v.trim().isEmpty ? 'Enter a name' : null,
+                decoration: InputDecoration(
+                  labelText: _t('panchang_location_name'),
+                ),
+                validator: (v) => v == null || v.trim().isEmpty
+                    ? _t('panchang_enter_name')
+                    : null,
               ),
               TextFormField(
                 key: const Key('location_latitude'),
                 controller: _lat,
-                decoration: const InputDecoration(labelText: 'Latitude'),
+                decoration: InputDecoration(labelText: _t('panchang_latitude')),
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                   signed: true,
                 ),
-                validator: (v) => _coordinate(v, 90, 'latitude'),
+                validator: (v) => _coordinate(v, 90),
               ),
               TextFormField(
                 key: const Key('location_longitude'),
                 controller: _lon,
-                decoration: const InputDecoration(labelText: 'Longitude'),
+                decoration: InputDecoration(
+                  labelText: _t('panchang_longitude'),
+                ),
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                   signed: true,
                 ),
-                validator: (v) => _coordinate(v, 180, 'longitude'),
+                validator: (v) => _coordinate(v, 180),
               ),
               TextFormField(
                 key: const Key('location_timezone'),
                 controller: _zone,
-                decoration: const InputDecoration(
-                  labelText: 'IANA timezone',
-                  helperText: 'Example: Asia/Kolkata or America/New_York',
-                ),
+                decoration: InputDecoration(labelText: _t('panchang_timezone')),
                 validator: (v) {
                   try {
                     PanchangCity(
@@ -198,14 +204,14 @@ class _PanchangLocationDialogState extends State<PanchangLocationDialog> {
                     ).zone;
                     return null;
                   } catch (_) {
-                    return 'Enter a valid IANA timezone';
+                    return _t('panchang_invalid_timezone');
                   }
                 },
               ),
               const SizedBox(height: 12),
-              const Text(
-                'City data: GeoNames · CC BY 4.0. Calculations and city search work offline.',
-                style: TextStyle(fontSize: 12),
+              Text(
+                _t('panchang_location_footer'),
+                style: const TextStyle(fontSize: 12),
               ),
             ],
           ),
@@ -215,7 +221,7 @@ class _PanchangLocationDialogState extends State<PanchangLocationDialog> {
     actions: [
       TextButton(
         onPressed: () => Navigator.pop(context),
-        child: const Text('Cancel'),
+        child: Text(_t('cancel')),
       ),
       FilledButton(
         onPressed: _busy
@@ -233,15 +239,25 @@ class _PanchangLocationDialogState extends State<PanchangLocationDialog> {
                   ),
                 );
               },
-        child: const Text('Save location'),
+        key: const Key('location_save'),
+        child: Text(_t('panchang_save_location')),
       ),
     ],
   );
 
-  String? _coordinate(String? value, int limit, String name) {
+  String? _coordinate(String? value, int limit) {
     final number = double.tryParse(value ?? '');
     return number == null || !number.isFinite || number.abs() > limit
-        ? 'Enter a $name from -$limit to $limit'
+        ? AppStrings.translateWithArgs(
+            'panchang_invalid_coordinate',
+            _language,
+            ['$limit'],
+          )
         : null;
   }
+
+  String get _language =>
+      context.read<LanguageService>().currentLocale.languageCode;
+
+  String _t(String key) => AppStrings.translate(key, _language);
 }

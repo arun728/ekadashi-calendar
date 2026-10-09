@@ -69,10 +69,15 @@ class CityInfo {
 
 /// Main Ekadashi data service with multi-timezone support
 class EkadashiService {
-  final Map<String,Map<String,String>> _termCache={};
-  String _calendarTerm(String value,String prefix,String code){
-    final supported=AppLocalizations.supportedLocales.contains(Locale(code))?code:'en';
-    final labels=_termCache.putIfAbsent(supported,()=>localizedLookup(lookupAppLocalizations(Locale(supported))));
+  final Map<String, Map<String, String>> _termCache = {};
+  String _calendarTerm(String value, String prefix, String code) {
+    final supported = AppLocalizations.supportedLocales.contains(Locale(code))
+        ? code
+        : 'en';
+    final labels = _termCache.putIfAbsent(
+      supported,
+      () => localizedLookup(lookupAppLocalizations(Locale(supported))),
+    );
     return labels['$prefix${value.toLowerCase()}'] ?? value;
   }
 
@@ -371,8 +376,16 @@ class EkadashiService {
                 benefitsMap[languageCode] as String? ??
                 benefitsMap['en'] as String? ??
                 'Grants spiritual merit.',
-            paksha: _calendarTerm(ekadashiJson['paksha'] as String? ?? '', 'paksha_', languageCode),
-            month: _calendarTerm(ekadashiJson['month'] as String? ?? '', 'lunar_month_', languageCode),
+            paksha: _calendarTerm(
+              ekadashiJson['paksha'] as String? ?? '',
+              'paksha_',
+              languageCode,
+            ),
+            month: _calendarTerm(
+              ekadashiJson['month'] as String? ?? '',
+              'lunar_month_',
+              languageCode,
+            ),
             fastingStartIso: fastingStartIso,
             paranaStartIso: paranaStartIso,
             paranaEndIso: paranaEndIso,

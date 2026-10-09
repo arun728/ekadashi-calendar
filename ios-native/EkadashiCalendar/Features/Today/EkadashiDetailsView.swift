@@ -12,9 +12,9 @@ struct EkadashiDetailsView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 VStack(spacing: 4) {
-                    Text(model.format(event.date, "MMM dd, yyyy")).font(.title2.weight(.light))
+                    Text(model.fullDate(event.date)).font(.title2.weight(.light))
                     Text(event.name).font(.largeTitle.bold()).foregroundStyle(Theme.teal).multilineTextAlignment(.center)
-                    StatusPill(text: model.timezone.rawValue, color: Theme.teal)
+                    StatusPill(text: model.timeZoneLabel, color: Theme.teal)
                 }
                 .frame(maxWidth: .infinity)
                 if event.usesContentFallback {
@@ -53,8 +53,8 @@ struct EkadashiDetailsView: View {
             Image(systemName: symbol).foregroundStyle(Theme.teal).frame(width: 28)
             VStack(alignment: .leading, spacing: 2) {
                 Text(title).bold().foregroundStyle(Theme.teal)
-                Text(model.format(date, "MMM dd, yyyy")).font(.footnote).foregroundStyle(.secondary)
-                Text(time).font(.title3)
+                Text(model.fullDate(date)).font(.footnote).foregroundStyle(.secondary)
+                Text(Localizer.shared.localizeClock(time, language: model.language)).font(.title3)
             }
             Spacer(minLength: 0)
         }
@@ -63,7 +63,9 @@ struct EkadashiDetailsView: View {
     private var vratButton: some View {
         let record = model.vrat.record(for: event.occurrenceUid)
         let style = VratStatusStyle(record?.status)
-        let label = record != nil ? "\(model.t("vrat")): \(model.t(style.detailKey))" : model.t("record_vrat")
+        let open = model.canRecord(event)
+        let label = record != nil ? "\(model.t("vrat")): \(model.t(style.detailKey))"
+            : model.t(open ? "record_vrat" : "journey_record_after_parana")
         return Button {
             recording = true
         } label: {
@@ -74,6 +76,7 @@ struct EkadashiDetailsView: View {
                 .padding(.vertical, 8)
         }
         .secondaryActionStyle()
+        .disabled(!open)
         .accessibilityIdentifier("details_record_vrat")
     }
 }

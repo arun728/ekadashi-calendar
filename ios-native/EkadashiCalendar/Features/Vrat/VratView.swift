@@ -4,9 +4,10 @@ import EkadashiCore
 /// Vrat tracker: overview, history, statistics and achievements
 /// (vrat_tracker_screen.dart). Recording, history, streaks and statistics
 /// are free; three entries and three badges are free, more need Premium.
+/// The sections are glass chips, as in Panchang, and change with a swipe.
 struct VratView: View {
     @Environment(AppModel.self) private var model
-    enum Section: CaseIterable { case overview, history, statistics, achievements }
+    enum Section: String, CaseIterable { case overview, history, statistics, achievements }
     @State private var section: Section = .overview
     @State private var selectedYear = CivilDate.today().year
     @State private var statusFilter: ObservanceStatus?
@@ -34,25 +35,24 @@ struct VratView: View {
                     Button(model.t("retry")) { model.vrat.load(events) }.primaryActionStyle()
                 }
             } else {
-                Picker(model.t("vrat_tracker"), selection: $section) {
-                    Text(model.t("overview")).tag(Section.overview)
-                    Text(model.t("history")).tag(Section.history)
-                    Text(model.t("statistics")).tag(Section.statistics)
-                    Text(model.t("achievements")).tag(Section.achievements)
+                sectionBar
+                TabView(selection: $section) {
+                    overview.tag(Section.overview)
+                    history.tag(Section.history)
+                    statistics.tag(Section.statistics)
+                    achievements.tag(Section.achievements)
                 }
-                .pickerStyle(.segmented)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
-                .accessibilityIdentifier("vrat_tabs_tube")
-                switch section {
-                case .overview: overview
-                case .history: history
-                case .statistics: statistics
-                case .achievements: achievements
-                }
+                .tabViewStyle(.page(indexDisplayMode: .never))
             }
         }
         .sheet(item: $recording) { RecordVratSheet(event: $0) }
+    }
+
+    private var sectionBar: some View {
+        SectionChips(Section.allCases, selection: $section, title: { model.t($0.rawValue) },
+                     identifier: { "journey_tab_\($0.rawValue)" })
+            .accessibilityElement(children: .contain)
+            .accessibilityIdentifier("vrat_tabs_tube")
     }
 
     // MARK: Overview
@@ -72,6 +72,7 @@ struct VratView: View {
                     GridRow {
                         MetricCard(title: model.t("current_streak"), value: "\(model.vrat.currentStreak(events))",
                                    subtitle: model.t("ekadashis_unit"), symbol: "flame", color: .orange)
+                            .accessibilityIdentifier("journey_overview_streaks")
                         MetricCard(title: model.t("longest_streak"), value: "\(longest)", subtitle: model.t("ekadashis_unit"),
                                    symbol: "medal", color: Theme.amber)
                     }
@@ -167,9 +168,11 @@ struct VratView: View {
     private func row(_ event: EkadashiOccurrence) -> some View {
         let record = model.vrat.record(for: event.occurrenceUid)
         let style = VratStatusStyle(record?.status)
-        let date = model.format(event.date, "MMM dd, yyyy")
+        let date = model.fullDate(event.date)
+        let open = model.canRecord(event)
         return Button {
-            recording = event
+            // Only fasts that have happened can be recorded (Phase 4).
+            if open { recording = event } else { model.show("journey_record_after_parana") }
         } label: {
             HStack(spacing: 12) {
                 Image(systemName: style.symbol)
@@ -186,8 +189,9 @@ struct VratView: View {
                 }
                 Spacer(minLength: 8)
                 StatusPill(text: model.t(style.listKey), color: style.color)
-                Image(systemName: "chevron.right").font(.caption).foregroundStyle(.tertiary)
+                Image(systemName: open ? "chevron.right" : "clock").font(.caption).foregroundStyle(.tertiary)
             }
+            .opacity(open ? 1 : 0.55)
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
             .contentShape(Rectangle())
@@ -220,7 +224,7 @@ struct VratView: View {
                         Text("\(Int(stats.completionPercentage.rounded()))%").font(.title.bold()).foregroundStyle(Theme.teal)
                     }
                     .frame(width: 130, height: 130)
-                    Text("\(stats.observedCount) of \(stats.totalOccurrences) \(model.t("ekadashis_unit"))")
+                    Text(model.t("observed_of_total", "\(stats.observedCount)", "\(stats.totalOccurrences)"))
                         .font(.subheadline).foregroundStyle(.secondary)
                 }
                 .frame(maxWidth: .infinity)

@@ -2,9 +2,11 @@ import Foundation
 import XCTest
 @testable import EkadashiCore
 
-/// Ports search_accuracy_test.dart and the recent-search rules.
+/// Ports search_accuracy_test.dart (Ekadashi matching) and the recent-search rules.
 final class SearchTests: XCTestCase {
-    private func vaikuntha(_ language: String = "en") -> [EkadashiOccurrence] {
+    private let today = CivilDate(2026, 10, 8)
+
+    private func vaikuntha(_ language: String) -> [EkadashiOccurrence] {
         [2026, 2027].map { year in
             EkadashiOccurrence(id: year == 2026 ? 1 : 2027001, occurrenceUid: "ekadashi:\(year):01",
                                name: language == "te" ? "వైకుంఠ ఏకాదశి" : "Vaikuntha Ekadashi",
@@ -13,64 +15,50 @@ final class SearchTests: XCTestCase {
         }
     }
 
-    private func index(_ events: [EkadashiOccurrence], language: String = "en") -> SearchIndex {
-        let index = SearchIndex()
-        index.build(ekadashis: events, language: language)
-        return index
+    private func search(_ events: @escaping (String) -> [EkadashiOccurrence], language: String = "en") -> UnifiedSearch {
+        UnifiedSearch(items: SearchCorpus.ekadashiItems(events, language: language))
     }
 
     func testUnmatchedAndPunctuationOnlyQueriesReturnNothing() {
-        let s = index(vaikuntha())
-        XCTAssertTrue(s.search("zzzzreviewnomatch9999").isEmpty)
-        XCTAssertTrue(s.search("!!!").isEmpty)
+        let s = search(vaikuntha)
+        XCTAssertTrue(s.search("zzzzreviewnomatch9999", today: today).isEmpty)
+        XCTAssertTrue(s.search("!!!", today: today).isEmpty)
     }
 
     func testOneEditTranspositionAndTwoEditsFindTheIntendedEkadashi() {
-        let s = index(vaikuntha())
+        let s = search(vaikuntha)
         for query in ["vaikunta", "vaikuntah", "vaikntha", "vaikxxtha"] {
-            let results = s.search(query, filter: .ekadashi)
+            let results = s.search(query, category: .ekadashi, today: today)
             XCTAssertFalse(results.isEmpty, query)
-            XCTAssertTrue(results.allSatisfy { $0.title == "Vaikuntha Ekadashi" }, query)
+            XCTAssertTrue(results.allSatisfy { $0.titleEnglish == "Vaikuntha Ekadashi" }, query)
         }
-        XCTAssertTrue(s.search("vx", filter: .ekadashi).isEmpty)
-        XCTAssertTrue(s.search("vaikuntha unrelatedword", filter: .ekadashi).isEmpty)
+        XCTAssertTrue(s.search("vx", category: .ekadashi, today: today).isEmpty)
+        XCTAssertTrue(s.search("vaikuntha unrelatedword", category: .ekadashi, today: today).isEmpty)
     }
 
-    func testTeluguQueryKeepsItsLetters() {
-        let s = index(vaikuntha("te"), language: "te")
+    func testTeluguQueryKeepsItsLettersAndEveryLanguageNameMatches() {
         XCTAssertEqual(SearchText.normalize("వైకుంఠ"), "వైకుంఠ")
-        XCTAssertEqual(s.search("వైకుంఠ", filter: .ekadashi).count, 2)
-        XCTAssertTrue(s.search("mantra", languageCode: "te").isEmpty)
+        let telugu = search(vaikuntha, language: "te")
+        XCTAssertEqual(telugu.search("వైకుంఠ", today: today).count, 2)
+        XCTAssertEqual(telugu.search("vaikuntha", today: today).first?.title, "వైకుంఠ ఏకాదశి", "English name finds the Telugu title")
     }
 
     func testYearSelectionDistinguishesOccurrences() {
-        let s = index(vaikuntha())
+        let s = search(vaikuntha)
         for year in [2026, 2027] {
-            let results = s.search("vaikuntha", filter: .ekadashi, year: year)
-            XCTAssertEqual(results.count, 1)
-            XCTAssertEqual(results.first?.entry.metadataInt("year"), year)
+            let results = s.search("vaikuntha", year: year, today: today)
+            XCTAssertEqual(results.map { $0.date?.year }, [year])
         }
     }
 
     func testExactTitleTokenRanksAboveAPrefixAndTitleAboveBody() {
-        let prefix = index([EkadashiOccurrence(id: 1, name: "Vaikuntham Ekadashi", date: CivilDate(2026, 1, 1)),
-                            EkadashiOccurrence(id: 2, name: "Vaikuntha Ekadashi", date: CivilDate(2026, 1, 1))])
-        XCTAssertEqual(prefix.search("vaikuntha", filter: .ekadashi).first?.title, "Vaikuntha Ekadashi")
-        let body = index([EkadashiOccurrence(id: 1, name: "Unrelated Ekadashi", date: CivilDate(2026, 1, 1),
-                                             description: "Reaches Vaikuntha"),
-                          EkadashiOccurrence(id: 2, name: "Vaikuntha Ekadashi", date: CivilDate(2026, 1, 1))])
-        XCTAssertEqual(body.search("vaikunta", filter: .ekadashi).first?.title, "Vaikuntha Ekadashi")
-    }
-
-    func testCuratedCatalogIsSearchableAndOfflineHidesOnlineOnlyItems() {
-        let s = index([])
-        XCTAssertFalse(s.search("hare krishna").isEmpty)
-        XCTAssertFalse(s.search("nirjala", filter: .katha).isEmpty)
-        XCTAssertTrue(s.search("nirjala", filter: .katha, offline: true).isEmpty)
-        s.markDownloaded("katha_online_pandava")
-        XCTAssertFalse(s.search("nirjala", filter: .katha, offline: true).isEmpty)
-        XCTAssertFalse(s.suggestions("hare").isEmpty)
-        XCTAssertEqual(SearchContentType.vratInfo.localizationKey, "category_vrat")
+        let prefix = search { _ in [EkadashiOccurrence(id: 1, occurrenceUid: "a", name: "Vaikuntham Ekadashi", date: CivilDate(2026, 1, 1)),
+                                    EkadashiOccurrence(id: 2, occurrenceUid: "b", name: "Vaikuntha Ekadashi", date: CivilDate(2026, 1, 1))] }
+        XCTAssertEqual(prefix.search("vaikuntha", today: today).first?.titleEnglish, "Vaikuntha Ekadashi")
+        let body = search { _ in [EkadashiOccurrence(id: 1, occurrenceUid: "a", name: "Unrelated Ekadashi", date: CivilDate(2026, 1, 1),
+                                                     description: "Reaches Vaikuntha"),
+                                  EkadashiOccurrence(id: 2, occurrenceUid: "b", name: "Vaikuntha Ekadashi", date: CivilDate(2026, 1, 1))] }
+        XCTAssertEqual(body.search("vaikunta", today: today).first?.titleEnglish, "Vaikuntha Ekadashi")
     }
 
     func testRecentSearchesDeduplicateDropTypingPrefixesAndCapAtTen() {
@@ -135,7 +123,8 @@ final class WidgetSnapshotTests: XCTestCase {
     func testEveryLanguageProvidesAllWidgetLabels() {
         for language in Localizer.languages {
             let strings = snapshot([event(2027, 1, utc(2027, 1, 5))], utc(2027, 1, 1), language: language).strings
-            XCTAssertEqual(strings.count, 23, language)
+            XCTAssertEqual(strings.count, WidgetSnapshot.stringKeys.count, language)
+            XCTAssertEqual(strings.count, 28, language)
             XCTAssertTrue(strings.values.allSatisfy { !$0.isEmpty && !$0.hasPrefix("widget_") }, language)
             if language != "en" { XCTAssertNotEqual(strings["widget.next_ekadashi"], "Next Ekadashi") }
         }
@@ -252,6 +241,7 @@ final class ResourceSyncTests: XCTestCase {
             XCTAssertEqual(try resource("calendar/\(name)"), try Repo.data("assets/calendar/\(name)"), name)
         }
         XCTAssertEqual(try resource("panchang/cities.json"), try Repo.data("assets/panchang/cities.json"))
+        XCTAssertEqual(try resource("panchang/place_names.json"), try Repo.data("assets/panchang/place_names.json"))
     }
 
     func testStringsMatchTheArbFiles() throws {
@@ -269,16 +259,20 @@ final class ResourceSyncTests: XCTestCase {
         XCTAssertEqual(try CalendarRepository.bundled().availableYears, years)
     }
 
+    /// No user-facing English literal in any iOS view, Panchang included
+    /// (Phase 2: every screen follows the app language).
     func testIosAppSourcesDoNotBypassLocalization() throws {
-        // Panchang is English-only by design (AGENTS.md), like on Android.
-        let app = Repo.url("ios-native/EkadashiCalendar")
-        guard let files = FileManager.default.enumerator(at: app, includingPropertiesForKeys: nil) else { return }
+        let views = #"(Text|Label|Button|TextField|SecureField|Toggle|Picker|DatePicker|DisclosureGroup|Section|navigationTitle|accessibilityLabel|accessibilityHint|ContentUnavailableView)"#
+        let pattern = try NSRegularExpression(pattern: #"\b"# + views + #"\(\s*"([^"\\]*[A-Za-z][^"\\]*)""#)
         var violations: [String] = []
-        let pattern = try NSRegularExpression(pattern: #"Text\("([^"\\]*[A-Za-z][^"\\]*)"\)"#)
-        for case let url as URL in files where url.pathExtension == "swift" && !url.lastPathComponent.hasPrefix("Panchang") {
-            let text = try String(contentsOf: url, encoding: .utf8)
-            for match in pattern.matches(in: text, range: NSRange(text.startIndex..., in: text)) {
-                violations.append("\(url.lastPathComponent): \((text as NSString).substring(with: match.range(at: 1)))")
+        for folder in ["ios-native/EkadashiCalendar", "ios-native/EkadashiWidgets", "ios-native/Shared"] {
+            guard let files = FileManager.default.enumerator(at: Repo.url(folder), includingPropertiesForKeys: nil) else { continue }
+            for case let url as URL in files where url.pathExtension == "swift" {
+                for line in try String(contentsOf: url, encoding: .utf8).components(separatedBy: "\n") {
+                    for match in pattern.matches(in: line, range: NSRange(line.startIndex..., in: line)) {
+                        violations.append("\(url.lastPathComponent): \((line as NSString).substring(with: match.range(at: 2)))")
+                    }
+                }
             }
         }
         XCTAssertEqual(violations, [])
@@ -294,11 +288,13 @@ final class ResourceSyncTests: XCTestCase {
             #"countCard\("([^"\\]+)""#, #"iconButton\("[^"]+", "([^"\\]+)""#, #"reminder\("([^"\\]+)""#,
             #"feature\("[^"]+", "([^"\\]+)"\)"#, #"caption\("([^"\\]+)"\)"#, #"\blink\("([^"\\]+)"\)"#,
             #"statusChip\([^,]+, "([^"\\]+)""#, #""(premium_[a-z_]+)""#,
+            // Every literal inside t(...), including both sides of a ternary.
+            #"\bt\([^()]*?"([a-z0-9_]+)"[^()]*?\)"#, #"\bt\([^()]*?"[a-z0-9_]+"[^()]*?"([a-z0-9_]+)"[^()]*?\)"#,
         ].map { try! NSRegularExpression(pattern: $0) }
         var keys: [String: String] = [:]
         for folder in ["ios-native/EkadashiCalendar", "ios-native/EkadashiWidgets", "ios-native/Shared"] {
             guard let files = FileManager.default.enumerator(at: Repo.url(folder), includingPropertiesForKeys: nil) else { continue }
-            for case let url as URL in files where url.pathExtension == "swift" && !url.lastPathComponent.hasPrefix("Panchang") {
+            for case let url as URL in files where url.pathExtension == "swift" {
                 for line in try String(contentsOf: url, encoding: .utf8).components(separatedBy: "\n")
                 where !line.contains("accessibilityIdentifier") {
                     for pattern in patterns {
@@ -314,7 +310,12 @@ final class ResourceSyncTests: XCTestCase {
             keys["premium_\(plan.rawValue)"] = "PremiumView.swift"
             if plan != .lifetime { keys["premium_\(plan.rawValue)_terms"] = "PremiumView.swift" }
         }
-        for type in SearchContentType.allCases { keys[type.localizationKey] = "Search" }
+        for category in SearchCategory.allCases { keys[category.localizationKey] = "Search" }
+        for screen in SearchCatalog.bundled.screens { keys[screen.titleKey] = "search_catalog.json" }
+        for page in ["keydays", "daily", "muhurta", "ekadashi", "rashi"] { keys["panchang_section_\(page)"] = "PanchangView" }
+        for limb in ["tithi", "nakshatra", "yoga", "karana"] { keys["panchang_\(limb)"] = "PanchangPages" }
+        for key in ["panchang_am", "panchang_pm", "panchang_next_day_marker", "panchang_previous_day_marker", "panchang_day",
+                    "panchang_night"] { keys[key] = "EkadashiCore" }
         for method in FastingMethod.allCases { keys[method.localizationKey] = "VratModels" }
         for status in ObservanceStatus.allCases where status != .unrecorded { keys[status.rawValue] = "VratStatusStyle" }
         for achievement in AchievementEvaluator.all {
@@ -322,6 +323,9 @@ final class ResourceSyncTests: XCTestCase {
             keys[achievement.descriptionKey] = "Achievements"
         }
         for key in WidgetSnapshot.stringKeys.values { keys[key] = "WidgetSnapshot" }
+        for group in EventReminderChoice.Kind.allCases { keys[group.titleKey] = "EventReminders" }
+        for key in ["event_reminder_today", "event_reminder_tomorrow", "event_reminder_in_days", "event_reminder_all_custom",
+                    "event_reminder_all_google"] { keys[key] = "EventReminders" }
         XCTAssertGreaterThan(keys.count, 150)
         var missing: [String] = []
         for language in Localizer.languages {
@@ -329,5 +333,46 @@ final class ResourceSyncTests: XCTestCase {
             for (key, file) in keys where !known.contains(key) { missing.append("\(language) \(key) (\(file))") }
         }
         XCTAssertEqual(missing.sorted(), [])
+    }
+}
+
+/// Phase 6: the two redesigned widgets (Ekadashi, Upcoming).
+final class WidgetRedesignTests: XCTestCase {
+    private func snapshot(now: Date) throws -> WidgetSnapshot {
+        WidgetSnapshot.build(occurrences: try CalendarRepository.bundled().ekadashis(timezone: "IST", language: "en"),
+                             timezone: "IST", locationName: "", language: "en", now: now)
+    }
+
+    func testBeforeAnEkadashiTheWidgetShowsTheNextOneAndDaysToGo() throws {
+        let now = instant("2026-10-08T10:00:00+05:30")
+        let snapshot = try snapshot(now: now)
+        guard case .next(let item, let days) = snapshot.headline(at: now) else { return XCTFail("expected next") }
+        XCTAssertEqual(item.name, "Papankusha Ekadashi")
+        XCTAssertEqual(days, 14)
+        XCTAssertEqual(snapshot.daysToGo(days), "14 days to go")
+        XCTAssertEqual(snapshot.daysToGo(1), "Tomorrow")
+    }
+
+    func testOnTheEkadashiTheWidgetShowsProgressUntilParana() throws {
+        let probe = try snapshot(now: instant("2026-10-08T10:00:00+05:30")).nextEkadashi!
+        let middle = probe.fastingStart.addingTimeInterval(probe.paranaStart.timeIntervalSince(probe.fastingStart) / 2)
+        let snapshot = try snapshot(now: middle)
+        guard case .today(let item, let progress) = snapshot.headline(at: middle) else { return XCTFail("expected today") }
+        XCTAssertEqual(item.id, probe.id)
+        XCTAssertEqual(progress, 0.5, accuracy: 0.01)
+        XCTAssertEqual(item.fastProgress(at: probe.fastingStart.addingTimeInterval(-60)), 0)
+        XCTAssertEqual(item.fastProgress(at: probe.paranaEnd), 1)
+        // During Parana the widget stays on today's Ekadashi, fully fasted.
+        let parana = probe.paranaStart.addingTimeInterval(60)
+        guard case .today(_, let done) = snapshot.headline(at: parana) else { return XCTFail("expected parana") }
+        XCTAssertEqual(done, 1)
+    }
+
+    func testEveryLanguageHasTheNewWidgetStrings() {
+        for language in Localizer.languages {
+            for key in ["widget_today_is_ekadashi", "widget_days_to_go", "widget_fast_done"] {
+                XCTAssertNotEqual(Localizer.shared.translate(key, language: language), key, "\(language) \(key)")
+            }
+        }
     }
 }

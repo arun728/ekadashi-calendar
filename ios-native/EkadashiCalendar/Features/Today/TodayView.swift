@@ -97,7 +97,7 @@ struct HomeHeader: View {
             } label: {
                 HStack(spacing: 6) {
                     Image(systemName: "location.fill").foregroundStyle(Theme.teal)
-                    Text("\(city) • \(model.timezone.rawValue)").font(.subheadline.weight(.medium)).lineLimit(1)
+                    Text("\(model.cityLabel(city)) • \(model.timeZoneLabel)").font(.subheadline.weight(.medium)).lineLimit(1)
                     Image(systemName: "arrow.clockwise").font(.caption2).foregroundStyle(.secondary)
                 }
             }
@@ -108,7 +108,7 @@ struct HomeHeader: View {
             } label: {
                 HStack(spacing: 6) {
                     Image(systemName: "location.fill").foregroundStyle(Theme.teal)
-                    Text("\(model.t("locating")) • \(model.timezone.rawValue)").font(.subheadline)
+                    Text("\(model.t("locating")) • \(model.timeZoneLabel)").font(.subheadline)
                 }
             }
             .buttonStyle(.plain)
@@ -116,13 +116,15 @@ struct HomeHeader: View {
     }
 }
 
-/// తెలుగు / English / हिंदी / தமிழ், as on Android.
+/// The app's only language picker: every tab and subtab, including
+/// Panchang, follows it. Languages appear in registry order (English,
+/// Hindi, Tamil, Telugu, Gujarati, Bengali, then any added later).
 struct LanguageMenu: View {
     @Environment(AppModel.self) private var model
 
     var body: some View {
         Menu {
-            ForEach(["te", "en", "hi", "ta"], id: \.self) { code in
+            ForEach(Localizer.languages, id: \.self) { code in
                 Button {
                     model.setLanguage(code)
                 } label: {
@@ -168,8 +170,7 @@ struct EkadashiCard: View {
                         .padding(.vertical, 6)
                         .background(daysUntil < 0 ? Color.gray : Theme.teal, in: Capsule())
                         .frame(maxWidth: .infinity, alignment: .trailing)
-                    Text(model.format(event.date, "MMM dd, yyyy")).font(.title2.weight(.light)).padding(.top, 16)
-                    Text(model.format(event.date, "EEEE")).font(.callout).foregroundStyle(.secondary).padding(.top, 4)
+                    Text(model.fullDate(event.date)).font(.title2.weight(.light)).padding(.top, 16)
                     Text(event.name)
                         .font(.title.bold())
                         .foregroundStyle(Theme.teal)
@@ -205,7 +206,9 @@ struct EkadashiCard: View {
                                 .padding(.vertical, 4)
                         }
                         .secondaryActionStyle()
+                        .disabled(!model.canRecord(event))
                         .accessibilityLabel(model.t(model.vrat.record(for: event.occurrenceUid) == nil ? "record_vrat" : "edit_record"))
+                        .accessibilityHint(model.canRecord(event) ? "" : model.t("journey_record_after_parana"))
                         .accessibilityIdentifier("home_record_vrat")
                     }
                 }
@@ -219,8 +222,8 @@ struct EkadashiCard: View {
     private func timing(_ title: String, _ date: CivilDate, _ time: String) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(title).font(.callout.bold()).foregroundStyle(Theme.teal)
-            Text(model.format(date, "MMM dd, yyyy")).font(.subheadline).foregroundStyle(.secondary)
-            Text(time).font(.title3.weight(.semibold))
+            Text(model.fullDate(date)).font(.subheadline).foregroundStyle(.secondary)
+            Text(Localizer.shared.localizeClock(time, language: model.language)).font(.title3.weight(.semibold))
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }

@@ -8,7 +8,7 @@ import 'package:ekadashi_calendar/screens/vrat_tracker/vrat_tracker_screen.dart'
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  for (final code in ['en', 'ta', 'hi', 'te']) {
+  for (final code in ['en', 'ta', 'hi', 'te', 'gu', 'bn']) {
     testWidgets('$code Vrat has all free tabs and no enable/disable controls', (
       tester,
     ) async {
@@ -37,9 +37,13 @@ void main() {
         find.text(language.translate('disable_vrat_tracker')),
         findsNothing,
       );
+      // Journey's sections are glass chips, as in Panchang.
       for (final key in ['overview', 'history', 'statistics', 'achievements']) {
         expect(
-          find.widgetWithText(Tab, language.translate(key)),
+          find.descendant(
+            of: find.byKey(Key('journey_tab_$key')),
+            matching: find.text(language.translate(key)),
+          ),
           findsOneWidget,
         );
       }

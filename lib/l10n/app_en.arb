@@ -365,5 +365,306 @@
   "google_free_sync_used": "Free sync used. Upgrade to sync the whole year.",
   "google_sign_in_failed": "Google sign-in failed. Check your connection and try again.",
   "vrat_free_limit_reached": "You've used your three free Vrat entries. Get Premium to keep recording.",
-  "google_premium_events_removed": "Your Premium has ended, so the Google events it synced were removed. Renew to sync again."
+  "google_premium_events_removed": "Your Premium has ended, so the Google events it synced were removed. Renew to sync again.",
+  "search_filter_ekadashi": "Ekadashi",
+  "search_filter_festival": "Festivals",
+  "search_filter_amavasya": "Amavasya",
+  "search_filter_purnima": "Purnima",
+  "search_filter_shivaratri": "Shivaratri",
+  "search_filter_chaturthi": "Chaturthi",
+  "search_filter_pradosham": "Pradosham",
+  "search_filter_navaratri": "Navaratri",
+  "search_filter_sankranti": "Sankranti",
+  "search_filter_jayanti": "Jayanti",
+  "search_filter_my_calendar": "My calendar",
+  "search_filter_screen": "In the app",
+  "search_screen_panchang": "Panchang",
+  "search_hint_all": "Search Ekadashi, festivals, events…",
+  "search_start_all": "Find Ekadashis, festivals, Amavasya, Purnima and your events",
+  "search_premium_locked": "Unlock with Premium",
+  "search_no_results_hint": "Check the spelling, or try another year or filter.",
+  "search_all_years": "All years",
+  "panchang_day": "Day",
+  "panchang_night": "Night",
+  "panchang_am": "AM",
+  "panchang_pm": "PM",
+  "panchang_next_day_marker": "(next day)",
+  "panchang_previous_day_marker": "(previous day)",
+  "panchang_section_keydays": "Key days",
+  "panchang_section_daily": "Daily",
+  "panchang_section_muhurta": "Muhurta",
+  "panchang_section_ekadashi": "Ekadashi",
+  "panchang_section_rashi": "Rashi",
+  "panchang_search_location": "Search city or use location",
+  "panchang_previous": "Previous",
+  "panchang_next": "Next",
+  "panchang_pick_date": "Date",
+  "panchang_month": "Month",
+  "panchang_done": "Done",
+  "panchang_location_not_saved": "Location changed, but could not be saved.",
+  "panchang_notes_title": "How the Panchang is calculated",
+  "panchang_notes_body": "Everything is calculated on your phone for the chosen location, with its own time zone. Tithi, nakshatra, yoga and karana are taken at local sunrise; times after midnight are marked as the next day. Sunrise and sunset use the visible upper edge of the Sun at sea level, so hills and buildings can shift them by a few minutes.",
+  "panchang_notes_traditions": "Festival dates follow the traditional time-of-day rules and published calendars; regional and family traditions can differ. Months are shown in both the Amanta and Purnimanta systems. Ekadashi dates in Key days, the calendar, reminders and Journey come from the published schedule.",
+  "panchang_notes_sources": "Astronomy: VSOP87 and ELP 2000-82B with the Lahiri ayanamsa. Cities: GeoNames (CC BY 4.0). Time zones: IANA database.",
+  "panchang_premium_title": "Full Panchang is part of Premium",
+  "panchang_premium_body": "Unlock the five limbs, good times and times to avoid, Choghadiya, Hora, Rashi, and every festival and observance in Key days.",
+  "panchang_unlock": "Unlock full Panchang",
+  "panchang_unlock_short": "Unlock",
+  "panchang_key_days_locked": "Festivals and observances are part of Premium. Ekadashis are free.",
+  "panchang_no_key_days": "No key days this month for this filter.",
+  "panchang_days_ago": "{value0} days ago",
+  "@panchang_days_ago": {
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "panchang_tithi_at_sunrise": "Tithi at sunrise",
+  "panchang_tithi_at_six": "Tithi at 6 AM (no sunrise)",
+  "panchang_until": "until {value0}",
+  "@panchang_until": {
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "panchang_after": "after {value0}",
+  "@panchang_after": {
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "panchang_starts_at": "starts {value0}",
+  "@panchang_starts_at": {
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "panchang_amanta": "Amanta",
+  "panchang_purnimanta": "Purnimanta",
+  "panchang_sunrise": "Sunrise",
+  "panchang_sunset": "Sunset",
+  "panchang_moonrise": "Moonrise",
+  "panchang_moonset": "Moonset",
+  "panchang_five_limbs": "Five limbs",
+  "panchang_tithi": "Tithi",
+  "panchang_nakshatra": "Nakshatra",
+  "panchang_yoga": "Yoga",
+  "panchang_karana": "Karana",
+  "panchang_vara": "Vara",
+  "panchang_timings": "Timings",
+  "panchang_good_times": "Good times",
+  "panchang_avoid_times": "Times to avoid",
+  "panchang_observances": "Observances",
+  "panchang_more_details": "More details",
+  "panchang_sun_rashi": "Sun rashi",
+  "panchang_moon_rashi": "Moon rashi",
+  "panchang_nakshatra_pada": "Nakshatra pada",
+  "panchang_ritu": "Ritu",
+  "panchang_ayana": "Ayana",
+  "panchang_samvat": "Samvat",
+  "panchang_samvat_value": "Shaka {value0} · Vikrama {value1}",
+  "@panchang_samvat_value": {
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      },
+      "value1": {
+        "type": "String"
+      }
+    }
+  },
+  "panchang_anandadi": "Anandadi yoga",
+  "panchang_special_yogas": "Special yogas",
+  "panchang_none": "None",
+  "panchang_ayanamsa": "Lahiri ayanamsa",
+  "panchang_no_solar_day": "No complete solar day here today, so sunrise-based periods are unavailable.",
+  "panchang_transitions": "Changes until the next sunrise",
+  "panchang_choghadiya": "Choghadiya",
+  "panchang_choghadiya_hint": "Amrit, Shubh and Labh are favourable; Chal is neutral; Rog, Kaal and Udveg are best avoided.",
+  "panchang_hora": "Hora",
+  "panchang_lagna": "Udaya Lagna",
+  "panchang_unavailable": "Unavailable for this day and place.",
+  "panchang_now": "Now",
+  "panchang_rashi": "Rashi",
+  "panchang_rashi_note": "These are the Sun and Moon positions for the day (sidereal, Lahiri). Your personal birth rashi needs your birth date, time and place.",
+  "panchang_smarta": "Smarta",
+  "panchang_gaudiya": "Vaishnava · Gaudiya/ISKCON",
+  "panchang_smarta_rule": "Householders: the Ekadashi at sunrise; when it touches two sunrises, the first day.",
+  "panchang_gaudiya_rule": "Gaudiya/ISKCON: Ekadashi must hold 96 minutes before sunrise (Arunodaya), with Mahadvadashi rules.",
+  "panchang_calculation_failed": "Could not calculate this month.",
+  "panchang_no_calculated_fast": "No calculated fast for this month and place; a local sunrise is needed.",
+  "panchang_calculated_preview": "A calculated preview: the calendar, reminders and Journey keep using the published Ekadashi schedule.",
+  "panchang_fast_day": "Fast",
+  "panchang_parana": "Parana",
+  "panchang_near_boundary": "A change of tithi or nakshatra is within five minutes of a deciding moment. Check this date with your tradition's calendar.",
+  "panchang_calculation_details": "Calculation details",
+  "panchang_rule": "Rule",
+  "panchang_hari_vasara_ends": "Hari Vasara ends",
+  "panchang_search_cities": "Search cities worldwide",
+  "panchang_locating": "Locating…",
+  "panchang_use_current_location": "Use current location",
+  "panchang_location_name": "Location name",
+  "panchang_latitude": "Latitude",
+  "panchang_longitude": "Longitude",
+  "panchang_timezone": "Time zone (IANA)",
+  "panchang_location_footer": "Example: Asia/Kolkata or America/New_York. City data: GeoNames (CC BY 4.0). Calculations and city search work offline.",
+  "panchang_location_title": "Panchang location",
+  "panchang_save_location": "Save",
+  "panchang_location_denied": "Location permission denied. Search or enter a location instead.",
+  "panchang_location_unavailable": "Location unavailable. Search or enter a location instead.",
+  "panchang_location_received": "Coordinates received. Check the time zone before saving.",
+  "journey_tab": "Journey",
+  "journey_record_after_parana": "You can record this fast once Parana begins",
+  "settings_premium_subtitle": "Everything for your Ekadashi journey",
+  "premium_feature_panchang_v2": "Full Panchang: every festival in Key days, the five limbs, timings, Muhurta and Rashi",
+  "settings_premium_from": "From {value0} a month · Lifetime {value1}",
+  "@settings_premium_from": {
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      },
+      "value1": {
+        "type": "String"
+      }
+    }
+  },
+  "settings_premium_cta": "See plans",
+  "settings_premium_plan": "Your plan: {value0}",
+  "@settings_premium_plan": {
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "settings_premium_manage": "Manage",
+  "settings_premium_plans": "Change plan",
+  "widget_today_is_ekadashi": "Today is Ekadashi",
+  "widget_days_to_go": "{value0} days to go",
+  "@widget_days_to_go": {
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "widget_fast_done": "{value0}% of the fast done",
+  "@widget_fast_done": {
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "widget_name_ekadashi": "Ekadashi",
+  "widget_desc_ekadashi": "Today's Ekadashi with your fast's progress, or the next Ekadashi and the days to go.",
+  "widget_desc_upcoming": "The next Ekadashis at a glance.",
+  "widget_preview_during": "Left: now · Right: during the next Ekadashi",
+  "event_reminder_today": "{value0} is today ({value1})",
+  "@event_reminder_today": {
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      },
+      "value1": {
+        "type": "String"
+      }
+    }
+  },
+  "event_reminder_tomorrow": "{value0} is tomorrow ({value1})",
+  "@event_reminder_tomorrow": {
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      },
+      "value1": {
+        "type": "String"
+      }
+    }
+  },
+  "event_reminder_in_days": "{value0} is in {value2} days ({value1})",
+  "@event_reminder_in_days": {
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      },
+      "value1": {
+        "type": "String"
+      },
+      "value2": {
+        "type": "String"
+      }
+    }
+  },
+  "event_reminder_all_custom": "All my entries",
+  "event_reminder_all_google": "All Google Calendar events",
+  "event_reminder_group_festival": "Festivals",
+  "event_reminder_group_monthly": "Monthly observances",
+  "event_reminder_group_my_calendar": "My calendar",
+  "notifications_section_ekadashi": "Ekadashi",
+  "notifications_section_events": "Festivals and events",
+  "notifications_events_desc": "Get reminded before festivals, Panchang days and your calendar entries.",
+  "notifications_add_event": "Add a reminder",
+  "notifications_edit_event": "Edit reminder",
+  "notifications_choose_event": "Event",
+  "notifications_lead_title": "Remind me",
+  "notifications_lead_0": "On the day",
+  "notifications_lead_1": "1 day before",
+  "notifications_lead_n": "{value0} days before",
+  "@notifications_lead_n": {
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "notifications_time": "At",
+  "notifications_delete_event": "Delete reminder",
+  "notifications_lead_required": "Choose at least one day",
+  "notifications_premium_events": "Festival and Panchang reminders are part of Premium. Reminders for your calendar entries are free.",
+  "notifications_no_events": "No reminders yet",
+  "notifications_off_hint": "Turn on notifications to use reminders.",
+  "notifications_search_events": "Search events",
+  "panchang_enter_name": "Enter a name",
+  "panchang_invalid_coordinate": "Enter a number from -{value0} to {value0}",
+  "panchang_invalid_timezone": "Enter a valid time zone, such as Asia/Kolkata",
+  "panchang_city_search_unavailable": "City search is unavailable. Enter the coordinates below.",
+  "@panchang_invalid_coordinate": {
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "observed_of_total": "{value0} of {value1} Ekadashis",
+  "@observed_of_total": {
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      },
+      "value1": {
+        "type": "String"
+      }
+    }
+  },
+  "timezone_IST": "IST",
+  "timezone_EST": "EST",
+  "timezone_CST": "CST",
+  "timezone_MST": "MST",
+  "timezone_PST": "PST",
+  "utc_offset": "UTC{value0}",
+  "@utc_offset": {
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  }
 }

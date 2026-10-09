@@ -215,6 +215,28 @@ extension PanchangEngine {
             add("holi", "Holi", major: true, note: "The day after Holika Dahan.")
         }
 
+        // Festivals added in docs/ROADMAP.md Phase 3 (phase3FestivalIds).
+        // Months are Amanta, as above.
+        if let purnima = occurrence(15), purnima.month == "Shravana", rakshaBandhan(purnima, days, city) == date {
+            add("raksha-bandhan", "Raksha Bandhan", major: true,
+                note: "Shravana Purnima: the day it lasts six ghatis after sunrise (after Bhadra), else Aparahna.")
+        }
+        if observed(5, .purvahna, month: "Shravana") { add("nag-panchami", "Nag Panchami", major: true) }
+        if observed(2, .sunrise, month: "Ashadha") { add("ratha-yatra", "Ratha Yatra", major: true) }
+        if observed(8, .sunrise, month: "Ashvina") { add("durga-ashtami", "Durga Ashtami", major: true) }
+        if isVaralakshmiVratam(date, sunrise: sunrise, tithi: tithi, days: days) {
+            add("varalakshmi-vratam", "Varalakshmi Vratam", major: true,
+                note: "The Friday of Shravana Shukla on or before Purnima; many South Indian calendars keep the Friday before.")
+        }
+        if isOnam(date, sunrise: sunrise, days: days) {
+            add("onam", "Onam (Thiruvonam)", major: true,
+                note: "Shravana (Thiruvonam) nakshatra six nazhika after sunrise in the solar month of Simha (Chingam).")
+        }
+        if isKarthigaiDeepam(date, sunset: sunset, days: days) {
+            add("karthigai-deepam", "Karthigai Deepam", major: true,
+                note: "Krittika nakshatra during Pradosh in the solar month of Vrischika (Karthigai).")
+        }
+
         addSankranti(add, city, date, sunset, days)
 
         return items.enumerated().sorted { a, b in
@@ -222,6 +244,53 @@ extension PanchangEngine {
             if a.element.name != b.element.name { return a.element.name < b.element.name }
             return a.offset < b.offset
         }.map(\.element)
+    }
+
+    /// Raksha Bandhan: the first half of Purnima is Bhadra, so the day on
+    /// which Purnima still holds six ghatis (2 h 24 min) after sunrise;
+    /// otherwise the day with the most Purnima in Aparahna.
+    func rakshaBandhan(_ purnima: Occurrence, _ days: SolarDays, _ city: PanchangCity) -> CivilDate? {
+        var day = city.wallClock(purnima.start).date
+        let last = city.wallClock(purnima.end).date
+        while day <= last {
+            if let sunrise = days.of(day).sunrise, purnima.covers(sunrise), purnima.covers(sunrise.adding(6 * 24 * 60)) {
+                return day
+            }
+            day = day.adding(days: 1)
+        }
+        return purnima.observedOn(.aparahna, .longest, days, city)
+    }
+
+    /// The first day in solar Vrischika on which Krittika prevails at some
+    /// point of Pradosh (sunset to a fifth of the night).
+    func isKarthigaiDeepam(_ date: CivilDate, sunset: Date, days: SolarDays) -> Bool {
+        func krittikaInPradosh(_ day: CivilDate, _ sunset: Date?) -> Bool {
+            guard let sunset, siderealSign(sunset) == 7, let next = days.of(day).nextSunrise else { return false }
+            let pradoshEnd = sunset.adding(next.timeIntervalSince(sunset) / 5)
+            return nakshatraAt(sunset).index == 3 || nakshatraAt(pradoshEnd).index == 3
+        }
+        guard krittikaInPradosh(date, sunset) else { return false }
+        let previous = date.adding(days: -1)
+        return !krittikaInPradosh(previous, days.of(previous).sunset)
+    }
+
+    /// The Friday of Amanta Shravana's bright fortnight whose next Friday
+    /// falls after Purnima (Drik's rule for New Delhi).
+    func isVaralakshmiVratam(_ date: CivilDate, sunrise: Date, tithi: PanchangLimb, days: SolarDays) -> Bool {
+        guard date.weekday == 5, (8...15).contains(tithi.index), monthFor(sunrise).name == "Shravana",
+              let nextFriday = days.of(date.adding(days: 7)).sunrise else { return false }
+        return tithiAt(nextFriday).index > 15
+    }
+
+    /// Thiruvonam six nazhika (2 h 24 min) after sunrise in solar Simha;
+    /// when the nakshatra returns within the same solar month, the later one.
+    func isOnam(_ date: CivilDate, sunrise: Date, days: SolarDays) -> Bool {
+        let nazhika6: TimeInterval = 6 * 24 * 60
+        func thiruvonam(_ instant: Date) -> Bool { nakshatraAt(instant).index == 22 && siderealSign(instant) == 4 }
+        let probe = sunrise.adding(nazhika6)
+        guard thiruvonam(probe), siderealSign(probe.adding(27.32 * 86400)) != 4 else { return false }
+        guard let previous = days.of(date.adding(days: -1)).sunrise else { return true }
+        return !thiruvonam(previous.adding(nazhika6))
     }
 
     func sankrantiOnly(_ city: PanchangCity, _ date: CivilDate, _ sunset: Date?) -> [PanchangObservance] {
@@ -324,5 +393,42 @@ extension PanchangEngine {
         if t == 11 && p != 11 { return n == 11 ? nn != 12 : n == 12 }
         if t == 11 && p == 11 { return n == 12 }
         return n == 12 || (n == 11 && nn == 13)
+    }
+}
+
+/// An observance on its civil date at a location.
+public struct DatedObservance: Equatable, Sendable {
+    public let date: CivilDate
+    public let observance: PanchangObservance
+}
+
+extension PanchangEngine {
+    /// The day's observances without the rest of the Panchang (muhurtas,
+    /// choghadiya, lagna ...): the same result as `calculate(date).observances`.
+    public func observances(on date: CivilDate, city: PanchangCity) -> [PanchangObservance] {
+        let startUtc = startFor(date, city: city)
+        let endUtc = endFor(date, city: city)
+        let sunrise = findCrossing(startUtc, endUtc, city, moon: false, rising: true)
+        var sunset = findCrossing(startUtc, endUtc, city, moon: false, rising: false)
+        if let sunrise, sunset == nil || sunset! < sunrise {
+            sunset = findCrossing(sunrise, city.midnight(date, dayOffset: 2), city, moon: false, rising: false)
+        }
+        let hasSolarDay = sunrise != nil && sunset != nil && sunset! > sunrise!
+        let localSunrise = sunrise ?? city.dateAtHour(date, 6)
+        let localSunset = sunset ?? city.dateAtHour(date, 18)
+        let nightEnd = findCrossing(localSunset, city.midnight(date, dayOffset: 2), city, moon: false, rising: true)
+        guard hasSolarDay, nightEnd != nil else { return sankrantiOnly(city, date, sunset) }
+        return observances(city: city, date: date, sunrise: localSunrise, sunset: localSunset, tithi: tithiAt(localSunrise))
+    }
+
+    /// Every observance of [year] at [city], in date order.
+    public func observanceCalendar(year: Int, city: PanchangCity) -> [DatedObservance] {
+        var result: [DatedObservance] = []
+        var date = CivilDate(year, 1, 1)
+        while date.year == year {
+            for observance in observances(on: date, city: city) { result.append(DatedObservance(date: date, observance: observance)) }
+            date = date.adding(days: 1)
+        }
+        return result
     }
 }

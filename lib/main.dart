@@ -5,16 +5,21 @@ import 'widgets/glass_tube.dart';
 import 'package:flutter/foundation.dart';
 import 'widgets/glass_navigation_bar.dart';
 import 'data/calendar_entry_repository.dart';
+import 'widgets/app_background.dart';
+import 'data/sqflite_calendar_entry_repository.dart';
+import 'models/calendar_entry.dart';
+import 'services/notifications/event_reminder_service.dart';
+import 'services/panchang/panchang_city.dart';
+import 'services/panchang/panchang_location_store.dart';
 import 'services/native_widget_service.dart';
 import 'services/widget_sync_manager.dart';
-import 'services/search_index_manager.dart';
 import 'screens/global_search_screen.dart';
+import 'services/search/search_return.dart';
 import 'screens/panchang_screen.dart';
 import 'l10n/generated/app_localizations.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
@@ -24,7 +29,10 @@ import 'services/native_location_service.dart';
 import 'services/native_notification_service.dart';
 import 'services/native_settings_service.dart';
 import 'services/theme_service.dart';
+import 'l10n/app_language.dart';
+import 'l10n/place_names.dart';
 import 'services/language_service.dart';
+import 'services/vrat_recording.dart';
 import 'screens/calendar_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/details_screen.dart';
@@ -137,6 +145,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     if (premium == null) return;
     if (premium.isPremium != _lastPremium) {
       _lastPremium = premium.isPremium;
+      // Festival and Panchang reminders start or stop with Premium.
+      EventReminderService.instance.changed();
       if (_achievementTracker?.isInitialized == true &&
           _ekadashiList.isNotEmpty) {
         _achievementTracker!
@@ -156,6 +166,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   bool _isLoading = true;
   String _errorMessage = '';
   String _locationText = '';
+  (double, double)? _locationCoords;
+
+  /// Place names from the phone's geocoder, by "language|English name".
+  final _nativeCityNames = <String, String?>{};
   String _currentTimezone = 'IST';
   bool _locationDenied = false;
   bool _isRequestingLocation = false;
@@ -163,6 +177,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   bool _isResuming = false;
   bool _isPermanentDenial = false;
   bool _searchOpen = false;
+
+  /// The way back to a search whose result opened a tab or calendar day.
+  final _searchReturn = SearchReturn();
 
   /// Re-checks Google Play while the app stays open, so an ended
   /// subscription is noticed without leaving the app.
@@ -172,12 +189,19 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
   final PageController _pageController = PageController(viewportFraction: 1.0);
   final GlobalKey<CalendarScreenState> _calendarKey = GlobalKey();
+  final GlobalKey<PanchangScreenState> _panchangKey = GlobalKey();
+  bool _panchangOpened = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     NativeWidgetService().initializeDeepLinkListener(handleDeepLink);
+    EventReminderService.instance.attach(_scheduleEventReminders);
+    // City and country names in the app language.
+    PlaceNames.load().then((_) {
+      if (mounted) setState(() {});
+    });
     // Defer initialization to prevent freeze on process restoration
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeApp();
@@ -381,6 +405,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       if (location != null && mounted) {
         setState(() {
           _locationText = location.city;
+          _locationCoords = (location.latitude, location.longitude);
           _currentTimezone = location.timezone;
           _locationDenied = false;
           _isRequestingLocation = false;
@@ -414,6 +439,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           if (cached != null && mounted) {
             setState(() {
               _locationText = cached.city;
+              _locationCoords = (cached.latitude, cached.longitude);
               _currentTimezone = cached.timezone;
               _locationDenied = false;
               _isRequestingLocation = false;
@@ -569,6 +595,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         if (location != null && mounted) {
           setState(() {
             _locationText = location.city;
+            _locationCoords = (location.latitude, location.longitude);
             _currentTimezone = location.timezone;
             _locationDenied = false;
           });
@@ -584,12 +611,16 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           // Timezone changed - reload data
           setState(() {
             _locationText = location.city;
+            _locationCoords = (location.latitude, location.longitude);
             _currentTimezone = location.timezone;
           });
           await _loadData(shouldScrollToNext: true);
         } else if (location.city != _locationText) {
           // Just city name changed
-          setState(() => _locationText = location.city);
+          setState(() {
+            _locationText = location.city;
+            _locationCoords = (location.latitude, location.longitude);
+          });
         }
       }
     } catch (e) {
@@ -671,7 +702,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _errorMessage = 'Failed to load data';
+          _errorMessage = context.read<LanguageService>().translate(
+            'failed_load',
+          );
         });
       }
     }
@@ -813,6 +846,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       'settings': 4,
     }[uri.host];
     if (tab == null) return;
+    // A deep link is not a search result.
+    _searchReturn.clear();
     if (_searchOpen && Navigator.of(context).canPop()) {
       Navigator.of(context).pop();
     }
@@ -820,22 +855,47 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       if (tab == 0) _scrollToNextEkadashi(animate: false, includeParana: true);
-      if (tab == 1) {
-        final date = DateTime.tryParse(uri.queryParameters['date'] ?? '');
-        if (date != null) _calendarKey.currentState?.selectDate(date);
-      }
+      final date = DateTime.tryParse(uri.queryParameters['date'] ?? '');
+      if (tab == 1 && date != null) _calendarKey.currentState?.selectDate(date);
+      // Event reminders open their day in Panchang.
+      if (tab == 3 && date != null) _panchangKey.currentState?.showDate(date);
     });
   }
 
-  Future<void> _openSearch() async {
+  /// Opens the search; [restore] reopens the one a result left.
+  Future<void> _openSearch({SearchSession? restore}) async {
     if (!mounted || _searchOpen) return;
+    if (restore == null) setState(_searchReturn.clear);
     _searchOpen = true;
     try {
       await Navigator.of(context).push<void>(
         MaterialPageRoute<void>(
           builder: (_) => GlobalSearchScreen(
             ekadashiList: _ekadashiList,
+            ekadashisFor: (code) => _ekadashiService.getEkadashis(
+              timezone: _currentTimezone,
+              languageCode: code,
+            ),
             currentTimezone: _currentTimezone,
+            availableYears: _ekadashiService.availableYears,
+            initialSession: restore,
+            onOpenTab: (tab, session) {
+              if (!mounted) return;
+              setState(() {
+                _currentIndex = tab;
+                _searchReturn.opened(tab, session);
+              });
+            },
+            onOpenCalendar: (day, session) {
+              if (!mounted) return;
+              setState(() {
+                _currentIndex = 1;
+                _searchReturn.opened(1, session);
+              });
+              WidgetsBinding.instance.addPostFrameCallback(
+                (_) => _calendarKey.currentState?.selectDate(day),
+              );
+            },
           ),
         ),
       );
@@ -847,15 +907,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   Future<void> _syncSearchAndWidgets() async {
     if (!mounted || _ekadashiList.isEmpty) return;
     final lang = context.read<LanguageService>();
-    await SearchIndexManager().initializeIndex(
-      ekadashiList: _ekadashiList,
-      language: lang.currentLocale.languageCode,
-    );
-    if (!mounted) return;
     await WidgetSyncManager().syncWidgetData(
       ekadashiList: _ekadashiList,
       timezone: _currentTimezone,
-      locationName: _locationText,
+      locationName: _cityLabel(lang.currentLocale.languageCode),
       languageService: lang,
     );
     final pending = _pendingDeepLink;
@@ -863,8 +918,40 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     if (pending != null && mounted) handleDeepLink(pending);
   }
 
+  /// The detected place in [language]: the shared table first, then the
+  /// phone's geocoder, then the English name.
+  String _cityLabel(String language) {
+    final table = AppStrings.placeName(_locationText, language);
+    if (language == 'en' || table != _locationText) return table;
+    final key = '$language|$_locationText';
+    final known = _nativeCityNames[key];
+    if (known != null) return known;
+    final coords = _locationCoords;
+    if (coords != null && !_nativeCityNames.containsKey(key)) {
+      _nativeCityNames[key] = null;
+      _locationService.localizedCityName(coords.$1, coords.$2, language).then((
+        name,
+      ) {
+        // Only a name in the language's own script replaces English.
+        if (mounted && name != null && !RegExp('[A-Za-z]').hasMatch(name)) {
+          setState(() => _nativeCityNames[key] = name);
+        }
+      });
+    }
+    return _locationText;
+  }
+
+  /// Back from a screen a search result opened: the same search again.
+  void _returnToSearch() {
+    final session = _searchReturn.goBack();
+    setState(() {});
+    if (session != null) _openSearch(restore: session);
+  }
+
   /// Handle bottom navigation taps
   void _onBottomNavTapped(int index) {
+    // Another tab forgets the way back to a search.
+    _searchReturn.selected(index);
     if (index == _currentIndex) {
       // Already on this tab - special actions
       if (index == 0) {
@@ -886,8 +973,47 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     }
   }
 
+  /// Plans the festival, Panchang and calendar reminders (docs/ROADMAP.md
+  /// Phase 7) with the current Premium, language, Panchang location and
+  /// entries; clears them while notifications are off.
+  Future<void> _scheduleEventReminders() async {
+    final service = EventReminderService.instance;
+    final settings = await service.load();
+    var enabled = false;
+    try {
+      final native = NativeSettingsService();
+      enabled =
+          (await native.getNotificationSettings()).enabled &&
+          (await native.checkAllPermissions()).hasNotificationPermission;
+    } catch (e) {
+      debugPrint('Event reminders: notification state unavailable: $e');
+    }
+    if (!mounted) return;
+    final language = context.read<LanguageService>().currentLocale.languageCode;
+    final repository = context.read<CalendarEntryRepository?>();
+    final city = await PanchangLocationStore().load() ?? PanchangCity.newDelhi;
+    var entries = const <CalendarEntry>[];
+    if (enabled && settings.reminders.any((r) => r.target.source != null)) {
+      try {
+        final repo = repository ?? SqfliteCalendarEntryRepository();
+        await repo.init();
+        entries = await repo.getAll();
+      } catch (e) {
+        debugPrint('Event reminders: entries unavailable: $e');
+      }
+    }
+    await service.schedule(
+      enabled: enabled,
+      premium: _premium?.isPremium ?? false,
+      language: language,
+      city: city,
+      entries: entries,
+    );
+  }
+
   /// Schedule notifications for all Ekadashis
   Future<void> _scheduleNotifications() async {
+    _scheduleEventReminders();
     if (_ekadashiList.isEmpty) return;
 
     final settingsService = NativeSettingsService();
@@ -973,49 +1099,72 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       BottomNavigationBarItem(
         icon: const Icon(Icons.spa_outlined),
         activeIcon: const Icon(Icons.spa),
-        label: lang.translate('vrat'),
+        label: lang.translate('journey_tab'),
       ),
-      const BottomNavigationBarItem(
-        icon: Icon(Icons.auto_awesome_outlined),
-        activeIcon: Icon(Icons.auto_awesome),
-        label: 'Panchang',
+      BottomNavigationBarItem(
+        icon: const Icon(Icons.auto_awesome_outlined),
+        activeIcon: const Icon(Icons.auto_awesome),
+        label: lang.translate('search_screen_panchang'),
       ),
       BottomNavigationBarItem(
         icon: const Icon(Icons.settings),
         label: lang.translate('settings'),
       ),
     ];
-    return Scaffold(
-      extendBody: glass,
-      appBar: AppBar(
-        title: Text(lang.translate('app_title')),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            key: const Key('open_global_search'),
-            tooltip: lang.translate('search'),
-            icon: const Icon(Icons.search),
-            onPressed: _openSearch,
+    // A search result opened this tab: the top bar's back arrow and the
+    // system back reopen its results (docs/ROADMAP.md Phase 9).
+    final searchBack = _searchReturn.showsBack(_currentIndex);
+    // The iOS gradient behind every tab (docs/ROADMAP.md Phase 8).
+    return PopScope(
+      canPop: !searchBack,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && searchBack) _returnToSearch();
+      },
+      child: AppBackground(
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          extendBody: glass,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            surfaceTintColor: Colors.transparent,
+            leading: searchBack
+                ? IconButton(
+                    key: const Key('search_return'),
+                    tooltip: lang.translate('search'),
+                    icon: const BackButtonIcon(),
+                    onPressed: _returnToSearch,
+                  )
+                : null,
+            title: Text(lang.translate('app_title')),
+            centerTitle: true,
+            actions: [
+              IconButton(
+                key: const Key('open_global_search'),
+                tooltip: lang.translate('search'),
+                icon: const Icon(Icons.search),
+                onPressed: _openSearch,
+              ),
+              const SizedBox(width: 4),
+            ],
           ),
-          const SizedBox(width: 4),
-        ],
+          body: _buildBody(lang, tealColor),
+          bottomNavigationBar: glass
+              ? (keyboardOpen
+                    ? null
+                    : GlassNavigationBar(
+                        items: items,
+                        currentIndex: _currentIndex,
+                        onTap: _onBottomNavTapped,
+                      ))
+              : BottomNavigationBar(
+                  type: BottomNavigationBarType.fixed,
+                  currentIndex: _currentIndex,
+                  onTap: _onBottomNavTapped,
+                  selectedItemColor: tealColor,
+                  items: items,
+                ),
+        ),
       ),
-      body: _buildBody(lang, tealColor),
-      bottomNavigationBar: glass
-          ? (keyboardOpen
-                ? null
-                : GlassNavigationBar(
-                    items: items,
-                    currentIndex: _currentIndex,
-                    onTap: _onBottomNavTapped,
-                  ))
-          : BottomNavigationBar(
-              type: BottomNavigationBarType.fixed,
-              currentIndex: _currentIndex,
-              onTap: _onBottomNavTapped,
-              selectedItemColor: tealColor,
-              items: items,
-            ),
     );
   }
 
@@ -1055,6 +1204,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       );
     }
 
+    if (_currentIndex == 3) _panchangOpened = true;
     return IndexedStack(
       index: _currentIndex,
       children: [
@@ -1072,7 +1222,12 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             currentTimezone: _currentTimezone,
           ),
         ),
-        const PanchangScreen(),
+        // Built when first opened: the Panchang calculates a year of
+        // festivals, which the other tabs never need.
+        if (_currentIndex == 3 || _panchangOpened)
+          PanchangScreen(key: _panchangKey, ekadashiList: _ekadashiList)
+        else
+          const SizedBox.shrink(),
         SettingsScreen(currentTimezone: _currentTimezone),
       ],
     );
@@ -1284,7 +1439,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             const SizedBox(width: 6),
             Flexible(
               child: Text(
-                '$_locationText • $_currentTimezone',
+                '${_cityLabel(lang.currentLocale.languageCode)} • ${AppStrings.timeZoneName(_currentTimezone, lang.currentLocale.languageCode)}',
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
@@ -1300,54 +1455,34 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     );
   }
 
+  /// The app's only language menu (docs/ROADMAP.md Phase 2), in the
+  /// registry's order: English, Hindi, Tamil, Telugu, Gujarati, Bengali.
   Widget _buildLanguageSelector(LanguageService lang, Color tealColor) {
-    String displayLanguage;
-    switch (lang.currentLocale.languageCode) {
-      case 'te':
-        displayLanguage = 'తెలుగు';
-        break;
-      case 'ta':
-        displayLanguage = 'தமிழ்';
-        break;
-      case 'hi':
-        displayLanguage = 'हिंदी';
-        break;
-      default:
-        displayLanguage = 'English';
-    }
-
+    final current = AppLanguage.named(lang.currentLocale.languageCode);
     return PopupMenuButton<String>(
+      key: const Key('language_menu'),
       onSelected: (String newValue) => lang.changeLanguage(newValue),
       color: Theme.of(context).cardColor,
       itemBuilder: (context) => [
-        const PopupMenuItem(value: 'te', child: Text('తెలుగు')),
-        const PopupMenuItem(
-          value: 'en',
-          child: Text(
-            "English",
-            style: TextStyle(fontWeight: FontWeight.normal),
+        for (final language in AppLanguage.all)
+          PopupMenuItem(
+            value: language.code,
+            child: Row(
+              children: [
+                Expanded(child: Text(language.nativeName)),
+                if (language.code == current.code)
+                  Icon(Icons.check, size: 18, color: tealColor),
+              ],
+            ),
           ),
-        ),
-        const PopupMenuItem(
-          value: 'hi',
-          child: Text("हिंदी", style: TextStyle(fontWeight: FontWeight.normal)),
-        ),
-        const PopupMenuItem(
-          value: 'ta',
-          child: Text("தமிழ்", style: TextStyle(fontWeight: FontWeight.normal)),
-        ),
       ],
       offset: const Offset(0, 40),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            displayLanguage,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight:
-                  FontWeight.w500, // Consistent weight for all languages
-            ),
+            current.nativeName,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
           ),
           const SizedBox(width: 6),
           Icon(Icons.language, color: tealColor, size: 20),
@@ -1381,7 +1516,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     final lang = Provider.of<LanguageService>(context);
 
     String breakTime = ekadashi.fastBreakTime;
-    breakTime = breakTime.replaceAll(RegExp(r'^[a-zA-Z]{3} \d{1,2}, '), '');
+    breakTime = AppStrings.localizeClock(
+      breakTime.replaceAll(RegExp(r'^[a-zA-Z]{3} \d{1,2}, '), ''),
+      lang.currentLocale.languageCode,
+    );
 
     String daysText;
     if (daysUntil == 0) {
@@ -1439,26 +1577,15 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                     ),
                     const SizedBox(height: 16),
 
-                    // Date
+                    // Date: weekday, date, month and year, as on every tab.
                     Text(
-                      DateFormat(
-                        'MMM dd, yyyy',
+                      AppStrings.fullDate(
+                        ekadashi.date,
                         lang.currentLocale.languageCode,
-                      ).format(ekadashi.date),
+                      ),
                       style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w300,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      DateFormat(
-                        'EEEE',
-                        lang.currentLocale.languageCode,
-                      ).format(ekadashi.date),
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey.shade500,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -1491,10 +1618,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        DateFormat(
-                          'MMM dd, yyyy',
+                        AppStrings.fullDate(
+                          ekadashi.date,
                           lang.currentLocale.languageCode,
-                        ).format(ekadashi.date),
+                        ),
                         style: TextStyle(
                           fontSize: 15,
                           color: Colors.grey.shade500,
@@ -1504,7 +1631,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        ekadashi.fastStartTime,
+                        AppStrings.localizeClock(
+                          ekadashi.fastStartTime,
+                          lang.currentLocale.languageCode,
+                        ),
                         style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w600,
@@ -1529,10 +1659,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        DateFormat(
-                          'MMM dd, yyyy',
+                        AppStrings.fullDate(
+                          ekadashi.date.add(const Duration(days: 1)),
                           lang.currentLocale.languageCode,
-                        ).format(ekadashi.date.add(const Duration(days: 1))),
+                        ),
                         style: TextStyle(
                           fontSize: 15,
                           color: Colors.grey.shade500,
@@ -1639,24 +1769,33 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                             record == null ? 'record_vrat' : 'edit_record',
                           ),
                           child: OutlinedButton(
-                            onPressed: () async {
-                              final unlocks = await RecordVratDialog.show(
-                                context,
-                                ekadashi: ekadashi,
-                                allOccurrences: _ekadashiList,
-                                currentTimezone: _currentTimezone,
-                              );
-                              if (unlocks != null &&
-                                  unlocks.isNotEmpty &&
-                                  mounted) {
-                                for (final u in unlocks) {
-                                  await AchievementUnlockDialog.show(
-                                    context,
-                                    u,
-                                  );
-                                }
-                              }
-                            },
+                            key: const Key('home_record_vrat'),
+                            // Open once the fast is over: after Parana begins.
+                            onPressed:
+                                !VratRecording.isOpen(
+                                  ekadashi,
+                                  now: DateTime.now(),
+                                  timezone: _currentTimezone,
+                                )
+                                ? null
+                                : () async {
+                                    final unlocks = await RecordVratDialog.show(
+                                      context,
+                                      ekadashi: ekadashi,
+                                      allOccurrences: _ekadashiList,
+                                      currentTimezone: _currentTimezone,
+                                    );
+                                    if (unlocks != null &&
+                                        unlocks.isNotEmpty &&
+                                        mounted) {
+                                      for (final u in unlocks) {
+                                        await AchievementUnlockDialog.show(
+                                          context,
+                                          u,
+                                        );
+                                      }
+                                    }
+                                  },
                             style: OutlinedButton.styleFrom(
                               side: BorderSide.none,
                               shape: RoundedRectangleBorder(

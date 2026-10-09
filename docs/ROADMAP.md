@@ -20,22 +20,24 @@ status table as each phase moves forward.
   read.
 - **TDD.** Write the failing test first, then implement, then run the full
   suites.
-- **Languages** are always ordered English, Hindi, Tamil, Telugu. New
-  languages (Bengali, Gujarati, ...) are added at the end, never earlier.
+- **Languages** are always ordered English, Hindi, Tamil, Telugu, Gujarati,
+  Bengali. New languages are added at the end, never earlier.
 
 ## Status
 
 | Phase | Scope | iOS | Android |
 | --- | --- | --- | --- |
 | 0 | Housekeeping | Done | Done (same commits) |
-| 1 | One search for the whole app | In progress | Not started |
-| 2 | One app language and Sarvam translation | Not started | Not started |
-| 3 | Panchang redesign, missing festivals, regional names | Not started | Not started |
-| 4 | Calendar tab, Home, Journey tab, observance fix, scroll tests | Not started | Not started |
-| 5 | Settings and Premium card | Not started | Not started |
-| 6 | Widgets (two widgets) | Not started | Not started |
-| 7 | Notifications revamp | Not started | Not started |
-| 8 | Android look and feel parity | n/a | Not started |
+| 1 | One search for the whole app | Done (PR #17) | Done (`feature/android-v2`) |
+| 2 | One app language and Sarvam translation | Done; Sarvam run needs an API key | Done (`feature/android-v2`) |
+| 3 | Panchang redesign, missing festivals, regional names | Done | Done (`feature/android-v2`) |
+| 4 | Calendar tab, Home, Journey tab, observance fix, scroll tests | Done | Done (`feature/android-v2`) |
+| 5 | Settings and Premium card | Done | Done (`feature/android-v2`) |
+| 6 | Widgets (two widgets) | Done | Done (`feature/android-v2`) |
+| 7 | Notifications revamp | Done | Done (`feature/android-v2`) |
+| 8 | Android look and feel parity | n/a | Done (`feature/android-v2`) |
+| 9 | Swipeable sub-sections and back to search | Done | Done (`feature/android-v2`) |
+| 10 | Gujarati and Bengali | Done | Done (`feature/android-v2`) |
 
 ## Phase 0: housekeeping
 
@@ -69,7 +71,7 @@ content-download button, and the "More" sheet.
   below typos, for queries of 3 or more letters.
 - One alias table maps every spelling, regional name and the Hindi, Tamil and
   Telugu names to one canonical observance. For example, Diwali, Deepawali and
-  दीपावली all find Deepavali; Pongal and Lohri find Makar Sankranti.
+  दीपावली all find Deepavali; Pongal and Uttarayan find Makar Sankranti.
 - The query is parsed: a year ("2027") becomes the year filter, and a type word
   ("amavasai") becomes the type filter.
 
@@ -82,6 +84,23 @@ finder stays Premium).
 
 **Tests**: a shared golden fixture (query, filters, language → expected top
 results) run by both the Swift and the Dart test suites.
+
+**iOS implementation** (`feature/unified-search`):
+- `assets/search/search_catalog.json`: observance names in four languages,
+  aliases, type words and screens (the iOS copy is checked byte for byte);
+- `test/fixtures/search/search_golden.json`: 32 golden cases;
+- `PanchangEngine.observances(on:city:)` and `observanceCalendar(year:city:)`
+  compute observances only, for the index;
+- `UnifiedSearch`, `SearchCorpus`, `SearchCatalog` and `SearchQueryParser`
+  in EkadashiCore; `GlobalSearchView` in the app.
+
+**Notes for later phases**:
+- Lohri and Bhogi (the day before Makar Sankranti), Puthandu, Vishu and
+  Baisakhi need their own regional rules (Phase 3) and are not aliases yet.
+- Holika Dahan 2026 is calculated on 2 March (Bhadra is not evaluated);
+  published calendars give 3 March. Review in Phase 3.
+- Hindi, Tamil and Telugu names and the new search strings need native
+  review (Phase 2).
 
 ## Phase 2: one app language and Sarvam translation
 
@@ -156,10 +175,91 @@ results) run by both the Swift and the Dart test suites.
 - For each, the user chooses when to be reminded (for example 1 or 2 days
   before, at a chosen time) so devotees can plan.
 
+### Phase 7 implementation notes (iOS)
+
+- Settings > Notifications: the master switch, then **Ekadashi** (the four
+  existing switches, unchanged keys) and **Festivals and events**: the user's
+  reminders, each opening an editor, and "Add a reminder".
+- The editor picks an event from a searchable list in the app language:
+  festivals (alphabetical), monthly observances (Purnima, Amavasya,
+  Pradosham, Chaturthis, Masik Shivaratri, the Sankrantis) and My calendar
+  (all custom entries, all Google events). Lead times are on the day, 1, 2,
+  3 or 7 days before (several at once; 1 and 2 days by default) at a chosen
+  time, 7:00 AM by default.
+- Festival and Panchang reminders are Premium, like Key days; reminders for
+  the user's own and Google entries are free. A locked reminder is kept and
+  starts working with Premium.
+- Festival dates are calculated at the saved Panchang location and the
+  reminder fires on that location's clock; entries fire on the phone's
+  clock. Tapping a festival reminder opens that day in Panchang
+  (`ekadashi://panchang?date=YYYY-MM-DD`); an entry reminder opens the
+  Calendar on that day.
+- Stored as JSON under `event_reminders` (the master switch stays
+  `notifications_enabled`). Ekadashi and event reminders share iOS's 64
+  pending notifications, soonest first; the app plans again on launch,
+  background refresh, and when reminders, entries, the Panchang location or
+  Premium change.
+- Core: `EventReminderSettings`, `EventReminderPlanner`,
+  `EventReminderChoice` and `PendingNotification` in `EkadashiCore`
+  (`EventReminderTests`, `PendingNotificationTests`).
+
+### Android implementation notes (Phases 1–8)
+
+Built on `feature/android-v2` (from `feature/unified-search`) with the same
+behaviour as iOS; shared data stays shared (`assets/search/search_catalog.json`
+and the search golden cases, `lib/l10n/` strings, the Panchang engine rules).
+
+- Phase 6: the Ekadashi widget is the original "Next Ekadashi" provider
+  (`NextEkadashiWidgetReceiver`), so placed widgets become it. It leads with
+  "Today is Ekadashi" and a progress bar through the fast (Parana in / Parana
+  ends), or the next Ekadashi and the days to go; wide placements add the
+  timings. Upcoming is a list that starts with the next Ekadashi. The retired
+  "Ekadashi Today" provider is hidden from the picker
+  (`widgetFeatures="hide_from_picker"`, Android 12+) and renders the Ekadashi
+  widget. Tests: `WidgetRedesignTest`, `WidgetBehaviorTest`,
+  `widget_preview_test`.
+- Phase 7: `EventReminderPlanner` and friends are ported to Dart
+  (`lib/services/notifications/event_reminders.dart`, same JSON under
+  `event_reminders`, same results as `EventReminderTests`). Native
+  `scheduleEventReminders` replaces all WorkManager jobs tagged
+  `event_reminder` (the Ekadashi jobs are untouched); a tap opens the
+  reminder's `ekadashi://panchang?date=` or `ekadashi://calendar?date=` link.
+  Up to 64 event reminders are kept scheduled.
+- Phase 8: `AppBackground` (`lib/widgets/app_background.dart`) mirrors the
+  iOS one and is painted once behind the app bar and the five tabs, whose
+  pages are transparent (`app_background_test`).
+
 ## Phase 8: Android look and feel parity
 
 - The iOS green-to-black gradient on every Android tab.
 - Matching colours, type and spacing, checked with side-by-side screenshots.
+
+## Phase 9: swipeable sub-sections and back to search
+
+- Panchang, Journey and Search sub-sections change with a horizontal swipe
+  as well as their chips (iOS: a page-style `TabView`; Android: a
+  `PageView`), and the chip bar scrolls to keep the selected chip in view.
+  Calendar keeps its swipe between months.
+- Journey's sections are glass chips like Panchang's (no segmented control).
+- A search result that opens a tab or a calendar day leaves the search, so
+  that screen's top bar shows "‹ Search" (`search_return`), which reopens
+  the search with the same text, type page and year. Choosing another tab,
+  a deep link or a new search forgets it. Results that push a screen
+  (Ekadashi, festival, widget preview) keep the system back button.
+- Core: `SearchReturn` and `SearchSession` (`SearchReturnTests`).
+
+## Phase 10: Gujarati and Bengali
+
+- Gujarati (ગુજરાતી) and Bengali (বাংলা) are appended after Telugu in both
+  apps' language menus, with every UI string, the iOS-only strings, the
+  Panchang vocabulary, festival names and search words, the Ekadashi names,
+  descriptions, stories, fasting rules and benefits for 2026 and 2027, and
+  the Android widget strings.
+- Arun chose Claude over Sarvam: the translations were written by Claude, at
+  no cost, and await native-speaker review (lib/l10n/translation_review.json).
+- Search keeps Gujarati and Bengali letters when matching.
+- Tests: every key, native script and placeholder in both languages; every
+  Ekadashi field; every Panchang term and observance; layouts in both.
 
 ## Testing and CI
 

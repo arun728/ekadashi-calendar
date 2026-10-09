@@ -46,3 +46,4 @@ app.*.map.json
 
 # Kotlin compiler session artifacts
 /android/.kotlin/
+tool/l10n/out/

@@ -151,17 +151,25 @@ void main() {
     expect(find.text('Next Milestone'), findsOneWidget);
 
     // 6. Switch to History tab
-    await tester.tap(find.text('History'));
+    await tester.ensureVisible(find.byKey(const Key('journey_tab_history')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('journey_tab_history')));
     await tester.pumpAndSettle();
     expect(find.text('Jaya Ekadashi'), findsOneWidget);
 
     // 7. Switch to Statistics tab
-    await tester.tap(find.text('Statistics'));
+    await tester.ensureVisible(find.byKey(const Key('journey_tab_statistics')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('journey_tab_statistics')));
     await tester.pumpAndSettle();
     expect(find.text('2026 Annual Completion'), findsOneWidget);
 
     // 8. Switch to Achievements tab
-    await tester.tap(find.text('Achievements'));
+    await tester.ensureVisible(
+      find.byKey(const Key('journey_tab_achievements')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('journey_tab_achievements')));
     await tester.pumpAndSettle();
     expect(find.text('First Vrat'), findsOneWidget);
     expect(find.text('5 Ekadashis'), findsOneWidget);

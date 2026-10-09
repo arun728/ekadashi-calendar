@@ -219,7 +219,8 @@ class AppLocalizationsTe extends AppLocalizations {
       '1. సెట్టింగ్స్‌కు వెళ్లడానికి \"తెరవండి\" నొక్కండి';
 
   @override
-  String get alarms_info_step2 => '2. \"Allow setting alarms\" ఆన్ చేయండి';
+  String get alarms_info_step2 =>
+      '2. \"అలారాలు సెట్ చేయడానికి అనుమతించు\" ఆన్ చేయండి';
 
   @override
   String get alarms_info_note =>
@@ -233,7 +234,7 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get battery_info_why_desc =>
-      'బ్యాటరీ ఆప్టిమైజేషన్ ప్రారంభించబడితే, Android మీ ఏకాదశి రిమైండర్లను ఆలస్యం చేయవచ్చు లేదా దాటవచ్చు.';
+      'బ్యాటరీ ఆప్టిమైజేషన్ ప్రారంభించబడితే, ఆండ్రాయిడ్ మీ ఏకాదశి రిమైండర్లను ఆలస్యం చేయవచ్చు లేదా దాటవచ్చు.';
 
   @override
   String get battery_info_steps => 'నేపథ్య వినియోగం ఎలా అనుమతించాలి';
@@ -243,11 +244,11 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get battery_info_step2 =>
-      '2. \"Battery\" లేదా \"App battery usage\" నొక్కండి';
+      '2. \"బ్యాటరీ\" లేదా \"యాప్ బ్యాటరీ వినియోగం\" నొక్కండి';
 
   @override
   String get battery_info_step3 =>
-      '3. \"Allow background usage\" ప్రారంభించండి లేదా \"Unrestricted\" ఎంచుకోండి';
+      '3. \"బ్యాక్‌గ్రౌండ్ వినియోగాన్ని అనుమతించు\" ప్రారంభించండి లేదా \"అపరిమితం\" ఎంచుకోండి';
 
   @override
   String get battery_info_note =>
@@ -273,7 +274,7 @@ class AppLocalizationsTe extends AppLocalizations {
   String get auto_detect_location => 'స్థానం స్వయంచాలకంగా గుర్తించు';
 
   @override
-  String get auto_detect_desc => 'మీ నగరం కనుగొనడానికి GPS ఉపయోగించండి';
+  String get auto_detect_desc => 'మీ నగరం కనుగొనడానికి జీపీఎస్ ఉపయోగించండి';
 
   @override
   String get using_auto_location => 'స్వయంచాలక స్థానం ఉపయోగిస్తున్నారు';
@@ -312,7 +313,7 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get perm_guide_desc =>
-      'ఖచ్చితమైన నోటిఫికేషన్లు మరియు స్థాన ఫీచర్ల కోసం, దయచేసి అనుమతించండి:\n• నోటిఫికేషన్లు\n• స్థానం\n• బ్యాటరీ (Unrestricted/Background)';
+      'ఖచ్చితమైన నోటిఫికేషన్లు మరియు స్థాన ఫీచర్ల కోసం, దయచేసి అనుమతించండి:\n• నోటిఫికేషన్లు\n• స్థానం\n• బ్యాటరీ (అపరిమితం/బ్యాక్‌గ్రౌండ్)';
 
   @override
   String get vrat => 'వ్రతం';
@@ -509,7 +510,7 @@ class AppLocalizationsTe extends AppLocalizations {
       'ఒక క్యాలెండర్ సంవత్సరంలోని అన్ని ఏకాదశులను ఆచరించారు.';
 
   @override
-  String get filter_google => 'Google';
+  String get filter_google => 'గూగుల్';
 
   @override
   String get filter_custom => 'వ్యక్తిగతం';
@@ -546,16 +547,16 @@ class AppLocalizationsTe extends AppLocalizations {
       'శీర్షికను, ప్రారంభ సమయం తర్వాత ముగింపు సమయాన్ని నమోదు చేయండి.';
 
   @override
-  String get sync_google => 'Google క్యాలెండర్ దిగుమతి చేయండి';
+  String get sync_google => 'గూగుల్ క్యాలెండర్ దిగుమతి చేయండి';
 
   @override
-  String get disconnect_google => 'Google క్యాలెండర్ అనుసంధానం తొలగించండి';
+  String get disconnect_google => 'గూగుల్ క్యాలెండర్ అనుసంధానం తొలగించండి';
 
   @override
-  String get sign_in_cancelled => 'Google సైన్ ఇన్ రద్దయింది';
+  String get sign_in_cancelled => 'గూగుల్ సైన్ ఇన్ రద్దయింది';
 
   @override
-  String get no_google_calendars => 'Google క్యాలెండర్లు కనుగొనబడలేదు';
+  String get no_google_calendars => 'గూగుల్ క్యాలెండర్లు కనుగొనబడలేదు';
 
   @override
   String get no_google_events =>
@@ -563,12 +564,12 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String imported_google_events(String value0) {
-    return '$value0 Google ఈవెంట్లు దిగుమతి అయ్యాయి';
+    return '$value0 గూగుల్ ఈవెంట్లు దిగుమతి అయ్యాయి';
   }
 
   @override
   String imported_google_range(String value0, String value1, String value2) {
-    return '$value0 Google ఈవెంట్లు దిగుమతి అయ్యాయి ($value1 – $value2)';
+    return '$value0 గూగుల్ ఈవెంట్లు దిగుమతి అయ్యాయి ($value1 – $value2)';
   }
 
   @override
@@ -587,13 +588,13 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get choose_calendars_help =>
-      'యాప్‌లో చూపించాల్సిన క్యాలెండర్లను ఎంచుకోండి. దిగుమతి మీ Google ఈవెంట్లను మార్చదు.';
+      'యాప్‌లో చూపించాల్సిన క్యాలెండర్లను ఎంచుకోండి. దిగుమతి మీ గూగుల్ ఈవెంట్లను మార్చదు.';
 
   @override
   String get switch_google_account => 'మరో ఖాతాను ఉపయోగించండి';
 
   @override
-  String get google_calendar => 'Google క్యాలెండర్';
+  String get google_calendar => 'గూగుల్ క్యాలెండర్';
 
   @override
   String get primary_calendar => 'ప్రధాన';
@@ -910,25 +911,25 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get premium_cancelled_body =>
-      'మీరు చెల్లించిన వ్యవధి ముగిసే వరకు Premium ఉంటుంది. కొనసాగించడానికి ఎప్పుడైనా మళ్లీ ప్రారంభించండి.';
+      'మీరు చెల్లించిన వ్యవధి ముగిసే వరకు ప్రీమియం ఉంటుంది. కొనసాగించడానికి ఎప్పుడైనా మళ్లీ ప్రారంభించండి.';
 
   @override
   String get premium_reactivate => 'మళ్లీ ప్రారంభించండి';
 
   @override
   String get free_sync_unverified =>
-      'మీ ఉచిత సింక్‌ను తనిఖీ చేయలేకపోయాం. కనెక్షన్ చూడండి, లేదా Premium పొందండి.';
+      'మీ ఉచిత సింక్‌ను తనిఖీ చేయలేకపోయాం. కనెక్షన్ చూడండి, లేదా ప్రీమియం పొందండి.';
 
   @override
   String get premium_upgrade => 'అప్‌గ్రేడ్';
 
   @override
   String get premium_restored =>
-      'కొనుగోళ్లు పునరుద్ధరించబడ్డాయి. Premium సక్రియంగా ఉంది.';
+      'కొనుగోళ్లు పునరుద్ధరించబడ్డాయి. ప్రీమియం సక్రియంగా ఉంది.';
 
   @override
   String get premium_restore_none =>
-      'ఈ Google Play ఖాతాకు ఎలాంటి కొనుగోళ్లు కనబడలేదు.';
+      'ఈ గూగుల్ ప్లే ఖాతాకు ఎలాంటి కొనుగోళ్లు కనబడలేదు.';
 
   @override
   String get premium_lifetime_thanks_title =>
@@ -936,10 +937,10 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get premium_lifetime_thanks_body =>
-      'భవిష్యత్ ఫీచర్లు, అప్‌డేట్‌లతో సహా ప్రతి Premium ఫీచర్ జీవితాంతం మీదే. ఎన్నో ఏళ్లు మీకు సేవ చేయడానికి ఎదురుచూస్తున్నాం.';
+      'భవిష్యత్ ఫీచర్లు, అప్‌డేట్‌లతో సహా ప్రతి ప్రీమియం ఫీచర్ జీవితాంతం మీదే. ఎన్నో ఏళ్లు మీకు సేవ చేయడానికి ఎదురుచూస్తున్నాం.';
 
   @override
-  String get premium_subscriber_title => 'మీకు Premium ఉంది ✨';
+  String get premium_subscriber_title => 'మీకు ప్రీమియం ఉంది ✨';
 
   @override
   String get premium_subscriber_body =>
@@ -947,11 +948,11 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get premium_cancel_subscription_note =>
-      'మీ సబ్‌స్క్రిప్షన్ ఇంకా సక్రియంగా ఉంది. మళ్లీ ఛార్జ్ కాకుండా Google Playలో దాన్ని రద్దు చేయండి. జీవితకాలం మీదే.';
+      'మీ సబ్‌స్క్రిప్షన్ ఇంకా సక్రియంగా ఉంది. మళ్లీ ఛార్జ్ కాకుండా గూగుల్ ప్లేలో దాన్ని రద్దు చేయండి. జీవితకాలం మీదే.';
 
   @override
   String get premium_cancel_subscription_action =>
-      'Google Playలో సబ్‌స్క్రిప్షన్ రద్దు చేయండి';
+      'గూగుల్ ప్లేలో సబ్‌స్క్రిప్షన్ రద్దు చేయండి';
 
   @override
   String get premium_lifetime_confirm_title =>
@@ -959,14 +960,14 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get premium_lifetime_confirm_body =>
-      'Google Play సబ్‌స్క్రిప్షన్‌లను ఆటోమేటిక్‌గా రద్దు చేయదు. జీవితకాలం కొన్న తర్వాత, రెన్యూవల్స్ ఆపడానికి Google Playలో మీ సబ్‌స్క్రిప్షన్‌ను రద్దు చేయండి.';
+      'గూగుల్ ప్లే సబ్‌స్క్రిప్షన్‌లను ఆటోమేటిక్‌గా రద్దు చేయదు. జీవితకాలం కొన్న తర్వాత, రెన్యూవల్స్ ఆపడానికి గూగుల్ ప్లేలో మీ సబ్‌స్క్రిప్షన్‌ను రద్దు చేయండి.';
 
   @override
   String get premium_buy_lifetime_anyway => 'జీవితకాలం కొనండి';
 
   @override
   String get premium_unavailable =>
-      'ప్రస్తుతం కొనుగోళ్లు అందుబాటులో లేవు. Google Play నుండి యాప్‌ను ఇన్‌స్టాల్ చేసి మళ్లీ ప్రయత్నించండి. ఉచిత ఫీచర్లు పనిచేస్తాయి.';
+      'ప్రస్తుతం కొనుగోళ్లు అందుబాటులో లేవు. గూగుల్ ప్లే నుండి యాప్‌ను ఇన్‌స్టాల్ చేసి మళ్లీ ప్రయత్నించండి. ఉచిత ఫీచర్లు పనిచేస్తాయి.';
 
   @override
   String get premium_verification_failed =>
@@ -1022,7 +1023,7 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get premium_feature_calendar =>
-      'మీ పూర్తి సబ్‌స్క్రిప్షన్ సంవత్సరానికి Google క్యాలెండర్ సింక్ (ఒక నెల సింక్ ఉచితం)';
+      'మీ పూర్తి సబ్‌స్క్రిప్షన్ సంవత్సరానికి గూగుల్ క్యాలెండర్ సింక్ (ఒక నెల సింక్ ఉచితం)';
 
   @override
   String get premium_feature_vrat =>
@@ -1044,7 +1045,7 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get google_sign_in_failed =>
-      'Google సైన్ ఇన్ విఫలమైంది. కనెక్షన్ తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.';
+      'గూగుల్ సైన్ ఇన్ విఫలమైంది. కనెక్షన్ తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.';
 
   @override
   String get vrat_free_limit_reached =>
@@ -1052,5 +1053,571 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get google_premium_events_removed =>
-      'మీ ప్రీమియం ముగిసింది, కాబట్టి దానితో సింక్ చేసిన Google ఈవెంట్లు తొలగించబడ్డాయి. మళ్లీ సింక్ చేయడానికి పునరుద్ధరించండి.';
+      'మీ ప్రీమియం ముగిసింది, కాబట్టి దానితో సింక్ చేసిన గూగుల్ ఈవెంట్లు తొలగించబడ్డాయి. మళ్లీ సింక్ చేయడానికి పునరుద్ధరించండి.';
+
+  @override
+  String get search_filter_ekadashi => 'ఏకాదశి';
+
+  @override
+  String get search_filter_festival => 'పండుగలు';
+
+  @override
+  String get search_filter_amavasya => 'అమావాస్య';
+
+  @override
+  String get search_filter_purnima => 'పౌర్ణమి';
+
+  @override
+  String get search_filter_shivaratri => 'శివరాత్రి';
+
+  @override
+  String get search_filter_chaturthi => 'చతుర్థి';
+
+  @override
+  String get search_filter_pradosham => 'ప్రదోషం';
+
+  @override
+  String get search_filter_navaratri => 'నవరాత్రి';
+
+  @override
+  String get search_filter_sankranti => 'సంక్రాంతి';
+
+  @override
+  String get search_filter_jayanti => 'జయంతి';
+
+  @override
+  String get search_filter_my_calendar => 'నా క్యాలెండర్';
+
+  @override
+  String get search_filter_screen => 'యాప్‌లో';
+
+  @override
+  String get search_screen_panchang => 'పంచాంగం';
+
+  @override
+  String get search_hint_all => 'ఏకాదశి, పండుగలు, కార్యక్రమాలు శోధించండి…';
+
+  @override
+  String get search_start_all =>
+      'ఏకాదశి, పండుగలు, అమావాస్య, పౌర్ణమి మరియు మీ కార్యక్రమాలను కనుగొనండి';
+
+  @override
+  String get search_premium_locked => 'ప్రీమియంతో అన్‌లాక్ చేయండి';
+
+  @override
+  String get search_no_results_hint =>
+      'స్పెల్లింగ్ తనిఖీ చేయండి, లేదా వేరే సంవత్సరం లేదా ఫిల్టర్ ప్రయత్నించండి.';
+
+  @override
+  String get search_all_years => 'అన్ని సంవత్సరాలు';
+
+  @override
+  String get panchang_day => 'పగలు';
+
+  @override
+  String get panchang_night => 'రాత్రి';
+
+  @override
+  String get panchang_am => 'పూర్వాహ్నం';
+
+  @override
+  String get panchang_pm => 'అపరాహ్నం';
+
+  @override
+  String get panchang_next_day_marker => '(మరుసటి రోజు)';
+
+  @override
+  String get panchang_previous_day_marker => '(ముందు రోజు)';
+
+  @override
+  String get panchang_section_keydays => 'ముఖ్య దినాలు';
+
+  @override
+  String get panchang_section_daily => 'దైనందిన';
+
+  @override
+  String get panchang_section_muhurta => 'ముహూర్తం';
+
+  @override
+  String get panchang_section_ekadashi => 'ఏకాదశి';
+
+  @override
+  String get panchang_section_rashi => 'రాశి';
+
+  @override
+  String get panchang_search_location =>
+      'నగరాన్ని శోధించండి లేదా స్థానాన్ని ఉపయోగించండి';
+
+  @override
+  String get panchang_previous => 'మునుపటి';
+
+  @override
+  String get panchang_next => 'తదుపరి';
+
+  @override
+  String get panchang_pick_date => 'తేదీ';
+
+  @override
+  String get panchang_month => 'నెల';
+
+  @override
+  String get panchang_done => 'పూర్తయింది';
+
+  @override
+  String get panchang_location_not_saved =>
+      'స్థానం మారింది, కానీ సేవ్ చేయలేకపోయాం.';
+
+  @override
+  String get panchang_notes_title => 'పంచాంగం ఎలా లెక్కించబడుతుంది';
+
+  @override
+  String get panchang_notes_body =>
+      'ఎంచుకున్న స్థానం, దాని సమయ మండలం ప్రకారం అన్నీ మీ ఫోన్‌లోనే లెక్కించబడతాయి. తిథి, నక్షత్రం, యోగం, కరణం స్థానిక సూర్యోదయ సమయంలో తీసుకోబడతాయి; అర్ధరాత్రి తర్వాతి సమయాలు మరుసటి రోజుగా గుర్తించబడతాయి. సూర్యోదయం, సూర్యాస్తమయం సముద్ర మట్టంలో సూర్యుని పై అంచుతో లెక్కించబడతాయి, కాబట్టి కొండలు, భవనాలు వాటిని కొన్ని నిమిషాలు మార్చవచ్చు.';
+
+  @override
+  String get panchang_notes_traditions =>
+      'పండుగ తేదీలు సంప్రదాయ కాల నియమాలను, ప్రచురిత పంచాంగాలను అనుసరిస్తాయి; ప్రాంతీయ, కుటుంబ సంప్రదాయాలు వేరుగా ఉండవచ్చు. నెలలు అమాంత, పూర్ణిమాంత రెండు పద్ధతుల్లోనూ చూపబడతాయి. ముఖ్య దినాలు, క్యాలెండర్, రిమైండర్లు, ప్రయాణంలోని ఏకాదశి తేదీలు ప్రచురిత పట్టిక నుండి వస్తాయి.';
+
+  @override
+  String get panchang_notes_sources =>
+      'ఖగోళం: లాహిరి అయనాంశతో వీఎస్ఓపీ87, ఈఎల్‌పీ 2000-82బీ. నగరాలు: జియోనేమ్స్ (సీసీ బై 4.0). సమయ మండలాలు: ఐఏఎన్ఏ డేటాబేస్.';
+
+  @override
+  String get panchang_premium_title => 'పూర్తి పంచాంగం ప్రీమియంలో ఉంది';
+
+  @override
+  String get panchang_premium_body =>
+      'ఐదు అంగాలు, శుభ సమయాలు, నివారించాల్సిన సమయాలు, చౌఘడియా, హోర, రాశి, ముఖ్య దినాల్లోని ప్రతి పండుగ, వ్రతాన్ని అన్‌లాక్ చేయండి.';
+
+  @override
+  String get panchang_unlock => 'పూర్తి పంచాంగాన్ని అన్‌లాక్ చేయండి';
+
+  @override
+  String get panchang_unlock_short => 'అన్‌లాక్';
+
+  @override
+  String get panchang_key_days_locked =>
+      'పండుగలు, వ్రతాలు ప్రీమియంలో ఉన్నాయి. ఏకాదశి ఉచితం.';
+
+  @override
+  String get panchang_no_key_days => 'ఈ ఫిల్టర్‌కు ఈ నెలలో ముఖ్య దినాలు లేవు.';
+
+  @override
+  String panchang_days_ago(String value0) {
+    return '$value0 రోజుల క్రితం';
+  }
+
+  @override
+  String get panchang_tithi_at_sunrise => 'సూర్యోదయ సమయంలో తిథి';
+
+  @override
+  String get panchang_tithi_at_six => 'ఉదయం 6 గంటల తిథి (సూర్యోదయం లేదు)';
+
+  @override
+  String panchang_until(String value0) {
+    return '$value0 వరకు';
+  }
+
+  @override
+  String panchang_after(String value0) {
+    return '$value0 తర్వాత';
+  }
+
+  @override
+  String panchang_starts_at(String value0) {
+    return '$value0 నుండి';
+  }
+
+  @override
+  String get panchang_amanta => 'అమాంత';
+
+  @override
+  String get panchang_purnimanta => 'పూర్ణిమాంత';
+
+  @override
+  String get panchang_sunrise => 'సూర్యోదయం';
+
+  @override
+  String get panchang_sunset => 'సూర్యాస్తమయం';
+
+  @override
+  String get panchang_moonrise => 'చంద్రోదయం';
+
+  @override
+  String get panchang_moonset => 'చంద్రాస్తమయం';
+
+  @override
+  String get panchang_five_limbs => 'ఐదు అంగాలు';
+
+  @override
+  String get panchang_tithi => 'తిథి';
+
+  @override
+  String get panchang_nakshatra => 'నక్షత్రం';
+
+  @override
+  String get panchang_yoga => 'యోగం';
+
+  @override
+  String get panchang_karana => 'కరణం';
+
+  @override
+  String get panchang_vara => 'వారం';
+
+  @override
+  String get panchang_timings => 'సమయాలు';
+
+  @override
+  String get panchang_good_times => 'శుభ సమయాలు';
+
+  @override
+  String get panchang_avoid_times => 'నివారించాల్సిన సమయాలు';
+
+  @override
+  String get panchang_observances => 'వ్రతాలు, పర్వాలు';
+
+  @override
+  String get panchang_more_details => 'మరిన్ని వివరాలు';
+
+  @override
+  String get panchang_sun_rashi => 'సూర్య రాశి';
+
+  @override
+  String get panchang_moon_rashi => 'చంద్ర రాశి';
+
+  @override
+  String get panchang_nakshatra_pada => 'నక్షత్ర పాదం';
+
+  @override
+  String get panchang_ritu => 'ఋతువు';
+
+  @override
+  String get panchang_ayana => 'అయనం';
+
+  @override
+  String get panchang_samvat => 'సంవత్';
+
+  @override
+  String panchang_samvat_value(String value0, String value1) {
+    return 'శక $value0 · విక్రమ $value1';
+  }
+
+  @override
+  String get panchang_anandadi => 'ఆనందాది యోగం';
+
+  @override
+  String get panchang_special_yogas => 'ప్రత్యేక యోగాలు';
+
+  @override
+  String get panchang_none => 'ఏదీ లేదు';
+
+  @override
+  String get panchang_ayanamsa => 'లాహిరి అయనాంశ';
+
+  @override
+  String get panchang_no_solar_day =>
+      'ఈ రోజు ఇక్కడ పూర్తి సౌర దినం లేదు, కాబట్టి సూర్యోదయ ఆధారిత సమయాలు అందుబాటులో లేవు.';
+
+  @override
+  String get panchang_transitions => 'తదుపరి సూర్యోదయం వరకు మార్పులు';
+
+  @override
+  String get panchang_choghadiya => 'చౌఘడియా';
+
+  @override
+  String get panchang_choghadiya_hint =>
+      'అమృత, శుభ, లాభ అనుకూలం; చల సాధారణం; రోగ, కాల, ఉద్వేగ నివారించండి.';
+
+  @override
+  String get panchang_hora => 'హోర';
+
+  @override
+  String get panchang_lagna => 'ఉదయ లగ్నం';
+
+  @override
+  String get panchang_unavailable => 'ఈ రోజు, ప్రదేశానికి అందుబాటులో లేదు.';
+
+  @override
+  String get panchang_now => 'ఇప్పుడు';
+
+  @override
+  String get panchang_rashi => 'రాశి';
+
+  @override
+  String get panchang_rashi_note =>
+      'ఇవి ఆ రోజు సూర్య, చంద్రుల స్థానాలు (నిరయన, లాహిరి). మీ జన్మ రాశికి జన్మ తేదీ, సమయం, ప్రదేశం అవసరం.';
+
+  @override
+  String get panchang_smarta => 'స్మార్త';
+
+  @override
+  String get panchang_gaudiya => 'వైష్ణవ · గౌడీయ/ఇస్కాన్';
+
+  @override
+  String get panchang_smarta_rule =>
+      'గృహస్థులు: సూర్యోదయంలో ఉన్న ఏకాదశి; రెండు సూర్యోదయాలను తాకితే మొదటి రోజు.';
+
+  @override
+  String get panchang_gaudiya_rule =>
+      'గౌడీయ/ఇస్కాన్: సూర్యోదయానికి 96 నిమిషాల ముందు (అరుణోదయం) ఏకాదశి ఉండాలి, మహాద్వాదశి నియమాలతో.';
+
+  @override
+  String get panchang_calculation_failed => 'ఈ నెలను లెక్కించలేకపోయాం.';
+
+  @override
+  String get panchang_no_calculated_fast =>
+      'ఈ నెల, ప్రదేశానికి లెక్కించిన వ్రతం లేదు; స్థానిక సూర్యోదయం అవసరం.';
+
+  @override
+  String get panchang_calculated_preview =>
+      'లెక్కింపు ముందస్తు వీక్షణ: క్యాలెండర్, రిమైండర్లు, ప్రయాణం ప్రచురిత ఏకాదశి పట్టికనే ఉపయోగిస్తాయి.';
+
+  @override
+  String get panchang_fast_day => 'ఉపవాసం';
+
+  @override
+  String get panchang_parana => 'పారణ';
+
+  @override
+  String get panchang_near_boundary =>
+      'తిథి లేదా నక్షత్ర మార్పు నిర్ణయాత్మక క్షణానికి ఐదు నిమిషాల్లో ఉంది. ఈ తేదీని మీ సంప్రదాయ పంచాంగంతో సరిచూసుకోండి.';
+
+  @override
+  String get panchang_calculation_details => 'లెక్కింపు వివరాలు';
+
+  @override
+  String get panchang_rule => 'నియమం';
+
+  @override
+  String get panchang_hari_vasara_ends => 'హరి వాసరం ముగింపు';
+
+  @override
+  String get panchang_search_cities => 'ప్రపంచవ్యాప్త నగరాలను శోధించండి';
+
+  @override
+  String get panchang_locating => 'స్థానాన్ని కనుగొంటోంది…';
+
+  @override
+  String get panchang_use_current_location => 'ప్రస్తుత స్థానాన్ని ఉపయోగించండి';
+
+  @override
+  String get panchang_location_name => 'స్థానం పేరు';
+
+  @override
+  String get panchang_latitude => 'అక్షాంశం';
+
+  @override
+  String get panchang_longitude => 'రేఖాంశం';
+
+  @override
+  String get panchang_timezone => 'సమయ మండలం (ఐఏఎన్ఏ)';
+
+  @override
+  String get panchang_location_footer =>
+      'ఉదాహరణ: Asia/Kolkata లేదా America/New_York. నగర డేటా: జియోనేమ్స్ (సీసీ బై 4.0). లెక్కింపులు, నగర శోధన ఆఫ్‌లైన్‌లో పనిచేస్తాయి.';
+
+  @override
+  String get panchang_location_title => 'పంచాంగ స్థానం';
+
+  @override
+  String get panchang_save_location => 'సేవ్ చేయండి';
+
+  @override
+  String get panchang_location_denied =>
+      'స్థాన అనుమతి నిరాకరించబడింది. బదులుగా స్థానాన్ని శోధించండి లేదా నమోదు చేయండి.';
+
+  @override
+  String get panchang_location_unavailable =>
+      'స్థానం అందుబాటులో లేదు. బదులుగా స్థానాన్ని శోధించండి లేదా నమోదు చేయండి.';
+
+  @override
+  String get panchang_location_received =>
+      'కోఆర్డినేట్లు అందాయి. సేవ్ చేసే ముందు సమయ మండలాన్ని తనిఖీ చేయండి.';
+
+  @override
+  String get journey_tab => 'ప్రయాణం';
+
+  @override
+  String get journey_record_after_parana =>
+      'పారణ మొదలైన తర్వాత ఈ ఉపవాసాన్ని నమోదు చేయవచ్చు';
+
+  @override
+  String get settings_premium_subtitle => 'మీ ఏకాదశి ప్రయాణానికి అన్నీ';
+
+  @override
+  String get premium_feature_panchang_v2 =>
+      'పూర్తి పంచాంగం: ముఖ్య దినాల్లో ప్రతి పండుగ, ఐదు అంగాలు, సమయాలు, ముహూర్తం, రాశి';
+
+  @override
+  String settings_premium_from(String value0, String value1) {
+    return 'నెలకు $value0 నుండి · జీవితకాలం $value1';
+  }
+
+  @override
+  String get settings_premium_cta => 'ప్లాన్‌లు చూడండి';
+
+  @override
+  String settings_premium_plan(String value0) {
+    return 'మీ ప్లాన్: $value0';
+  }
+
+  @override
+  String get settings_premium_manage => 'నిర్వహించండి';
+
+  @override
+  String get settings_premium_plans => 'ప్లాన్ మార్చండి';
+
+  @override
+  String get widget_today_is_ekadashi => 'ఈరోజు ఏకాదశి';
+
+  @override
+  String widget_days_to_go(String value0) {
+    return 'ఇంకా $value0 రోజులు';
+  }
+
+  @override
+  String widget_fast_done(String value0) {
+    return 'ఉపవాసం $value0% పూర్తి';
+  }
+
+  @override
+  String get widget_name_ekadashi => 'ఏకాదశి';
+
+  @override
+  String get widget_desc_ekadashi =>
+      'ఈరోజు ఏకాదశి, మీ ఉపవాసం పురోగతి, లేదా తదుపరి ఏకాదశి, మిగిలిన రోజులు.';
+
+  @override
+  String get widget_desc_upcoming => 'రాబోయే ఏకాదశులు ఒక్క చూపులో.';
+
+  @override
+  String get widget_preview_during =>
+      'ఎడమ: ఇప్పుడు · కుడి: తదుపరి ఏకాదశి సమయంలో';
+
+  @override
+  String event_reminder_today(String value0, String value1) {
+    return '$value0 ఈ రోజు ($value1)';
+  }
+
+  @override
+  String event_reminder_tomorrow(String value0, String value1) {
+    return '$value0 రేపు ($value1)';
+  }
+
+  @override
+  String event_reminder_in_days(String value0, String value1, String value2) {
+    return '$value0 ఇంకా $value2 రోజుల్లో ($value1)';
+  }
+
+  @override
+  String get event_reminder_all_custom => 'నా అన్ని ఎంట్రీలు';
+
+  @override
+  String get event_reminder_all_google => 'అన్ని గూగుల్ క్యాలెండర్ ఈవెంట్‌లు';
+
+  @override
+  String get event_reminder_group_festival => 'పండుగలు';
+
+  @override
+  String get event_reminder_group_monthly => 'నెలవారీ వ్రత దినాలు';
+
+  @override
+  String get event_reminder_group_my_calendar => 'నా క్యాలెండర్';
+
+  @override
+  String get notifications_section_ekadashi => 'ఏకాదశి';
+
+  @override
+  String get notifications_section_events => 'పండుగలు మరియు ఈవెంట్‌లు';
+
+  @override
+  String get notifications_events_desc =>
+      'పండుగలు, పంచాంగ దినాలు మరియు మీ క్యాలెండర్ ఎంట్రీలకు ముందు రిమైండర్ పొందండి.';
+
+  @override
+  String get notifications_add_event => 'రిమైండర్ జోడించండి';
+
+  @override
+  String get notifications_edit_event => 'రిమైండర్ మార్చండి';
+
+  @override
+  String get notifications_choose_event => 'ఈవెంట్';
+
+  @override
+  String get notifications_lead_title => 'నాకు గుర్తు చేయండి';
+
+  @override
+  String get notifications_lead_0 => 'అదే రోజు';
+
+  @override
+  String get notifications_lead_1 => '1 రోజు ముందు';
+
+  @override
+  String notifications_lead_n(String value0) {
+    return '$value0 రోజులు ముందు';
+  }
+
+  @override
+  String get notifications_time => 'సమయం';
+
+  @override
+  String get notifications_delete_event => 'రిమైండర్ తొలగించండి';
+
+  @override
+  String get notifications_lead_required => 'కనీసం ఒక రోజు ఎంచుకోండి';
+
+  @override
+  String get notifications_premium_events =>
+      'పండుగ మరియు పంచాంగ రిమైండర్‌లు ప్రీమియంలో భాగం. మీ క్యాలెండర్ ఎంట్రీల రిమైండర్‌లు ఉచితం.';
+
+  @override
+  String get notifications_no_events => 'ఇంకా రిమైండర్‌లు లేవు';
+
+  @override
+  String get notifications_off_hint =>
+      'రిమైండర్‌ల కోసం నోటిఫికేషన్‌లను ఆన్ చేయండి.';
+
+  @override
+  String get notifications_search_events => 'ఈవెంట్‌లను వెతకండి';
+
+  @override
+  String get panchang_enter_name => 'పేరు నమోదు చేయండి';
+
+  @override
+  String panchang_invalid_coordinate(String value0) {
+    return '-$value0 నుండి $value0 మధ్య సంఖ్య నమోదు చేయండి';
+  }
+
+  @override
+  String get panchang_invalid_timezone =>
+      'సరైన టైమ్ జోన్ నమోదు చేయండి, ఉదా. Asia/Kolkata';
+
+  @override
+  String get panchang_city_search_unavailable =>
+      'నగర శోధన అందుబాటులో లేదు. కింద కోఆర్డినేట్లు నమోదు చేయండి.';
+
+  @override
+  String observed_of_total(String value0, String value1) {
+    return '$value1 లో $value0 ఏకాదశులు';
+  }
+
+  @override
+  String get timezone_IST => 'భారత కాలమానం';
+
+  @override
+  String get timezone_EST => 'అమెరికా తూర్పు కాలమానం';
+
+  @override
+  String get timezone_CST => 'అమెరికా మధ్య కాలమానం';
+
+  @override
+  String get timezone_MST => 'అమెరికా పర్వత కాలమానం';
+
+  @override
+  String get timezone_PST => 'అమెరికా పసిఫిక్ కాలమానం';
+
+  @override
+  String utc_offset(String value0) {
+    return 'యూటీసీ $value0';
+  }
 }

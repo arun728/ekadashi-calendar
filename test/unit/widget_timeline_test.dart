@@ -95,7 +95,7 @@ void main() {
     final west = await payload([e], DateTime.utc(2027, 1, 4, 20), zone: 'PST');
     expect(west['today']['isEkadashi'], isFalse);
   });
-  for (final language in ['en', 'ta', 'hi', 'te']) {
+  for (final language in ['en', 'ta', 'hi', 'te', 'gu', 'bn']) {
     test(
       '$language provides every widget label without leaking raw keys',
       () async {
@@ -105,7 +105,16 @@ void main() {
           language: language,
         );
         final strings = p['localizedStrings'] as Map;
-        expect(strings, hasLength(23));
+        expect(strings, hasLength(26));
+        // Phase 6 headline strings keep their {value0} placeholder.
+        expect(strings['widget.days_to_go'], contains('{value0}'));
+        expect(strings['widget.fast_done'], contains('{value0}'));
+        if (language != 'en') {
+          expect(
+            strings['widget.today_is_ekadashi'],
+            isNot('Today is Ekadashi'),
+          );
+        }
         for (final value in strings.values) {
           expect(value, isNotEmpty);
           expect(value, isNot(startsWith('widget_')));

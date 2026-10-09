@@ -6,7 +6,7 @@ import '../support/app_harness.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  for (final locale in ['en', 'ta', 'hi', 'te']) {
+  for (final locale in ['en', 'ta', 'hi', 'te', 'gu', 'bn']) {
     testWidgets('$locale Home localizes fasting and fast-breaking dates', (
       tester,
     ) async {
@@ -25,8 +25,9 @@ void main() {
       final breakDates = EkadashiService()
           .getEkadashis(timezone: 'IST', languageCode: locale)
           .map(
+            // The one date format of every tab: weekday, date, month, year.
             (e) => DateFormat(
-              'MMM dd, yyyy',
+              'EEE, d MMM yyyy',
               locale,
             ).format(e.date.add(const Duration(days: 1))),
           )
@@ -38,7 +39,7 @@ void main() {
       );
       if (locale != 'en') {
         final englishDate = RegExp(
-          r'^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{2}, \d{4}$',
+          r'(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4}$',
         );
         expect(
           text.where(englishDate.hasMatch),

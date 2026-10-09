@@ -18,6 +18,27 @@ public struct PanchangEngine: Sendable {
     static let lunarMonths = ["Chaitra", "Vaishakha", "Jyeshtha", "Ashadha", "Shravana", "Bhadrapada", "Ashvina",
                               "Kartika", "Margashirsha", "Pausha", "Magha", "Phalguna"]
     static let varas = ["", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    static let varaNames = Array(varas.dropFirst())
+    /// Festivals added in docs/ROADMAP.md Phase 3 (in both engines).
+    public static let phase3FestivalIds: Set<String> = [
+        "raksha-bandhan", "nag-panchami", "ratha-yatra", "durga-ashtami", "varalakshmi-vratam", "onam", "karthigai-deepam",
+    ]
+    static let karanaFixed = ["Kimstughna", "Shakuni", "Chatushpada", "Naga"]
+    static let ritus = ["Vasanta", "Grishma", "Varsha", "Sharad", "Hemanta", "Shishira"]
+    static let ayanas = ["Uttarayana (tropical)", "Dakshinayana (tropical)"]
+    static let periodNames = ["Rahu Kalam", "Yamaganda", "Gulika Kalam", "Abhijit Muhurta", "Brahma Muhurta", "Dur Muhurta",
+                              "Varjyam", "Amrit Kalam"]
+    static let choghadiyaDay = ["Udveg", "Chal", "Labh", "Amrit", "Kaal", "Shubh", "Rog"]
+    static let choghadiyaNight = ["Shubh", "Amrit", "Chal", "Rog", "Kaal", "Labh", "Udveg"]
+    static let choghadiyaNames = choghadiyaDay
+    static let horaPlanets = ["Saturn", "Jupiter", "Mars", "Sun", "Venus", "Mercury", "Moon"]
+    static let anandadiNames = ["Ananda", "Kaladanda", "Dhumra", "Prajapati", "Saumya", "Dhwanksha", "Dhwaja", "Srivatsa",
+                                "Vajra", "Mudgara", "Chhatra", "Mitra", "Manasa", "Padma", "Lumbaka", "Utpata", "Mrityu",
+                                "Kana", "Siddhi", "Shubha", "Amrita", "Musala", "Gada", "Matanga", "Rakshasa", "Chara",
+                                "Sthira", "Vardhamana"]
+    static let specialYogaNames = ["Amrita Siddhi Yoga", "Ravi Yoga", "Panchaka", "Ganda Moola", "Vinchudo", "Bhadra",
+                                   "Sarvartha Siddhi Yoga", "Ravi Pushya Yoga", "Guru Pushya Yoga", "Dwipushkara Yoga",
+                                   "Tripushkara Yoga"]
     static let signs = ["Mesha", "Vrishabha", "Mithuna", "Karka", "Simha", "Kanya", "Tula", "Vrischika", "Dhanu",
                         "Makara", "Kumbha", "Meena"]
 
@@ -80,8 +101,8 @@ public struct PanchangEngine: Sendable {
             specialYogas: specialYogas(localSunrise, weekday),
             nakshatraPada: Int(floor(dartMod(siderealMoon(localSunrise), 360.0 / 27) / (360.0 / 108))) + 1,
             ayanamsa: AstronomyCalculator.lahiriAyanamsa(localSunrise),
-            ritu: ["Vasanta", "Grishma", "Varsha", "Sharad", "Hemanta", "Shishira"][month.index / 2],
-            ayana: sunLongitude >= 270 || sunLongitude < 90 ? "Uttarayana (tropical)" : "Dakshinayana (tropical)",
+            ritu: Self.ritus[month.index / 2],
+            ayana: Self.ayanas[sunLongitude >= 270 || sunLongitude < 90 ? 0 : 1],
             sunRashi: Self.rashi(AstronomyCalculator.normalize(sunLongitude - AstronomyCalculator.apparentLahiriAyanamsa(localSunrise))),
             moonRashi: Self.rashi(siderealMoon(localSunrise)),
             sunRashiEndsAt: nextBoundary(localSunrise, siderealSun(localSunrise), 30, siderealSun),
@@ -291,7 +312,7 @@ public struct PanchangEngine: Sendable {
     }
 
     func hora(_ sunrise: Date, _ sunset: Date, _ nextSunrise: Date, _ weekday: Int) -> [PanchangPeriod] {
-        let planets = ["Saturn", "Jupiter", "Mars", "Sun", "Venus", "Mercury", "Moon"]
+        let planets = Self.horaPlanets
         let firstByWeekday = [6, 2, 5, 1, 4, 0, 3]
         var result: [PanchangPeriod] = []
         for half in 0..<2 {
@@ -306,10 +327,10 @@ public struct PanchangEngine: Sendable {
     }
 
     func choghadiya(_ sunrise: Date, _ sunset: Date, _ nextSunrise: Date, _ weekday: Int) -> [PanchangPeriod] {
-        let names = ["Udveg", "Chal", "Labh", "Amrit", "Kaal", "Shubh", "Rog"]
+        let names = Self.choghadiyaDay
         let dayStarts = [0, 3, 6, 2, 5, 1, 4]
         let nightStarts = [0, 2, 4, 6, 1, 3, 5]
-        let nightNames = ["Shubh", "Amrit", "Chal", "Rog", "Kaal", "Labh", "Udveg"]
+        let nightNames = Self.choghadiyaNight
         var result: [PanchangPeriod] = []
         for night in 0..<2 {
             let start = night == 0 ? sunrise : sunset
@@ -390,9 +411,7 @@ public struct PanchangEngine: Sendable {
     }
 
     func anandadi(_ instant: Date, _ weekday: Int) -> String {
-        let names = ["Ananda", "Kaladanda", "Dhumra", "Prajapati", "Saumya", "Dhwanksha", "Dhwaja", "Srivatsa", "Vajra",
-                     "Mudgara", "Chhatra", "Mitra", "Manasa", "Padma", "Lumbaka", "Utpata", "Mrityu", "Kana", "Siddhi",
-                     "Shubha", "Amrita", "Musala", "Gada", "Matanga", "Rakshasa", "Chara", "Sthira", "Vardhamana"]
+        let names = Self.anandadiNames
         let longitude = siderealMoon(instant)
         let nak = Int(floor(longitude / (360.0 / 27)))
         // The 28-star cycle includes Abhijit (276°40′ to 280°53′20″).

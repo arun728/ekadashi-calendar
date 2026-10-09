@@ -28,7 +28,7 @@ void main() {
       await loader.load();
     }
   });
-  for (final locale in ['en', 'ta', 'hi', 'te']) {
+  for (final locale in ['en', 'ta', 'hi', 'te', 'gu', 'bn']) {
     testWidgets(
       '$locale Home, Calendar, Settings and Details render and navigate',
       (tester) async {
@@ -90,6 +90,9 @@ void main() {
 
         await tester.tap(find.byKey(const Key('glass_tab_3')));
         await tester.pumpAndSettle();
+        await capture('panchang_key_days');
+        await tester.tap(find.byKey(const Key('panchang_tab_daily')));
+        await tester.pumpAndSettle();
         expect(
           find.byKey(const Key('panchang_daily_overview')),
           findsOneWidget,
@@ -99,7 +102,11 @@ void main() {
         await tester.tap(find.byKey(const Key('glass_tab_2')));
         await tester.pumpAndSettle();
         await capture('vrat');
-        await tester.tap(find.text(language.translate('history')));
+        await tester.ensureVisible(
+          find.byKey(const Key('journey_tab_history')),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const Key('journey_tab_history')));
         await tester.pumpAndSettle();
         await capture('vrat_history');
         await tester.tap(find.byType(Card).first);

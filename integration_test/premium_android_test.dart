@@ -64,7 +64,34 @@ void main() {
       expect(find.byKey(const Key('glass_tab_1')), findsOneWidget);
       debugPrint('Premium Android flow: opening Panchang');
       await tester.tap(find.byKey(const Key('glass_tab_3')));
-      await tester.pump(const Duration(seconds: 2));
+      // Panchang is built when first opened and calculates the month's
+      // festivals before Key days and its unlock card appear; slow emulators
+      // (API 24) need more than a fixed delay.
+      final scrollView = find.byKey(const Key('panchang_scroll_view'));
+      final loading = find.descendant(
+        of: scrollView,
+        matching: find.byType(CircularProgressIndicator),
+      );
+      for (
+        var i = 0;
+        i < 90 &&
+            (scrollView.evaluate().isEmpty || loading.evaluate().isNotEmpty);
+        i++
+      ) {
+        await tester.pump(const Duration(seconds: 1));
+      }
+      expect(scrollView, findsOneWidget);
+      expect(loading, findsNothing);
+      // Key days opens first; the full upgrade card is on the Daily page.
+      await tester.tap(find.byKey(const Key('panchang_tab_daily')));
+      for (
+        var i = 0;
+        i < 30 &&
+            find.byKey(const Key('panchang_unlock_button')).evaluate().isEmpty;
+        i++
+      ) {
+        await tester.pump(const Duration(seconds: 1));
+      }
       // The unlock card is below the fold in Panchang's lazy list.
       final unlock = find.byKey(const Key('panchang_unlock_button'));
       await tester.scrollUntilVisible(
@@ -104,7 +131,7 @@ void main() {
       final context = tester.element(find.byType(app.MainScreen));
       final lang = context.read<LanguageService>();
       final premium = context.read<PremiumService>();
-      for (final locale in ['en', 'ta', 'hi', 'te']) {
+      for (final locale in ['en', 'ta', 'hi', 'te', 'gu', 'bn']) {
         debugPrint('Premium Android flow: fixture locale $locale');
         await lang.changeLanguage(locale);
         await tester.pump(const Duration(milliseconds: 200));

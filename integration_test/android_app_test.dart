@@ -99,6 +99,9 @@ void main() {
     expect(find.text('Appearance'), findsOneWidget);
     final themeSwitch = find.byType(SwitchListTile).first;
     final original = tester.widget<SwitchListTile>(themeSwitch).value;
+    // Below the Premium card on short screens.
+    await tester.ensureVisible(themeSwitch);
+    await pumpUi(tester);
     await tester.tap(themeSwitch);
     await pumpUi(tester);
     expect(tester.widget<SwitchListTile>(themeSwitch).value, !original);

@@ -5,9 +5,10 @@ import 'dart:io';
 import 'package:sqflite/sqflite.dart' show getDatabasesPath;
 import 'package:table_calendar/table_calendar.dart';
 import 'package:ekadashi_calendar/screens/global_search_screen.dart';
+import 'package:ekadashi_calendar/screens/panchang_screen.dart';
+import 'package:ekadashi_calendar/widgets/glass_tube.dart';
 import 'package:ekadashi_calendar/services/widget_sync_manager.dart';
 import 'package:ekadashi_calendar/services/native_widget_service.dart';
-import 'package:ekadashi_calendar/services/search_index_manager.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -103,18 +104,44 @@ void main() {
       await binding.takeScreenshot('v2_home_2026');
       await tester.tap(find.byKey(const Key('glass_tab_3')));
       await frames(tester);
-      expect(find.byKey(const Key('panchang_daily_overview')), findsOneWidget);
-      for (final label in [
-        'Daily',
-        'Muhurta',
-        'Ekadashi',
-        'Rashi',
-        'Festivals',
-        'Guide',
-      ]) {
-        expect(find.widgetWithText(Tab, label), findsOneWidget);
+      // Panchang is built when first opened (docs/ROADMAP.md Phase 3): five
+      // sections, Key days first.
+      await until(
+        tester,
+        () => find
+            .byKey(const Key('panchang_sections_tube'))
+            .evaluate()
+            .isNotEmpty,
+      );
+      for (final page in ['keydays', 'daily', 'muhurta', 'ekadashi', 'rashi']) {
+        expect(find.byKey(Key('panchang_tab_$page')), findsOneWidget);
       }
+      await tester.tap(find.byKey(const Key('panchang_tab_daily')));
+      await frames(tester);
+      await until(
+        tester,
+        () => find
+            .byKey(const Key('panchang_daily_overview'))
+            .evaluate()
+            .isNotEmpty,
+      );
       await binding.takeScreenshot('v2_panchang_free');
+      // The sections also change with a horizontal swipe (Phase 9).
+      bool chipSelected(String key) =>
+          tester.widget<GlassFilterChip>(find.byKey(Key(key))).selected;
+      final panchangPages = find.descendant(
+        of: find.byType(PanchangScreen),
+        matching: find.byType(PageView),
+      );
+      await tester.fling(panchangPages, const Offset(-400, 0), 1500);
+      await frames(tester);
+      await until(tester, () => chipSelected('panchang_tab_muhurta'));
+      await binding.takeScreenshot('v2_panchang_swiped');
+      await tester.fling(panchangPages, const Offset(400, 0), 1500);
+      await frames(tester);
+      await until(tester, () => chipSelected('panchang_tab_daily'));
+      await tester.tap(find.byKey(const Key('panchang_city_selector')));
+      await frames(tester);
       await tester.tap(find.byKey(const Key('panchang_edit_location')));
       await frames(tester);
       for (final entry in {
@@ -127,7 +154,7 @@ void main() {
         await tester.ensureVisible(field);
         await tester.enterText(field, entry.value);
       }
-      await tester.tap(find.text('Save location'));
+      await tester.tap(find.byKey(const Key('location_save')));
       await frames(tester);
       await until(
         tester,
@@ -137,21 +164,21 @@ void main() {
             .evaluate()
             .isNotEmpty,
       );
-      expect(find.text('America/New_York · English'), findsOneWidget);
+      expect(find.text('New York'), findsWidgets);
+      expect(find.text('America/New_York'), findsOneWidget);
       expect(
         prefs.getString('panchang_location'),
         contains('America/New_York'),
       );
       await binding.takeScreenshot('v2_panchang_worldwide');
-      // Six Panchang subtabs scroll horizontally; Guide is off-screen on
-      // narrow phones until scrolled into view.
-      final guide = find.widgetWithText(Tab, 'Guide');
-      await tester.ensureVisible(guide);
+      // The calculation notes (formerly the Guide tab) open from the toolbar.
+      await tester.tap(find.byKey(const Key('panchang_notes')));
       await frames(tester);
-      await tester.tap(guide);
-      await frames(tester);
-      expect(find.text('Smarta and Vaishnava'), findsOneWidget);
+      final notes = find.byKey(const Key('panchang_notes_sheet'));
+      expect(notes, findsOneWidget);
       await binding.takeScreenshot('v2_panchang_guide');
+      Navigator.of(tester.element(notes)).pop();
+      await frames(tester);
       final lang = tester
           .element(find.byType(MaterialApp).first)
           .read<LanguageService>();
@@ -172,7 +199,9 @@ void main() {
       await tester.tap(find.byKey(const Key('glass_tab_2')));
       await frames(tester);
       await binding.takeScreenshot('v2_tracker_retained');
-      await tester.tap(find.text('History'));
+      await tester.ensureVisible(find.byKey(const Key('journey_tab_history')));
+      await frames(tester);
+      await tester.tap(find.byKey(const Key('journey_tab_history')));
       await frames(tester);
       await binding.takeScreenshot('v2_history_2026');
       await tester.tap(find.byIcon(Icons.calendar_month));
@@ -199,7 +228,9 @@ void main() {
       );
       await tester.tap(find.byKey(const Key('calendar_year_selector')));
       await frames(tester);
-      await tester.tap(find.text('2027').last);
+      await tester.tap(find.byKey(const Key('month_picker_year_2027')));
+      await frames(tester);
+      await tester.tap(find.byKey(const Key('panchang_month_1')));
       await frames(tester);
       await binding.takeScreenshot('v2_calendar_2027');
       await lang.changeLanguage('te');
@@ -209,7 +240,7 @@ void main() {
       await frames(tester);
       await binding.takeScreenshot('v2_home_telugu');
       expect(tester.takeException(), isNull);
-      for (final code in ['en', 'ta', 'hi', 'te']) {
+      for (final code in ['en', 'ta', 'hi', 'te', 'gu', 'bn']) {
         await lang.changeLanguage(code);
         await frames(tester, count: 10);
         final events = EkadashiService().getEkadashis(
@@ -234,7 +265,7 @@ void main() {
         await tester.tap(find.byIcon(Icons.spa_outlined));
         await frames(tester);
         await binding.takeScreenshot('v2_vrat_$code');
-        expect(find.text(lang.translate('vrat')), findsWidgets);
+        expect(find.text(lang.translate('journey_tab')), findsWidgets);
         await tester.tap(find.byIcon(Icons.search));
         await frames(tester);
         expect(find.byType(GlobalSearchScreen).hitTestable(), findsOneWidget);
@@ -248,6 +279,8 @@ void main() {
         await tester.tap(find.byIcon(Icons.settings));
         await frames(tester);
         await binding.takeScreenshot('glass_settings_dark_$code');
+        await tester.ensureVisible(find.byType(SwitchListTile).first);
+        await frames(tester);
         await tester.tap(find.byType(SwitchListTile).first);
         await frames(tester);
         await binding.takeScreenshot('glass_settings_light_$code');
@@ -266,16 +299,16 @@ void main() {
       await frames(tester, count: 10);
       await tester.enterText(find.byType(TextField), 'nirjla');
       await tester.pump(const Duration(milliseconds: 400));
-      await tester.tap(find.byIcon(Icons.arrow_forward).first);
+      await tester.testTextInput.receiveAction(TextInputAction.search);
       await frames(tester, count: 10);
-      expect(
-        SearchIndexManager().search('nirjla', languageCode: 'en'),
-        isNotEmpty,
+      await until(
+        tester,
+        () => find.byKey(const Key('search_results')).evaluate().isNotEmpty,
       );
       await binding.takeScreenshot('v2_search_typo');
       await tester.enterText(find.byType(TextField), 'zzzznomatch9999');
       await tester.pump(const Duration(milliseconds: 400));
-      await tester.tap(find.byIcon(Icons.arrow_forward).first);
+      await tester.testTextInput.receiveAction(TextInputAction.search);
       await frames(tester);
       await binding.takeScreenshot('v2_search_no_match');
       await until(
@@ -287,6 +320,33 @@ void main() {
         'zzzznomatch9999',
       );
       debugPrint("Android Search typo and no-match UI verified");
+      // A result that opens a tab shows a top-bar back to the same search
+      // (Phase 9).
+      await tester.enterText(find.byType(TextField), 'settings');
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.testTextInput.receiveAction(TextInputAction.search);
+      await frames(tester);
+      final settingsResult = find.byKey(
+        const Key('search_result_screen:settings'),
+      );
+      await until(tester, () => settingsResult.evaluate().isNotEmpty);
+      await tester.tap(settingsResult);
+      await frames(tester);
+      final searchReturn = find.byKey(const Key('search_return'));
+      await until(tester, () => searchReturn.evaluate().isNotEmpty);
+      await binding.takeScreenshot('v2_search_return');
+      await tester.tap(searchReturn);
+      await frames(tester);
+      await until(
+        tester,
+        () => find.byType(GlobalSearchScreen).evaluate().isNotEmpty,
+      );
+      expect(
+        tester.widget<TextField>(find.byType(TextField)).controller!.text,
+        'settings',
+      );
+      expect(settingsResult, findsOneWidget);
+      debugPrint("Android Search return verified");
       // Real Android SQLite + app screens, deterministic fake Google account.
       // OAuth consent and a real Google deletion remain an account/device check.
       final fixtureLang = LanguageService();
@@ -408,7 +468,9 @@ void main() {
       google.min = null;
       await tester.tap(find.byKey(const Key('calendar_year_selector')));
       await frames(tester);
-      await tester.tap(find.text('2027').last);
+      await tester.tap(find.byKey(const Key('month_picker_year_2027')));
+      await frames(tester);
+      await tester.tap(find.byKey(const Key('panchang_month_1')));
       await frames(tester);
       // Select January 1 so deletion is visible in screenshots before/after.
       final state = tester.state<CalendarScreenState>(

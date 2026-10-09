@@ -1,5 +1,7 @@
 import 'package:timezone/timezone.dart' as tz;
 
+import '../../l10n/app_language.dart';
+
 import '../time_zone_data.dart';
 
 /// Explicit coordinates and IANA timezone; never uses the host timezone.
@@ -66,6 +68,20 @@ class PanchangCity {
       tz.TZDateTime(zone, date.year, date.month, date.day, hour).toUtc();
 
   String get timezoneLabel => timeZoneId == 'Asia/Kolkata' ? 'IST' : timeZoneId;
+
+  /// The time zone as [language] shows it: the IANA id in English, the UTC
+  /// offset now in the language's script otherwise.
+  String timeZoneLabel(String language) {
+    if (language == 'en') return timezoneLabel;
+    try {
+      final offset = zone
+          .timeZone(DateTime.now().millisecondsSinceEpoch)
+          .offset;
+      return AppStrings.utcOffset(offset ~/ 60000, language);
+    } catch (_) {
+      return timezoneLabel;
+    }
+  }
 
   static const newDelhi = PanchangCity(
     id: 'new-delhi',
