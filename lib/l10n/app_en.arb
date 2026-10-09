@@ -642,5 +642,29 @@
         "type": "String"
       }
     }
+  },
+  "observed_of_total": "{value0} of {value1} Ekadashis",
+  "@observed_of_total": {
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      },
+      "value1": {
+        "type": "String"
+      }
+    }
+  },
+  "timezone_IST": "IST",
+  "timezone_EST": "EST",
+  "timezone_CST": "CST",
+  "timezone_MST": "MST",
+  "timezone_PST": "PST",
+  "utc_offset": "UTC{value0}",
+  "@utc_offset": {
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
   }
 }

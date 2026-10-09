@@ -218,7 +218,8 @@ class AppLocalizationsTa extends AppLocalizations {
   String get alarms_info_step1 => '1. அமைப்புகளுக்கு \"திற\" தட்டவும்';
 
   @override
-  String get alarms_info_step2 => '2. \"அலாரம் அமைக்க அனுமதி\" ON செய்யவும்';
+  String get alarms_info_step2 =>
+      '2. \"அலாரம் அமைக்க அனுமதி\" இயக்கு செய்யவும்';
 
   @override
   String get alarms_info_note =>
@@ -271,7 +272,8 @@ class AppLocalizationsTa extends AppLocalizations {
   String get auto_detect_location => 'தானியங்கி இருப்பிட கண்டறிதல்';
 
   @override
-  String get auto_detect_desc => 'உங்கள் நகரத்தை கண்டறிய GPS பயன்படுத்தவும்';
+  String get auto_detect_desc =>
+      'உங்கள் நகரத்தை கண்டறிய ஜிபிஎஸ் பயன்படுத்தவும்';
 
   @override
   String get using_auto_location => 'தானியங்கி இருப்பிடம் பயன்படுத்துகிறது';
@@ -508,7 +510,7 @@ class AppLocalizationsTa extends AppLocalizations {
       'ஒரு முழு ஆண்டின் அனைத்து ஏகாதசிகளையும் அனுஷ்டித்தீர்கள்.';
 
   @override
-  String get filter_google => 'Google';
+  String get filter_google => 'கூகுள்';
 
   @override
   String get filter_custom => 'தனிப்பட்டவை';
@@ -545,16 +547,16 @@ class AppLocalizationsTa extends AppLocalizations {
       'தலைப்பையும் தொடக்க நேரத்திற்குப் பிந்தைய முடிவு நேரத்தையும் உள்ளிடவும்.';
 
   @override
-  String get sync_google => 'Google நாள்காட்டியை இறக்குமதி செய்';
+  String get sync_google => 'கூகுள் நாள்காட்டியை இறக்குமதி செய்';
 
   @override
-  String get disconnect_google => 'Google நாள்காட்டி இணைப்பை நீக்கு';
+  String get disconnect_google => 'கூகுள் நாள்காட்டி இணைப்பை நீக்கு';
 
   @override
-  String get sign_in_cancelled => 'Google உள்நுழைவு ரத்து செய்யப்பட்டது';
+  String get sign_in_cancelled => 'கூகுள் உள்நுழைவு ரத்து செய்யப்பட்டது';
 
   @override
-  String get no_google_calendars => 'Google நாள்காட்டிகள் இல்லை';
+  String get no_google_calendars => 'கூகுள் நாள்காட்டிகள் இல்லை';
 
   @override
   String get no_google_events =>
@@ -562,12 +564,12 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String imported_google_events(String value0) {
-    return '$value0 Google நிகழ்வுகள் இறக்குமதி செய்யப்பட்டன';
+    return '$value0 கூகுள் நிகழ்வுகள் இறக்குமதி செய்யப்பட்டன';
   }
 
   @override
   String imported_google_range(String value0, String value1, String value2) {
-    return '$value0 Google நிகழ்வுகள் இறக்குமதி செய்யப்பட்டன ($value1 – $value2)';
+    return '$value0 கூகுள் நிகழ்வுகள் இறக்குமதி செய்யப்பட்டன ($value1 – $value2)';
   }
 
   @override
@@ -586,13 +588,13 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get choose_calendars_help =>
-      'செயலியில் காட்ட வேண்டிய நாள்காட்டிகளைத் தேர்ந்தெடுக்கவும். இறக்குமதி உங்கள் Google நிகழ்வுகளை மாற்றாது.';
+      'செயலியில் காட்ட வேண்டிய நாள்காட்டிகளைத் தேர்ந்தெடுக்கவும். இறக்குமதி உங்கள் கூகுள் நிகழ்வுகளை மாற்றாது.';
 
   @override
   String get switch_google_account => 'வேறு கணக்கைப் பயன்படுத்து';
 
   @override
-  String get google_calendar => 'Google கேலெண்டர்';
+  String get google_calendar => 'கூகுள் கேலெண்டர்';
 
   @override
   String get primary_calendar => 'முதன்மை';
@@ -911,35 +913,35 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get premium_cancelled_body =>
-      'நீங்கள் செலுத்திய காலம் முடியும் வரை Premium செயலில் இருக்கும். தொடர எப்போது வேண்டுமானாலும் மீண்டும் இயக்கலாம்.';
+      'நீங்கள் செலுத்திய காலம் முடியும் வரை பிரீமியம் செயலில் இருக்கும். தொடர எப்போது வேண்டுமானாலும் மீண்டும் இயக்கலாம்.';
 
   @override
   String get premium_reactivate => 'மீண்டும் இயக்கு';
 
   @override
   String get free_sync_unverified =>
-      'உங்கள் இலவச ஒத்திசைவைச் சரிபார்க்க முடியவில்லை. இணைப்பைச் சரிபார்க்கவும் அல்லது Premium பெறவும்.';
+      'உங்கள் இலவச ஒத்திசைவைச் சரிபார்க்க முடியவில்லை. இணைப்பைச் சரிபார்க்கவும் அல்லது பிரீமியம் பெறவும்.';
 
   @override
   String get premium_upgrade => 'மேம்படுத்து';
 
   @override
   String get premium_restored =>
-      'வாங்கியவை மீட்டெடுக்கப்பட்டன. Premium செயலில் உள்ளது.';
+      'வாங்கியவை மீட்டெடுக்கப்பட்டன. பிரீமியம் செயலில் உள்ளது.';
 
   @override
   String get premium_restore_none =>
-      'இந்த Google Play கணக்கில் வாங்கியவை எதுவும் இல்லை.';
+      'இந்த கூகுள் பிளே கணக்கில் வாங்கியவை எதுவும் இல்லை.';
 
   @override
   String get premium_lifetime_thanks_title => 'நன்றி, வாழ்நாள் உறுப்பினரே! 🙏';
 
   @override
   String get premium_lifetime_thanks_body =>
-      'எதிர்கால அம்சங்கள், புதுப்பிப்புகள் உட்பட அனைத்து Premium அம்சங்களும் வாழ்நாள் முழுவதும் உங்களுடையவை. பல ஆண்டுகள் உங்களுக்கு சேவை செய்ய ஆவலாக உள்ளோம்.';
+      'எதிர்கால அம்சங்கள், புதுப்பிப்புகள் உட்பட அனைத்து பிரீமியம் அம்சங்களும் வாழ்நாள் முழுவதும் உங்களுடையவை. பல ஆண்டுகள் உங்களுக்கு சேவை செய்ய ஆவலாக உள்ளோம்.';
 
   @override
-  String get premium_subscriber_title => 'உங்களிடம் Premium உள்ளது ✨';
+  String get premium_subscriber_title => 'உங்களிடம் பிரீமியம் உள்ளது ✨';
 
   @override
   String get premium_subscriber_body =>
@@ -947,25 +949,25 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get premium_cancel_subscription_note =>
-      'உங்கள் சந்தா இன்னும் செயலில் உள்ளது. மீண்டும் கட்டணம் வசூலிக்கப்படாமல் இருக்க Google Play-இல் அதை ரத்துசெய்யவும். வாழ்நாள் திட்டம் உங்களுடையதே.';
+      'உங்கள் சந்தா இன்னும் செயலில் உள்ளது. மீண்டும் கட்டணம் வசூலிக்கப்படாமல் இருக்க கூகுள் பிளே-இல் அதை ரத்துசெய்யவும். வாழ்நாள் திட்டம் உங்களுடையதே.';
 
   @override
   String get premium_cancel_subscription_action =>
-      'Google Play-இல் சந்தாவை ரத்துசெய்';
+      'கூகுள் பிளே-இல் சந்தாவை ரத்துசெய்';
 
   @override
   String get premium_lifetime_confirm_title => 'உங்களிடம் ஏற்கனவே சந்தா உள்ளது';
 
   @override
   String get premium_lifetime_confirm_body =>
-      'Google Play சந்தாக்களை தானாக ரத்துசெய்யாது. வாழ்நாள் திட்டத்தை வாங்கிய பின், புதுப்பித்தலை நிறுத்த Google Play-இல் உங்கள் சந்தாவை ரத்துசெய்யவும்.';
+      'கூகுள் பிளே சந்தாக்களை தானாக ரத்துசெய்யாது. வாழ்நாள் திட்டத்தை வாங்கிய பின், புதுப்பித்தலை நிறுத்த கூகுள் பிளே-இல் உங்கள் சந்தாவை ரத்துசெய்யவும்.';
 
   @override
   String get premium_buy_lifetime_anyway => 'வாழ்நாள் திட்டத்தை வாங்கு';
 
   @override
   String get premium_unavailable =>
-      'தற்போது வாங்க முடியவில்லை. Google Play-இலிருந்து செயலியை நிறுவி மீண்டும் முயலவும். இலவச அம்சங்கள் தொடர்ந்து செயல்படும்.';
+      'தற்போது வாங்க முடியவில்லை. கூகுள் பிளே-இலிருந்து செயலியை நிறுவி மீண்டும் முயலவும். இலவச அம்சங்கள் தொடர்ந்து செயல்படும்.';
 
   @override
   String get premium_verification_failed =>
@@ -1023,7 +1025,7 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get premium_feature_calendar =>
-      'உங்கள் முழு சந்தா ஆண்டுக்கான Google நாள்காட்டி ஒத்திசைவு (ஒரு மாத ஒத்திசைவு இலவசம்)';
+      'உங்கள் முழு சந்தா ஆண்டுக்கான கூகுள் நாள்காட்டி ஒத்திசைவு (ஒரு மாத ஒத்திசைவு இலவசம்)';
 
   @override
   String get premium_feature_vrat =>
@@ -1045,7 +1047,7 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get google_sign_in_failed =>
-      'Google உள்நுழைவு தோல்வியடைந்தது. இணைப்பைச் சரிபார்த்து மீண்டும் முயலவும்.';
+      'கூகுள் உள்நுழைவு தோல்வியடைந்தது. இணைப்பைச் சரிபார்த்து மீண்டும் முயலவும்.';
 
   @override
   String get vrat_free_limit_reached =>
@@ -1053,7 +1055,7 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get google_premium_events_removed =>
-      'உங்கள் பிரீமியம் முடிந்தது, எனவே அதன் மூலம் ஒத்திசைத்த Google நிகழ்வுகள் நீக்கப்பட்டன. மீண்டும் ஒத்திசைக்க புதுப்பிக்கவும்.';
+      'உங்கள் பிரீமியம் முடிந்தது, எனவே அதன் மூலம் ஒத்திசைத்த கூகுள் நிகழ்வுகள் நீக்கப்பட்டன. மீண்டும் ஒத்திசைக்க புதுப்பிக்கவும்.';
 
   @override
   String get search_filter_ekadashi => 'ஏகாதசி';
@@ -1180,7 +1182,7 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get panchang_notes_sources =>
-      'வானியல்: லஹிரி அயனாம்சத்துடன் VSOP87, ELP 2000-82B. நகரங்கள்: GeoNames (CC BY 4.0). நேர மண்டலங்கள்: IANA தரவுத்தளம்.';
+      'வானியல்: லஹிரி அயனாம்சத்துடன் விஎஸ்ஓபி87, இஎல்பி 2000-82பி. நகரங்கள்: ஜியோநேம்ஸ் (சிசி பை 4.0). நேர மண்டலங்கள்: ஐஏஎன்ஏ தரவுத்தளம்.';
 
   @override
   String get panchang_premium_title => 'முழு பஞ்சாங்கம் பிரீமியத்தில் உள்ளது';
@@ -1413,11 +1415,11 @@ class AppLocalizationsTa extends AppLocalizations {
   String get panchang_longitude => 'தீர்க்கரேகை';
 
   @override
-  String get panchang_timezone => 'நேர மண்டலம் (IANA)';
+  String get panchang_timezone => 'நேர மண்டலம் (ஐஏஎன்ஏ)';
 
   @override
   String get panchang_location_footer =>
-      'எடுத்துக்காட்டு: Asia/Kolkata அல்லது America/New_York. நகரத் தரவு: GeoNames (CC BY 4.0). கணக்கீடுகளும் நகரத் தேடலும் இணையமின்றி செயல்படும்.';
+      'எடுத்துக்காட்டு: Asia/Kolkata அல்லது America/New_York. நகரத் தரவு: ஜியோநேம்ஸ் (சிசி பை 4.0). கணக்கீடுகளும் நகரத் தேடலும் இணையமின்றி செயல்படும்.';
 
   @override
   String get panchang_location_title => 'பஞ்சாங்க இருப்பிடம்';
@@ -1517,7 +1519,7 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get event_reminder_all_google =>
-      'அனைத்து Google Calendar நிகழ்வுகளும்';
+      'அனைத்து கூகுள் நாள்காட்டி நிகழ்வுகளும்';
 
   @override
   String get event_reminder_group_festival => 'பண்டிகைகள்';
@@ -1600,4 +1602,29 @@ class AppLocalizationsTa extends AppLocalizations {
   @override
   String get panchang_city_search_unavailable =>
       'நகரத் தேடல் கிடைக்கவில்லை. கீழே ஆயத்தொலைவுகளை உள்ளிடவும்.';
+
+  @override
+  String observed_of_total(String value0, String value1) {
+    return '$value1 இல் $value0 ஏகாதசிகள்';
+  }
+
+  @override
+  String get timezone_IST => 'இந்திய நேரம்';
+
+  @override
+  String get timezone_EST => 'அமெரிக்க கிழக்கு நேரம்';
+
+  @override
+  String get timezone_CST => 'அமெரிக்க மத்திய நேரம்';
+
+  @override
+  String get timezone_MST => 'அமெரிக்க மலை நேரம்';
+
+  @override
+  String get timezone_PST => 'அமெரிக்க பசிபிக் நேரம்';
+
+  @override
+  String utc_offset(String value0) {
+    return 'யூடிசி $value0';
+  }
 }

@@ -3021,6 +3021,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'City search is unavailable. Enter the coordinates below.'**
   String get panchang_city_search_unavailable;
+
+  /// No description provided for @observed_of_total.
+  ///
+  /// In en, this message translates to:
+  /// **'{value0} of {value1} Ekadashis'**
+  String observed_of_total(String value0, String value1);
+
+  /// No description provided for @timezone_IST.
+  ///
+  /// In en, this message translates to:
+  /// **'IST'**
+  String get timezone_IST;
+
+  /// No description provided for @timezone_EST.
+  ///
+  /// In en, this message translates to:
+  /// **'EST'**
+  String get timezone_EST;
+
+  /// No description provided for @timezone_CST.
+  ///
+  /// In en, this message translates to:
+  /// **'CST'**
+  String get timezone_CST;
+
+  /// No description provided for @timezone_MST.
+  ///
+  /// In en, this message translates to:
+  /// **'MST'**
+  String get timezone_MST;
+
+  /// No description provided for @timezone_PST.
+  ///
+  /// In en, this message translates to:
+  /// **'PST'**
+  String get timezone_PST;
+
+  /// No description provided for @utc_offset.
+  ///
+  /// In en, this message translates to:
+  /// **'UTC{value0}'**
+  String utc_offset(String value0);
 }
 
 class _AppLocalizationsDelegate

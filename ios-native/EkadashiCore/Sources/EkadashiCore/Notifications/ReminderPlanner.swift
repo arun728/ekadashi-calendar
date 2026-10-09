@@ -62,6 +62,11 @@ public enum ReminderPlanner {
         var result: [PlannedReminder] = []
         for event in occurrences {
             guard let start = event.fastingStart, let parana = event.paranaStart else { continue }
+            /// "06:00 AM" with the reminder language's own AM and PM.
+            func clock(_ time: String) -> String {
+                time.replacingOccurrences(of: " AM", with: " \(texts("panchang_am"))")
+                    .replacingOccurrences(of: " PM", with: " \(texts("panchang_pm"))")
+            }
             func add(_ kind: PlannedReminder.Kind, _ date: Date, _ title: String, _ body: String) {
                 guard date > now else { return }
                 result.append(PlannedReminder(id: event.id * 10 + kind.rawValue, ekadashiId: event.id, kind: kind,
@@ -72,7 +77,7 @@ public enum ReminderPlanner {
             }
             if settings.oneDayBefore {
                 add(.oneDayBefore, start.addingTimeInterval(-24 * 3600), texts("notif_1day_title"),
-                    "\(event.name) \(texts("notif_1day_body")) \(EkadashiTimeFormat.displayTime(event.fastingStartISO))")
+                    "\(event.name) \(texts("notif_1day_body")) \(clock(EkadashiTimeFormat.displayTime(event.fastingStartISO)))")
             }
             if settings.onFastingStart {
                 add(.onFastingStart, start, texts("notif_start_title"),

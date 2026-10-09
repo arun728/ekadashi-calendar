@@ -188,8 +188,8 @@ open class EkadashiWidgetReceiver : AppWidgetProvider() {
             views.setTextViewText(R.id.widget_medium_name, displayName(item))
             views.setTextViewText(R.id.widget_medium_date, "${item.localizedDate} • ${item.paksha}")
             views.setTextViewText(R.id.widget_medium_location, "📍 ${payload.metadata.locationName}")
-            views.setTextViewText(R.id.widget_medium_fasting_time, formatDisplayTime(payload, item.fastingStartInstant))
-            views.setTextViewText(R.id.widget_medium_parana_time, "${formatDisplayTime(payload, item.paranaStartInstant)} - ${formatDisplayTime(payload, item.paranaEndInstant)}")
+            views.setTextViewText(R.id.widget_medium_fasting_time, formatDisplayTime(context, payload, item.fastingStartInstant))
+            views.setTextViewText(R.id.widget_medium_parana_time, "${formatDisplayTime(context, payload, item.paranaStartInstant)} - ${formatDisplayTime(context, payload, item.paranaEndInstant)}")
             when (item.stateAt(Instant.now())) {
                 WidgetState.FASTING_ACTIVE -> {
                     views.setTextColor(R.id.widget_medium_badge, context.getColor(R.color.widget_amber))
@@ -293,11 +293,18 @@ open class EkadashiWidgetReceiver : AppWidgetProvider() {
         }
     }
 
-    private fun formatDisplayTime(payload: WidgetPayload, instant: Instant?): String {
+    private fun formatDisplayTime(context: Context, payload: WidgetPayload, instant: Instant?): String {
         if (instant == null) return "--"
         return try {
-            val formatter = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT).withLocale(java.util.Locale.forLanguageTag(payload.metadata.locale))
-            formatter.format(instant.atZone(payload.zoneId()))
+            // The app language's own AM/PM words (Java writes them in Latin
+            // letters for most Indian languages).
+            val local = instant.atZone(payload.zoneId())
+            val config = android.content.res.Configuration(context.resources.configuration)
+            config.setLocale(java.util.Locale.forLanguageTag(payload.metadata.locale))
+            val localized = context.createConfigurationContext(config)
+            val marker = localized.getString(if (local.hour < 12) R.string.widget_am else R.string.widget_pm)
+            val hour = if (local.hour % 12 == 0) 12 else local.hour % 12
+            "%d:%02d %s".format(java.util.Locale.ROOT, hour, local.minute, marker)
         } catch (e: Exception) {
             "--"
         }

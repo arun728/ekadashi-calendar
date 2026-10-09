@@ -178,4 +178,37 @@ final class EnglishFallbackTests: XCTestCase {
         }
         XCTAssertEqual(same, [])
     }
+
+    /// No English word in another language: brand names are written in the
+    /// language's script too. Only placeholders, links and time zone ids a
+    /// user types stay in Latin letters.
+    func testNoEnglishIsLeftInOtherLanguages() {
+        let allowed = #"\{[^{}]+\}|https?://\S+|Asia/Kolkata|America/New_York"#
+        var problems: [String] = []
+        for language in Localizer.languages where language != "en" {
+            let keys = Set(Localizer.shared.keys(language: language)).union(Localizer.shared.overrideKeys(language: language))
+            for key in keys {
+                let text = Localizer.shared.translate(key, language: language)
+                    .replacingOccurrences(of: allowed, with: "", options: .regularExpression)
+                if text.range(of: "[A-Za-z]", options: .regularExpression) != nil { problems.append("\(language) \(key)") }
+            }
+        }
+        XCTAssertEqual(problems.sorted(), [])
+    }
+
+    func testClockTimesUseTheLanguagesOwnWords() {
+        XCTAssertEqual(Localizer.shared.clock(hour: 18, minute: 5, language: "en"), "6:05 PM")
+        XCTAssertEqual(Localizer.shared.clock(hour: 6, minute: 30, language: "hi"), "6:30 पूर्वाह्न")
+        XCTAssertEqual(Localizer.shared.localizeClock("06:00 AM - 08:21 AM", language: "bn"), "06:00 পূর্বাহ্ণ - 08:21 পূর্বাহ্ণ")
+        XCTAssertEqual(Localizer.shared.timeZoneName("IST", language: "gu"), "ભારતીય સમય")
+        XCTAssertEqual(Localizer.shared.timeZoneName("IST", language: "en"), "IST")
+    }
+
+    func testPlacesAndCountriesAreNamedInEachLanguage() {
+        XCTAssertEqual(PlaceNames.shared.place("Chennai", language: "hi"), "चेन्नई")
+        XCTAssertEqual(PlaceNames.shared.place("Chennai", language: "en"), "Chennai")
+        XCTAssertEqual(PlaceNames.shared.place("Nowhere", language: "ta"), "Nowhere")
+        XCTAssertEqual(PlaceNames.shared.label("London (GB)", language: "gu"), "લંડન (યુનાઇટેડ કિંગડમ)")
+        XCTAssertEqual(PlaceNames.shared.country("IN", language: "te"), "భారతదేశం")
+    }
 }

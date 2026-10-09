@@ -160,7 +160,7 @@ class AppLocalizationsBn extends AppLocalizations {
   String get rate_app => 'অ্যাপ রেট করুন';
 
   @override
-  String get rate_app_desc => 'Play Store-এ আমাদের রেট দিন';
+  String get rate_app_desc => 'প্লে স্টোর-এ আমাদের রেট দিন';
 
   @override
   String get notif_test_title => '🙏 হরি ওঁ!';
@@ -233,7 +233,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get battery_info_why_desc =>
-      'ব্যাটারি অপ্টিমাইজেশন চালু থাকলে Android শক্তি বাঁচাতে আপনার একাদশী রিমাইন্ডার দেরিতে দিতে বা বাদ দিতে পারে।';
+      'ব্যাটারি অপ্টিমাইজেশন চালু থাকলে অ্যান্ড্রয়েড শক্তি বাঁচাতে আপনার একাদশী রিমাইন্ডার দেরিতে দিতে বা বাদ দিতে পারে।';
 
   @override
   String get battery_info_steps =>
@@ -274,7 +274,7 @@ class AppLocalizationsBn extends AppLocalizations {
   String get auto_detect_location => 'স্বয়ংক্রিয়ভাবে অবস্থান শনাক্ত করুন';
 
   @override
-  String get auto_detect_desc => 'আপনার শহর খুঁজতে GPS ব্যবহার করুন';
+  String get auto_detect_desc => 'আপনার শহর খুঁজতে জিপিএস ব্যবহার করুন';
 
   @override
   String get using_auto_location =>
@@ -510,7 +510,7 @@ class AppLocalizationsBn extends AppLocalizations {
       'এক ক্যালেন্ডার বছরের সব একাদশী পালন করেছেন।';
 
   @override
-  String get filter_google => 'Google';
+  String get filter_google => 'গুগল';
 
   @override
   String get filter_custom => 'আমার এন্ট্রি';
@@ -546,16 +546,16 @@ class AppLocalizationsBn extends AppLocalizations {
   String get invalid_entry => 'একটি শিরোনাম এবং শুরুর পরের শেষ সময় দিন।';
 
   @override
-  String get sync_google => 'Google ক্যালেন্ডার আমদানি করুন';
+  String get sync_google => 'গুগল ক্যালেন্ডার আমদানি করুন';
 
   @override
-  String get disconnect_google => 'Google ক্যালেন্ডার সংযোগ বিচ্ছিন্ন করুন';
+  String get disconnect_google => 'গুগল ক্যালেন্ডার সংযোগ বিচ্ছিন্ন করুন';
 
   @override
-  String get sign_in_cancelled => 'Google সাইন-ইন বাতিল হয়েছে';
+  String get sign_in_cancelled => 'গুগল সাইন-ইন বাতিল হয়েছে';
 
   @override
-  String get no_google_calendars => 'কোনো Google ক্যালেন্ডার পাওয়া যায়নি';
+  String get no_google_calendars => 'কোনো গুগল ক্যালেন্ডার পাওয়া যায়নি';
 
   @override
   String get no_google_events =>
@@ -563,12 +563,12 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String imported_google_events(String value0) {
-    return '$value0টি Google ইভেন্ট আমদানি হয়েছে';
+    return '$value0টি গুগল ইভেন্ট আমদানি হয়েছে';
   }
 
   @override
   String imported_google_range(String value0, String value1, String value2) {
-    return '$value0টি Google ইভেন্ট আমদানি হয়েছে ($value1 – $value2)';
+    return '$value0টি গুগল ইভেন্ট আমদানি হয়েছে ($value1 – $value2)';
   }
 
   @override
@@ -587,13 +587,13 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get choose_calendars_help =>
-      'এই অ্যাপে দেখানোর জন্য ক্যালেন্ডার বেছে নিন। আমদানি আপনার Google ইভেন্ট পরিবর্তন করে না।';
+      'এই অ্যাপে দেখানোর জন্য ক্যালেন্ডার বেছে নিন। আমদানি আপনার গুগল ইভেন্ট পরিবর্তন করে না।';
 
   @override
   String get switch_google_account => 'অন্য অ্যাকাউন্ট ব্যবহার করুন';
 
   @override
-  String get google_calendar => 'Google ক্যালেন্ডার';
+  String get google_calendar => 'গুগল ক্যালেন্ডার';
 
   @override
   String get primary_calendar => 'প্রধান';
@@ -867,18 +867,18 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get premium_monthly_terms =>
-      'প্রতি মাসে পুরো মূল্য নেওয়া হয়। Google Play-তে বাতিল না করা পর্যন্ত স্বয়ংক্রিয়ভাবে নবায়ন হয়।';
+      'প্রতি মাসে পুরো মূল্য নেওয়া হয়। গুগল প্লে-তে বাতিল না করা পর্যন্ত স্বয়ংক্রিয়ভাবে নবায়ন হয়।';
 
   @override
   String get premium_yearly_terms =>
-      'প্রতি বছর পুরো মূল্য নেওয়া হয়। Google Play-তে বাতিল না করা পর্যন্ত স্বয়ংক্রিয়ভাবে নবায়ন হয়।';
+      'প্রতি বছর পুরো মূল্য নেওয়া হয়। গুগল প্লে-তে বাতিল না করা পর্যন্ত স্বয়ংক্রিয়ভাবে নবায়ন হয়।';
 
   @override
   String get premium_lifetime_terms =>
       'একবার পেমেন্ট, কোনো নবায়ন নেই। দ্বিগুণ চার্জ এড়াতে আজীবন কেনার আগে বর্তমান সাবস্ক্রিপশন পরিচালনা বা বাতিল করুন।';
 
   @override
-  String get premium_sign_in => 'Google দিয়ে নিরাপদে সাইন ইন করুন';
+  String get premium_sign_in => 'গুগল দিয়ে নিরাপদে সাইন ইন করুন';
 
   @override
   String get premium_continue_free => 'বিনামূল্যে চালিয়ে যান';
@@ -887,7 +887,7 @@ class AppLocalizationsBn extends AppLocalizations {
   String get premium_restore => 'কেনাকাটা পুনরুদ্ধার করুন';
 
   @override
-  String get premium_manage => 'Google Play-তে সাবস্ক্রিপশন পরিচালনা করুন';
+  String get premium_manage => 'গুগল প্লে-তে সাবস্ক্রিপশন পরিচালনা করুন';
 
   @override
   String get premium_active => 'প্রিমিয়াম অ্যাক্সেস সক্রিয়';
@@ -930,7 +930,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get premium_restore_none =>
-      'এই Google Play অ্যাকাউন্টে কোনো কেনাকাটা পাওয়া যায়নি।';
+      'এই গুগল প্লে অ্যাকাউন্টে কোনো কেনাকাটা পাওয়া যায়নি।';
 
   @override
   String get premium_lifetime_thanks_title => 'ধন্যবাদ, আজীবন সদস্য! 🙏';
@@ -948,11 +948,11 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get premium_cancel_subscription_note =>
-      'আপনার সাবস্ক্রিপশন এখনও চালু আছে। আবার চার্জ এড়াতে Google Play-তে এটি বাতিল করুন। আজীবন আপনারই থাকবে।';
+      'আপনার সাবস্ক্রিপশন এখনও চালু আছে। আবার চার্জ এড়াতে গুগল প্লে-তে এটি বাতিল করুন। আজীবন আপনারই থাকবে।';
 
   @override
   String get premium_cancel_subscription_action =>
-      'Google Play-তে সাবস্ক্রিপশন বাতিল করুন';
+      'গুগল প্লে-তে সাবস্ক্রিপশন বাতিল করুন';
 
   @override
   String get premium_lifetime_confirm_title =>
@@ -960,14 +960,14 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get premium_lifetime_confirm_body =>
-      'Google Play নিজে থেকে সাবস্ক্রিপশন বাতিল করে না। আজীবন কেনার পর নবায়ন থামাতে Google Play-তে আপনার সাবস্ক্রিপশন বাতিল করুন।';
+      'গুগল প্লে নিজে থেকে সাবস্ক্রিপশন বাতিল করে না। আজীবন কেনার পর নবায়ন থামাতে গুগল প্লে-তে আপনার সাবস্ক্রিপশন বাতিল করুন।';
 
   @override
   String get premium_buy_lifetime_anyway => 'আজীবন কিনুন';
 
   @override
   String get premium_unavailable =>
-      'এখন কেনাকাটা করা যাচ্ছে না। Google Play থেকে অ্যাপটি ইনস্টল করে আবার চেষ্টা করুন। বিনামূল্যের সুবিধাগুলো চালু থাকবে।';
+      'এখন কেনাকাটা করা যাচ্ছে না। গুগল প্লে থেকে অ্যাপটি ইনস্টল করে আবার চেষ্টা করুন। বিনামূল্যের সুবিধাগুলো চালু থাকবে।';
 
   @override
   String get premium_verification_failed =>
@@ -1006,7 +1006,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get premium_delete_warning =>
-      'ক্লাউড পুরস্কার ও অ্যাকাউন্টের তথ্য মুছবেন? ফোনের ব্রত ইতিহাস থেকে যাবে। এতে Google Play সাবস্ক্রিপশন বাতিল হয় না; আগে সেগুলো পরিচালনা করুন।';
+      'ক্লাউড পুরস্কার ও অ্যাকাউন্টের তথ্য মুছবেন? ফোনের ব্রত ইতিহাস থেকে যাবে। এতে গুগল প্লে সাবস্ক্রিপশন বাতিল হয় না; আগে সেগুলো পরিচালনা করুন।';
 
   @override
   String get premium_terms => 'গোপনীয়তা ও পুরস্কারের শর্ত';
@@ -1023,7 +1023,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get premium_feature_calendar =>
-      'আপনার পুরো সাবস্ক্রিপশন বছরের জন্য Google ক্যালেন্ডার সিঙ্ক (এক মাসের সিঙ্ক বিনামূল্যে)';
+      'আপনার পুরো সাবস্ক্রিপশন বছরের জন্য গুগল ক্যালেন্ডার সিঙ্ক (এক মাসের সিঙ্ক বিনামূল্যে)';
 
   @override
   String get premium_feature_vrat =>
@@ -1045,7 +1045,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get google_sign_in_failed =>
-      'Google সাইন-ইন ব্যর্থ হয়েছে। সংযোগ পরীক্ষা করে আবার চেষ্টা করুন।';
+      'গুগল সাইন-ইন ব্যর্থ হয়েছে। সংযোগ পরীক্ষা করে আবার চেষ্টা করুন।';
 
   @override
   String get vrat_free_limit_reached =>
@@ -1053,7 +1053,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get google_premium_events_removed =>
-      'আপনার প্রিমিয়াম শেষ হয়েছে, তাই এর মাধ্যমে সিঙ্ক করা Google ইভেন্টগুলো সরানো হয়েছে। আবার সিঙ্ক করতে নবায়ন করুন।';
+      'আপনার প্রিমিয়াম শেষ হয়েছে, তাই এর মাধ্যমে সিঙ্ক করা গুগল ইভেন্টগুলো সরানো হয়েছে। আবার সিঙ্ক করতে নবায়ন করুন।';
 
   @override
   String get search_filter_ekadashi => 'একাদশী';
@@ -1179,7 +1179,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get panchang_notes_sources =>
-      'জ্যোতির্বিজ্ঞান: লাহিড়ী অয়নাংশসহ VSOP87 ও ELP 2000-82B। শহর: GeoNames (CC BY 4.0)। সময় অঞ্চল: IANA ডেটাবেস।';
+      'জ্যোতির্বিজ্ঞান: লাহিড়ী অয়নাংশসহ ভিএসওপি87 ও ইএলপি 2000-82বি। শহর: জিওনেমস (সিসি বাই 4.0)। সময় অঞ্চল: আইএএনএ ডেটাবেস।';
 
   @override
   String get panchang_premium_title => 'সম্পূর্ণ পঞ্জিকা প্রিমিয়ামের অংশ';
@@ -1409,11 +1409,11 @@ class AppLocalizationsBn extends AppLocalizations {
   String get panchang_longitude => 'দ্রাঘিমাংশ';
 
   @override
-  String get panchang_timezone => 'সময় অঞ্চল (IANA)';
+  String get panchang_timezone => 'সময় অঞ্চল (আইএএনএ)';
 
   @override
   String get panchang_location_footer =>
-      'উদাহরণ: Asia/Kolkata বা America/New_York। শহরের তথ্য: GeoNames (CC BY 4.0)। গণনা ও শহর খোঁজা অফলাইনে কাজ করে।';
+      'উদাহরণ: Asia/Kolkata বা America/New_York। শহরের তথ্য: জিওনেমস (সিসি বাই 4.0)। গণনা ও শহর খোঁজা অফলাইনে কাজ করে।';
 
   @override
   String get panchang_location_title => 'পঞ্জিকার স্থান';
@@ -1512,7 +1512,7 @@ class AppLocalizationsBn extends AppLocalizations {
   String get event_reminder_all_custom => 'আমার সব এন্ট্রি';
 
   @override
-  String get event_reminder_all_google => 'সব Google ক্যালেন্ডার ইভেন্ট';
+  String get event_reminder_all_google => 'সব গুগল ক্যালেন্ডার ইভেন্ট';
 
   @override
   String get event_reminder_group_festival => 'উৎসব';
@@ -1594,4 +1594,29 @@ class AppLocalizationsBn extends AppLocalizations {
   @override
   String get panchang_city_search_unavailable =>
       'শহর খোঁজা যাচ্ছে না। নিচে স্থানাঙ্ক লিখুন।';
+
+  @override
+  String observed_of_total(String value0, String value1) {
+    return '$value1টির মধ্যে $value0টি একাদশী';
+  }
+
+  @override
+  String get timezone_IST => 'ভারতীয় সময়';
+
+  @override
+  String get timezone_EST => 'মার্কিন পূর্বাঞ্চলীয় সময়';
+
+  @override
+  String get timezone_CST => 'মার্কিন মধ্যাঞ্চলীয় সময়';
+
+  @override
+  String get timezone_MST => 'মার্কিন পার্বত্য সময়';
+
+  @override
+  String get timezone_PST => 'মার্কিন প্রশান্ত মহাসাগরীয় সময়';
+
+  @override
+  String utc_offset(String value0) {
+    return 'ইউটিসি $value0';
+  }
 }

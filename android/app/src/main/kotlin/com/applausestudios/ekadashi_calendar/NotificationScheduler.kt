@@ -149,7 +149,9 @@ class NotificationScheduler(private val context: Context) {
             if (prefs.getBoolean(KEY_REMIND_1_DAY, true)) {
                 val time1Day = fastingStart.minusHours(24)
                 val title = texts["notif_1day_title"] ?: "Ekadashi Tomorrow!"
-                val fastTime = fastingStart.format(DateTimeFormatter.ofPattern("hh:mm a"))
+                val marker = texts[if (fastingStart.hour < 12) "panchang_am" else "panchang_pm"]
+                    ?: if (fastingStart.hour < 12) "AM" else "PM"
+                val fastTime = "${fastingStart.format(DateTimeFormatter.ofPattern("hh:mm"))} $marker"
                 val body = "$ekadashiName ${texts["notif_1day_body"] ?: "is tomorrow. Fasting starts at"} $fastTime"
                 if (scheduleNotification(ekadashiId, time1Day, title, body, NotificationType.ONE_DAY_BEFORE)) {
                     scheduledCount++

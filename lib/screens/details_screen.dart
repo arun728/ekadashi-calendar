@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../services/ekadashi_service.dart';
 import '../services/vrat_recording.dart';
+import '../l10n/app_language.dart';
 import '../services/language_service.dart';
 import '../services/vrat_tracker_service.dart';
 import '../models/vrat_tracker_models.dart';
@@ -21,8 +22,12 @@ class DetailsScreen extends StatelessWidget {
     final lang = Provider.of<LanguageService>(context);
 
     // Clean up break time string
+    final language = lang.currentLocale.languageCode;
     String breakTime = ekadashi.fastBreakTime;
-    breakTime = breakTime.replaceAll(RegExp(r'^[a-zA-Z]{3} \d{1,2}, '), '');
+    breakTime = AppStrings.localizeClock(
+      breakTime.replaceAll(RegExp(r'^[a-zA-Z]{3} \d{1,2}, '), ''),
+      language,
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -70,7 +75,7 @@ class DetailsScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        timezone!,
+                        AppStrings.timeZoneName(timezone!, language),
                         style: TextStyle(
                           fontSize: 12,
                           color: tealColor.withValues(alpha: 0.8),
@@ -197,7 +202,10 @@ class DetailsScreen extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              ekadashi.fastStartTime,
+                              AppStrings.localizeClock(
+                                ekadashi.fastStartTime,
+                                language,
+                              ),
                               style: const TextStyle(fontSize: 18),
                             ),
                           ],

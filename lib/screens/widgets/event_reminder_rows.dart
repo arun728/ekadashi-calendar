@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../widgets/time_picker.dart';
 import 'package:provider/provider.dart';
 
 import '../../l10n/app_language.dart';
@@ -29,10 +30,7 @@ String _lead(int days, String language) => switch (days) {
 /// "1 day before, 2 days before · 7:00 AM".
 String _summary(BuildContext context, EventReminder reminder, String language) {
   final days = reminder.daysBefore.map((d) => _lead(d, language)).join(', ');
-  final time = TimeOfDay(
-    hour: reminder.hour,
-    minute: reminder.minute,
-  ).format(context);
+  final time = AppStrings.clock(reminder.hour, reminder.minute, language);
   return '$days · $time';
 }
 
@@ -201,7 +199,7 @@ class _EventReminderEditorState extends State<EventReminderEditor> {
   }
 
   Future<void> _pickTime() async {
-    final picked = await showTimePicker(context: context, initialTime: _time);
+    final picked = await pickTime(context, _time);
     if (picked != null && mounted) setState(() => _time = picked);
   }
 
@@ -299,7 +297,11 @@ class _EventReminderEditorState extends State<EventReminderEditor> {
             key: const Key('event_reminder_time'),
             title: Text(t('notifications_time')),
             trailing: Text(
-              _time.format(context),
+              AppStrings.clock(
+                _time.hour,
+                _time.minute,
+                context.read<LanguageService>().currentLocale.languageCode,
+              ),
               style: const TextStyle(fontWeight: FontWeight.w600),
             ),
             onTap: _pickTime,

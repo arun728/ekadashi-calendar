@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import '../../models/vrat_tracker_models.dart';
 import '../../services/achievement_evaluator.dart';
 import '../../services/ekadashi_service.dart';
+import '../../l10n/app_language.dart';
 import '../../services/language_service.dart';
 import '../../services/vrat_recording.dart';
 import '../../services/vrat_statistics_service.dart';
@@ -801,7 +802,11 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
               ),
               const SizedBox(height: 6),
               Text(
-                '${stats.observedCount} of ${stats.totalOccurrences} ${lang.translate('ekadashis_unit')}',
+                AppStrings.translateWithArgs(
+                  'observed_of_total',
+                  lang.currentLocale.languageCode,
+                  ['${stats.observedCount}', '${stats.totalOccurrences}'],
+                ),
                 style: const TextStyle(fontSize: 13, color: Colors.grey),
               ),
             ],

@@ -78,7 +78,7 @@ public struct WidgetSnapshot: Codable, Equatable, Sendable {
         "parana_ends": "widget_parana_ends", "starts_in": "widget_starts_in", "notice": "widget_notice", "now": "widget_now",
         "day_unit": "widget_day_unit", "hour_unit": "widget_hour_unit", "minute_unit": "widget_minute_unit",
         "no_ekadashi": "no_ekadashi", "today_is_ekadashi": "widget_today_is_ekadashi", "days_to_go": "widget_days_to_go",
-        "fast_done": "widget_fast_done",
+        "fast_done": "widget_fast_done", "am": "panchang_am", "pm": "panchang_pm",
     ]
 
     public static func state(of event: EkadashiOccurrence, at now: Date) -> WidgetState {

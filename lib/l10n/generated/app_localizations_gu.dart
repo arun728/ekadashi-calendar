@@ -160,7 +160,7 @@ class AppLocalizationsGu extends AppLocalizations {
   String get rate_app => 'એપને રેટ કરો';
 
   @override
-  String get rate_app_desc => 'Play Store પર અમને રેટ કરો';
+  String get rate_app_desc => 'પ્લે સ્ટોર પર અમને રેટ કરો';
 
   @override
   String get notif_test_title => '🙏 હરિ ૐ!';
@@ -233,7 +233,7 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get battery_info_why_desc =>
-      'જો બેટરી ઑપ્ટિમાઇઝેશન ચાલુ હોય, તો Android પાવર બચાવવા તમારા એકાદશી રિમાઇન્ડર મોડા કરી શકે અથવા છોડી શકે.';
+      'જો બેટરી ઑપ્ટિમાઇઝેશન ચાલુ હોય, તો એન્ડ્રોઇડ પાવર બચાવવા તમારા એકાદશી રિમાઇન્ડર મોડા કરી શકે અથવા છોડી શકે.';
 
   @override
   String get battery_info_steps => 'બેકગ્રાઉન્ડ વપરાશની મંજૂરી કેવી રીતે આપવી';
@@ -272,7 +272,7 @@ class AppLocalizationsGu extends AppLocalizations {
   String get auto_detect_location => 'સ્થાન આપમેળે શોધો';
 
   @override
-  String get auto_detect_desc => 'તમારું શહેર શોધવા GPS વાપરો';
+  String get auto_detect_desc => 'તમારું શહેર શોધવા જીપીએસ વાપરો';
 
   @override
   String get using_auto_location => 'આપમેળે શોધાયેલ સ્થાન વાપરી રહ્યા છીએ';
@@ -503,7 +503,7 @@ class AppLocalizationsGu extends AppLocalizations {
       'એક જ કેલેન્ડર વર્ષની બધી એકાદશી પાળી.';
 
   @override
-  String get filter_google => 'Google';
+  String get filter_google => 'ગૂગલ';
 
   @override
   String get filter_custom => 'મારી નોંધો';
@@ -539,16 +539,16 @@ class AppLocalizationsGu extends AppLocalizations {
   String get invalid_entry => 'શીર્ષક અને શરૂઆત પછીનો અંતિમ સમય લખો.';
 
   @override
-  String get sync_google => 'Google કેલેન્ડર આયાત કરો';
+  String get sync_google => 'ગૂગલ કેલેન્ડર આયાત કરો';
 
   @override
-  String get disconnect_google => 'Google કેલેન્ડર ડિસ્કનેક્ટ કરો';
+  String get disconnect_google => 'ગૂગલ કેલેન્ડર ડિસ્કનેક્ટ કરો';
 
   @override
-  String get sign_in_cancelled => 'Google સાઇન-ઇન રદ થયું';
+  String get sign_in_cancelled => 'ગૂગલ સાઇન-ઇન રદ થયું';
 
   @override
-  String get no_google_calendars => 'કોઈ Google કેલેન્ડર મળ્યું નથી';
+  String get no_google_calendars => 'કોઈ ગૂગલ કેલેન્ડર મળ્યું નથી';
 
   @override
   String get no_google_events =>
@@ -556,12 +556,12 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String imported_google_events(String value0) {
-    return '$value0 Google ઇવેન્ટ આયાત થયા';
+    return '$value0 ગૂગલ ઇવેન્ટ આયાત થયા';
   }
 
   @override
   String imported_google_range(String value0, String value1, String value2) {
-    return '$value0 Google ઇવેન્ટ આયાત થયા ($value1 – $value2)';
+    return '$value0 ગૂગલ ઇવેન્ટ આયાત થયા ($value1 – $value2)';
   }
 
   @override
@@ -580,13 +580,13 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get choose_calendars_help =>
-      'આ એપમાં બતાવવા માટે કેલેન્ડર પસંદ કરો. આયાતથી તમારા Google ઇવેન્ટ બદલાતા નથી.';
+      'આ એપમાં બતાવવા માટે કેલેન્ડર પસંદ કરો. આયાતથી તમારા ગૂગલ ઇવેન્ટ બદલાતા નથી.';
 
   @override
   String get switch_google_account => 'બીજું એકાઉન્ટ વાપરો';
 
   @override
-  String get google_calendar => 'Google કેલેન્ડર';
+  String get google_calendar => 'ગૂગલ કેલેન્ડર';
 
   @override
   String get primary_calendar => 'મુખ્ય';
@@ -859,18 +859,18 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get premium_monthly_terms =>
-      'દર મહિને પૂરી કિંમત લેવાય છે. Google Play માં રદ ન કરો ત્યાં સુધી આપમેળે નવીકરણ થાય છે.';
+      'દર મહિને પૂરી કિંમત લેવાય છે. ગૂગલ પ્લે માં રદ ન કરો ત્યાં સુધી આપમેળે નવીકરણ થાય છે.';
 
   @override
   String get premium_yearly_terms =>
-      'દર વર્ષે પૂરી કિંમત લેવાય છે. Google Play માં રદ ન કરો ત્યાં સુધી આપમેળે નવીકરણ થાય છે.';
+      'દર વર્ષે પૂરી કિંમત લેવાય છે. ગૂગલ પ્લે માં રદ ન કરો ત્યાં સુધી આપમેળે નવીકરણ થાય છે.';
 
   @override
   String get premium_lifetime_terms =>
       'એક જ ચુકવણી, કોઈ નવીકરણ નહીં. બેવડી ચુકવણી ટાળવા આજીવન ખરીદતા પહેલાં હાલનું સબ્સ્ક્રિપ્શન સંભાળો અથવા રદ કરો.';
 
   @override
-  String get premium_sign_in => 'Google સાથે સુરક્ષિત સાઇન ઇન કરો';
+  String get premium_sign_in => 'ગૂગલ સાથે સુરક્ષિત સાઇન ઇન કરો';
 
   @override
   String get premium_continue_free => 'મફત ચાલુ રાખો';
@@ -879,7 +879,7 @@ class AppLocalizationsGu extends AppLocalizations {
   String get premium_restore => 'ખરીદી પુનઃસ્થાપિત કરો';
 
   @override
-  String get premium_manage => 'Google Play માં સબ્સ્ક્રિપ્શન સંભાળો';
+  String get premium_manage => 'ગૂગલ પ્લે માં સબ્સ્ક્રિપ્શન સંભાળો';
 
   @override
   String get premium_active => 'પ્રીમિયમ ઍક્સેસ ચાલુ';
@@ -921,7 +921,7 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get premium_restore_none =>
-      'આ Google Play એકાઉન્ટ માટે કોઈ ખરીદી મળી નથી.';
+      'આ ગૂગલ પ્લે એકાઉન્ટ માટે કોઈ ખરીદી મળી નથી.';
 
   @override
   String get premium_lifetime_thanks_title => 'આભાર, આજીવન સભ્ય! 🙏';
@@ -938,11 +938,11 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get premium_cancel_subscription_note =>
-      'તમારું સબ્સ્ક્રિપ્શન હજી ચાલુ છે. ફરી ચાર્જ ન લાગે તે માટે તેને Google Play માં રદ કરો. આજીવન તમારું જ રહેશે.';
+      'તમારું સબ્સ્ક્રિપ્શન હજી ચાલુ છે. ફરી ચાર્જ ન લાગે તે માટે તેને ગૂગલ પ્લે માં રદ કરો. આજીવન તમારું જ રહેશે.';
 
   @override
   String get premium_cancel_subscription_action =>
-      'Google Play માં સબ્સ્ક્રિપ્શન રદ કરો';
+      'ગૂગલ પ્લે માં સબ્સ્ક્રિપ્શન રદ કરો';
 
   @override
   String get premium_lifetime_confirm_title =>
@@ -950,14 +950,14 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get premium_lifetime_confirm_body =>
-      'Google Play સબ્સ્ક્રિપ્શન આપમેળે રદ કરતું નથી. આજીવન ખરીદ્યા પછી નવીકરણ રોકવા Google Play માં તમારું સબ્સ્ક્રિપ્શન રદ કરો.';
+      'ગૂગલ પ્લે સબ્સ્ક્રિપ્શન આપમેળે રદ કરતું નથી. આજીવન ખરીદ્યા પછી નવીકરણ રોકવા ગૂગલ પ્લે માં તમારું સબ્સ્ક્રિપ્શન રદ કરો.';
 
   @override
   String get premium_buy_lifetime_anyway => 'આજીવન ખરીદો';
 
   @override
   String get premium_unavailable =>
-      'હાલમાં ખરીદી ઉપલબ્ધ નથી. Google Play પરથી એપ ઇન્સ્ટોલ કરીને ફરી પ્રયાસ કરો. મફત સુવિધાઓ ચાલુ રહે છે.';
+      'હાલમાં ખરીદી ઉપલબ્ધ નથી. ગૂગલ પ્લે પરથી એપ ઇન્સ્ટોલ કરીને ફરી પ્રયાસ કરો. મફત સુવિધાઓ ચાલુ રહે છે.';
 
   @override
   String get premium_verification_failed =>
@@ -996,7 +996,7 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get premium_delete_warning =>
-      'ક્લાઉડ પુરસ્કાર અને એકાઉન્ટ ડેટા કાઢી નાખવા છે? સ્થાનિક વ્રત ઇતિહાસ તમારા ફોન પર રહેશે. આનાથી Google Play સબ્સ્ક્રિપ્શન રદ થતું નથી; પહેલાં તેને સંભાળો.';
+      'ક્લાઉડ પુરસ્કાર અને એકાઉન્ટ ડેટા કાઢી નાખવા છે? સ્થાનિક વ્રત ઇતિહાસ તમારા ફોન પર રહેશે. આનાથી ગૂગલ પ્લે સબ્સ્ક્રિપ્શન રદ થતું નથી; પહેલાં તેને સંભાળો.';
 
   @override
   String get premium_terms => 'ગોપનીયતા અને પુરસ્કારની શરતો';
@@ -1013,7 +1013,7 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get premium_feature_calendar =>
-      'તમારા આખા સબ્સ્ક્રિપ્શન વર્ષ માટે Google કેલેન્ડર સિંક (એક મહિનાનું સિંક મફત)';
+      'તમારા આખા સબ્સ્ક્રિપ્શન વર્ષ માટે ગૂગલ કેલેન્ડર સિંક (એક મહિનાનું સિંક મફત)';
 
   @override
   String get premium_feature_vrat =>
@@ -1035,7 +1035,7 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get google_sign_in_failed =>
-      'Google સાઇન-ઇન નિષ્ફળ. કનેક્શન તપાસીને ફરી પ્રયાસ કરો.';
+      'ગૂગલ સાઇન-ઇન નિષ્ફળ. કનેક્શન તપાસીને ફરી પ્રયાસ કરો.';
 
   @override
   String get vrat_free_limit_reached =>
@@ -1043,7 +1043,7 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get google_premium_events_removed =>
-      'તમારું પ્રીમિયમ પૂરું થયું છે, તેથી તેણે સિંક કરેલા Google ઇવેન્ટ દૂર કરાયા. ફરી સિંક કરવા નવીકરણ કરો.';
+      'તમારું પ્રીમિયમ પૂરું થયું છે, તેથી તેણે સિંક કરેલા ગૂગલ ઇવેન્ટ દૂર કરાયા. ફરી સિંક કરવા નવીકરણ કરો.';
 
   @override
   String get search_filter_ekadashi => 'એકાદશી';
@@ -1169,7 +1169,7 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get panchang_notes_sources =>
-      'ખગોળશાસ્ત્ર: લાહિરી અયનાંશ સાથે VSOP87 અને ELP 2000-82B. શહેરો: GeoNames (CC BY 4.0). સમય ક્ષેત્રો: IANA ડેટાબેઝ.';
+      'ખગોળશાસ્ત્ર: લાહિરી અયનાંશ સાથે વીએસઓપી87 અને ઇએલપી 2000-82બી. શહેરો: જિયોનેમ્સ (સીસી બાય 4.0). સમય ક્ષેત્રો: આઈએએનએ ડેટાબેઝ.';
 
   @override
   String get panchang_premium_title => 'સંપૂર્ણ પંચાંગ પ્રીમિયમનો ભાગ છે';
@@ -1341,7 +1341,7 @@ class AppLocalizationsGu extends AppLocalizations {
   String get panchang_smarta => 'સ્માર્ત';
 
   @override
-  String get panchang_gaudiya => 'વૈષ્ણવ · ગૌડીય/ISKCON';
+  String get panchang_gaudiya => 'વૈષ્ણવ · ગૌડીય/ઇસ્કોન';
 
   @override
   String get panchang_smarta_rule =>
@@ -1349,7 +1349,7 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get panchang_gaudiya_rule =>
-      'ગૌડીય/ISKCON: સૂર્યોદયના 96 મિનિટ પહેલાં (અરુણોદય) એકાદશી હોવી જોઈએ, મહાદ્વાદશીના નિયમો સાથે.';
+      'ગૌડીય/ઇસ્કોન: સૂર્યોદયના 96 મિનિટ પહેલાં (અરુણોદય) એકાદશી હોવી જોઈએ, મહાદ્વાદશીના નિયમો સાથે.';
 
   @override
   String get panchang_calculation_failed => 'આ મહિનાની ગણતરી થઈ શકી નહીં.';
@@ -1400,11 +1400,11 @@ class AppLocalizationsGu extends AppLocalizations {
   String get panchang_longitude => 'રેખાંશ';
 
   @override
-  String get panchang_timezone => 'સમય ક્ષેત્ર (IANA)';
+  String get panchang_timezone => 'સમય ક્ષેત્ર (આઈએએનએ)';
 
   @override
   String get panchang_location_footer =>
-      'ઉદાહરણ: Asia/Kolkata અથવા America/New_York. શહેર ડેટા: GeoNames (CC BY 4.0). ગણતરી અને શહેર શોધ ઑફલાઇન કામ કરે છે.';
+      'ઉદાહરણ: Asia/Kolkata અથવા America/New_York. શહેર ડેટા: જિયોનેમ્સ (સીસી બાય 4.0). ગણતરી અને શહેર શોધ ઑફલાઇન કામ કરે છે.';
 
   @override
   String get panchang_location_title => 'પંચાંગનું સ્થાન';
@@ -1503,7 +1503,7 @@ class AppLocalizationsGu extends AppLocalizations {
   String get event_reminder_all_custom => 'મારી બધી નોંધો';
 
   @override
-  String get event_reminder_all_google => 'બધા Google કેલેન્ડર ઇવેન્ટ';
+  String get event_reminder_all_google => 'બધા ગૂગલ કેલેન્ડર ઇવેન્ટ';
 
   @override
   String get event_reminder_group_festival => 'તહેવારો';
@@ -1584,4 +1584,29 @@ class AppLocalizationsGu extends AppLocalizations {
   @override
   String get panchang_city_search_unavailable =>
       'શહેર શોધ ઉપલબ્ધ નથી. નીચે અક્ષાંશ-રેખાંશ લખો.';
+
+  @override
+  String observed_of_total(String value0, String value1) {
+    return '$value1 માંથી $value0 એકાદશી';
+  }
+
+  @override
+  String get timezone_IST => 'ભારતીય સમય';
+
+  @override
+  String get timezone_EST => 'અમેરિકી પૂર્વી સમય';
+
+  @override
+  String get timezone_CST => 'અમેરિકી મધ્ય સમય';
+
+  @override
+  String get timezone_MST => 'અમેરિકી પર્વતીય સમય';
+
+  @override
+  String get timezone_PST => 'અમેરિકી પેસિફિક સમય';
+
+  @override
+  String utc_offset(String value0) {
+    return 'યુટીસી $value0';
+  }
 }

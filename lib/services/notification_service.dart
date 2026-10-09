@@ -312,7 +312,7 @@ class NotificationService {
             id: id++,
             title: texts['notif_1day_title'] ?? 'Ekadashi Tomorrow!',
             body:
-                '${ekadashi.name} ${texts['notif_1day_body'] ?? 'is tomorrow. Fasting starts at'} ${ekadashi.fastStartTime}.',
+                '${ekadashi.name} ${texts['notif_1day_body'] ?? 'is tomorrow. Fasting starts at'} ${_clock(ekadashi.fastStartTime, texts)}.',
             scheduledDate: scheduled,
           );
         }
@@ -387,4 +387,11 @@ class NotificationService {
     await flutterLocalNotificationsPlugin.cancelAll();
     debugPrint('🗑️ All notifications cancelled');
   }
+
+  /// The stored "06:00 AM" with the notification language's AM and PM.
+  static String _clock(String time, Map<String, String> texts) =>
+      time.replaceAllMapped(
+        RegExp(r'\b(AM|PM)\b'),
+        (m) => texts[m[1] == 'AM' ? 'panchang_am' : 'panchang_pm'] ?? m[1]!,
+      );
 }

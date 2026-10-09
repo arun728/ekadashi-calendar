@@ -1,7 +1,9 @@
 import 'package:uuid/uuid.dart';
 import 'package:provider/provider.dart';
+import '../../l10n/app_language.dart';
 import '../../services/language_service.dart';
 import 'package:flutter/material.dart';
+import '../../widgets/time_picker.dart';
 import '../../models/calendar_entry.dart';
 
 class AddEditEntrySheet extends StatefulWidget {
@@ -73,12 +75,12 @@ class _AddEditEntrySheetState extends State<AddEditEntrySheet> {
       DateTime(day.year, day.month, day.day, t.hour, t.minute);
 
   Future<void> _pickStart() async {
-    final t = await showTimePicker(context: context, initialTime: _start);
+    final t = await pickTime(context, _start);
     if (t != null) setState(() => _start = t);
   }
 
   Future<void> _pickEnd() async {
-    final t = await showTimePicker(context: context, initialTime: _end);
+    final t = await pickTime(context, _end);
     if (t != null) setState(() => _end = t);
   }
 
@@ -159,13 +161,13 @@ class _AddEditEntrySheetState extends State<AddEditEntrySheet> {
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 title: Text(lang.translate('entry_starts')),
-                trailing: Text(_start.format(context)),
+                trailing: Text(_clock(_start)),
                 onTap: _pickStart,
               ),
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 title: Text(lang.translate('entry_ends')),
-                trailing: Text(_end.format(context)),
+                trailing: Text(_clock(_end)),
                 onTap: _pickEnd,
               ),
             ],
@@ -197,4 +199,10 @@ class _AddEditEntrySheetState extends State<AddEditEntrySheet> {
       ),
     );
   }
+
+  String _clock(TimeOfDay t) => AppStrings.clock(
+    t.hour,
+    t.minute,
+    context.read<LanguageService>().currentLocale.languageCode,
+  );
 }

@@ -1,7 +1,7 @@
 import 'package:provider/provider.dart';
+import '../../l10n/app_language.dart';
 import '../../services/language_service.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import '../../models/calendar_day_merge.dart';
 import '../../models/calendar_entry.dart';
 
@@ -30,10 +30,11 @@ class DayEntriesList extends StatelessWidget {
 
   String _timeLabel(DayListItem item, LanguageService lang) {
     if (item.isAllDay || item.startAt == null) return lang.translate('all_day');
-    final fmt = DateFormat.jm(lang.currentLocale.languageCode);
-    final start = fmt.format(item.startAt!);
+    final language = lang.currentLocale.languageCode;
+    String fmt(DateTime t) => AppStrings.clock(t.hour, t.minute, language);
+    final start = fmt(item.startAt!);
     if (item.endAt == null) return start;
-    return '$start – ${fmt.format(item.endAt!)}';
+    return '$start – ${fmt(item.endAt!)}';
   }
 
   @override

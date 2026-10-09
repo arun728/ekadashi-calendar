@@ -319,7 +319,7 @@ struct CalendarEkadashiCard: View {
                     StatusPill(text: model.t(style.listKey), systemImage: style.symbol, color: style.color)
                 }
             }
-            Text("\(model.t("start_fasting")): \(event.fastStartTime)").font(.subheadline)
+            Text("\(model.t("start_fasting")): \(Localizer.shared.localizeClock(event.fastStartTime, language: model.language))").font(.subheadline)
             Text("\(model.t("break_fasting")): \(EkadashiDisplay.breakTime(event))").font(.subheadline)
             NavigationLink {
                 EkadashiDetailsView(event: event)
@@ -392,10 +392,12 @@ struct DayEntriesList: View {
 
     private func time(_ entry: CalendarEntry) -> String {
         if entry.isAllDay { return model.t("all_day") }
-        let formatter = DateFormatter()
-        formatter.locale = model.locale
-        formatter.timeStyle = .short
-        formatter.dateStyle = .none
-        return "\(formatter.string(from: entry.start)) – \(formatter.string(from: entry.end))"
+        // The app language's own AM/PM words, in the device's time zone.
+        let calendar = Calendar.current
+        func clock(_ date: Date) -> String {
+            let parts = calendar.dateComponents([.hour, .minute], from: date)
+            return Localizer.shared.clock(hour: parts.hour ?? 0, minute: parts.minute ?? 0, language: model.language)
+        }
+        return "\(clock(entry.start)) – \(clock(entry.end))"
     }
 }

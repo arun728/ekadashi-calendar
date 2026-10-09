@@ -48,6 +48,25 @@ class NativeLocationService {
     }
   }
 
+  /// The place at the coordinates named in [language] by the phone's
+  /// geocoder, for display; null when it has none.
+  Future<String?> localizedCityName(
+    double latitude,
+    double longitude,
+    String language,
+  ) async {
+    try {
+      final name = await _channel.invokeMethod<String>('getLocalizedCityName', {
+        'latitude': latitude,
+        'longitude': longitude,
+        'language': language,
+      });
+      return name == null || name.trim().isEmpty ? null : name.trim();
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// Get cached location instantly (for fast UI response)
   Future<LocationData?> getCachedLocation() async {
     try {

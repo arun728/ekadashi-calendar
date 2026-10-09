@@ -42,4 +42,7 @@
     <string name="widget_lunar_month_phalguna">Phalguna</string>
     <string name="widget_lunar_month_shravana">Shravana</string>
     <string name="widget_lunar_month_vaishakha">Vaishakha</string>
+    <string name="widget_am">AM</string>
+    <string name="widget_pm">PM</string>
+    <string name="widget_seed_location">India (IST)</string>
 </resources>

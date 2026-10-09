@@ -20,7 +20,7 @@ struct PanchangLocationSheet: View {
 
     private var matches: [PanchangCity] {
         let q = search.trimmingCharacters(in: .whitespaces)
-        return q.count < 2 ? [] : PanchangCityCatalog.shared.search(q, limit: 12)
+        return q.count < 2 ? [] : PanchangCityCatalog.shared.search(q, language: model.language, limit: 12)
     }
 
     private var candidate: PanchangCity? {
@@ -41,8 +41,8 @@ struct PanchangLocationSheet: View {
                     ForEach(matches, id: \.self) { item in
                         Button { select(item) } label: {
                             VStack(alignment: .leading) {
-                                Text(item.label).foregroundStyle(.primary)
-                                Text(item.timeZoneId).font(.caption).foregroundStyle(.secondary)
+                                Text(PlaceNames.shared.label(item.label, language: model.language)).foregroundStyle(.primary)
+                                Text(item.timeZoneLabel(language: model.language)).font(.caption).foregroundStyle(.secondary)
                             }
                         }
                     }

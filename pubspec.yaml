@@ -69,6 +69,7 @@ flutter:
   assets:
     - assets/panchang/cities.json
     - assets/panchang/terms.json
+    - assets/panchang/place_names.json
     - assets/search/search_catalog.json
     - assets/ekadashi_data.json
     - assets/images/

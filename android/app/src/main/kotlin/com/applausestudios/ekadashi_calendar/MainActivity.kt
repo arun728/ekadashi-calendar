@@ -304,6 +304,20 @@ class MainActivity: FlutterActivity() {
                     result.success(true)
                 }
 
+                // The place name in the app language, for display only.
+                "getLocalizedCityName" -> {
+                    val lat = call.argument<Double>("latitude")
+                    val lng = call.argument<Double>("longitude")
+                    val language = call.argument<String>("language")
+                    if (lat == null || lng == null || language == null) {
+                        result.success(null)
+                    } else {
+                        scope.launch {
+                            result.success(locService.localizedCityName(lat, lng, language))
+                        }
+                    }
+                }
+
                 "shouldShowRequestRationale" -> {
                     // Check if we should show permission rationale
                     // Returns false if user has permanently denied ("Don't ask again")

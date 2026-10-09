@@ -36,8 +36,18 @@ void main() {
             problems.add('$key: missing');
             continue;
           }
-          if (key != 'filter_google' && !script.hasMatch(value)) {
+          if (!script.hasMatch(value)) {
             problems.add('$key: untranslated');
+          }
+          // No English word: brand names are written in the language's
+          // script too. Only placeholders, links and time zone ids a user
+          // types (Asia/Kolkata) stay in Latin letters.
+          final rest = value
+              .replaceAll(RegExp(r'\{[^{}]+\}'), '')
+              .replaceAll(RegExp(r'https?://\S+'), '')
+              .replaceAll(RegExp(r'Asia/Kolkata|America/New_York'), '');
+          if (RegExp('[A-Za-z]').hasMatch(rest)) {
+            problems.add('$key: English left in "$value"');
           }
           final sourcePlaceholders =
               RegExp(

@@ -488,6 +488,13 @@ Map<String, String> localizedLookup(AppLocalizations l) => {
   'panchang_invalid_coordinate': l.panchang_invalid_coordinate('{}'),
   'panchang_invalid_timezone': l.panchang_invalid_timezone,
   'panchang_city_search_unavailable': l.panchang_city_search_unavailable,
+  'observed_of_total': l.observed_of_total('{}', '{}'),
+  'timezone_IST': l.timezone_IST,
+  'timezone_EST': l.timezone_EST,
+  'timezone_CST': l.timezone_CST,
+  'timezone_MST': l.timezone_MST,
+  'timezone_PST': l.timezone_PST,
+  'utc_offset': l.utc_offset('{}'),
 };
 Map<String, String> localizedTemplates(AppLocalizations l) => {
   'app_title': l.app_title,
@@ -984,4 +991,11 @@ Map<String, String> localizedTemplates(AppLocalizations l) => {
   'panchang_invalid_coordinate': l.panchang_invalid_coordinate('{value0}'),
   'panchang_invalid_timezone': l.panchang_invalid_timezone,
   'panchang_city_search_unavailable': l.panchang_city_search_unavailable,
+  'observed_of_total': l.observed_of_total('{value0}', '{value1}'),
+  'timezone_IST': l.timezone_IST,
+  'timezone_EST': l.timezone_EST,
+  'timezone_CST': l.timezone_CST,
+  'timezone_MST': l.timezone_MST,
+  'timezone_PST': l.timezone_PST,
+  'utc_offset': l.utc_offset('{value0}'),
 };

@@ -3,6 +3,7 @@ import '../services/notifications/event_reminder_service.dart';
 import 'package:provider/provider.dart';
 
 import '../l10n/app_language.dart';
+import '../l10n/place_names.dart';
 import '../services/ekadashi_service.dart';
 import '../services/language_service.dart';
 import '../services/panchang/calculated_ekadashi.dart';
@@ -90,6 +91,9 @@ class PanchangScreenState extends State<PanchangScreen> {
     _recalculate();
     PanchangTerms.load().then((terms) {
       if (mounted) setState(() => _terms = terms);
+    });
+    PlaceNames.load().then((_) {
+      if (mounted) setState(() {});
     });
     if (widget.initialCity == null) _restoreLocation();
   }
@@ -298,7 +302,7 @@ class PanchangScreenState extends State<PanchangScreen> {
             const SizedBox(width: 8),
             Flexible(
               child: Text(
-                _city.timezoneLabel,
+                _city.timeZoneLabel(_language),
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.bodySmall,
               ),
@@ -347,7 +351,7 @@ class PanchangScreenState extends State<PanchangScreen> {
             value: city,
             child: Row(
               children: [
-                Expanded(child: Text(city.label)),
+                Expanded(child: Text(PlaceNames.label(city.label, _language))),
                 if (city == _city)
                   const Icon(
                     Icons.check,
@@ -390,7 +394,7 @@ class PanchangScreenState extends State<PanchangScreen> {
             const SizedBox(width: 6),
             Flexible(
               child: Text(
-                _city.label,
+                PlaceNames.label(_city.label, _language),
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(fontWeight: FontWeight.w600),
               ),

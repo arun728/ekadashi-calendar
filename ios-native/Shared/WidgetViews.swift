@@ -44,7 +44,15 @@ struct WidgetTimes {
         return formatter
     }
 
-    func time(_ date: Date?) -> String { date.map { formatter("h:mm a").string(from: $0) } ?? "--" }
+    /// "6:24 PM" with the app language's own AM/PM words.
+    func time(_ date: Date?) -> String {
+        guard let date else { return "--" }
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: snapshot.timeZone) ?? .current
+        let hour = calendar.component(.hour, from: date), minute = calendar.component(.minute, from: date)
+        let marker = hour < 12 ? snapshot.string("am", "AM") : snapshot.string("pm", "PM")
+        return "\(hour % 12 == 0 ? 12 : hour % 12):\(minute < 10 ? "0" : "")\(minute) \(marker)"
+    }
     func month(_ item: WidgetItem) -> String { formatter("MMM").string(from: item.fastingStart).uppercased() }
     func day(_ item: WidgetItem) -> String { CivilDate(iso: item.date).map { String($0.day) } ?? "" }
 }

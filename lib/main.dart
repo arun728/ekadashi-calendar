@@ -31,6 +31,7 @@ import 'services/native_notification_service.dart';
 import 'services/native_settings_service.dart';
 import 'services/theme_service.dart';
 import 'l10n/app_language.dart';
+import 'l10n/place_names.dart';
 import 'services/language_service.dart';
 import 'services/vrat_recording.dart';
 import 'screens/calendar_screen.dart';
@@ -166,6 +167,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   bool _isLoading = true;
   String _errorMessage = '';
   String _locationText = '';
+  (double, double)? _locationCoords;
+
+  /// Place names from the phone's geocoder, by "language|English name".
+  final _nativeCityNames = <String, String?>{};
   String _currentTimezone = 'IST';
   bool _locationDenied = false;
   bool _isRequestingLocation = false;
@@ -194,6 +199,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     NativeWidgetService().initializeDeepLinkListener(handleDeepLink);
     EventReminderService.instance.attach(_scheduleEventReminders);
+    // City and country names in the app language.
+    PlaceNames.load().then((_) {
+      if (mounted) setState(() {});
+    });
     // Defer initialization to prevent freeze on process restoration
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeApp();
@@ -397,6 +406,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       if (location != null && mounted) {
         setState(() {
           _locationText = location.city;
+          _locationCoords = (location.latitude, location.longitude);
           _currentTimezone = location.timezone;
           _locationDenied = false;
           _isRequestingLocation = false;
@@ -430,6 +440,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           if (cached != null && mounted) {
             setState(() {
               _locationText = cached.city;
+              _locationCoords = (cached.latitude, cached.longitude);
               _currentTimezone = cached.timezone;
               _locationDenied = false;
               _isRequestingLocation = false;
@@ -585,6 +596,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         if (location != null && mounted) {
           setState(() {
             _locationText = location.city;
+            _locationCoords = (location.latitude, location.longitude);
             _currentTimezone = location.timezone;
             _locationDenied = false;
           });
@@ -600,12 +612,16 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           // Timezone changed - reload data
           setState(() {
             _locationText = location.city;
+            _locationCoords = (location.latitude, location.longitude);
             _currentTimezone = location.timezone;
           });
           await _loadData(shouldScrollToNext: true);
         } else if (location.city != _locationText) {
           // Just city name changed
-          setState(() => _locationText = location.city);
+          setState(() {
+            _locationText = location.city;
+            _locationCoords = (location.latitude, location.longitude);
+          });
         }
       }
     } catch (e) {
@@ -687,7 +703,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _errorMessage = 'Failed to load data';
+          _errorMessage = context.read<LanguageService>().translate(
+            'failed_load',
+          );
         });
       }
     }
@@ -893,12 +911,35 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     await WidgetSyncManager().syncWidgetData(
       ekadashiList: _ekadashiList,
       timezone: _currentTimezone,
-      locationName: _locationText,
+      locationName: _cityLabel(lang.currentLocale.languageCode),
       languageService: lang,
     );
     final pending = _pendingDeepLink;
     _pendingDeepLink = null;
     if (pending != null && mounted) handleDeepLink(pending);
+  }
+
+  /// The detected place in [language]: the shared table first, then the
+  /// phone's geocoder, then the English name.
+  String _cityLabel(String language) {
+    final table = AppStrings.placeName(_locationText, language);
+    if (language == 'en' || table != _locationText) return table;
+    final key = '$language|$_locationText';
+    final known = _nativeCityNames[key];
+    if (known != null) return known;
+    final coords = _locationCoords;
+    if (coords != null && !_nativeCityNames.containsKey(key)) {
+      _nativeCityNames[key] = null;
+      _locationService.localizedCityName(coords.$1, coords.$2, language).then((
+        name,
+      ) {
+        // Only a name in the language's own script replaces English.
+        if (mounted && name != null && !RegExp('[A-Za-z]').hasMatch(name)) {
+          setState(() => _nativeCityNames[key] = name);
+        }
+      });
+    }
+    return _locationText;
   }
 
   /// Back from a screen a search result opened: the same search again.
@@ -1061,10 +1102,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         activeIcon: const Icon(Icons.spa),
         label: lang.translate('journey_tab'),
       ),
-      const BottomNavigationBarItem(
-        icon: Icon(Icons.auto_awesome_outlined),
-        activeIcon: Icon(Icons.auto_awesome),
-        label: 'Panchang',
+      BottomNavigationBarItem(
+        icon: const Icon(Icons.auto_awesome_outlined),
+        activeIcon: const Icon(Icons.auto_awesome),
+        label: lang.translate('search_screen_panchang'),
       ),
       BottomNavigationBarItem(
         icon: const Icon(Icons.settings),
@@ -1399,7 +1440,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             const SizedBox(width: 6),
             Flexible(
               child: Text(
-                '$_locationText • $_currentTimezone',
+                '${_cityLabel(lang.currentLocale.languageCode)} • ${AppStrings.timeZoneName(_currentTimezone, lang.currentLocale.languageCode)}',
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
@@ -1476,7 +1517,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     final lang = Provider.of<LanguageService>(context);
 
     String breakTime = ekadashi.fastBreakTime;
-    breakTime = breakTime.replaceAll(RegExp(r'^[a-zA-Z]{3} \d{1,2}, '), '');
+    breakTime = AppStrings.localizeClock(
+      breakTime.replaceAll(RegExp(r'^[a-zA-Z]{3} \d{1,2}, '), ''),
+      lang.currentLocale.languageCode,
+    );
 
     String daysText;
     if (daysUntil == 0) {
@@ -1599,7 +1643,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        ekadashi.fastStartTime,
+                        AppStrings.localizeClock(
+                          ekadashi.fastStartTime,
+                          lang.currentLocale.languageCode,
+                        ),
                         style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w600,

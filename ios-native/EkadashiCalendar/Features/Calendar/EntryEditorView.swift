@@ -30,8 +30,10 @@ struct EntryEditorView: View {
                 Toggle(model.t("all_day"), isOn: $allDay).tint(Theme.teal)
                 DatePicker(model.t("entry_starts"), selection: $start,
                            displayedComponents: allDay ? [.date] : [.date, .hourAndMinute])
+                    .environment(\.locale, model.timePickerLocale)
                 DatePicker(model.t("entry_ends"), selection: $end, in: start...,
                            displayedComponents: allDay ? [.date] : [.date, .hourAndMinute])
+                    .environment(\.locale, model.timePickerLocale)
                 TextField(model.t("entry_notes"), text: $notes, axis: .vertical).lineLimit(2...5)
                 if invalid {
                     Text(model.t("invalid_entry")).foregroundStyle(.red).font(.footnote)

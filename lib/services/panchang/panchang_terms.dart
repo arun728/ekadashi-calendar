@@ -187,13 +187,7 @@ class PanchangFormat {
   ) {
     if (instant == null) return '—';
     final local = city.wallClock(instant);
-    final hour = local.hour % 12 == 0 ? 12 : local.hour % 12;
-    final minute = local.minute.toString().padLeft(2, '0');
-    final marker = AppStrings.translate(
-      local.hour < 12 ? 'panchang_am' : 'panchang_pm',
-      language,
-    );
-    var text = '$hour:$minute $marker';
+    var text = AppStrings.clock(local.hour, local.minute, language);
     final day = DateTime.utc(date.year, date.month, date.day);
     final delta = DateTime.utc(
       local.year,

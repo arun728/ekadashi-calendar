@@ -97,7 +97,7 @@ struct HomeHeader: View {
             } label: {
                 HStack(spacing: 6) {
                     Image(systemName: "location.fill").foregroundStyle(Theme.teal)
-                    Text("\(city) • \(model.timezone.rawValue)").font(.subheadline.weight(.medium)).lineLimit(1)
+                    Text("\(model.cityLabel(city)) • \(model.timeZoneLabel)").font(.subheadline.weight(.medium)).lineLimit(1)
                     Image(systemName: "arrow.clockwise").font(.caption2).foregroundStyle(.secondary)
                 }
             }
@@ -108,7 +108,7 @@ struct HomeHeader: View {
             } label: {
                 HStack(spacing: 6) {
                     Image(systemName: "location.fill").foregroundStyle(Theme.teal)
-                    Text("\(model.t("locating")) • \(model.timezone.rawValue)").font(.subheadline)
+                    Text("\(model.t("locating")) • \(model.timeZoneLabel)").font(.subheadline)
                 }
             }
             .buttonStyle(.plain)
@@ -224,7 +224,7 @@ struct EkadashiCard: View {
         VStack(alignment: .leading, spacing: 2) {
             Text(title).font(.callout.bold()).foregroundStyle(Theme.teal)
             Text(model.format(date, "MMM dd, yyyy")).font(.subheadline).foregroundStyle(.secondary)
-            Text(time).font(.title3.weight(.semibold))
+            Text(Localizer.shared.localizeClock(time, language: model.language)).font(.title3.weight(.semibold))
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }

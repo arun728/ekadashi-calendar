@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_language.dart';
+import '../l10n/place_names.dart';
 import '../services/language_service.dart';
 import '../services/native_location_service.dart';
 import '../services/panchang/panchang_city.dart';
@@ -126,7 +127,9 @@ class _PanchangLocationDialogState extends State<PanchangLocationDialog> {
                         : _catalog
                               .where(
                                 (c) =>
-                                    '${c.label.toLowerCase()} ${c.searchTerms}'
+                                    // Names typed in the app language
+                                    // match too.
+                                    '${c.label.toLowerCase()} ${c.searchTerms} ${PlaceNames.label(c.label, _language)}'
                                         .contains(q),
                               )
                               .take(12)
@@ -137,8 +140,8 @@ class _PanchangLocationDialogState extends State<PanchangLocationDialog> {
               for (final city in _matches)
                 ListTile(
                   dense: true,
-                  title: Text(city.label),
-                  subtitle: Text(city.timeZoneId),
+                  title: Text(PlaceNames.label(city.label, _language)),
+                  subtitle: Text(city.timeZoneLabel(_language)),
                   onTap: () => _select(city),
                 ),
               TextButton.icon(
