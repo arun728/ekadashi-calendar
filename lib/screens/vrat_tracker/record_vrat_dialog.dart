@@ -1,3 +1,4 @@
+import '../../l10n/app_language.dart';
 import '../../widgets/glass_tube.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -223,10 +224,10 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
   Widget build(BuildContext context) {
     final lang = Provider.of<LanguageService>(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final formattedDate = DateFormat(
-      'EEEE, d MMMM yyyy',
+    final formattedDate = AppStrings.fullDate(
+      widget.ekadashi.date,
       lang.currentLocale.languageCode,
-    ).format(widget.ekadashi.date);
+    );
 
     return Container(
       decoration: BoxDecoration(

@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:flutter/widgets.dart';
 
 import 'generated/app_localizations.dart';
@@ -49,6 +50,11 @@ class AppStrings {
 
   /// A clock time such as "6:24 PM", with [language]'s own words for AM and
   /// PM (the date library writes them in Latin letters for most languages).
+  /// The one way every tab shows a date: weekday, date, month and year
+  /// ("Thu, 8 Oct 2026"), in [language] (PanchangFormat.date on iOS).
+  static String fullDate(DateTime date, String language) =>
+      DateFormat('EEE, d MMM yyyy', language).format(date);
+
   static String clock(int hour, int minute, String language) {
     final shown = hour % 12 == 0 ? 12 : hour % 12;
     final marker = translate(

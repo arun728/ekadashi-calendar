@@ -3,7 +3,6 @@ import '../../services/premium_service.dart';
 import '../../widgets/glass_tube.dart';
 import '../../widgets/section_pager.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../models/vrat_tracker_models.dart';
 import '../../services/achievement_evaluator.dart';
@@ -558,10 +557,10 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
   ) {
     final record = tracker.getRecordByUid(ekadashi.occurrenceUid);
     final status = record?.status ?? ObservanceStatus.unrecorded;
-    final dateStr = DateFormat(
-      'MMM dd, yyyy',
+    final dateStr = AppStrings.fullDate(
+      ekadashi.date,
       lang.currentLocale.languageCode,
-    ).format(ekadashi.date);
+    );
 
     Color chipColor;
     String statusLabel;

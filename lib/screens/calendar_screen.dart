@@ -1,3 +1,4 @@
+import '../l10n/app_language.dart';
 import 'premium_screen.dart';
 import '../services/premium_service.dart';
 import '../widgets/glass_tube.dart';
@@ -697,75 +698,81 @@ class CalendarScreenState extends State<CalendarScreen> {
             ),
           ),
           SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-              child: GlassTube(
-                key: const Key('calendar_month_tube'),
-                optionCount: 2,
-                child: Row(
-                  children: [
-                    IconButton(
-                      key: const Key('calendar_previous_month'),
-                      tooltip: MaterialLocalizations.of(
-                        context,
-                      ).previousMonthTooltip,
-                      color: GlassTubeColors.teal,
-                      onPressed: _isFirstMonth
-                          ? null
-                          : () => _monthPager?.previousPage(
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
+            child: _MonthSwipe(
+              onSwipe: _swipeMonth,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+                child: GlassTube(
+                  key: const Key('calendar_month_tube'),
+                  optionCount: 2,
+                  child: Row(
+                    children: [
+                      IconButton(
+                        key: const Key('calendar_previous_month'),
+                        tooltip: MaterialLocalizations.of(
+                          context,
+                        ).previousMonthTooltip,
+                        color: GlassTubeColors.teal,
+                        onPressed: _isFirstMonth
+                            ? null
+                            : () => _monthPager?.previousPage(
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              ),
+                        icon: const Icon(Icons.chevron_left),
+                      ),
+                      // The month title opens a month and year picker.
+                      Expanded(
+                        child: TextButton(
+                          key: const Key('calendar_year_selector'),
+                          onPressed: _pickMonth,
+                          style: TextButton.styleFrom(
+                            foregroundColor: GlassTubeColors.foreground(
+                              context,
                             ),
-                      icon: const Icon(Icons.chevron_left),
-                    ),
-                    // The month title opens a month and year picker.
-                    Expanded(
-                      child: TextButton(
-                        key: const Key('calendar_year_selector'),
-                        onPressed: _pickMonth,
-                        style: TextButton.styleFrom(
-                          foregroundColor: GlassTubeColors.foreground(context),
-                        ),
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                DateFormat.yMMMM(
-                                  lang.currentLocale.languageCode,
-                                ).format(_focusedDay),
-                                style: const TextStyle(
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.w700,
+                          ),
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  AppStrings.fullDate(
+                                    _selectedDay,
+                                    lang.currentLocale.languageCode,
+                                  ),
+                                  style: const TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w700,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 4),
-                              const Icon(
-                                Icons.expand_more,
-                                size: 20,
-                                color: GlassTubeColors.teal,
-                              ),
-                            ],
+                                const SizedBox(width: 4),
+                                const Icon(
+                                  Icons.expand_more,
+                                  size: 20,
+                                  color: GlassTubeColors.teal,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    IconButton(
-                      key: const Key('calendar_next_month'),
-                      tooltip: MaterialLocalizations.of(
-                        context,
-                      ).nextMonthTooltip,
-                      color: GlassTubeColors.teal,
-                      onPressed: _isLastMonth
-                          ? null
-                          : () => _monthPager?.nextPage(
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            ),
-                      icon: const Icon(Icons.chevron_right),
-                    ),
-                  ],
+                      IconButton(
+                        key: const Key('calendar_next_month'),
+                        tooltip: MaterialLocalizations.of(
+                          context,
+                        ).nextMonthTooltip,
+                        color: GlassTubeColors.teal,
+                        onPressed: _isLastMonth
+                            ? null
+                            : () => _monthPager?.nextPage(
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              ),
+                        icon: const Icon(Icons.chevron_right),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -799,10 +806,9 @@ class CalendarScreenState extends State<CalendarScreen> {
               headerStyle: HeaderStyle(
                 formatButtonVisible: false,
                 titleCentered: true,
-                // Force English Month Name (January 2026) regardless of locale
-                titleTextFormatter: (date, locale) => DateFormat.yMMMM(
-                  lang.currentLocale.languageCode,
-                ).format(date),
+                // Hidden header; the month tube above shows the selected date.
+                titleTextFormatter: (date, locale) =>
+                    AppStrings.fullDate(date, lang.currentLocale.languageCode),
                 // Custom chevrons with grey color at boundaries
                 leftChevronIcon: Icon(
                   Icons.chevron_left,
@@ -857,11 +863,27 @@ class CalendarScreenState extends State<CalendarScreen> {
                 setState(() => _selectedEkadashi = found);
               },
               onPageChanged: (focusedDay) {
+                // A new month keeps the day of the month selected (its last
+                // day when shorter), within the data years.
+                final lastDay = DateTime(
+                  focusedDay.year,
+                  focusedDay.month + 1,
+                  0,
+                ).day;
+                var day = DateTime(
+                  focusedDay.year,
+                  focusedDay.month,
+                  _selectedDay.day > lastDay ? lastDay : _selectedDay.day,
+                );
+                if (day.isBefore(_firstDay)) day = _firstDay;
+                if (day.isAfter(_lastDay)) day = _lastDay;
                 setState(() {
-                  _focusedDay = focusedDay;
+                  _focusedDay = day;
+                  _selectedDay = day;
                   // Swiping from December into January moves the year too.
-                  _selectedYear = focusedDay.year;
+                  _selectedYear = day.year;
                 });
+                _checkSelectedDayEkadashi();
               },
               calendarStyle: CalendarStyle(
                 todayDecoration: BoxDecoration(
@@ -932,49 +954,66 @@ class CalendarScreenState extends State<CalendarScreen> {
           // Spacer between calendar and details
           const SliverToBoxAdapter(child: SizedBox(height: 16)),
 
-          // Simplified ekadashi details - fills remaining space
+          // Simplified ekadashi details - fills remaining space. A
+          // horizontal swipe here changes the month, as on the grid.
           SliverToBoxAdapter(
-            child: Column(
-              children: [
-                if (_selectedEkadashi != null &&
-                    (_filter == CalendarFilter.all ||
-                        _filter == CalendarFilter.ekadashi))
-                  _buildSimpleEkadashiCard(_selectedEkadashi!),
-                if (_filter != CalendarFilter.ekadashi)
-                  DayEntriesList(
-                    items: CalendarDayMerge.merge(
-                      day: _selectedDay,
-                      ekadashis: const [],
-                      entries: _entries,
-                      filter: _filter,
+            child: _MonthSwipe(
+              key: const Key('calendar_day_details'),
+              onSwipe: _swipeMonth,
+              child: Column(
+                children: [
+                  if (_selectedEkadashi != null &&
+                      (_filter == CalendarFilter.all ||
+                          _filter == CalendarFilter.ekadashi))
+                    _buildSimpleEkadashiCard(_selectedEkadashi!),
+                  if (_filter != CalendarFilter.ekadashi)
+                    DayEntriesList(
+                      items: CalendarDayMerge.merge(
+                        day: _selectedDay,
+                        ekadashis: const [],
+                        entries: _entries,
+                        filter: _filter,
+                      ),
+                      onTap: (item) {
+                        if (item.editable) {
+                          _editEntry(
+                            existing: _entries.firstWhere(
+                              (e) => e.id == item.entryId,
+                            ),
+                          );
+                        }
+                      },
+                      onDeleteCustom: (item) async {
+                        try {
+                          await _repo.delete(item.entryId!);
+                          await _reloadEntries();
+                          EventReminderService.instance.changed();
+                        } catch (_) {
+                          _showMessage('storage_failed');
+                        }
+                      },
                     ),
-                    onTap: (item) {
-                      if (item.editable) {
-                        _editEntry(
-                          existing: _entries.firstWhere(
-                            (e) => e.id == item.entryId,
-                          ),
-                        );
-                      }
-                    },
-                    onDeleteCustom: (item) async {
-                      try {
-                        await _repo.delete(item.entryId!);
-                        await _reloadEntries();
-                        EventReminderService.instance.changed();
-                      } catch (_) {
-                        _showMessage('storage_failed');
-                      }
-                    },
-                  ),
-                // Add bottom padding to ensure content isn't cut off on very small screens
-                SizedBox(height: 88 + MediaQuery.paddingOf(context).bottom),
-              ],
+                  // Add bottom padding to ensure content isn't cut off on very small screens
+                  SizedBox(height: 88 + MediaQuery.paddingOf(context).bottom),
+                ],
+              ),
             ),
           ),
         ],
       ),
     );
+  }
+
+  /// A swipe to the left shows the next month, to the right the previous
+  /// one, within the data years (the grid's own paging).
+  void _swipeMonth(int direction) {
+    if (direction > 0 ? _isLastMonth : _isFirstMonth) return;
+    const duration = Duration(milliseconds: 300);
+    if (direction > 0) {
+      _monthPager?.nextPage(duration: duration, curve: Curves.easeInOut);
+    } else {
+      _monthPager?.previousPage(duration: duration, curve: Curves.easeInOut);
+    }
   }
 
   Widget _buildSimpleEkadashiCard(EkadashiDate ekadashi) {
@@ -1132,4 +1171,25 @@ class CalendarScreenState extends State<CalendarScreen> {
       ),
     );
   }
+}
+
+/// Pages the calendar by month on a horizontal swipe outside the grid
+/// (docs/ROADMAP.md Phase 9); vertical drags still scroll the page.
+class _MonthSwipe extends StatelessWidget {
+  const _MonthSwipe({super.key, required this.onSwipe, required this.child});
+
+  /// 1 for the next month, -1 for the previous one.
+  final ValueChanged<int> onSwipe;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+    behavior: HitTestBehavior.translucent,
+    onHorizontalDragEnd: (details) {
+      final velocity = details.primaryVelocity ?? 0;
+      if (velocity.abs() < 200) return;
+      onSwipe(velocity < 0 ? 1 : -1);
+    },
+    child: child,
+  );
 }

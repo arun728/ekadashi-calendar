@@ -29,7 +29,7 @@ struct RecordVratSheet: View {
                 VStack(alignment: .leading, spacing: 20) {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(event.name).font(.title3.bold())
-                        Text(model.format(event.date, "EEEE, d MMMM yyyy")).font(.footnote).foregroundStyle(.secondary)
+                        Text(model.fullDate(event.date)).font(.footnote).foregroundStyle(.secondary)
                     }
                     if isFuture {
                         Label(model.t("cannot_record_future"), systemImage: "info.circle")

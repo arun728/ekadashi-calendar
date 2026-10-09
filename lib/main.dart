@@ -1578,26 +1578,15 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                     ),
                     const SizedBox(height: 16),
 
-                    // Date
+                    // Date: weekday, date, month and year, as on every tab.
                     Text(
-                      DateFormat(
-                        'MMM dd, yyyy',
+                      AppStrings.fullDate(
+                        ekadashi.date,
                         lang.currentLocale.languageCode,
-                      ).format(ekadashi.date),
+                      ),
                       style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w300,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      DateFormat(
-                        'EEEE',
-                        lang.currentLocale.languageCode,
-                      ).format(ekadashi.date),
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey.shade500,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -1630,10 +1619,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        DateFormat(
-                          'MMM dd, yyyy',
+                        AppStrings.fullDate(
+                          ekadashi.date,
                           lang.currentLocale.languageCode,
-                        ).format(ekadashi.date),
+                        ),
                         style: TextStyle(
                           fontSize: 15,
                           color: Colors.grey.shade500,
@@ -1671,10 +1660,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        DateFormat(
-                          'MMM dd, yyyy',
+                        AppStrings.fullDate(
+                          ekadashi.date.add(const Duration(days: 1)),
                           lang.currentLocale.languageCode,
-                        ).format(ekadashi.date.add(const Duration(days: 1))),
+                        ),
                         style: TextStyle(
                           fontSize: 15,
                           color: Colors.grey.shade500,

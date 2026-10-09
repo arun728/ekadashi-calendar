@@ -172,6 +172,65 @@ void main() {
     },
   );
 
+  testWidgets('A horizontal swipe anywhere below the chips changes the month', (
+    tester,
+  ) async {
+    await open(tester);
+    final state = tester.state<CalendarScreenState>(
+      find.byType(CalendarScreen),
+    );
+    state.selectDate(DateTime(2026, 10, 5));
+    await tester.pumpAndSettle();
+    List<int> month() => [
+      calendarOf(tester).focusedDay.year,
+      calendarOf(tester).focusedDay.month,
+    ];
+    Future<void> swipe(Finder target, double dx) async {
+      await tester.ensureVisible(target);
+      await tester.pumpAndSettle();
+      // Near the top, which stays on screen even when the target is tall.
+      final start = tester.getTopLeft(target) + Offset(200 - dx / 2, 20);
+      await tester.flingFrom(start, Offset(dx, 0), 1200);
+      await tester.pumpAndSettle();
+    }
+
+    final grid = find.byWidgetPredicate((w) => w is TableCalendar);
+    final title = find.byKey(const Key('calendar_month_tube'));
+    final day = find.byKey(const Key('calendar_day_details'));
+    // The month grid, the month title and the selected day all page.
+    // The header shows the selected date in full, like every tab; a new
+    // month keeps the day of the month selected.
+    Finder header(String text) => find.descendant(
+      of: find.byKey(const Key('calendar_year_selector')),
+      matching: find.text(text),
+    );
+    expect(header('Mon, 5 Oct 2026'), findsOneWidget);
+    await swipe(grid, -300);
+    expect(month(), [2026, 11]);
+    expect(header('Thu, 5 Nov 2026'), findsOneWidget);
+    await swipe(title, -300);
+    expect(month(), [2026, 12]);
+    expect(header('Sat, 5 Dec 2026'), findsOneWidget);
+    await swipe(day, -300);
+    expect(month(), [2027, 1]);
+    expect(header('Tue, 5 Jan 2027'), findsOneWidget);
+    expect(selectorYear(tester), 2027);
+    await swipe(day, 300);
+    expect(month(), [2026, 12]);
+    await swipe(title, 300);
+    expect(month(), [2026, 11]);
+    // The first and last months stop the swipe.
+    state.selectDate(DateTime(2027, 12, 15));
+    await tester.pumpAndSettle();
+    await swipe(day, -300);
+    expect(month(), [2027, 12]);
+    state.selectDate(DateTime(2026, 1, 15));
+    await tester.pumpAndSettle();
+    await swipe(day, 300);
+    expect(month(), [2026, 1]);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('Choosing a year opens its January; the current year, today', (
     tester,
   ) async {

@@ -119,7 +119,8 @@ void main() {
     }
     await tester.tap(find.byKey(const Key('panchang_month_11')));
     await tester.pumpAndSettle();
-    expect(find.text('November 2026'), findsOneWidget);
+    // A picked month opens its first day, shown in full.
+    expect(find.text('Sun, 1 Nov 2026'), findsOneWidget);
     expect(find.byKey(const Key('panchang_key_days')), findsOneWidget);
     expect(find.byKey(const Key('panchang_key_days_unlock')), findsOneWidget);
     expect(find.text('Deepavali (Lakshmi Puja)'), findsOneWidget);
@@ -127,6 +128,48 @@ void main() {
     await tester.tap(find.byKey(const Key('panchang_key_filter_ekadashi')));
     await tester.pumpAndSettle();
     expect(find.text('Deepavali (Lakshmi Puja)'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('every sub-tab shows the weekday, date, month and year', (
+    tester,
+  ) async {
+    final premium = await premiumService(true);
+    addTearDown(premium.dispose);
+    await showPanchang(tester, premium: premium, date: DateTime(2026, 10, 8));
+    Future<void> open(String page) async {
+      await tester.tap(find.byKey(Key('panchang_tab_$page')));
+      await tester.pumpAndSettle();
+    }
+
+    Finder dateOnPage(String text) => find.descendant(
+      of: find.byKey(const Key('panchang_stepper')),
+      matching: find.text(text),
+    );
+    for (final page in ['keydays', 'daily', 'muhurta', 'ekadashi', 'rashi']) {
+      await open(page);
+      expect(dateOnPage('Thu, 8 Oct 2026'), findsOneWidget, reason: page);
+    }
+    // The monthly sub-tabs step a month and keep the day of the month.
+    await open('keydays');
+    await tester.tap(find.byKey(const Key('panchang_next_month')));
+    await tester.pumpAndSettle();
+    expect(dateOnPage('Sun, 8 Nov 2026'), findsOneWidget);
+    await open('daily');
+    expect(dateOnPage('Sun, 8 Nov 2026'), findsOneWidget);
+    // Days stepped on Daily carry over to the monthly sub-tabs.
+    for (var i = 0; i < 22; i++) {
+      await tester.tap(find.byKey(const Key('panchang_next_day')));
+      await tester.pumpAndSettle();
+    }
+    expect(dateOnPage('Mon, 30 Nov 2026'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('panchang_next_day')));
+    await tester.pumpAndSettle();
+    await open('ekadashi');
+    expect(dateOnPage('Tue, 1 Dec 2026'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('panchang_previous_month')));
+    await tester.pumpAndSettle();
+    expect(dateOnPage('Sun, 1 Nov 2026'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

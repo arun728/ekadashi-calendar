@@ -44,10 +44,10 @@ class DetailsScreen extends StatelessWidget {
               child: Column(
                 children: [
                   Text(
-                    DateFormat(
-                      'MMM dd, yyyy',
+                    AppStrings.fullDate(
+                      ekadashi.date,
                       lang.currentLocale.languageCode,
-                    ).format(ekadashi.date),
+                    ),
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w300,
@@ -192,10 +192,10 @@ class DetailsScreen extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              DateFormat(
-                                'MMM dd, yyyy',
+                              AppStrings.fullDate(
+                                ekadashi.date,
                                 lang.currentLocale.languageCode,
-                              ).format(ekadashi.date),
+                              ),
                               style: const TextStyle(
                                 fontSize: 13,
                                 color: Colors.grey,
@@ -231,11 +231,9 @@ class DetailsScreen extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              DateFormat(
-                                'MMM dd, yyyy',
-                                lang.currentLocale.languageCode,
-                              ).format(
+                              AppStrings.fullDate(
                                 ekadashi.date.add(const Duration(days: 1)),
+                                lang.currentLocale.languageCode,
                               ),
                               style: const TextStyle(
                                 fontSize: 13,

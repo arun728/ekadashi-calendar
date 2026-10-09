@@ -114,6 +114,10 @@ final class AppModel {
         language == "en" ? locale : Locale(identifier: "\(locale.identifier)@hours=h23")
     }
 
+    /// The one way every tab shows a date: weekday, date, month and year
+    /// ("Thu, 8 Oct 2026"), as AppStrings.fullDate on Android.
+    func fullDate(_ date: CivilDate) -> String { PanchangFormat.date(date, language: language) }
+
     func format(_ date: CivilDate, _ pattern: String) -> String {
         let formatter = DateFormatter()
         formatter.locale = locale

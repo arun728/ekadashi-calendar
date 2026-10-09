@@ -132,9 +132,15 @@ class PanchangScreenState extends State<PanchangScreen> {
     return DateTime.utc(now.year, now.month, now.day);
   }
 
-  bool _isToday(PanchangPage page) => page.isMonthly
-      ? _month == DateTime.utc(_today().year, _today().month)
-      : _date == _today();
+  /// Every sub-tab shows the selected date, so Today means today's date.
+  bool _isToday(PanchangPage page) => _date == _today();
+
+  /// Selects [date] on every sub-tab; the monthly ones browse its month.
+  void _select(DateTime date) {
+    _date = DateTime.utc(date.year, date.month, date.day);
+    _month = DateTime.utc(_date.year, _date.month);
+    _recalculate();
+  }
 
   Future<void> _restoreLocation() async {
     final city = await _locationStore.load();
@@ -156,8 +162,11 @@ class PanchangScreenState extends State<PanchangScreen> {
     final wasToday = _date == _today();
     setState(() {
       _city = city;
-      if (wasToday) _date = _today();
-      _recalculate();
+      if (wasToday) {
+        _select(_today());
+      } else {
+        _recalculate();
+      }
     });
     if (widget.initialCity != null) return;
     try {
@@ -181,18 +190,22 @@ class PanchangScreenState extends State<PanchangScreen> {
     if (mounted) await _changeCity(city);
   }
 
-  void _goToToday() => setState(() {
-    _date = _today();
-    _month = DateTime.utc(_date.year, _date.month);
-    _recalculate();
-  });
+  void _goToToday() => setState(() => _select(_today()));
 
+  /// Monthly sub-tabs move a month, keeping the day of the month (the last
+  /// day of a shorter month); the others move a day.
   void _step(PanchangPage page, int offset) => setState(() {
     if (page.isMonthly) {
-      _month = DateTime.utc(_month.year, _month.month + offset);
+      final lastDay = DateTime.utc(_date.year, _date.month + offset + 1, 0).day;
+      _select(
+        DateTime.utc(
+          _date.year,
+          _date.month + offset,
+          _date.day > lastDay ? lastDay : _date.day,
+        ),
+      );
     } else {
-      _date = _date.add(Duration(days: offset));
-      _recalculate();
+      _select(_date.add(Duration(days: offset)));
     }
   });
 
@@ -204,7 +217,17 @@ class PanchangScreenState extends State<PanchangScreen> {
         builder: (_) =>
             PanchangMonthPickerDialog(month: _month, language: language),
       );
-      if (month != null && mounted) setState(() => _month = month);
+      if (month != null && mounted) {
+        // Today in the current month, else the month's first day.
+        final today = _today();
+        setState(
+          () => _select(
+            month.year == today.year && month.month == today.month
+                ? today
+                : month,
+          ),
+        );
+      }
       return;
     }
     final date = await showDatePicker(
@@ -215,10 +238,7 @@ class PanchangScreenState extends State<PanchangScreen> {
       locale: Locale(language),
     );
     if (date != null && mounted) {
-      setState(() {
-        _date = DateTime.utc(date.year, date.month, date.day);
-        _recalculate();
-      });
+      setState(() => _select(date));
     }
   }
 
@@ -412,9 +432,8 @@ class PanchangScreenState extends State<PanchangScreen> {
     PanchangPage page,
   ) {
     final monthly = page.isMonthly;
-    final title = monthly
-        ? PanchangFormat.monthTitle(_month, language)
-        : PanchangFormat.date(_date, language);
+    // Every sub-tab shows the weekday, date, month and year.
+    final title = PanchangFormat.date(_date, language);
     return GlassTube(
       key: const Key('panchang_stepper'),
       optionCount: 3,

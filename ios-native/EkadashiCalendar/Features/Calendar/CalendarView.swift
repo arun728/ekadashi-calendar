@@ -45,14 +45,21 @@ struct CalendarView: View {
                     .padding(.horizontal, 16)
                 }
                 filterBar
-                monthHeader
-                MonthGrid(month: month, selected: selected, today: CivilDate.today(), firstDay: firstDay, lastDay: lastDay,
-                          markers: { markers(for: $0, loaded.list) }, select: { selected = $0 })
-                    .padding(.horizontal, 12)
-                    .gesture(DragGesture(minimumDistance: 30).onEnded { value in
-                        if value.translation.width < -60 { move(1) } else if value.translation.width > 60 { move(-1) }
-                    })
-                selectedDay(loaded.list)
+                // A horizontal swipe on the month title, the grid or the
+                // selected day changes the month, as on Android.
+                VStack(spacing: 12) {
+                    monthHeader
+                    MonthGrid(month: month, selected: selected, today: CivilDate.today(), firstDay: firstDay, lastDay: lastDay,
+                              markers: { markers(for: $0, loaded.list) }, select: { selected = $0 })
+                        .padding(.horizontal, 12)
+                    selectedDay(loaded.list)
+                }
+                .contentShape(Rectangle())
+                .simultaneousGesture(DragGesture(minimumDistance: 30).onEnded { value in
+                    let dx = value.translation.width, dy = value.translation.height
+                    guard abs(dx) > 60, abs(dx) > abs(dy) else { return }
+                    move(dx < 0 ? 1 : -1)
+                })
             }
             .padding(.top, 4)
             .padding(.bottom, 100)
@@ -128,12 +135,13 @@ struct CalendarView: View {
         GlassChip(title: model.t(key), color: color, selected: filter == value) { filter = value }
     }
 
-    /// The month title opens the month and year picker; arrows step months.
+    /// The selected date opens the month and year picker; arrows step months.
     private var monthHeader: some View {
         HStack(spacing: 0) {
             Button { pickingMonth = true } label: {
                 HStack(spacing: 6) {
-                    Text(model.format(month, "LLLL yyyy")).font(.title3.weight(.bold)).foregroundStyle(.primary)
+                    // The selected date in full, as on every tab.
+                    Text(model.fullDate(selected)).font(.title3.weight(.bold)).foregroundStyle(.primary)
                     Image(systemName: "chevron.down").font(.footnote.weight(.bold)).foregroundStyle(Theme.teal)
                 }
             }
@@ -141,11 +149,11 @@ struct CalendarView: View {
             Spacer()
             Button { move(-1) } label: { Image(systemName: "chevron.left").frame(width: 44, height: 44) }
                 .disabled(isFirstMonth)
-                .accessibilityLabel(model.format(month.adding(months: -1), "MMMM yyyy"))
+                .accessibilityLabel(model.fullDate(selected.steppingMonths(-1)))
                 .accessibilityIdentifier("calendar_previous_month")
             Button { move(1) } label: { Image(systemName: "chevron.right").frame(width: 44, height: 44) }
                 .disabled(isLastMonth)
-                .accessibilityLabel(model.format(month.adding(months: 1), "MMMM yyyy"))
+                .accessibilityLabel(model.fullDate(selected.steppingMonths(1)))
                 .accessibilityIdentifier("calendar_next_month")
         }
         .foregroundStyle(Theme.teal)
@@ -157,7 +165,6 @@ struct CalendarView: View {
     @ViewBuilder
     private func selectedDay(_ list: [CalendarEntry]) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(model.format(selected, "EEEE, d MMMM yyyy")).font(.headline).padding(.horizontal, 4)
             if let event = selectedEkadashi, filter == .all || filter == .ekadashi {
                 CalendarEkadashiCard(event: event)
             } else if filter == .ekadashi {
@@ -191,9 +198,12 @@ struct CalendarView: View {
         focus(picked.firstOfMonth == today.firstOfMonth ? today : picked.firstOfMonth)
     }
 
+    /// A new month keeps the day of the month selected (its last day when
+    /// shorter), within the data years.
     private func move(_ months: Int) {
         let target = month.adding(months: months).firstOfMonth
         guard target >= firstDay.firstOfMonth, target <= lastDay.firstOfMonth else { return }
+        selected = min(max(selected.steppingMonths(months), firstDay), lastDay)
         withAnimation(.easeInOut(duration: 0.3)) { month = target }
     }
 
@@ -297,7 +307,7 @@ struct MonthGrid: View {
         }
         .buttonStyle(.plain)
         .disabled(!enabled)
-        .accessibilityLabel(model.format(day, "d MMMM yyyy"))
+        .accessibilityLabel(model.fullDate(day))
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
