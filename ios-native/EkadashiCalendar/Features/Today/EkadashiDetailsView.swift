@@ -12,7 +12,7 @@ struct EkadashiDetailsView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 VStack(spacing: 4) {
-                    Text(model.format(event.date, "MMM dd, yyyy")).font(.title2.weight(.light))
+                    Text(model.fullDate(event.date)).font(.title2.weight(.light))
                     Text(event.name).font(.largeTitle.bold()).foregroundStyle(Theme.teal).multilineTextAlignment(.center)
                     StatusPill(text: model.timezone.rawValue, color: Theme.teal)
                 }
@@ -53,7 +53,7 @@ struct EkadashiDetailsView: View {
             Image(systemName: symbol).foregroundStyle(Theme.teal).frame(width: 28)
             VStack(alignment: .leading, spacing: 2) {
                 Text(title).bold().foregroundStyle(Theme.teal)
-                Text(model.format(date, "MMM dd, yyyy")).font(.footnote).foregroundStyle(.secondary)
+                Text(model.fullDate(date)).font(.footnote).foregroundStyle(.secondary)
                 Text(time).font(.title3)
             }
             Spacer(minLength: 0)

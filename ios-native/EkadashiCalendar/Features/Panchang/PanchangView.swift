@@ -22,9 +22,10 @@ struct PanchangView: View {
 
     @State private var city = PanchangCity.newDelhi
     @State private var date = PanchangCity.newDelhi.today()
-    @State private var month = PanchangCity.newDelhi.today().firstOfMonth
     @State private var day: PanchangDay?
     @State private var section: Page = .keyDays
+    /// The monthly sub-tabs browse the selected date's month.
+    private var month: CivilDate { date.firstOfMonth }
     @State private var tradition: EkadashiTradition = .smarta
     @State private var editingLocation = false
     @State private var pickingDate = false
@@ -34,7 +35,8 @@ struct PanchangView: View {
     @State private var toast: ToastMessage?
 
     private var language: String { model.language }
-    private var isToday: Bool { section.isMonthly ? month == city.today().firstOfMonth : date == city.today() }
+    /// Every sub-tab shows the selected date, so Today means today's date.
+    private var isToday: Bool { date == city.today() }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -71,7 +73,11 @@ struct PanchangView: View {
         }
         .sheet(isPresented: $pickingDate) { datePicker }
         .sheet(isPresented: $pickingMonth) {
-            PanchangMonthPicker(month: month) { month = $0 }
+            PanchangMonthPicker(month: month) { picked in
+                // Today in the current month, else the month's first day.
+                let today = city.today()
+                date = picked.firstOfMonth == today.firstOfMonth ? today : picked.firstOfMonth
+            }
                 .presentationDetents([.height(320)])
         }
         .sheet(isPresented: $showingNotes) { PanchangNotesSheet() }
@@ -101,9 +107,11 @@ struct PanchangView: View {
                     Text(city.timezoneLabel).font(.caption).foregroundStyle(.secondary).lineLimit(1)
                 }
             }
+            // Every sub-tab shows the weekday, date, month and year; the
+            // monthly ones step a month and keep the day of the month.
             if page.isMonthly {
-                stepper(title: PanchangFormat.monthTitle(month, language: language), symbol: "calendar", monthly: true,
-                        previous: { month = month.adding(months: -1) }, next: { month = month.adding(months: 1) },
+                stepper(title: PanchangFormat.date(date, language: language), symbol: "calendar", monthly: true,
+                        previous: { date = date.steppingMonths(-1) }, next: { date = date.steppingMonths(1) },
                         pick: { pickingMonth = true }, id: "panchang_selected_month")
             } else {
                 stepper(title: PanchangFormat.date(date, language: language), symbol: "calendar", monthly: false,
@@ -238,7 +246,6 @@ struct PanchangView: View {
         let saved = initialCity ?? PanchangLocationStore(store: model.store).load() ?? .newDelhi
         city = saved
         date = initialDate ?? saved.today()
-        month = date.firstOfMonth
         if initialDate != nil { section = .daily }
     }
 
@@ -254,13 +261,11 @@ struct PanchangView: View {
         guard initialDate == nil, let focus = model.panchangFocus else { return }
         model.panchangFocus = nil
         date = focus
-        month = focus.firstOfMonth
         section = .daily
     }
 
     private func goToToday() {
         date = city.today()
-        month = date.firstOfMonth
     }
 
     /// A new city keeps "today" on the new city's today.

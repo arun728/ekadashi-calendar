@@ -168,7 +168,7 @@ struct VratView: View {
     private func row(_ event: EkadashiOccurrence) -> some View {
         let record = model.vrat.record(for: event.occurrenceUid)
         let style = VratStatusStyle(record?.status)
-        let date = model.format(event.date, "MMM dd, yyyy")
+        let date = model.fullDate(event.date)
         let open = model.canRecord(event)
         return Button {
             // Only fasts that have happened can be recorded (Phase 4).

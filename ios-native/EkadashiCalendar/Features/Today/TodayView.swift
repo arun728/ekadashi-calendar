@@ -170,8 +170,7 @@ struct EkadashiCard: View {
                         .padding(.vertical, 6)
                         .background(daysUntil < 0 ? Color.gray : Theme.teal, in: Capsule())
                         .frame(maxWidth: .infinity, alignment: .trailing)
-                    Text(model.format(event.date, "MMM dd, yyyy")).font(.title2.weight(.light)).padding(.top, 16)
-                    Text(model.format(event.date, "EEEE")).font(.callout).foregroundStyle(.secondary).padding(.top, 4)
+                    Text(model.fullDate(event.date)).font(.title2.weight(.light)).padding(.top, 16)
                     Text(event.name)
                         .font(.title.bold())
                         .foregroundStyle(Theme.teal)
@@ -223,7 +222,7 @@ struct EkadashiCard: View {
     private func timing(_ title: String, _ date: CivilDate, _ time: String) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(title).font(.callout.bold()).foregroundStyle(Theme.teal)
-            Text(model.format(date, "MMM dd, yyyy")).font(.subheadline).foregroundStyle(.secondary)
+            Text(model.fullDate(date)).font(.subheadline).foregroundStyle(.secondary)
             Text(time).font(.title3.weight(.semibold))
         }
         .frame(maxWidth: .infinity, alignment: .leading)
