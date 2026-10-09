@@ -211,4 +211,22 @@ final class EnglishFallbackTests: XCTestCase {
         XCTAssertEqual(PlaceNames.shared.label("London (GB)", language: "gu"), "લંડન (યુનાઇટેડ કિંગડમ)")
         XCTAssertEqual(PlaceNames.shared.country("IN", language: "te"), "భారతదేశం")
     }
+
+    /// Every Indian city in the worldwide Panchang list, as the list spells
+    /// it, is written in each language's own script.
+    func testEveryIndianPanchangCityIsNamedInEachLanguage() throws {
+        let rows = try XCTUnwrap(JSONSerialization.jsonObject(with: Repo.data("assets/panchang/cities.json")) as? [[Any]])
+        let latin = try NSRegularExpression(pattern: "[A-Za-z]")
+        var missing: [String] = []
+        for row in rows where row[3] as? String == "IN" {
+            let label = "\(row[1]) (IN)"
+            for language in ["hi", "ta", "te", "gu", "bn"] {
+                let shown = PlaceNames.shared.label(label, language: language)
+                if latin.firstMatch(in: shown, range: NSRange(shown.startIndex..., in: shown)) != nil {
+                    missing.append("\(language): \(label)")
+                }
+            }
+        }
+        XCTAssertEqual(Array(missing.prefix(20)), [], "\(missing.count) missing")
+    }
 }
