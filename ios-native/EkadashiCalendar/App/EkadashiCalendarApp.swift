@@ -14,12 +14,27 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         return true
     }
 
-    nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification)
-        async -> UNNotificationPresentationOptions { [.banner, .sound, .list] }
+    // The completion-handler forms, answered on the main thread. The async
+    // forms are resumed on a background thread, and UIKit then asserts
+    // "Call must be made on main thread": a notification arriving while the
+    // app is open crashed it, and a tapped one (lock screen or banner) never
+    // opened its event.
+    nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification,
+                                            withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        DispatchQueue.main.async { completionHandler([.banner, .sound, .list]) }
+    }
 
-    nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse) async {
-        guard let link = response.notification.request.content.userInfo["url"] as? String, let url = URL(string: link) else { return }
-        await MainActor.run { model.open(url) }
+    nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse,
+                                            withCompletionHandler completionHandler: @escaping () -> Void) {
+        let link = response.notification.request.content.userInfo["url"] as? String
+        DispatchQueue.main.async {
+            MainActor.assumeIsolated {
+                // Opens the reminder's day in Panchang or Calendar (or Home for
+                // Ekadashi reminders); a cold launch queues it until loaded.
+                if let link, let url = URL(string: link) { self.model.open(url) }
+            }
+            completionHandler()
+        }
     }
 }
 

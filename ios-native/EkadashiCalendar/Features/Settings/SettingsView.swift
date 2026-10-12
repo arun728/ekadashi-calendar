@@ -65,6 +65,7 @@ struct SettingsView: View {
                         row("bell.badge", model.t("test_notification"), model.t("test_notification_desc"))
                     }
                     .buttonStyle(.plain)
+                    .accessibilityIdentifier("settings_test_notification")
                 }
             }
             .tint(Theme.teal)
