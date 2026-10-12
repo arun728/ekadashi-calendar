@@ -2,7 +2,7 @@ import '../test/support/premium_fixture.dart';
 import '../test/support/fake_free_sync_registry.dart';
 import 'package:ekadashi_calendar/services/premium_service.dart';
 import 'dart:io';
-import 'package:sqflite/sqflite.dart' show getDatabasesPath;
+import 'package:sqflite/sqflite.dart' show deleteDatabase, getDatabasesPath;
 import 'package:table_calendar/table_calendar.dart';
 import 'package:ekadashi_calendar/screens/global_search_screen.dart';
 import 'package:ekadashi_calendar/screens/panchang_screen.dart';
@@ -64,6 +64,12 @@ void main() {
       addTearDown(tester.testTextInput.unregister);
       final prefs = await SharedPreferences.getInstance();
       await prefs.clear();
+      // tool/android-drive-installed.sh retries a run whose driver dropped;
+      // start every attempt with no calendar entries so a retry does not
+      // find the reminder an earlier attempt saved (12 Oct 2026 CI).
+      await deleteDatabase(
+        '${await getDatabasesPath()}/ekadashi_calendar_entries.db',
+      );
       await prefs.setBool('has_launched', true);
       await prefs.setString('language_code', 'en');
       await prefs.setBool('is_dark_mode', true);

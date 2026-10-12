@@ -111,8 +111,14 @@ final class AppModel {
     /// Time pickers use the 24-hour clock outside English, since iOS writes
     /// AM and PM in Latin letters for most Indian languages.
     var timePickerLocale: Locale {
-        language == "en" ? locale : Locale(identifier: "\(locale.identifier)@hours=h23")
+        // Built once per language: a new Locale on every redraw kept the
+        // time wheel re-laying itself out (an observation feedback loop).
+        if let cached = timePickerLocales[language] { return cached }
+        let value = language == "en" ? locale : Locale(identifier: "\(locale.identifier)@hours=h23")
+        timePickerLocales[language] = value
+        return value
     }
+    @ObservationIgnored private var timePickerLocales: [String: Locale] = [:]
 
     /// The one way every tab shows a date: weekday, date, month and year
     /// ("Thu, 8 Oct 2026"), as AppStrings.fullDate on Android.

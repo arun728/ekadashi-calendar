@@ -222,6 +222,22 @@ final class ScreenshotTests: XCTestCase {
         snap("13-notifications")
     }
 
+    /// A notification shown while the app is open must not crash it (the
+    /// notification delegate answered off the main thread, 12 Oct 2026).
+    func testTestNotificationKeepsTheAppRunning() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 20))
+        tab(4)
+        let send = element("settings_test_notification")
+        for _ in 0..<6 where !(send.exists && send.isHittable) { app.swipeUp() }
+        XCTAssertTrue(send.waitForExistence(timeout: 5), "Test notification")
+        send.tap()
+        // It is delivered after one second; give it time to arrive.
+        sleep(4)
+        XCTAssertEqual(app.state, .runningForeground, "the app survived the notification")
+        XCTAssertTrue(send.exists, "Settings is still on screen and responsive")
+        snap("14-test-notification")
+    }
+
     /// Return ends editing, so focus the field again before replacing its text.
     private func replaceSearch(with text: String) {
         let field = app.searchFields.firstMatch

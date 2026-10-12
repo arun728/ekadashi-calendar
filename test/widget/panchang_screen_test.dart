@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:ekadashi_calendar/screens/panchang_screen.dart';
 import 'package:ekadashi_calendar/services/ekadashi_service.dart';
 import 'package:ekadashi_calendar/services/language_service.dart';
 import 'package:ekadashi_calendar/services/panchang/observance_calendar_service.dart';
 import 'package:ekadashi_calendar/services/panchang/panchang_city.dart';
+import 'package:ekadashi_calendar/services/panchang/panchang_location_store.dart';
 import 'package:ekadashi_calendar/services/panchang/panchang_engine.dart';
 import 'package:ekadashi_calendar/services/premium_service.dart';
 import 'package:flutter/material.dart';
@@ -128,6 +131,52 @@ void main() {
     await tester.tap(find.byKey(const Key('panchang_key_filter_ekadashi')));
     await tester.pumpAndSettle();
     expect(find.text('Deepavali (Lakshmi Puja)'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a reminder opens its day even while the saved city loads', (
+    tester,
+  ) async {
+    final premium = await premiumService(true);
+    addTearDown(premium.dispose);
+    // On a phone the saved city arrives after the tapped reminder has
+    // opened its day (Panchang is built when first opened); hold it back.
+    final store = _SlowLocationStore();
+    final key = GlobalKey<PanchangScreenState>();
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider<PremiumService>.value(value: premium),
+          ChangeNotifierProvider<LanguageService>.value(
+            value: LanguageService(),
+          ),
+        ],
+        child: MaterialApp(
+          home: Scaffold(
+            body: PanchangScreen(
+              key: key,
+              locationStore: store,
+              ekadashiList: service.getEkadashis(
+                timezone: 'IST',
+                languageCode: 'en',
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    key.currentState!.showDate(DateTime(2027, 3, 4));
+    await tester.pumpAndSettle();
+    store.loaded.complete(PanchangCity.newDelhi);
+    await tester.pumpAndSettle();
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('panchang_stepper')),
+        matching: find.text('Thu, 4 Mar 2027'),
+      ),
+      findsOneWidget,
+      reason: 'restoring the saved city must not reset the date to today',
+    );
     expect(tester.takeException(), isNull);
   });
 
@@ -298,4 +347,11 @@ void main() {
       expect(tester.takeException(), isNull, reason: page);
     }
   });
+}
+
+class _SlowLocationStore extends PanchangLocationStore {
+  final loaded = Completer<PanchangCity?>();
+
+  @override
+  Future<PanchangCity?> load() => loaded.future;
 }

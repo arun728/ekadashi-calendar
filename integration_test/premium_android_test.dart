@@ -106,15 +106,27 @@ void main() {
       );
       // Bring it near the top: the floating glass navigation bar and bottom
       // overlays (such as a location snackbar) cannot cover the tap there.
-      await Scrollable.ensureVisible(tester.element(unlock), alignment: 0.15);
-      await tester.pump(const Duration(milliseconds: 500));
-      await tester.tap(unlock);
+      // A bottom message or the glass bar sliding in can cover the button
+      // for a moment (the 12 Oct 2026 CI tap "would not hit test"), so wait
+      // for movement to settle and tap again if the paywall did not open.
       for (
-        var i = 0;
-        i < 20 && find.byType(PremiumScreen).evaluate().isEmpty;
-        i++
+        var attempt = 0;
+        attempt < 3 && find.byType(PremiumScreen).evaluate().isEmpty;
+        attempt++
       ) {
-        await tester.pump(const Duration(milliseconds: 500));
+        await Scrollable.ensureVisible(
+          tester.element(unlock),
+          alignment: 0.15 + 0.1 * attempt,
+        );
+        await tester.pump(const Duration(seconds: 1));
+        await tester.tap(unlock, warnIfMissed: false);
+        for (
+          var i = 0;
+          i < 10 && find.byType(PremiumScreen).evaluate().isEmpty;
+          i++
+        ) {
+          await tester.pump(const Duration(milliseconds: 500));
+        }
       }
       expect(find.byType(PremiumScreen), findsOneWidget);
       debugPrint('Premium Android flow: free Panchang gate opened');

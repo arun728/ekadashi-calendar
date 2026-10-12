@@ -49,6 +49,7 @@ class PanchangScreen extends StatefulWidget {
     this.initialCity,
     this.ekadashiList = const [],
     this.engine = const PanchangEngine(),
+    this.locationStore,
   });
 
   final DateTime? initialDate;
@@ -57,6 +58,9 @@ class PanchangScreen extends StatefulWidget {
   /// The published schedule in the app language (Key days lists it).
   final List<EkadashiDate> ekadashiList;
   final PanchangEngine engine;
+
+  /// Where the chosen city is kept (tests pass a slow one).
+  final PanchangLocationStore? locationStore;
 
   @override
   State<PanchangScreen> createState() => PanchangScreenState();
@@ -70,7 +74,7 @@ class PanchangScreenState extends State<PanchangScreen> {
   PanchangTerms? _terms;
   PanchangPage _page = PanchangPage.keyDays;
   EkadashiTradition _tradition = EkadashiTradition.smarta;
-  final _locationStore = PanchangLocationStore();
+  late final _locationStore = widget.locationStore ?? PanchangLocationStore();
   late final PageController _pages;
 
   /// Each page keeps its own scroll position while it is shown.
@@ -78,6 +82,9 @@ class PanchangScreenState extends State<PanchangScreen> {
     for (final page in PanchangPage.values) page: ScrollController(),
   };
   bool _locationChanged = false;
+
+  /// A day was opened or picked, so restoring the city keeps it.
+  bool _dateChosen = false;
 
   @override
   void initState() {
@@ -109,11 +116,7 @@ class PanchangScreenState extends State<PanchangScreen> {
 
   /// Opens [date] on the Daily page (event reminders, deep links).
   void showDate(DateTime date) {
-    setState(() {
-      _date = DateTime.utc(date.year, date.month, date.day);
-      _month = DateTime.utc(_date.year, _date.month);
-      _recalculate();
-    });
+    setState(() => _select(date));
     _showPage(PanchangPage.daily);
     final daily = _scrollControllers[PanchangPage.daily]!;
     if (daily.hasClients) daily.jumpTo(0);
@@ -137,6 +140,7 @@ class PanchangScreenState extends State<PanchangScreen> {
 
   /// Selects [date] on every sub-tab; the monthly ones browse its month.
   void _select(DateTime date) {
+    _dateChosen = true;
     _date = DateTime.utc(date.year, date.month, date.day);
     _month = DateTime.utc(_date.year, _date.month);
     _recalculate();
@@ -147,7 +151,9 @@ class PanchangScreenState extends State<PanchangScreen> {
     if (!mounted || city == null || _locationChanged) return;
     setState(() {
       _city = city;
-      if (widget.initialDate == null) {
+      // Only move a date nobody chose: a tapped reminder (showDate) or the
+      // user may have picked one before the saved city arrived.
+      if (widget.initialDate == null && !_dateChosen) {
         _date = _today();
         _month = DateTime.utc(_date.year, _date.month);
       }
