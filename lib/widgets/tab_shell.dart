@@ -75,6 +75,13 @@ class TabBarSlots extends ChangeNotifier {
   WidgetBuilder? _leading;
   List<Widget> Function(BuildContext context)? _actions;
   bool _scheduled = false;
+  bool _disposed = false;
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
 
   Widget? leading(BuildContext context) => _leading?.call(context);
   List<Widget> actions(BuildContext context) =>
@@ -103,7 +110,8 @@ class TabBarSlots extends ChangeNotifier {
     _scheduled = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scheduled = false;
-      notifyListeners();
+      // A page that owns its slots may be gone by then.
+      if (!_disposed) notifyListeners();
     });
     WidgetsBinding.instance.ensureVisualUpdate();
   }

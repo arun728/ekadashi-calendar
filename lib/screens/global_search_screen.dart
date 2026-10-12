@@ -280,9 +280,10 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
         if (!mounted) return;
         await Navigator.of(context).push(
           MaterialPageRoute<void>(
-            builder: (_) => Scaffold(
-              appBar: AppBar(title: Text(item.title)),
-              body: PanchangScreen(initialDate: target.date, initialCity: city),
+            builder: (_) => PanchangPushedPage(
+              title: item.title,
+              initialDate: target.date,
+              initialCity: city,
             ),
           ),
         );

@@ -197,6 +197,19 @@ void main() {
     );
     expect(styleOf(tester, name).fontSize, IosText.subheadline);
     expect(styleOf(tester, name).fontWeight, FontWeight.w600);
+    // Arun's iPhone screenshot: city, pin and chevron all in teal.
+    expect(styleOf(tester, name).color, IosColors.teal);
+    expect(
+      tester
+          .widget<Icon>(
+            find.descendant(
+              of: pill,
+              matching: find.byIcon(Icons.keyboard_arrow_down),
+            ),
+          )
+          .color,
+      IosColors.teal,
+    );
     final zone = find.text('America/New_York').first;
     final page = tester.getRect(find.byKey(const Key('panchang_stepper')));
     expect(
@@ -215,7 +228,10 @@ void main() {
     final stepper = find.byKey(const Key('panchang_stepper'));
     expect(tester.widget<GlassPanel>(stepper).radius, 16);
     expect(
-      find.descendant(of: stepper, matching: find.byIcon(Icons.calendar_today)),
+      find.descendant(
+        of: stepper,
+        matching: find.byIcon(Icons.calendar_month_outlined),
+      ),
       findsOneWidget,
     );
     final title = find
@@ -223,6 +239,22 @@ void main() {
         .first;
     expect(styleOf(tester, title).fontSize, IosText.headline);
     expect(styleOf(tester, title).fontWeight, FontWeight.w600);
+    // The screenshot: the date, its calendar icon and both chevrons teal.
+    expect(styleOf(tester, title).color, IosColors.teal);
+    for (final icon in [
+      Icons.calendar_month_outlined,
+      Icons.chevron_left,
+      Icons.chevron_right,
+    ]) {
+      expect(
+        tester
+            .widget<Icon>(
+              find.descendant(of: stepper, matching: find.byIcon(icon)),
+            )
+            .color,
+        IosColors.teal,
+      );
+    }
   });
 
   testWidgets('day picker is a sheet with a graphical calendar, Today, Done', (
@@ -309,6 +341,8 @@ void main() {
     final premium = await premiumService(false);
     addTearDown(premium.dispose);
     await show(tester, premium: premium, date: DateTime(2026, 11, 8));
+    await tester.tap(find.byKey(const Key('panchang_tab_keydays')));
+    await tester.pumpAndSettle();
     final chip = find.byKey(const Key('panchang_key_filter_ekadashi'));
     expect(tester.widget(chip), isA<GlassChip>());
     expect(
@@ -337,6 +371,34 @@ void main() {
     );
     expect(styleOf(tester, title).fontSize, IosText.headline);
     expect(panelAround(tester, title).radius, 18);
+    // Locked rows: a lock in the tile and a lock on the right, the
+    // category alone as the subtitle; unlocked rows end in a chevron.
+    final locked = find.ancestor(
+      of: title,
+      matching: find.byType(PanchangPanel),
+    );
+    expect(
+      find.descendant(of: locked, matching: find.byIcon(Icons.lock)),
+      findsNWidgets(2),
+    );
+    final festival = find.descendant(
+      of: locked,
+      matching: find.textContaining('Festival'),
+    );
+    expect(festival, findsOneWidget);
+    expect(
+      tester.widget<Text>(festival).data ??
+          tester.widget<Text>(festival).textSpan!.toPlainText(),
+      isNot(contains('·')),
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('panchang_key_days')),
+        matching: find.byIcon(Icons.chevron_right),
+      ),
+      findsWidgets,
+      reason: 'the free Ekadashi rows end in a chevron',
+    );
     await tester.tap(chip);
     await tester.pumpAndSettle();
     expect(tester.widget<GlassChip>(chip).selected, isTrue);
@@ -425,15 +487,12 @@ void main() {
         home: Scaffold(
           body: SizedBox(
             width: 360,
-            child: PanchangValueRow(
-              label: 'A long label that needs some room',
-              value: '5',
-            ),
+            child: PanchangValueRow(label: 'Twenty one characters', value: '5'),
           ),
         ),
       ),
     );
-    final label = find.text('A long label that needs some room');
+    final label = find.text('Twenty one characters');
     expect(styleOf(tester, label).fontSize, IosText.subheadline);
     expect(tester.getSize(label).height, lessThan(24), reason: 'one line');
     final value = find.text('5');
@@ -471,6 +530,8 @@ void main() {
     final premium = await premiumService(false);
     addTearDown(premium.dispose);
     await show(tester, premium: premium, date: DateTime(2026, 11, 8));
+    await tester.ensureVisible(find.byKey(const Key('panchang_tab_ekadashi')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('panchang_tab_ekadashi')));
     await tester.pumpAndSettle();
     final chip = find.byKey(const Key('panchang_tradition_gaudiya'));
