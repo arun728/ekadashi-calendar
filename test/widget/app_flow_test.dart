@@ -24,7 +24,7 @@ void main() {
       );
       final events = (request.arguments as Map)['ekadashis'] as List;
       expect((events.first as Map)['fastingStart'], endsWith('-05:00'));
-      await tester.tap(find.byIcon(Icons.calendar_month));
+      await tester.tap(find.byKey(const Key('glass_tab_1')));
       await tester.pumpAndSettle();
       expect(find.byIcon(Icons.settings), findsOneWidget);
       expect(tester.takeException(), isNull);
@@ -129,7 +129,7 @@ void main() {
     await tester.pumpWidget(harness.app());
     await tester.pumpAndSettle();
     expect(find.text('Location Denied'), findsOneWidget);
-    await tester.tap(find.byIcon(Icons.calendar_month));
+    await tester.tap(find.byKey(const Key('glass_tab_1')));
     await tester.pumpAndSettle();
     expect(find.text('Location Denied'), findsNothing);
     await tester.tap(find.byIcon(Icons.settings));
@@ -144,7 +144,7 @@ void main() {
   ) async {
     await tester.pumpWidget(harness.app());
     await tester.pumpAndSettle();
-    await tester.tap(find.byIcon(Icons.calendar_month));
+    await tester.tap(find.byKey(const Key('glass_tab_1')));
     await tester.pumpAndSettle();
     await tester.tap(find.byIcon(Icons.settings));
     await tester.pumpAndSettle();

@@ -1,12 +1,12 @@
 import '../test/support/premium_fixture.dart';
 import '../test/support/fake_free_sync_registry.dart';
+import 'package:ekadashi_calendar/widgets/ios_style.dart';
 import 'package:ekadashi_calendar/services/premium_service.dart';
 import 'dart:io';
 import 'package:sqflite/sqflite.dart' show deleteDatabase, getDatabasesPath;
 import 'package:table_calendar/table_calendar.dart';
 import 'package:ekadashi_calendar/screens/global_search_screen.dart';
 import 'package:ekadashi_calendar/screens/panchang_screen.dart';
-import 'package:ekadashi_calendar/widgets/glass_tube.dart';
 import 'package:ekadashi_calendar/services/widget_sync_manager.dart';
 import 'package:ekadashi_calendar/services/native_widget_service.dart';
 import 'dart:convert';
@@ -134,7 +134,7 @@ void main() {
       await binding.takeScreenshot('v2_panchang_free');
       // The sections also change with a horizontal swipe (Phase 9).
       bool chipSelected(String key) =>
-          tester.widget<GlassFilterChip>(find.byKey(Key(key))).selected;
+          tester.widget<GlassChip>(find.byKey(Key(key))).selected;
       final panchangPages = find.descendant(
         of: find.byType(PanchangScreen),
         matching: find.byType(PageView),
@@ -210,7 +210,7 @@ void main() {
       await tester.tap(find.byKey(const Key('journey_tab_history')));
       await frames(tester);
       await binding.takeScreenshot('v2_history_2026');
-      await tester.tap(find.byIcon(Icons.calendar_month));
+      await tester.tap(find.byKey(const Key('glass_tab_1')));
       await frames(tester);
       final addButton = find.byKey(const Key('add_calendar_entry'));
       final capsule = tester.getRect(
@@ -268,7 +268,7 @@ void main() {
         await File(
           '$fixtureDirectory/widget-fixture-$code.json',
         ).writeAsString(jsonEncode(payload));
-        await tester.tap(find.byIcon(Icons.spa_outlined));
+        await tester.tap(find.byKey(const Key('glass_tab_2')));
         await frames(tester);
         await binding.takeScreenshot('v2_vrat_$code');
         expect(find.text(lang.translate('journey_tab')), findsWidgets);
@@ -295,7 +295,7 @@ void main() {
         await tester.tap(find.byIcon(Icons.home));
         await frames(tester);
         await binding.takeScreenshot('glass_home_$code');
-        await tester.tap(find.byIcon(Icons.calendar_month));
+        await tester.tap(find.byKey(const Key('glass_tab_1')));
         await frames(tester);
         await binding.takeScreenshot('glass_calendar_$code');
       }

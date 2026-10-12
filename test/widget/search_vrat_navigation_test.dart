@@ -27,7 +27,7 @@ void main() {
       );
       expect(nav.items, hasLength(5));
       final dynamic state = tester.state(find.byType(MainScreen));
-      await tester.tap(find.byIcon(Icons.spa_outlined));
+      await tester.tap(find.byKey(const Key('glass_tab_2')));
       await tester.pumpAndSettle();
       expect(find.byType(VratTrackerScreen).hitTestable(), findsOneWidget);
       await tester.tap(find.byKey(const Key('open_global_search')));

@@ -17,6 +17,7 @@ import 'widgets/day_entries_list.dart';
 import 'widgets/add_edit_entry_sheet.dart';
 import 'widgets/google_calendar_picker_sheet.dart';
 import 'package:flutter/material.dart';
+import '../widgets/tab_shell.dart';
 import '../services/notifications/event_reminder_service.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:provider/provider.dart';
@@ -31,6 +32,9 @@ import '../models/vrat_tracker_models.dart';
 
 class CalendarScreen extends StatefulWidget {
   final List<EkadashiDate> ekadashiList;
+
+  /// Today, Add and Google go in the shared top bar (iOS toolbar).
+  final TabBarSlots? barSlots;
   final String? currentTimezone;
   final CalendarEntryRepository? repository;
   final GoogleCalendarService? googleService;
@@ -56,6 +60,7 @@ class CalendarScreen extends StatefulWidget {
   const CalendarScreen({
     super.key,
     required this.ekadashiList,
+    this.barSlots,
     this.currentTimezone,
     this.repository,
     this.googleService,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/ios_style.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/language_service.dart';
@@ -11,11 +12,11 @@ Future<void> openPremium(
   BuildContext context, {
   String currentTimezone = 'IST',
   String? reasonKey,
-}) => Navigator.of(context).push(
-  MaterialPageRoute<void>(
-    builder: (_) =>
-        PremiumScreen(currentTimezone: currentTimezone, reasonKey: reasonKey),
-  ),
+}) => showAppSheet<void>(
+  // A sheet over everything, as the iOS paywall.
+  context,
+  builder: (_) =>
+      PremiumScreen(currentTimezone: currentTimezone, reasonKey: reasonKey),
 );
 
 /// Paywall. Premium is bought and restored through Google Play only; no

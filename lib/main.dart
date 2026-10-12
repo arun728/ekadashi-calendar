@@ -6,6 +6,8 @@ import 'package:flutter/foundation.dart';
 import 'widgets/glass_navigation_bar.dart';
 import 'data/calendar_entry_repository.dart';
 import 'widgets/app_background.dart';
+import 'widgets/ios_style.dart';
+import 'widgets/tab_shell.dart';
 import 'data/sqflite_calendar_entry_repository.dart';
 import 'models/calendar_entry.dart';
 import 'services/notifications/event_reminder_service.dart';
@@ -191,6 +193,33 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   final GlobalKey<CalendarScreenState> _calendarKey = GlobalKey();
   final GlobalKey<PanchangScreenState> _panchangKey = GlobalKey();
   bool _panchangOpened = false;
+
+  /// One navigation stack per tab (iOS NavigationStack per tab): pages a
+  /// tab pushes keep the tab bar; the shell's top bar gives way to theirs.
+  final _tabNavigators = List.generate(5, (_) => GlobalKey<NavigatorState>());
+  late final _tabObservers = List.generate(
+    5,
+    (_) => TabNavigatorObserver(_tabStackChanged),
+  );
+
+  /// Toolbar items of the Calendar and Panchang tabs.
+  final _calendarBar = TabBarSlots();
+  final _panchangBar = TabBarSlots();
+
+  NavigatorState? get _currentTabNavigator =>
+      _tabNavigators[_currentIndex].currentState;
+
+  bool get _tabPushed => _currentTabNavigator?.canPop() ?? false;
+
+  void _tabStackChanged() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  /// Back to a tab's first page (re-tapping the tab, or a deep link).
+  void _popTabToRoot(int index) =>
+      _tabNavigators[index].currentState?.popUntil((route) => route.isFirst);
 
   @override
   void initState() {
@@ -848,9 +877,11 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     if (tab == null) return;
     // A deep link is not a search result.
     _searchReturn.clear();
-    if (_searchOpen && Navigator.of(context).canPop()) {
-      Navigator.of(context).pop();
-    }
+    // Sheets, the paywall and the search close first, and the target tab
+    // shows its first page, so the link never lands under another page.
+    Navigator.of(context).popUntil((route) => route.isFirst);
+    _popTabToRoot(tab);
+    _popTabToRoot(_currentIndex);
     setState(() => _currentIndex = tab);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -868,35 +899,36 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     if (restore == null) setState(_searchReturn.clear);
     _searchOpen = true;
     try {
-      await Navigator.of(context).push<void>(
-        MaterialPageRoute<void>(
-          builder: (_) => GlobalSearchScreen(
-            ekadashiList: _ekadashiList,
-            ekadashisFor: (code) => _ekadashiService.getEkadashis(
-              timezone: _currentTimezone,
-              languageCode: code,
-            ),
-            currentTimezone: _currentTimezone,
-            availableYears: _ekadashiService.availableYears,
-            initialSession: restore,
-            onOpenTab: (tab, session) {
-              if (!mounted) return;
-              setState(() {
-                _currentIndex = tab;
-                _searchReturn.opened(tab, session);
-              });
-            },
-            onOpenCalendar: (day, session) {
-              if (!mounted) return;
-              setState(() {
-                _currentIndex = 1;
-                _searchReturn.opened(1, session);
-              });
-              WidgetsBinding.instance.addPostFrameCallback(
-                (_) => _calendarKey.currentState?.selectDate(day),
-              );
-            },
+      // A sheet with its own navigation, as on iOS: results open inside it.
+      await showAppSheet<void>(
+        context,
+        nested: true,
+        builder: (_) => GlobalSearchScreen(
+          ekadashiList: _ekadashiList,
+          ekadashisFor: (code) => _ekadashiService.getEkadashis(
+            timezone: _currentTimezone,
+            languageCode: code,
           ),
+          currentTimezone: _currentTimezone,
+          availableYears: _ekadashiService.availableYears,
+          initialSession: restore,
+          onOpenTab: (tab, session) {
+            if (!mounted) return;
+            setState(() {
+              _currentIndex = tab;
+              _searchReturn.opened(tab, session);
+            });
+          },
+          onOpenCalendar: (day, session) {
+            if (!mounted) return;
+            setState(() {
+              _currentIndex = 1;
+              _searchReturn.opened(1, session);
+            });
+            WidgetsBinding.instance.addPostFrameCallback(
+              (_) => _calendarKey.currentState?.selectDate(day),
+            );
+          },
         ),
       );
     } finally {
@@ -953,6 +985,11 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     // Another tab forgets the way back to a search.
     _searchReturn.selected(index);
     if (index == _currentIndex) {
+      // Re-tapping a tab first returns to its first page, as on iOS.
+      if (_tabPushed) {
+        _popTabToRoot(index);
+        return;
+      }
       // Already on this tab - special actions
       if (index == 0) {
         // User explicitly tapped Home - strictly go to next upcoming (skip Parana)
@@ -961,15 +998,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         _calendarKey.currentState?.resetToToday();
       }
     } else {
-      // Switching tabs
+      // Switching tabs keeps each tab where it was (Home keeps its card),
+      // as on iOS.
       setState(() => _currentIndex = index);
-
-      // When switching TO Home tab, scroll to upcoming Ekadashi
-      if (index == 0) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _scrollToNextEkadashi(animate: false, includeParana: true);
-        });
-      }
     }
   }
 
@@ -1092,18 +1123,17 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         icon: const Icon(Icons.home),
         label: lang.translate('home'),
       ),
+      // The iOS tab symbols: calendar, leaf and sparkles.
       BottomNavigationBarItem(
-        icon: const Icon(Icons.calendar_month),
+        icon: const Icon(Icons.calendar_today),
         label: lang.translate('calendar'),
       ),
       BottomNavigationBarItem(
-        icon: const Icon(Icons.spa_outlined),
-        activeIcon: const Icon(Icons.spa),
+        icon: const Icon(Icons.eco),
         label: lang.translate('journey_tab'),
       ),
       BottomNavigationBarItem(
-        icon: const Icon(Icons.auto_awesome_outlined),
-        activeIcon: const Icon(Icons.auto_awesome),
+        icon: const Icon(Icons.auto_awesome),
         label: lang.translate('search_screen_panchang'),
       ),
       BottomNavigationBarItem(
@@ -1111,42 +1141,41 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         label: lang.translate('settings'),
       ),
     ];
-    // A search result opened this tab: the top bar's back arrow and the
-    // system back reopen its results (docs/ROADMAP.md Phase 9).
+    // A search result opened this tab: the top bar's "Search" back button
+    // and the system back reopen its results (docs/ROADMAP.md Phase 9).
     final searchBack = _searchReturn.showsBack(_currentIndex);
+    // A page pushed inside the tab brings its own top bar, as on iOS.
+    final tabPushed = !_isLoading && _errorMessage.isEmpty && _tabPushed;
+    final slots = switch (_currentIndex) {
+      1 => _calendarBar,
+      3 => _panchangBar,
+      _ => null,
+    };
     // The iOS gradient behind every tab (docs/ROADMAP.md Phase 8).
     return PopScope(
-      canPop: !searchBack,
+      canPop: !searchBack && !tabPushed,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop && searchBack) _returnToSearch();
+        if (didPop) return;
+        if (tabPushed) {
+          _currentTabNavigator?.maybePop();
+        } else if (searchBack) {
+          _returnToSearch();
+        }
       },
       child: AppBackground(
         child: Scaffold(
           backgroundColor: Colors.transparent,
           extendBody: glass,
-          appBar: AppBar(
-            backgroundColor: Colors.transparent,
-            surfaceTintColor: Colors.transparent,
-            leading: searchBack
-                ? IconButton(
-                    key: const Key('search_return'),
-                    tooltip: lang.translate('search'),
-                    icon: const BackButtonIcon(),
-                    onPressed: _returnToSearch,
-                  )
-                : null,
-            title: Text(lang.translate('app_title')),
-            centerTitle: true,
-            actions: [
-              IconButton(
-                key: const Key('open_global_search'),
-                tooltip: lang.translate('search'),
-                icon: const Icon(Icons.search),
-                onPressed: _openSearch,
-              ),
-              const SizedBox(width: 4),
-            ],
-          ),
+          appBar: tabPushed
+              ? null
+              : PreferredSize(
+                  preferredSize: const Size.fromHeight(kToolbarHeight),
+                  child: ListenableBuilder(
+                    listenable: slots ?? const AlwaysStoppedAnimation(0),
+                    builder: (context, _) =>
+                        _topBar(context, lang, searchBack, slots),
+                  ),
+                ),
           body: _buildBody(lang, tealColor),
           bottomNavigationBar: glass
               ? (keyboardOpen
@@ -1168,7 +1197,66 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     );
   }
 
+  /// The iOS inline navigation bar: "‹ Search" when a search result opened
+  /// the tab, the tab's leading items (Today), the centred title, the
+  /// tab's actions and the search button.
+  PreferredSizeWidget _topBar(
+    BuildContext context,
+    LanguageService lang,
+    bool searchBack,
+    TabBarSlots? slots,
+  ) {
+    final tabLeading = slots?.leading(context);
+    final leading = [
+      if (searchBack)
+        TextButton.icon(
+          key: const Key('search_return'),
+          onPressed: _returnToSearch,
+          style: TextButton.styleFrom(
+            foregroundColor: IosColors.teal,
+            padding: const EdgeInsets.only(left: 4, right: 8),
+            minimumSize: const Size(44, 44),
+          ),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          label: Text(
+            lang.translate('search'),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: IosText.body),
+          ),
+        ),
+      ?tabLeading,
+    ];
+    return AppBar(
+      automaticallyImplyLeading: false,
+      leadingWidth: leading.isEmpty
+          ? null
+          : (searchBack && tabLeading != null ? 210 : 128),
+      // Long words in other languages shrink rather than overflow.
+      leading: leading.isEmpty
+          ? null
+          : FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: AlignmentDirectional.centerStart,
+              child: Row(mainAxisSize: MainAxisSize.min, children: leading),
+            ),
+      title: Text(lang.translate('app_title')),
+      actions: [
+        ...?slots?.actions(context),
+        IconButton(
+          key: const Key('open_global_search'),
+          tooltip: lang.translate('search'),
+          icon: const Icon(Icons.search),
+          onPressed: _openSearch,
+        ),
+        const SizedBox(width: 4),
+      ],
+    );
+  }
+
   Widget _buildBody(LanguageService lang, Color tealColor) {
+    // Loading and error states as iOS RootView: a spinner with
+    // "Locating...", or the unavailable view with a prominent Try again.
     if (_isLoading) {
       return Center(
         child: Column(
@@ -1178,7 +1266,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             const SizedBox(height: 16),
             Text(
               lang.translate('locating'),
-              style: TextStyle(color: Colors.grey.shade500),
+              style: TextStyle(
+                fontSize: IosText.body,
+                color: IosColors.secondary(context),
+              ),
             ),
           ],
         ),
@@ -1186,50 +1277,60 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     }
 
     if (_errorMessage.isNotEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.error_outline, size: 48, color: Colors.grey.shade400),
-            const SizedBox(height: 16),
-            Text(_errorMessage, style: TextStyle(color: Colors.grey.shade500)),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => _loadData(),
-              style: ElevatedButton.styleFrom(backgroundColor: tealColor),
-              child: Text(lang.translate('retry')),
-            ),
-          ],
+      return UnavailableView(
+        icon: Icons.error_outline,
+        title: _errorMessage,
+        action: FilledButton(
+          onPressed: () => _loadData(),
+          style: IosButtons.prominent(),
+          child: Text(lang.translate('retry'), style: IosButtons.label),
         ),
       );
     }
 
     if (_currentIndex == 3) _panchangOpened = true;
-    return IndexedStack(
-      index: _currentIndex,
-      children: [
-        SafeArea(top: false, child: _buildHomeContent(lang, tealColor)),
-        CalendarScreen(
-          key: _calendarKey,
-          repository: context.read<CalendarEntryRepository?>(),
+    // Each tab is a navigation stack whose first page is built here.
+    Widget tabRoot(int index) => switch (index) {
+      0 => SafeArea(top: false, child: _buildHomeContent(lang, tealColor)),
+      1 => CalendarScreen(
+        key: _calendarKey,
+        repository: context.read<CalendarEntryRepository?>(),
+        ekadashiList: _ekadashiList,
+        currentTimezone: _currentTimezone,
+        barSlots: _calendarBar,
+      ),
+      2 => SafeArea(
+        top: false,
+        child: VratTrackerScreen(
           ekadashiList: _ekadashiList,
           currentTimezone: _currentTimezone,
         ),
-        SafeArea(
-          top: false,
-          child: VratTrackerScreen(
-            ekadashiList: _ekadashiList,
-            currentTimezone: _currentTimezone,
-          ),
-        ),
-        // Built when first opened: the Panchang calculates a year of
-        // festivals, which the other tabs never need.
-        if (_currentIndex == 3 || _panchangOpened)
-          PanchangScreen(key: _panchangKey, ekadashiList: _ekadashiList)
-        else
-          const SizedBox.shrink(),
-        SettingsScreen(currentTimezone: _currentTimezone),
-      ],
+      ),
+      // Built when first opened: the Panchang calculates a year of
+      // festivals, which the other tabs never need.
+      3 =>
+        _currentIndex == 3 || _panchangOpened
+            ? PanchangScreen(
+                key: _panchangKey,
+                ekadashiList: _ekadashiList,
+                barSlots: _panchangBar,
+              )
+            : const SizedBox.shrink(),
+      _ => SettingsScreen(currentTimezone: _currentTimezone),
+    };
+    return TabContentScope(
+      build: tabRoot,
+      child: IndexedStack(
+        index: _currentIndex,
+        children: [
+          for (var i = 0; i < 5; i++)
+            TabNavigator(
+              index: i,
+              navigatorKey: _tabNavigators[i],
+              observer: _tabObservers[i],
+            ),
+        ],
+      ),
     );
   }
 

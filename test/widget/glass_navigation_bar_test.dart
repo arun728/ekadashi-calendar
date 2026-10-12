@@ -101,7 +101,9 @@ void main() {
     }
   }
   for (final brightness in [Brightness.light, Brightness.dark]) {
-    testWidgets('$brightness selection uses brand teal on black', (
+    // The iOS tab bar's selection: a teal-tinted glass highlight, never a
+    // solid black pill.
+    testWidgets('$brightness selection uses brand teal on a teal tint', (
       tester,
     ) async {
       await open(tester, brightness: brightness);
@@ -119,7 +121,9 @@ void main() {
       );
       expect(
         (tester.widget<DecoratedBox>(pill).decoration as BoxDecoration).color,
-        Colors.black,
+        const Color(
+          0xFF00A19B,
+        ).withValues(alpha: brightness == Brightness.dark ? .2 : .14),
       );
     });
   }

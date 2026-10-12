@@ -135,10 +135,10 @@ void main() {
     await tester.pumpAndSettle();
 
     // 1. Verify Home screen loaded
-    expect(find.byIcon(Icons.spa_outlined), findsOneWidget);
+    expect(find.byKey(const Key('glass_tab_2')), findsOneWidget);
 
     // 2. Navigate to Vrat Tracker tab
-    await tester.tap(find.byIcon(Icons.spa_outlined));
+    await tester.tap(find.byKey(const Key('glass_tab_2')));
     await tester.pumpAndSettle();
 
     expect(find.text('Enable Vrat Tracker'), findsNothing);

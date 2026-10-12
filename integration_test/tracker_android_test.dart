@@ -41,14 +41,14 @@ void main() {
     await tester.pump();
     for (
       var frame = 0;
-      frame < 120 && find.byIcon(Icons.spa_outlined).evaluate().isEmpty;
+      frame < 120 && find.byKey(const Key('glass_tab_2')).evaluate().isEmpty;
       frame++
     ) {
       await tester.pump(const Duration(seconds: 1));
     }
-    expect(find.byIcon(Icons.spa_outlined), findsOneWidget);
+    expect(find.byKey(const Key('glass_tab_2')), findsOneWidget);
     debugPrint('Tracker UI: Home ready');
-    await tester.tap(find.byIcon(Icons.spa_outlined));
+    await tester.tap(find.byKey(const Key('glass_tab_2')));
     await pumpUi(tester);
     final screen = find.byType(VratTrackerScreen);
     final context = tester.element(screen);

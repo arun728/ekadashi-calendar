@@ -91,7 +91,7 @@ void main() {
       const Offset(0, 260),
     );
     await pumpUi(tester);
-    await tester.tap(find.byIcon(Icons.calendar_month));
+    await tester.tap(find.byKey(const Key('glass_tab_1')));
     await pumpUi(tester);
     final emptyDay = find.text('No Ekadashi on this day');
     if (emptyDay.evaluate().isNotEmpty &&

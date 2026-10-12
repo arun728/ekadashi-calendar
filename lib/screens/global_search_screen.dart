@@ -288,11 +288,12 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
         );
       case SearchTargetKind.entry:
         final session = _session;
-        Navigator.of(context).pop();
+        // The search is a sheet with its own navigation: close the sheet.
+        Navigator.of(context, rootNavigator: true).pop();
         widget.onOpenCalendar?.call(target.date!, session);
       case SearchTargetKind.tab:
         final session = _session;
-        Navigator.of(context).pop();
+        Navigator.of(context, rootNavigator: true).pop();
         widget.onOpenTab?.call(target.tab!, session);
       case SearchTargetKind.paywall:
         await openPremium(context, currentTimezone: widget.currentTimezone);
@@ -318,7 +319,8 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
           key: const Key('global_search_back'),
           icon: const Icon(Icons.arrow_back),
           tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-          onPressed: () => Navigator.of(context).maybePop(),
+          onPressed: () =>
+              Navigator.of(context, rootNavigator: true).maybePop(),
         ),
         titleSpacing: 0,
         title: TextField(

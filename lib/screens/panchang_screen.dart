@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/tab_shell.dart';
 import '../services/notifications/event_reminder_service.dart';
 import 'package:provider/provider.dart';
 
@@ -50,7 +51,11 @@ class PanchangScreen extends StatefulWidget {
     this.ekadashiList = const [],
     this.engine = const PanchangEngine(),
     this.locationStore,
+    this.barSlots,
   });
+
+  /// Today and the calculation notes go in the shared top bar (iOS toolbar).
+  final TabBarSlots? barSlots;
 
   final DateTime? initialDate;
   final PanchangCity? initialCity;

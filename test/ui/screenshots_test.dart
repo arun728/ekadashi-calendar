@@ -75,7 +75,7 @@ void main() {
         }
 
         await capture('home');
-        await tester.tap(find.byIcon(Icons.calendar_month));
+        await tester.tap(find.byKey(const Key('glass_tab_1')));
         await tester.pumpAndSettle();
         await capture('calendar');
         await tester.tap(find.byKey(const Key('open_global_search')));
@@ -178,7 +178,7 @@ void main() {
         await capture('details');
         await tester.tap(find.byType(BackButton));
         await tester.pumpAndSettle();
-        expect(find.byIcon(Icons.calendar_month), findsOneWidget);
+        expect(find.byKey(const Key('glass_tab_1')), findsOneWidget);
       },
     );
   }

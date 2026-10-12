@@ -1,8 +1,6 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 
-import 'glass_tube.dart';
+import 'ios_style.dart';
 
 /// A screen's sub-sections as a row of glass chips (Panchang and Journey,
 /// docs/ROADMAP.md Phase 9). The pages below also change with a swipe; the
@@ -21,33 +19,30 @@ class SectionChipBar extends StatelessWidget {
   final int selected;
   final ValueChanged<int> onSelected;
 
+  /// Separate glass capsules in a scrolling row, like iOS SectionChips
+  /// (Glass.swift): spacing 8, padding 16/8.
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
-    child: GlassTube(
-      optionCount: max(2, labels.length),
-      padding: const EdgeInsets.all(3),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            for (var i = 0; i < labels.length; i++)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 2),
-                child: SelectedChipAnchor(
-                  selected: i == selected,
-                  child: GlassFilterChip(
-                    key: chipKeys[i],
-                    label: Text(labels[i]),
-                    selected: i == selected,
-                    showCheckmark: false,
-                    onSelected: (_) => onSelected(i),
-                  ),
-                ),
+  Widget build(BuildContext context) => SingleChildScrollView(
+    scrollDirection: Axis.horizontal,
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    child: Row(
+      children: [
+        for (var i = 0; i < labels.length; i++) ...[
+          if (i > 0) const SizedBox(width: 8),
+          SelectedChipAnchor(
+            selected: i == selected,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 40),
+              child: GlassChip(
+                key: chipKeys[i],
+                label: labels[i],
+                selected: i == selected,
+                onTap: () => onSelected(i),
               ),
-          ],
-        ),
-      ),
+            ),
+          ),
+        ],
+      ],
     ),
   );
 }
