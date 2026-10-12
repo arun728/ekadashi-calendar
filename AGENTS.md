@@ -1,5 +1,30 @@
 # Repository collaboration rules
 
+## Always TDD — critical (12 October 2026)
+
+Arun's standing rule for every agent and chat, for every update, feature, fix
+or any other implementation, on both platforms (Flutter, Kotlin, Swift), with
+no exceptions:
+
+1. **Write the failing tests first.** Before writing the implementation, add
+   tests that describe the new behaviour or UI (keys, widgets, text, colours,
+   sizes, navigation, stored data). Run them and see them fail for the right
+   reason. Commit them on their own ("Failing tests: …"), or, when only one
+   commit is possible, record the failing run in the commit message.
+2. **Then implement** until the new tests pass.
+3. **Run every previous test too**: `flutter analyze` (no errors or
+   warnings), the full `flutter test`, and `swift test` in
+   `ios-native/EkadashiCore`. A change is not done until the new tests and
+   all existing tests pass.
+4. **Every new piece of code has a test that exercises it.** That includes
+   shared components, helpers and bug fixes. A bug fix starts with a test
+   that reproduces the bug.
+5. Where a test cannot run here (XCUITests and the iOS app target without
+   Xcode, Kotlin tests without Gradle, emulator tests), still write it, and
+   say plainly that it was not run.
+6. Report the evidence: the new tests, their failing run before the change,
+   and the passing totals after it.
+
 These rules record Arun's explicit instructions from 3 October 2026.
 
 - Never push or merge to `dev` or `main` without Arun's explicit permission.
