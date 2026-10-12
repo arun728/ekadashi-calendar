@@ -134,6 +134,36 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('the Ekadashi sub-tab calculates in a background isolate', (
+    tester,
+  ) async {
+    // The app calculates off the UI thread; the closure it sends must not
+    // carry the screen (12 Oct 2026: "Could not calculate this month").
+    ObservanceCalendarService.calculateInline = false;
+    addTearDown(() => ObservanceCalendarService.calculateInline = true);
+    final premium = await premiumService(false);
+    addTearDown(premium.dispose);
+    await showPanchang(tester, premium: premium, date: DateTime(2026, 11, 1));
+    await tester.tap(find.byKey(const Key('panchang_tab_ekadashi')));
+    // Let the page slide in (the spinner keeps pumpAndSettle busy).
+    for (var i = 0; i < 5; i++) {
+      await tester.pump(const Duration(milliseconds: 200));
+    }
+    const fastDay = 'Fast';
+    for (var i = 0; i < 60; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 500)),
+      );
+      await tester.pump(const Duration(milliseconds: 100));
+      if (find.text('Could not calculate this month.').evaluate().isNotEmpty) {
+        break;
+      }
+      if (find.text(fastDay).evaluate().isNotEmpty) break;
+    }
+    expect(find.text('Could not calculate this month.'), findsNothing);
+    expect(find.text(fastDay), findsWidgets, reason: 'the fasts of the month');
+  });
+
   testWidgets('a reminder opens its day even while the saved city loads', (
     tester,
   ) async {

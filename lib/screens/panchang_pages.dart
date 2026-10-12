@@ -1236,6 +1236,24 @@ class PanchangRashiView extends StatelessWidget {
 
 // MARK: Ekadashi
 
+/// The month's calculated fasts, off the UI thread in the app. A top-level
+/// function on purpose: a closure made inside a State method also captures
+/// the State (and its BuildContext), which cannot be sent to another
+/// isolate, so every month failed with "Could not calculate this month."
+Future<List<CalculatedEkadashi>> _calculateEkadashiMonth(
+  DateTime month,
+  PanchangCity city,
+  EkadashiTradition tradition,
+) {
+  final start = DateTime.utc(month.year, month.month, 1);
+  final days = DateTime.utc(month.year, month.month + 1, 0).day;
+  List<CalculatedEkadashi> calculate() =>
+      const CalculatedEkadashiEngine().calculate(start, days, city, tradition);
+  return ObservanceCalendarService.calculateInline
+      ? Future.value(calculate())
+      : Isolate.run(calculate);
+}
+
 /// Calculated Smarta or Gaudiya/ISKCON fasts for the month and location, in
 /// the app language. A preview: the published schedule still drives the
 /// calendar, reminders and Journey.
@@ -1287,18 +1305,8 @@ class _PanchangEkadashiViewState extends State<PanchangEkadashiView> {
       _fasts = null;
       _failed = false;
     });
-    final days = DateTime.utc(month.year, month.month + 1, 0).day;
-    List<CalculatedEkadashi> calculate() =>
-        const CalculatedEkadashiEngine().calculate(
-          DateTime.utc(month.year, month.month, 1),
-          days,
-          city,
-          tradition,
-        );
     try {
-      final result = ObservanceCalendarService.calculateInline
-          ? calculate()
-          : await Isolate.run(calculate);
+      final result = await _calculateEkadashiMonth(month, city, tradition);
       if (!mounted || key != _loadedKey) return;
       setState(() => _fasts = result);
     } catch (_) {
