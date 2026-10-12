@@ -101,9 +101,9 @@ void main() {
     }
   }
   for (final brightness in [Brightness.light, Brightness.dark]) {
-    // The iOS tab bar's selection: a teal-tinted glass highlight, never a
-    // solid black pill.
-    testWidgets('$brightness selection uses brand teal on a teal tint', (
+    // The iOS tab bar's selection (iPhone screenshots, 12 October 2026):
+    // teal icon and label on a dark pill.
+    testWidgets('$brightness selection uses brand teal on a dark pill', (
       tester,
     ) async {
       await open(tester, brightness: brightness);
@@ -119,12 +119,11 @@ void main() {
         of: find.byType(AnimatedAlign),
         matching: find.byType(DecoratedBox),
       );
-      expect(
-        (tester.widget<DecoratedBox>(pill).decoration as BoxDecoration).color,
-        const Color(
-          0xFF00A19B,
-        ).withValues(alpha: brightness == Brightness.dark ? .2 : .14),
-      );
+      final color =
+          (tester.widget<DecoratedBox>(pill).decoration as BoxDecoration)
+              .color!;
+      expect(color.computeLuminance(), lessThan(.05), reason: 'a dark pill');
+      expect(color.a, greaterThan(.6));
     });
   }
   testWidgets('Localized tab semantics expose selection and activation', (
