@@ -6,6 +6,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:ekadashi_calendar/services/language_service.dart';
+import 'package:ekadashi_calendar/widgets/ios_style.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:ekadashi_calendar/widgets/settings_group.dart';
 import '../support/app_harness.dart';
 
@@ -38,6 +40,14 @@ void main() {
       testWidgets('$locale $theme Settings matches the iOS layout', (
         tester,
       ) async {
+        // The build's version, as the Play Store build reports it.
+        PackageInfo.setMockInitialValues(
+          appName: 'Ekadashi Calendar',
+          packageName: 'com.applausestudios.ekadashi_calendar',
+          version: '2.0.0',
+          buildNumber: '5',
+          buildSignature: '',
+        );
         final harness = AppHarness();
         await tester.runAsync(
           () => harness.install(
@@ -195,6 +205,8 @@ void main() {
           findsOneWidget,
         );
         expect(inTube(about, find.byIcon(Icons.ios_share)), findsOneWidget);
+        expect(inTube(about, find.text('2.0.0')), findsOneWidget);
+        expect(inTube(about, find.text('1.1.1')), findsNothing);
 
         // Premium: white label on a capsule button.
         final cta = tester.widget<FilledButton>(
@@ -203,17 +215,42 @@ void main() {
         expect(cta.style?.shape?.resolve({}), isA<StadiumBorder>());
         expect(cta.style?.foregroundColor?.resolve({}), Colors.white);
 
-        // The reminder editor: Cancel and Save in the bar, grouped cards.
-        await tester.tap(find.byKey(const Key('notifications_add_event')));
+        // A test notification answers with the iOS toast, not a SnackBar.
+        final test = find.text(lang.translate('test_notification'));
+        await tester.ensureVisible(test);
         await tester.pumpAndSettle();
+        await tester.tap(test);
+        await tester.pumpAndSettle();
+        expect(find.byType(SnackBar), findsNothing);
         expect(
           find.descendant(
-            of: find.byType(AppBar),
+            of: find.byKey(const Key('app_toast')),
+            matching: find.text(lang.translate('notif_sent_msg')),
+          ),
+          findsOneWidget,
+        );
+        await tester.pump(const Duration(seconds: 5));
+        await tester.pumpAndSettle();
+
+        // The reminder editor: an iOS sheet with Cancel and Save in its
+        // bar, grouped cards.
+        await tester.tap(find.byKey(const Key('notifications_add_event')));
+        await tester.pumpAndSettle();
+        expect(find.byType(BottomSheet), findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.byType(SheetBar),
             matching: find.text(lang.translate('cancel')),
           ),
           findsOneWidget,
         );
-        expect(find.byType(SettingsCard), findsNWidgets(3));
+        expect(
+          find.descendant(
+            of: find.byType(BottomSheet),
+            matching: find.byType(SettingsCard),
+          ),
+          findsNWidgets(3),
+        );
         await capture('reminder_editor');
         expect(tester.takeException(), isNull);
       });

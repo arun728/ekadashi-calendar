@@ -4,9 +4,9 @@
     <string name="widget_a_title">একাদশী</string>
     <string name="widget_b_title">আজ একাদশী</string>
     <string name="widget_c_title">আসন্ন একাদশীগুলো</string>
-    <string name="widget_a_description">পরবর্তী একাদশী</string>
-    <string name="widget_b_description">আজ একাদশী</string>
-    <string name="widget_c_description">আসন্ন একাদশীগুলো</string>
+    <string name="widget_a_description">আজকের একাদশী ও আপনার উপবাসের অগ্রগতি, অথবা পরবর্তী একাদশী ও বাকি দিন।</string>
+    <string name="widget_b_description">আজকের একাদশী ও আপনার উপবাসের অগ্রগতি, অথবা পরবর্তী একাদশী ও বাকি দিন।</string>
+    <string name="widget_c_description">এক নজরে পরবর্তী একাদশীগুলো।</string>
     <string name="widget_title">একাদশী ক্যালেন্ডার</string>
     <string name="widget_next_ekadashi">পরবর্তী একাদশী</string>
     <string name="widget_fasting_active">উপবাস চলছে</string>

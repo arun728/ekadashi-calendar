@@ -143,7 +143,7 @@ void main() {
       tester.widget<TextField>(find.byType(TextField)).controller!.text,
       'parvsa',
     );
-    await tester.tap(find.byIcon(Icons.arrow_back).first);
+    await tester.tap(find.byKey(const Key('global_search_back')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('glass_tab_4')));
     await tester.pumpAndSettle();
@@ -190,7 +190,7 @@ void main() {
       expect(find.byType(TextField).hitTestable(), findsOneWidget);
       tester.view.resetViewInsets();
       await tester.pumpAndSettle();
-      await tester.tap(find.byIcon(Icons.arrow_back).first);
+      await tester.tap(find.byKey(const Key('global_search_back')));
       await tester.pumpAndSettle();
       expect(
         find.byKey(const Key('glass_tab_3')).hitTestable(),
