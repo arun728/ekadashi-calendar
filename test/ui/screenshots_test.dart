@@ -163,9 +163,10 @@ void main() {
         await capture('settings_light');
         await tester.tap(find.byIcon(Icons.home));
         await tester.pumpAndSettle();
-        final button = find
-            .widgetWithText(ElevatedButton, language.translate('view_details'))
-            .first;
+        final button = find.widgetWithText(
+          FilledButton,
+          language.translate('view_details'),
+        );
         expect(
           button,
           findsOneWidget,

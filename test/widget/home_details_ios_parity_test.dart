@@ -48,12 +48,9 @@ void main() {
     return (list, int.parse(indicator.split(' / ').first) - 1);
   }
 
-  Color? iconColor(WidgetTester tester, Finder within, IconData icon) =>
-      tester
-          .widget<Icon>(
-            find.descendant(of: within, matching: find.byIcon(icon)),
-          )
-          .color;
+  Color? iconColor(WidgetTester tester, Finder within, IconData icon) => tester
+      .widget<Icon>(find.descendant(of: within, matching: find.byIcon(icon)))
+      .color;
 
   group('Home header', () {
     testWidgets('located: location.fill arrow, subheadline medium, refresh', (
@@ -85,6 +82,9 @@ void main() {
             .length,
         greaterThan(before),
       );
+      // Let the reload's scroll to the current Ekadashi finish.
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pumpAndSettle();
     });
 
     testWidgets(
@@ -133,10 +133,7 @@ void main() {
     testWidgets('language menu: checkmark leading, globe teal', (tester) async {
       await pumpHome(tester);
       final menu = find.byKey(const Key('language_menu'));
-      expect(
-        iconColor(tester, menu, Icons.language),
-        IosColors.teal,
-      );
+      expect(iconColor(tester, menu, Icons.language), IosColors.teal);
       expect(
         styleOf(
           tester,
@@ -204,9 +201,7 @@ void main() {
       expect(styleOf(tester, label).fontSize, IosText.callout);
       expect(styleOf(tester, label).fontWeight, FontWeight.bold);
       expect(
-        tester.widget<FilledButton>(button).style!.foregroundColor!.resolve(
-          {},
-        ),
+        tester.widget<FilledButton>(button).style!.foregroundColor!.resolve({}),
         Colors.white,
       );
     });
@@ -244,11 +239,7 @@ void main() {
       await tester.pumpAndSettle();
       final (list, index) = homeCards(tester);
       expect(
-        VratRecording.isOpen(
-          list[index],
-          now: DateTime.now(),
-          timezone: 'IST',
-        ),
+        VratRecording.isOpen(list[index], now: DateTime.now(), timezone: 'IST'),
         isTrue,
       );
       record = find.byKey(const Key('home_record_vrat'));
@@ -313,27 +304,28 @@ void main() {
           matching: find.byType(SingleChildScrollView),
         ),
       );
-      expect(
-        (scroll.padding! as EdgeInsets).bottom,
-        greaterThanOrEqualTo(100),
-      );
+      expect((scroll.padding! as EdgeInsets).bottom, greaterThanOrEqualTo(100));
       await tester.tap(find.byType(BackButton));
       await tester.pumpAndSettle();
       expect(find.byType(DetailsScreen), findsNothing);
       expect(find.byKey(const Key('home_ekadashi_card')), findsOneWidget);
     });
 
-    testWidgets('iOS sizes, time-zone pill, glass timings box', (
-      tester,
-    ) async {
+    testWidgets('iOS sizes, time-zone pill, glass timings box', (tester) async {
       await pumpHome(tester);
       final (list, index) = homeCards(tester);
       final event = list[index];
       await openDetails(tester);
       final details = find.byType(DetailsScreen);
-      final name = find.descendant(of: details, matching: find.text(event.name));
+      final name = find.descendant(
+        of: details,
+        matching: find.text(event.name),
+      );
       expect(styleOf(tester, name).fontSize, IosText.largeTitle);
-      final pill = find.descendant(of: details, matching: find.byType(StatusPill));
+      final pill = find.descendant(
+        of: details,
+        matching: find.byType(StatusPill),
+      );
       expect(pill, findsOneWidget);
       expect(tester.widget<StatusPill>(pill).text, 'IST');
       final section = find.text('Significance');
