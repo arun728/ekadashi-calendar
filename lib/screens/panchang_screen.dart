@@ -18,6 +18,9 @@ import '../widgets/glass_tube.dart';
 import '../widgets/section_pager.dart';
 import 'panchang_location_dialog.dart';
 import 'panchang_pages.dart';
+import 'widgets/month_year_picker.dart';
+
+export 'widgets/month_year_picker.dart' show PanchangMonthPickerDialog;
 
 /// The Panchang pages, in tab order.
 enum PanchangPage {
@@ -223,10 +226,10 @@ class PanchangScreenState extends State<PanchangScreen> {
   Future<void> _pick(PanchangPage page) async {
     final language = _language;
     if (page.isMonthly) {
-      final month = await showDialog<DateTime>(
-        context: context,
-        builder: (_) =>
-            PanchangMonthPickerDialog(month: _month, language: language),
+      final month = await showMonthYearPicker(
+        context,
+        month: _month,
+        language: language,
       );
       if (month != null && mounted) {
         // Today in the current month, else the month's first day.
@@ -537,122 +540,6 @@ class PanchangScreenState extends State<PanchangScreen> {
             ? PanchangRashiView(day: _day, terms: terms)
             : const PanchangUpgradeCard();
     }
-  }
-}
-
-/// A year and its twelve months (the iOS month and year wheels).
-class PanchangMonthPickerDialog extends StatefulWidget {
-  const PanchangMonthPickerDialog({
-    super.key,
-    required this.month,
-    required this.language,
-    this.years,
-  });
-  final DateTime month;
-  final String language;
-
-  /// The years offered as chips (the Calendar's data years); any year with
-  /// arrows when null.
-  final List<int>? years;
-
-  @override
-  State<PanchangMonthPickerDialog> createState() =>
-      _PanchangMonthPickerDialogState();
-}
-
-class _PanchangMonthPickerDialogState extends State<PanchangMonthPickerDialog> {
-  late int _year = widget.month.year;
-
-  @override
-  Widget build(BuildContext context) {
-    final language = widget.language;
-    final years = widget.years;
-    return AlertDialog(
-      key: const Key('panchang_month_picker'),
-      title: years != null
-          ? Wrap(
-              alignment: WrapAlignment.center,
-              spacing: 8,
-              children: [
-                for (final year in years)
-                  ChoiceChip(
-                    key: Key('month_picker_year_$year'),
-                    label: Text('$year'),
-                    selected: _year == year,
-                    showCheckmark: false,
-                    selectedColor: GlassTubeColors.teal.withValues(alpha: .2),
-                    onSelected: (_) => setState(() => _year = year),
-                  ),
-              ],
-            )
-          : Row(
-              children: [
-                IconButton(
-                  onPressed: _year > 1900
-                      ? () => setState(() => _year--)
-                      : null,
-                  icon: const Icon(Icons.chevron_left),
-                ),
-                Expanded(child: Text('$_year', textAlign: TextAlign.center)),
-                IconButton(
-                  onPressed: _year < 2100
-                      ? () => setState(() => _year++)
-                      : null,
-                  icon: const Icon(Icons.chevron_right),
-                ),
-              ],
-            ),
-      content: SizedBox(
-        width: 320,
-        child: GridView.count(
-          crossAxisCount: 3,
-          shrinkWrap: true,
-          childAspectRatio: 1.8,
-          mainAxisSpacing: 8,
-          crossAxisSpacing: 8,
-          children: [
-            for (var m = 1; m <= 12; m++)
-              () {
-                final selected =
-                    _year == widget.month.year && m == widget.month.month;
-                return Material(
-                  color: selected
-                      ? GlassTubeColors.teal
-                      : GlassTubeColors.foreground(
-                          context,
-                        ).withValues(alpha: .06),
-                  borderRadius: BorderRadius.circular(12),
-                  child: InkWell(
-                    key: Key('panchang_month_$m'),
-                    borderRadius: BorderRadius.circular(12),
-                    onTap: () =>
-                        Navigator.of(context).pop(DateTime.utc(_year, m)),
-                    child: Center(
-                      child: Text(
-                        PanchangFormat.format(
-                          DateTime.utc(2026, m),
-                          'LLL',
-                          language,
-                        ),
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: selected ? Colors.white : null,
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              }(),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(AppStrings.translate('cancel', language)),
-        ),
-      ],
-    );
   }
 }
 

@@ -116,11 +116,12 @@ void main() {
     // Today's month; choose November 2026 with the month picker.
     await tester.tap(find.byKey(const Key('panchang_selected_month')));
     await tester.pumpAndSettle();
-    while (find.text('2026').evaluate().isEmpty) {
-      await tester.tap(find.byIcon(Icons.chevron_left).last);
-      await tester.pumpAndSettle();
-    }
+    // The iOS month and year wheels, applied with Done.
+    await tester.tap(find.byKey(const Key('month_picker_year_2026')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('panchang_month_11')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('month_picker_done')));
     await tester.pumpAndSettle();
     // A picked month opens its first day, shown in full.
     expect(find.text('Sun, 1 Nov 2026'), findsOneWidget);

@@ -35,7 +35,7 @@ class CalendarDayMerge {
     CalendarFilter.custom,
   ];
 
-  static const defaultFilter = CalendarFilter.ekadashi;
+  static const defaultFilter = CalendarFilter.all;
 
   static List<DayListItem> merge({
     required DateTime day,

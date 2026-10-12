@@ -4,6 +4,9 @@ import 'package:ekadashi_calendar/models/calendar_entry.dart';
 class MemoryCalendarRepository implements CalendarEntryRepository {
   final Map<String, CalendarEntry> entries = {};
   bool fail = false;
+
+  /// Makes saving and deleting fail (storage errors after a good start).
+  bool failWrites = false;
   @override
   Future<void> init() async {
     if (fail) throw StateError('Storage failed');
@@ -21,6 +24,7 @@ class MemoryCalendarRepository implements CalendarEntryRepository {
       entries.values.where((e) => e.source == source).toList();
   @override
   Future<void> upsert(CalendarEntry entry) async {
+    if (failWrites) throw StateError('Storage failed');
     entries[entry.id] = entry;
   }
 
