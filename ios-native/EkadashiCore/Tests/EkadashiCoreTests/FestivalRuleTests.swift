@@ -31,7 +31,7 @@ final class FestivalRuleTests: XCTestCase {
     }
 
     func testEachNewFestivalHappensOnceAYearAndIsMajor() {
-        for id in PanchangEngine.iosFirstObservanceIds {
+        for id in PanchangEngine.phase3FestivalIds {
             for year in [2026, 2027] {
                 XCTAssertEqual(dates(id, year).count, 1, "\(id) \(year)")
             }
@@ -40,7 +40,7 @@ final class FestivalRuleTests: XCTestCase {
     }
 
     func testNewFestivalsAreSearchableInEveryLanguage() {
-        for id in PanchangEngine.iosFirstObservanceIds {
+        for id in PanchangEngine.phase3FestivalIds {
             guard let observance = Self.calendars[2026]?.first(where: { $0.observance.id == id })?.observance
                     ?? PanchangEngine().observanceCalendar(year: 2026, city: .newDelhi).first(where: { $0.observance.id == id })?.observance
             else { return XCTFail(id) }

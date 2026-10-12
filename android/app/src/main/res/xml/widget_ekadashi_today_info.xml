@@ -13,5 +13,6 @@
     android:initialLayout="@layout/widget_medium"
     android:previewLayout="@layout/preview_widget_today"
     android:previewImage="@drawable/widget_preview_medium"
-    android:widgetCategory="home_screen">
+    android:widgetCategory="home_screen"
+    android:widgetFeatures="hide_from_picker">
 </appwidget-provider>

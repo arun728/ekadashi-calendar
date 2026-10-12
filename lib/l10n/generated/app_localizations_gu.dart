@@ -1046,6 +1046,546 @@ class AppLocalizationsGu extends AppLocalizations {
       'તમારું પ્રીમિયમ પૂરું થયું છે, તેથી તેણે સિંક કરેલા ગૂગલ ઇવેન્ટ દૂર કરાયા. ફરી સિંક કરવા નવીકરણ કરો.';
 
   @override
+  String get search_filter_ekadashi => 'એકાદશી';
+
+  @override
+  String get search_filter_festival => 'તહેવારો';
+
+  @override
+  String get search_filter_amavasya => 'અમાસ';
+
+  @override
+  String get search_filter_purnima => 'પૂનમ';
+
+  @override
+  String get search_filter_shivaratri => 'શિવરાત્રી';
+
+  @override
+  String get search_filter_chaturthi => 'ચતુર્થી';
+
+  @override
+  String get search_filter_pradosham => 'પ્રદોષ';
+
+  @override
+  String get search_filter_navaratri => 'નવરાત્રી';
+
+  @override
+  String get search_filter_sankranti => 'સંક્રાંતિ';
+
+  @override
+  String get search_filter_jayanti => 'જયંતી';
+
+  @override
+  String get search_filter_my_calendar => 'મારું કેલેન્ડર';
+
+  @override
+  String get search_filter_screen => 'એપમાં';
+
+  @override
+  String get search_screen_panchang => 'પંચાંગ';
+
+  @override
+  String get search_hint_all => 'એકાદશી, તહેવારો, ઇવેન્ટ શોધો…';
+
+  @override
+  String get search_start_all =>
+      'એકાદશી, તહેવારો, અમાસ, પૂનમ અને તમારા ઇવેન્ટ શોધો';
+
+  @override
+  String get search_premium_locked => 'પ્રીમિયમથી અનલૉક કરો';
+
+  @override
+  String get search_no_results_hint =>
+      'જોડણી તપાસો, અથવા બીજું વર્ષ કે ફિલ્ટર અજમાવો.';
+
+  @override
+  String get search_all_years => 'બધાં વર્ષ';
+
+  @override
+  String get panchang_day => 'દિવસ';
+
+  @override
+  String get panchang_night => 'રાત';
+
+  @override
+  String get panchang_am => 'પૂર્વાહ્ન';
+
+  @override
+  String get panchang_pm => 'અપરાહ્ન';
+
+  @override
+  String get panchang_next_day_marker => '(બીજા દિવસે)';
+
+  @override
+  String get panchang_previous_day_marker => '(આગલા દિવસે)';
+
+  @override
+  String get panchang_section_keydays => 'મુખ્ય દિવસો';
+
+  @override
+  String get panchang_section_daily => 'દૈનિક';
+
+  @override
+  String get panchang_section_muhurta => 'મુહૂર્ત';
+
+  @override
+  String get panchang_section_ekadashi => 'એકાદશી';
+
+  @override
+  String get panchang_section_rashi => 'રાશિ';
+
+  @override
+  String get panchang_search_location => 'શહેર શોધો અથવા સ્થાન વાપરો';
+
+  @override
+  String get panchang_previous => 'પાછલું';
+
+  @override
+  String get panchang_next => 'આગળનું';
+
+  @override
+  String get panchang_pick_date => 'તારીખ';
+
+  @override
+  String get panchang_month => 'મહિનો';
+
+  @override
+  String get panchang_done => 'થઈ ગયું';
+
+  @override
+  String get panchang_location_not_saved =>
+      'સ્થાન બદલાયું, પણ સાચવી શકાયું નહીં.';
+
+  @override
+  String get panchang_notes_title => 'પંચાંગની ગણતરી કેવી રીતે થાય છે';
+
+  @override
+  String get panchang_notes_body =>
+      'બધી ગણતરી તમારા ફોન પર પસંદ કરેલા સ્થાન અને તેના સમય ક્ષેત્ર માટે થાય છે. તિથિ, નક્ષત્ર, યોગ અને કરણ સ્થાનિક સૂર્યોદય સમયે લેવાય છે; મધ્યરાત્રિ પછીના સમય બીજા દિવસ તરીકે દર્શાવાય છે. સૂર્યોદય અને સૂર્યાસ્ત દરિયાની સપાટીએ સૂર્યની દેખાતી ઉપરની કિનારી પરથી ગણાય છે, તેથી ટેકરીઓ અને ઇમારતો તેમાં થોડી મિનિટનો ફેર લાવી શકે.';
+
+  @override
+  String get panchang_notes_traditions =>
+      'તહેવારની તારીખો પરંપરાગત સમય-નિયમો અને પ્રકાશિત પંચાંગને અનુસરે છે; પ્રાદેશિક અને કૌટુંબિક પરંપરાઓ જુદી હોઈ શકે. મહિના અમાંત અને પૂર્ણિમાંત બંને પદ્ધતિમાં બતાવાય છે. મુખ્ય દિવસો, કેલેન્ડર, રિમાઇન્ડર અને વ્રતમાં એકાદશીની તારીખો પ્રકાશિત સમયપત્રક પરથી આવે છે.';
+
+  @override
+  String get panchang_notes_sources =>
+      'ખગોળશાસ્ત્ર: લાહિરી અયનાંશ સાથે વીએસઓપી87 અને ઇએલપી 2000-82બી. શહેરો: જિયોનેમ્સ (સીસી બાય 4.0). સમય ક્ષેત્રો: આઈએએનએ ડેટાબેઝ.';
+
+  @override
+  String get panchang_premium_title => 'સંપૂર્ણ પંચાંગ પ્રીમિયમનો ભાગ છે';
+
+  @override
+  String get panchang_premium_body =>
+      'પાંચ અંગ, શુભ સમય અને ટાળવાના સમય, ચોઘડિયા, હોરા, રાશિ અને મુખ્ય દિવસોના બધા તહેવાર અને પર્વો અનલૉક કરો.';
+
+  @override
+  String get panchang_unlock => 'સંપૂર્ણ પંચાંગ અનલૉક કરો';
+
+  @override
+  String get panchang_unlock_short => 'અનલૉક';
+
+  @override
+  String get panchang_key_days_locked =>
+      'તહેવારો અને પર્વો પ્રીમિયમનો ભાગ છે. એકાદશી મફત છે.';
+
+  @override
+  String get panchang_no_key_days =>
+      'આ ફિલ્ટર માટે આ મહિને કોઈ મુખ્ય દિવસ નથી.';
+
+  @override
+  String panchang_days_ago(String value0) {
+    return '$value0 દિવસ પહેલાં';
+  }
+
+  @override
+  String get panchang_tithi_at_sunrise => 'સૂર્યોદયે તિથિ';
+
+  @override
+  String get panchang_tithi_at_six => 'સવારે 6 વાગ્યે તિથિ (સૂર્યોદય નથી)';
+
+  @override
+  String panchang_until(String value0) {
+    return '$value0 સુધી';
+  }
+
+  @override
+  String panchang_after(String value0) {
+    return '$value0 પછી';
+  }
+
+  @override
+  String panchang_starts_at(String value0) {
+    return '$value0 થી શરૂ';
+  }
+
+  @override
+  String get panchang_amanta => 'અમાંત';
+
+  @override
+  String get panchang_purnimanta => 'પૂર્ણિમાંત';
+
+  @override
+  String get panchang_sunrise => 'સૂર્યોદય';
+
+  @override
+  String get panchang_sunset => 'સૂર્યાસ્ત';
+
+  @override
+  String get panchang_moonrise => 'ચંદ્રોદય';
+
+  @override
+  String get panchang_moonset => 'ચંદ્રાસ્ત';
+
+  @override
+  String get panchang_five_limbs => 'પાંચ અંગ';
+
+  @override
+  String get panchang_tithi => 'તિથિ';
+
+  @override
+  String get panchang_nakshatra => 'નક્ષત્ર';
+
+  @override
+  String get panchang_yoga => 'યોગ';
+
+  @override
+  String get panchang_karana => 'કરણ';
+
+  @override
+  String get panchang_vara => 'વાર';
+
+  @override
+  String get panchang_timings => 'સમય';
+
+  @override
+  String get panchang_good_times => 'શુભ સમય';
+
+  @override
+  String get panchang_avoid_times => 'ટાળવાના સમય';
+
+  @override
+  String get panchang_observances => 'પર્વો';
+
+  @override
+  String get panchang_more_details => 'વધુ વિગતો';
+
+  @override
+  String get panchang_sun_rashi => 'સૂર્ય રાશિ';
+
+  @override
+  String get panchang_moon_rashi => 'ચંદ્ર રાશિ';
+
+  @override
+  String get panchang_nakshatra_pada => 'નક્ષત્ર પદ';
+
+  @override
+  String get panchang_ritu => 'ઋતુ';
+
+  @override
+  String get panchang_ayana => 'અયન';
+
+  @override
+  String get panchang_samvat => 'સંવત';
+
+  @override
+  String panchang_samvat_value(String value0, String value1) {
+    return 'શક $value0 · વિક્રમ $value1';
+  }
+
+  @override
+  String get panchang_anandadi => 'આનંદાદિ યોગ';
+
+  @override
+  String get panchang_special_yogas => 'વિશેષ યોગ';
+
+  @override
+  String get panchang_none => 'કોઈ નહીં';
+
+  @override
+  String get panchang_ayanamsa => 'લાહિરી અયનાંશ';
+
+  @override
+  String get panchang_no_solar_day =>
+      'આજે અહીં સંપૂર્ણ સૌર દિવસ નથી, તેથી સૂર્યોદય આધારિત સમયગાળા ઉપલબ્ધ નથી.';
+
+  @override
+  String get panchang_transitions => 'આગામી સૂર્યોદય સુધીના ફેરફાર';
+
+  @override
+  String get panchang_choghadiya => 'ચોઘડિયા';
+
+  @override
+  String get panchang_choghadiya_hint =>
+      'અમૃત, શુભ અને લાભ અનુકૂળ છે; ચલ તટસ્થ છે; રોગ, કાળ અને ઉદ્વેગ ટાળવા સારા.';
+
+  @override
+  String get panchang_hora => 'હોરા';
+
+  @override
+  String get panchang_lagna => 'ઉદય લગ્ન';
+
+  @override
+  String get panchang_unavailable => 'આ દિવસ અને સ્થાન માટે ઉપલબ્ધ નથી.';
+
+  @override
+  String get panchang_now => 'હમણાં';
+
+  @override
+  String get panchang_rashi => 'રાશિ';
+
+  @override
+  String get panchang_rashi_note =>
+      'આ દિવસ માટે સૂર્ય અને ચંદ્રની સ્થિતિ છે (નિરયન, લાહિરી). તમારી જન્મ રાશિ માટે જન્મ તારીખ, સમય અને સ્થળ જોઈએ.';
+
+  @override
+  String get panchang_smarta => 'સ્માર્ત';
+
+  @override
+  String get panchang_gaudiya => 'વૈષ્ણવ · ગૌડીય/ઇસ્કોન';
+
+  @override
+  String get panchang_smarta_rule =>
+      'ગૃહસ્થો: સૂર્યોદયે હોય તે એકાદશી; બે સૂર્યોદયને સ્પર્શે ત્યારે પહેલો દિવસ.';
+
+  @override
+  String get panchang_gaudiya_rule =>
+      'ગૌડીય/ઇસ્કોન: સૂર્યોદયના 96 મિનિટ પહેલાં (અરુણોદય) એકાદશી હોવી જોઈએ, મહાદ્વાદશીના નિયમો સાથે.';
+
+  @override
+  String get panchang_calculation_failed => 'આ મહિનાની ગણતરી થઈ શકી નહીં.';
+
+  @override
+  String get panchang_no_calculated_fast =>
+      'આ મહિના અને સ્થાન માટે કોઈ ગણતરી કરેલો ઉપવાસ નથી; સ્થાનિક સૂર્યોદય જરૂરી છે.';
+
+  @override
+  String get panchang_calculated_preview =>
+      'ગણતરી કરેલું પૂર્વાવલોકન: કેલેન્ડર, રિમાઇન્ડર અને વ્રત પ્રકાશિત એકાદશી સમયપત્રક જ વાપરે છે.';
+
+  @override
+  String get panchang_fast_day => 'ઉપવાસ';
+
+  @override
+  String get panchang_parana => 'પારણા';
+
+  @override
+  String get panchang_near_boundary =>
+      'તિથિ કે નક્ષત્રનો ફેરફાર નિર્ણાયક ક્ષણની પાંચ મિનિટની અંદર છે. આ તારીખ તમારી પરંપરાના પંચાંગ સાથે તપાસો.';
+
+  @override
+  String get panchang_calculation_details => 'ગણતરીની વિગતો';
+
+  @override
+  String get panchang_rule => 'નિયમ';
+
+  @override
+  String get panchang_hari_vasara_ends => 'હરિ વાસર પૂરું';
+
+  @override
+  String get panchang_search_cities => 'વિશ્વભરનાં શહેરો શોધો';
+
+  @override
+  String get panchang_locating => 'સ્થાન શોધી રહ્યા છીએ…';
+
+  @override
+  String get panchang_use_current_location => 'હાલનું સ્થાન વાપરો';
+
+  @override
+  String get panchang_location_name => 'સ્થાનનું નામ';
+
+  @override
+  String get panchang_latitude => 'અક્ષાંશ';
+
+  @override
+  String get panchang_longitude => 'રેખાંશ';
+
+  @override
+  String get panchang_timezone => 'સમય ક્ષેત્ર (આઈએએનએ)';
+
+  @override
+  String get panchang_location_footer =>
+      'ઉદાહરણ: Asia/Kolkata અથવા America/New_York. શહેર ડેટા: જિયોનેમ્સ (સીસી બાય 4.0). ગણતરી અને શહેર શોધ ઑફલાઇન કામ કરે છે.';
+
+  @override
+  String get panchang_location_title => 'પંચાંગનું સ્થાન';
+
+  @override
+  String get panchang_save_location => 'સાચવો';
+
+  @override
+  String get panchang_location_denied =>
+      'સ્થાનની પરવાનગી નકારાઈ. તેના બદલે સ્થાન શોધો અથવા લખો.';
+
+  @override
+  String get panchang_location_unavailable =>
+      'સ્થાન ઉપલબ્ધ નથી. તેના બદલે સ્થાન શોધો અથવા લખો.';
+
+  @override
+  String get panchang_location_received =>
+      'અક્ષાંશ-રેખાંશ મળ્યા. સાચવતા પહેલાં સમય ક્ષેત્ર તપાસો.';
+
+  @override
+  String get journey_tab => 'યાત્રા';
+
+  @override
+  String get journey_record_after_parana =>
+      'પારણા શરૂ થયા પછી તમે આ ઉપવાસ નોંધી શકશો';
+
+  @override
+  String get settings_premium_subtitle => 'તમારી એકાદશી યાત્રા માટે બધું જ';
+
+  @override
+  String get premium_feature_panchang_v2 =>
+      'સંપૂર્ણ પંચાંગ: મુખ્ય દિવસોના બધા તહેવાર, પાંચ અંગ, સમય, મુહૂર્ત અને રાશિ';
+
+  @override
+  String settings_premium_from(String value0, String value1) {
+    return 'મહિને $value0 થી · આજીવન $value1';
+  }
+
+  @override
+  String get settings_premium_cta => 'પ્લાન જુઓ';
+
+  @override
+  String settings_premium_plan(String value0) {
+    return 'તમારો પ્લાન: $value0';
+  }
+
+  @override
+  String get settings_premium_manage => 'સંભાળો';
+
+  @override
+  String get settings_premium_plans => 'પ્લાન બદલો';
+
+  @override
+  String get widget_today_is_ekadashi => 'આજે એકાદશી છે';
+
+  @override
+  String widget_days_to_go(String value0) {
+    return '$value0 દિવસ બાકી';
+  }
+
+  @override
+  String widget_fast_done(String value0) {
+    return 'ઉપવાસ $value0% પૂર્ણ';
+  }
+
+  @override
+  String get widget_name_ekadashi => 'એકાદશી';
+
+  @override
+  String get widget_desc_ekadashi =>
+      'આજની એકાદશી અને તમારા ઉપવાસની પ્રગતિ, અથવા આગામી એકાદશી અને બાકી દિવસો.';
+
+  @override
+  String get widget_desc_upcoming => 'આગામી એકાદશીઓ એક નજરમાં.';
+
+  @override
+  String get widget_preview_during =>
+      'ડાબે: હમણાં · જમણે: આગામી એકાદશી દરમિયાન';
+
+  @override
+  String event_reminder_today(String value0, String value1) {
+    return '$value0 આજે છે ($value1)';
+  }
+
+  @override
+  String event_reminder_tomorrow(String value0, String value1) {
+    return '$value0 આવતીકાલે છે ($value1)';
+  }
+
+  @override
+  String event_reminder_in_days(String value0, String value1, String value2) {
+    return '$value0 $value2 દિવસમાં છે ($value1)';
+  }
+
+  @override
+  String get event_reminder_all_custom => 'મારી બધી નોંધો';
+
+  @override
+  String get event_reminder_all_google => 'બધા ગૂગલ કેલેન્ડર ઇવેન્ટ';
+
+  @override
+  String get event_reminder_group_festival => 'તહેવારો';
+
+  @override
+  String get event_reminder_group_monthly => 'માસિક પર્વો';
+
+  @override
+  String get event_reminder_group_my_calendar => 'મારું કેલેન્ડર';
+
+  @override
+  String get notifications_section_ekadashi => 'એકાદશી';
+
+  @override
+  String get notifications_section_events => 'તહેવારો અને ઇવેન્ટ';
+
+  @override
+  String get notifications_events_desc =>
+      'તહેવારો, પંચાંગના દિવસો અને તમારી કેલેન્ડર નોંધો પહેલાં યાદ અપાવો.';
+
+  @override
+  String get notifications_add_event => 'રિમાઇન્ડર ઉમેરો';
+
+  @override
+  String get notifications_edit_event => 'રિમાઇન્ડર સુધારો';
+
+  @override
+  String get notifications_choose_event => 'ઇવેન્ટ';
+
+  @override
+  String get notifications_lead_title => 'મને યાદ અપાવો';
+
+  @override
+  String get notifications_lead_0 => 'તે જ દિવસે';
+
+  @override
+  String get notifications_lead_1 => '1 દિવસ પહેલાં';
+
+  @override
+  String notifications_lead_n(String value0) {
+    return '$value0 દિવસ પહેલાં';
+  }
+
+  @override
+  String get notifications_time => 'સમય';
+
+  @override
+  String get notifications_delete_event => 'રિમાઇન્ડર કાઢી નાખો';
+
+  @override
+  String get notifications_lead_required => 'ઓછામાં ઓછો એક દિવસ પસંદ કરો';
+
+  @override
+  String get notifications_premium_events =>
+      'તહેવાર અને પંચાંગ રિમાઇન્ડર પ્રીમિયમનો ભાગ છે. તમારી કેલેન્ડર નોંધોના રિમાઇન્ડર મફત છે.';
+
+  @override
+  String get notifications_no_events => 'હજી કોઈ રિમાઇન્ડર નથી';
+
+  @override
+  String get notifications_off_hint => 'રિમાઇન્ડર વાપરવા સૂચનાઓ ચાલુ કરો.';
+
+  @override
+  String get notifications_search_events => 'ઇવેન્ટ શોધો';
+
+  @override
+  String get panchang_enter_name => 'નામ લખો';
+
+  @override
+  String panchang_invalid_coordinate(String value0) {
+    return '-$value0 થી $value0 વચ્ચેની સંખ્યા લખો';
+  }
+
+  @override
+  String get panchang_invalid_timezone =>
+      'માન્ય સમય ક્ષેત્ર લખો, જેમ કે Asia/Kolkata';
+
+  @override
+  String get panchang_city_search_unavailable =>
+      'શહેર શોધ ઉપલબ્ધ નથી. નીચે અક્ષાંશ-રેખાંશ લખો.';
+
+  @override
   String observed_of_total(String value0, String value1) {
     return '$value1 માંથી $value0 એકાદશી';
   }

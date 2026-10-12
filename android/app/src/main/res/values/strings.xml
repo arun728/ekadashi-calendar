@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Ekadashi Calendar</string>
-    <string name="widget_a_title">Next Ekadashi</string>
+    <string name="widget_a_title">Ekadashi</string>
     <string name="widget_b_title">Ekadashi Today</string>
     <string name="widget_c_title">Upcoming Ekadashis</string>
     <string name="widget_a_description">Next Ekadashi</string>
@@ -42,4 +42,7 @@
     <string name="widget_lunar_month_phalguna">Phalguna</string>
     <string name="widget_lunar_month_shravana">Shravana</string>
     <string name="widget_lunar_month_vaishakha">Vaishakha</string>
+    <string name="widget_am">AM</string>
+    <string name="widget_pm">PM</string>
+    <string name="widget_seed_location">India (IST)</string>
 </resources>

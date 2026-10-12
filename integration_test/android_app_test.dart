@@ -17,6 +17,17 @@ Future<void> pumpUi(WidgetTester tester, {int frames = 6}) async {
   }
 }
 
+Future<void> waitForUi(
+  WidgetTester tester,
+  bool Function() ready, {
+  required String reason,
+}) async {
+  for (var attempt = 0; attempt < 50 && !ready(); attempt++) {
+    await tester.pump(const Duration(milliseconds: 200));
+  }
+  expect(ready(), isTrue, reason: reason);
+}
+
 void main() {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
   testWidgets('Real Android startup, settings, localization and navigation', (
@@ -99,6 +110,9 @@ void main() {
     expect(find.text('Appearance'), findsOneWidget);
     final themeSwitch = find.byType(SwitchListTile).first;
     final original = tester.widget<SwitchListTile>(themeSwitch).value;
+    // Below the Premium card on short screens.
+    await tester.ensureVisible(themeSwitch);
+    await pumpUi(tester);
     await tester.tap(themeSwitch);
     await pumpUi(tester);
     expect(tester.widget<SwitchListTile>(themeSwitch).value, !original);
@@ -130,12 +144,16 @@ void main() {
     await binding.takeScreenshot('android_settings_actions');
     await tester.tap(find.byKey(const Key('permission_guide_action')));
     await pumpUi(tester);
+    // The guide's row and the dialog share the title; check the dialog.
     expect(
-      find.text(
-        Provider.of<LanguageService>(
-          tester.element(find.byType(MaterialApp)),
-          listen: false,
-        ).translate('perm_guide_title'),
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.text(
+          Provider.of<LanguageService>(
+            tester.element(find.byType(MaterialApp)),
+            listen: false,
+          ).translate('perm_guide_title'),
+        ),
       ),
       findsOneWidget,
     );
@@ -175,23 +193,67 @@ void main() {
       tester.element(find.byType(MaterialApp)),
       listen: false,
     );
+    Future<void> selectTab(int index) async {
+      final tab = find.byKey(Key('glass_tab_$index'));
+      await waitForUi(
+        tester,
+        () => tab.hitTestable().evaluate().length == 1,
+        reason: 'Tab $index must be ready to receive a tap',
+      );
+      await tester.tap(tab.hitTestable());
+      await waitForUi(
+        tester,
+        () => tester.widget<Semantics>(tab).properties.selected == true,
+        reason: 'Tab $index must become selected before checking its page',
+      );
+    }
+
     for (final locale in ['ta', 'hi', 'en']) {
-      await tester.tap(find.byIcon(Icons.home));
-      await pumpUi(tester);
-      await tester.tap(find.byType(PopupMenuButton<String>));
-      await pumpUi(tester);
+      await selectTab(0);
+      await tester.tap(find.byKey(const Key('language_menu')));
       const names = {'en': 'English', 'ta': 'தமிழ்', 'hi': 'हिंदी'};
-      await tester.tap(find.text(names[locale]!).last);
-      await pumpUi(tester);
+      final choice = find.widgetWithText(PopupMenuItem<String>, names[locale]!);
+      await waitForUi(
+        tester,
+        () => choice.hitTestable().evaluate().length == 1,
+        reason: 'The $locale language menu item must be ready',
+      );
+      await tester.tap(choice.hitTestable());
+      // A selected locale alone does not mean the popup has finished closing.
+      // Wait for the menu and reload before tapping the navigation beneath it.
+      await waitForUi(
+        tester,
+        () =>
+            language.currentLocale.languageCode == locale &&
+            find.byType(PopupMenuItem<String>).evaluate().isEmpty &&
+            find
+                .byType(CircularProgressIndicator)
+                .hitTestable()
+                .evaluate()
+                .isEmpty,
+        reason: 'The $locale language change and popup dismissal must finish',
+      );
       expect(language.currentLocale.languageCode, locale);
       await binding.takeScreenshot('android_home_$locale');
-      await tester.tap(find.byIcon(Icons.settings));
-      await pumpUi(tester);
-      expect(find.text(language.translate('appearance')), findsOneWidget);
+      await selectTab(4);
+      final settingsList = find.byType(ListView).hitTestable();
+      await waitForUi(
+        tester,
+        () => settingsList.evaluate().length == 1,
+        reason: 'Settings must finish loading in $locale',
+      );
+      final scrollable = find
+          .descendant(of: settingsList, matching: find.byType(Scrollable))
+          .first;
+      final position = tester.state<ScrollableState>(scrollable).position;
+      position.jumpTo(position.minScrollExtent);
+      await tester.pump();
+      final appearance = find.text(language.translate('appearance'));
+      await tester.scrollUntilVisible(appearance, 180, scrollable: scrollable);
+      expect(appearance.hitTestable(), findsOneWidget);
       await binding.takeScreenshot('android_settings_$locale');
     }
-    await tester.tap(find.byIcon(Icons.home));
-    await pumpUi(tester);
+    await selectTab(0);
     final details = find.byType(ElevatedButton).first;
     await tester.ensureVisible(details);
     await tester.tap(details);

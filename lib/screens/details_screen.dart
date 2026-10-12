@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../services/ekadashi_service.dart';
+import '../services/vrat_recording.dart';
+import '../l10n/app_language.dart';
 import '../services/language_service.dart';
 import '../services/vrat_tracker_service.dart';
 import '../models/vrat_tracker_models.dart';
@@ -20,8 +21,12 @@ class DetailsScreen extends StatelessWidget {
     final lang = Provider.of<LanguageService>(context);
 
     // Clean up break time string
+    final language = lang.currentLocale.languageCode;
     String breakTime = ekadashi.fastBreakTime;
-    breakTime = breakTime.replaceAll(RegExp(r'^[a-zA-Z]{3} \d{1,2}, '), '');
+    breakTime = AppStrings.localizeClock(
+      breakTime.replaceAll(RegExp(r'^[a-zA-Z]{3} \d{1,2}, '), ''),
+      language,
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -38,7 +43,10 @@ class DetailsScreen extends StatelessWidget {
               child: Column(
                 children: [
                   Text(
-                    DateFormat('MMM dd, yyyy',lang.currentLocale.languageCode).format(ekadashi.date),
+                    AppStrings.fullDate(
+                      ekadashi.date,
+                      lang.currentLocale.languageCode,
+                    ),
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w300,
@@ -66,7 +74,7 @@ class DetailsScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        timezone!,
+                        AppStrings.timeZoneName(timezone!, language),
                         style: TextStyle(
                           fontSize: 12,
                           color: tealColor.withValues(alpha: 0.8),
@@ -183,14 +191,20 @@ class DetailsScreen extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              DateFormat('MMM dd, yyyy',lang.currentLocale.languageCode).format(ekadashi.date),
+                              AppStrings.fullDate(
+                                ekadashi.date,
+                                lang.currentLocale.languageCode,
+                              ),
                               style: const TextStyle(
                                 fontSize: 13,
                                 color: Colors.grey,
                               ),
                             ),
                             Text(
-                              ekadashi.fastStartTime,
+                              AppStrings.localizeClock(
+                                ekadashi.fastStartTime,
+                                language,
+                              ),
                               style: const TextStyle(fontSize: 18),
                             ),
                           ],
@@ -216,8 +230,9 @@ class DetailsScreen extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              DateFormat('MMM dd, yyyy',lang.currentLocale.languageCode).format(
+                              AppStrings.fullDate(
                                 ekadashi.date.add(const Duration(days: 1)),
+                                lang.currentLocale.languageCode,
                               ),
                               style: const TextStyle(
                                 fontSize: 13,
@@ -294,25 +309,32 @@ class DetailsScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    onPressed: () async {
-                      final occurrences = EkadashiService().getEkadashis(
-                        timezone: timezone ?? 'IST',
-                        languageCode: lang.currentLocale.languageCode,
-                      );
-                      final unlocks = await RecordVratDialog.show(
-                        context,
-                        ekadashi: ekadashi,
-                        allOccurrences: occurrences,
-                        currentTimezone: timezone ?? 'IST',
-                      );
-                      if (unlocks != null &&
-                          unlocks.isNotEmpty &&
-                          context.mounted) {
-                        for (final u in unlocks) {
-                          await AchievementUnlockDialog.show(context, u);
-                        }
-                      }
-                    },
+                    onPressed:
+                        !VratRecording.isOpen(
+                          ekadashi,
+                          now: DateTime.now(),
+                          timezone: timezone ?? 'IST',
+                        )
+                        ? null
+                        : () async {
+                            final occurrences = EkadashiService().getEkadashis(
+                              timezone: timezone ?? 'IST',
+                              languageCode: lang.currentLocale.languageCode,
+                            );
+                            final unlocks = await RecordVratDialog.show(
+                              context,
+                              ekadashi: ekadashi,
+                              allOccurrences: occurrences,
+                              currentTimezone: timezone ?? 'IST',
+                            );
+                            if (unlocks != null &&
+                                unlocks.isNotEmpty &&
+                                context.mounted) {
+                              for (final u in unlocks) {
+                                await AchievementUnlockDialog.show(context, u);
+                              }
+                            }
+                          },
                   ),
                 );
               },

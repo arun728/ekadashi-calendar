@@ -193,6 +193,10 @@ current. These rules supersede earlier ones where they conflict:
 - Languages are ordered English, Hindi, Tamil, Telugu, Gujarati, Bengali; new
   languages are appended at the end.
 - Search no longer covers katha, mantra, food or vrat-info content.
+- On 8 October 2026 Arun asked for every phase to be built for Android on a
+  new branch from `feature/unified-search` (`feature/android-v2`), with CI run
+  on its PR to `dev` and the PR marked ready for review once every check
+  passes. Do not merge it without his approval.
 
 ## No more CI (8 October 2026)
 
@@ -233,3 +237,13 @@ Every tab and sub-tab shows dates as weekday, date, month and year ("Thu, 8
 Oct 2026") in the app language: `AppModel.fullDate` on iOS and
 `AppStrings.fullDate` on Android. The Calendar header and all Panchang
 sub-tabs show the selected date; month steps keep the day of the month.
+## Tests follow every change (8 October 2026)
+
+Arun's standing rule for every agent and chat: when you change a screen,
+label, key, flow, default page, widget or anything else a test can observe,
+update **every** test that refers to it in the same change, before pushing.
+That includes the tests you cannot run locally: `integration_test/*.dart`,
+`android/app/src/androidTest/`, the counts in `tool/android-*.sh`, and
+`ios-native/*UITests/`. Search them for each renamed or moved label, key and
+step (for example `grep -rn "'Vrat'" integration_test`). Never leave an
+out-of-date test for CI to find one round at a time.

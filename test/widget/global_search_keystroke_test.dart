@@ -6,6 +6,8 @@ import 'package:ekadashi_calendar/screens/global_search_screen.dart';
 import 'package:ekadashi_calendar/services/language_service.dart';
 import 'package:ekadashi_calendar/services/theme_service.dart';
 import 'package:ekadashi_calendar/services/recent_search_repository.dart';
+import 'package:ekadashi_calendar/services/panchang/observance_calendar_service.dart';
+import 'package:ekadashi_calendar/services/panchang/panchang_city.dart';
 
 Widget createSearchTestApp() {
   return MultiProvider(
@@ -13,8 +15,12 @@ Widget createSearchTestApp() {
       ChangeNotifierProvider(create: (_) => ThemeService()),
       ChangeNotifierProvider(create: (_) => LanguageService()),
     ],
-    child: const MaterialApp(
-      home: GlobalSearchScreen(ekadashiList: [], currentTimezone: 'IST'),
+    child: MaterialApp(
+      home: GlobalSearchScreen(
+        ekadashiList: const [],
+        ekadashisFor: (_) => const [],
+        availableYears: const [2026],
+      ),
     ),
   );
 }
@@ -24,6 +30,8 @@ void main() {
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
+    // No festival calculation in these keystroke tests.
+    ObservanceCalendarService.instance.put(2026, PanchangCity.newDelhi, []);
   });
 
   testWidgets(

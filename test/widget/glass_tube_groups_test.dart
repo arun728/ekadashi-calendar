@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:provider/provider.dart';
-import 'package:ekadashi_calendar/services/language_service.dart';
 import '../support/app_harness.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  for (final locale in ['en', 'ta', 'hi', 'te']) {
+  for (final locale in ['en', 'ta', 'hi', 'te', 'gu', 'bn']) {
     for (final variant in [
       (true, 393.0, 1.0),
       (false, 393.0, 1.0),
@@ -35,9 +33,6 @@ void main() {
           addTearDown(tester.view.resetDevicePixelRatio);
           await tester.pumpWidget(harness.app());
           await tester.pumpAndSettle();
-          final lang = tester
-              .element(find.byType(MaterialApp))
-              .read<LanguageService>();
           expect(find.byKey(const Key('home_options_tube')), findsOneWidget);
           await tester.tap(find.byKey(const Key('glass_tab_1')));
           await tester.pumpAndSettle();
@@ -49,6 +44,17 @@ void main() {
             expect(find.byKey(Key(key)).hitTestable(), findsOneWidget);
           }
           await tester.tap(find.byKey(const Key('glass_tab_3')));
+          await tester.pumpAndSettle();
+          // Key days come first; the day's Panchang is the Daily page.
+          expect(
+            find.byKey(const Key('panchang_sections_tube')),
+            findsOneWidget,
+          );
+          await tester.ensureVisible(
+            find.byKey(const Key('panchang_tab_daily')),
+          );
+          await tester.pumpAndSettle();
+          await tester.tap(find.byKey(const Key('panchang_tab_daily')));
           await tester.pumpAndSettle();
           await tester.scrollUntilVisible(
             find.byKey(const Key('panchang_daily_overview')),
@@ -75,9 +81,9 @@ void main() {
           await tester.enterText(find.byType(TextField), 'nirjla');
           await tester.pump(const Duration(milliseconds: 450));
           await tester.pumpAndSettle();
-          expect(find.byKey(const Key('search_submit_tube')), findsOneWidget);
+          expect(find.byKey(const Key('search_results')), findsOneWidget);
           expect(
-            tester.getSize(find.byKey(const Key('search_submit_tube'))).height,
+            tester.getSize(find.byKey(const Key('search_filters_tube'))).height,
             greaterThanOrEqualTo(48),
           );
           await tester.binding.handlePopRoute();
@@ -85,7 +91,12 @@ void main() {
           await tester.tap(find.byKey(const Key('glass_tab_2')));
           await tester.pumpAndSettle();
           expect(find.byKey(const Key('vrat_tabs_tube')), findsOneWidget);
-          await tester.tap(find.text(lang.translate('history')));
+          // Journey's chips scroll sideways on narrow screens, as Panchang's.
+          await tester.ensureVisible(
+            find.byKey(const Key('journey_tab_history')),
+          );
+          await tester.pumpAndSettle();
+          await tester.tap(find.byKey(const Key('journey_tab_history')));
           await tester.pumpAndSettle();
           expect(
             find.byKey(const Key('vrat_history_filters_tube')),

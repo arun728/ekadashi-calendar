@@ -50,9 +50,10 @@ DateTime nextEkadashi(DateTime from) {
 /// Returns all Ekadashi dates in a given [month] and [year].
 List<DateTime> ekadashiDatesInMonth(int year, int month) {
   final daysInMonth = DateTime(year, month + 1, 0).day;
-  return List.generate(daysInMonth, (i) => DateTime(year, month, i + 1))
-      .where(isEkadashi)
-      .toList();
+  return List.generate(
+    daysInMonth,
+    (i) => DateTime(year, month, i + 1),
+  ).where(isEkadashi).toList();
 }
 
 // ── Private helpers ───────────────────────────────────────────────────────────

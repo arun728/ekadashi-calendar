@@ -35,9 +35,7 @@ class AppTheme {
       elevation: 0,
     ),
     cardColor: Colors.white,
-    textTheme: const TextTheme(
-      bodyMedium: TextStyle(color: Colors.black87),
-    ),
+    textTheme: const TextTheme(bodyMedium: TextStyle(color: Colors.black87)),
   );
 
   static final darkTheme = ThemeData(
@@ -50,8 +48,6 @@ class AppTheme {
       elevation: 0,
     ),
     cardColor: const Color(0xFF1F1F1F),
-    textTheme: const TextTheme(
-      bodyMedium: TextStyle(color: Colors.white70),
-    ),
+    textTheme: const TextTheme(bodyMedium: TextStyle(color: Colors.white70)),
   );
 }

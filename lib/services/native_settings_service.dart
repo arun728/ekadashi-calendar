@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 
 /// Native Settings Service - communicates with Kotlin SettingsService
 /// for permission handling and settings management.
-/// 
+///
 /// Benefits over Flutter plugins:
 /// - Runs on native IO threads (no main thread blocking)
 /// - Faster permission checks
@@ -14,7 +14,8 @@ class NativeSettingsService {
   static const MethodChannel _channel = MethodChannel('com.ekadashi.settings');
 
   // Singleton pattern
-  static final NativeSettingsService _instance = NativeSettingsService._internal();
+  static final NativeSettingsService _instance =
+      NativeSettingsService._internal();
   factory NativeSettingsService() => _instance;
   NativeSettingsService._internal();
 
@@ -26,7 +27,8 @@ class NativeSettingsService {
   /// Returns a PermissionStatus object with all permission states.
   Future<PermissionStatus> checkAllPermissions() async {
     try {
-      final result = await _channel.invokeMethod<Map<Object?, Object?>>('checkAllPermissions')
+      final result = await _channel
+          .invokeMethod<Map<Object?, Object?>>('checkAllPermissions')
           .timeout(const Duration(milliseconds: 1500));
       if (result == null) return PermissionStatus.defaults();
 
@@ -34,16 +36,23 @@ class NativeSettingsService {
       final map = result.map((k, v) => MapEntry(k.toString(), v));
 
       return PermissionStatus(
-        hasNotificationPermission: map['hasNotificationPermission'] as bool? ?? false,
-        hasExactAlarmPermission: map['hasExactAlarmPermission'] as bool? ?? true,
+        hasNotificationPermission:
+            map['hasNotificationPermission'] as bool? ?? false,
+        hasExactAlarmPermission:
+            map['hasExactAlarmPermission'] as bool? ?? true,
         hasLocationPermission: map['hasLocationPermission'] as bool? ?? false,
-        isBatteryOptimizationDisabled: map['isBatteryOptimizationDisabled'] as bool? ?? false,
+        isBatteryOptimizationDisabled:
+            map['isBatteryOptimizationDisabled'] as bool? ?? false,
         androidVersion: map['androidVersion'] as int? ?? 0,
-        requiresExactAlarmPermission: map['requiresExactAlarmPermission'] as bool? ?? false,
-        requiresNotificationPermission: map['requiresNotificationPermission'] as bool? ?? false,
+        requiresExactAlarmPermission:
+            map['requiresExactAlarmPermission'] as bool? ?? false,
+        requiresNotificationPermission:
+            map['requiresNotificationPermission'] as bool? ?? false,
       );
     } on TimeoutException {
-      debugPrint('NativeSettingsService.checkAllPermissions timeout - returning defaults');
+      debugPrint(
+        'NativeSettingsService.checkAllPermissions timeout - returning defaults',
+      );
       return PermissionStatus.defaults();
     } catch (e) {
       debugPrint('NativeSettingsService.checkAllPermissions error: $e');
@@ -54,7 +63,8 @@ class NativeSettingsService {
   /// Check if notification permission is granted.
   Future<bool> hasNotificationPermission() async {
     try {
-      return await _channel.invokeMethod<bool>('hasNotificationPermission') ?? false;
+      return await _channel.invokeMethod<bool>('hasNotificationPermission') ??
+          false;
     } catch (e) {
       debugPrint('NativeSettingsService.hasNotificationPermission error: $e');
       return false;
@@ -64,7 +74,8 @@ class NativeSettingsService {
   /// Check if exact alarm permission is granted (Android 12+).
   Future<bool> hasExactAlarmPermission() async {
     try {
-      return await _channel.invokeMethod<bool>('hasExactAlarmPermission') ?? true;
+      return await _channel.invokeMethod<bool>('hasExactAlarmPermission') ??
+          true;
     } catch (e) {
       debugPrint('NativeSettingsService.hasExactAlarmPermission error: $e');
       return true; // Default to true on error to not block functionality
@@ -74,7 +85,8 @@ class NativeSettingsService {
   /// Check if location permission is granted.
   Future<bool> hasLocationPermission() async {
     try {
-      return await _channel.invokeMethod<bool>('hasLocationPermission') ?? false;
+      return await _channel.invokeMethod<bool>('hasLocationPermission') ??
+          false;
     } catch (e) {
       debugPrint('NativeSettingsService.hasLocationPermission error: $e');
       return false;
@@ -84,9 +96,14 @@ class NativeSettingsService {
   /// Check if battery optimization is disabled.
   Future<bool> isBatteryOptimizationDisabled() async {
     try {
-      return await _channel.invokeMethod<bool>('isBatteryOptimizationDisabled') ?? false;
+      return await _channel.invokeMethod<bool>(
+            'isBatteryOptimizationDisabled',
+          ) ??
+          false;
     } catch (e) {
-      debugPrint('NativeSettingsService.isBatteryOptimizationDisabled error: $e');
+      debugPrint(
+        'NativeSettingsService.isBatteryOptimizationDisabled error: $e',
+      );
       return false;
     }
   }
@@ -98,7 +115,8 @@ class NativeSettingsService {
   /// Open app notification settings.
   Future<bool> openNotificationSettings() async {
     try {
-      return await _channel.invokeMethod<bool>('openNotificationSettings') ?? false;
+      return await _channel.invokeMethod<bool>('openNotificationSettings') ??
+          false;
     } catch (e) {
       debugPrint('NativeSettingsService.openNotificationSettings error: $e');
       return false;
@@ -108,7 +126,8 @@ class NativeSettingsService {
   /// Open exact alarm settings (Android 12+).
   Future<bool> openExactAlarmSettings() async {
     try {
-      return await _channel.invokeMethod<bool>('openExactAlarmSettings') ?? false;
+      return await _channel.invokeMethod<bool>('openExactAlarmSettings') ??
+          false;
     } catch (e) {
       debugPrint('NativeSettingsService.openExactAlarmSettings error: $e');
       return false;
@@ -118,9 +137,14 @@ class NativeSettingsService {
   /// Open battery optimization settings.
   Future<bool> openBatteryOptimizationSettings() async {
     try {
-      return await _channel.invokeMethod<bool>('openBatteryOptimizationSettings') ?? false;
+      return await _channel.invokeMethod<bool>(
+            'openBatteryOptimizationSettings',
+          ) ??
+          false;
     } catch (e) {
-      debugPrint('NativeSettingsService.openBatteryOptimizationSettings error: $e');
+      debugPrint(
+        'NativeSettingsService.openBatteryOptimizationSettings error: $e',
+      );
       return false;
     }
   }
@@ -162,7 +186,9 @@ class NativeSettingsService {
   /// Get all notification settings.
   Future<NotificationPrefs> getNotificationSettings() async {
     try {
-      final result = await _channel.invokeMethod<Map<Object?, Object?>>('getNotificationSettings');
+      final result = await _channel.invokeMethod<Map<Object?, Object?>>(
+        'getNotificationSettings',
+      );
       if (result == null) return NotificationPrefs.defaults();
 
       final map = result.map((k, v) => MapEntry(k.toString(), v));
@@ -184,14 +210,15 @@ class NativeSettingsService {
   Future<bool> updateNotificationSettings(NotificationPrefs settings) async {
     try {
       return await _channel.invokeMethod<bool>('updateNotificationSettings', {
-        'settings': {
-          'enabled': settings.enabled,
-          'remind2Days': settings.remind2Days,
-          'remind1Day': settings.remind1Day,
-          'remindOnStart': settings.remindOnStart,
-          'remindOnParana': settings.remindOnParana,
-        },
-      }) ?? false;
+            'settings': {
+              'enabled': settings.enabled,
+              'remind2Days': settings.remind2Days,
+              'remind1Day': settings.remind1Day,
+              'remindOnStart': settings.remindOnStart,
+              'remindOnParana': settings.remindOnParana,
+            },
+          }) ??
+          false;
     } catch (e) {
       debugPrint('NativeSettingsService.updateNotificationSettings error: $e');
       return false;
@@ -202,9 +229,10 @@ class NativeSettingsService {
   Future<bool> setNotificationSetting(String key, bool value) async {
     try {
       return await _channel.invokeMethod<bool>('setNotificationSetting', {
-        'key': key,
-        'value': value,
-      }) ?? false;
+            'key': key,
+            'value': value,
+          }) ??
+          false;
     } catch (e) {
       debugPrint('NativeSettingsService.setNotificationSetting error: $e');
       return false;
@@ -218,7 +246,9 @@ class NativeSettingsService {
   /// Get location settings.
   Future<LocationSettings> getLocationSettings() async {
     try {
-      final result = await _channel.invokeMethod<Map<Object?, Object?>>('getLocationSettings');
+      final result = await _channel.invokeMethod<Map<Object?, Object?>>(
+        'getLocationSettings',
+      );
       if (result == null) return LocationSettings.defaults();
 
       final map = result.map((k, v) => MapEntry(k.toString(), v));
@@ -242,10 +272,11 @@ class NativeSettingsService {
   }) async {
     try {
       return await _channel.invokeMethod<bool>('updateLocationSettings', {
-        'autoDetect': autoDetect,
-        'cityId': cityId,
-        'timezone': timezone,
-      }) ?? false;
+            'autoDetect': autoDetect,
+            'cityId': cityId,
+            'timezone': timezone,
+          }) ??
+          false;
     } catch (e) {
       debugPrint('NativeSettingsService.updateLocationSettings error: $e');
       return false;
@@ -270,8 +301,9 @@ class NativeSettingsService {
   Future<bool> setDarkMode(bool enabled) async {
     try {
       return await _channel.invokeMethod<bool>('setDarkMode', {
-        'enabled': enabled,
-      }) ?? false;
+            'enabled': enabled,
+          }) ??
+          false;
     } catch (e) {
       debugPrint('NativeSettingsService.setDarkMode error: $e');
       return false;
@@ -296,8 +328,9 @@ class NativeSettingsService {
   Future<bool> setLanguageCode(String code) async {
     try {
       return await _channel.invokeMethod<bool>('setLanguageCode', {
-        'code': code,
-      }) ?? false;
+            'code': code,
+          }) ??
+          false;
     } catch (e) {
       debugPrint('NativeSettingsService.setLanguageCode error: $e');
       return false;
@@ -311,7 +344,9 @@ class NativeSettingsService {
   /// Get all settings at once for initial load.
   Future<AllSettings> getAllSettings() async {
     try {
-      final result = await _channel.invokeMethod<Map<Object?, Object?>>('getAllSettings');
+      final result = await _channel.invokeMethod<Map<Object?, Object?>>(
+        'getAllSettings',
+      );
       if (result == null) return AllSettings.defaults();
 
       return AllSettings.fromMap(result);
@@ -439,11 +474,8 @@ class LocationSettings {
     required this.timezone,
   });
 
-  factory LocationSettings.defaults() => LocationSettings(
-    autoDetect: true,
-    cityId: null,
-    timezone: 'IST',
-  );
+  factory LocationSettings.defaults() =>
+      LocationSettings(autoDetect: true, cityId: null, timezone: 'IST');
 
   LocationSettings copyWith({
     bool? autoDetect,
@@ -488,27 +520,39 @@ class AllSettings {
     final locMap = map['location'] as Map<Object?, Object?>?;
 
     return AllSettings(
-      permissions: permMap != null ? PermissionStatus(
-        hasNotificationPermission: permMap['hasNotificationPermission'] as bool? ?? false,
-        hasExactAlarmPermission: permMap['hasExactAlarmPermission'] as bool? ?? true,
-        hasLocationPermission: permMap['hasLocationPermission'] as bool? ?? false,
-        isBatteryOptimizationDisabled: permMap['isBatteryOptimizationDisabled'] as bool? ?? false,
-        androidVersion: permMap['androidVersion'] as int? ?? 0,
-        requiresExactAlarmPermission: permMap['requiresExactAlarmPermission'] as bool? ?? false,
-        requiresNotificationPermission: permMap['requiresNotificationPermission'] as bool? ?? false,
-      ) : PermissionStatus.defaults(),
-      notifications: notifMap != null ? NotificationPrefs(
-        enabled: notifMap['enabled'] as bool? ?? true,
-        remind2Days: notifMap['remind2Days'] as bool? ?? true,
-        remind1Day: notifMap['remind1Day'] as bool? ?? true,
-        remindOnStart: notifMap['remindOnStart'] as bool? ?? true,
-        remindOnParana: notifMap['remindOnParana'] as bool? ?? false,
-      ) : NotificationPrefs.defaults(),
-      location: locMap != null ? LocationSettings(
-        autoDetect: locMap['autoDetect'] as bool? ?? true,
-        cityId: locMap['cityId'] as String?,
-        timezone: locMap['timezone'] as String? ?? 'IST',
-      ) : LocationSettings.defaults(),
+      permissions: permMap != null
+          ? PermissionStatus(
+              hasNotificationPermission:
+                  permMap['hasNotificationPermission'] as bool? ?? false,
+              hasExactAlarmPermission:
+                  permMap['hasExactAlarmPermission'] as bool? ?? true,
+              hasLocationPermission:
+                  permMap['hasLocationPermission'] as bool? ?? false,
+              isBatteryOptimizationDisabled:
+                  permMap['isBatteryOptimizationDisabled'] as bool? ?? false,
+              androidVersion: permMap['androidVersion'] as int? ?? 0,
+              requiresExactAlarmPermission:
+                  permMap['requiresExactAlarmPermission'] as bool? ?? false,
+              requiresNotificationPermission:
+                  permMap['requiresNotificationPermission'] as bool? ?? false,
+            )
+          : PermissionStatus.defaults(),
+      notifications: notifMap != null
+          ? NotificationPrefs(
+              enabled: notifMap['enabled'] as bool? ?? true,
+              remind2Days: notifMap['remind2Days'] as bool? ?? true,
+              remind1Day: notifMap['remind1Day'] as bool? ?? true,
+              remindOnStart: notifMap['remindOnStart'] as bool? ?? true,
+              remindOnParana: notifMap['remindOnParana'] as bool? ?? false,
+            )
+          : NotificationPrefs.defaults(),
+      location: locMap != null
+          ? LocationSettings(
+              autoDetect: locMap['autoDetect'] as bool? ?? true,
+              cityId: locMap['cityId'] as String?,
+              timezone: locMap['timezone'] as String? ?? 'IST',
+            )
+          : LocationSettings.defaults(),
       darkMode: map['darkMode'] as bool? ?? false,
       languageCode: map['languageCode'] as String? ?? 'en',
     );

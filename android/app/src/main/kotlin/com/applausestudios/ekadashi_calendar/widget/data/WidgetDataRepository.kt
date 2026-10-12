@@ -233,7 +233,11 @@ class WidgetDataRepository private constructor(private val context: Context) {
                                 lastUpdatedAtUTC = now.toString(),
                                 locale = locale,
                                 timezone = targetTz,
-                                locationName = "India (IST)"
+                                locationName = run {
+                                    val config = android.content.res.Configuration(context.resources.configuration)
+                                    config.setLocale(java.util.Locale.forLanguageTag(locale))
+                                    context.createConfigurationContext(config).getString(com.applausestudios.ekadashi_calendar.R.string.widget_seed_location)
+                                }
                             ),
                             currentState = nextEkadashi.stateAt(now),
                             nextEkadashi = nextEkadashi,

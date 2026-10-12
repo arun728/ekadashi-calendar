@@ -1,13 +1,15 @@
 import '../premium_screen.dart';
 import '../../services/premium_service.dart';
 import '../../widgets/glass_tube.dart';
+import '../../widgets/section_pager.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../models/vrat_tracker_models.dart';
 import '../../services/achievement_evaluator.dart';
 import '../../services/ekadashi_service.dart';
+import '../../l10n/app_language.dart';
 import '../../services/language_service.dart';
+import '../../services/vrat_recording.dart';
 import '../../services/vrat_statistics_service.dart';
 import '../../services/vrat_tracker_service.dart';
 import 'achievement_unlock_dialog.dart';
@@ -29,18 +31,20 @@ class VratTrackerScreen extends StatefulWidget {
   State<VratTrackerScreen> createState() => _VratTrackerScreenState();
 }
 
-class _VratTrackerScreenState extends State<VratTrackerScreen>
-    with SingleTickerProviderStateMixin {
+/// Journey's sections; each name is also its label key.
+enum _JourneySection { overview, history, statistics, achievements }
+
+class _VratTrackerScreenState extends State<VratTrackerScreen> {
   static const Color tealColor = Color(0xFF00A19B);
 
-  late TabController _tabController;
+  final _pages = PageController();
+  var _section = _JourneySection.overview;
   int _selectedYear = DateTime.now().year;
   ObservanceStatus? _historyStatusFilter;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
 
     // Initialize tracker service with occurrences if not already done
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -53,7 +57,7 @@ class _VratTrackerScreenState extends State<VratTrackerScreen>
 
   @override
   void dispose() {
-    _tabController.dispose();
+    _pages.dispose();
     super.dispose();
   }
 
@@ -80,83 +84,47 @@ class _VratTrackerScreenState extends State<VratTrackerScreen>
       );
     }
 
-    // 2. ACTIVE TRACKER DASHBOARD
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(lang.translate('vrat_tracker')),
-        centerTitle: true,
-        bottom: PreferredSize(
-          preferredSize: Size.fromHeight(
-            60 + MediaQuery.textScalerOf(context).scale(12),
+    // 2. ACTIVE TRACKER DASHBOARD: the sections are glass chips, as in
+    // Panchang, and also change with a horizontal swipe.
+    const sections = _JourneySection.values;
+    // Chips need a Material; the shell's Scaffold is not always above.
+    return Material(
+      type: MaterialType.transparency,
+      child: Column(
+        children: [
+          SectionChipBar(
+            key: const Key('vrat_tabs_tube'),
+            labels: [for (final s in sections) lang.translate(s.name)],
+            chipKeys: [for (final s in sections) Key('journey_tab_${s.name}')],
+            selected: _section.index,
+            onSelected: (index) {
+              setState(() => _section = sections[index]);
+              showSectionPage(_pages, index);
+            },
           ),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
-            child: GlassTube(
-              key: const Key('vrat_tabs_tube'),
-              optionCount: 4,
-              child: TabBar(
-                controller: _tabController,
-                indicator: BoxDecoration(
-                  color: GlassTubeColors.optionSelection(context),
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                indicatorSize: TabBarIndicatorSize.tab,
-                indicatorPadding: const EdgeInsets.all(3),
-                dividerColor: Colors.transparent,
-                labelPadding: const EdgeInsets.symmetric(horizontal: 2),
-                labelStyle: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
-                labelColor: tealColor,
-                unselectedLabelColor: GlassTubeColors.foreground(context),
-                isScrollable: false,
-                tabs: [
-                  Tab(
-                    child: Text(
-                      lang.translate('overview'),
-                      maxLines: 2,
-                      textAlign: TextAlign.center,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+          Expanded(
+            child: PageView.builder(
+              controller: _pages,
+              itemCount: sections.length,
+              onPageChanged: (index) =>
+                  setState(() => _section = sections[index]),
+              itemBuilder: (_, index) => KeyedSubtree(
+                key: ValueKey(sections[index]),
+                child: switch (sections[index]) {
+                  _JourneySection.overview => _buildOverviewTab(lang, tracker),
+                  _JourneySection.history => _buildHistoryTab(lang, tracker),
+                  _JourneySection.statistics => _buildStatisticsTab(
+                    lang,
+                    tracker,
                   ),
-                  Tab(
-                    child: Text(
-                      lang.translate('history'),
-                      maxLines: 2,
-                      textAlign: TextAlign.center,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                  _JourneySection.achievements => _buildAchievementsTab(
+                    lang,
+                    tracker,
                   ),
-                  Tab(
-                    child: Text(
-                      lang.translate('statistics'),
-                      maxLines: 2,
-                      textAlign: TextAlign.center,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  Tab(
-                    child: Text(
-                      lang.translate('achievements'),
-                      maxLines: 2,
-                      textAlign: TextAlign.center,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
+                },
               ),
             ),
           ),
-        ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildOverviewTab(lang, tracker),
-          _buildHistoryTab(lang, tracker),
-          _buildStatisticsTab(lang, tracker),
-          _buildAchievementsTab(lang, tracker),
         ],
       ),
     );
@@ -192,6 +160,7 @@ class _VratTrackerScreenState extends State<VratTrackerScreen>
       children: [
         // Streak & Total Cards Grid
         Row(
+          key: const Key('journey_overview_streaks'),
           children: [
             Expanded(
               child: _buildMetricCard(
@@ -588,10 +557,10 @@ class _VratTrackerScreenState extends State<VratTrackerScreen>
   ) {
     final record = tracker.getRecordByUid(ekadashi.occurrenceUid);
     final status = record?.status ?? ObservanceStatus.unrecorded;
-    final dateStr = DateFormat(
-      'MMM dd, yyyy',
+    final dateStr = AppStrings.fullDate(
+      ekadashi.date,
       lang.currentLocale.languageCode,
-    ).format(ekadashi.date);
+    );
 
     Color chipColor;
     String statusLabel;
@@ -623,124 +592,140 @@ class _VratTrackerScreenState extends State<VratTrackerScreen>
     final accessibilityLabel =
         '${ekadashi.name}, $dateStr, $statusLabel. ${lang.translate('tap_to_record_semantics')}';
 
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () async {
-          final unlocks = await RecordVratDialog.show(
-            context,
-            ekadashi: ekadashi,
-            allOccurrences: widget.ekadashiList,
-            currentTimezone: widget.currentTimezone,
-          );
-          if (unlocks != null && unlocks.isNotEmpty && mounted) {
-            for (final u in unlocks) {
-              await AchievementUnlockDialog.show(context, u);
-            }
-          }
-        },
-        child: Semantics(
-          label: accessibilityLabel,
-          button: true,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            child: Row(
-              children: [
-                // Circular indicator on the left
-                Container(
-                  width: 38,
-                  height: 38,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: chipColor.withValues(alpha: 0.12),
-                    border: Border.all(
-                      color: chipColor.withValues(alpha: 0.35),
-                      width: 1.5,
-                    ),
-                  ),
-                  child: Icon(statusIcon, size: 18, color: chipColor),
+    final open = VratRecording.isOpen(
+      ekadashi,
+      now: DateTime.now(),
+      timezone: widget.currentTimezone,
+    );
+    return Opacity(
+      opacity: open ? 1 : .55,
+      child: Card(
+        margin: const EdgeInsets.symmetric(vertical: 6),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () async {
+            if (!open) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(lang.translate('journey_record_after_parana')),
                 ),
-                const SizedBox(width: 12),
+              );
+              return;
+            }
+            final unlocks = await RecordVratDialog.show(
+              context,
+              ekadashi: ekadashi,
+              allOccurrences: widget.ekadashiList,
+              currentTimezone: widget.currentTimezone,
+            );
+            if (unlocks != null && unlocks.isNotEmpty && mounted) {
+              for (final u in unlocks) {
+                await AchievementUnlockDialog.show(context, u);
+              }
+            }
+          },
+          child: Semantics(
+            label: accessibilityLabel,
+            button: true,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              child: Row(
+                children: [
+                  // Circular indicator on the left
+                  Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: chipColor.withValues(alpha: 0.12),
+                      border: Border.all(
+                        color: chipColor.withValues(alpha: 0.35),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Icon(statusIcon, size: 18, color: chipColor),
+                  ),
+                  const SizedBox(width: 12),
 
-                // Center: Ekadashi name & Date
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        ekadashi.name,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                  // Center: Ekadashi name & Date
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          ekadashi.name,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        dateStr,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Theme.of(
-                            context,
-                          ).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
-                        ),
-                      ),
-                      if (record?.note != null && record!.note!.isNotEmpty) ...[
                         const SizedBox(height: 4),
                         Text(
-                          '“${record.note!}”',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontStyle: FontStyle.italic,
-                            color: Colors.grey,
+                          dateStr,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Theme.of(context).textTheme.bodySmall?.color
+                                ?.withValues(alpha: 0.7),
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        ),
+                        if (record?.note != null &&
+                            record!.note!.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            '“${record.note!}”',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontStyle: FontStyle.italic,
+                              color: Colors.grey,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+
+                  // Right: Status Badge + Chevron (NO CHECKBOX)
+                  Flexible(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: chipColor.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: chipColor.withValues(alpha: 0.35),
+                            ),
+                          ),
+                          child: Text(
+                            statusLabel,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: chipColor,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Icon(
+                          Icons.chevron_right,
+                          size: 18,
+                          color: Colors.grey.shade400,
                         ),
                       ],
-                    ],
+                    ),
                   ),
-                ),
-                const SizedBox(width: 8),
-
-                // Right: Status Badge + Chevron (NO CHECKBOX)
-                Flexible(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          color: chipColor.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: chipColor.withValues(alpha: 0.35),
-                          ),
-                        ),
-                        child: Text(
-                          statusLabel,
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: chipColor,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Icon(
-                        Icons.chevron_right,
-                        size: 18,
-                        color: Colors.grey.shade400,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -816,7 +801,11 @@ class _VratTrackerScreenState extends State<VratTrackerScreen>
               ),
               const SizedBox(height: 6),
               Text(
-                '${stats.observedCount} of ${stats.totalOccurrences} ${lang.translate('ekadashis_unit')}',
+                AppStrings.translateWithArgs(
+                  'observed_of_total',
+                  lang.currentLocale.languageCode,
+                  ['${stats.observedCount}', '${stats.totalOccurrences}'],
+                ),
                 style: const TextStyle(fontSize: 13, color: Colors.grey),
               ),
             ],

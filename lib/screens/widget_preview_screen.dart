@@ -6,27 +6,22 @@ import '../services/language_service.dart';
 import 'details_screen.dart';
 import 'calendar_screen.dart';
 
-/// Module 13 — Widget Preview Card Simplification with Lotus Logo
-/// Final Compact Rectangle Design (Android + iOS)
-/// Exactly 3 preview cards:
-///   1. [LOTUS LOGO] EKADASHI TODAY (Only this text, compact rectangular frame)
-///   2. [LOTUS LOGO] NEXT EKADASHI / Starts in 2 days (Only these two lines)
-///   3. [LOTUS LOGO] UPCOMING EKADASHI / 2–3 compact date boxes
-/// Design Standards:
-///   • Devotional lotus logo positioned on the LEFT side of each card
-///   • Logo scaled proportionally with BoxFit.contain (NO zoom, NO crop, NO distortion)
-///   • No outer card outline/border/stroke
-///   • Dark black/deep teal background gradient + glassmorphism + soft glow
-///   • Responsive wide-rectangle proportions with compact height (no excess empty space)
-///   • Large readable white typography
+/// The in-app preview of the two home screen widgets (docs/ROADMAP.md Phase 6):
+///   1. Ekadashi: on an Ekadashi, "Today is Ekadashi", its name and the
+///      progress of the fast; otherwise the next Ekadashi and the days to go.
+///   2. Upcoming Ekadashis: a list.
 class WidgetPreviewScreen extends StatelessWidget {
   final List<EkadashiDate> ekadashiList;
   final String? currentTimezone;
+
+  /// The preview's clock; tests pass a fixed time.
+  final DateTime? now;
 
   const WidgetPreviewScreen({
     super.key,
     required this.ekadashiList,
     this.currentTimezone,
+    this.now,
   });
 
   static const Color _cyan = Color(0xFF00E5FF);
@@ -34,51 +29,29 @@ class WidgetPreviewScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final lang = Provider.of<LanguageService>(context);
+    final clock = now ?? DateTime.now();
+    final today = DateTime(clock.year, clock.month, clock.day);
 
-    // Resolve real dynamic data
-    final today = DateTime(
-      DateTime.now().year,
-      DateTime.now().month,
-      DateTime.now().day,
+    final sorted = [...ekadashiList]..sort((a, b) => a.date.compareTo(b.date));
+    final ahead = sorted
+        .where(
+          (e) =>
+              !DateTime(e.date.year, e.date.month, e.date.day).isBefore(today),
+        )
+        .toList();
+    final first = ahead.firstOrNull;
+    final isToday =
+        first != null &&
+        DateTime(first.date.year, first.date.month, first.date.day) == today;
+    // The list starts after today's Ekadashi, like the widget.
+    final list = (isToday ? ahead.skip(1) : ahead).take(3).toList();
+
+    void openDetails(EkadashiDate e) => Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => DetailsScreen(ekadashi: e, timezone: currentTimezone),
+      ),
     );
-
-    EkadashiDate? todayEkadashi;
-    EkadashiDate? nextEkadashi;
-    final List<EkadashiDate> upcomingRest = [];
-
-    for (final e in ekadashiList) {
-      final eDate = DateTime(e.date.year, e.date.month, e.date.day);
-      if (eDate == today) {
-        todayEkadashi = e;
-      } else if (eDate.isAfter(today)) {
-        if (nextEkadashi == null) {
-          nextEkadashi = e;
-        } else {
-          upcomingRest.add(e);
-        }
-      }
-    }
-
-    final activeToday = todayEkadashi;
-    final activeNext = nextEkadashi;
-
-    // Build 2–3 item upcoming list for Card 3 (distinct upcoming dates)
-    final List<EkadashiDate> threeUpcoming = [];
-    for (final e in upcomingRest) {
-      if (threeUpcoming.length >= 3) break;
-      threeUpcoming.add(e);
-    }
-    if (threeUpcoming.length < 3 &&
-        nextEkadashi != null &&
-        !threeUpcoming.contains(nextEkadashi)) {
-      threeUpcoming.insert(0, nextEkadashi);
-    }
-    if (threeUpcoming.length < 3) {
-      for (final e in ekadashiList) {
-        if (threeUpcoming.length >= 3) break;
-        if (!threeUpcoming.contains(e)) threeUpcoming.add(e);
-      }
-    }
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -95,7 +68,7 @@ class WidgetPreviewScreen extends StatelessWidget {
         ),
         centerTitle: true,
         title: Text(
-          lang.translate('app_title'),
+          lang.translate('widget_preview'),
           style: const TextStyle(
             color: _cyan,
             fontWeight: FontWeight.bold,
@@ -119,65 +92,34 @@ class WidgetPreviewScreen extends StatelessWidget {
           child: ListView(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             children: [
-              // ── CARD 1: EKADASHI TODAY ──────────────────────────────────
+              _SectionLabel(lang.translate('widget_name_ekadashi')),
               _CompactPreviewCard(
-                key: const Key('card_today_ekadashi'),
+                key: const Key('card_ekadashi'),
                 onTap: () {
-                  if (activeToday != null) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => DetailsScreen(
-                          ekadashi: activeToday,
-                          timezone: currentTimezone,
-                        ),
-                      ),
-                    );
-                  }
+                  if (first != null) openDetails(first);
                 },
-                child: const _Card1TodayContent(),
+                child: _EkadashiContent(
+                  item: first,
+                  isToday: isToday,
+                  now: clock,
+                  today: today,
+                ),
               ),
-
-              const SizedBox(height: 14),
-
-              // ── CARD 2: NEXT EKADASHI ───────────────────────────────────
-              _CompactPreviewCard(
-                key: const Key('card_next_ekadashi'),
-                onTap: () {
-                  if (activeNext != null) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => DetailsScreen(
-                          ekadashi: activeNext,
-                          timezone: currentTimezone,
-                        ),
-                      ),
-                    );
-                  }
-                },
-                child: _Card2NextContent(next: activeNext),
-              ),
-
-              const SizedBox(height: 14),
-
-              // ── CARD 3: UPCOMING EKADASHI ───────────────────────────────
+              const SizedBox(height: 18),
+              _SectionLabel(lang.translate('upcoming_ekadashis')),
               _CompactPreviewCard(
                 key: const Key('card_upcoming_ekadashi'),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => CalendarScreen(
-                        ekadashiList: ekadashiList,
-                        currentTimezone: currentTimezone,
-                      ),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => CalendarScreen(
+                      ekadashiList: ekadashiList,
+                      currentTimezone: currentTimezone,
                     ),
-                  );
-                },
-                child: _Card3UpcomingContent(upcoming: threeUpcoming),
+                  ),
+                ),
+                child: _UpcomingContent(upcoming: list),
               ),
-
               const SizedBox(height: 24),
             ],
           ),
@@ -185,6 +127,20 @@ class WidgetPreviewScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+class _SectionLabel extends StatelessWidget {
+  final String text;
+  const _SectionLabel(this.text);
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(left: 4, bottom: 8),
+    child: Text(
+      text,
+      style: const TextStyle(color: Colors.white70, fontSize: 13),
+    ),
+  );
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -306,30 +262,123 @@ class _LotusLogo extends StatelessWidget {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// CARD 1 CONTENT — [LOTUS LOGO] EKADASHI TODAY ONLY
+// EKADASHI WIDGET — today with progress, or the next one and the days to go
 // ════════════════════════════════════════════════════════════════════════════
 
-class _Card1TodayContent extends StatelessWidget {
-  const _Card1TodayContent();
+class _EkadashiContent extends StatelessWidget {
+  final EkadashiDate? item;
+  final bool isToday;
+  final DateTime now;
+  final DateTime today;
+
+  const _EkadashiContent({
+    required this.item,
+    required this.isToday,
+    required this.now,
+    required this.today,
+  });
+
+  /// How much of the fast (fasting start to Parana start) has passed.
+  static double progress(EkadashiDate e, DateTime now) {
+    final start = DateTime.tryParse(e.fastingStartIso);
+    final parana = DateTime.tryParse(e.paranaStartIso);
+    if (start == null || parana == null) return 0;
+    final total = parana.difference(start).inSeconds;
+    if (total <= 0) return now.isBefore(parana) ? 0 : 1;
+    return (now.difference(start).inSeconds / total).clamp(0.0, 1.0);
+  }
 
   @override
   Widget build(BuildContext context) {
     final lang = context.watch<LanguageService>();
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        const _LotusLogo(size: 52),
-        const SizedBox(width: 14),
-        Expanded(
-          child: Text(
-            lang.translate('widget_today_title').toUpperCase(),
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 19,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 1.1,
+    final e = item;
+    const titleStyle = TextStyle(
+      color: Colors.white,
+      fontSize: 13,
+      fontWeight: FontWeight.w800,
+      letterSpacing: 1.1,
+    );
+    const detailStyle = TextStyle(
+      color: Color(0xFFE0F7FA),
+      fontSize: 14,
+      fontWeight: FontWeight.w500,
+    );
+    if (e == null) {
+      return Row(
+        children: [
+          const _LotusLogo(size: 54),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Text(
+              lang.translate('open_app_to_refresh'),
+              style: detailStyle,
             ),
           ),
+        ],
+      );
+    }
+    final String detail;
+    double? value;
+    if (isToday) {
+      value = progress(e, now);
+      detail = lang.translateWithArgs('widget_fast_done', [
+        '${(value * 100).floor()}',
+      ]);
+    } else {
+      final days = DateTime(
+        e.date.year,
+        e.date.month,
+        e.date.day,
+      ).difference(today).inDays;
+      detail = days <= 1
+          ? lang.translate(days <= 0 ? 'today' : 'tomorrow')
+          : lang.translateWithArgs('widget_days_to_go', ['$days']);
+    }
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        const _LotusLogo(size: 54),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                lang
+                    .translate(
+                      isToday ? 'widget_today_is_ekadashi' : 'next_ekadashi',
+                    )
+                    .toUpperCase(),
+                style: titleStyle,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                e.name,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 19,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              if (value != null) ...[
+                const SizedBox(height: 8),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(3),
+                  child: LinearProgressIndicator(
+                    value: value,
+                    minHeight: 6,
+                    color: const Color(0xFFFFC857),
+                    backgroundColor: Colors.white24,
+                  ),
+                ),
+              ],
+              const SizedBox(height: 6),
+              Text(detail, style: detailStyle),
+            ],
+          ),
         ),
       ],
     );
@@ -337,114 +386,65 @@ class _Card1TodayContent extends StatelessWidget {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// CARD 2 CONTENT — [LOTUS LOGO] NEXT EKADASHI + Starts in 2 days
+// UPCOMING EKADASHIS WIDGET — a list
 // ════════════════════════════════════════════════════════════════════════════
 
-class _Card2NextContent extends StatelessWidget {
-  final EkadashiDate? next;
-  const _Card2NextContent({this.next});
+class _UpcomingContent extends StatelessWidget {
+  final List<EkadashiDate> upcoming;
+
+  const _UpcomingContent({required this.upcoming});
 
   @override
   Widget build(BuildContext context) {
     final lang = context.watch<LanguageService>();
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
+    final code = lang.currentLocale.languageCode;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _LotusLogo(size: 54),
-        const SizedBox(width: 14),
-        Expanded(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                lang.translate('next_ekadashi').toUpperCase(),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 19,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1.1,
-                ),
-              ),
-              const SizedBox(height: 5),
-              Text(
-                next == null
-                    ? lang.translate('open_app_to_refresh')
-                    : lang.translateWithArgs('in_days', [
-                        '${DateTime(next!.date.year, next!.date.month, next!.date.day).difference(DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day)).inDays}',
-                      ]),
-                style: const TextStyle(
-                  color: Color(0xFFE0F7FA),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  letterSpacing: 0.3,
-                ),
-              ),
-            ],
+        Text(
+          lang.translate('upcoming_ekadashis').toUpperCase(),
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 13,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 1.1,
           ),
         ),
-      ],
-    );
-  }
-}
-
-// ════════════════════════════════════════════════════════════════════════════
-// CARD 3 CONTENT — [LOTUS LOGO] UPCOMING EKADASHI + 2–3 COMPACT DATE BOXES
-// ════════════════════════════════════════════════════════════════════════════
-
-class _Card3UpcomingContent extends StatelessWidget {
-  final List<EkadashiDate> upcoming;
-
-  const _Card3UpcomingContent({required this.upcoming});
-
-  @override
-  Widget build(BuildContext context) {
-    final count = upcoming.length > 3 ? 3 : upcoming.length;
-    final List<EkadashiDate> displayItems = upcoming.take(count).toList();
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        const _LotusLogo(size: 54),
-        const SizedBox(width: 14),
-        Expanded(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                context
-                    .watch<LanguageService>()
-                    .translate('upcoming_ekadashis')
-                    .toUpperCase(),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 19,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1.1,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: List.generate(displayItems.length, (i) {
-                  final item = displayItems[i];
-                  final mon = DateFormat(
+        const SizedBox(height: 10),
+        if (upcoming.isEmpty)
+          Text(
+            lang.translate('open_app_to_refresh'),
+            style: const TextStyle(color: Color(0xFFE0F7FA)),
+          ),
+        for (final item in upcoming)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Row(
+              children: [
+                _DateTile(
+                  month: DateFormat(
                     'MMM',
-                    context.read<LanguageService>().currentLocale.languageCode,
-                  ).format(item.date).toUpperCase();
-                  final day = DateFormat('d').format(item.date);
-                  return Padding(
-                    padding: EdgeInsets.only(
-                      right: i < displayItems.length - 1 ? 8 : 0,
+                    code,
+                  ).format(item.date).toUpperCase(),
+                  day: DateFormat('d').format(item.date),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    item.name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
                     ),
-                    child: _DateTile(month: mon, day: day),
-                  );
-                }),
-              ),
-            ],
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
       ],
     );
   }

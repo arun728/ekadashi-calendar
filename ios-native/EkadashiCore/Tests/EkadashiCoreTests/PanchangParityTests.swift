@@ -98,9 +98,7 @@ final class PanchangParityTests: XCTestCase {
                 for (i, limb) in entry.limbs.enumerated() { sameLimb(limb, expected[i], "\(key) \(entry.name) \(i)", &failures) }
             }
             let observances = row.array("observances")! as! [[String: Any]]
-            // Festivals added on iOS first (Phase 3) join the Dart engine with the Android port.
-            let actual = day.observances.filter { !PanchangEngine.iosFirstObservanceIds.contains($0.id) }
-                .map { "\($0.id)|\($0.name)|\($0.description)|\($0.isMajor)" }
+            let actual = day.observances.map { "\($0.id)|\($0.name)|\($0.description)|\($0.isMajor)" }
             let wanted = observances.map { "\($0.string("id")!)|\($0.string("name")!)|\($0.string("description")!)|\($0["major"] as! Bool)" }
             if actual != wanted { failures.append("\(key) observances \(actual) vs \(wanted)") }
         }

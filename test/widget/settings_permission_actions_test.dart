@@ -4,7 +4,7 @@ import 'package:ekadashi_calendar/l10n/generated/app_localizations.dart';
 import 'package:ekadashi_calendar/screens/widgets/settings_permission_actions.dart';
 
 void main() {
-  for (final code in ['en', 'ta', 'hi', 'te']) {
+  for (final code in ['en', 'ta', 'hi', 'te', 'gu', 'bn']) {
     testWidgets(
       '$code Android permission actions fit and remain accessible at 2x',
       (tester) async {
@@ -30,9 +30,9 @@ void main() {
                     body: Padding(
                       padding: const EdgeInsets.all(16),
                       child: SettingsPermissionActions(
-                        title: strings.app_settings,
-                        guideTooltip: strings.perm_guide_title,
-                        settingsTooltip: strings.settings_button,
+                        settingsTitle: strings.app_settings,
+                        settingsSubtitle: strings.app_settings_desc,
+                        guideTitle: strings.perm_guide_title,
                         onGuide: () => guide++,
                         onSettings: () => settings++,
                       ),

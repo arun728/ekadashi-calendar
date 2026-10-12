@@ -1,4 +1,5 @@
 import '../data/calendar_entry_repository.dart';
+import 'notifications/event_reminder_service.dart';
 import '../models/calendar_entry.dart';
 import 'google_event_mapper.dart';
 import 'google_calendar_prefs.dart';
@@ -55,6 +56,7 @@ class GoogleCalendarService {
     if (account != null) {
       await repository.clearGoogleEntries(accountId: account);
       await GoogleCalendarPrefs.clear(account);
+      EventReminderService.instance.changed();
     }
   }
 
@@ -97,6 +99,7 @@ class GoogleCalendarService {
       timeMax: timeMax,
       entries: entries,
     );
+    EventReminderService.instance.changed();
     return entries.length;
   }
 }

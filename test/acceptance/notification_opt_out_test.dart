@@ -19,6 +19,15 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byIcon(Icons.settings));
       await tester.pumpAndSettle();
+      // Notifications sits below the Premium card and the Appearance section.
+      await tester.ensureVisible(
+        find.widgetWithText(
+          SwitchListTile,
+          'Enable Notifications',
+          skipOffstage: false,
+        ),
+      );
+      await tester.pumpAndSettle();
       await tester.tap(
         find.widgetWithText(SwitchListTile, 'Enable Notifications'),
       );

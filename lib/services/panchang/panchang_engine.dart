@@ -117,6 +117,80 @@ class PanchangEngine {
     'Sunday',
   ];
 
+  /// The day's observances without the rest of the Panchang (muhurtas,
+  /// choghadiya, lagna ...): the same result as `calculate(date).observances`.
+  List<PanchangObservance> observancesOn(
+    DateTime date, {
+    PanchangCity city = PanchangCity.newDelhi,
+  }) {
+    city.validate();
+    final calendarDate = DateTime.utc(date.year, date.month, date.day);
+    final startUtc = startFor(calendarDate, city: city);
+    final endUtc = endFor(calendarDate, city: city);
+    final sunrise = _findCrossing(
+      startUtc,
+      endUtc,
+      city,
+      moon: false,
+      rising: true,
+    );
+    var sunset = _findCrossing(
+      startUtc,
+      endUtc,
+      city,
+      moon: false,
+      rising: false,
+    );
+    if (sunrise != null && (sunset == null || sunset.isBefore(sunrise))) {
+      sunset = _findCrossing(
+        sunrise,
+        city.midnight(calendarDate, dayOffset: 2),
+        city,
+        moon: false,
+        rising: false,
+      );
+    }
+    final hasSolarDay =
+        sunrise != null && sunset != null && sunset.isAfter(sunrise);
+    final localSunrise = sunrise ?? city.dateAtHour(calendarDate, 6);
+    final localSunset = sunset ?? city.dateAtHour(calendarDate, 18);
+    final nightEnd = _findCrossing(
+      localSunset,
+      city.midnight(calendarDate, dayOffset: 2),
+      city,
+      moon: false,
+      rising: true,
+    );
+    if (!hasSolarDay || nightEnd == null) {
+      return _sankrantiOnly(city, calendarDate, sunset);
+    }
+    return _observances(
+      city: city,
+      date: calendarDate,
+      sunrise: localSunrise,
+      sunset: localSunset,
+      tithi: _tithiAt(localSunrise),
+    );
+  }
+
+  /// Every observance of [year] at [city], in date order.
+  List<DatedObservance> observanceCalendar(
+    int year, {
+    PanchangCity city = PanchangCity.newDelhi,
+  }) {
+    final result = <DatedObservance>[];
+    for (
+      var date = DateTime.utc(year, 1, 1);
+      date.year == year;
+      date = date.add(const Duration(days: 1))
+    ) {
+      for (final observance in observancesOn(date, city: city)) {
+        result.add(DatedObservance(date: date, observance: observance));
+      }
+    }
+    return result;
+  }
+
   PanchangDay calculate(
     DateTime date, {
     PanchangCity city = PanchangCity.newDelhi,
@@ -1135,6 +1209,57 @@ class PanchangEngine {
       add('holi', 'Holi', major: true, note: 'The day after Holika Dahan.');
     }
 
+    // Festivals added in docs/ROADMAP.md Phase 3 (iOS first, same rules).
+    // Months are Amanta, as above.
+    final shravanaPurnima = occurrence(15);
+    if (shravanaPurnima != null &&
+        shravanaPurnima.month == 'Shravana' &&
+        _sameDate(_rakshaBandhan(shravanaPurnima, days, city), date)) {
+      add(
+        'raksha-bandhan',
+        'Raksha Bandhan',
+        major: true,
+        note:
+            'Shravana Purnima: the day it lasts six ghatis after sunrise (after Bhadra), else Aparahna.',
+      );
+    }
+    if (observed(5, _Kala.purvahna, month: 'Shravana')) {
+      add('nag-panchami', 'Nag Panchami', major: true);
+    }
+    if (observed(2, _Kala.sunrise, month: 'Ashadha')) {
+      add('ratha-yatra', 'Ratha Yatra', major: true);
+    }
+    if (observed(8, _Kala.sunrise, month: 'Ashvina')) {
+      add('durga-ashtami', 'Durga Ashtami', major: true);
+    }
+    if (_isVaralakshmiVratam(date, sunrise, tithi, days)) {
+      add(
+        'varalakshmi-vratam',
+        'Varalakshmi Vratam',
+        major: true,
+        note:
+            'The Friday of Shravana Shukla on or before Purnima; many South Indian calendars keep the Friday before.',
+      );
+    }
+    if (_isOnam(date, sunrise, days)) {
+      add(
+        'onam',
+        'Onam (Thiruvonam)',
+        major: true,
+        note:
+            'Shravana (Thiruvonam) nakshatra six nazhika after sunrise in the solar month of Simha (Chingam).',
+      );
+    }
+    if (_isKarthigaiDeepam(date, sunset, days)) {
+      add(
+        'karthigai-deepam',
+        'Karthigai Deepam',
+        major: true,
+        note:
+            'Krittika nakshatra during Pradosh in the solar month of Vrischika (Karthigai).',
+      );
+    }
+
     _addSankranti(add, city, date, sunset, days);
 
     items.sort((a, b) {
@@ -1315,6 +1440,85 @@ class PanchangEngine {
       return next;
     }
     return chosen;
+  }
+
+  /// Raksha Bandhan: the first half of Purnima is Bhadra, so the day on
+  /// which Purnima still holds six ghatis (2 h 24 min) after sunrise;
+  /// otherwise the day with the most Purnima in Aparahna.
+  DateTime? _rakshaBandhan(
+    _Occurrence purnima,
+    _SolarDays days,
+    PanchangCity city,
+  ) {
+    final first = city.wallClock(purnima.start);
+    final last = city.wallClock(purnima.end);
+    final lastDay = DateTime.utc(last.year, last.month, last.day);
+    for (
+      var day = DateTime.utc(first.year, first.month, first.day);
+      !day.isAfter(lastDay);
+      day = day.add(const Duration(days: 1))
+    ) {
+      final sunrise = days.of(day).sunrise;
+      if (sunrise != null &&
+          purnima._covers(sunrise) &&
+          purnima._covers(sunrise.add(_sixGhatis))) {
+        return day;
+      }
+    }
+    return purnima.observedOn(_Kala.aparahna, _Tie.longest, days, city);
+  }
+
+  /// Six ghatis (or nazhika) of 24 minutes.
+  static const _sixGhatis = Duration(minutes: 6 * 24);
+
+  /// The first day in solar Vrischika on which Krittika prevails at some
+  /// point of Pradosh (sunset to a fifth of the night).
+  bool _isKarthigaiDeepam(DateTime date, DateTime sunset, _SolarDays days) {
+    bool krittikaInPradosh(DateTime day, DateTime? sunset) {
+      if (sunset == null || _siderealSign(sunset) != 7) return false;
+      final next = days.of(day).nextSunrise;
+      if (next == null) return false;
+      final pradoshEnd = sunset.add(next.difference(sunset) ~/ 5);
+      return _nakshatraAt(sunset).index == 3 ||
+          _nakshatraAt(pradoshEnd).index == 3;
+    }
+
+    if (!krittikaInPradosh(date, sunset)) return false;
+    final previous = date.subtract(const Duration(days: 1));
+    return !krittikaInPradosh(previous, days.of(previous).sunset);
+  }
+
+  /// The Friday of Amanta Shravana's bright fortnight whose next Friday
+  /// falls after Purnima (Drik's rule for New Delhi).
+  bool _isVaralakshmiVratam(
+    DateTime date,
+    DateTime sunrise,
+    PanchangLimb tithi,
+    _SolarDays days,
+  ) {
+    if (date.weekday != DateTime.friday) return false;
+    if (tithi.index < 8 || tithi.index > 15) return false;
+    if (_lunarMonths[_monthFor(sunrise).index] != 'Shravana' ||
+        _monthFor(sunrise).adhika) {
+      return false;
+    }
+    final nextFriday = days.of(date.add(const Duration(days: 7))).sunrise;
+    if (nextFriday == null) return false;
+    return _tithiAt(nextFriday).index > 15;
+  }
+
+  /// Thiruvonam six nazhika (2 h 24 min) after sunrise in solar Simha;
+  /// when the nakshatra returns within the same solar month, the later one.
+  bool _isOnam(DateTime date, DateTime sunrise, _SolarDays days) {
+    bool thiruvonam(DateTime instant) =>
+        _nakshatraAt(instant).index == 22 && _siderealSign(instant) == 4;
+    final probe = sunrise.add(_sixGhatis);
+    if (!thiruvonam(probe)) return false;
+    final nextReturn = probe.add(const Duration(milliseconds: 27320 * 86400));
+    if (_siderealSign(nextReturn) == 4) return false;
+    final previous = days.of(date.subtract(const Duration(days: 1))).sunrise;
+    if (previous == null) return true;
+    return !thiruvonam(previous.add(_sixGhatis));
   }
 
   DateTime? _holikaDate(DateTime date, PanchangCity city, _SolarDays days) {

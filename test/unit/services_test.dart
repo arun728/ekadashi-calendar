@@ -20,7 +20,7 @@ void main() {
       // However, _loadLanguage calls notifyListeners, so we can wait a bit or check if values update
       // Better way: Re-implement _loadLanguage to be testable or await a future if exposed
       // Since it's fire-and-forget in constructor, let's verify logic via changeLanguage
-      
+
       await service.changeLanguage('hi');
       expect(service.currentLocale.languageCode, 'hi');
     });
@@ -62,15 +62,15 @@ void main() {
       // We can't easily mock FlutterTimezone.getLocalTimezone() freely without binding setup
       // But we can test the fallback logic if we could inject the system timezone string
       // Since the method calls a platform channel, we need to mock the channel
-      
+
       const channel = MethodChannel('flutter_timezone');
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
-        if (methodCall.method == 'getLocalTimezone') {
-          return 'America/New_York';
-        }
-        return null;
-      });
+            if (methodCall.method == 'getLocalTimezone') {
+              return 'America/New_York';
+            }
+            return null;
+          });
 
       final tz = await service.getDeviceAppTimezone();
       expect(tz, 'EST');
@@ -80,25 +80,25 @@ void main() {
       const channel = MethodChannel('flutter_timezone');
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
-        if (methodCall.method == 'getLocalTimezone') {
-          return 'Asia/Kolkata';
-        }
-        return null;
-      });
+            if (methodCall.method == 'getLocalTimezone') {
+              return 'Asia/Kolkata';
+            }
+            return null;
+          });
 
       final tz = await service.getDeviceAppTimezone();
       expect(tz, 'IST');
     });
-    
+
     test('Device timezone fallback for Unknown/Default', () async {
       const channel = MethodChannel('flutter_timezone');
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
-        if (methodCall.method == 'getLocalTimezone') {
-          return 'Antarctica/Troll';
-        }
-        return null;
-      });
+            if (methodCall.method == 'getLocalTimezone') {
+              return 'Antarctica/Troll';
+            }
+            return null;
+          });
 
       final tz = await service.getDeviceAppTimezone();
       expect(tz, 'IST');

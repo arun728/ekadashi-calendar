@@ -410,6 +410,22 @@ class LocationService(private val context: Context) {
     }
 
     /**
+     * The place name in [language] for display ("चेन्नई" for Chennai in
+     * Hindi); null when the geocoder has none. Matching still uses the
+     * English name from [getCityName].
+     */
+    @Suppress("DEPRECATION")
+    suspend fun localizedCityName(lat: Double, lng: Double, language: String): String? = withContext(Dispatchers.IO) {
+        try {
+            val address = Geocoder(context, Locale(language)).getFromLocation(lat, lng, 1)?.firstOrNull()
+            address?.locality ?: address?.subAdminArea ?: address?.adminArea
+        } catch (e: Exception) {
+            Log.w(TAG, "Localized geocoding failed: ${e.message}")
+            null
+        }
+    }
+
+    /**
      * Reverse geocode to get city name
      */
     @Suppress("DEPRECATION")

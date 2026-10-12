@@ -1,19 +1,28 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:ekadashi_calendar/l10n/app_language.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   final en =
       jsonDecode(File('lib/l10n/app_en.arb').readAsStringSync())
           as Map<String, dynamic>;
-  for (final language in ['ta', 'hi', 'te']) {
-    final script = RegExp(
-      language == 'ta'
-          ? r'[\u0B80-\u0BFF]'
-          : language == 'hi'
-          ? r'[\u0900-\u097F]'
-          : r'[\u0C00-\u0C7F]',
+  // Each language's own script; a language added to AppLanguage needs one.
+  const scripts = {
+    'ta': r'[\u0B80-\u0BFF]',
+    'hi': r'[\u0900-\u097F]',
+    'te': r'[\u0C00-\u0C7F]',
+    'gu': r'[\u0A80-\u0AFF]',
+    'bn': r'[\u0980-\u09FF]',
+  };
+  test('every app language has a script check', () {
+    expect(
+      AppLanguage.codes.where((c) => c != 'en').toSet(),
+      scripts.keys.toSet(),
     );
+  });
+  for (final language in scripts.keys) {
+    final script = RegExp(scripts[language]!);
     test(
       '$language has every UI key, native script and identical placeholders',
       () {
@@ -27,8 +36,18 @@ void main() {
             problems.add('$key: missing');
             continue;
           }
-          if (key != 'filter_google' && !script.hasMatch(value)) {
+          if (!script.hasMatch(value)) {
             problems.add('$key: untranslated');
+          }
+          // No English word: brand names are written in the language's
+          // script too. Only placeholders, links and time zone ids a user
+          // types (Asia/Kolkata) stay in Latin letters.
+          final rest = value
+              .replaceAll(RegExp(r'\{[^{}]+\}'), '')
+              .replaceAll(RegExp(r'https?://\S+'), '')
+              .replaceAll(RegExp(r'Asia/Kolkata|America/New_York'), '');
+          if (RegExp('[A-Za-z]').hasMatch(rest)) {
+            problems.add('$key: English left in "$value"');
           }
           final sourcePlaceholders =
               RegExp(
@@ -49,15 +68,12 @@ void main() {
   }
   test('screen Text literals do not bypass localization', () {
     final violations = <String>[];
-    final expression = RegExp(r"Text\(\s*'([^'\n]+)'");
-    // Panchang is intentionally English-only for this release, as approved in
-    // AGENTS.md. Remove this exception when the feature is localized.
-    const englishOnlyScreenFiles = {
-      'lib/screens/panchang_screen.dart',
-      'lib/screens/panchang_location_dialog.dart',
-      'lib/screens/panchang_month_panels.dart',
-      'lib/screens/panchang_tools.dart',
-    };
+    // Text, labels, hints and tooltips; Panchang follows the app language
+    // too (docs/ROADMAP.md Phase 2).
+    final expression = RegExp(
+      r"(?:Text\(|labelText: |helperText: |hintText: |tooltip: |content: Text\()\s*'([^'\n]+)'",
+    );
+    const englishOnlyScreenFiles = <String>{};
     for (final file in [
       File('lib/main.dart'),
       ...Directory('lib/screens')

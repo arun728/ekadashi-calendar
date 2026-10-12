@@ -194,3 +194,10 @@ String formatPanchangTime(DateTime? instant, PanchangCity city, DateTime date) {
       '${offset < 0 ? '-' : '+'}${(offset.abs() ~/ 60).toString().padLeft(2, '0')}:${(offset.abs() % 60).toString().padLeft(2, '0')}';
   return '$hour:${local.minute.toString().padLeft(2, '0')} ${local.hour < 12 ? 'AM' : 'PM'} ${local.timeZoneName} (UTC$offsetText)$suffix';
 }
+
+/// An observance on its civil date (UTC midnight) at a location.
+class DatedObservance {
+  const DatedObservance({required this.date, required this.observance});
+  final DateTime date;
+  final PanchangObservance observance;
+}

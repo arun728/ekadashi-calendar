@@ -84,6 +84,19 @@
         android:textColor="@color/widget_text_secondary"
         android:textSize="@dimen/widget_text_date_small" />
 
+    <!-- Progress through today's fast (docs/ROADMAP.md Phase 6) -->
+    <ProgressBar
+        android:id="@+id/widget_small_progress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        android:layout_marginTop="6dp"
+        android:max="100"
+        android:progress="0"
+        android:progressTint="@color/widget_gold"
+        android:progressBackgroundTint="#55FFFFFF"
+        android:visibility="gone" />
+
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"

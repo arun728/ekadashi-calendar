@@ -215,8 +215,8 @@ extension PanchangEngine {
             add("holi", "Holi", major: true, note: "The day after Holika Dahan.")
         }
 
-        // Festivals added on iOS first (docs/ROADMAP.md Phase 3; see
-        // iosFirstObservanceIds). Months are Amanta, as above.
+        // Festivals added in docs/ROADMAP.md Phase 3 (phase3FestivalIds).
+        // Months are Amanta, as above.
         if let purnima = occurrence(15), purnima.month == "Shravana", rakshaBandhan(purnima, days, city) == date {
             add("raksha-bandhan", "Raksha Bandhan", major: true,
                 note: "Shravana Purnima: the day it lasts six ghatis after sunrise (after Bhadra), else Aparahna.")
