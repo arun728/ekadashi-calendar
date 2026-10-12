@@ -9,6 +9,7 @@ import 'package:ekadashi_calendar/services/panchang/panchang_engine.dart';
 import 'package:ekadashi_calendar/services/premium_service.dart';
 import 'package:ekadashi_calendar/services/search/search_catalog.dart';
 import 'package:ekadashi_calendar/services/theme_service.dart';
+import 'package:ekadashi_calendar/services/vrat_tracker_service.dart';
 import 'package:ekadashi_calendar/widgets/app_background.dart';
 import 'package:ekadashi_calendar/widgets/ios_style.dart';
 import 'package:flutter/material.dart';
@@ -64,6 +65,7 @@ void main() {
           ChangeNotifierProvider(create: (_) => ThemeService()),
           ChangeNotifierProvider(create: (_) => LanguageService()),
           ChangeNotifierProvider<PremiumService?>.value(value: premiumService),
+          ChangeNotifierProvider(create: (_) => VratTrackerService()),
         ],
         child: MaterialApp(
           theme: AppTheme.darkTheme,

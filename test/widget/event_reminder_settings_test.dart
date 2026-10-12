@@ -180,6 +180,14 @@ void main() {
       findsOneWidget,
     );
     expect(find.byKey(const Key('event_reminder_upgrade')), findsNothing);
+    // The iOS grouped page (systemGroupedBackground) behind the cards.
+    final page = tester.widget<Scaffold>(
+      find.descendant(
+        of: find.byType(BottomSheet),
+        matching: find.byType(Scaffold),
+      ),
+    );
+    expect(page.backgroundColor, const Color(0xFFF2F2F7));
     await tester.tap(find.text('Cancel'));
     await tester.pumpAndSettle();
     expect(find.byType(BottomSheet), findsNothing);

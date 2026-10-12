@@ -18,7 +18,8 @@ import '../services/search/search_catalog.dart';
 import '../services/search/search_corpus.dart';
 import '../services/search/search_return.dart';
 import '../services/search/unified_search.dart';
-import '../widgets/glass_tube.dart';
+import '../widgets/app_background.dart';
+import '../widgets/ios_style.dart';
 import '../widgets/section_pager.dart';
 import 'details_screen.dart';
 import 'panchang_screen.dart';
@@ -250,6 +251,21 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
       item.requiresPremium &&
       !(context.read<PremiumService?>()?.isPremium ?? false);
 
+  /// A page a result opens: inside the search sheet, on the app background
+  /// (iOS keeps the gradient on every pushed page).
+  Future<void> _push(WidgetBuilder builder) => Navigator.of(context).push(
+    MaterialPageRoute<void>(
+      builder: (context) => AppBackground(
+        child: Theme(
+          data: Theme.of(
+            context,
+          ).copyWith(scaffoldBackgroundColor: Colors.transparent),
+          child: Builder(builder: builder),
+        ),
+      ),
+    ),
+  );
+
   Future<void> _open(SearchItem item) async {
     if (_locked(item)) {
       await openPremium(
@@ -266,24 +282,19 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
             .where((e) => e.occurrenceUid == target.id)
             .firstOrNull;
         if (event == null) return;
-        await Navigator.of(context).push(
-          MaterialPageRoute<void>(
-            builder: (_) => DetailsScreen(
-              ekadashi: event,
-              timezone: widget.currentTimezone,
-            ),
-          ),
+        await _push(
+          (_) =>
+              DetailsScreen(ekadashi: event, timezone: widget.currentTimezone),
         );
       case SearchTargetKind.observance:
         final city =
             await PanchangLocationStore().load() ?? PanchangCity.newDelhi;
         if (!mounted) return;
-        await Navigator.of(context).push(
-          MaterialPageRoute<void>(
-            builder: (_) => Scaffold(
-              appBar: AppBar(title: Text(item.title)),
-              body: PanchangScreen(initialDate: target.date, initialCity: city),
-            ),
+        await _push(
+          (_) => Scaffold(
+            backgroundColor: Colors.transparent,
+            appBar: AppBar(title: Text(item.title)),
+            body: PanchangScreen(initialDate: target.date, initialCity: city),
           ),
         );
       case SearchTargetKind.entry:
@@ -298,12 +309,10 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
       case SearchTargetKind.paywall:
         await openPremium(context, currentTimezone: widget.currentTimezone);
       case SearchTargetKind.widgetPreview:
-        await Navigator.of(context).push(
-          MaterialPageRoute<void>(
-            builder: (_) => WidgetPreviewScreen(
-              ekadashiList: widget.ekadashiList,
-              currentTimezone: widget.currentTimezone,
-            ),
+        await _push(
+          (_) => WidgetPreviewScreen(
+            ekadashiList: widget.ekadashiList,
+            currentTimezone: widget.currentTimezone,
           ),
         );
     }
@@ -313,175 +322,258 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
   Widget build(BuildContext context) {
     final lang = context.watch<LanguageService>();
     context.watch<PremiumService?>();
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          key: const Key('global_search_back'),
-          icon: const Icon(Icons.arrow_back),
-          tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-          onPressed: () =>
-              Navigator.of(context, rootNavigator: true).maybePop(),
-        ),
-        titleSpacing: 0,
-        title: TextField(
-          key: const Key('global_search_field'),
-          controller: _controller,
-          focusNode: _focus,
-          autofocus: true,
-          textInputAction: TextInputAction.search,
-          decoration: InputDecoration(
-            hintText: lang.translate('search_hint_all'),
-            border: InputBorder.none,
-            suffixIcon: _controller.text.isEmpty
-                ? null
-                : IconButton(
-                    key: const Key('global_search_clear'),
-                    icon: const Icon(Icons.close),
-                    onPressed: () {
-                      _controller.clear();
-                      _changed('');
-                    },
-                  ),
+    // The iOS sheet: ⌄ to close, the inline title, the search field below.
+    return AppBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          surfaceTintColor: Colors.transparent,
+          centerTitle: true,
+          leading: IconButton(
+            key: const Key('global_search_back'),
+            icon: const Icon(Icons.keyboard_arrow_down, size: 30),
+            color: IosColors.teal,
+            tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+            onPressed: () =>
+                Navigator.of(context, rootNavigator: true).maybePop(),
           ),
-          onChanged: _changed,
-          onSubmitted: _submit,
+          title: Text(lang.translate('search'), style: iosNavTitle(context)),
+          actions: [
+            if (_loadingObservances)
+              const Padding(
+                padding: EdgeInsets.all(16),
+                child: SizedBox.square(
+                  dimension: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: IosColors.teal,
+                  ),
+                ),
+              ),
+          ],
         ),
-        actions: [
-          if (_loadingObservances)
-            const Padding(
-              padding: EdgeInsets.all(16),
-              child: SizedBox.square(
-                dimension: 18,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: GlassTubeColors.teal,
+        body: Column(
+          children: [
+            _searchField(lang),
+            _filters(lang),
+            if (_suggestions.isNotEmpty && _focus.hasFocus) _suggestionList(),
+            Expanded(
+              child: PageView.builder(
+                controller: _pages,
+                itemCount: SearchCategory.pages.length,
+                onPageChanged: (index) =>
+                    setState(() => _category = SearchCategory.pages[index]),
+                itemBuilder: (_, index) => KeyedSubtree(
+                  key: ValueKey('search_page_$index'),
+                  child: _content(lang, SearchCategory.pages[index]),
                 ),
               ),
             ),
-        ],
-      ),
-      body: Column(
-        children: [
-          _filters(lang),
-          if (_suggestions.isNotEmpty && _focus.hasFocus) _suggestionList(),
-          Expanded(
-            child: PageView.builder(
-              controller: _pages,
-              itemCount: SearchCategory.pages.length,
-              onPageChanged: (index) =>
-                  setState(() => _category = SearchCategory.pages[index]),
-              itemBuilder: (_, index) => KeyedSubtree(
-                key: ValueKey('search_page_$index'),
-                child: _content(lang, SearchCategory.pages[index]),
-              ),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
+  /// The iOS search field (.searchable): a rounded fill, a magnifier, the
+  /// prompt and a clear button; the keyboard opens only on a tap.
+  Widget _searchField(LanguageService lang) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final secondary = IosColors.secondary(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 2, 16, 4),
+      child: Container(
+        key: const Key('global_search_bar'),
+        height: 38,
+        decoration: BoxDecoration(
+          // tertiarySystemFill.
+          color: dark ? const Color(0x3D767680) : const Color(0x1F767680),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: Row(
+          children: [
+            Icon(Icons.search, size: 20, color: secondary),
+            const SizedBox(width: 6),
+            Expanded(
+              child: TextField(
+                key: const Key('global_search_field'),
+                controller: _controller,
+                focusNode: _focus,
+                textInputAction: TextInputAction.search,
+                cursorColor: IosColors.teal,
+                style: TextStyle(
+                  fontSize: IosText.body,
+                  color: IosColors.primary(context),
+                ),
+                decoration: InputDecoration(
+                  isDense: true,
+                  hintText: lang.translate('search_hint_all'),
+                  hintStyle: TextStyle(
+                    fontSize: IosText.body,
+                    color: secondary,
+                  ),
+                  hintMaxLines: 1,
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                ),
+                onChanged: _changed,
+                onSubmitted: _submit,
+              ),
+            ),
+            if (_controller.text.isNotEmpty)
+              GestureDetector(
+                key: const Key('global_search_clear'),
+                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  _controller.clear();
+                  _changed('');
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(4),
+                  child: Icon(
+                    Icons.cancel,
+                    size: 18,
+                    color: secondary,
+                    semanticLabel: MaterialLocalizations.of(
+                      context,
+                    ).deleteButtonTooltip,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// The year menu (a glass capsule) and the type chips, each its own glass
+  /// control, scrolling sideways.
   Widget _filters(LanguageService lang) {
     final years = widget.availableYears;
+    final yearColor = _year == null
+        ? IosColors.primary(context)
+        : IosColors.teal;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 6, 12, 6),
-      child: GlassTube(
-        key: const Key('search_filters_tube'),
-        optionCount: 2,
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-        child: SingleChildScrollView(
-          key: const Key('search_categories_tube'),
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: [
-              PopupMenuButton<int>(
-                key: const Key('search_year_selector'),
-                tooltip: lang.translate('year'),
-                onSelected: (value) {
-                  setState(() => _year = value == 0 ? null : value);
-                  _run();
-                },
-                itemBuilder: (_) => [
-                  PopupMenuItem(
-                    value: 0,
-                    child: Text(lang.translate('search_all_years')),
-                  ),
-                  for (final y in years)
-                    PopupMenuItem(value: y, child: Text('$y')),
-                ],
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 14,
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.calendar_today,
-                        size: 16,
-                        color: _year == null ? null : GlassTubeColors.teal,
+      key: const Key('search_filters_tube'),
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: SingleChildScrollView(
+        key: const Key('search_categories_tube'),
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          children: [
+            PopupMenuButton<int>(
+              key: const Key('search_year_selector'),
+              tooltip: lang.translate('year'),
+              padding: EdgeInsets.zero,
+              onSelected: (value) {
+                setState(() => _year = value == 0 ? null : value);
+                _run();
+              },
+              itemBuilder: (_) => [
+                PopupMenuItem(
+                  value: 0,
+                  child: Text(lang.translate('search_all_years')),
+                ),
+                for (final y in years)
+                  PopupMenuItem(value: y, child: Text('$y')),
+              ],
+              child: GlassPanel(
+                radius: 18,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 8,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.calendar_today, size: 15, color: yearColor),
+                    const SizedBox(width: 6),
+                    Text(
+                      _year?.toString() ?? lang.translate('year'),
+                      style: TextStyle(
+                        fontSize: IosText.subheadline,
+                        fontWeight: _year == null
+                            ? FontWeight.w400
+                            : FontWeight.w600,
+                        color: yearColor,
                       ),
-                      const SizedBox(width: 6),
-                      Text(
-                        _year?.toString() ?? lang.translate('year'),
-                        style: TextStyle(
-                          fontWeight: _year == null
-                              ? FontWeight.w500
-                              : FontWeight.w700,
-                          color: _year == null ? null : GlassTubeColors.teal,
-                        ),
-                      ),
-                      const Icon(Icons.arrow_drop_down, size: 18),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-              _chip(lang.translate('filter_all'), Icons.grid_view, null),
-              for (final type in SearchCategory.filters)
-                _chip(
-                  lang.translate(type.localizationKey),
-                  searchCategoryIcon(type),
-                  type,
-                ),
+            ),
+            for (final type in SearchCategory.pages) ...[
+              const SizedBox(width: 8),
+              _chip(lang, type),
             ],
-          ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _chip(String label, IconData icon, SearchCategory? type) {
+  Widget _chip(LanguageService lang, SearchCategory? type) {
     final selected = _category == type;
-    final color = type == null ? GlassTubeColors.teal : Color(type.color);
-    return Padding(
-      padding: const EdgeInsets.only(right: 4),
-      child: SelectedChipAnchor(
+    return SelectedChipAnchor(
+      selected: selected,
+      child: GlassChip(
+        key: Key('search_filter_${type?.raw ?? 'all'}'),
+        label: lang.translate(type?.localizationKey ?? 'filter_all'),
+        icon: type == null ? Icons.grid_view : searchCategoryIcon(type),
+        color: type == null ? IosColors.teal : Color(type.color),
         selected: selected,
-        child: GlassFilterChip(
-          key: Key('search_filter_${type?.raw ?? 'all'}'),
-          avatar: Icon(icon, size: 16, color: color),
-          label: Text(label),
-          selected: selected,
-          showCheckmark: false,
-          // The selected type's chip goes back to All.
-          onSelected: (_) => _showCategory(selected ? null : type),
-        ),
+        // The selected type's chip goes back to All.
+        onTap: () => _showCategory(selected ? null : type),
       ),
     );
   }
 
-  Widget _suggestionList() => Material(
-    elevation: 2,
-    child: Column(
-      children: [
-        for (final s in _suggestions)
-          ListTile(
-            dense: true,
-            leading: const Icon(Icons.search, size: 18),
-            title: Text(s),
-            onTap: () => _submit(s),
-          ),
-      ],
+  /// Completions under the field, like the iOS search suggestions list.
+  Widget _suggestionList() => Padding(
+    padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+    child: GlassPanel(
+      key: const Key('search_suggestions'),
+      radius: 12,
+      child: Column(
+        children: [
+          for (final s in _suggestions) ...[
+            if (s != _suggestions.first)
+              Divider(
+                height: .5,
+                thickness: .5,
+                indent: 16,
+                color: IosColors.separator(context),
+              ),
+            InkWell(
+              onTap: () => _submit(s),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 11,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        s,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: IosText.body,
+                          color: IosColors.primary(context),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
     ),
   );
 
@@ -489,107 +581,145 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
     if (!_hasInput(page)) return _start(lang);
     final results = _results(page);
     if (results.isEmpty) {
-      return Center(
+      // The query follows the sentence: No results found for "xyz".
+      return UnavailableView(
         key: const Key('search_no_results'),
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.search_off, size: 48, color: Colors.grey.shade500),
-              const SizedBox(height: 12),
-              Text(
-                '${lang.translate('no_results_found')} "${_controller.text.trim()}"',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 6),
-              Text(
-                lang.translate('search_no_results_hint'),
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey.shade500),
-              ),
-            ],
-          ),
-        ),
+        icon: Icons.search,
+        title:
+            '${lang.translate('no_results_found')} "${_controller.text.trim()}"',
+        description: lang.translate('search_no_results_hint'),
       );
     }
     return ListView.separated(
       key: const Key('search_results'),
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
       itemCount: results.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 8),
+      separatorBuilder: (_, _) => const SizedBox(height: 10),
       itemBuilder: (_, i) => _row(results[i], lang),
     );
   }
 
-  Widget _start(LanguageService lang) => ListView(
-    key: const Key('search_start'),
-    padding: const EdgeInsets.all(16),
-    children: [
-      if (_recents.isNotEmpty) ...[
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                lang.translate('recent_searches').toUpperCase(),
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: Colors.grey.shade500,
-                  fontWeight: FontWeight.w700,
+  Future<void> _removeRecent(String term) async {
+    await _recentRepo.deleteSearch(term);
+    final list = await _recentRepo.getRecentSearches();
+    if (mounted) setState(() => _recents = list);
+  }
+
+  Widget _start(LanguageService lang) {
+    final primary = IosColors.primary(context);
+    final secondary = IosColors.secondary(context);
+    return ListView(
+      key: const Key('search_start'),
+      padding: const EdgeInsets.all(16),
+      children: [
+        if (_recents.isNotEmpty) ...[
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  lang.translate('recent_searches').toUpperCase(),
+                  style: TextStyle(
+                    fontSize: IosText.caption,
+                    fontWeight: FontWeight.w700,
+                    color: secondary,
+                  ),
                 ),
               ),
-            ),
-            TextButton(
-              onPressed: () async {
-                await _recentRepo.clearAll();
-                if (mounted) setState(() => _recents = const []);
-              },
-              child: Text(lang.translate('clear_all')),
+              GestureDetector(
+                key: const Key('search_clear_recents'),
+                behavior: HitTestBehavior.opaque,
+                onTap: () async {
+                  await _recentRepo.clearAll();
+                  if (mounted) setState(() => _recents = const []);
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Text(
+                    lang.translate('clear_all'),
+                    style: const TextStyle(
+                      fontSize: IosText.caption,
+                      color: IosColors.teal,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          for (final term in _recents) ...[
+            const SizedBox(height: 16),
+            Row(
+              key: Key('search_recent_$term'),
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => _submit(term),
+                    child: Row(
+                      children: [
+                        Icon(Icons.history, size: 18, color: primary),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            term,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: IosText.body,
+                              color: primary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => _removeRecent(term),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 4, 0, 4),
+                    child: Icon(
+                      Icons.close,
+                      size: IosText.caption,
+                      color: secondary,
+                      semanticLabel: MaterialLocalizations.of(
+                        context,
+                      ).deleteButtonTooltip,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
-        ),
-        for (final term in _recents)
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.history),
-            title: Text(term),
-            onTap: () => _submit(term),
-            trailing: IconButton(
-              icon: const Icon(Icons.close, size: 18),
-              onPressed: () async {
-                await _recentRepo.deleteSearch(term);
-                final list = await _recentRepo.getRecentSearches();
-                if (mounted) setState(() => _recents = list);
-              },
-            ),
-          ),
-        const SizedBox(height: 12),
-      ],
-      Text(
-        lang.translate('search_start_all'),
-        style: Theme.of(context).textTheme.titleMedium,
-      ),
-      const SizedBox(height: 12),
-      Wrap(
-        key: const Key('search_explore_tube'),
-        spacing: 8,
-        runSpacing: 8,
-        children: [
-          for (final type in SearchCategory.filters)
-            ActionChip(
-              avatar: Icon(
-                searchCategoryIcon(type),
-                size: 16,
-                color: Color(type.color),
-              ),
-              label: Text(lang.translate(type.localizationKey)),
-              shape: const StadiumBorder(),
-              onPressed: () => _showCategory(type),
-            ),
+          const SizedBox(height: 16),
         ],
-      ),
-    ],
-  );
+        Text(
+          lang.translate('search_start_all'),
+          style: TextStyle(
+            fontSize: IosText.headline,
+            fontWeight: FontWeight.w600,
+            color: primary,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Wrap(
+          key: const Key('search_explore_tube'),
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final type in SearchCategory.filters)
+              GlassChip(
+                label: lang.translate(type.localizationKey),
+                icon: searchCategoryIcon(type),
+                color: Color(type.color),
+                selected: false,
+                onTap: () => _showCategory(type),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
 
   Widget _row(SearchItem item, LanguageService lang) {
     final locked = _locked(item);
@@ -598,88 +728,88 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
         : item.categories.firstOrNull ?? SearchCategory.screen;
     final color = Color(category.color);
     final date = item.date;
-    return Material(
+    final secondary = IosColors.secondary(context);
+    // iOS SearchResultRow: a glass card, headline title, the date (or the
+    // amber lock), the category in its colour and a chevron or lock.
+    return GlassPanel(
       key: Key('search_result_${item.id}'),
-      color: Theme.of(context).cardColor,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: () => _open(item),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: .16),
-                  borderRadius: BorderRadius.circular(12),
+      radius: 16,
+      padding: const EdgeInsets.all(12),
+      onTap: () => _open(item),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: .16),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(searchCategoryIcon(category), color: color, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: IosText.headline,
+                    fontWeight: FontWeight.w600,
+                    color: IosColors.primary(context),
+                  ),
                 ),
-                child: Icon(
-                  searchCategoryIcon(category),
-                  color: color,
-                  size: 22,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      item.title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
+                const SizedBox(height: 3),
+                if (locked)
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.lock,
+                        size: IosText.caption,
+                        color: IosColors.amber,
                       ),
-                    ),
-                    if (locked)
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.lock,
-                            size: 13,
-                            color: Color(0xFFF59E0B),
+                      const SizedBox(width: 4),
+                      Flexible(
+                        child: Text(
+                          lang.translate('search_premium_locked'),
+                          style: const TextStyle(
+                            fontSize: IosText.caption,
+                            color: IosColors.amber,
                           ),
-                          const SizedBox(width: 4),
-                          Text(
-                            lang.translate('search_premium_locked'),
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Color(0xFFF59E0B),
-                            ),
-                          ),
-                        ],
-                      )
-                    else if (date != null)
-                      Text(
-                        DateFormat('EEE, d MMM yyyy', _language).format(date),
-                        style: TextStyle(
-                          color: Colors.grey.shade500,
-                          fontSize: 13,
                         ),
                       ),
-                    Text(
-                      lang.translate(category.localizationKey),
-                      style: TextStyle(
-                        color: color,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    ],
+                  )
+                else if (date != null)
+                  Text(
+                    DateFormat('EEE, d MMM yyyy', _language).format(date),
+                    style: TextStyle(
+                      fontSize: IosText.subheadline,
+                      color: secondary,
                     ),
-                  ],
+                  ),
+                const SizedBox(height: 3),
+                Text(
+                  lang.translate(category.localizationKey),
+                  style: TextStyle(
+                    color: color,
+                    fontSize: IosText.caption2,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
-              Icon(
-                locked ? Icons.lock : Icons.chevron_right,
-                size: 18,
-                color: locked ? const Color(0xFFF59E0B) : Colors.grey.shade500,
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
+          const SizedBox(width: 8),
+          Icon(
+            locked ? Icons.lock : Icons.chevron_right,
+            size: 16,
+            color: locked ? IosColors.amber : secondary,
+          ),
+        ],
       ),
     );
   }

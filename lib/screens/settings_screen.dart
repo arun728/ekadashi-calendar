@@ -1,4 +1,6 @@
 import 'widgets/settings_premium_card.dart';
+import '../services/app_version.dart';
+import '../widgets/ios_style.dart';
 import 'widgets/event_reminder_rows.dart';
 import '../services/notifications/event_reminder_service.dart';
 import '../services/premium_service.dart';
@@ -57,12 +59,18 @@ class _SettingsScreenState extends State<SettingsScreen>
 
   static const Color tealColor = Color(0xFF00A19B);
 
+  /// The installed build's version (package_info_plus).
+  String _version = '';
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _initialize();
     EventReminderService.instance.load();
+    appVersion().then((value) {
+      if (mounted) setState(() => _version = value);
+    });
   }
 
   @override
@@ -412,12 +420,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                     );
 
                     if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(lang.translate('notif_sent_msg')),
-                          duration: const Duration(seconds: 2),
-                        ),
-                      );
+                      showToast(context, lang.translate('notif_sent_msg'));
                     }
                   } catch (e) {
                     debugPrint('Error sending test notification: $e');
@@ -510,7 +513,13 @@ class _SettingsScreenState extends State<SettingsScreen>
             const SettingsSeparator(inset: SettingsStyle.iconInset),
             ListTile(
               title: Text(lang.translate('version')),
-              trailing: const Text('1.1.1'),
+              trailing: Text(
+                _version,
+                style: TextStyle(
+                  fontSize: IosText.body,
+                  color: IosColors.secondary(context),
+                ),
+              ),
             ),
           ],
         ),

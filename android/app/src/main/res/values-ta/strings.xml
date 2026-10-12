@@ -4,9 +4,9 @@
     <string name="widget_a_title">ஏகாதசி</string>
     <string name="widget_b_title">இன்றைய ஏகாதசி</string>
     <string name="widget_c_title">வரவிருக்கும் ஏகாதசிகள்</string>
-    <string name="widget_a_description">அடுத்த ஏகாதசி</string>
-    <string name="widget_b_description">இன்றைய ஏகாதசி</string>
-    <string name="widget_c_description">வரவிருக்கும் ஏகாதசிகள்</string>
+    <string name="widget_a_description">இன்றைய ஏகாதசி மற்றும் விரதத்தின் முன்னேற்றம், அல்லது அடுத்த ஏகாதசி மற்றும் மீதமுள்ள நாட்கள்.</string>
+    <string name="widget_b_description">இன்றைய ஏகாதசி மற்றும் விரதத்தின் முன்னேற்றம், அல்லது அடுத்த ஏகாதசி மற்றும் மீதமுள்ள நாட்கள்.</string>
+    <string name="widget_c_description">வரவிருக்கும் ஏகாதசிகள் ஒரே பார்வையில்.</string>
     <string name="widget_title">ஏகாதசி காலண்டர்</string>
     <string name="widget_next_ekadashi">அடுத்த ஏகாதசி</string>
     <string name="widget_fasting_active">விரதம் நடைபெறுகிறது</string>

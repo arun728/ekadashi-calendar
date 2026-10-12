@@ -85,7 +85,7 @@ void main() {
         await tester.pump(const Duration(milliseconds: 450));
         await tester.pumpAndSettle();
         await capture('search_results');
-        await tester.tap(find.byIcon(Icons.arrow_back).first);
+        await tester.tap(find.byKey(const Key('global_search_back')));
         await tester.pumpAndSettle();
 
         await tester.tap(find.byKey(const Key('glass_tab_3')));

@@ -244,7 +244,13 @@ void main() {
           ),
           findsOneWidget,
         );
-        expect(find.byType(SettingsCard), findsNWidgets(3));
+        expect(
+          find.descendant(
+            of: find.byType(BottomSheet),
+            matching: find.byType(SettingsCard),
+          ),
+          findsNWidgets(3),
+        );
         await capture('reminder_editor');
         expect(tester.takeException(), isNull);
       });

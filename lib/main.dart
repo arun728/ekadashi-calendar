@@ -1045,6 +1045,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   /// Schedule notifications for all Ekadashis
   Future<void> _scheduleNotifications() async {
     _scheduleEventReminders();
+    // The channel follows the app language, even while reminders are off.
+    NativeNotificationService().localizeChannel(
+      context.read<LanguageService>().localizedStrings,
+    );
     if (_ekadashiList.isEmpty) return;
 
     final settingsService = NativeSettingsService();

@@ -46,6 +46,18 @@ class NotificationScheduler(private val context: Context) {
     }
 
     /**
+     * Names the reminder channel in the app language (system Settings shows
+     * it); the same channel id is renamed, so the user's choices stay.
+     */
+    fun localizeChannel(name: String, description: String) {
+        context.getSharedPreferences(EkadashiNotificationWorker.CHANNEL_PREFS, Context.MODE_PRIVATE).edit()
+            .putString(EkadashiNotificationWorker.KEY_CHANNEL_NAME, name)
+            .putString(EkadashiNotificationWorker.KEY_CHANNEL_DESCRIPTION, description)
+            .apply()
+        EkadashiNotificationWorker.ensureChannel(context)
+    }
+
+    /**
      * Schedule a single notification
      *
      * @param ekadashiId Unique identifier for the Ekadashi

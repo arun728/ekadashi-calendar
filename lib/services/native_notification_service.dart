@@ -15,6 +15,32 @@ class NativeNotificationService {
     'com.ekadashi.notifications',
   );
 
+  /// The notification channel's name and description in the app language
+  /// (Android system Settings), from existing keys: "Notifications" and
+  /// "Ekadashi, Festivals and events".
+  static ({String name, String description}) channelLabels(
+    Map<String, String> texts,
+  ) => (
+    name: texts['notifications'] ?? 'Notifications',
+    description: [
+      texts['notifications_section_ekadashi'] ?? 'Ekadashi',
+      texts['notifications_section_events'] ?? 'Festivals and events',
+    ].join(', '),
+  );
+
+  /// Renames the reminder channel (same id) in the language of [texts].
+  Future<void> localizeChannel(Map<String, String> texts) async {
+    final labels = channelLabels(texts);
+    try {
+      await _channel.invokeMethod<void>('localizeChannel', {
+        'name': labels.name,
+        'description': labels.description,
+      });
+    } catch (e) {
+      debugPrint('localizeChannel error: $e');
+    }
+  }
+
   /// Schedule notifications for a single Ekadashi
   /// Returns the number of notifications scheduled
   Future<int> scheduleEkadashiNotifications({

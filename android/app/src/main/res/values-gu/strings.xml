@@ -4,9 +4,9 @@
     <string name="widget_a_title">એકાદશી</string>
     <string name="widget_b_title">આજે એકાદશી</string>
     <string name="widget_c_title">આગામી એકાદશીઓ</string>
-    <string name="widget_a_description">આગામી એકાદશી</string>
-    <string name="widget_b_description">આજે એકાદશી</string>
-    <string name="widget_c_description">આગામી એકાદશીઓ</string>
+    <string name="widget_a_description">આજની એકાદશી અને તમારા ઉપવાસની પ્રગતિ, અથવા આગામી એકાદશી અને બાકી દિવસો.</string>
+    <string name="widget_b_description">આજની એકાદશી અને તમારા ઉપવાસની પ્રગતિ, અથવા આગામી એકાદશી અને બાકી દિવસો.</string>
+    <string name="widget_c_description">આગામી એકાદશીઓ એક નજરમાં.</string>
     <string name="widget_title">એકાદશી કેલેન્ડર</string>
     <string name="widget_next_ekadashi">આગામી એકાદશી</string>
     <string name="widget_fasting_active">ઉપવાસ ચાલુ</string>
