@@ -16,7 +16,7 @@ class AchievementEvaluator {
       descriptionKey: 'achievement_first_vrat_desc',
       conditionType: 'count',
       targetValue: 1,
-      icon: Icons.spa,
+      icon: Icons.eco,
       sortOrder: 1,
     ),
     Achievement(
@@ -66,7 +66,7 @@ class AchievementEvaluator {
       descriptionKey: 'achievement_full_year_desc',
       conditionType: 'annual_full',
       targetValue: 100, // 100% of year occurrences
-      icon: Icons.brightness_high,
+      icon: Icons.wb_sunny,
       sortOrder: 6,
     ),
   ];
