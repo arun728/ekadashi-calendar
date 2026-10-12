@@ -1,4 +1,9 @@
 import 'package:ekadashi_calendar/models/calendar_entry.dart';
+import 'package:ekadashi_calendar/screens/premium_screen.dart';
+import 'package:ekadashi_calendar/services/play_billing_service.dart';
+import 'package:ekadashi_calendar/services/premium_service.dart';
+import 'package:ekadashi_calendar/widgets/ios_style.dart';
+import 'package:ekadashi_calendar/widgets/settings_group.dart';
 import 'package:ekadashi_calendar/screens/widgets/event_reminder_rows.dart';
 import 'package:ekadashi_calendar/services/language_service.dart';
 import 'package:ekadashi_calendar/services/notifications/event_reminder_service.dart';
@@ -8,6 +13,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../support/premium_fixture.dart';
 
 /// Phase 7 (docs/ROADMAP.md): Settings > Notifications > Festivals and
 /// events, as on iOS: the user's reminders, an editor and an event picker.
@@ -19,11 +26,15 @@ void main() {
   late EventReminderService service;
   late List<List<PlannedEventReminder>> scheduled;
   late int upgrades;
+  late PremiumService premiumService;
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
     scheduled = [];
     upgrades = 0;
+    premiumService = PremiumService(
+      entitlements: PremiumFixture()..premium = false,
+    );
     service = EventReminderService(
       scheduler: (planned) async {
         scheduled.add(planned);
@@ -36,24 +47,40 @@ void main() {
     WidgetTester tester, {
     bool premium = false,
     bool enabled = true,
+    UpgradeAction? onUpgrade,
+    bool realPaywall = false,
   }) async {
     tester.view.physicalSize = const Size(390 * 3, 844 * 3);
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.reset);
+    addTearDown(premiumService.dispose);
+    if (premium) premiumService.applyOwned({PremiumService.subscriptionId});
+    final billing = FixtureBilling(premiumService);
+    addTearDown(billing.dispose);
     await service.load();
     await tester.pumpWidget(
-      ChangeNotifierProvider(
-        create: (_) => LanguageService(),
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => LanguageService()),
+          ChangeNotifierProvider<PremiumService?>.value(value: premiumService),
+          ChangeNotifierProvider<PlayBillingService?>.value(value: billing),
+        ],
         child: MaterialApp(
           home: Scaffold(
             body: ListView(
               children: [
-                EventReminderRows(
-                  service: service,
-                  enabled: enabled,
-                  premium: premium,
-                  onUpgrade: (_) async => upgrades++,
-                ),
+                realPaywall
+                    ? EventReminderRows(
+                        service: service,
+                        enabled: enabled,
+                        premium: premium,
+                      )
+                    : EventReminderRows(
+                        service: service,
+                        enabled: enabled,
+                        premium: premium,
+                        onUpgrade: onUpgrade ?? (_) async => upgrades++,
+                      ),
               ],
             ),
           ),
@@ -123,22 +150,70 @@ void main() {
     );
   });
 
-  testWidgets('festival reminders are Premium, kept and marked locked', (
-    tester,
-  ) async {
-    await pump(tester);
+  Future<void> openPicker(WidgetTester tester) async {
     await tester.tap(find.byKey(const Key('notifications_add_event')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('event_reminder_choose')));
     await tester.pumpAndSettle();
+  }
+
+  Future<Finder> findDeepavali(WidgetTester tester) async {
     await tester.enterText(
       find.byKey(const Key('event_reminder_search')),
       'deepa',
     );
     await tester.pumpAndSettle();
-    final deepavali = find.byKey(
-      const Key('event_choice_observance:deepavali'),
+    return find.byKey(const Key('event_choice_observance:deepavali'));
+  }
+
+  testWidgets('the editor is an iOS sheet without a locked section', (
+    tester,
+  ) async {
+    await pump(tester);
+    await tester.tap(find.byKey(const Key('notifications_add_event')));
+    await tester.pumpAndSettle();
+    // A sheet over the page, Cancel and Save in its bar.
+    expect(find.byType(BottomSheet), findsOneWidget);
+    expect(find.byType(SheetBar), findsOneWidget);
+    expect(
+      find.descendant(of: find.byType(SheetBar), matching: find.text('Cancel')),
+      findsOneWidget,
     );
+    expect(find.byKey(const Key('event_reminder_upgrade')), findsNothing);
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+    expect(find.byType(BottomSheet), findsNothing);
+  });
+
+  testWidgets('the picker is a grouped list with a teal search field', (
+    tester,
+  ) async {
+    await pump(tester);
+    await openPicker(tester);
+    final search = tester.widget<TextField>(
+      find.byKey(const Key('event_reminder_search')),
+    );
+    expect(search.cursorColor, IosColors.teal);
+    expect(search.decoration?.border, InputBorder.none);
+    final custom = find.byKey(const Key('event_choice_calendar:custom'));
+    await tester.scrollUntilVisible(
+      custom,
+      300,
+      scrollable: find.byType(Scrollable).last,
+    );
+    expect(
+      find.ancestor(of: custom, matching: find.byType(SettingsCard)),
+      findsOneWidget,
+    );
+    expect(find.byType(SettingsHeader), findsWidgets);
+  });
+
+  testWidgets('a locked event opens the paywall and is not chosen', (
+    tester,
+  ) async {
+    await pump(tester);
+    await openPicker(tester);
+    final deepavali = await findDeepavali(tester);
     expect(
       find.descendant(of: deepavali, matching: find.byIcon(Icons.lock)),
       findsOneWidget,
@@ -150,13 +225,59 @@ void main() {
     );
     await tester.tap(deepavali);
     await tester.pumpAndSettle();
+    expect(upgrades, 1);
+    // Still free: the picker stays and nothing is chosen.
+    expect(deepavali, findsOneWidget);
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<TextButton>(find.byKey(const Key('event_reminder_save')))
+          .onPressed,
+      isNull,
+    );
+    expect(service.reminders, isEmpty);
+  });
 
-    await tester.tap(find.byKey(const Key('event_reminder_upgrade')));
+  testWidgets('the paywall says why it opened', (tester) async {
+    await pump(tester, realPaywall: true);
+    await openPicker(tester);
+    await tester.tap(await findDeepavali(tester));
+    await tester.pumpAndSettle();
+    final paywall = tester.widget<PremiumScreen>(find.byType(PremiumScreen));
+    expect(paywall.reasonKey, 'notifications_premium_events');
+  });
+
+  testWidgets('a locked event is chosen once Premium becomes active', (
+    tester,
+  ) async {
+    await pump(
+      tester,
+      onUpgrade: (_) async {
+        upgrades++;
+        premiumService.applyOwned({PremiumService.subscriptionId});
+      },
+    );
+    await openPicker(tester);
+    await tester.tap(await findDeepavali(tester));
     await tester.pumpAndSettle();
     expect(upgrades, 1);
-
+    expect(find.byKey(const Key('event_reminder_search')), findsNothing);
     await tester.tap(find.byKey(const Key('event_reminder_save')));
     await tester.pumpAndSettle();
+    expect(
+      service.reminders.single.target,
+      const EventReminderTarget.observance('deepavali'),
+    );
+  });
+
+  testWidgets('a locked reminder saved earlier stays and shows its lock', (
+    tester,
+  ) async {
+    await service.upsert(
+      EventReminder(target: const EventReminderTarget.observance('deepavali')),
+    );
+    await pump(tester);
     final row = find.byKey(
       const Key('event_reminder_row_observance:deepavali'),
     );

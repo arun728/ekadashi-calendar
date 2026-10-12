@@ -95,7 +95,7 @@ void main() {
     for (final feature in [
       'premium_feature_calendar',
       'premium_feature_vrat',
-      'premium_feature_panchang',
+      'premium_feature_panchang_v2',
     ]) {
       expect(find.text(lang.translate(feature)), findsOneWidget);
     }
