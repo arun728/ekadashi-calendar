@@ -88,14 +88,16 @@ void main() {
     PremiumService? premium,
     Size size = const Size(393, 852),
     Brightness brightness = Brightness.light,
+    List<EkadashiDate>? events,
   }) async {
+    final list = events ?? _events;
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     final service = tracker ?? VratTrackerService();
     if (!service.isInitialized) {
-      await tester.runAsync(() => service.init(occurrences: _events));
+      await tester.runAsync(() => service.init(occurrences: list));
     }
     final billing = premium == null ? null : FixtureBilling(premium);
     if (billing != null) addTearDown(billing.dispose);
@@ -111,10 +113,7 @@ void main() {
         child: MaterialApp(
           theme: ThemeData(brightness: brightness),
           home: Scaffold(
-            body: VratTrackerScreen(
-              ekadashiList: _events,
-              currentTimezone: 'IST',
-            ),
+            body: VratTrackerScreen(ekadashiList: list, currentTimezone: 'IST'),
           ),
         ),
       ),
@@ -314,7 +313,12 @@ void main() {
       );
       expect(name.style?.fontSize, IosText.headline);
 
-      // The future Ekadashi: a clock, no chevron, and a toast when tapped.
+      // The future Ekadashi (a later year, chosen in the year menu): a
+      // clock, no chevron, and a toast when tapped.
+      await tester.tap(find.byKey(const Key('journey_history_year_menu')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('${_events[3].date.year}').last);
+      await tester.pumpAndSettle();
       final future = find.byKey(Key('journey_row_${_events[3].occurrenceUid}'));
       await tester.ensureVisible(future);
       await tester.pumpAndSettle();
@@ -676,6 +680,144 @@ void main() {
       await tester.tap(ok);
       await tester.pumpAndSettle();
       expect(sheet, findsNothing);
+    });
+  });
+
+  group('Overview (iPhone screenshot)', () {
+    testWidgets('metric cards are glass panels strongly tinted with their '
+        'accent, icon left and value right', (tester) async {
+      await pumpJourney(tester, brightness: Brightness.dark);
+      final context = tester.element(find.byType(VratTrackerScreen));
+      final expected = {
+        'current_streak': (
+          IosColors.orange(context),
+          Icons.local_fire_department_outlined,
+        ),
+        'longest_streak': (IosColors.amber, Icons.military_tech_outlined),
+        'annual_completion': (IosColors.teal, Icons.pie_chart_outline),
+        'total_observed': (
+          IosColors.green(context),
+          Icons.check_circle_outline,
+        ),
+      };
+      for (final MapEntry(:key, :value) in expected.entries) {
+        final card = find.byKey(Key('journey_metric_$key'));
+        expect(card, findsOneWidget, reason: key);
+        final panel = tester.widget<GlassPanel>(card);
+        expect(panel.tint, value.$1, reason: key);
+        // iOS Glass.tint(color.opacity(0.35)).
+        expect(panel.tintOpacity, .35, reason: key);
+        final icon = find.descendant(of: card, matching: find.byIcon(value.$2));
+        expect(icon, findsOneWidget, reason: key);
+        expect(tester.widget<Icon>(icon).color, value.$1, reason: key);
+        final cardRect = tester.getRect(card);
+        expect(
+          tester.getCenter(icon).dx,
+          lessThan(cardRect.center.dx),
+          reason: '$key icon top-left',
+        );
+      }
+      // Two by two: streaks on the first row, completion and total below.
+      final a = tester.getTopLeft(
+        find.byKey(const Key('journey_metric_current_streak')),
+      );
+      final b = tester.getTopLeft(
+        find.byKey(const Key('journey_metric_longest_streak')),
+      );
+      final c = tester.getTopLeft(
+        find.byKey(const Key('journey_metric_annual_completion')),
+      );
+      expect(a.dy, b.dy);
+      expect(c.dy, greaterThan(a.dy));
+    });
+
+    test('GlassPanel tints with the given opacity', () {
+      const panel = GlassPanel(tint: IosColors.teal, child: SizedBox());
+      expect(panel.tintOpacity, .16);
+    });
+
+    testWidgets('a GlassPanel paints its tint at tintOpacity', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: GlassPanel(
+            tint: IosColors.teal,
+            tintOpacity: .35,
+            child: SizedBox(width: 50, height: 50),
+          ),
+        ),
+      );
+      final tinted = tester
+          .widgetList<DecoratedBox>(find.byType(DecoratedBox))
+          .map((d) => d.decoration)
+          .whereType<BoxDecoration>()
+          .where((d) => d.color != null);
+      expect(
+        tinted.map((d) => d.color),
+        contains(IosColors.teal.withValues(alpha: .35)),
+      );
+    });
+
+    testWidgets('recent rows show a grey Not Recorded pill and a green '
+        'Observed pill, each beside its chevron', (tester) async {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final recent = [
+        _event(21, today.subtract(const Duration(days: 20))),
+        _event(22, today.subtract(const Duration(days: 6))),
+      ];
+      final tracker = VratTrackerService();
+      await tester.runAsync(() => tracker.init(occurrences: recent));
+      await tester.runAsync(
+        () => tracker.recordVrat(
+          ekadashiOccurrenceId: recent[1].id,
+          occurrenceUid: recent[1].occurrenceUid,
+          ekadashiDate: recent[1].date.toIso8601String().substring(0, 10),
+          ekadashiName: recent[1].name,
+          status: ObservanceStatus.observed,
+          occurrences: recent,
+        ),
+      );
+      await pumpJourney(
+        tester,
+        tracker: tracker,
+        events: recent,
+        brightness: Brightness.dark,
+      );
+      final context = tester.element(find.byType(VratTrackerScreen));
+      for (final (event, label, color, icon) in [
+        (
+          recent[0],
+          'Not Recorded',
+          IosColors.gray(context),
+          Icons.help_outline,
+        ),
+        (
+          recent[1],
+          'Observed',
+          IosColors.green(context),
+          Icons.check_circle_outline,
+        ),
+      ]) {
+        final row = find.byKey(Key('journey_row_${event.occurrenceUid}'));
+        await tester.ensureVisible(row);
+        await tester.pumpAndSettle();
+        final pill = find.descendant(
+          of: row,
+          matching: find.byType(StatusPill),
+        );
+        expect(tester.widget<StatusPill>(pill).text, label);
+        expect(tester.widget<StatusPill>(pill).color, color);
+        final status = find.descendant(of: row, matching: find.byIcon(icon));
+        expect(tester.widget<Icon>(status).color, color);
+        final chevron = find.descendant(
+          of: row,
+          matching: find.byIcon(Icons.chevron_right),
+        );
+        expect(
+          (tester.getCenter(pill).dy - tester.getCenter(chevron).dy).abs(),
+          lessThan(2),
+        );
+      }
     });
   });
 

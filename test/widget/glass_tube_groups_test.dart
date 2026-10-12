@@ -103,17 +103,18 @@ void main() {
             findsOneWidget,
           );
           // Journey rows are glass panels (iOS), not Cards.
-          await tester.tap(
-            find
-                .byWidgetPredicate(
-                  (w) =>
-                      w.key is ValueKey<String> &&
-                      (w.key! as ValueKey<String>).value.startsWith(
-                        'journey_row_',
-                      ),
-                )
-                .first,
-          );
+          final firstRow = find
+              .byWidgetPredicate(
+                (w) =>
+                    w.key is ValueKey<String> &&
+                    (w.key! as ValueKey<String>).value.startsWith(
+                      'journey_row_',
+                    ),
+              )
+              .first;
+          await tester.ensureVisible(firstRow);
+          await tester.pumpAndSettle();
+          await tester.tap(firstRow);
           await tester.pumpAndSettle();
           expect(
             find.byKey(const Key('vrat_record_status_tube')),
