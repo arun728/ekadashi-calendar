@@ -141,6 +141,20 @@ void main() {
         ).fontSize,
         IosText.subheadline,
       );
+      // iPhone: the menu label is teal, on one line with the city.
+      expect(
+        styleOf(
+          tester,
+          find.descendant(of: menu, matching: find.text('English')),
+        ).color,
+        IosColors.teal,
+      );
+      expect(
+        (tester.getCenter(menu).dy -
+                tester.getCenter(find.text('Chennai • IST')).dy)
+            .abs(),
+        lessThan(4),
+      );
       await tester.tap(menu);
       await tester.pumpAndSettle();
       final check = find.byIcon(Icons.check);
@@ -204,9 +218,18 @@ void main() {
         tester.widget<FilledButton>(button).style!.foregroundColor!.resolve({}),
         Colors.white,
       );
+      // iPhone: a tall capsule, as high as the round record button.
+      expect(tester.getSize(button).height, greaterThanOrEqualTo(48));
+      expect(
+        tester.getSize(button).height,
+        moreOrLessEquals(
+          tester.getSize(find.byKey(const Key('home_record_vrat'))).height,
+          epsilon: 1,
+        ),
+      );
     });
 
-    testWidgets('Record: glass capsule, calendar.badge.plus, dimmed when '
+    testWidgets('Record: round glass button, calendar.badge.plus, grey when '
         'closed, teal when open', (tester) async {
       await pumpHome(tester);
       // The card after the next one is in the future: closed.
@@ -217,11 +240,20 @@ void main() {
       expect(tester.widget<OutlinedButton>(record).onPressed, isNull);
       expect(
         tester.widget<OutlinedButton>(record).style!.shape!.resolve({}),
-        isA<StadiumBorder>(),
+        isA<CircleBorder>(),
       );
+      final size = tester.getSize(record);
+      expect(size.width, moreOrLessEquals(size.height, epsilon: 1));
       final context = tester.element(record);
+      // Closed: a neutral grey glass circle, no teal tint.
       expect(
-        iconColor(tester, record, Icons.calendar_today_outlined),
+        tester.widget<OutlinedButton>(record).style!.backgroundColor!.resolve({
+          WidgetState.disabled,
+        }),
+        IosColors.gray(context).withValues(alpha: .18),
+      );
+      expect(
+        iconColor(tester, record, Icons.calendar_month_outlined),
         IosColors.tertiary(context),
       );
       expect(
@@ -245,7 +277,7 @@ void main() {
       record = find.byKey(const Key('home_record_vrat'));
       expect(tester.widget<OutlinedButton>(record).onPressed, isNotNull);
       expect(
-        iconColor(tester, record, Icons.calendar_today_outlined),
+        iconColor(tester, record, Icons.calendar_month_outlined),
         IosColors.teal,
       );
     });
