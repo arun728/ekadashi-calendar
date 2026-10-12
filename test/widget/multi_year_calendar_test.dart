@@ -95,10 +95,19 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(Key('panchang_month_${1}')));
     await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('month_picker_done')));
+    await tester.pumpAndSettle();
+  }
+
+  // Import and Disconnect live in the Google menu of the top bar (iOS).
+  Future<void> googleAction(WidgetTester tester, String key) async {
+    await tester.tap(find.byKey(const Key('calendar_google_menu')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(Key(key)));
   }
 
   Future<void> import(WidgetTester tester) async {
-    await tester.tap(find.byKey(const Key('import_google_year')));
+    await googleAction(tester, 'import_google_year');
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
     await tester.tap(find.text('Import selected'));
@@ -113,7 +122,7 @@ void main() {
       });
       await open(tester, paid: false);
       await year2027(tester);
-      await tester.tap(find.byKey(const Key('import_google_year')));
+      await googleAction(tester, 'import_google_year');
       await tester.pumpAndSettle();
       expect(find.byType(PremiumScreen), findsOneWidget);
       expect(google.min, isNull);
@@ -244,6 +253,8 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(Key('panchang_month_${DateTime.now().month}')));
     await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('month_picker_done')));
+    await tester.pumpAndSettle();
     expect(calendarOf(tester).focusedDay.month, 10);
     expect(calendarOf(tester).focusedDay.year, 2026);
   });
@@ -319,18 +330,6 @@ void main() {
       google.events = [
         event('Keep December', start: '2027-12-31', end: '2028-01-01'),
       ];
-      final importButton = find.byKey(const Key('import_google_year'));
-      final calendarViewport = find.byType(CustomScrollView).first;
-      for (
-        var attempt = 0;
-        attempt < 20 && importButton.evaluate().isEmpty;
-        attempt++
-      ) {
-        await tester.drag(calendarViewport, const Offset(0, 500));
-        await tester.pump(const Duration(milliseconds: 100));
-      }
-      expect(importButton, findsOneWidget);
-      await tester.ensureVisible(importButton);
       await import(tester);
       expect(repo.entries.values.map((e) => e.title), ['Keep December']);
       expect(find.text('Deleted in Google'), findsNothing);

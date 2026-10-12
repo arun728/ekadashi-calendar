@@ -127,6 +127,8 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(Key('panchang_month_${1}')));
     await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('month_picker_done')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('glass_tab_2')));
     await tester.pumpAndSettle();
     expect(find.byType(VratTrackerScreen).hitTestable(), findsOneWidget);

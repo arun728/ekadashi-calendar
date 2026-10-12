@@ -238,6 +238,8 @@ void main() {
       await frames(tester);
       await tester.tap(find.byKey(const Key('panchang_month_1')));
       await frames(tester);
+      await tester.tap(find.byKey(const Key('month_picker_done')));
+      await frames(tester);
       await binding.takeScreenshot('v2_calendar_2027');
       await lang.changeLanguage('te');
       await frames(tester);
@@ -435,20 +437,10 @@ void main() {
           ).toIso8601String().substring(0, 10),
         ),
       ];
-      final freeImport = find.byKey(const Key('import_google_year'));
-      for (
-        var attempt = 0;
-        attempt < 20 && freeImport.evaluate().isEmpty;
-        attempt++
-      ) {
-        await tester.drag(
-          find.byType(CustomScrollView).first,
-          const Offset(0, 500),
-        );
-        await tester.pump(const Duration(milliseconds: 100));
-      }
-      await tester.ensureVisible(freeImport);
-      await tester.tap(freeImport);
+      // Import lives in the Google menu of the top bar (iOS).
+      await tester.tap(find.byKey(const Key('calendar_google_menu')));
+      await frames(tester);
+      await tester.tap(find.byKey(const Key('import_google_year')));
       await frames(tester);
       expect(find.byType(PremiumScreen), findsNothing);
       await until(
@@ -478,6 +470,8 @@ void main() {
       await frames(tester);
       await tester.tap(find.byKey(const Key('panchang_month_1')));
       await frames(tester);
+      await tester.tap(find.byKey(const Key('month_picker_done')));
+      await frames(tester);
       // Select January 1 so deletion is visible in screenshots before/after.
       final state = tester.state<CalendarScreenState>(
         find.byType(CalendarScreen),
@@ -488,9 +482,9 @@ void main() {
       await frames(tester);
       // The free sync is used: the next sync opens the paywall; then simulate
       // a Play purchase.
-      final paidImport = find.byKey(const Key('import_google_year'));
-      await tester.ensureVisible(paidImport);
-      await tester.tap(paidImport);
+      await tester.tap(find.byKey(const Key('calendar_google_menu')));
+      await frames(tester);
+      await tester.tap(find.byKey(const Key('import_google_year')));
       await frames(tester);
       await until(
         tester,
@@ -519,22 +513,12 @@ void main() {
         event('December event', start: '2027-12-31', end: '2028-01-01'),
       ];
       Future<void> sync() async {
-        final importButton = find.byKey(const Key('import_google_year'));
-        // TableCalendar also handles vertical drags. Reset the outer viewport
-        // explicitly after capturing the event row, then use the real toolbar.
-        final scrollable = tester.state<ScrollableState>(
-          find
-              .descendant(
-                of: find.byType(CustomScrollView).first,
-                matching: find.byType(Scrollable),
-              )
-              .first,
-        );
-        scrollable.position.jumpTo(scrollable.position.minScrollExtent);
+        // Import lives in the Google menu of the top bar (iOS).
+        final menu = find.byKey(const Key('calendar_google_menu'));
+        await until(tester, () => menu.evaluate().isNotEmpty);
+        await tester.tap(menu);
         await frames(tester);
-        expect(importButton.hitTestable(), findsOneWidget);
-        await tester.ensureVisible(importButton);
-        await tester.tap(importButton);
+        await tester.tap(find.byKey(const Key('import_google_year')));
         await frames(tester);
         await until(
           tester,

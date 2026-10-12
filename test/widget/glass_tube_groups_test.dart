@@ -36,8 +36,10 @@ void main() {
           expect(find.byKey(const Key('home_options_tube')), findsOneWidget);
           await tester.tap(find.byKey(const Key('glass_tab_1')));
           await tester.pumpAndSettle();
+          // iOS: Today, Add and Google sit in the top bar; filters are
+          // separate chips and the month header has no tube.
           for (final key in [
-            'calendar_actions_tube',
+            'add_calendar_entry',
             'calendar_filters_tube',
             'calendar_month_tube',
           ]) {
