@@ -1815,8 +1815,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
-                        Navigator.push(
-                          context,
+                        // Inside the Home tab, so the tab bar stays.
+                        _tabNavigators[0].currentState!.push(
                           MaterialPageRoute(
                             builder: (_) => DetailsScreen(
                               ekadashi: ekadashi,
