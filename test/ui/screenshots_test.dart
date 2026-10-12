@@ -109,7 +109,18 @@ void main() {
         await tester.tap(find.byKey(const Key('journey_tab_history')));
         await tester.pumpAndSettle();
         await capture('vrat_history');
-        await tester.tap(find.byType(Card).first);
+        // Journey rows are glass panels (iOS), not Cards.
+        await tester.tap(
+          find
+              .byWidgetPredicate(
+                (w) =>
+                    w.key is ValueKey<String> &&
+                    (w.key! as ValueKey<String>).value.startsWith(
+                      'journey_row_',
+                    ),
+              )
+              .first,
+        );
         await tester.pumpAndSettle();
         await capture('vrat_record');
         await tester.binding.handlePopRoute();
