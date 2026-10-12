@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'ios_style.dart';
+
 /// Each tab keeps its own navigation stack, as iOS does with a
 /// NavigationStack per tab: pages pushed from a tab (Ekadashi details,
 /// widget preview) stay in that tab, above it the tab bar stays visible,
@@ -107,4 +109,73 @@ class TabBarSlots extends ChangeNotifier {
     });
     WidgetsBinding.instance.ensureVisualUpdate();
   }
+}
+
+/// The iOS top bar (iPhone, 12 October 2026): [leading] items (Today, the
+/// "‹ Search" return) in their own glass capsule on the left, the inline
+/// title (ellipsized), and search followed by the tab's [actions] in one
+/// glass capsule on the right (search alone is a glass circle).
+class ShellTopBar extends StatelessWidget implements PreferredSizeWidget {
+  const ShellTopBar({
+    super.key,
+    required this.title,
+    required this.onSearch,
+    this.searchTooltip,
+    this.leading = const [],
+    this.actions = const [],
+  });
+
+  final String title;
+  final VoidCallback onSearch;
+  final String? searchTooltip;
+  final List<Widget> leading;
+  final List<Widget> actions;
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+
+  Widget _capsule(List<Widget> children) => GlassPanel(
+    radius: 999,
+    padding: const EdgeInsets.symmetric(horizontal: 2),
+    child: IconTheme.merge(
+      data: const IconThemeData(color: IosColors.teal, size: 24),
+      child: Row(mainAxisSize: MainAxisSize.min, children: children),
+    ),
+  );
+
+  @override
+  Widget build(BuildContext context) => SafeArea(
+    bottom: false,
+    child: SizedBox(
+      height: kToolbarHeight,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        child: NavigationToolbar(
+          leading: leading.isEmpty
+              ? null
+              : FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: AlignmentDirectional.centerStart,
+                  child: _capsule(leading),
+                ),
+          middle: Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).appBarTheme.titleTextStyle,
+          ),
+          trailing: _capsule([
+            IconButton(
+              key: const Key('open_global_search'),
+              tooltip: searchTooltip,
+              icon: const Icon(Icons.search),
+              onPressed: onSearch,
+            ),
+            ...actions,
+          ]),
+          middleSpacing: 8,
+        ),
+      ),
+    ),
+  );
 }

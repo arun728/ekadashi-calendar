@@ -1227,30 +1227,14 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         ),
       ?tabLeading,
     ];
-    return AppBar(
-      automaticallyImplyLeading: false,
-      leadingWidth: leading.isEmpty
-          ? null
-          : (searchBack && tabLeading != null ? 210 : 128),
-      // Long words in other languages shrink rather than overflow.
-      leading: leading.isEmpty
-          ? null
-          : FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: AlignmentDirectional.centerStart,
-              child: Row(mainAxisSize: MainAxisSize.min, children: leading),
-            ),
-      title: Text(lang.translate('app_title')),
-      actions: [
-        ...?slots?.actions(context),
-        IconButton(
-          key: const Key('open_global_search'),
-          tooltip: lang.translate('search'),
-          icon: const Icon(Icons.search),
-          onPressed: _openSearch,
-        ),
-        const SizedBox(width: 4),
-      ],
+    // The iPhone top bar: Today and "‹ Search" in a glass capsule on the
+    // left, search and the tab's actions in one on the right.
+    return ShellTopBar(
+      title: lang.translate('app_title'),
+      searchTooltip: lang.translate('search'),
+      onSearch: _openSearch,
+      leading: leading,
+      actions: slots?.actions(context) ?? const [],
     );
   }
 

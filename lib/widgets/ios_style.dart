@@ -133,7 +133,8 @@ class GlassPanel extends StatelessWidget {
           child: DecoratedBox(
             decoration: BoxDecoration(
               borderRadius: shape,
-              color: tint?.withValues(alpha: .16),
+              // iOS 26 glass tint strength (Glass.swift: tint.opacity(0.35)).
+              color: tint?.withValues(alpha: .35),
               border: Border.all(
                 color: (dark ? Colors.white : Colors.black).withValues(
                   alpha: dark ? .14 : .06,

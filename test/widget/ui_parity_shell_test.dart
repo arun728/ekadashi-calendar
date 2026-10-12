@@ -5,6 +5,7 @@ import 'package:ekadashi_calendar/screens/premium_screen.dart';
 import 'package:ekadashi_calendar/screens/splash_screen.dart';
 import 'package:ekadashi_calendar/services/theme_service.dart';
 import 'package:ekadashi_calendar/widgets/glass_navigation_bar.dart';
+import 'package:ekadashi_calendar/widgets/tab_shell.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -118,11 +119,11 @@ void main() {
     testWidgets('the top bar title is the iOS inline title', (tester) async {
       await open(tester);
       final title = find.descendant(
-        of: find.byType(AppBar),
+        of: find.byType(ShellTopBar),
         matching: find.text('Ekadashi Calendar'),
       );
       expect(title, findsOneWidget);
-      final style = DefaultTextStyle.of(tester.element(title)).style;
+      final style = tester.widget<Text>(title).style!;
       expect(style.fontSize, 17);
       expect(style.fontWeight, FontWeight.w600);
       expect(style.color, Colors.white);

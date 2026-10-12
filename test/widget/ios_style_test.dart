@@ -47,6 +47,24 @@ void main() {
     });
   });
 
+  // iOS 26 tints glass at 35% (Glass.swift: glass.tint(tint.opacity(0.35))),
+  // as the selected chips and Journey cards on the iPhone show.
+  testWidgets('GlassPanel tints like iOS glass, at 35%', (tester) async {
+    await tester.pumpWidget(
+      app(const GlassPanel(tint: teal, child: SizedBox(width: 40, height: 40))),
+    );
+    final tinted = tester
+        .widgetList<DecoratedBox>(
+          find.descendant(
+            of: find.byType(GlassPanel),
+            matching: find.byType(DecoratedBox),
+          ),
+        )
+        .map((b) => (b.decoration as BoxDecoration).color)
+        .whereType<Color>();
+    expect(tinted, contains(teal.withValues(alpha: .35)));
+  });
+
   group('GlassChip', () {
     testWidgets('selected: its own colour, 15 pt semibold, no checkmark', (
       tester,
