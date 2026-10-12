@@ -3,10 +3,8 @@ import 'widgets/event_reminder_rows.dart';
 import '../services/notifications/event_reminder_service.dart';
 import '../services/premium_service.dart';
 import 'widgets/settings_permission_actions.dart';
-import '../widgets/glass_tube.dart';
+import '../widgets/settings_group.dart';
 import 'widget_preview_screen.dart';
-import 'dart:io';
-import 'dart:math' show max;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -199,18 +197,6 @@ class _SettingsScreenState extends State<SettingsScreen>
     });
   }
 
-  Widget _subsection(String text) => Padding(
-    padding: const EdgeInsets.fromLTRB(4, 0, 4, 6),
-    child: Text(
-      text,
-      style: const TextStyle(
-        fontSize: 13,
-        fontWeight: FontWeight.w600,
-        color: Colors.grey,
-      ),
-    ),
-  );
-
   // ============================================================
   // NOTIFICATION TOGGLES
   // ============================================================
@@ -266,14 +252,6 @@ class _SettingsScreenState extends State<SettingsScreen>
     _rescheduleNotifications();
   }
 
-  /// Section headers in the secondary text colour; teal is kept for icons
-  /// and switches (docs/ROADMAP.md Phase 5).
-  TextStyle _sectionStyle(BuildContext context) => TextStyle(
-    color: Theme.of(context).textTheme.bodySmall?.color,
-    fontWeight: FontWeight.w700,
-    letterSpacing: .4,
-  );
-
   // ============================================================
   // BUILD UI
   // ============================================================
@@ -286,12 +264,38 @@ class _SettingsScreenState extends State<SettingsScreen>
         _permissionStatus.hasNotificationPermission &&
         _notificationSettings.enabled;
 
-    // Show permissions section always on Android (since USE_EXACT_ALARM is auto-granted)
-    final bool showPermissionsSection = Platform.isAndroid;
+    // Show permissions section always on Android (since USE_EXACT_ALARM is
+    // auto-granted). The target platform is Android on the device and in
+    // widget tests.
+    final bool showPermissionsSection =
+        Theme.of(context).platform == TargetPlatform.android;
 
     if (!_isInitialized) {
       return const Center(child: CircularProgressIndicator(color: tealColor));
     }
+
+    final premium = context.watch<PremiumService>().isPremium;
+    final secondary = SettingsStyle.secondary(context);
+
+    Widget header(String key, {double top = 24}) => SettingsHeader(
+      lang.translate(key),
+      key: Key('settings_header_$key'),
+      top: top,
+    );
+
+    // Ekadashi reminders: the status is a grey detail, as on iOS.
+    Widget reminder(String key, bool value, ValueChanged<bool> onChanged) =>
+        SettingsSwitchTile(
+          title: Text(lang.translate(key)),
+          subtitle: Text(
+            lang.translate(
+              togglesEnabled && value ? 'status_active' : 'status_disabled',
+            ),
+            style: TextStyle(fontSize: 12, color: secondary),
+          ),
+          value: value && togglesEnabled,
+          onChanged: togglesEnabled ? onChanged : null,
+        );
 
     return ListView(
       padding: EdgeInsets.fromLTRB(
@@ -302,302 +306,213 @@ class _SettingsScreenState extends State<SettingsScreen>
       ),
       children: [
         SettingsPremiumCard(currentTimezone: widget.currentTimezone),
-        const SizedBox(height: 16),
-        GlassTube(
+
+        // ==================== APPEARANCE ====================
+        header('appearance', top: 28),
+        SettingsCard(
           key: const Key('settings_appearance_tube'),
-          optionCount: 2,
-          padding: EdgeInsets.zero,
-          child: Column(
-            children: [
-              ListTile(
-                leading: const Icon(Icons.widgets_outlined),
-                title: Text(lang.translate('widget_preview')),
-                subtitle: Text(lang.translate('widget_preview_desc')),
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => WidgetPreviewScreen(
-                      ekadashiList: _ekadashiService.getEkadashis(
-                        timezone: _currentTimezone,
-                        languageCode: lang.currentLocale.languageCode,
-                      ),
-                      currentTimezone: _currentTimezone,
+          children: [
+            ListTile(
+              leading: const SettingsIcon(Icons.grid_view),
+              title: Text(lang.translate('widget_preview')),
+              subtitle: Text(lang.translate('widget_preview_desc')),
+              trailing: const SettingsChevron(),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => WidgetPreviewScreen(
+                    ekadashiList: _ekadashiService.getEkadashis(
+                      timezone: _currentTimezone,
+                      languageCode: lang.currentLocale.languageCode,
                     ),
+                    currentTimezone: _currentTimezone,
                   ),
                 ),
               ),
-              // ==================== APPEARANCE ====================
-              Text(
-                lang.translate('appearance'),
-                style: const TextStyle(
-                  color: tealColor,
-                  fontWeight: FontWeight.bold,
+            ),
+            const SettingsSeparator(inset: SettingsStyle.iconInset),
+            SettingsSwitchTile(
+              icon: Icons.dark_mode,
+              title: Text(lang.translate('dark_mode')),
+              value: Provider.of<ThemeService>(context).isDarkMode,
+              onChanged: (value) {
+                Provider.of<ThemeService>(
+                  context,
+                  listen: false,
+                ).toggleTheme(value);
+                _settingsService.setDarkMode(value);
+              },
+            ),
+          ],
+        ),
+
+        // ==================== NOTIFICATIONS ====================
+        header('notifications'),
+        SettingsCard(
+          key: const Key('settings_notifications_tube'),
+          children: [
+            SettingsSwitchTile(
+              title: Text(lang.translate('enable_notifications')),
+              subtitle: _permissionStatus.hasNotificationPermission
+                  ? (_notificationSettings.enabled
+                        ? Text(
+                            lang.translateWithArgs('reminders_active', [
+                              _notificationSettings.enabledCount.toString(),
+                            ]),
+                          )
+                        : null)
+                  : Text(
+                      lang.translate('notifications_off'),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.orange,
+                      ),
+                    ),
+              value:
+                  _notificationSettings.enabled &&
+                  _permissionStatus.hasNotificationPermission,
+              onChanged: _toggleNotifications,
+            ),
+            if (_permissionStatus.hasNotificationPermission &&
+                !_notificationSettings.enabled) ...[
+              const SettingsSeparator(),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: SettingsStyle.rowPadding,
+                  vertical: 12,
+                ),
+                child: Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: Text(
+                    lang.translate('notifications_off_hint'),
+                    style: TextStyle(fontSize: 12, color: secondary),
+                  ),
                 ),
               ),
-              SwitchListTile(
-                title: Text(lang.translate('dark_mode')),
-                value: Provider.of<ThemeService>(context).isDarkMode,
-                activeThumbColor: tealColor,
-                onChanged: (value) {
-                  Provider.of<ThemeService>(
-                    context,
-                    listen: false,
-                  ).toggleTheme(value);
-                  _settingsService.setDarkMode(value);
+            ],
+
+            // Test notification button
+            if (togglesEnabled) ...[
+              const SettingsSeparator(),
+              ListTile(
+                leading: const SettingsIcon(
+                  Icons.notifications_active_outlined,
+                ),
+                title: Text(lang.translate('test_notification')),
+                subtitle: Text(lang.translate('test_notification_desc')),
+                onTap: () async {
+                  try {
+                    final langService = Provider.of<LanguageService>(
+                      context,
+                      listen: false,
+                    );
+                    // FIXED: Passing individual strings instead of Map to match method signature
+                    await _notificationService.showTestNotification(
+                      langService.translate('test_notif_title'),
+                      langService.translate('test_notif_body'),
+                    );
+
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(lang.translate('notif_sent_msg')),
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                    }
+                  } catch (e) {
+                    debugPrint('Error sending test notification: $e');
+                  }
                 },
               ),
             ],
-          ),
+          ],
         ),
-        const Divider(),
 
-        // ==================== NOTIFICATIONS ====================
-        Text(lang.translate('notifications'), style: _sectionStyle(context)),
-
-        GlassTube(
-          key: const Key('settings_notifications_tube'),
-          optionCount: 2,
-          padding: EdgeInsets.zero,
-          child: Column(
-            children: [
-              SwitchListTile(
-                title: Text(lang.translate('enable_notifications')),
-                subtitle: _permissionStatus.hasNotificationPermission
-                    ? (_notificationSettings.enabled
-                          ? Text(
-                              lang.translateWithArgs('reminders_active', [
-                                _notificationSettings.enabledCount.toString(),
-                              ]),
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey,
-                              ),
-                            )
-                          : null)
-                    : Text(
-                        lang.translate('notifications_off'),
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.orange,
-                        ),
-                      ),
-                value:
-                    _notificationSettings.enabled &&
-                    _permissionStatus.hasNotificationPermission,
-                activeThumbColor: tealColor,
-                onChanged: _toggleNotifications,
-              ),
-
-              // Test notification button
-              if (togglesEnabled)
-                ListTile(
-                  leading: const Icon(
-                    Icons.notifications_active_outlined,
-                    color: tealColor,
-                  ),
-                  title: Text(lang.translate('test_notification')),
-                  subtitle: Text(
-                    lang.translate('test_notification_desc'),
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                  onTap: () async {
-                    try {
-                      final langService = Provider.of<LanguageService>(
-                        context,
-                        listen: false,
-                      );
-                      // FIXED: Passing individual strings instead of Map to match method signature
-                      await _notificationService.showTestNotification(
-                        langService.translate('test_notif_title'),
-                        langService.translate('test_notif_body'),
-                      );
-
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(lang.translate('notif_sent_msg')),
-                            duration: const Duration(seconds: 2),
-                          ),
-                        );
-                      }
-                    } catch (e) {
-                      debugPrint('Error sending test notification: $e');
-                    }
-                  },
-                ),
-            ],
-          ),
-        ),
         // Sub-sections under the master switch (docs/ROADMAP.md Phase 7).
-        const SizedBox(height: 12),
-        _subsection(lang.translate('notifications_section_ekadashi')),
-        GlassTube(
+        header('notifications_section_ekadashi'),
+        SettingsCard(
           key: const Key('settings_notifications_ekadashi_tube'),
-          optionCount: 4,
-          padding: EdgeInsets.zero,
-          child: Column(
-            children: [
-              // Remind 2 days before
-              SwitchListTile(
-                title: Text(lang.translate('notify_2day')),
-                subtitle: Text(
-                  togglesEnabled && _notificationSettings.remind2Days
-                      ? lang.translate('status_active')
-                      : lang.translate('status_disabled'),
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: togglesEnabled && _notificationSettings.remind2Days
-                        ? Colors.green
-                        : Colors.grey,
-                  ),
-                ),
-                value: _notificationSettings.remind2Days && togglesEnabled,
-                activeThumbColor: tealColor,
-                onChanged: togglesEnabled ? _toggleRemind2Days : null,
-              ),
-
-              // Remind 1 day before
-              SwitchListTile(
-                title: Text(lang.translate('notify_1day')),
-                subtitle: Text(
-                  togglesEnabled && _notificationSettings.remind1Day
-                      ? lang.translate('status_active')
-                      : lang.translate('status_disabled'),
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: togglesEnabled && _notificationSettings.remind1Day
-                        ? Colors.green
-                        : Colors.grey,
-                  ),
-                ),
-                value: _notificationSettings.remind1Day && togglesEnabled,
-                activeThumbColor: tealColor,
-                onChanged: togglesEnabled ? _toggleRemind1Day : null,
-              ),
-
-              // Remind on start (Ekadashi day)
-              SwitchListTile(
-                title: Text(lang.translate('notify_start')),
-                subtitle: Text(
-                  togglesEnabled && _notificationSettings.remindOnStart
-                      ? lang.translate('status_active')
-                      : lang.translate('status_disabled'),
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: togglesEnabled && _notificationSettings.remindOnStart
-                        ? Colors.green
-                        : Colors.grey,
-                  ),
-                ),
-                value: _notificationSettings.remindOnStart && togglesEnabled,
-                activeThumbColor: tealColor,
-                onChanged: togglesEnabled ? _toggleRemindOnStart : null,
-              ),
-
-              // Remind on Parana (breaking fast)
-              SwitchListTile(
-                title: Text(lang.translate('notify_parana')),
-                subtitle: Text(
-                  togglesEnabled && _notificationSettings.remindOnParana
-                      ? lang.translate('status_active')
-                      : lang.translate('status_disabled'),
-                  style: TextStyle(
-                    fontSize: 11,
-                    color:
-                        togglesEnabled && _notificationSettings.remindOnParana
-                        ? Colors.green
-                        : Colors.grey,
-                  ),
-                ),
-                value: _notificationSettings.remindOnParana && togglesEnabled,
-                activeThumbColor: tealColor,
-                onChanged: togglesEnabled ? _toggleRemindOnParana : null,
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-        _subsection(lang.translate('notifications_section_events')),
-        GlassTube(
-          key: const Key('settings_notifications_events_tube'),
-          // No-reminders text or the reminders, then Add a reminder.
-          optionCount: max(
-            2,
-            EventReminderService.instance.reminders.length + 1,
-          ),
-          padding: EdgeInsets.zero,
-          child: EventReminderRows(
-            service: EventReminderService.instance,
-            enabled: togglesEnabled,
-            premium: context.watch<PremiumService>().isPremium,
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
-          child: Text(
-            lang.translate(
-              context.watch<PremiumService>().isPremium
-                  ? 'notifications_events_desc'
-                  : 'notifications_premium_events',
+          children: [
+            reminder(
+              'notify_2day',
+              _notificationSettings.remind2Days,
+              _toggleRemind2Days,
             ),
-            style: const TextStyle(fontSize: 12, color: Colors.grey),
+            const SettingsSeparator(),
+            reminder(
+              'notify_1day',
+              _notificationSettings.remind1Day,
+              _toggleRemind1Day,
+            ),
+            const SettingsSeparator(),
+            reminder(
+              'notify_start',
+              _notificationSettings.remindOnStart,
+              _toggleRemindOnStart,
+            ),
+            const SettingsSeparator(),
+            reminder(
+              'notify_parana',
+              _notificationSettings.remindOnParana,
+              _toggleRemindOnParana,
+            ),
+          ],
+        ),
+        header('notifications_section_events'),
+        SettingsCard(
+          key: const Key('settings_notifications_events_tube'),
+          children: [
+            EventReminderRows(
+              service: EventReminderService.instance,
+              enabled: togglesEnabled,
+              premium: premium,
+            ),
+          ],
+        ),
+        SettingsFooter(
+          lang.translate(
+            premium
+                ? 'notifications_events_desc'
+                : 'notifications_premium_events',
           ),
         ),
+
         // ==================== PERMISSIONS ====================
         if (showPermissionsSection) ...[
-          const Divider(height: 32),
-
-          Text(
-            lang.translate('permissions'),
-            style: const TextStyle(
-              color: tealColor,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-
+          header('permissions'),
           SettingsPermissionActions(
-            title: lang.translate('app_settings'),
-            guideTooltip: lang.translate('perm_guide_title'),
-            settingsTooltip: lang.translate('settings_button'),
+            settingsTitle: lang.translate('app_settings'),
+            settingsSubtitle: lang.translate('app_settings_desc'),
+            guideTitle: lang.translate('perm_guide_title'),
             onSettings: () => _settingsService.openAppSettings(),
             onGuide: _showPermissionsGuideDialog,
           ),
         ],
 
-        const Divider(height: 32),
-
         // ==================== ABOUT ====================
-        Text(lang.translate('about'), style: _sectionStyle(context)),
-        GlassTube(
+        header('about'),
+        SettingsCard(
           key: const Key('settings_about_tube'),
-          optionCount: 2,
-          padding: EdgeInsets.zero,
-          child: Column(
-            children: [
-              ListTile(
-                leading: const Icon(Icons.star_rate_rounded, color: tealColor),
-                title: Text(lang.translate('rate_app')),
-                subtitle: Text(
-                  lang.translate('rate_app_desc'),
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-                onTap: () => _settingsService.openStoreListing(),
-              ),
-              ListTile(
-                leading: const Icon(Icons.share, color: tealColor),
-                title: Text(lang.translate('share_app')),
-                subtitle: Text(
-                  lang.translate('share_app_desc'),
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-                onTap: _shareApp,
-              ),
-            ],
-          ),
-        ),
-        ListTile(
-          title: Text(lang.translate('version')),
-          trailing: const Text("1.1.1", style: TextStyle(color: Colors.grey)),
+          children: [
+            ListTile(
+              leading: const SettingsIcon(Icons.star),
+              title: Text(lang.translate('rate_app')),
+              subtitle: Text(lang.translate('rate_app_desc')),
+              onTap: () => _settingsService.openStoreListing(),
+            ),
+            const SettingsSeparator(inset: SettingsStyle.iconInset),
+            ListTile(
+              leading: const SettingsIcon(Icons.ios_share),
+              title: Text(lang.translate('share_app')),
+              subtitle: Text(lang.translate('share_app_desc')),
+              onTap: _shareApp,
+            ),
+            const SettingsSeparator(inset: SettingsStyle.iconInset),
+            ListTile(
+              title: Text(lang.translate('version')),
+              trailing: const Text('1.1.1'),
+            ),
+          ],
         ),
       ],
     );
@@ -609,23 +524,16 @@ class _SettingsScreenState extends State<SettingsScreen>
     Share.share(shareMessage);
   }
 
+  /// Like the iOS alert: the guide, then Settings and Close.
   void _showPermissionsGuideDialog() {
     final lang = Provider.of<LanguageService>(context, listen: false);
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            const Icon(Icons.settings_applications, color: tealColor),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                lang.translate('perm_guide_title'),
-                style: const TextStyle(fontSize: 18),
-              ),
-            ),
-          ],
+        title: Text(
+          lang.translate('perm_guide_title'),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
         ),
         content: SingleChildScrollView(
           child: Text(
@@ -639,6 +547,20 @@ class _SettingsScreenState extends State<SettingsScreen>
             child: Text(
               lang.translate('info_close'),
               style: const TextStyle(color: tealColor),
+            ),
+          ),
+          TextButton(
+            key: const Key('permission_guide_settings'),
+            onPressed: () {
+              Navigator.of(context).pop();
+              _settingsService.openAppSettings();
+            },
+            child: Text(
+              lang.translate('settings_button'),
+              style: const TextStyle(
+                color: tealColor,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],

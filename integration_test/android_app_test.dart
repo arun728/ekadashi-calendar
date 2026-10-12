@@ -133,12 +133,16 @@ void main() {
     await binding.takeScreenshot('android_settings_actions');
     await tester.tap(find.byKey(const Key('permission_guide_action')));
     await pumpUi(tester);
+    // The guide's row and the dialog share the title; check the dialog.
     expect(
-      find.text(
-        Provider.of<LanguageService>(
-          tester.element(find.byType(MaterialApp)),
-          listen: false,
-        ).translate('perm_guide_title'),
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.text(
+          Provider.of<LanguageService>(
+            tester.element(find.byType(MaterialApp)),
+            listen: false,
+          ).translate('perm_guide_title'),
+        ),
       ),
       findsOneWidget,
     );

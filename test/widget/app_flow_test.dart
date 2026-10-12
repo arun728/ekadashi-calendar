@@ -39,6 +39,11 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byIcon(Icons.settings));
       await tester.pumpAndSettle();
+      // Notifications sits below the Premium card and the Appearance section.
+      await tester.ensureVisible(
+        find.text('Notifications disabled', skipOffstage: false),
+      );
+      await tester.pumpAndSettle();
       expect(find.text('Notifications disabled'), findsOneWidget);
       // The Ekadashi switches are a sub-section below the master switch.
       await tester.scrollUntilVisible(
@@ -62,8 +67,13 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byIcon(Icons.settings));
       await tester.pumpAndSettle();
+      // Notifications sits below the Premium card and the Appearance section.
       await tester.ensureVisible(
-        find.widgetWithText(SwitchListTile, 'Enable Notifications'),
+        find.widgetWithText(
+          SwitchListTile,
+          'Enable Notifications',
+          skipOffstage: false,
+        ),
       );
       await tester.pumpAndSettle();
       await tester.tap(
@@ -138,7 +148,10 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byIcon(Icons.settings));
     await tester.pumpAndSettle();
-    expect(find.text('Enable Notifications'), findsOneWidget);
+    expect(
+      find.text('Enable Notifications', skipOffstage: false),
+      findsOneWidget,
+    );
     await tester.tap(find.byIcon(Icons.home));
     await tester.pumpAndSettle();
     expect(find.text('Chennai • IST'), findsOneWidget);

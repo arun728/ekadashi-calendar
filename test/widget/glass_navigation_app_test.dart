@@ -147,7 +147,10 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('glass_tab_4')));
     await tester.pumpAndSettle();
-    expect(find.text('Enable Notifications'), findsOneWidget);
+    expect(
+      find.text('Enable Notifications', skipOffstage: false),
+      findsOneWidget,
+    );
     await tester.tap(find.byKey(const Key('glass_tab_3')));
     await tester.pumpAndSettle();
     expect(find.byType(PanchangScreen).hitTestable(), findsOneWidget);

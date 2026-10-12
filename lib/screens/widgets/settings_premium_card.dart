@@ -7,6 +7,7 @@ import '../../services/language_service.dart';
 import '../../services/play_billing_service.dart';
 import '../../services/premium_service.dart';
 import '../../widgets/glass_tube.dart';
+import '../../widgets/settings_group.dart';
 import '../premium_screen.dart';
 
 /// Premium at the top of Settings (docs/ROADMAP.md Phase 5), like the iOS
@@ -16,7 +17,20 @@ class SettingsPremiumCard extends StatelessWidget {
   const SettingsPremiumCard({super.key, this.currentTimezone = 'IST'});
   final String currentTimezone;
 
-  static const _amber = Color(0xFFF59E0B);
+  /// iOS Theme.amber and .orange (the crown's gradient).
+  static const _amber = Color(0xFFFFC208);
+  static const _orange = Color(0xFFFF9500);
+
+  /// A capsule button with a white label, like the iOS glassProminent one.
+  static ButtonStyle get _prominent => FilledButton.styleFrom(
+    backgroundColor: GlassTubeColors.teal,
+    foregroundColor: Colors.white,
+    shape: const StadiumBorder(),
+    padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 16),
+  );
+
+  /// The iOS headline label (merged with the button's own font).
+  static const _label = TextStyle(fontSize: 17, fontWeight: FontWeight.w600);
 
   @override
   Widget build(BuildContext context) {
@@ -60,11 +74,8 @@ class SettingsPremiumCard extends StatelessWidget {
                   color: _amber.withValues(alpha: .18),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.workspace_premium,
-                  color: _amber,
-                  size: 30,
-                ),
+                alignment: Alignment.center,
+                child: const _Crown(size: 26, top: _amber, bottom: _orange),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -73,15 +84,18 @@ class SettingsPremiumCard extends StatelessWidget {
                   children: [
                     Text(
                       lang.translate('premium_title'),
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w800,
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: SettingsStyle.primary(context),
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 3),
                     Text(
                       lang.translate(subtitle),
                       style: TextStyle(
-                        color: Theme.of(context).textTheme.bodySmall?.color,
+                        fontSize: 15,
+                        color: SettingsStyle.secondary(context),
                       ),
                     ),
                   ],
@@ -112,18 +126,22 @@ class SettingsPremiumCard extends StatelessWidget {
       children: [
         _benefit(
           context,
-          Icons.event_available,
+          const _CalendarClock(),
           lang.translate('premium_feature_calendar'),
         ),
-        _benefit(context, Icons.spa, lang.translate('premium_feature_vrat')),
         _benefit(
           context,
-          Icons.auto_awesome,
+          const Icon(Icons.eco, size: 24, color: GlassTubeColors.teal),
+          lang.translate('premium_feature_vrat'),
+        ),
+        _benefit(
+          context,
+          const Icon(Icons.auto_awesome, size: 24, color: GlassTubeColors.teal),
           lang.translate('premium_feature_panchang_v2'),
         ),
         if (monthly != null && lifetime != null)
           Padding(
-            padding: const EdgeInsets.only(top: 4),
+            padding: const EdgeInsets.only(top: 7),
             child: Text(
               AppStrings.translateWithArgs(
                 'settings_premium_from',
@@ -131,24 +149,22 @@ class SettingsPremiumCard extends StatelessWidget {
                 [monthly, lifetime],
               ),
               key: const Key('settings_premium_prices'),
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: SettingsStyle.primary(context),
+              ),
             ),
           ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 10),
         SizedBox(
           width: double.infinity,
           child: FilledButton(
             key: const Key('settings_premium'),
-            style: FilledButton.styleFrom(
-              backgroundColor: GlassTubeColors.teal,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-            ),
+            style: _prominent,
             onPressed: () =>
                 openPremium(context, currentTimezone: currentTimezone),
-            child: Text(
-              lang.translate('settings_premium_cta'),
-              style: const TextStyle(fontWeight: FontWeight.w700),
-            ),
+            child: Text(lang.translate('settings_premium_cta'), style: _label),
           ),
         ),
       ],
@@ -165,7 +181,10 @@ class SettingsPremiumCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (premium.lifetime)
-          Text(lang.translate('premium_lifetime_thanks_body'))
+          Text(
+            lang.translate('premium_lifetime_thanks_body'),
+            style: const TextStyle(fontSize: 15),
+          )
         else ...[
           if (plan != null)
             Text(
@@ -178,8 +197,9 @@ class SettingsPremiumCard extends StatelessWidget {
                   ),
                 ],
               ),
-              style: const TextStyle(fontWeight: FontWeight.w600),
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
             ),
+          const SizedBox(height: 4),
           Text(
             lang.translate(
               premium.subscriptionCancelled
@@ -188,17 +208,25 @@ class SettingsPremiumCard extends StatelessWidget {
             ),
             style: TextStyle(
               fontSize: 13,
-              color: Theme.of(context).textTheme.bodySmall?.color,
+              color: SettingsStyle.secondary(context),
             ),
           ),
         ],
-        const SizedBox(height: 12),
+        const SizedBox(height: 10),
         Row(
           children: [
             if (premium.subscribed) ...[
               Expanded(
                 child: OutlinedButton(
                   key: const Key('settings_premium_manage'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: GlassTubeColors.teal,
+                    shape: const StadiumBorder(),
+                    padding: const EdgeInsets.symmetric(vertical: 11),
+                    side: BorderSide(
+                      color: GlassTubeColors.teal.withValues(alpha: .5),
+                    ),
+                  ),
                   onPressed: () => launchUrl(
                     Uri.https(
                       'play.google.com',
@@ -219,12 +247,17 @@ class SettingsPremiumCard extends StatelessWidget {
               Expanded(
                 child: FilledButton(
                   key: const Key('settings_premium'),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: GlassTubeColors.teal,
+                  style: _prominent.copyWith(
+                    padding: const WidgetStatePropertyAll(
+                      EdgeInsets.symmetric(vertical: 11),
+                    ),
                   ),
                   onPressed: () =>
                       openPremium(context, currentTimezone: currentTimezone),
-                  child: Text(lang.translate('settings_premium_plans')),
+                  child: Text(
+                    lang.translate('settings_premium_plans'),
+                    style: _label,
+                  ),
                 ),
               ),
           ],
@@ -233,15 +266,111 @@ class SettingsPremiumCard extends StatelessWidget {
     );
   }
 
-  Widget _benefit(BuildContext context, IconData icon, String text) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 4),
+  /// A teal icon and its line, like the iOS Label.
+  Widget _benefit(BuildContext context, Widget icon, String text) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 5),
     child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 18, color: GlassTubeColors.teal),
-        const SizedBox(width: 10),
-        Expanded(child: Text(text, style: const TextStyle(fontSize: 14))),
+        SizedBox(width: 30, child: Center(child: icon)),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 15,
+              color: SettingsStyle.primary(context),
+            ),
+          ),
+        ),
       ],
     ),
   );
+}
+
+/// SF Symbols' calendar.badge.clock: a calendar with a small clock badge.
+class _CalendarClock extends StatelessWidget {
+  const _CalendarClock();
+
+  @override
+  Widget build(BuildContext context) => const SizedBox(
+    width: 28,
+    height: 26,
+    child: Stack(
+      children: [
+        Icon(
+          Icons.calendar_month_outlined,
+          size: 24,
+          color: GlassTubeColors.teal,
+        ),
+        Positioned(
+          right: 0,
+          bottom: 0,
+          child: Icon(
+            Icons.access_time_filled,
+            size: 13,
+            color: GlassTubeColors.teal,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+/// SF Symbols' crown.fill with a top-to-bottom amber to orange gradient.
+class _Crown extends StatelessWidget {
+  const _Crown({required this.size, required this.top, required this.bottom});
+  final double size;
+  final Color top, bottom;
+
+  @override
+  Widget build(BuildContext context) => CustomPaint(
+    size: Size(size, size * .8),
+    painter: _CrownPainter(top, bottom),
+  );
+}
+
+class _CrownPainter extends CustomPainter {
+  _CrownPainter(this.top, this.bottom);
+  final Color top, bottom;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width, h = size.height;
+    final paint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [top, bottom],
+      ).createShader(Offset.zero & size);
+    // Three points over the band, a ball on each point.
+    final crown = Path()
+      ..moveTo(w * .08, h * .3)
+      ..lineTo(w * .3, h * .55)
+      ..lineTo(w * .5, h * .18)
+      ..lineTo(w * .7, h * .55)
+      ..lineTo(w * .92, h * .3)
+      ..lineTo(w * .84, h * .76)
+      ..lineTo(w * .16, h * .76)
+      ..close();
+    canvas.drawPath(crown, paint);
+    final r = w * .075;
+    for (final p in [
+      Offset(w * .08, h * .3),
+      Offset(w * .5, h * .14),
+      Offset(w * .92, h * .3),
+    ]) {
+      canvas.drawCircle(p, r, paint);
+    }
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTRB(w * .16, h * .84, w * .84, h),
+        Radius.circular(h * .06),
+      ),
+      paint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_CrownPainter old) =>
+      old.top != top || old.bottom != bottom;
 }

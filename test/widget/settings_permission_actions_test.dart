@@ -30,9 +30,9 @@ void main() {
                     body: Padding(
                       padding: const EdgeInsets.all(16),
                       child: SettingsPermissionActions(
-                        title: strings.app_settings,
-                        guideTooltip: strings.perm_guide_title,
-                        settingsTooltip: strings.settings_button,
+                        settingsTitle: strings.app_settings,
+                        settingsSubtitle: strings.app_settings_desc,
+                        guideTitle: strings.perm_guide_title,
                         onGuide: () => guide++,
                         onSettings: () => settings++,
                       ),

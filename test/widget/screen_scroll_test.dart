@@ -70,7 +70,7 @@ void main() {
     await open(tester, 4);
     await expectScrolls(
       tester,
-      find.byKey(const Key('settings_appearance_tube')),
+      find.byKey(const Key('settings_premium_card')),
       const Offset(196, 260),
     );
   });

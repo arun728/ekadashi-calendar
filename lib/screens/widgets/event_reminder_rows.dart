@@ -9,6 +9,7 @@ import '../../services/notifications/event_reminder_service.dart';
 import '../../services/notifications/event_reminders.dart';
 import '../../services/search/search_text.dart';
 import '../../widgets/glass_tube.dart';
+import '../../widgets/settings_group.dart';
 import '../premium_screen.dart';
 
 typedef UpgradeAction = Future<void> Function(BuildContext context);
@@ -81,61 +82,64 @@ class EventReminderRows extends StatelessWidget {
       listenable: service,
       builder: (context, _) {
         final reminders = service.reminders;
+        final secondary = SettingsStyle.secondary(context);
+        // Rows of the Settings card, separated like iOS list rows.
         return Column(
           children: [
-            if (reminders.isEmpty)
+            if (reminders.isEmpty) ...[
               ListTile(
                 enabled: enabled,
                 title: Text(
                   AppStrings.translate('notifications_no_events', language),
-                  style: const TextStyle(color: Colors.grey),
+                  style: TextStyle(fontSize: 15, color: secondary),
                 ),
               ),
-            for (final reminder in reminders)
+              const SettingsSeparator(),
+            ],
+            for (final reminder in reminders) ...[
               ListTile(
                 key: Key('event_reminder_row_${reminder.id}'),
                 enabled: enabled,
-                leading: Icon(
-                  _icon(reminder.target),
-                  color: GlassTubeColors.teal,
-                ),
+                leading: SettingsIcon(_icon(reminder.target)),
                 title: Text(
                   EventReminderChoice.titleFor(reminder.target, language),
                 ),
-                subtitle: Text(
-                  _summary(context, reminder, language),
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
-                ),
+                subtitle: Text(_summary(context, reminder, language)),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (reminder.target.requiresPremium && !premium)
-                      Icon(
-                        Icons.lock,
-                        size: 16,
-                        color: Colors.grey,
-                        semanticLabel: AppStrings.translate(
-                          'search_premium_locked',
-                          language,
+                      Padding(
+                        padding: const EdgeInsetsDirectional.only(end: 6),
+                        child: Icon(
+                          Icons.lock,
+                          size: 14,
+                          color: secondary,
+                          semanticLabel: AppStrings.translate(
+                            'search_premium_locked',
+                            language,
+                          ),
                         ),
                       ),
-                    const Icon(Icons.chevron_right, color: Colors.grey),
+                    const SettingsChevron(),
                   ],
                 ),
                 onTap: () => _edit(context, reminder),
               ),
+              const SettingsSeparator(inset: SettingsStyle.iconInset),
+            ],
             ListTile(
               key: const Key('notifications_add_event'),
               enabled: enabled,
-              leading: Icon(
+              leading: SettingsIcon(
                 Icons.add_circle,
-                color: enabled ? GlassTubeColors.teal : Colors.grey,
+                color: enabled ? GlassTubeColors.teal : secondary,
               ),
               title: Text(
                 AppStrings.translate('notifications_add_event', language),
                 style: TextStyle(
-                  color: enabled ? GlassTubeColors.teal : Colors.grey,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 17,
+                  color: enabled ? GlassTubeColors.teal : secondary,
                 ),
               ),
               onTap: () => _edit(context, null),
@@ -233,107 +237,189 @@ class _EventReminderEditorState extends State<EventReminderEditor> {
     String t(String key) => AppStrings.translate(key, language);
     final target = _target;
     final canSave = target != null && _days.isNotEmpty;
+    final secondary = SettingsStyle.secondary(context);
+    // Like the iOS Form: Cancel and Save in the bar, grouped cards below.
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.close),
-          tooltip: t('cancel'),
+        leadingWidth: 96,
+        leading: TextButton(
+          style: TextButton.styleFrom(foregroundColor: GlassTubeColors.teal),
           onPressed: () => Navigator.of(context).pop(),
+          child: Text(t('cancel'), overflow: TextOverflow.ellipsis),
         ),
+        centerTitle: true,
         title: Text(
           t(
             widget.original == null
                 ? 'notifications_add_event'
                 : 'notifications_edit_event',
           ),
+          style: TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w600,
+            color: SettingsStyle.primary(context),
+          ),
         ),
         actions: [
           TextButton(
             key: const Key('event_reminder_save'),
+            style: TextButton.styleFrom(foregroundColor: GlassTubeColors.teal),
             onPressed: canSave ? _save : null,
-            child: Text(t('save')),
+            child: Text(
+              t('save'),
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
           ),
         ],
       ),
       body: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
         children: [
-          ListTile(
-            key: const Key('event_reminder_choose'),
-            title: Text(t('notifications_choose_event')),
-            subtitle: Text(
-              target == null
-                  ? '—'
-                  : EventReminderChoice.titleFor(target, language),
-            ),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: _choose,
-          ),
-          const Divider(),
-          _Header(t('notifications_lead_title')),
-          for (final lead in EventReminder.leadDays)
-            ListTile(
-              key: Key('event_reminder_lead_$lead'),
-              selected: _days.contains(lead),
-              selectedColor: GlassTubeColors.teal,
-              title: Text(_lead(lead, language)),
-              trailing: _days.contains(lead)
-                  ? const Icon(Icons.check, color: GlassTubeColors.teal)
-                  : null,
-              onTap: () => setState(
-                () =>
-                    _days.contains(lead) ? _days.remove(lead) : _days.add(lead),
+          SettingsCard(
+            children: [
+              ListTile(
+                key: const Key('event_reminder_choose'),
+                title: Text(t('notifications_choose_event')),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: MediaQuery.sizeOf(context).width * .4,
+                      ),
+                      child: Text(
+                        target == null
+                            ? '—'
+                            : EventReminderChoice.titleFor(target, language),
+                        textAlign: TextAlign.end,
+                        style: TextStyle(fontSize: 17, color: secondary),
+                      ),
+                    ),
+                    const SettingsChevron(),
+                  ],
+                ),
+                onTap: _choose,
               ),
-            ),
+            ],
+          ),
+          SettingsHeader(t('notifications_lead_title')),
+          SettingsCard(
+            children: [
+              for (final lead in EventReminder.leadDays) ...[
+                if (lead != EventReminder.leadDays.first)
+                  const SettingsSeparator(),
+                ListTile(
+                  key: Key('event_reminder_lead_$lead'),
+                  selected: _days.contains(lead),
+                  // The title stays in the primary colour; the check is teal.
+                  selectedColor: SettingsStyle.primary(context),
+                  title: Text(_lead(lead, language)),
+                  trailing: _days.contains(lead)
+                      ? const Icon(Icons.check, color: GlassTubeColors.teal)
+                      : null,
+                  onTap: () => setState(
+                    () => _days.contains(lead)
+                        ? _days.remove(lead)
+                        : _days.add(lead),
+                  ),
+                ),
+              ],
+            ],
+          ),
           if (_days.isEmpty)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.fromLTRB(
+                SettingsStyle.rowPadding,
+                8,
+                16,
+                0,
+              ),
               child: Text(
                 t('notifications_lead_required'),
-                style: const TextStyle(color: Colors.orange),
+                style: const TextStyle(fontSize: 13, color: Colors.orange),
               ),
             ),
-          const Divider(),
-          ListTile(
-            key: const Key('event_reminder_time'),
-            title: Text(t('notifications_time')),
-            trailing: Text(
-              AppStrings.clock(
-                _time.hour,
-                _time.minute,
-                context.read<LanguageService>().currentLocale.languageCode,
+          const SizedBox(height: 28),
+          SettingsCard(
+            children: [
+              ListTile(
+                key: const Key('event_reminder_time'),
+                title: Text(t('notifications_time')),
+                trailing: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: SettingsStyle.tertiary(
+                      context,
+                    ).withValues(alpha: .24),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    AppStrings.clock(
+                      _time.hour,
+                      _time.minute,
+                      context
+                          .read<LanguageService>()
+                          .currentLocale
+                          .languageCode,
+                    ),
+                    style: TextStyle(
+                      fontSize: 17,
+                      color: SettingsStyle.primary(context),
+                    ),
+                  ),
+                ),
+                onTap: _pickTime,
               ),
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
-            onTap: _pickTime,
+            ],
           ),
           if (_locked) ...[
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.lock, color: Colors.grey),
-              title: Text(t('notifications_premium_events')),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: FilledButton(
-                key: const Key('event_reminder_upgrade'),
-                style: FilledButton.styleFrom(
-                  backgroundColor: GlassTubeColors.teal,
+            const SizedBox(height: 28),
+            SettingsCard(
+              children: [
+                ListTile(
+                  leading: SettingsIcon(Icons.lock, color: secondary),
+                  title: Text(
+                    t('notifications_premium_events'),
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: SettingsStyle.primary(context),
+                    ),
+                  ),
                 ),
-                onPressed: () => widget.onUpgrade(context),
-                child: Text(t('premium_upgrade')),
-              ),
+                const SettingsSeparator(inset: SettingsStyle.iconInset),
+                ListTile(
+                  key: const Key('event_reminder_upgrade'),
+                  title: Text(
+                    t('premium_upgrade'),
+                    style: const TextStyle(
+                      fontSize: 17,
+                      color: GlassTubeColors.teal,
+                    ),
+                  ),
+                  onTap: () => widget.onUpgrade(context),
+                ),
+              ],
             ),
           ],
           if (widget.original != null) ...[
-            const Divider(),
-            TextButton(
-              key: const Key('event_reminder_delete'),
-              style: TextButton.styleFrom(foregroundColor: Colors.red),
-              onPressed: _delete,
-              child: Text(t('notifications_delete_event')),
+            const SizedBox(height: 28),
+            SettingsCard(
+              children: [
+                ListTile(
+                  key: const Key('event_reminder_delete'),
+                  title: Text(
+                    t('notifications_delete_event'),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 17, color: Colors.red),
+                  ),
+                  onTap: _delete,
+                ),
+              ],
             ),
           ],
-          const SizedBox(height: 24),
         ],
       ),
     );
