@@ -14,6 +14,7 @@ import 'package:ekadashi_calendar/services/vrat_tracker_service.dart';
 import 'package:ekadashi_calendar/widgets/glass_tube.dart';
 import 'package:ekadashi_calendar/widgets/ios_style.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
@@ -474,6 +475,18 @@ void main() {
             .selected,
         isTrue,
       );
+      // The selected (semibold) label is shown whole, not cut short.
+      for (final name in ['observed', 'partial', 'missed']) {
+        final paragraph = tester.renderObject<RenderParagraph>(
+          find
+              .descendant(
+                of: find.byKey(Key('vrat_status_$name')),
+                matching: find.byType(RichText),
+              )
+              .last,
+        );
+        expect(paragraph.didExceedMaxLines, isFalse, reason: name);
+      }
 
       expect(find.byType(ChoiceChip), findsNothing);
       for (final method in FastingMethod.values) {
@@ -715,6 +728,18 @@ void main() {
           tester.getCenter(icon).dx,
           lessThan(cardRect.center.dx),
           reason: '$key icon top-left',
+        );
+        // The value sits at the top-right corner (16 padding).
+        final valueText = find.descendant(
+          of: card,
+          matching: find.byWidgetPredicate(
+            (w) => w is Text && w.style?.fontSize == IosText.title2,
+          ),
+        );
+        expect(
+          tester.getRect(valueText).right,
+          closeTo(cardRect.right - 16, 1),
+          reason: '$key value top-right',
         );
       }
       // Two by two: streaks on the first row, completion and total below.

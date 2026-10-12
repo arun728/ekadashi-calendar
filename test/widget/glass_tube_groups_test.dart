@@ -114,7 +114,11 @@ void main() {
               .first;
           await tester.ensureVisible(firstRow);
           await tester.pumpAndSettle();
-          await tester.tap(firstRow);
+          // Tap the name: at large text the row's centre can sit under
+          // the floating tab bar.
+          await tester.tap(
+            find.descendant(of: firstRow, matching: find.byType(Text)).first,
+          );
           await tester.pumpAndSettle();
           expect(
             find.byKey(const Key('vrat_record_status_tube')),
