@@ -1322,13 +1322,100 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     );
   }
 
+  /// The Home header as iOS HomeHeader: location and language in one glass
+  /// tube, side by side when they fit, stacked otherwise (ViewThatFits).
+  Widget _buildHomeHeader(LanguageService lang, Color tealColor) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+      child: GlassTube(
+        key: const Key('home_options_tube'),
+        optionCount: 2,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final location = _buildLocationWidget(lang, tealColor);
+            final language = _buildLanguageSelector(lang, tealColor);
+            if (_headerFits(lang, constraints.maxWidth)) {
+              return Row(
+                children: [
+                  Expanded(
+                    child: Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: location,
+                    ),
+                  ),
+                  const SizedBox(width: 20),
+                  language,
+                ],
+              );
+            }
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                location,
+                const SizedBox(height: 8),
+                Align(
+                  alignment: AlignmentDirectional.centerEnd,
+                  child: language,
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  /// Whether the location and the language fit on one line (the first
+  /// layout of iOS ViewThatFits).
+  bool _headerFits(LanguageService lang, double width) {
+    final code = lang.currentLocale.languageCode;
+    double measure(String text) {
+      final painter = TextPainter(
+        text: TextSpan(
+          text: text,
+          style: (Theme.of(context).textTheme.bodyMedium ?? const TextStyle())
+              .copyWith(
+                fontSize: IosText.subheadline,
+                fontWeight: FontWeight.w500,
+              ),
+        ),
+        textDirection: TextDirection.ltr,
+        textScaler: MediaQuery.textScalerOf(context),
+        maxLines: 1,
+      )..layout();
+      final w = painter.width;
+      painter.dispose();
+      return w;
+    }
+
+    final zone = AppStrings.timeZoneName(_currentTimezone, code);
+    final location = _locationDenied
+        ? lang.translate('location_denied')
+        : _isRequestingLocation
+        ? lang.translate('detecting_location')
+        : _locationText.isEmpty
+        ? '${lang.translate('locating')} • $zone'
+        : '${_cityLabel(code)} • $zone';
+    final language = AppLanguage.named(code).nativeName;
+    // Icons and gaps: location ~40, between 20, globe ~24.
+    return measure(location) + 40 + 20 + measure(language) + 24 <= width;
+  }
+
   Widget _buildHomeContent(LanguageService lang, Color tealColor) {
     if (_ekadashiList.isEmpty) {
-      return Center(
-        child: Text(
-          lang.translate('no_ekadashi'),
-          style: TextStyle(color: Colors.grey.shade500),
-        ),
+      // iOS keeps the header above ContentUnavailableView.
+      return Column(
+        children: [
+          _buildHomeHeader(lang, tealColor),
+          Expanded(
+            child: UnavailableView(
+              key: const Key('home_empty'),
+              icon: Icons.event_busy_outlined,
+              title: lang.translate('no_ekadashi'),
+            ),
+          ),
+        ],
       );
     }
 
@@ -1337,80 +1424,37 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
     return Column(
       children: [
-        // Header with location and language inline (v1.0 style)
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
-          child: GlassTube(
-            key: const Key('home_options_tube'),
-            optionCount: 2,
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                if (constraints.maxWidth < 400 &&
-                    MediaQuery.textScalerOf(context).scale(14) > 20) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _buildLocationWidget(lang, tealColor),
-                      const SizedBox(height: 8),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: _buildLanguageSelector(lang, tealColor),
-                      ),
-                    ],
-                  );
-                }
-                return Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(child: _buildLocationWidget(lang, tealColor)),
-                    const SizedBox(width: 20),
-                    _buildLanguageSelector(lang, tealColor),
-                  ],
-                );
-              },
-            ),
-          ),
-        ),
+        _buildHomeHeader(lang, tealColor),
 
         // Page indicator
         Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: Text(
             '${_currentPage + 1} / ${_ekadashiList.length}',
-            style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+            key: const Key('home_page_indicator'),
+            style: TextStyle(
+              fontSize: IosText.footnote,
+              color: IosColors.secondary(context),
+            ),
           ),
         ),
 
         // Card with navigation arrows
         Expanded(
           child: Padding(
-            padding: const EdgeInsets.only(
-              left: 4,
-              right: 4,
-              top: 8,
-              bottom: 8,
-            ),
+            padding: const EdgeInsets.only(left: 4, right: 4, bottom: 8),
             child: Row(
               children: [
-                // Left arrow
-                SizedBox(
-                  width: 44,
-                  child: IconButton(
-                    onPressed: isFirstPage
-                        ? null
-                        : () {
-                            _pageController.previousPage(
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            );
-                          },
-                    icon: const Icon(Icons.chevron_left, size: 36),
-                    color: isFirstPage ? Colors.grey.shade600 : tealColor,
-                    padding: EdgeInsets.zero,
+                _homeArrow(
+                  key: const Key('home_previous'),
+                  icon: Icons.arrow_back_ios_new_rounded,
+                  target: _currentPage - 1,
+                  enabled: !isFirstPage,
+                  onPressed: () => _pageController.previousPage(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
                   ),
                 ),
-
-                // Card with PageView
                 Expanded(
                   child: PageView.builder(
                     controller: _pageController,
@@ -1420,27 +1464,20 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                         setState(() => _currentPage = index);
                       }
                     },
-                    itemBuilder: (context, index) {
-                      return _buildEkadashiCard(_ekadashiList[index]);
-                    },
+                    itemBuilder: (context, index) => Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: _buildEkadashiCard(_ekadashiList[index]),
+                    ),
                   ),
                 ),
-
-                // Right arrow
-                SizedBox(
-                  width: 44,
-                  child: IconButton(
-                    onPressed: isLastPage
-                        ? null
-                        : () {
-                            _pageController.nextPage(
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            );
-                          },
-                    icon: const Icon(Icons.chevron_right, size: 36),
-                    color: isLastPage ? Colors.grey.shade600 : tealColor,
-                    padding: EdgeInsets.zero,
+                _homeArrow(
+                  key: const Key('home_next'),
+                  icon: Icons.arrow_forward_ios_rounded,
+                  target: _currentPage + 1,
+                  enabled: !isLastPage,
+                  onPressed: () => _pageController.nextPage(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
                   ),
                 ),
               ],
@@ -1451,22 +1488,53 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     );
   }
 
+  /// An arrow to the card at [target] (iOS: 28 pt semibold chevron in a
+  /// 40 x 60 frame), read out as that Ekadashi's name.
+  Widget _homeArrow({
+    required Key key,
+    required IconData icon,
+    required int target,
+    required bool enabled,
+    required VoidCallback onPressed,
+  }) {
+    final name = enabled ? _ekadashiList[target].name : '';
+    return SizedBox(
+      width: 40,
+      height: 60,
+      child: IconButton(
+        key: key,
+        onPressed: enabled ? onPressed : null,
+        padding: EdgeInsets.zero,
+        icon: Icon(
+          icon,
+          size: 26,
+          weight: 600,
+          semanticLabel: name,
+          color: enabled ? IosColors.teal : IosColors.gray(context),
+        ),
+      ),
+    );
+  }
+
   Widget _buildLocationWidget(LanguageService lang, Color tealColor) {
-    // Show spinner while detecting location
+    final code = lang.currentLocale.languageCode;
+    const subheadline = TextStyle(fontSize: IosText.subheadline);
+    // Detecting: a small spinner and the secondary text.
     if (_isRequestingLocation) {
       return Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           SizedBox(
-            width: 14,
-            height: 14,
+            width: 16,
+            height: 16,
             child: CircularProgressIndicator(strokeWidth: 2, color: tealColor),
           ),
           const SizedBox(width: 8),
           Flexible(
             child: Text(
               lang.translate('detecting_location'),
-              style: TextStyle(fontSize: 14, color: Colors.grey.shade400),
+              maxLines: 1,
+              style: subheadline.copyWith(color: IosColors.secondary(context)),
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -1474,22 +1542,26 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       );
     }
 
-    // Show "Location Denied" with tap to retry
+    // Denied: orange, underlined, tap to ask again.
     if (_locationDenied) {
+      final orange = IosColors.orange(context);
       return GestureDetector(
+        key: const Key('home_location_chip'),
+        behavior: HitTestBehavior.opaque,
         onTap: _requestLocationAgain,
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.location_off, size: 18, color: Colors.orange.shade400),
+            Icon(Icons.near_me_disabled, size: 16, color: orange),
             const SizedBox(width: 6),
             Flexible(
               child: Text(
                 lang.translate('location_denied'),
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.orange.shade400,
+                maxLines: 1,
+                style: subheadline.copyWith(
+                  color: orange,
                   decoration: TextDecoration.underline,
+                  decorationColor: orange,
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -1499,68 +1571,92 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       );
     }
 
-    // Show "Locating..." while loading
+    final zone = AppStrings.timeZoneName(_currentTimezone, code);
+    // Locating: the zone in use; tap to ask for the location again.
     if (_locationText.isEmpty) {
-      return Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.location_on, size: 18, color: tealColor),
-          const SizedBox(width: 6),
-          Text(
-            lang.translate('locating'),
-            style: const TextStyle(fontSize: 14),
-          ),
-        ],
-      );
-    }
-
-    // Show city name and timezone
-    // Show city name and timezone (Clickable to retry)
-    return InkWell(
-      onTap: _handleLocation,
-      borderRadius: BorderRadius.circular(16),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      return GestureDetector(
+        key: const Key('home_location_chip'),
+        behavior: HitTestBehavior.opaque,
+        onTap: _requestLocationAgain,
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.location_on, size: 18, color: tealColor),
+            Icon(Icons.near_me, size: 16, color: tealColor),
             const SizedBox(width: 6),
             Flexible(
               child: Text(
-                '${_cityLabel(lang.currentLocale.languageCode)} • ${AppStrings.timeZoneName(_currentTimezone, lang.currentLocale.languageCode)}',
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
+                '${lang.translate('locating')} • $zone',
+                maxLines: 1,
+                style: subheadline,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            const SizedBox(width: 4),
-            Icon(Icons.refresh, size: 14, color: Colors.grey.shade400),
           ],
         ),
+      );
+    }
+
+    // Located: the city and zone; tap to look the location up again.
+    return GestureDetector(
+      key: const Key('home_location_chip'),
+      behavior: HitTestBehavior.opaque,
+      onTap: _handleLocation,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.near_me, size: 16, color: tealColor),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              '${_cityLabel(code)} • $zone',
+              maxLines: 1,
+              style: subheadline.copyWith(fontWeight: FontWeight.w500),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(width: 6),
+          Icon(
+            Icons.refresh,
+            size: IosText.caption2,
+            color: IosColors.secondary(context),
+          ),
+        ],
       ),
     );
   }
 
   /// The app's only language menu (docs/ROADMAP.md Phase 2), in the
   /// registry's order: English, Hindi, Tamil, Telugu, Gujarati, Bengali.
+  /// As in the iOS Menu, the current language has a leading checkmark.
   Widget _buildLanguageSelector(LanguageService lang, Color tealColor) {
     final current = AppLanguage.named(lang.currentLocale.languageCode);
     return PopupMenuButton<String>(
       key: const Key('language_menu'),
       onSelected: (String newValue) => lang.changeLanguage(newValue),
-      color: Theme.of(context).cardColor,
+      color: IosColors.sheet(context),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       itemBuilder: (context) => [
         for (final language in AppLanguage.all)
           PopupMenuItem(
             value: language.code,
             child: Row(
               children: [
-                Expanded(child: Text(language.nativeName)),
-                if (language.code == current.code)
-                  Icon(Icons.check, size: 18, color: tealColor),
+                SizedBox(
+                  width: 28,
+                  child: language.code == current.code
+                      ? Icon(
+                          Icons.check,
+                          size: 18,
+                          color: IosColors.primary(context),
+                        )
+                      : null,
+                ),
+                Expanded(
+                  child: Text(
+                    language.nativeName,
+                    style: const TextStyle(fontSize: IosText.body),
+                  ),
+                ),
               ],
             ),
           ),
@@ -1569,17 +1665,25 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
+          // A SwiftUI Menu label takes the tint: teal.
           Text(
             current.nativeName,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+            style: TextStyle(
+              fontSize: IosText.subheadline,
+              fontWeight: FontWeight.w500,
+              color: tealColor,
+            ),
           ),
           const SizedBox(width: 6),
-          Icon(Icons.language, color: tealColor, size: 20),
+          Icon(Icons.language, color: tealColor, size: 18),
         ],
       ),
     );
   }
 
+  /// One Ekadashi as the iOS EkadashiCard: a glass panel (radius 24) with
+  /// the countdown, dates, fast and Parana times, the description, View
+  /// Details (prominent) and the Vrat record button (glass).
   Widget _buildEkadashiCard(EkadashiDate ekadashi) {
     // Use timezone-aware "today" calculation
     DateTime today;
@@ -1601,13 +1705,13 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     );
     final daysUntil = ekadashiDate.difference(today).inDays;
 
-    const tealColor = Color(0xFF00A19B);
+    const tealColor = IosColors.teal;
     final lang = Provider.of<LanguageService>(context);
+    final code = lang.currentLocale.languageCode;
 
-    String breakTime = ekadashi.fastBreakTime;
-    breakTime = AppStrings.localizeClock(
-      breakTime.replaceAll(RegExp(r'^[a-zA-Z]{3} \d{1,2}, '), ''),
-      lang.currentLocale.languageCode,
+    final breakTime = AppStrings.localizeClock(
+      ekadashi.fastBreakTime.replaceAll(RegExp(r'^[a-zA-Z]{3} \d{1,2}, '), ''),
+      code,
     );
 
     String daysText;
@@ -1621,301 +1725,248 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       daysText = lang.translateWithArgs('in_days', [daysUntil.toString()]);
     }
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 10,
-            spreadRadius: 1,
+    Widget timing(String title, DateTime date, String time) => SizedBox(
+      width: double.infinity,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              color: tealColor,
+              fontWeight: FontWeight.bold,
+              fontSize: IosText.callout,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            AppStrings.fullDate(date, code),
+            style: TextStyle(
+              fontSize: IosText.subheadline,
+              color: IosColors.secondary(context),
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            time,
+            style: TextStyle(
+              fontSize: IosText.title3,
+              fontWeight: FontWeight.w600,
+              color: IosColors.primary(context),
+            ),
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    // Days badge
-                    Align(
-                      alignment: Alignment.topRight,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: daysUntil < 0 ? Colors.grey : tealColor,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Text(
-                          daysText,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
+    );
 
-                    // Date: weekday, date, month and year, as on every tab.
-                    Text(
-                      AppStrings.fullDate(
-                        ekadashi.date,
-                        lang.currentLocale.languageCode,
-                      ),
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w300,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Ekadashi name
-                    Text(
-                      ekadashi.name,
-                      style: const TextStyle(
-                        color: tealColor,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Start Fasting
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        lang.translate('start_fasting'),
-                        style: const TextStyle(
-                          color: tealColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        AppStrings.fullDate(
-                          ekadashi.date,
-                          lang.currentLocale.languageCode,
-                        ),
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: Colors.grey.shade500,
-                        ),
-                      ),
-                    ),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        AppStrings.localizeClock(
-                          ekadashi.fastStartTime,
-                          lang.currentLocale.languageCode,
-                        ),
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Break Fasting
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        lang.translate('break_fasting'),
-                        style: const TextStyle(
-                          color: tealColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        AppStrings.fullDate(
-                          ekadashi.date.add(const Duration(days: 1)),
-                          lang.currentLocale.languageCode,
-                        ),
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: Colors.grey.shade500,
-                        ),
-                      ),
-                    ),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        breakTime,
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    Divider(color: Colors.grey.shade400, height: 1),
-                    const SizedBox(height: 16),
-
-                    // Description
-                    Text(
-                      ekadashi.description,
-                      style: TextStyle(
-                        fontStyle: FontStyle.italic,
-                        fontSize: 15,
-                        color: Theme.of(
-                          context,
-                        ).textTheme.bodyMedium?.color?.withValues(alpha: 0.8),
-                        height: 1.4,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Action buttons: View Details and Record Vrat
-            GlassOptionGroup(
-              key: const Key('home_card_actions_tube'),
-              optionCount: context.watch<VratTrackerService>().trackerEnabled
-                  ? 2
-                  : 1,
-              child: Row(
+    final tracker = context.watch<VratTrackerService>();
+    return GlassPanel(
+      key: const Key('home_ekadashi_card'),
+      radius: 24,
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+      child: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
                 children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // Inside the Home tab, so the tab bar stays.
-                        _tabNavigators[0].currentState!.push(
-                          MaterialPageRoute(
-                            builder: (_) => DetailsScreen(
-                              ekadashi: ekadashi,
-                              timezone: _currentTimezone,
-                            ),
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            context.watch<VratTrackerService>().trackerEnabled
-                            ? Colors.transparent
+                  // Days badge
+                  Align(
+                    alignment: AlignmentDirectional.centerEnd,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 6,
+                      ),
+                      decoration: ShapeDecoration(
+                        color: daysUntil < 0
+                            ? IosColors.gray(context)
                             : tealColor,
-                        foregroundColor:
-                            context.watch<VratTrackerService>().trackerEnabled
-                            ? GlassTubeColors.teal
-                            : Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 0,
+                        shape: const StadiumBorder(),
                       ),
                       child: Text(
-                        lang.translate('view_details'),
+                        daysText,
                         style: const TextStyle(
+                          color: Colors.white,
                           fontWeight: FontWeight.bold,
-                          fontSize: 15,
+                          fontSize: IosText.footnote,
                         ),
                       ),
                     ),
                   ),
-                  Consumer<VratTrackerService>(
-                    builder: (ctx, trackerService, _) {
-                      if (!trackerService.trackerEnabled) {
-                        return const SizedBox.shrink();
-                      }
-                      final record = trackerService.getRecord(ekadashi.id);
-                      final isObserved =
-                          record?.status == ObservanceStatus.observed;
-                      final isPartial =
-                          record?.status == ObservanceStatus.partial;
-                      final isMissed =
-                          record?.status == ObservanceStatus.missed;
-                      const iconColor = GlassTubeColors.teal;
-
-                      return Padding(
-                        padding: const EdgeInsets.only(left: 8),
-                        child: Tooltip(
-                          message: lang.translate(
-                            record == null ? 'record_vrat' : 'edit_record',
-                          ),
-                          child: OutlinedButton(
-                            key: const Key('home_record_vrat'),
-                            // Open once the fast is over: after Parana begins.
-                            onPressed:
-                                !VratRecording.isOpen(
-                                  ekadashi,
-                                  now: DateTime.now(),
-                                  timezone: _currentTimezone,
-                                )
-                                ? null
-                                : () async {
-                                    final unlocks = await RecordVratDialog.show(
-                                      context,
-                                      ekadashi: ekadashi,
-                                      allOccurrences: _ekadashiList,
-                                      currentTimezone: _currentTimezone,
-                                    );
-                                    if (unlocks != null &&
-                                        unlocks.isNotEmpty &&
-                                        mounted) {
-                                      for (final u in unlocks) {
-                                        await AchievementUnlockDialog.show(
-                                          context,
-                                          u,
-                                        );
-                                      }
-                                    }
-                                  },
-                            style: OutlinedButton.styleFrom(
-                              side: BorderSide.none,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                                vertical: 14,
-                              ),
-                            ),
-                            child: Icon(
-                              isObserved
-                                  ? Icons.check_circle
-                                  : (isPartial
-                                        ? Icons.adjust
-                                        : (isMissed
-                                              ? Icons.highlight_off
-                                              : Icons.edit_calendar_outlined)),
-                              color: iconColor,
-                              size: 20,
-                            ),
-                          ),
-                        ),
-                      );
-                    },
+                  const SizedBox(height: 16),
+                  // Date: weekday, date, month and year, as on every tab.
+                  Text(
+                    AppStrings.fullDate(ekadashi.date, code),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: IosText.title2,
+                      fontWeight: FontWeight.w300,
+                      color: IosColors.primary(context),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    ekadashi.name,
+                    style: const TextStyle(
+                      color: tealColor,
+                      fontSize: IosText.title,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  timing(
+                    lang.translate('start_fasting'),
+                    ekadashi.date,
+                    AppStrings.localizeClock(ekadashi.fastStartTime, code),
+                  ),
+                  const SizedBox(height: 16),
+                  timing(
+                    lang.translate('break_fasting'),
+                    ekadashi.date.add(const Duration(days: 1)),
+                    breakTime,
+                  ),
+                  Divider(height: 33, color: IosColors.separator(context)),
+                  Text(
+                    ekadashi.description,
+                    style: TextStyle(
+                      fontStyle: FontStyle.italic,
+                      fontSize: IosText.callout,
+                      color: IosColors.primary(context).withValues(alpha: 0.8),
+                      height: 1.45,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
                 ],
               ),
             ),
+          ),
+          const SizedBox(height: 16),
+          // View Details (prominent teal capsule) and the Vrat record button
+          // (glass capsule), as the iOS GlassGroup.
+          Row(
+            children: [
+              Expanded(
+                child: FilledButton(
+                  key: const Key('view_details'),
+                  onPressed: () => _openDetails(ekadashi),
+                  style: IosButtons.prominent(vertical: 12).copyWith(
+                    minimumSize: const WidgetStatePropertyAll(Size(0, 48)),
+                    fixedSize: const WidgetStatePropertyAll(
+                      Size.fromHeight(48),
+                    ),
+                  ),
+                  child: Text(
+                    lang.translate('view_details'),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: IosText.callout,
+                    ),
+                  ),
+                ),
+              ),
+              if (tracker.trackerEnabled) ...[
+                const SizedBox(width: 8),
+                _homeRecordButton(ekadashi, tracker, lang),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Ekadashi details are pushed inside the Home tab, so the tab bar stays.
+  void _openDetails(EkadashiDate ekadashi) {
+    _tabNavigators[0].currentState?.push(
+      MaterialPageRoute<void>(
+        builder: (_) =>
+            DetailsScreen(ekadashi: ekadashi, timezone: _currentTimezone),
+      ),
+    );
+  }
+
+  /// The card's Vrat button (iOS VratStatusStyle.cardSymbol), dimmed until
+  /// Parana begins.
+  Widget _homeRecordButton(
+    EkadashiDate ekadashi,
+    VratTrackerService tracker,
+    LanguageService lang,
+  ) {
+    final record = tracker.getRecord(ekadashi.id);
+    final open = VratRecording.isOpen(
+      ekadashi,
+      now: DateTime.now(),
+      timezone: _currentTimezone,
+    );
+    final color = open ? IosColors.teal : IosColors.tertiary(context);
+    final Widget icon = switch (record?.status) {
+      ObservanceStatus.observed => Icon(Icons.check_circle, color: color),
+      ObservanceStatus.partial => Icon(Icons.adjust, color: color),
+      ObservanceStatus.missed => Icon(Icons.highlight_off, color: color),
+      // calendar.badge.plus: a calendar with a plus badge.
+      _ => SizedBox(
+        width: 24,
+        height: 24,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Icon(Icons.calendar_month_outlined, size: 22, color: color),
+            Positioned(
+              right: -1,
+              bottom: -1,
+              child: Icon(Icons.add_circle, size: 11, color: color),
+            ),
           ],
         ),
+      ),
+    };
+    return OutlinedButton(
+      key: const Key('home_record_vrat'),
+      onPressed: open
+          ? () async {
+              final unlocks = await RecordVratDialog.show(
+                context,
+                ekadashi: ekadashi,
+                allOccurrences: _ekadashiList,
+                currentTimezone: _currentTimezone,
+              );
+              if (unlocks != null && unlocks.isNotEmpty && mounted) {
+                for (final u in unlocks) {
+                  await AchievementUnlockDialog.show(context, u);
+                }
+              }
+            }
+          : null,
+      // A round glass button, neutral grey while recording is closed.
+      style: IosButtons.glass(context).copyWith(
+        shape: const WidgetStatePropertyAll(CircleBorder()),
+        padding: const WidgetStatePropertyAll(EdgeInsets.zero),
+        fixedSize: const WidgetStatePropertyAll(Size.square(48)),
+        minimumSize: const WidgetStatePropertyAll(Size.square(48)),
+        backgroundColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.disabled)
+              ? IosColors.gray(context).withValues(alpha: .18)
+              : IosColors.teal.withValues(alpha: .10),
+        ),
+        side: WidgetStateProperty.resolveWith(
+          (states) => BorderSide(
+            color:
+                (states.contains(WidgetState.disabled)
+                        ? IosColors.gray(context)
+                        : IosColors.teal)
+                    .withValues(alpha: .28),
+            width: .7,
+          ),
+        ),
+      ),
+      child: Semantics(
+        label: lang.translate(record == null ? 'record_vrat' : 'edit_record'),
+        hint: open ? null : lang.translate('journey_record_after_parana'),
+        child: SizedBox(height: 24, child: Center(child: icon)),
       ),
     );
   }

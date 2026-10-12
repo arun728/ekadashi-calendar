@@ -254,7 +254,7 @@ void main() {
       await binding.takeScreenshot('android_settings_$locale');
     }
     await selectTab(0);
-    final details = find.byType(ElevatedButton).first;
+    final details = find.byKey(const Key('view_details'));
     await tester.ensureVisible(details);
     await tester.tap(details);
     await pumpUi(tester);
