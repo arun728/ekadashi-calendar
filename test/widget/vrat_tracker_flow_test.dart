@@ -174,14 +174,16 @@ void main() {
     expect(find.text('First Vrat'), findsOneWidget);
     expect(find.text('5 Ekadashis'), findsOneWidget);
 
-    // Scroll to bottom of GridView to reveal remaining achievements
+    // The intro, Premium button and grid scroll together (iOS).
     await tester.scrollUntilVisible(
       find.text('Consistent Observance'),
       160,
-      scrollable: find.descendant(
-        of: find.byType(GridView),
-        matching: find.byType(Scrollable),
-      ),
+      scrollable: find
+          .ancestor(
+            of: find.text('First Vrat'),
+            matching: find.byType(Scrollable),
+          )
+          .first,
     );
     await tester.pumpAndSettle();
     expect(find.text('Consistent Observance'), findsOneWidget);

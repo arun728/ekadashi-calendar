@@ -712,7 +712,7 @@ void main() {
   }
 
   Future<void> save(WidgetTester tester, String label) async {
-    final button = find.widgetWithText(ElevatedButton, lang.translate(label));
+    final button = find.widgetWithText(FilledButton, lang.translate(label));
     await tester.ensureVisible(button);
     await tester.tap(button);
     await tester.pumpAndSettle();

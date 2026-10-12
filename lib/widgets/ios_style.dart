@@ -78,6 +78,7 @@ class GlassPanel extends StatelessWidget {
     required this.child,
     this.radius = 22,
     this.tint,
+    this.tintOpacity = .35,
     this.padding = EdgeInsets.zero,
     this.onTap,
     this.onLongPress,
@@ -86,6 +87,9 @@ class GlassPanel extends StatelessWidget {
   final Widget child;
   final double radius;
   final Color? tint;
+
+  /// How strongly [tint] colours the glass (iOS glass.tint uses .35).
+  final double tintOpacity;
   final EdgeInsetsGeometry padding;
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
@@ -134,7 +138,7 @@ class GlassPanel extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: shape,
               // iOS 26 glass tint strength (Glass.swift: tint.opacity(0.35)).
-              color: tint?.withValues(alpha: .35),
+              color: tint?.withValues(alpha: tintOpacity),
               border: Border.all(
                 color: (dark ? Colors.white : Colors.black).withValues(
                   alpha: dark ? .14 : .06,

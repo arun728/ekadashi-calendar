@@ -84,7 +84,7 @@ void main() {
     expect(find.byType(RecordVratDialog), findsOneWidget);
     await binding.takeScreenshot('pr4_tracker_record');
     final save = find.widgetWithText(
-      ElevatedButton,
+      FilledButton,
       lang.translate('record_observance'),
     );
     await tester.ensureVisible(save);
@@ -100,7 +100,11 @@ void main() {
       reason: 'Save must close the sheet before showing a one-time achievement',
     );
     expect(find.byType(AchievementUnlockDialog), findsOneWidget);
-    expect(find.text(lang.translate('achievement_unlocked')), findsOneWidget);
+    // Upper-case caption, as iOS.
+    expect(
+      find.text(lang.translate('achievement_unlocked').toUpperCase()),
+      findsOneWidget,
+    );
     Navigator.of(tester.element(find.byType(AchievementUnlockDialog))).pop();
     await pumpUi(tester);
 
@@ -128,7 +132,7 @@ void main() {
     );
     await pumpUi(tester);
     final saveFourth = find.widgetWithText(
-      ElevatedButton,
+      FilledButton,
       lang.translate('record_observance'),
     );
     await tester.ensureVisible(saveFourth);

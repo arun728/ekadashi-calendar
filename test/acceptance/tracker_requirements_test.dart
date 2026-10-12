@@ -88,14 +88,15 @@ void main() {
     await tester.tap(find.text(e.name).hitTestable());
     await tester.pumpAndSettle();
     await tester.ensureVisible(
-      find.widgetWithText(ElevatedButton, 'Record Observance'),
+      find.widgetWithText(FilledButton, 'Record Observance'),
     );
-    await tester.tap(find.widgetWithText(ElevatedButton, 'Record Observance'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Record Observance'));
     await tester.pumpAndSettle();
     expect(s.getRecord(1), isNotNull);
     expect(find.byType(RecordVratDialog), findsNothing);
     expect(find.byType(AchievementUnlockDialog), findsOneWidget);
-    expect(find.text('Achievement Unlocked'), findsOneWidget);
+    // Upper-case caption, as iOS (textCase(.uppercase)).
+    expect(find.text('ACHIEVEMENT UNLOCKED'), findsOneWidget);
   });
   testWidgets('Tracker must render when device year is absent from calendar', (
     tester,
@@ -118,16 +119,23 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('journey_tab_history')));
     await tester.pumpAndSettle();
-    final historyYear = tester.widget<DropdownButton<int>>(
-      find.byType(DropdownButton<int>).first,
+    // The year menus are glass capsules showing the chosen year (iOS).
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('journey_history_year_menu')),
+        matching: find.text('${DateTime.now().year}'),
+      ),
+      findsOneWidget,
     );
-    expect(historyYear.value, DateTime.now().year);
     await tester.tap(find.byKey(const Key('journey_tab_statistics')));
     await tester.pumpAndSettle();
-    final statisticsYear = tester.widget<DropdownButton<int>>(
-      find.byType(DropdownButton<int>).last,
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('journey_stats_year_menu')),
+        matching: find.text('${DateTime.now().year}'),
+      ),
+      findsOneWidget,
     );
-    expect(statisticsYear.value, DateTime.now().year);
     expect(tester.takeException(), isNull);
   });
 
@@ -156,7 +164,7 @@ void main() {
     await tester.tap(find.text('Show achievement'));
     await tester.pumpAndSettle();
     expect(
-      find.text(language.translate('achievement_unlocked')),
+      find.text(language.translate('achievement_unlocked').toUpperCase()),
       findsOneWidget,
     );
     expect(find.text('Achievement Unlocked'), findsNothing);
