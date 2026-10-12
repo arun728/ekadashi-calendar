@@ -2,29 +2,37 @@ import Foundation
 import UserNotifications
 import EkadashiCore
 
-/// Local Ekadashi reminders (NotificationScheduler.kt). Each reminder fires
-/// at an absolute instant taken from the published schedule.
+/// Local reminders (NotificationScheduler.kt): Ekadashi reminders at instants
+/// from the published schedule, and the user's festival, Panchang and
+/// calendar reminders (docs/ROADMAP.md Phase 7).
 @MainActor
 final class NotificationService {
     private let center = UNUserNotificationCenter.current()
     static let prefix = "ekadashi."
+    private let assumeAuthorized: Bool
+
+    init(assumeAuthorized: Bool = false) { self.assumeAuthorized = assumeAuthorized }
 
     func requestAuthorization() async -> Bool {
-        (try? await center.requestAuthorization(options: [.alert, .sound, .badge])) ?? false
+        if assumeAuthorized { return true }
+        return (try? await center.requestAuthorization(options: [.alert, .sound, .badge])) ?? false
     }
 
     func isAuthorized() async -> Bool {
-        let settings = await center.notificationSettings()
-        switch settings.authorizationStatus {
+        switch await authorizationStatus() {
         case .authorized, .provisional, .ephemeral: return true
         default: return false
         }
     }
 
-    func authorizationStatus() async -> UNAuthorizationStatus { await center.notificationSettings().authorizationStatus }
+    func authorizationStatus() async -> UNAuthorizationStatus {
+        if assumeAuthorized { return .authorized }
+        return await center.notificationSettings().authorizationStatus
+    }
 
-    /// Replaces this app's pending reminders with [plan].
-    func schedule(_ plan: [PlannedReminder]) async {
+    /// Replaces this app's pending reminders with [plan] (Ekadashi and
+    /// event reminders, docs/ROADMAP.md Phase 7).
+    func schedule(_ plan: [PendingNotification]) async {
         await cancelAll()
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(identifier: "UTC")!
@@ -33,7 +41,7 @@ final class NotificationService {
             content.title = reminder.title
             content.body = reminder.body
             content.sound = .default
-            content.userInfo = ["url": reminder.kind == .onParana ? AppRoute.paranaURL.absoluteString : AppRoute.todayURL.absoluteString]
+            content.userInfo = ["url": reminder.url.absoluteString]
             var parts = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: reminder.fireDate)
             parts.calendar = calendar
             parts.timeZone = calendar.timeZone

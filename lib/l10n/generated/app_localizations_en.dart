@@ -1051,4 +1051,29 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get google_premium_events_removed =>
       'Your Premium has ended, so the Google events it synced were removed. Renew to sync again.';
+
+  @override
+  String observed_of_total(String value0, String value1) {
+    return '$value0 of $value1 Ekadashis';
+  }
+
+  @override
+  String get timezone_IST => 'IST';
+
+  @override
+  String get timezone_EST => 'EST';
+
+  @override
+  String get timezone_CST => 'CST';
+
+  @override
+  String get timezone_MST => 'MST';
+
+  @override
+  String get timezone_PST => 'PST';
+
+  @override
+  String utc_offset(String value0) {
+    return 'UTC$value0';
+  }
 }

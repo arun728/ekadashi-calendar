@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -16,6 +17,13 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     await initializeDateFormatting('en', null);
   });
+
+  // Sample dates are relative to today so the preview always shows them as
+  // upcoming (a fixed date drops out once it has passed).
+  DateTime daysFromToday(int days) {
+    final now = DateTime.now();
+    return DateTime(now.year, now.month, now.day + days);
+  }
 
   final sampleEkadashis = [
     EkadashiDate(
@@ -37,7 +45,7 @@ void main() {
     EkadashiDate(
       id: 3,
       name: 'Papankusha Ekadashi',
-      date: DateTime(2026, 10, 11),
+      date: daysFromToday(9),
       fastBreakTime: '06:12 AM – 08:25 AM',
       fastStartTime: '05:32 AM',
       description: 'Papankusha Ekadashi description',
@@ -45,7 +53,7 @@ void main() {
     EkadashiDate(
       id: 4,
       name: 'Rama Ekadashi',
-      date: DateTime(2026, 10, 26),
+      date: daysFromToday(22),
       fastBreakTime: '06:18 AM – 08:35 AM',
       fastStartTime: '05:35 AM',
       description: 'Rama Ekadashi description',
@@ -53,7 +61,7 @@ void main() {
     EkadashiDate(
       id: 5,
       name: 'Devaprabodhini Ekadashi',
-      date: DateTime(2026, 11, 10),
+      date: daysFromToday(36),
       fastBreakTime: '06:22 AM – 08:40 AM',
       fastStartTime: '05:38 AM',
       description: 'Devaprabodhini description',
@@ -61,7 +69,7 @@ void main() {
     EkadashiDate(
       id: 6,
       name: 'Utpanna Ekadashi',
-      date: DateTime(2026, 11, 25),
+      date: daysFromToday(50),
       fastBreakTime: '06:28 AM – 08:45 AM',
       fastStartTime: '05:40 AM',
       description: 'Utpanna description',
@@ -188,27 +196,27 @@ void main() {
         lessThan(tester.getTopLeft(card3Text).dx),
       );
 
-      // Date boxes in Card 3
-      expect(
-        find.descendant(of: card3Finder, matching: find.text('OCT')),
-        findsWidgets,
-      );
-      expect(
-        find.descendant(of: card3Finder, matching: find.text('11')),
-        findsOneWidget,
-      );
-      expect(
-        find.descendant(of: card3Finder, matching: find.text('26')),
-        findsOneWidget,
-      );
-      expect(
-        find.descendant(of: card3Finder, matching: find.text('NOV')),
-        findsWidgets,
-      );
-      expect(
-        find.descendant(of: card3Finder, matching: find.text('10')),
-        findsOneWidget,
-      );
+      // Date boxes in Card 3: the three Ekadashis after the next one. The
+      // sample dates follow today, so the labels are worked out from them
+      // (gaps of 13, 27 and 14 days never repeat a day of the month).
+      for (final upcoming in sampleEkadashis.sublist(2, 5)) {
+        expect(
+          find.descendant(
+            of: card3Finder,
+            matching: find.text(
+              DateFormat('MMM', 'en').format(upcoming.date).toUpperCase(),
+            ),
+          ),
+          findsWidgets,
+        );
+        expect(
+          find.descendant(
+            of: card3Finder,
+            matching: find.text(DateFormat('d').format(upcoming.date)),
+          ),
+          findsOneWidget,
+        );
+      }
 
       // ─── 4. Attached Background Banner Image behind content in ALL 3 CARDS ───
       final bannerFinder = find.byWidgetPredicate(

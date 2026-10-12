@@ -157,11 +157,14 @@ final class CalendarDataTests: XCTestCase {
 
 final class LocalizationTests: XCTestCase {
     func testEveryLanguageHasEveryKeyNativeScriptAndPlaceholders() {
-        let scripts = ["ta": "\u{0B80}"..."\u{0BFF}", "hi": "\u{0900}"..."\u{097F}", "te": "\u{0C00}"..."\u{0C7F}"]
+        let scripts = ["ta": "\u{0B80}"..."\u{0BFF}", "hi": "\u{0900}"..."\u{097F}", "te": "\u{0C00}"..."\u{0C7F}",
+                       "gu": "\u{0A80}"..."\u{0AFF}", "bn": "\u{0980}"..."\u{09FF}"]
         let english = Localizer.shared.keys(language: "en")
-        XCTAssertEqual(english.count, 325)
+        // 325 shared keys, plus "X of Y Ekadashis", the five time zone
+        // names and the UTC offset (no English left, 9 October 2026).
+        XCTAssertEqual(english.count, 332)
         var problems: [String] = []
-        for language in ["ta", "hi", "te"] {
+        for language in ["ta", "hi", "te", "gu", "bn"] {
             for key in english {
                 let value = Localizer.shared.translate(key, language: language)
                 if value == key || value.trimmingCharacters(in: .whitespaces).isEmpty {
@@ -183,7 +186,7 @@ final class LocalizationTests: XCTestCase {
         XCTAssertEqual(Localizer.shared.translate("in_days", language: "en", args: ["3"]), "in 3 days")
         XCTAssertEqual(Localizer.shared.translate("no_such_key", language: "en"), "no_such_key")
         XCTAssertEqual(Localizer.shared.translate("home", language: "xx"), Localizer.shared.translate("home", language: "en"))
-        XCTAssertEqual(Localizer.languages, ["en", "ta", "hi", "te"])
+        XCTAssertEqual(Localizer.languages, ["en", "hi", "ta", "te", "gu", "bn"])
         XCTAssertEqual(Localizer.displayName("te"), "తెలుగు")
     }
 
@@ -211,7 +214,11 @@ final class LocalizationTests: XCTestCase {
             XCTAssertEqual(Set(Localizer.shared.overrideKeys(language: language)), keys, language)
         }
         for key in keys {
-            if key.hasPrefix("ios_") {
+            // ios_ keys are iOS-only; other keys missing from the ARB files are
+            // iOS-first additions (docs/ROADMAP.md) that move to the ARB files
+            // when the feature is ported to Android. Keys present in the ARB
+            // files may only replace platform wording.
+            if key.hasPrefix("ios_") || english[key] == nil {
                 XCTAssertNil(english[key], key)
             } else {
                 let source = english[key] as? String ?? ""

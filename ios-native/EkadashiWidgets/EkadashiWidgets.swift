@@ -2,13 +2,14 @@ import WidgetKit
 import SwiftUI
 import EkadashiCore
 
-/// Small "Next Ekadashi", medium "Ekadashi Today" and large "Upcoming"
-/// widgets, from the snapshot the app writes to the App Group.
+/// Two widgets (docs/ROADMAP.md Phase 6): Ekadashi (today's fast with its
+/// progress, or the next Ekadashi with the days to go; small, medium and
+/// the lock screen) and Upcoming Ekadashis (medium and large), from the
+/// snapshot the app writes to the App Group.
 @main
 struct EkadashiWidgetBundle: WidgetBundle {
     var body: some Widget {
-        NextEkadashiWidget()
-        TodayEkadashiWidget()
+        EkadashiWidget()
         UpcomingEkadashiWidget()
     }
 }
@@ -19,8 +20,8 @@ struct SnapshotEntry: TimelineEntry {
 }
 
 /// Timeline entries at every fasting/Parana boundary and every 15 minutes
-/// for the next six hours, so states and countdowns change on time without
-/// the app running.
+/// for the next six hours, so states, progress and countdowns change on
+/// time without the app running.
 struct SnapshotProvider: TimelineProvider {
     static var appGroup: String { Bundle.main.object(forInfoDictionaryKey: "EkadashiAppGroup") as? String ?? "" }
 
@@ -58,38 +59,52 @@ private struct WidgetShell<Content: View>: View {
     }
 }
 
-struct NextEkadashiWidget: Widget {
-    var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "NextEkadashiWidget", provider: SnapshotProvider()) { entry in
-            WidgetShell(url: AppRoute.dashboardURL) { NextEkadashiWidgetView(snapshot: entry.snapshot, now: entry.date) }
+private struct EkadashiWidgetEntryView: View {
+    @Environment(\.widgetFamily) private var family
+    let entry: SnapshotEntry
+
+    var body: some View {
+        let today: Bool = {
+            if case .today? = entry.snapshot?.headline(at: entry.date) { return true }
+            return false
+        }()
+        WidgetShell(url: today ? AppRoute.paranaURL : AppRoute.dashboardURL) {
+            EkadashiWidgetView(snapshot: entry.snapshot, now: entry.date, family: family)
         }
-        .configurationDisplayName(Localizer.shared.translate("ios_widget_small", language: WidgetLanguage.current))
-        .description(Localizer.shared.translate("next_ekadashi", language: WidgetLanguage.current))
-        .supportedFamilies([.systemSmall])
     }
 }
 
-struct TodayEkadashiWidget: Widget {
-    var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "TodayEkadashiWidget", provider: SnapshotProvider()) { entry in
-            WidgetShell(url: entry.snapshot?.today.isEkadashi == true ? AppRoute.paranaURL : AppRoute.todayURL) {
-                TodayEkadashiWidgetView(snapshot: entry.snapshot, now: entry.date)
-            }
+private struct UpcomingWidgetEntryView: View {
+    @Environment(\.widgetFamily) private var family
+    let entry: SnapshotEntry
+
+    var body: some View {
+        WidgetShell(url: AppRoute.dashboardURL) {
+            UpcomingEkadashiWidgetView(snapshot: entry.snapshot, now: entry.date, family: family)
         }
-        .configurationDisplayName(Localizer.shared.translate("ios_widget_medium", language: WidgetLanguage.current))
-        .description(Localizer.shared.translate("widget_today_title", language: WidgetLanguage.current))
-        .supportedFamilies([.systemMedium])
+    }
+}
+
+/// Keeps the original kind so a placed "Next Ekadashi" widget becomes this one.
+struct EkadashiWidget: Widget {
+    var body: some WidgetConfiguration {
+        StaticConfiguration(kind: "NextEkadashiWidget", provider: SnapshotProvider()) { entry in
+            EkadashiWidgetEntryView(entry: entry)
+        }
+        .configurationDisplayName(Localizer.shared.translate("widget_name_ekadashi", language: WidgetLanguage.current))
+        .description(Localizer.shared.translate("widget_desc_ekadashi", language: WidgetLanguage.current))
+        .supportedFamilies([.systemSmall, .systemMedium, .accessoryCircular, .accessoryRectangular])
     }
 }
 
 struct UpcomingEkadashiWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: "UpcomingEkadashiWidget", provider: SnapshotProvider()) { entry in
-            WidgetShell(url: AppRoute.dashboardURL) { UpcomingEkadashiWidgetView(snapshot: entry.snapshot, now: entry.date) }
+            UpcomingWidgetEntryView(entry: entry)
         }
-        .configurationDisplayName(Localizer.shared.translate("ios_widget_large", language: WidgetLanguage.current))
-        .description(Localizer.shared.translate("upcoming_ekadashis", language: WidgetLanguage.current))
-        .supportedFamilies([.systemLarge])
+        .configurationDisplayName(Localizer.shared.translate("upcoming_ekadashis", language: WidgetLanguage.current))
+        .description(Localizer.shared.translate("widget_desc_upcoming", language: WidgetLanguage.current))
+        .supportedFamilies([.systemMedium, .systemLarge])
     }
 }
 

@@ -37,6 +37,30 @@ final class AppModelTests: XCTestCase {
         XCTAssertTrue(model.showSearch)
     }
 
+    func testScreensOpenedFromSearchGoBackToIt() {
+        let model = AppModel()
+        model.reload()
+        let session = SearchSession(query: "settings", category: nil, year: nil)
+        model.open(.search)
+        model.open(.tab(.settings), from: session)
+        XCTAssertFalse(model.showSearch)
+        XCTAssertEqual(model.selectedTab, .settings)
+        XCTAssertTrue(model.searchReturn.showsBack(on: .settings))
+        model.returnToSearch()
+        XCTAssertTrue(model.showSearch)
+        XCTAssertEqual(model.restoredSearch, session)
+        XCTAssertFalse(model.searchReturn.showsBack(on: .settings))
+
+        model.open(.calendar(CivilDate(2027, 1, 14)), from: session)
+        XCTAssertTrue(model.searchReturn.showsBack(on: .calendar))
+        model.select(.today)
+        XCTAssertFalse(model.searchReturn.showsBack(on: .calendar), "another tab forgets the way back")
+        // A deep link is not a search result.
+        model.open(.tab(.settings), from: session)
+        model.open(URL(string: "ekadashi://vrat")!)
+        XCTAssertFalse(AppTab.allCases.contains { model.searchReturn.showsBack(on: $0) })
+    }
+
     func testPremiumIsNeverGrantedFromStoredFlags() {
         UserDefaults.standard.set(true, forKey: "is_premium")
         UserDefaults.standard.set(true, forKey: "premium_lifetime")

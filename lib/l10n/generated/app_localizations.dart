@@ -5,7 +5,9 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
+import 'app_localizations_bn.dart';
 import 'app_localizations_en.dart';
+import 'app_localizations_gu.dart';
 import 'app_localizations_hi.dart';
 import 'app_localizations_ta.dart';
 import 'app_localizations_te.dart';
@@ -96,7 +98,9 @@ abstract class AppLocalizations {
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
+    Locale('bn'),
     Locale('en'),
+    Locale('gu'),
     Locale('hi'),
     Locale('ta'),
     Locale('te'),
@@ -2051,6 +2055,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your Premium has ended, so the Google events it synced were removed. Renew to sync again.'**
   String get google_premium_events_removed;
+
+  /// No description provided for @observed_of_total.
+  ///
+  /// In en, this message translates to:
+  /// **'{value0} of {value1} Ekadashis'**
+  String observed_of_total(String value0, String value1);
+
+  /// No description provided for @timezone_IST.
+  ///
+  /// In en, this message translates to:
+  /// **'IST'**
+  String get timezone_IST;
+
+  /// No description provided for @timezone_EST.
+  ///
+  /// In en, this message translates to:
+  /// **'EST'**
+  String get timezone_EST;
+
+  /// No description provided for @timezone_CST.
+  ///
+  /// In en, this message translates to:
+  /// **'CST'**
+  String get timezone_CST;
+
+  /// No description provided for @timezone_MST.
+  ///
+  /// In en, this message translates to:
+  /// **'MST'**
+  String get timezone_MST;
+
+  /// No description provided for @timezone_PST.
+  ///
+  /// In en, this message translates to:
+  /// **'PST'**
+  String get timezone_PST;
+
+  /// No description provided for @utc_offset.
+  ///
+  /// In en, this message translates to:
+  /// **'UTC{value0}'**
+  String utc_offset(String value0);
 }
 
 class _AppLocalizationsDelegate
@@ -2063,8 +2109,14 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['en', 'hi', 'ta', 'te'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>[
+    'bn',
+    'en',
+    'gu',
+    'hi',
+    'ta',
+    'te',
+  ].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -2073,8 +2125,12 @@ class _AppLocalizationsDelegate
 AppLocalizations lookupAppLocalizations(Locale locale) {
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
+    case 'bn':
+      return AppLocalizationsBn();
     case 'en':
       return AppLocalizationsEn();
+    case 'gu':
+      return AppLocalizationsGu();
     case 'hi':
       return AppLocalizationsHi();
     case 'ta':

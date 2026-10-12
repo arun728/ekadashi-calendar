@@ -69,6 +69,13 @@ public struct PanchangCity: Hashable, Codable, Sendable, Identifiable {
     public func midnight(_ date: CivilDate, dayOffset: Int = 0) -> Date { zone.utc(date.adding(days: dayOffset)) }
     public func dateAtHour(_ date: CivilDate, _ hour: Int) -> Date { zone.utc(date, hour: hour) }
     public var timezoneLabel: String { timeZoneId == "Asia/Kolkata" ? "IST" : timeZoneId }
+
+    /// The time zone as [language] shows it: the IANA id in English, the UTC
+    /// offset now in the language's script otherwise.
+    public func timeZoneLabel(language: String, now: Date = Date()) -> String {
+        guard language != "en", let zone = TimeZone(identifier: timeZoneId) else { return timezoneLabel }
+        return Localizer.shared.utcOffset(minutes: zone.secondsFromGMT(for: now) / 60, language: language)
+    }
     /// Today's civil date at this location.
     public func today(now: Date = Date()) -> CivilDate { wallClock(now).date }
 
@@ -124,12 +131,14 @@ public final class PanchangCityCatalog: @unchecked Sendable {
         return all.min { distance($0) < distance($1) }
     }
 
-    /// Matches names, ASCII names and country codes, as the Android picker.
-    public func search(_ query: String, limit: Int = 12) -> [PanchangCity] {
+    /// Matches names, ASCII names and country codes, as the Android picker,
+    /// and names typed in the app [language].
+    public func search(_ query: String, language: String = "en", limit: Int = 12) -> [PanchangCity] {
         let q = query.trimmingCharacters(in: .whitespaces).lowercased()
         guard q.count >= 2, let all = try? cities() else { return [] }
         var result: [PanchangCity] = []
-        for city in all where "\(city.label.lowercased()) \(city.searchTerms)".contains(q) {
+        let names = PlaceNames.shared
+        for city in all where "\(city.label.lowercased()) \(city.searchTerms) \(names.label(city.label, language: language))".contains(q) {
             result.append(city)
             if result.count >= limit { break }
         }

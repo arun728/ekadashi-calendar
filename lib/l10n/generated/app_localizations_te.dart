@@ -219,7 +219,8 @@ class AppLocalizationsTe extends AppLocalizations {
       '1. సెట్టింగ్స్‌కు వెళ్లడానికి \"తెరవండి\" నొక్కండి';
 
   @override
-  String get alarms_info_step2 => '2. \"Allow setting alarms\" ఆన్ చేయండి';
+  String get alarms_info_step2 =>
+      '2. \"అలారాలు సెట్ చేయడానికి అనుమతించు\" ఆన్ చేయండి';
 
   @override
   String get alarms_info_note =>
@@ -233,7 +234,7 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get battery_info_why_desc =>
-      'బ్యాటరీ ఆప్టిమైజేషన్ ప్రారంభించబడితే, Android మీ ఏకాదశి రిమైండర్లను ఆలస్యం చేయవచ్చు లేదా దాటవచ్చు.';
+      'బ్యాటరీ ఆప్టిమైజేషన్ ప్రారంభించబడితే, ఆండ్రాయిడ్ మీ ఏకాదశి రిమైండర్లను ఆలస్యం చేయవచ్చు లేదా దాటవచ్చు.';
 
   @override
   String get battery_info_steps => 'నేపథ్య వినియోగం ఎలా అనుమతించాలి';
@@ -243,11 +244,11 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get battery_info_step2 =>
-      '2. \"Battery\" లేదా \"App battery usage\" నొక్కండి';
+      '2. \"బ్యాటరీ\" లేదా \"యాప్ బ్యాటరీ వినియోగం\" నొక్కండి';
 
   @override
   String get battery_info_step3 =>
-      '3. \"Allow background usage\" ప్రారంభించండి లేదా \"Unrestricted\" ఎంచుకోండి';
+      '3. \"బ్యాక్‌గ్రౌండ్ వినియోగాన్ని అనుమతించు\" ప్రారంభించండి లేదా \"అపరిమితం\" ఎంచుకోండి';
 
   @override
   String get battery_info_note =>
@@ -273,7 +274,7 @@ class AppLocalizationsTe extends AppLocalizations {
   String get auto_detect_location => 'స్థానం స్వయంచాలకంగా గుర్తించు';
 
   @override
-  String get auto_detect_desc => 'మీ నగరం కనుగొనడానికి GPS ఉపయోగించండి';
+  String get auto_detect_desc => 'మీ నగరం కనుగొనడానికి జీపీఎస్ ఉపయోగించండి';
 
   @override
   String get using_auto_location => 'స్వయంచాలక స్థానం ఉపయోగిస్తున్నారు';
@@ -312,7 +313,7 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get perm_guide_desc =>
-      'ఖచ్చితమైన నోటిఫికేషన్లు మరియు స్థాన ఫీచర్ల కోసం, దయచేసి అనుమతించండి:\n• నోటిఫికేషన్లు\n• స్థానం\n• బ్యాటరీ (Unrestricted/Background)';
+      'ఖచ్చితమైన నోటిఫికేషన్లు మరియు స్థాన ఫీచర్ల కోసం, దయచేసి అనుమతించండి:\n• నోటిఫికేషన్లు\n• స్థానం\n• బ్యాటరీ (అపరిమితం/బ్యాక్‌గ్రౌండ్)';
 
   @override
   String get vrat => 'వ్రతం';
@@ -509,7 +510,7 @@ class AppLocalizationsTe extends AppLocalizations {
       'ఒక క్యాలెండర్ సంవత్సరంలోని అన్ని ఏకాదశులను ఆచరించారు.';
 
   @override
-  String get filter_google => 'Google';
+  String get filter_google => 'గూగుల్';
 
   @override
   String get filter_custom => 'వ్యక్తిగతం';
@@ -546,16 +547,16 @@ class AppLocalizationsTe extends AppLocalizations {
       'శీర్షికను, ప్రారంభ సమయం తర్వాత ముగింపు సమయాన్ని నమోదు చేయండి.';
 
   @override
-  String get sync_google => 'Google క్యాలెండర్ దిగుమతి చేయండి';
+  String get sync_google => 'గూగుల్ క్యాలెండర్ దిగుమతి చేయండి';
 
   @override
-  String get disconnect_google => 'Google క్యాలెండర్ అనుసంధానం తొలగించండి';
+  String get disconnect_google => 'గూగుల్ క్యాలెండర్ అనుసంధానం తొలగించండి';
 
   @override
-  String get sign_in_cancelled => 'Google సైన్ ఇన్ రద్దయింది';
+  String get sign_in_cancelled => 'గూగుల్ సైన్ ఇన్ రద్దయింది';
 
   @override
-  String get no_google_calendars => 'Google క్యాలెండర్లు కనుగొనబడలేదు';
+  String get no_google_calendars => 'గూగుల్ క్యాలెండర్లు కనుగొనబడలేదు';
 
   @override
   String get no_google_events =>
@@ -563,12 +564,12 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String imported_google_events(String value0) {
-    return '$value0 Google ఈవెంట్లు దిగుమతి అయ్యాయి';
+    return '$value0 గూగుల్ ఈవెంట్లు దిగుమతి అయ్యాయి';
   }
 
   @override
   String imported_google_range(String value0, String value1, String value2) {
-    return '$value0 Google ఈవెంట్లు దిగుమతి అయ్యాయి ($value1 – $value2)';
+    return '$value0 గూగుల్ ఈవెంట్లు దిగుమతి అయ్యాయి ($value1 – $value2)';
   }
 
   @override
@@ -587,13 +588,13 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get choose_calendars_help =>
-      'యాప్‌లో చూపించాల్సిన క్యాలెండర్లను ఎంచుకోండి. దిగుమతి మీ Google ఈవెంట్లను మార్చదు.';
+      'యాప్‌లో చూపించాల్సిన క్యాలెండర్లను ఎంచుకోండి. దిగుమతి మీ గూగుల్ ఈవెంట్లను మార్చదు.';
 
   @override
   String get switch_google_account => 'మరో ఖాతాను ఉపయోగించండి';
 
   @override
-  String get google_calendar => 'Google క్యాలెండర్';
+  String get google_calendar => 'గూగుల్ క్యాలెండర్';
 
   @override
   String get primary_calendar => 'ప్రధాన';
@@ -910,25 +911,25 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get premium_cancelled_body =>
-      'మీరు చెల్లించిన వ్యవధి ముగిసే వరకు Premium ఉంటుంది. కొనసాగించడానికి ఎప్పుడైనా మళ్లీ ప్రారంభించండి.';
+      'మీరు చెల్లించిన వ్యవధి ముగిసే వరకు ప్రీమియం ఉంటుంది. కొనసాగించడానికి ఎప్పుడైనా మళ్లీ ప్రారంభించండి.';
 
   @override
   String get premium_reactivate => 'మళ్లీ ప్రారంభించండి';
 
   @override
   String get free_sync_unverified =>
-      'మీ ఉచిత సింక్‌ను తనిఖీ చేయలేకపోయాం. కనెక్షన్ చూడండి, లేదా Premium పొందండి.';
+      'మీ ఉచిత సింక్‌ను తనిఖీ చేయలేకపోయాం. కనెక్షన్ చూడండి, లేదా ప్రీమియం పొందండి.';
 
   @override
   String get premium_upgrade => 'అప్‌గ్రేడ్';
 
   @override
   String get premium_restored =>
-      'కొనుగోళ్లు పునరుద్ధరించబడ్డాయి. Premium సక్రియంగా ఉంది.';
+      'కొనుగోళ్లు పునరుద్ధరించబడ్డాయి. ప్రీమియం సక్రియంగా ఉంది.';
 
   @override
   String get premium_restore_none =>
-      'ఈ Google Play ఖాతాకు ఎలాంటి కొనుగోళ్లు కనబడలేదు.';
+      'ఈ గూగుల్ ప్లే ఖాతాకు ఎలాంటి కొనుగోళ్లు కనబడలేదు.';
 
   @override
   String get premium_lifetime_thanks_title =>
@@ -936,10 +937,10 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get premium_lifetime_thanks_body =>
-      'భవిష్యత్ ఫీచర్లు, అప్‌డేట్‌లతో సహా ప్రతి Premium ఫీచర్ జీవితాంతం మీదే. ఎన్నో ఏళ్లు మీకు సేవ చేయడానికి ఎదురుచూస్తున్నాం.';
+      'భవిష్యత్ ఫీచర్లు, అప్‌డేట్‌లతో సహా ప్రతి ప్రీమియం ఫీచర్ జీవితాంతం మీదే. ఎన్నో ఏళ్లు మీకు సేవ చేయడానికి ఎదురుచూస్తున్నాం.';
 
   @override
-  String get premium_subscriber_title => 'మీకు Premium ఉంది ✨';
+  String get premium_subscriber_title => 'మీకు ప్రీమియం ఉంది ✨';
 
   @override
   String get premium_subscriber_body =>
@@ -947,11 +948,11 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get premium_cancel_subscription_note =>
-      'మీ సబ్‌స్క్రిప్షన్ ఇంకా సక్రియంగా ఉంది. మళ్లీ ఛార్జ్ కాకుండా Google Playలో దాన్ని రద్దు చేయండి. జీవితకాలం మీదే.';
+      'మీ సబ్‌స్క్రిప్షన్ ఇంకా సక్రియంగా ఉంది. మళ్లీ ఛార్జ్ కాకుండా గూగుల్ ప్లేలో దాన్ని రద్దు చేయండి. జీవితకాలం మీదే.';
 
   @override
   String get premium_cancel_subscription_action =>
-      'Google Playలో సబ్‌స్క్రిప్షన్ రద్దు చేయండి';
+      'గూగుల్ ప్లేలో సబ్‌స్క్రిప్షన్ రద్దు చేయండి';
 
   @override
   String get premium_lifetime_confirm_title =>
@@ -959,14 +960,14 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get premium_lifetime_confirm_body =>
-      'Google Play సబ్‌స్క్రిప్షన్‌లను ఆటోమేటిక్‌గా రద్దు చేయదు. జీవితకాలం కొన్న తర్వాత, రెన్యూవల్స్ ఆపడానికి Google Playలో మీ సబ్‌స్క్రిప్షన్‌ను రద్దు చేయండి.';
+      'గూగుల్ ప్లే సబ్‌స్క్రిప్షన్‌లను ఆటోమేటిక్‌గా రద్దు చేయదు. జీవితకాలం కొన్న తర్వాత, రెన్యూవల్స్ ఆపడానికి గూగుల్ ప్లేలో మీ సబ్‌స్క్రిప్షన్‌ను రద్దు చేయండి.';
 
   @override
   String get premium_buy_lifetime_anyway => 'జీవితకాలం కొనండి';
 
   @override
   String get premium_unavailable =>
-      'ప్రస్తుతం కొనుగోళ్లు అందుబాటులో లేవు. Google Play నుండి యాప్‌ను ఇన్‌స్టాల్ చేసి మళ్లీ ప్రయత్నించండి. ఉచిత ఫీచర్లు పనిచేస్తాయి.';
+      'ప్రస్తుతం కొనుగోళ్లు అందుబాటులో లేవు. గూగుల్ ప్లే నుండి యాప్‌ను ఇన్‌స్టాల్ చేసి మళ్లీ ప్రయత్నించండి. ఉచిత ఫీచర్లు పనిచేస్తాయి.';
 
   @override
   String get premium_verification_failed =>
@@ -1022,7 +1023,7 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get premium_feature_calendar =>
-      'మీ పూర్తి సబ్‌స్క్రిప్షన్ సంవత్సరానికి Google క్యాలెండర్ సింక్ (ఒక నెల సింక్ ఉచితం)';
+      'మీ పూర్తి సబ్‌స్క్రిప్షన్ సంవత్సరానికి గూగుల్ క్యాలెండర్ సింక్ (ఒక నెల సింక్ ఉచితం)';
 
   @override
   String get premium_feature_vrat =>
@@ -1044,7 +1045,7 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get google_sign_in_failed =>
-      'Google సైన్ ఇన్ విఫలమైంది. కనెక్షన్ తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.';
+      'గూగుల్ సైన్ ఇన్ విఫలమైంది. కనెక్షన్ తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.';
 
   @override
   String get vrat_free_limit_reached =>
@@ -1052,5 +1053,30 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get google_premium_events_removed =>
-      'మీ ప్రీమియం ముగిసింది, కాబట్టి దానితో సింక్ చేసిన Google ఈవెంట్లు తొలగించబడ్డాయి. మళ్లీ సింక్ చేయడానికి పునరుద్ధరించండి.';
+      'మీ ప్రీమియం ముగిసింది, కాబట్టి దానితో సింక్ చేసిన గూగుల్ ఈవెంట్లు తొలగించబడ్డాయి. మళ్లీ సింక్ చేయడానికి పునరుద్ధరించండి.';
+
+  @override
+  String observed_of_total(String value0, String value1) {
+    return '$value1 లో $value0 ఏకాదశులు';
+  }
+
+  @override
+  String get timezone_IST => 'భారత కాలమానం';
+
+  @override
+  String get timezone_EST => 'అమెరికా తూర్పు కాలమానం';
+
+  @override
+  String get timezone_CST => 'అమెరికా మధ్య కాలమానం';
+
+  @override
+  String get timezone_MST => 'అమెరికా పర్వత కాలమానం';
+
+  @override
+  String get timezone_PST => 'అమెరికా పసిఫిక్ కాలమానం';
+
+  @override
+  String utc_offset(String value0) {
+    return 'యూటీసీ $value0';
+  }
 }

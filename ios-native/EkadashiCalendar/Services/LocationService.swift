@@ -67,6 +67,14 @@ final class LocationService: NSObject, CLLocationManagerDelegate {
         return fix
     }
 
+    /// The place at the coordinates named by Apple's geocoder in [language],
+    /// for display; nil when it has none.
+    func localizedName(latitude: Double, longitude: Double, language: String) async -> String? {
+        let placemark = try? await CLGeocoder().reverseGeocodeLocation(
+            CLLocation(latitude: latitude, longitude: longitude), preferredLocale: Localizer.locale(language)).first
+        return placemark?.locality ?? placemark?.subAdministrativeArea ?? placemark?.administrativeArea
+    }
+
     func cachedFix(store: KeyValueStore) -> Fix? {
         store.string(forKey: Self.cacheKey).flatMap { try? JSONDecoder().decode(Fix.self, from: Data($0.utf8)) }
     }

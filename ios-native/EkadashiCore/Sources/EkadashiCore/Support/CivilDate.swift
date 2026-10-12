@@ -59,6 +59,12 @@ public struct CivilDate: Hashable, Comparable, Codable, Sendable, CustomStringCo
 
     public func adding(days: Int) -> CivilDate { CivilDate(daysSinceEpoch: daysSinceEpoch + days) }
     public func adding(months: Int) -> CivilDate { CivilDate(year, month + months, day) }
+    /// The same day [months] later, or the last day of a shorter month
+    /// (month steps in the Calendar and Panchang).
+    public func steppingMonths(_ months: Int) -> CivilDate {
+        let first = CivilDate(year, month + months, 1)
+        return CivilDate(first.year, first.month, min(day, first.daysInMonth))
+    }
     public func days(until other: CivilDate) -> Int { other.daysSinceEpoch - daysSinceEpoch }
 
     public static func < (a: CivilDate, b: CivilDate) -> Bool { a.daysSinceEpoch < b.daysSinceEpoch }

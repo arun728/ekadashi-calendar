@@ -20,7 +20,7 @@ struct PanchangLocationSheet: View {
 
     private var matches: [PanchangCity] {
         let q = search.trimmingCharacters(in: .whitespaces)
-        return q.count < 2 ? [] : PanchangCityCatalog.shared.search(q, limit: 12)
+        return q.count < 2 ? [] : PanchangCityCatalog.shared.search(q, language: model.language, limit: 12)
     }
 
     private var candidate: PanchangCity? {
@@ -35,44 +35,44 @@ struct PanchangLocationSheet: View {
         NavigationStack {
             Form {
                 Section {
-                    TextField("Search cities worldwide", text: $search)
+                    TextField(model.t("panchang_search_cities"), text: $search)
                         .textInputAutocapitalization(.words)
                         .autocorrectionDisabled()
                     ForEach(matches, id: \.self) { item in
                         Button { select(item) } label: {
                             VStack(alignment: .leading) {
-                                Text(item.label).foregroundStyle(.primary)
-                                Text(item.timeZoneId).font(.caption).foregroundStyle(.secondary)
+                                Text(PlaceNames.shared.label(item.label, language: model.language)).foregroundStyle(.primary)
+                                Text(item.timeZoneLabel(language: model.language)).font(.caption).foregroundStyle(.secondary)
                             }
                         }
                     }
                     Button {
                         Task { await useCurrentLocation() }
                     } label: {
-                        Label(busy ? "Locating…" : "Use current location", systemImage: "location")
+                        Label(model.t(busy ? "panchang_locating" : "panchang_use_current_location"), systemImage: "location")
                     }
                     .disabled(busy)
                     if let message { Text(message).font(.caption).foregroundStyle(.secondary) }
                 }
                 Section {
-                    TextField("Location name", text: $name).accessibilityIdentifier("location_name")
-                    TextField("Latitude", text: $latitude).keyboardType(.numbersAndPunctuation)
+                    TextField(model.t("panchang_location_name"), text: $name).accessibilityIdentifier("location_name")
+                    TextField(model.t("panchang_latitude"), text: $latitude).keyboardType(.numbersAndPunctuation)
                         .accessibilityIdentifier("location_latitude")
-                    TextField("Longitude", text: $longitude).keyboardType(.numbersAndPunctuation)
+                    TextField(model.t("panchang_longitude"), text: $longitude).keyboardType(.numbersAndPunctuation)
                         .accessibilityIdentifier("location_longitude")
-                    TextField("IANA timezone", text: $zone).autocorrectionDisabled().textInputAutocapitalization(.never)
+                    TextField(model.t("panchang_timezone"), text: $zone).autocorrectionDisabled().textInputAutocapitalization(.never)
                         .accessibilityIdentifier("location_timezone")
                 } footer: {
-                    Text("Example: Asia/Kolkata or America/New_York\n\nCity data: GeoNames · CC BY 4.0. Calculations and city search work offline.")
+                    Text(model.t("panchang_location_footer"))
                 }
             }
             .scrollContentBackground(.hidden)
-            .navigationTitle("Panchang location")
+            .navigationTitle(model.t("panchang_location_title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) { Button(model.t("cancel")) { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save location") {
+                    Button(model.t("panchang_save_location")) {
                         guard let candidate else { return }
                         save(candidate)
                         dismiss()
@@ -105,17 +105,17 @@ struct PanchangLocationSheet: View {
         message = nil
         defer { busy = false }
         guard await model.location.requestPermission() else {
-            message = "Location permission denied. Search or enter a location instead."
+            message = model.t("panchang_location_denied")
             return
         }
         guard let fix = await model.location.currentFix(store: model.store) else {
-            message = "Location unavailable. Search or enter a location instead."
+            message = model.t("panchang_location_unavailable")
             return
         }
         name = fix.city
         latitude = String(fix.latitude)
         longitude = String(fix.longitude)
         zone = fix.zoneIdentifier ?? TimeZone.current.identifier
-        message = "Coordinates received. Check the timezone before saving; the device timezone may differ from this location."
+        message = model.t("panchang_location_received")
     }
 }

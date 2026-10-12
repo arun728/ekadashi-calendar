@@ -1,0 +1,180 @@
+{
+ "_about": "Golden search cases shared by the iOS and Flutter search tests. Results come from the bundled Ekadashi data, Panchang observances for 'city' and 'years', the entries below and the screens in assets/search/search_catalog.json, searched on 'today'. Inputs: query, language (default en), category and year_filter (the filter chips). Expectations: top is the first result id (ekadashi:<occurrence uid>, observance:<key>:<date>, entry:<id> or screen:<key>); top_prefix matches its start; top_title is its title in the case language and top_title_en its English title; all_categories requires every result to carry that category; all_in_year requires every result to fall in that year; count is the exact number of results.",
+ "city": "new-delhi",
+ "today": "2026-10-08",
+ "timezone": "Asia/Kolkata",
+ "years": [
+  2026,
+  2027
+ ],
+ "entries": [
+  {
+   "id": "c1",
+   "title": "Temple visit",
+   "notes": "Visit Tirumala with family",
+   "date": "2026-10-20",
+   "source": "custom"
+  },
+  {
+   "id": "g1",
+   "title": "Satsang at ISKCON",
+   "notes": "",
+   "date": "2026-11-01",
+   "source": "google",
+   "calendar": "Family"
+  }
+ ],
+ "cases": [
+  {
+   "query": "diwali",
+   "top": "observance:deepavali:2026-11-08"
+  },
+  {
+   "query": "deepawali 2027",
+   "top": "observance:deepavali:2027-10-29",
+   "all_in_year": 2027
+  },
+  {
+   "query": "दीपावली",
+   "language": "hi",
+   "top": "observance:deepavali:2026-11-08"
+  },
+  {
+   "query": "தீபாவளி",
+   "language": "ta",
+   "top": "observance:deepavali:2026-11-08"
+  },
+  {
+   "query": "pongal",
+   "top": "observance:makar-sankranti:2027-01-15"
+  },
+  {
+   "query": "thai pongal",
+   "language": "ta",
+   "top": "observance:makar-sankranti:2027-01-15",
+   "top_title": "தைப் பொங்கல்"
+  },
+  {
+   "query": "dussehra",
+   "top": "observance:vijayadashami:2026-10-20"
+  },
+  {
+   "query": "amavasai",
+   "top": "observance:amavasya:2026-10-10",
+   "all_categories": "amavasya"
+  },
+  {
+   "query": "amavasya 2027",
+   "all_categories": "amavasya",
+   "count": 13,
+   "all_in_year": 2027
+  },
+  {
+   "query": "అమావాస్య",
+   "language": "te",
+   "top": "observance:amavasya:2026-10-10",
+   "all_categories": "amavasya"
+  },
+  {
+   "query": "shivratri",
+   "top": "observance:masik-shivaratri:2026-10-08",
+   "all_categories": "shivaratri"
+  },
+  {
+   "query": "maha shivratri",
+   "top": "observance:maha-shivaratri:2027-03-06"
+  },
+  {
+   "query": "papankusha",
+   "top_prefix": "ekadashi:2026:",
+   "top_title_en": "Papankusha Ekadashi"
+  },
+  {
+   "query": "papnkusha",
+   "top_prefix": "ekadashi:2026:",
+   "top_title_en": "Papankusha Ekadashi"
+  },
+  {
+   "query": "ekdsh",
+   "top_prefix": "ekadashi:2026:"
+  },
+  {
+   "query": "एकादशी",
+   "language": "hi",
+   "all_categories": "ekadashi"
+  },
+  {
+   "query": "vinayaka chavithi",
+   "top": "observance:ganesh-chaturthi:2027-09-04"
+  },
+  {
+   "query": "ganesh chaturthi 2026",
+   "top": "observance:ganesh-chaturthi:2026-09-14"
+  },
+  {
+   "query": "krishna jayanti",
+   "top": "observance:janmashtami:2027-08-25"
+  },
+  {
+   "query": "holi",
+   "top": "observance:holi:2027-03-22"
+  },
+  {
+   "query": "temple visit",
+   "top": "entry:c1"
+  },
+  {
+   "query": "tempel",
+   "top": "entry:c1"
+  },
+  {
+   "query": "tirumala",
+   "top": "entry:c1"
+  },
+  {
+   "query": "satsang",
+   "top": "entry:g1"
+  },
+  {
+   "query": "notifications",
+   "top": "screen:notifications"
+  },
+  {
+   "query": "subscribe",
+   "top": "screen:premium"
+  },
+  {
+   "query": "rahu kalam",
+   "top": "screen:panchang"
+  },
+  {
+   "query": "zzzz",
+   "count": 0
+  },
+  {
+   "query": "",
+   "category": "festival",
+   "top": "observance:makar-sankranti:2027-01-15",
+   "all_categories": "festival",
+   "year_filter": 2027,
+   "all_in_year": 2027
+  },
+  {
+   "query": "",
+   "category": "my_calendar",
+   "top": "entry:c1",
+   "count": 2
+  },
+  {
+   "query": "diwali",
+   "category": "amavasya",
+   "count": 0
+  },
+  {
+   "query": "diwali",
+   "top": "observance:deepavali:2027-10-29",
+   "year_filter": 2027,
+   "all_in_year": 2027
+  }
+ ]
+}

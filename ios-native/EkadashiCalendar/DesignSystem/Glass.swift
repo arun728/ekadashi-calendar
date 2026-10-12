@@ -124,6 +124,48 @@ struct GlassChip: View {
     }
 }
 
+/// A screen's sub-sections as a row of glass chips (Panchang and Journey).
+/// The pages below also change with a swipe; the row keeps the selected
+/// chip in view.
+struct SectionChips<Item: Hashable>: View {
+    let items: [Item]
+    @Binding var selection: Item
+    let title: (Item) -> String
+    let identifier: (Item) -> String
+
+    init(_ items: [Item], selection: Binding<Item>, title: @escaping (Item) -> String,
+         identifier: @escaping (Item) -> String) {
+        self.items = items
+        self._selection = selection
+        self.title = title
+        self.identifier = identifier
+    }
+
+    var body: some View {
+        ScrollViewReader { proxy in
+            ScrollView(.horizontal) {
+                GlassGroup(spacing: 8) {
+                    HStack(spacing: 8) {
+                        ForEach(items, id: \.self) { item in
+                            GlassChip(title: title(item), selected: selection == item) {
+                                withAnimation(.snappy) { selection = item }
+                            }
+                            .id(item)
+                            .accessibilityIdentifier(identifier(item))
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                }
+            }
+            .scrollIndicators(.hidden)
+            .onChange(of: selection) { _, value in
+                withAnimation { proxy.scrollTo(value, anchor: .center) }
+            }
+        }
+    }
+}
+
 /// A section heading with an optional subtitle.
 struct SectionTitle: View {
     let title: String

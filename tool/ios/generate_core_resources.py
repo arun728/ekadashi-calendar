@@ -8,11 +8,11 @@ any of the inputs below. EkadashiCoreTests/ResourceSyncTests fails when the
 copies drift.
 
 - assets/calendar/*.json            -> Resources/calendar/ (byte copies)
-- assets/panchang/cities.json       -> Resources/panchang/cities.json
+- assets/panchang/cities.json, place_names.json -> Resources/panchang/
 - lib/services/time_zone_data.dart  -> Resources/tz/tzdb.tzf (the same IANA
   release, decoded from its UTF-16 escapes to the timezone package's binary
   format, so iOS converts local times exactly like Android)
-- lib/l10n/app_{en,ta,hi,te}.arb    -> Resources/l10n/strings.json
+- lib/l10n/app_{en,ta,hi,te,gu,bn}.arb -> Resources/l10n/strings.json
 - lib/services/panchang/ephemeris_series.dart, lunar_series.dart
                                     -> Sources/EkadashiCore/Panchang/*Series.swift
 """
@@ -25,7 +25,7 @@ import struct
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 CORE = ROOT / "ios-native" / "EkadashiCore" / "Sources" / "EkadashiCore"
 RES = CORE / "Resources"
-LANGUAGES = ["en", "ta", "hi", "te"]
+LANGUAGES = ["en", "ta", "hi", "te", "gu", "bn"]
 
 
 def copy_assets():
@@ -33,7 +33,8 @@ def copy_assets():
     for path in sorted((ROOT / "assets" / "calendar").glob("*.json")):
         shutil.copyfile(path, RES / "calendar" / path.name)
     (RES / "panchang").mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(ROOT / "assets" / "panchang" / "cities.json", RES / "panchang" / "cities.json")
+    for name in ["cities.json", "place_names.json"]:
+        shutil.copyfile(ROOT / "assets" / "panchang" / name, RES / "panchang" / name)
 
 
 def time_zones():

@@ -159,3 +159,14 @@ public struct VratYearStats: Equatable, Sendable {
     public let unrecordedCount: Int
     public let completionPercentage: Double
 }
+
+/// When a fast can be recorded: after it has happened (docs/ROADMAP.md
+/// Phase 4). Today's Ekadashi opens at its Parana start; without a Parana
+/// time, the day after. Future Ekadashis stay closed. Existing records stay
+/// editable regardless.
+public enum VratRecording {
+    public static func isOpen(_ event: EkadashiOccurrence, now: Date, zone: TzLocation) -> Bool {
+        if let parana = event.paranaStart { return now >= parana }
+        return zone.wallClock(now).date > event.date
+    }
+}
