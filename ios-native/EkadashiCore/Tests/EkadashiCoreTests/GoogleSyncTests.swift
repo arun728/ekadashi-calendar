@@ -418,6 +418,17 @@ final class GoogleSyncCoordinatorTests: XCTestCase {
         XCTAssertEqual(messages.last, "imported_google_range")
     }
 
+    /// Month names in "Imported … (Oct 2026 – Sep 2027)" follow the app
+    /// language, not the device locale (as on Android).
+    func testImportedRangeMonthsFollowTheAppLanguage() {
+        let october = calendar.date(from: DateComponents(year: 2026, month: 10, day: 15))!
+        let english = GoogleSyncCoordinator.monthLabel(october, calendar, Localizer.locale("en"))
+        let hindi = GoogleSyncCoordinator.monthLabel(october, calendar, Localizer.locale("hi"))
+        XCTAssertTrue(english.contains("Oct"), english)
+        XCTAssertFalse(hindi.contains("Oct"), hindi)
+        XCTAssertTrue(hindi.unicodeScalars.contains { ("\u{0900}"..."\u{097F}").contains($0) }, hindi)
+    }
+
     func testLifetimeImportsEveryCalendarYear() async {
         premium.apply(owned: [OwnedProduct(productId: PremiumProduct.lifetime, purchaseDate: now, willAutoRenew: nil)])
         _ = await coordinator(registry: registry).sync(viewedMonth: CivilDate(2026, 10, 1), now: now, calendarYears: 2026...2027)

@@ -223,6 +223,30 @@ final class AppModel {
         reload(scrollToNext: true)
     }
 
+    @ObservationIgnored private var refreshingLocation = false
+
+    /// Back in the foreground: re-check permission and the city quietly, as
+    /// Android does, so a trip or a permission change shows without a restart.
+    /// The schedule reloads only when the time zone changes.
+    func refreshLocationOnResume() async {
+        guard started, !refreshingLocation, locationState != .detecting else { return }
+        refreshingLocation = true
+        defer { refreshingLocation = false }
+        if location.isDenied {
+            if locationState != .denied { locationState = .denied }
+            return
+        }
+        guard location.hasPermission, let fix = await location.currentFix(store: store) else { return }
+        lastCoordinate = (fix.latitude, fix.longitude)
+        if fix.timezone != timezone {
+            setTimezone(fix.timezone)
+            locationState = .located(fix.city)
+            reload(scrollToNext: true)
+        } else if locationState != .located(fix.city) {
+            locationState = .located(fix.city)
+        }
+    }
+
     /// Tapping "Location Denied": iOS asks only once, so after a denial the
     /// app's Settings page opens instead.
     func requestLocationAgain() async {
@@ -362,6 +386,7 @@ final class AppModel {
                 await premium.refresh()
                 removeLapsedPremiumImports()
             }
+            Task { await refreshLocationOnResume() }
             premium.startRecheck()
             syncWidgets()
         case .background:
@@ -479,7 +504,10 @@ final class AppModel {
     // MARK: Google Calendar
 
     var coordinator: GoogleSyncCoordinator {
-        if let coordinatorStorage { return coordinatorStorage }
+        if let coordinatorStorage {
+            coordinatorStorage.monthLocale = locale
+            return coordinatorStorage
+        }
         let made = GoogleSyncCoordinator(
             importer: GoogleCalendarImporter(auth: google, store: entries), registry: registry, preferences: store,
             premium: { [snapshot = premium.snapshot] in snapshot.state },
@@ -495,6 +523,7 @@ final class AppModel {
             message: { [weak self] key, args, upsell in
                 Task { @MainActor in self?.show(key, args: args, upsell: upsell) }
             })
+        made.monthLocale = locale
         coordinatorStorage = made
         return made
     }

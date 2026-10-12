@@ -58,7 +58,7 @@ struct GlobalSearchView: View {
         }
         .navigationDestination(item: $pushed) { item in destination(item) }
         .sheet(isPresented: $showPaywall) {
-            NavigationStack { PremiumView(reason: nil) }
+            NavigationStack { PremiumView(reason: "search_premium_locked") }
         }
         .onAppear {
             recents = model.recents.all()
@@ -128,7 +128,8 @@ struct GlobalSearchView: View {
             start
         } else if results.isEmpty {
             ContentUnavailableView {
-                Label(model.t("no_results_found"), systemImage: "magnifyingglass")
+                // The query follows the sentence, as on Android: No results found for "xyz".
+                Label("\(model.t("no_results_found")) \"\(query.trimmingCharacters(in: .whitespacesAndNewlines))\"", systemImage: "magnifyingglass")
             } description: {
                 Text(model.t("search_no_results_hint"))
             }
