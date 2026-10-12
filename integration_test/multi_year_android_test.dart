@@ -236,6 +236,11 @@ void main() {
       await frames(tester);
       await tester.tap(find.byKey(const Key('month_picker_year_2027')));
       await frames(tester);
+      await tester.dragUntilVisible(
+        find.byKey(const Key('panchang_month_1')),
+        find.byKey(const Key('month_picker_month_wheel')),
+        const Offset(0, 40),
+      );
       await tester.tap(find.byKey(const Key('panchang_month_1')));
       await frames(tester);
       await tester.tap(find.byKey(const Key('month_picker_done')));
@@ -468,6 +473,11 @@ void main() {
       await frames(tester);
       await tester.tap(find.byKey(const Key('month_picker_year_2027')));
       await frames(tester);
+      await tester.dragUntilVisible(
+        find.byKey(const Key('panchang_month_1')),
+        find.byKey(const Key('month_picker_month_wheel')),
+        const Offset(0, 40),
+      );
       await tester.tap(find.byKey(const Key('panchang_month_1')));
       await frames(tester);
       await tester.tap(find.byKey(const Key('month_picker_done')));

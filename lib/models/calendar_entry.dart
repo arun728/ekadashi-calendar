@@ -111,7 +111,7 @@ class CalendarEntry {
   }
 }
 
-/// Filter for calendar tab. Default is [ekadashi].
+/// Filter for calendar tab. Default is [all], as on iOS.
 enum CalendarFilter { all, ekadashi, google, custom }
 
 /// Marker colors (app accent teal for Ekadashi).

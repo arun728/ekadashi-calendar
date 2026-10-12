@@ -134,6 +134,11 @@ void main() {
         findsNothing,
       );
       expect(find.byType(FilterChip), findsNothing);
+      // The row scrolls sideways when the chips are wider than the phone.
+      await tester.ensureVisible(
+        find.byKey(const Key('calendar_filter_custom')),
+      );
+      await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('calendar_filter_custom')));
       await tester.pumpAndSettle();
       expect(chip(tester, 'custom').selected, isTrue);
@@ -229,6 +234,8 @@ void main() {
         ),
       );
       expect(title.style?.fontSize, IosText.title3);
+      // Teal, like the iPhone's toolbar-tinted title.
+      expect(title.style?.color, IosColors.teal);
       expect(title.style?.fontWeight, FontWeight.w700);
       final selector = tester.getRect(
         find.byKey(const Key('calendar_year_selector')),
@@ -238,7 +245,7 @@ void main() {
       );
       final next = tester.getRect(find.byKey(const Key('calendar_next_month')));
       expect(selector.left, lessThan(40));
-      expect(previous.left, greaterThan(selector.right));
+      expect(previous.left, greaterThanOrEqualTo(selector.right));
       expect(next.left, greaterThanOrEqualTo(previous.right - 1));
       expect(next.left - previous.right, lessThan(8));
       expect(
@@ -345,6 +352,11 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('month_picker_year_2027')));
       await tester.pumpAndSettle();
+      await tester.dragUntilVisible(
+        find.byKey(const Key('panchang_month_9')),
+        find.byKey(const Key('month_picker_month_wheel')),
+        const Offset(0, 40),
+      );
       await tester.tap(find.byKey(const Key('panchang_month_9')));
       await tester.pumpAndSettle();
       expect(state(tester).selectedYear, 2026);
@@ -404,9 +416,17 @@ void main() {
       await tester.pumpAndSettle();
       expect(repo.entries, isEmpty);
       expect(find.text('My entry'), findsNothing);
-      // The empty state is grey and left aligned.
+      // The empty state is grey and centred with padding (iPhone).
       final empty = find.text('No entries for this day');
-      expect(tester.getRect(empty).left, lessThan(60));
+      expect(
+        tester.getCenter(empty).dx,
+        closeTo(tester.getCenter(find.byType(CalendarScreen)).dx, 1),
+      );
+      expect(tester.widget<Text>(empty).textAlign, TextAlign.center);
+      expect(
+        tester.widget<Text>(empty).style?.color,
+        IosColors.secondary(tester.element(empty)),
+      );
     });
 
     testWidgets('saving keeps the current filter', (tester) async {

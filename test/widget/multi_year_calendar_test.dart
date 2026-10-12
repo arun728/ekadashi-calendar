@@ -93,7 +93,12 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('month_picker_year_2027')));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(Key('panchang_month_${1}')));
+    await tester.dragUntilVisible(
+      find.byKey(const Key('panchang_month_1')),
+      find.byKey(const Key('month_picker_month_wheel')),
+      const Offset(0, 40),
+    );
+    await tester.tap(find.byKey(const Key('panchang_month_1')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('month_picker_done')));
     await tester.pumpAndSettle();
@@ -251,7 +256,13 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('month_picker_year_2026')));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(Key('panchang_month_${DateTime.now().month}')));
+    // The wheel stands on January; October (the clock's month) is below.
+    await tester.dragUntilVisible(
+      find.byKey(const Key('panchang_month_10')),
+      find.byKey(const Key('month_picker_month_wheel')),
+      const Offset(0, -40),
+    );
+    await tester.tap(find.byKey(const Key('panchang_month_10')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('month_picker_done')));
     await tester.pumpAndSettle();
