@@ -228,8 +228,15 @@ final class ScreenshotTests: XCTestCase {
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 20))
         tab(4)
         let send = element("settings_test_notification")
-        for _ in 0..<6 where !(send.exists && send.isHittable) { app.swipeUp() }
+        // The row sits just below the first screen, under the floating tab
+        // bar; a full swipe scrolls past it and the lazy list drops it, so
+        // scroll a third of the screen at a time.
+        for _ in 0..<12 where !(send.exists && send.isHittable) {
+            app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7))
+                .press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.4)))
+        }
         XCTAssertTrue(send.waitForExistence(timeout: 5), "Test notification")
+        XCTAssertTrue(send.isHittable, "Test notification is on screen")
         send.tap()
         // It is delivered after one second; give it time to arrive.
         sleep(4)
