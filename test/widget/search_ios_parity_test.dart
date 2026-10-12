@@ -285,6 +285,17 @@ void main() {
   testWidgets('pages a result opens stay in the sheet on the background', (
     tester,
   ) async {
+    // The page paints the app background itself or sits on it: either way
+    // exactly one, never stacked twice.
+    int onBackground(Finder page) =>
+        find
+            .ancestor(of: page, matching: find.byType(AppBackground))
+            .evaluate()
+            .length +
+        find
+            .descendant(of: page, matching: find.byType(AppBackground))
+            .evaluate()
+            .length;
     await open(tester, premium: true);
     await search(tester, 'Mohini');
     await tester.tap(result('ekadashi:').first);
@@ -295,10 +306,7 @@ void main() {
       find.ancestor(of: details, matching: find.byType(BottomSheet)),
       findsOneWidget,
     );
-    expect(
-      find.ancestor(of: details, matching: find.byType(AppBackground)),
-      findsOneWidget,
-    );
+    expect(onBackground(details), 1, reason: 'exactly one app background');
     await tester.pageBack();
     await tester.pumpAndSettle();
 
@@ -311,10 +319,7 @@ void main() {
       find.ancestor(of: panchang, matching: find.byType(BottomSheet)),
       findsOneWidget,
     );
-    expect(
-      find.ancestor(of: panchang, matching: find.byType(AppBackground)),
-      findsOneWidget,
-    );
+    expect(onBackground(panchang), 1, reason: 'exactly one app background');
     expect(tester.takeException(), isNull);
   });
 }

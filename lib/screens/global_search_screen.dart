@@ -251,20 +251,10 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
       item.requiresPremium &&
       !(context.read<PremiumService?>()?.isPremium ?? false);
 
-  /// A page a result opens: inside the search sheet, on the app background
-  /// (iOS keeps the gradient on every pushed page).
-  Future<void> _push(WidgetBuilder builder) => Navigator.of(context).push(
-    MaterialPageRoute<void>(
-      builder: (context) => AppBackground(
-        child: Theme(
-          data: Theme.of(
-            context,
-          ).copyWith(scaffoldBackgroundColor: Colors.transparent),
-          child: Builder(builder: builder),
-        ),
-      ),
-    ),
-  );
+  /// A page a result opens, inside the search sheet. The pages paint the
+  /// app background themselves (Details, Panchang), as on iOS.
+  Future<void> _push(WidgetBuilder builder) =>
+      Navigator.of(context).push(MaterialPageRoute<void>(builder: builder));
 
   Future<void> _open(SearchItem item) async {
     if (_locked(item)) {
