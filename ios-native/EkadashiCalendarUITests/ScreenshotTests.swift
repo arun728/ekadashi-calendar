@@ -227,10 +227,11 @@ final class ScreenshotTests: XCTestCase {
     func testTestNotificationKeepsTheAppRunning() {
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 20))
         tab(4)
-        let send = element("settings_test_notification")
+        // Found by its title: the Notifications section's own identifier
+        // (settings_notifications_tube) replaces the identifiers of its rows.
+        let send = app.staticTexts["Test Notification"].firstMatch
         // The row sits just below the first screen, under the floating tab
-        // bar; a full swipe scrolls past it and the lazy list drops it, so
-        // scroll a third of the screen at a time.
+        // bar; scroll a third of the screen at a time until it can be tapped.
         for _ in 0..<12 where !(send.exists && send.isHittable) {
             app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7))
                 .press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.4)))
