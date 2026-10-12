@@ -15,6 +15,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest.dart' as tzdata;
 import 'package:ekadashi_calendar/services/premium_service.dart';
 import 'package:ekadashi_calendar/services/theme_service.dart';
+import 'package:ekadashi_calendar/widgets/app_background.dart';
+import 'package:ekadashi_calendar/widgets/tab_shell.dart';
 import '../support/premium_fixture.dart';
 
 void main() {
@@ -69,14 +71,35 @@ void main() {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: mode,
-      home: RepaintBoundary(
-        key: key,
-        child: Scaffold(
-          body: PanchangScreen(
-            initialDate: date,
-            initialCity: city ?? PanchangCity.newDelhi,
-          ),
-        ),
+      // Around the navigator, so the sheets are in the screenshots too.
+      builder: (context, child) => RepaintBoundary(key: key, child: child),
+      home: Builder(
+        builder: (context) {
+          // Today and the notes in the top bar, as the app shell shows them.
+          final slots = TabBarSlots();
+          return AppBackground(
+            child: Scaffold(
+              backgroundColor: Colors.transparent,
+              appBar: PreferredSize(
+                preferredSize: const Size.fromHeight(kToolbarHeight),
+                child: ListenableBuilder(
+                  listenable: slots,
+                  builder: (context, _) => AppBar(
+                    leadingWidth: 100,
+                    leading: slots.leading(context),
+                    title: const Text('Ekadashi Calendar'),
+                    actions: slots.actions(context),
+                  ),
+                ),
+              ),
+              body: PanchangScreen(
+                barSlots: slots,
+                initialDate: date,
+                initialCity: city ?? PanchangCity.newDelhi,
+              ),
+            ),
+          );
+        },
       ),
     ),
   );
@@ -143,5 +166,53 @@ void main() {
       expect(tester.takeException(), isNull);
       await capture(tester, boundaryKey, '2027_$page');
     }
+  });
+
+  testWidgets('Panchang sheets and free Key days render screenshots', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final premium = PremiumService(
+      entitlements: PremiumFixture()..premium = false,
+    );
+    addTearDown(premium.dispose);
+    final boundaryKey = GlobalKey();
+    await tester.pumpWidget(
+      app(
+        boundaryKey,
+        premium,
+        date: DateTime.utc(2026, 10, 12),
+        city: PanchangCity.chennai,
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('panchang_tab_keydays')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('panchang_key_days_unlock')), findsOneWidget);
+    await capture(tester, boundaryKey, 'key_days_free_dark');
+    await tester.tap(find.byKey(const Key('panchang_notes')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('panchang_notes_sheet')), findsOneWidget);
+    await capture(tester, boundaryKey, 'notes_sheet');
+    await tester.tap(find.byKey(const Key('panchang_notes_done')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('panchang_tab_daily')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('panchang_selected_date')));
+    await tester.pumpAndSettle();
+    expect(find.byType(CalendarDatePicker), findsOneWidget);
+    await capture(tester, boundaryKey, 'day_picker');
+    await tester.tap(find.byKey(const Key('panchang_day_picker_done')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('panchang_city_selector')));
+    await tester.pumpAndSettle();
+    await capture(tester, boundaryKey, 'location_menu');
+    await tester.tap(find.byKey(const Key('panchang_edit_location')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('panchang_location_sheet')), findsOneWidget);
+    await capture(tester, boundaryKey, 'location_sheet');
+    expect(tester.takeException(), isNull);
   });
 }

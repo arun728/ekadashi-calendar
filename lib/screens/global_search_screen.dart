@@ -291,10 +291,10 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
             await PanchangLocationStore().load() ?? PanchangCity.newDelhi;
         if (!mounted) return;
         await _push(
-          (_) => Scaffold(
-            backgroundColor: Colors.transparent,
-            appBar: AppBar(title: Text(item.title)),
-            body: PanchangScreen(initialDate: target.date, initialCity: city),
+          (_) => PanchangPushedPage(
+            title: item.title,
+            initialDate: target.date,
+            initialCity: city,
           ),
         );
       case SearchTargetKind.entry:

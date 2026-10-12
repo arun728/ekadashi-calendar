@@ -325,9 +325,11 @@ void main() {
       find.byKey(const Key('location_timezone')),
       'America/New_York',
     );
+    await tester.pump();
+    // As on iOS, Save stays disabled until the location is valid.
     await tester.tap(find.byKey(const Key('location_save')));
     await tester.pumpAndSettle();
-    expect(find.text('Enter a number from -90 to 90'), findsOneWidget);
+    expect(find.byKey(const Key('location_latitude')), findsOneWidget);
     await tester.enterText(
       find.byKey(const Key('location_latitude')),
       '40.7128',
