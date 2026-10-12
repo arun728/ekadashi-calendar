@@ -149,6 +149,9 @@ void main() {
         ).color,
         IosColors.teal,
       );
+      // The test font's glyphs are square, so give the line room to fit.
+      tester.view.physicalSize = const Size(600, 844);
+      await tester.pumpAndSettle();
       expect(
         (tester.getCenter(menu).dy -
                 tester.getCenter(find.text('Chennai • IST')).dy)
@@ -181,6 +184,32 @@ void main() {
       final name = find.descendant(of: card, matching: find.text(event.name));
       expect(styleOf(tester, name).fontSize, IosText.title);
       expect(styleOf(tester, name).fontWeight, FontWeight.bold);
+      // iPhone: the date and the fast's time are in the primary colour.
+      final primary = IosColors.primary(tester.element(card));
+      expect(
+        styleOf(
+          tester,
+          find.descendant(
+            of: card,
+            matching: find.text(
+              AppStrings.localizeClock(event.fastStartTime, 'en'),
+            ),
+          ),
+        ).color,
+        primary,
+      );
+      expect(
+        styleOf(
+          tester,
+          find
+              .descendant(
+                of: card,
+                matching: find.text(AppStrings.fullDate(event.date, 'en')),
+              )
+              .first,
+        ).color,
+        primary,
+      );
       final description = find.descendant(
         of: card,
         matching: find.text(event.description),

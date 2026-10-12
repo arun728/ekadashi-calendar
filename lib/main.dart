@@ -1677,11 +1677,13 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
+          // A SwiftUI Menu label takes the tint: teal.
           Text(
             current.nativeName,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: IosText.subheadline,
               fontWeight: FontWeight.w500,
+              color: tealColor,
             ),
           ),
           const SizedBox(width: 6),
@@ -1759,9 +1761,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           const SizedBox(height: 2),
           Text(
             time,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: IosText.title3,
               fontWeight: FontWeight.w600,
+              color: IosColors.primary(context),
             ),
           ),
         ],
@@ -1808,9 +1811,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                   Text(
                     AppStrings.fullDate(ekadashi.date, code),
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: IosText.title2,
                       fontWeight: FontWeight.w300,
+                      color: IosColors.primary(context),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -1859,7 +1863,12 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                 child: FilledButton(
                   key: const Key('view_details'),
                   onPressed: () => _openDetails(ekadashi),
-                  style: IosButtons.prominent(vertical: 12),
+                  style: IosButtons.prominent(vertical: 12).copyWith(
+                    minimumSize: const WidgetStatePropertyAll(Size(0, 48)),
+                    fixedSize: const WidgetStatePropertyAll(
+                      Size.fromHeight(48),
+                    ),
+                  ),
                   child: Text(
                     lang.translate('view_details'),
                     maxLines: 1,
@@ -1917,7 +1926,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         child: Stack(
           clipBehavior: Clip.none,
           children: [
-            Icon(Icons.calendar_today_outlined, size: 20, color: color),
+            Icon(Icons.calendar_month_outlined, size: 22, color: color),
             Positioned(
               right: -1,
               bottom: -1,
@@ -1944,11 +1953,27 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
               }
             }
           : null,
-      style: IosButtons.glass(context, vertical: 10).copyWith(
-        padding: const WidgetStatePropertyAll(
-          EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      // A round glass button, neutral grey while recording is closed.
+      style: IosButtons.glass(context).copyWith(
+        shape: const WidgetStatePropertyAll(CircleBorder()),
+        padding: const WidgetStatePropertyAll(EdgeInsets.zero),
+        fixedSize: const WidgetStatePropertyAll(Size.square(48)),
+        minimumSize: const WidgetStatePropertyAll(Size.square(48)),
+        backgroundColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.disabled)
+              ? IosColors.gray(context).withValues(alpha: .18)
+              : IosColors.teal.withValues(alpha: .10),
         ),
-        minimumSize: const WidgetStatePropertyAll(Size(56, 44)),
+        side: WidgetStateProperty.resolveWith(
+          (states) => BorderSide(
+            color:
+                (states.contains(WidgetState.disabled)
+                        ? IosColors.gray(context)
+                        : IosColors.teal)
+                    .withValues(alpha: .28),
+            width: .7,
+          ),
+        ),
       ),
       child: Semantics(
         label: lang.translate(record == null ? 'record_vrat' : 'edit_record'),
