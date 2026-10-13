@@ -23,7 +23,14 @@ class PanchangLocationStore {
 
   static Future<List<PanchangCity>> _loadCities() async {
     final rows =
-        jsonDecode(await rootBundle.loadString('assets/panchang/cities.json'))
+        // Not cached by the bundle: a failed read would be kept forever, and
+        // the parsed list is kept here anyway.
+        jsonDecode(
+              await rootBundle.loadString(
+                'assets/panchang/cities.json',
+                cache: false,
+              ),
+            )
             as List;
     return List.unmodifiable(
       rows.map(

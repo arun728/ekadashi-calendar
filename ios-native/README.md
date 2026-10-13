@@ -9,7 +9,7 @@ A native Swift/SwiftUI version of the Android app with the same features:
 
 On iOS 26 the app uses Apple's Liquid Glass (`glassEffect`, glass button styles and the system's glass tab bar and toolbars). On iOS 17–25 it falls back to system materials.
 
-> Status: the shared `EkadashiCore` package is built and tested on Linux (150 tests, 0 failures). The app, the widgets and their Xcode tests were written in a Linux container without Xcode or macOS. They have **not** been compiled, run on a simulator or device, or tested against StoreKit or Google. See [Verification](#verification).
+> Status: the shared `EkadashiCore` package is built and tested on Linux (236 tests, 0 failures). The app, the widgets and their Xcode tests were written in a Linux container without Xcode or macOS. They have **not** been compiled, run on a simulator or device, or tested against StoreKit or Google. See [Verification](#verification).
 
 ## Layout
 
@@ -144,7 +144,7 @@ These follow the Play-only rules in `AGENTS.md`, adapted to StoreKit 2 with no b
 ## Verification
 
 Done:
-- `swift test -c release` in `EkadashiCore` on Linux (Swift 6.3.3): **150 tests, 0 failures**. This includes:
+- `swift test -c release` in `EkadashiCore` on Linux (Swift 6.1.2): **236 tests, 0 failures**. This includes:
   - parity with the Flutter Panchang engine and calculated fasts;
   - published-date accuracy gates;
   - a check that the bundled data matches Android exactly;

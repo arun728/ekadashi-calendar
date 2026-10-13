@@ -135,5 +135,22 @@ Tests: `test/unit/ekadashi_schedule_test.dart`,
 (the 2×2 grid in every language at 393 and 320 dp and 2× text, tradition,
 year, city search, share card), `test/widget/panchang_screen_test.dart` (the
 city picker with time zones, following Home, the full date picker on every
-sub-tab) and `test/ui/no_english_ui_test.dart` (the new menus, pickers and
-share card in all five other languages).
+sub-tab), `test/widget/share_card_screen_test.dart` (the same texts and
+long date as iOS, no location, Play Store link only, Save to Gallery and
+Share), `test/unit/ekadashi_settings_test.dart` (Chennai by default, a picked
+city wins over detection, settings survive a restart, detection without the
+city catalog) and `test/ui/no_english_ui_test.dart` (the new menus, pickers
+and share card in all five other languages).
+
+## The same schedule on both platforms
+
+`test/tool/dump_ekadashi_schedule_parity_test.dart` writes every fast for ten
+cities (Chennai, New Delhi, Mumbai, New York, Los Angeles, London, Sydney,
+Singapore, Dubai, Kathmandu), both traditions and 2026-2028 to
+`ios-native/EkadashiCore/Tests/EkadashiCoreTests/Fixtures/ekadashi_schedule_parity.json`
+and fails when the Dart schedule no longer matches it.
+`EkadashiScheduleParityTests` checks that Swift gives the same 1,480 fasts
+field by field (identity, notification id, content, date, fasting start,
+Parana window, paksha, month, rule). After a schedule, engine or rule change:
+
+    UPDATE_IOS_FIXTURES=1 flutter test test/tool/dump_ekadashi_schedule_parity_test.dart
