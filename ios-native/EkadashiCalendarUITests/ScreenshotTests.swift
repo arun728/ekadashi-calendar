@@ -151,6 +151,13 @@ final class ScreenshotTests: XCTestCase {
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 10))
         tab(1)
         XCTAssertTrue(element("calendar_ekadashi_source").waitForExistence(timeout: 5))
+        // "Smarta • Chennai (IN)" sits under the date title, within the month
+        // header row (no extra row, so short screens keep the day in view).
+        let source = element("calendar_ekadashi_source").frame
+        let title = element("calendar_year_selector").frame
+        let next = element("calendar_next_month").frame
+        XCTAssertGreaterThanOrEqual(source.minY, title.maxY - 1)
+        XCTAssertLessThanOrEqual(source.maxY, next.maxY + 8)
         snap("13-calendar-2027")
         tab(0)
 

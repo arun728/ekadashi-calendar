@@ -50,12 +50,6 @@ struct CalendarView: View {
                     .padding(.horizontal, 16)
                 }
                 filterBar
-                Text("\(model.traditionName(model.tradition)) • \(model.ekadashiCityName)")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-                    .padding(.horizontal, 16)
-                    .accessibilityIdentifier("calendar_ekadashi_source")
                 // A horizontal swipe on the month title, the grid or the
                 // selected day changes the month, as on Android.
                 VStack(spacing: 12) {
@@ -157,14 +151,23 @@ struct CalendarView: View {
     /// The selected date opens the month and year picker; arrows step months.
     private var monthHeader: some View {
         HStack(spacing: 0) {
-            Button { pickingMonth = true } label: {
-                HStack(spacing: 6) {
-                    // The selected date in full, as on every tab.
-                    Text(model.fullDate(selected)).font(.title3.weight(.bold)).foregroundStyle(.primary)
-                    Image(systemName: "chevron.down").font(.footnote.weight(.bold)).foregroundStyle(Theme.teal)
+            VStack(alignment: .leading, spacing: 2) {
+                Button { pickingMonth = true } label: {
+                    HStack(spacing: 6) {
+                        // The selected date in full, as on every tab.
+                        Text(model.fullDate(selected)).font(.title3.weight(.bold)).foregroundStyle(.primary)
+                        Image(systemName: "chevron.down").font(.footnote.weight(.bold)).foregroundStyle(Theme.teal)
+                    }
                 }
+                .accessibilityIdentifier("calendar_year_selector")
+                // Where and how the Ekadashis are calculated (Home's menus),
+                // under the date so short screens keep the day in view.
+                Text("\(model.traditionName(model.tradition)) • \(model.ekadashiCityName)")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .accessibilityIdentifier("calendar_ekadashi_source")
             }
-            .accessibilityIdentifier("calendar_year_selector")
             Spacer()
             Button { move(-1) } label: { Image(systemName: "chevron.left").frame(width: 44, height: 44) }
                 .disabled(isFirstMonth)
