@@ -14,6 +14,16 @@ final class CityShortlistTests: XCTestCase {
         }
     }
 
+    /// Popular cities are written in each language's own script.
+    func testEveryPopularCityHasItsNameInEveryLanguage() {
+        for city in PanchangCityCatalog.shared.popular() {
+            for language in Localizer.languages where language != "en" {
+                let name = PlaceNames.shared.label(city.label, language: language)
+                XCTAssertNil(name.range(of: "[A-Za-z]", options: .regularExpression), "\(language): \(name)")
+            }
+        }
+    }
+
     func testRecentPicksComeFirstNewestFirstWithoutDuplicates() throws {
         let store = InMemoryKeyValueStore()
         let recents = RecentCities(store: store)

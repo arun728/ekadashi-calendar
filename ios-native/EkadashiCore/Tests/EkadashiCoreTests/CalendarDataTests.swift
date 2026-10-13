@@ -162,8 +162,10 @@ final class LocalizationTests: XCTestCase {
         let english = Localizer.shared.keys(language: "en")
         // 325 shared keys, plus the 157 iOS strings moved into lib/l10n, the
         // four Panchang location strings (docs/ROADMAP.md Phase 2, Android),
-        // "X of Y Ekadashis", the five time zone names and the UTC offset.
-        XCTAssertEqual(english.count, 493)
+        // "X of Y Ekadashis", the five time zone names and the UTC offset,
+        // and the 20 Ekadashi-engine, city picker and share card strings
+        // (docs/EKADASHI_ENGINE_SCHEDULE.md).
+        XCTAssertEqual(english.count, 513)
         var problems: [String] = []
         for language in ["ta", "hi", "te", "gu", "bn"] {
             for key in english {

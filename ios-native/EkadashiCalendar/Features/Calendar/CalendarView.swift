@@ -21,7 +21,7 @@ struct CalendarView: View {
     /// The direction the month grid slides in (a later month from the right).
     @State private var forward = true
     /// Month changes slide visibly rather than snapping.
-    static let monthSlide = Animation.easeInOut(duration: 0.45)
+    static let monthSlide = Animation.easeInOut(duration: 0.35)
 
     /// The enabled Ekadashi years (assets/calendar/ekadashi_years.json).
     private var years: [Int] { model.enabledYears }
@@ -70,9 +70,11 @@ struct CalendarView: View {
                 .contentShape(Rectangle())
                 .clipped()
                 // A swipe moves the month exactly as the arrows do (same slide).
-                .simultaneousGesture(DragGesture(minimumDistance: 30).onEnded { value in
-                    let dx = value.translation.width, dy = value.translation.height
-                    guard abs(dx) > 60, abs(dx) > abs(dy) else { return }
+                // A flick counts by where it is heading, so a quick swipe turns the
+                // month as promptly as an arrow tap.
+                .simultaneousGesture(DragGesture(minimumDistance: 20).onEnded { value in
+                    let dx = value.predictedEndTranslation.width, dy = value.translation.height
+                    guard abs(dx) > 50, abs(dx) > abs(dy) else { return }
                     move(dx < 0 ? 1 : -1)
                 })
             }

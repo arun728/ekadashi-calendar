@@ -207,7 +207,10 @@ final class EnglishFallbackTests: XCTestCase {
     func testPlacesAndCountriesAreNamedInEachLanguage() {
         XCTAssertEqual(PlaceNames.shared.place("Chennai", language: "hi"), "चेन्नई")
         XCTAssertEqual(PlaceNames.shared.place("Chennai", language: "en"), "Chennai")
-        XCTAssertEqual(PlaceNames.shared.place("Nowhere", language: "ta"), "Nowhere")
+        // A place the table lacks is written by sound, never left in Latin letters.
+        XCTAssertEqual(PlaceNames.shared.place("Nowhere", language: "ta"), Transliterator.transliterate("Nowhere", language: "ta"))
+        XCTAssertNil(PlaceNames.shared.place("Nowhere", language: "ta").range(of: "[A-Za-z]", options: .regularExpression))
+        XCTAssertEqual(PlaceNames.shared.place("Nowhere", language: "en"), "Nowhere")
         XCTAssertEqual(PlaceNames.shared.label("London (GB)", language: "gu"), "લંડન (યુનાઇટેડ કિંગડમ)")
         XCTAssertEqual(PlaceNames.shared.country("IN", language: "te"), "భారతదేశం")
     }

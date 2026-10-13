@@ -162,29 +162,51 @@ final class AppModel {
     var today: CivilDate { scheduleZone.wallClock(Date()).date }
     var locationName: String { if case .located(let city) = locationState { return city }; return "" }
 
-    /// The detected place in the app language: the shared table first, then
-    /// Apple's geocoder in that language, then the English name.
+    /// Place names Apple's geocoder gave in the app language (see [placeName]).
     private(set) var geocodedCityNames: [String: String] = [:]
     @ObservationIgnored private var cityLookups: Set<String> = []
     @ObservationIgnored private var lastCoordinate: (Double, Double)?
 
     func cityLabel(_ city: String) -> String {
-        let table = PlaceNames.shared.place(city, language: language)
-        guard language != "en", table == city else { return table }
-        let key = "\(language)|\(city)"
+        guard let coordinate = lastCoordinate else { return PlaceNames.shared.place(city, language: language) }
+        return placeName(city, latitude: coordinate.0, longitude: coordinate.1)
+    }
+
+    /// A place in the app language, never in Latin letters outside English:
+    /// the shared table first, then Apple's geocoder in that language at the
+    /// place's coordinates (cached on the phone; one lookup at a time, as the
+    /// geocoder throttles), and meanwhile the name written by sound.
+    func placeName(_ name: String, latitude: Double, longitude: Double) -> String {
+        let table = PlaceNames.shared.place(name, language: language)
+        guard !PlaceNames.shared.isKnown(name, language: language) else { return table }
+        let key = "\(language)|\(name)|\(String(format: "%.2f,%.2f", latitude, longitude))"
         if let known = geocodedCityNames[key] { return known }
-        if let coordinate = lastCoordinate, !cityLookups.contains(key) {
-            cityLookups.insert(key)
-            let language = self.language
-            Task { [weak self] in
-                // Only a name in the language's own script replaces English.
-                guard let name = await self?.location.localizedName(latitude: coordinate.0, longitude: coordinate.1,
-                                                                    language: language),
-                      name.range(of: "[A-Za-z]", options: .regularExpression) == nil else { return }
-                self?.geocodedCityNames[key] = name
-            }
+        if let saved = savedPlaceNames[key] { return saved }
+        guard !cityLookups.contains(key) else { return table }
+        cityLookups.insert(key)
+        let language = self.language, previous = geocodeQueue
+        geocodeQueue = Task { [weak self] in
+            await previous?.value
+            // Only a name in the language's own script replaces English.
+            guard let found = await self?.location.localizedName(latitude: latitude, longitude: longitude, language: language),
+                  found.range(of: "[A-Za-z]", options: .regularExpression) == nil else { return }
+            self?.rememberPlaceName(found, for: key)
         }
-        return city
+        return table
+    }
+
+    @ObservationIgnored private var geocodeQueue: Task<Void, Never>?
+    static let placeNamesKey = "geocoded_place_names"
+
+    private var savedPlaceNames: [String: String] {
+        store.string(forKey: Self.placeNamesKey).flatMap { try? JSONDecoder().decode([String: String].self, from: Data($0.utf8)) } ?? [:]
+    }
+
+    private func rememberPlaceName(_ name: String, for key: String) {
+        geocodedCityNames[key] = name
+        var saved = savedPlaceNames
+        saved[key] = name
+        if let data = try? JSONEncoder().encode(saved) { store.set(String(decoding: data, as: UTF8.self), forKey: Self.placeNamesKey) }
     }
 
     /// The Ekadashi city's time zone in the app language ("भारतीय समय" for
@@ -277,12 +299,11 @@ final class AppModel {
         return (try? city.validate()) == nil ? nil : city
     }
 
-    /// A detected place in the app language with its country code; a
-    /// catalog city through the place-name table.
+    /// Any city in the app language with its country code ("சென்னை
+    /// (இந்தியா)"): the place-name table, else the geocoder (see [placeName]).
     func cityDisplayName(_ city: PanchangCity) -> String {
-        guard city.id == Self.detectedCityId else { return PlaceNames.shared.label(city.label, language: language) }
         let (name, code) = Self.splitCountry(city.label)
-        let local = cityLabel(name)
+        let local = placeName(name, latitude: city.latitude, longitude: city.longitude)
         guard let code else { return local }
         return "\(local) (\(PlaceNames.shared.country(code, language: language)))"
     }

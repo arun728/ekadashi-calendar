@@ -41,7 +41,7 @@ struct ShareCardSheet: View {
                                 Button {
                                     Task { await save(image) }
                                 } label: {
-                                    Label(model.t("share_card_save"), systemImage: "square.and.arrow.down")
+                                    Label(model.t("ios_share_card_save"), systemImage: "square.and.arrow.down")
                                         .font(.callout.bold()).frame(maxWidth: .infinity).padding(.vertical, 6)
                                 }
                                 .secondaryActionStyle()
@@ -80,12 +80,12 @@ struct ShareCardSheet: View {
         defer { saving = false }
         let access = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
         guard access == .authorized || access == .limited else {
-            status = model.t("share_card_photos_denied")
+            status = model.t("ios_share_card_photos_denied")
             return
         }
         do {
             try await PHPhotoLibrary.shared().performChanges { PHAssetChangeRequest.creationRequestForAsset(from: image) }
-            status = model.t("share_card_saved")
+            status = model.t("ios_share_card_saved")
         } catch {
             status = model.t("share_card_save_failed")
         }

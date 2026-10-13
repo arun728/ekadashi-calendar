@@ -1620,4 +1620,70 @@ class AppLocalizationsTe extends AppLocalizations {
   String utc_offset(String value0) {
     return 'యూటీసీ $value0';
   }
+
+  @override
+  String get calculating_ekadashis => 'ఈ ప్రదేశానికి ఏకాదశులను లెక్కిస్తోంది…';
+
+  @override
+  String get home_location_hint =>
+      'నగరాన్ని వెతకండి లేదా మీ ప్రస్తుత ప్రదేశాన్ని ఉపయోగించండి';
+
+  @override
+  String get home_location_title => 'ఏకాదశి ప్రదేశం';
+
+  @override
+  String get home_location_footer =>
+      'ఏకాదశి తేదీలు, సమయాలు ఈ ప్రదేశానికి లెక్కించబడతాయి. ఇక్కడ నగరాన్ని ఎంచుకుంటే పంచాంగ ప్రదేశం కూడా మారుతుంది.';
+
+  @override
+  String get home_tradition => 'సంప్రదాయం';
+
+  @override
+  String get share_card => 'కార్డ్‌ను పంచుకోండి';
+
+  @override
+  String get share_card_title => 'ఏకాదశి కార్డ్‌ను పంచుకోండి';
+
+  @override
+  String get share_card_observance => 'ఏకాదశి వ్రత దినం';
+
+  @override
+  String get share_card_fasting_begins => 'ఉపవాస ప్రారంభం';
+
+  @override
+  String get share_card_parana_window => 'పారణ సమయం';
+
+  @override
+  String get share_card_preparing => 'కార్డ్ సిద్ధమవుతోంది…';
+
+  @override
+  String get share_card_save_failed => 'కార్డ్‌ను భద్రపరచలేకపోయాం.';
+
+  @override
+  String share_card_message(String value0, String value1) {
+    return '$value0 — $value1. ఏకాదశి క్యాలెండర్ యాప్ నుండి ఉపవాసం, పారణ సమయాలు ఈ కార్డ్‌లో ఉన్నాయి.';
+  }
+
+  @override
+  String get tradition_smarta => 'స్మార్త';
+
+  @override
+  String get tradition_vaishnava => 'వైష్ణవ';
+
+  @override
+  String get panchang_vaishnava_rule =>
+      'వైష్ణవ: సూర్యోదయానికి 96 నిమిషాల ముందు (అరుణోదయం) ఏకాదశి ఉండాలి, మహాద్వాదశి నియమాలతో.';
+
+  @override
+  String get home_popular_cities => 'ప్రముఖ నగరాలు';
+
+  @override
+  String get share_card_save => 'గ్యాలరీలో భద్రపరచండి';
+
+  @override
+  String get share_card_saved => 'కార్డ్ గ్యాలరీలో భద్రపరచబడింది.';
+
+  @override
+  String get share_card_photos_denied =>
+      'ఫోటో అనుమతి ఆపివేయబడింది. కార్డ్‌లను భద్రపరచడానికి సెట్టింగ్స్‌లో అనుమతించండి.';
 }

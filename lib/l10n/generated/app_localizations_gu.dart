@@ -1609,4 +1609,70 @@ class AppLocalizationsGu extends AppLocalizations {
   String utc_offset(String value0) {
     return 'યુટીસી $value0';
   }
+
+  @override
+  String get calculating_ekadashis => 'આ સ્થળ માટે એકાદશીની ગણતરી થઈ રહી છે…';
+
+  @override
+  String get home_location_hint =>
+      'શહેર શોધો અથવા તમારા વર્તમાન સ્થાનનો ઉપયોગ કરો';
+
+  @override
+  String get home_location_title => 'એકાદશી સ્થાન';
+
+  @override
+  String get home_location_footer =>
+      'એકાદશીની તારીખો અને સમય આ સ્થળ માટે ગણવામાં આવે છે. અહીં શહેર પસંદ કરવાથી પંચાંગનું સ્થાન પણ બદલાય છે.';
+
+  @override
+  String get home_tradition => 'પરંપરા';
+
+  @override
+  String get share_card => 'કાર્ડ શેર કરો';
+
+  @override
+  String get share_card_title => 'એકાદશી કાર્ડ શેર કરો';
+
+  @override
+  String get share_card_observance => 'એકાદશી વ્રત દિવસ';
+
+  @override
+  String get share_card_fasting_begins => 'વ્રત પ્રારંભ';
+
+  @override
+  String get share_card_parana_window => 'પારણ સમય';
+
+  @override
+  String get share_card_preparing => 'કાર્ડ તૈયાર થઈ રહ્યું છે…';
+
+  @override
+  String get share_card_save_failed => 'કાર્ડ સાચવી શકાયું નહીં.';
+
+  @override
+  String share_card_message(String value0, String value1) {
+    return '$value0 — $value1. એકાદશી કેલેન્ડર ઍપમાંથી વ્રત અને પારણનો સમય આ કાર્ડ પર છે.';
+  }
+
+  @override
+  String get tradition_smarta => 'સ્માર્ત';
+
+  @override
+  String get tradition_vaishnava => 'વૈષ્ણવ';
+
+  @override
+  String get panchang_vaishnava_rule =>
+      'વૈષ્ણવ: સૂર્યોદયના 96 મિનિટ પહેલાં (અરુણોદય) એકાદશી હોવી જોઈએ, મહાદ્વાદશીના નિયમો સાથે.';
+
+  @override
+  String get home_popular_cities => 'લોકપ્રિય શહેરો';
+
+  @override
+  String get share_card_save => 'ગેલેરીમાં સાચવો';
+
+  @override
+  String get share_card_saved => 'કાર્ડ ગેલેરીમાં સાચવ્યું.';
+
+  @override
+  String get share_card_photos_denied =>
+      'ફોટાની પરવાનગી બંધ છે. કાર્ડ સાચવવા માટે સેટિંગ્સમાં પરવાનગી આપો.';
 }
