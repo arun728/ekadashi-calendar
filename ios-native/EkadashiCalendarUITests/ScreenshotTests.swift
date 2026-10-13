@@ -44,6 +44,9 @@ final class ScreenshotTests: XCTestCase {
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 20))
         XCTAssertTrue(app.descendants(matching: .any)["home_options_tube"].exists)
         XCTAssertTrue(app.descendants(matching: .any)["language_menu"].exists)
+        XCTAssertTrue(element("home_tradition_menu").exists)
+        XCTAssertTrue(element("home_year_menu").exists)
+        XCTAssertTrue(element("home_location").exists)
         snap("01-today")
 
         app.buttons["view_details"].firstMatch.tap()
@@ -95,6 +98,44 @@ final class ScreenshotTests: XCTestCase {
         replaceSearch(with: "amavasai")
         XCTAssertTrue(result("search_result_observance:amavasya:").waitForExistence(timeout: 10))
         snap("11-search-type-word")
+    }
+
+    /// Home: the tradition and year menus, the city search and the free
+    /// share card (no paywall).
+    func testHomeMenusCitySearchAndShareCard() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+
+        element("home_tradition_menu").tap()
+        XCTAssertTrue(app.buttons["Vaishnava · Gaudiya/ISKCON"].waitForExistence(timeout: 5))
+        app.buttons["Vaishnava · Gaudiya/ISKCON"].tap()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        snap("12-home-vaishnava")
+
+        element("home_year_menu").tap()
+        XCTAssertTrue(app.buttons["2027"].waitForExistence(timeout: 5))
+        app.buttons["2027"].tap()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 10))
+        tab(1)
+        XCTAssertTrue(element("calendar_ekadashi_source").waitForExistence(timeout: 5))
+        snap("13-calendar-2027")
+        tab(0)
+
+        element("home_location").tap()
+        let search = app.textFields["ekadashi_location_search"]
+        XCTAssertTrue(search.waitForExistence(timeout: 5))
+        search.tap()
+        search.typeText("Mumbai")
+        let mumbai = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Mumbai'")).firstMatch
+        XCTAssertTrue(mumbai.waitForExistence(timeout: 10))
+        snap("14-home-city-search")
+        mumbai.tap()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+
+        app.buttons["home_share_card"].firstMatch.tap()
+        XCTAssertTrue(element("share_card_preview").waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["share_card_share"].waitForExistence(timeout: 10))
+        XCTAssertFalse(app.buttons["premium_close"].exists, "the share card is free")
+        snap("15-share-card")
     }
 
     /// Sub-sections change with a horizontal swipe as well as their chips,

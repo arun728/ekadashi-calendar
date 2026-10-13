@@ -1,10 +1,14 @@
 import SwiftUI
 import EkadashiCore
 
-/// The home tab: location and language, then one card per Ekadashi with
-/// arrows, opening on the current or next Ekadashi (main.dart home).
+/// The home tab: location and language, the tradition and year menus, then
+/// one card per Ekadashi of that year with arrows, opening on the current or
+/// next Ekadashi. Dates and times are calculated by the Panchang engine for
+/// the chosen city; the menus apply to Calendar, reminders and widgets too.
 struct TodayView: View {
     @Environment(AppModel.self) private var model
+
+    private var events: [EkadashiOccurrence] { model.homeEkadashis }
 
     var body: some View {
         @Bindable var model = model
@@ -12,11 +16,21 @@ struct TodayView: View {
             HomeHeader()
                 .padding(.horizontal, 20)
                 .padding(.top, 12)
+                .padding(.bottom, 8)
+            HomeFilters()
+                .padding(.horizontal, 20)
                 .padding(.bottom, 12)
-            if model.ekadashis.isEmpty {
+            if events.isEmpty && model.isCalculating {
+                VStack(spacing: 12) {
+                    ProgressView().tint(Theme.teal)
+                    Text(model.t("calculating_ekadashis")).font(.subheadline).foregroundStyle(.secondary)
+                }
+                .frame(maxHeight: .infinity)
+                .accessibilityIdentifier("home_calculating")
+            } else if events.isEmpty {
                 ContentUnavailableView(model.t("no_ekadashi"), systemImage: "calendar.badge.exclamationmark")
             } else {
-                Text("\(model.homeIndex + 1) / \(model.ekadashis.count)")
+                Text("\(model.homeIndex + 1) / \(events.count)")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                     .padding(.bottom, 8)
@@ -24,7 +38,7 @@ struct TodayView: View {
                 HStack(spacing: 0) {
                     arrow("chevron.left", target: model.homeIndex - 1) { model.homeIndex -= 1 }
                     TabView(selection: $model.homeIndex) {
-                        ForEach(Array(model.ekadashis.enumerated()), id: \.element.id) { index, event in
+                        ForEach(Array(events.enumerated()), id: \.element.occurrenceUid) { index, event in
                             EkadashiCard(event: event)
                                 .padding(4)
                                 .tag(index)
@@ -36,24 +50,27 @@ struct TodayView: View {
                 .padding(.horizontal, 4)
                 .padding(.bottom, 8)
                 .animation(.easeInOut(duration: 0.3), value: model.homeIndex)
+                .opacity(model.isCalculating ? 0.5 : 1)
+                .overlay { if model.isCalculating { ProgressView().tint(Theme.teal) } }
             }
         }
     }
 
     /// An arrow to the card at [target], read out as that Ekadashi's name.
     private func arrow(_ symbol: String, target: Int, action: @escaping () -> Void) -> some View {
-        let enabled = model.ekadashis.indices.contains(target)
+        let enabled = events.indices.contains(target)
         return Button(action: action) {
             Image(systemName: symbol).font(.system(size: 28, weight: .semibold))
                 .frame(width: 40, height: 60)
         }
         .disabled(!enabled)
         .foregroundStyle(enabled ? Theme.teal : .gray)
-        .accessibilityLabel(enabled ? model.ekadashis[target].name : "")
+        .accessibilityLabel(enabled ? events[target].name : "")
     }
 }
 
-/// Location (tap to refresh or to re-ask) and the language menu, in one glass tube.
+/// The Ekadashi city (tap to search or use the current location) and the
+/// language menu, in one glass tube.
 struct HomeHeader: View {
     @Environment(AppModel.self) private var model
 
@@ -75,44 +92,76 @@ struct HomeHeader: View {
         .accessibilityIdentifier("home_options_tube")
     }
 
-    @ViewBuilder
+    @State private var choosingCity = false
+
+    /// The Ekadashi city; tapping it opens the city search.
     private var location: some View {
-        switch model.locationState {
-        case .detecting:
-            HStack(spacing: 8) {
-                ProgressView().controlSize(.small).tint(Theme.teal)
-                Text(model.t("detecting_location")).font(.subheadline).foregroundStyle(.secondary).lineLimit(1)
-            }
-        case .denied:
-            Button {
-                Task { await model.requestLocationAgain() }
-            } label: {
-                Label(model.t("location_denied"), systemImage: "location.slash")
-                    .font(.subheadline).underline().foregroundStyle(.orange).lineLimit(1)
-            }
-            .buttonStyle(.plain)
-        case .located(let city) where !city.isEmpty:
-            Button {
-                Task { await model.handleLocation() }
-            } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: "location.fill").foregroundStyle(Theme.teal)
-                    Text("\(model.cityLabel(city)) • \(model.timeZoneLabel)").font(.subheadline.weight(.medium)).lineLimit(1)
-                    Image(systemName: "arrow.clockwise").font(.caption2).foregroundStyle(.secondary)
+        Button {
+            choosingCity = true
+        } label: {
+            HStack(spacing: 6) {
+                if model.locationState == .detecting && !model.ekadashiCityIsManual {
+                    ProgressView().controlSize(.small).tint(Theme.teal)
+                } else {
+                    Image(systemName: model.ekadashiCityIsManual ? "mappin.and.ellipse" : "location.fill")
+                        .foregroundStyle(Theme.teal)
                 }
+                Text("\(model.ekadashiCityName) • \(model.timeZoneLabel)").font(.subheadline.weight(.medium)).lineLimit(1)
+                Image(systemName: "chevron.down").font(.caption2).foregroundStyle(.secondary)
             }
-            .buttonStyle(.plain)
-        default:
-            Button {
-                Task { await model.requestLocationAgain() }
-            } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: "location.fill").foregroundStyle(Theme.teal)
-                    Text("\(model.t("locating")) • \(model.timeZoneLabel)").font(.subheadline)
-                }
-            }
-            .buttonStyle(.plain)
         }
+        .buttonStyle(.plain)
+        .accessibilityHint(model.t("home_location_hint"))
+        .accessibilityIdentifier("home_location")
+        .sheet(isPresented: $choosingCity) { EkadashiLocationSheet() }
+    }
+}
+
+/// Tradition and year: what Home, Calendar, reminders and widgets show.
+struct HomeFilters: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Menu {
+                ForEach(EkadashiTradition.allCases, id: \.self) { tradition in
+                    Button { model.setTradition(tradition) } label: {
+                        if tradition == model.tradition {
+                            Label(model.traditionName(tradition), systemImage: "checkmark")
+                        } else {
+                            Text(model.traditionName(tradition))
+                        }
+                    }
+                }
+            } label: {
+                pill(model.traditionName(model.tradition), symbol: "sparkles")
+            }
+            .accessibilityLabel("\(model.t("home_tradition")): \(model.traditionName(model.tradition))")
+            .accessibilityIdentifier("home_tradition_menu")
+            Menu {
+                ForEach(model.enabledYears, id: \.self) { year in
+                    Button { model.setYear(year) } label: {
+                        if year == model.selectedYear { Label(String(year), systemImage: "checkmark") } else { Text(String(year)) }
+                    }
+                }
+            } label: {
+                pill(String(model.selectedYear), symbol: "calendar")
+            }
+            .accessibilityLabel("\(model.t("year")): \(model.selectedYear)")
+            .accessibilityIdentifier("home_year_menu")
+        }
+    }
+
+    private func pill(_ text: String, symbol: String) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: symbol).foregroundStyle(Theme.teal)
+            Text(text).font(.subheadline.weight(.medium)).lineLimit(1)
+            Image(systemName: "chevron.down").font(.caption2).foregroundStyle(.secondary)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 8)
+        .frame(maxWidth: .infinity)
+        .glassCapsule(interactive: true)
     }
 }
 
@@ -147,6 +196,7 @@ struct EkadashiCard: View {
     @Environment(AppModel.self) private var model
     let event: EkadashiOccurrence
     @State private var recording = false
+    @State private var sharing = false
 
     private var daysUntil: Int { model.today.days(until: event.date) }
 
@@ -197,6 +247,14 @@ struct EkadashiCard: View {
                     }
                     .primaryActionStyle()
                     .accessibilityIdentifier("view_details")
+                    Button {
+                        sharing = true
+                    } label: {
+                        Image(systemName: "square.and.arrow.up").font(.title3).padding(.vertical, 4)
+                    }
+                    .secondaryActionStyle()
+                    .accessibilityLabel(model.t("share_card"))
+                    .accessibilityIdentifier("home_share_card")
                     if model.vrat.isEnabled {
                         Button {
                             recording = true
@@ -217,6 +275,7 @@ struct EkadashiCard: View {
         .padding(EdgeInsets(top: 16, leading: 20, bottom: 16, trailing: 20))
         .glassPanel(cornerRadius: 24)
         .sheet(isPresented: $recording) { RecordVratSheet(event: event) }
+        .sheet(isPresented: $sharing) { ShareCardSheet(event: event) }
     }
 
     private func timing(_ title: String, _ date: CivilDate, _ time: String) -> some View {

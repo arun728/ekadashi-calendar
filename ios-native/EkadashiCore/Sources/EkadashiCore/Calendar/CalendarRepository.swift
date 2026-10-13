@@ -66,6 +66,12 @@ public final class CalendarRepository: @unchecked Sendable {
         availableYears = years.sorted()
     }
 
+    /// The published rows of [year] (identities and texts), in pack order.
+    func rows(year: Int) -> [[String: Any]] { rows.filter { $0["calendar_year"] as? Int == year } }
+
+    /// The newest published texts of one Ekadashi, for any year.
+    func contentRow(id: String) -> [String: Any]? { rows.last { $0["content_id"] as? String == id } }
+
     /// Occurrences for one schedule ([timezone] is an app code such as IST)
     /// and language, sorted by date; English where a translation is missing.
     public func ekadashis(timezone: String, language: String, year: Int? = nil) -> [EkadashiOccurrence] {

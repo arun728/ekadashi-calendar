@@ -171,7 +171,7 @@ struct RecordVratSheet: View {
                 method: status == .observed || status == .partial ? method : nil,
                 methodOther: method == .other ? methodOther.trimmingCharacters(in: .whitespacesAndNewlines) : nil,
                 note: trimmedNote.isEmpty ? nil : trimmedNote,
-                timezone: model.timezone.rawValue, occurrences: model.ekadashis)
+                timezone: model.ekadashiCity.timeZoneId, tradition: model.tradition.rawValue, occurrences: model.ekadashis)
             dismiss()
             model.announce(unlocked, afterDismissal: true)
         } catch {

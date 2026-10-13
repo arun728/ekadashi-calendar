@@ -201,7 +201,7 @@ struct SettingsView: View {
     private var appStoreId: String { Bundle.main.object(forInfoDictionaryKey: "EkadashiAppStoreId") as? String ?? "" }
 
     private var appStoreLink: String {
-        appStoreId.isEmpty ? "https://apps.apple.com/app/ekadashi-calendar" : "https://apps.apple.com/app/id\(appStoreId)"
+        AppLinks.appStore(id: appStoreId)
     }
 
     /// The App Store review page when the app has a listing, else the system prompt.
@@ -314,8 +314,9 @@ struct WidgetPreviewView: View {
     @Environment(AppModel.self) private var model
 
     var body: some View {
-        let snapshot = WidgetSnapshot.build(occurrences: model.ekadashis, timezone: model.timezone.rawValue,
-                                            locationName: model.locationName, language: model.language, now: Date())
+        let snapshot = WidgetSnapshot.build(occurrences: model.ekadashis, timezone: model.ekadashiCity.timeZoneId,
+                                            locationName: model.ekadashiCityName, language: model.language, now: Date(),
+                                            tradition: model.tradition.rawValue)
         TimelineView(.periodic(from: .now, by: 60)) { context in
             let during = snapshot.nextEkadashi.map {
                 $0.fastingStart.addingTimeInterval($0.paranaStart.timeIntervalSince($0.fastingStart) * 0.6)

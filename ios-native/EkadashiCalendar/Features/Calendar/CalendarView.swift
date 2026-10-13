@@ -19,7 +19,8 @@ struct CalendarView: View {
     @State private var editing: EntryEditorRequest?
     @State private var pickingMonth = false
 
-    private var years: [Int] { model.repository?.availableYears ?? [CivilDate.today().year] }
+    /// The enabled Ekadashi years (assets/calendar/ekadashi_years.json).
+    private var years: [Int] { model.enabledYears }
     private var firstDay: CivilDate { CivilDate(years.first ?? month.year, 1, 1) }
     private var lastDay: CivilDate { CivilDate(years.last ?? month.year, 12, 31) }
     private var isFirstMonth: Bool { month == firstDay.firstOfMonth }
@@ -45,6 +46,12 @@ struct CalendarView: View {
                     .padding(.horizontal, 16)
                 }
                 filterBar
+                Text("\(model.traditionName(model.tradition)) • \(model.ekadashiCityName)")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .padding(.horizontal, 16)
+                    .accessibilityIdentifier("calendar_ekadashi_source")
                 // A horizontal swipe on the month title, the grid or the
                 // selected day changes the month, as on Android.
                 VStack(spacing: 12) {
@@ -84,6 +91,8 @@ struct CalendarView: View {
                 .presentationDetents([.height(320)])
         }
         .onAppear { focusInitial() }
+        // Home's year menu and Calendar stay on the same year.
+        .onChange(of: month) { _, value in model.calendarShowsYear(value.year) }
         .onChange(of: model.calendarFocus) { _, date in
             guard let date else { return }
             focus(date)
@@ -181,8 +190,11 @@ struct CalendarView: View {
 
     // MARK: Navigation
 
+    /// Opens on the year chosen on Home: today in this year, else its January.
     private func focusInitial() {
-        if month < firstDay.firstOfMonth || month > lastDay.firstOfMonth { focus(CivilDate.today()) }
+        guard month.year != model.selectedYear else { return }
+        let today = CivilDate.today()
+        focus(today.year == model.selectedYear ? today : CivilDate(model.selectedYear, 1, 1))
     }
 
     /// Today, clamped to the data years.

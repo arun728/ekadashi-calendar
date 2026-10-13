@@ -67,6 +67,8 @@ struct GlobalSearchView: View {
         }
         .onChange(of: model.entriesRevision) { _, _ in build() }
         .onChange(of: model.language) { _, _ in build() }
+        // Ekadashi dates follow Home's city and tradition.
+        .onChange(of: model.ekadashis.map(\.date)) { _, _ in build() }
     }
 
     // MARK: Filters
@@ -78,7 +80,7 @@ struct GlobalSearchView: View {
                     HStack(spacing: 8) {
                         Menu {
                             Button(model.t("search_all_years")) { year = nil; run() }
-                            ForEach(model.repository?.availableYears ?? [], id: \.self) { value in
+                            ForEach(model.enabledYears, id: \.self) { value in
                                 Button(String(value)) { year = value; run() }
                             }
                         } label: {

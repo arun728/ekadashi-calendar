@@ -113,7 +113,8 @@ These follow the Play-only rules in `AGENTS.md`, adapted to StoreKit 2 with no b
 
 | Android | iOS | Verified by |
 | --- | --- | --- |
-| Published 2026/2027 schedule; IST/EST/CST/MST/PST chosen by location, else the device timezone | `CalendarRepository`, `AppTimezone`, `LocationService` | Core tests (data byte-identical to `assets/`) |
+| Ekadashi dates and times from the Panchang engine for the Home city (picked, else detected, else Chennai), tradition and year; texts and identities from the 2026/2027 packs (docs/EKADASHI_ENGINE_SCHEDULE.md). Android still shows the published IST/EST/CST/MST/PST schedule until it is ported | `EkadashiSchedule`, `CalendarRepository`, `LocationService`, `EkadashiLocationSheet` | Core tests (`EkadashiScheduleTests`; data byte-identical to `assets/`) |
+| Free Ekadashi share card (from PR #20): preview, share with store links, save to Photos | `ShareCardSheet`, `EkadashiShareCard`, `AppLinks` | Core tests for the links and message; UI not run |
 | Home cards: countdown, fasting and Parana times, details, Vrat button; re-tapping Today jumps to the next Ekadashi | `TodayView`, `EkadashiDetailsView` | Not run |
 | Calendar: every data year, month grid, Ekadashi/Google/custom filters, custom entries, Google import and disconnect | `CalendarView`, `EntryEditorView`, `GoogleCalendarPickerView`, `GoogleSyncCoordinator` | Core tests for the sync, free-registry and deletion-reconciliation rules; UI not run |
 | Vrat tracker: overview, history, statistics, achievements, record sheet, unlock dialog | `VratView`, `RecordVratSheet`, `VratTracker` | Core tests (Android JSON schema, streaks, 3 free entries/badges); UI not run |

@@ -31,11 +31,11 @@ final class VratStore {
     func years(_ events: [EkadashiOccurrence]) -> [Int] { _ = revision; return tracker.availableYears(events) }
 
     func save(_ event: EkadashiOccurrence, status: ObservanceStatus, method: FastingMethod?, methodOther: String?, note: String?,
-              timezone: String, occurrences: [EkadashiOccurrence]) throws -> [Achievement] {
+              timezone: String, tradition: String? = nil, occurrences: [EkadashiOccurrence]) throws -> [Achievement] {
         defer { revision += 1 }
         return try tracker.record(occurrenceId: event.id, occurrenceUid: event.occurrenceUid, date: event.date.iso, name: event.name,
-                                  status: status, method: method, methodOther: methodOther, note: note, timezone: timezone,
-                                  occurrences: occurrences)
+                                  status: status, method: method, methodOther: methodOther, note: note, tradition: tradition,
+                                  timezone: timezone, occurrences: occurrences)
     }
 
     func delete(_ event: EkadashiOccurrence, occurrences: [EkadashiOccurrence]) throws {

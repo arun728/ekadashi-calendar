@@ -7,6 +7,7 @@ struct EkadashiDetailsView: View {
     @Environment(AppModel.self) private var model
     let event: EkadashiOccurrence
     @State private var recording = false
+    @State private var sharing = false
 
     var body: some View {
         ScrollView {
@@ -14,7 +15,8 @@ struct EkadashiDetailsView: View {
                 VStack(spacing: 4) {
                     Text(model.fullDate(event.date)).font(.title2.weight(.light))
                     Text(event.name).font(.largeTitle.bold()).foregroundStyle(Theme.teal).multilineTextAlignment(.center)
-                    StatusPill(text: model.timeZoneLabel, color: Theme.teal)
+                    StatusPill(text: "\(model.traditionName(model.tradition)) • \(model.ekadashiCityName) • \(model.timeZoneLabel)",
+                               color: Theme.teal)
                 }
                 .frame(maxWidth: .infinity)
                 if event.usesContentFallback {
@@ -39,6 +41,14 @@ struct EkadashiDetailsView: View {
         .navigationTitle(model.t("app_title"))
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $recording) { RecordVratSheet(event: event) }
+        .sheet(isPresented: $sharing) { ShareCardSheet(event: event) }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button { sharing = true } label: { Image(systemName: "square.and.arrow.up") }
+                    .accessibilityLabel(model.t("share_card"))
+                    .accessibilityIdentifier("details_share_card")
+            }
+        }
     }
 
     private func section(_ key: String, _ text: String) -> some View {

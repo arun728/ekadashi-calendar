@@ -247,3 +247,27 @@ That includes the tests you cannot run locally: `integration_test/*.dart`,
 `ios-native/*UITests/`. Search them for each renamed or moved label, key and
 step (for example `grep -rn "'Vrat'" integration_test`). Never leave an
 out-of-date test for CI to find one round at a time.
+
+## Ekadashi dates from the Panchang engine (13 October 2026)
+
+Arun approved building this iOS first on `feature/engine-ekadashi` (draft PR to
+`dev`, no merge, no CI); Android follows after he tests iOS. Home, Calendar,
+reminders, widgets, Journey and search take Ekadashi dates and times from the
+Panchang engine for the Home city (picked, else last detected, else Chennai)
+and the Home tradition (Smarta or Vaishnava) and year (2026, 2027). Setting the
+city on Home also sets the Panchang location, not the reverse. Leave the
+Panchang tab's Ekadashi sub-tab as it is. Home and Calendar are free; Panchang
+stays Premium. New years are enabled in `assets/calendar/ekadashi_years.json`;
+texts are reused by Ekadashi. The share card from PR #20 is free (no paywall).
+See docs/EKADASHI_ENGINE_SCHEDULE.md.
+
+## Store links (13 October 2026)
+
+Share texts use `AppLinks` in EkadashiCore:
+
+- Android (live v1): https://play.google.com/store/apps/details?id=com.applausestudios.ekadashi_calendar
+- iOS: https://apps.apple.com/app/ekadashi-calendar is a **placeholder**. The iOS
+  app has no App Store listing for v1; it launches with v2 at the end of 2026.
+  When it has a listing, replace the placeholder in `AppLinks.appStorePlaceholder`
+  (or set `APP_STORE_ID` in `ios-native/Config/Secrets.xcconfig`) and in the
+  Android port.
