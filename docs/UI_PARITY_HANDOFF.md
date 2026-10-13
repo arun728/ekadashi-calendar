@@ -1,55 +1,75 @@
-# UI parity continuation
+# UI parity review and continuation
 
-Continuation branch: `feature/ui-parity-resume`, based on
-`feature/ui-parity` at `d74893a`. The earlier local continuation from
-`5f0f8f0` is preserved locally on `archive/ui-parity-resume-5f0f8f0`;
-its overlapping implementation was not applied over Claude's newer work.
+Review branch: `feature/ui-parity-resume`, based on `feature/ui-parity` at
+`d74893a`. This keeps the latest screen parity implementation and adds the
+confirmed fixes below. Reference: Arun's four iPhone screenshots and the
+native views in `ios-native/EkadashiCalendar/`.
 
-## Reference and completed implementation
+## Fixes on this branch
 
-Use Arun's iPhone screenshots from 12 October 2026 and the native views in
-`ios-native/EkadashiCalendar/` as the reference. Preserve platform-specific
-widget rendering and verified store entitlement rules.
+- Larger Cupertino magnifying-glass icon (30dp) on all five tab toolbars,
+  with at least a 44dp touch target, including narrow screens.
+- Cupertino circular sync, sync, and person-minus Google disconnect icons.
+  Include the icon font in app assets and offscreen screenshot tests.
+- Home's language menu opens above the app instead of pushing a route
+  into Home's page stack. Opening it keeps the toolbar and card position.
+- Track actual page routes separately from popup overlays. Journey's year
+  menus and Panchang's location menu keep their toolbar and layout, while
+  pushed screens still use their own toolbar. Android Back dismisses the
+  active tab's popup before leaving the app.
+- Update Android integration regressions alongside the local widget checks.
+  Other source edits only address analyzer lints (braces and const).
 
-- Dark selected-tab capsule with teal icon and label.
-- Home header states, teal language action, glass Ekadashi card, prominent
-  Details button, grey disabled record action and Details navigation.
-- Calendar toolbar, Google action menu, All default, individual glass
-  filters, narrow weekday grid, month/year wheels, glass entries and
-  multi-day entry editor.
-- Journey overview/history/statistics/achievements, glass status rows,
-  recording sheet and achievement unlock presentation.
-- Panchang toolbar, location/date controls, glass chips/cards, sheets,
-  Muhurta control and pushed pages.
-- Search sheet/results, Premium sheet, reminder picker entitlement flow,
-  Settings details, localized notification channel and widget gallery.
-- Larger iOS magnifying-glass action on all five tab toolbars, including
-  narrow screens, with a touch target of at least 44dp.
-- iOS circular sync, sync and person-minus disconnect glyphs for Google.
-  The Cupertino icon font is included in app assets and offscreen renders.
+The source already contains dark selected-tab pills, glass Home/Details,
+Calendar controls and entries, Journey cards and sheets, Panchang controls
+and pages, Search/Premium sheets, and Settings/reminder/widget-gallery
+parity. The continuation does not change iOS, shared data, translations,
+purchase rules, notification behavior, or calendar calculations.
 
-Claude's newer source commits implement the broad screen parity work.
-This continuation adds the final search/Google icon requirements, their
-TDD regressions, and nonfunctional analyzer cleanup.
+## TDD and local verification
 
-## TDD and verification
+- `38541ca`: failing large-search and Google-glyph tests before the icon fix.
+- `af0e990`: failing Home language-menu toolbar/layout test before its fix.
+- `fc3a17f`: failing Journey and Panchang menu toolbar/layout tests before
+  the shared navigation fix.
+- `71e0e31`: failing system-Back dismissal regressions during that fix.
+- Expanded checks cover all six language transitions, preservation of the
+  selected fast and Details target, previously opened tabs retaining dates
+  and sections, and 320dp screens with 2x text. All 28 focused icon, language,
+  overlay, and shell tests pass.
+- Analyzer: no issues. Full Flutter suite: **661 tests pass** (13 October
+  2026), including regression, localization, offscreen UI, SQLite, and the
+  Swift/Dart Panchang fixture comparison.
+- Swift core: 214 tests pass; Python runner/tool tests: 26 pass. Their sources
+  are unchanged since these local runs. SQLite FFI tests use the system
+  library via the workspace's local library path, without an app change.
 
-`38541ca` commits the failing icon tests before implementation: both
-all-tab search tests and the Google-symbol test fail on `d74893a`, while
-the dark-tab regression passes. The targeted icon, shell and Calendar
-suite subsequently passes all 28 tests.
+Rendered PNGs under `build/ui-screenshots/offscreen/` cover all six languages
+and additional light/dark Settings, Premium, and Panchang layouts. These use
+mock native channels and are layout evidence, not device captures.
 
-Full local validation results will be recorded below when complete.
-Linux SQLite FFI tests require `libsqlite3.so`; this workspace supplies
-the system library through its local test environment without app changes.
+## Device verification
 
-## Remaining validation
+On Android, use this branch's build:
 
-Android emulator/native build checks and the iOS app/XCUITests require
-their respective SDKs and were not run here. Rendered Flutter PNGs use
-mock native channels; they are layout evidence, not device captures.
-Review the supplied screens on Android and iPhone before claiming exact
-visual parity, particularly platform glass, system controls and fonts.
+1. Home: browse to another fast, open the language menu, and select Hindi,
+   Tamil, then English. The top search/title and card must stay in place
+   while the menu is open. The same fast remains selected; Details and
+   Settings use the new language.
+2. Journey: open History and its year menu (also Statistics' year menu).
+   The toolbar and section chips must stay in place. Android Back closes
+   the menu and leaves Journey open.
+3. Panchang: open the city menu, cancel with Android Back, then reopen and
+   choose a city. The toolbar stays visible, and cancel preserves the date
+   and location. Changing language on Home preserves the selected Panchang
+   date and section when returning.
+4. Check the large search glyph on every tab and the Google sync/disconnect
+   glyphs in Calendar. Compare against the same screens on iPhone.
 
-No CI is authorized. Every pushed commit includes `[skip ci]`; do not
-trigger workflows or merge into dev/main without Arun's instructions.
+Native Android builds/emulator tests and iOS app/XCUITests were not run:
+Android SDK/ADB and Xcode are unavailable here. Real Google authorization,
+store purchases, and platform glass rendering require device validation.
+No new iOS fix is claimed; its native menus are the parity reference.
+
+No CI is authorized. Every pushed commit includes `[skip ci]`. Keep the PR
+draft for Arun's device review, and do not merge or push to dev/main.
