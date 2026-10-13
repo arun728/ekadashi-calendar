@@ -210,6 +210,9 @@ void main() {
 
     for (final locale in ['ta', 'hi', 'en']) {
       await selectTab(0);
+      final headerPosition = tester.getTopLeft(
+        find.byKey(const Key('home_options_tube')),
+      );
       await tester.tap(find.byKey(const Key('language_menu')));
       const names = {'en': 'English', 'ta': 'தமிழ்', 'hi': 'हिंदी'};
       final choice = find.widgetWithText(PopupMenuItem<String>, names[locale]!);
@@ -217,6 +220,11 @@ void main() {
         tester,
         () => choice.hitTestable().evaluate().length == 1,
         reason: 'The $locale language menu item must be ready',
+      );
+      expect(find.byKey(const Key('open_global_search')), findsOneWidget);
+      expect(
+        tester.getTopLeft(find.byKey(const Key('home_options_tube'))),
+        headerPosition,
       );
       await tester.tap(choice.hitTestable());
       // A selected locale alone does not mean the popup has finished closing.
