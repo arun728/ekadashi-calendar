@@ -66,6 +66,10 @@ void main() {
         expect(tester.getTopLeft(anchor), position);
         await tester.binding.handlePopRoute();
         await tester.pumpAndSettle();
+        expect(
+          find.byWidgetPredicate((widget) => widget is PopupMenuItem),
+          findsNothing,
+        );
         expect(find.byType(ShellTopBar), findsOneWidget);
         expect(tester.getTopLeft(anchor), position);
         expect(tester.takeException(), isNull);
@@ -94,6 +98,10 @@ void main() {
     expect(find.byType(DetailsScreen), findsOneWidget);
     await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
+    expect(
+      find.byWidgetPredicate((widget) => widget is PopupMenuItem),
+      findsNothing,
+    );
     await menu;
     expect(find.byType(ShellTopBar), findsNothing);
     await tester.tap(find.byKey(const Key('glass_tab_0')));
