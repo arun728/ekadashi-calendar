@@ -18,6 +18,12 @@ struct CalendarView: View {
     @State private var syncing = false
     @State private var editing: EntryEditorRequest?
     @State private var pickingMonth = false
+    /// The direction the month grid slides in (a later month from the right).
+    @State private var forward = true
+    /// How far the grid follows a horizontal drag before the month changes.
+    @State private var dragOffset: CGFloat = 0
+    /// Month changes slide visibly rather than snapping.
+    static let monthSlide = Animation.easeInOut(duration: 0.45)
 
     /// The enabled Ekadashi years (assets/calendar/ekadashi_years.json).
     private var years: [Int] { model.enabledYears }
@@ -59,14 +65,25 @@ struct CalendarView: View {
                     MonthGrid(month: month, selected: selected, today: CivilDate.today(), firstDay: firstDay, lastDay: lastDay,
                               markers: { markers(for: $0, loaded.list) }, select: { selected = $0 })
                         .padding(.horizontal, 12)
+                        .offset(x: dragOffset)
+                        .id(month)
+                        .transition(.push(from: forward ? .trailing : .leading))
                     selectedDay(loaded.list)
                 }
                 .contentShape(Rectangle())
-                .simultaneousGesture(DragGesture(minimumDistance: 30).onEnded { value in
-                    let dx = value.translation.width, dy = value.translation.height
-                    guard abs(dx) > 60, abs(dx) > abs(dy) else { return }
-                    move(dx < 0 ? 1 : -1)
-                })
+                .clipped()
+                .simultaneousGesture(DragGesture(minimumDistance: 30)
+                    .onChanged { value in
+                        let dx = value.translation.width, dy = value.translation.height
+                        // The grid follows the finger (damped) so the swipe is visible.
+                        if abs(dx) > abs(dy) { dragOffset = dx * 0.5 }
+                    }
+                    .onEnded { value in
+                        let dx = value.translation.width, dy = value.translation.height
+                        withAnimation(Self.monthSlide) { dragOffset = 0 }
+                        guard abs(dx) > 60, abs(dx) > abs(dy) else { return }
+                        move(dx < 0 ? 1 : -1)
+                    })
             }
             .padding(.top, 4)
             .padding(.bottom, 100)
@@ -201,7 +218,8 @@ struct CalendarView: View {
     private func focus(_ date: CivilDate) {
         let target = min(max(date, firstDay), lastDay)
         selected = target
-        withAnimation(.easeInOut(duration: 0.25)) { month = target.firstOfMonth }
+        forward = target.firstOfMonth >= month
+        withAnimation(Self.monthSlide) { month = target.firstOfMonth }
     }
 
     /// A picked month selects today when it is this month, else its first day.
@@ -216,7 +234,8 @@ struct CalendarView: View {
         let target = month.adding(months: months).firstOfMonth
         guard target >= firstDay.firstOfMonth, target <= lastDay.firstOfMonth else { return }
         selected = min(max(selected.steppingMonths(months), firstDay), lastDay)
-        withAnimation(.easeInOut(duration: 0.3)) { month = target }
+        forward = months > 0
+        withAnimation(Self.monthSlide) { month = target }
     }
 
     private func markers(for day: CivilDate, _ list: [CalendarEntry]) -> [Color] {

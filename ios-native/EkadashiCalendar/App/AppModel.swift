@@ -86,6 +86,8 @@ final class AppModel {
     var paywall: PaywallRequest?
     var googlePicker: GooglePickerRequest?
     var unlockQueue: [Achievement] = []
+    /// Bumped when Home sets the Panchang location.
+    private(set) var panchangCityRevision = 0
 
     init() {
         let group = Bundle.main.object(forInfoDictionaryKey: "EkadashiAppGroup") as? String ?? ""
@@ -193,18 +195,29 @@ final class AppModel {
             : ekadashiCity.timeZoneLabel(language: language)
     }
 
-    /// The Ekadashi city in the app language ("Chennai (IN)" from the catalog,
-    /// the geocoded place name for a detected location).
+    /// The Ekadashi city and its country code in the app language
+    /// ("Chennai (IN)", "சென்னை (இந்தியா)"); no time zone.
     var ekadashiCityName: String {
-        let label = PlaceNames.shared.label(ekadashiCity.label, language: language)
-        if ekadashiCity.id == Self.detectedCityId { return cityLabel(ekadashiCity.label) }
-        return label
+        guard ekadashiCity.id == Self.detectedCityId else {
+            return PlaceNames.shared.label(ekadashiCity.label, language: language)
+        }
+        // A detected place: the geocoded name in the app language, then the code.
+        let (name, code) = Self.splitCountry(ekadashiCity.label)
+        let local = cityLabel(name)
+        guard let code else { return local }
+        return "\(local) (\(PlaceNames.shared.country(code, language: language)))"
+    }
+
+    /// "Chennai (IN)" → ("Chennai", "IN").
+    static func splitCountry(_ label: String) -> (String, String?) {
+        guard let range = label.range(of: #" \(([A-Z]{2})\)$"#, options: .regularExpression) else { return (label, nil) }
+        return (String(label[..<range.lowerBound]), String(label[range].dropFirst(2).dropLast()))
     }
 
     /// Home lists the selected year's Ekadashis.
     var homeEkadashis: [EkadashiOccurrence] { ekadashis.filter { $0.date.year == selectedYear } }
 
-    func traditionName(_ value: EkadashiTradition) -> String { t(value == .smarta ? "panchang_smarta" : "panchang_gaudiya") }
+    func traditionName(_ value: EkadashiTradition) -> String { t(value == .smarta ? "tradition_smarta" : "tradition_vaishnava") }
 
     // MARK: Launch
 
@@ -256,19 +269,19 @@ final class AppModel {
     }
 
     private func useDetected(_ fix: LocationService.Fix) {
-        let zone = fix.zoneIdentifier
-            ?? PanchangCityCatalog.shared.nearest(latitude: fix.latitude, longitude: fix.longitude)?.timeZoneId
-            ?? TimeZone.current.identifier
+        let nearest = PanchangCityCatalog.shared.nearest(latitude: fix.latitude, longitude: fix.longitude)
+        let zone = fix.zoneIdentifier ?? nearest?.timeZoneId ?? TimeZone.current.identifier
         // Rounded to about a kilometre (sunrise moves by well under a second),
         // so small GPS drift reuses the cached schedule.
         func rounded(_ value: Double) -> Double { (value * 100).rounded() / 100 }
-        let city = PanchangCity(id: Self.detectedCityId, label: fix.city.isEmpty ? "—" : fix.city,
+        let code = nearest.flatMap { Self.splitCountry($0.label).1 }
+        let name = fix.city.isEmpty ? (nearest.map { Self.splitCountry($0.label).0 } ?? "—") : fix.city
+        let city = PanchangCity(id: Self.detectedCityId, label: code.map { "\(name) (\($0))" } ?? name,
                                 latitude: rounded(fix.latitude), longitude: rounded(fix.longitude), timeZoneId: zone)
         guard (try? city.validate()) != nil else { return }
         saveCity(city, manual: false)
         // The Panchang tab starts from the detected place until one is set there.
-        let panchang = PanchangLocationStore(store: store)
-        if panchang.load() == nil { try? panchang.save(city) }
+        if PanchangLocationStore(store: store).load() == nil { savePanchangCity(city) }
     }
 
     /// The user picked a city on Home: Ekadashis follow it, detection no
@@ -277,7 +290,8 @@ final class AppModel {
     func chooseEkadashiCity(_ city: PanchangCity) {
         guard (try? city.validate()) != nil else { return }
         saveCity(city, manual: true)
-        try? PanchangLocationStore(store: store).save(city)
+        RecentCities(store: store).add(city)
+        savePanchangCity(city)
         reload(scrollToNext: true)
     }
 
@@ -288,7 +302,7 @@ final class AppModel {
         _ = await location.requestPermission()
         await handleLocation()
         // Setting the location on Home also sets it on the Panchang tab.
-        if ekadashiCity.id == Self.detectedCityId { try? PanchangLocationStore(store: store).save(ekadashiCity) }
+        if ekadashiCity.id == Self.detectedCityId { savePanchangCity(ekadashiCity) }
     }
 
     private func saveCity(_ city: PanchangCity, manual: Bool) {
@@ -302,7 +316,8 @@ final class AppModel {
         guard value != tradition else { return }
         tradition = value
         store.set(value.rawValue, forKey: Self.traditionKey)
-        reload(scrollToNext: true)
+        // Stay on the Ekadashi on screen: both traditions share its identity.
+        reload(scrollToNext: false)
     }
 
     /// Home's year menu; Calendar opens on the chosen year.
@@ -679,8 +694,12 @@ final class AppModel {
     /// The saved Panchang location; festival dates in search follow it.
     var panchangCity: PanchangCity { PanchangLocationStore(store: store).load() ?? .newDelhi }
 
-    /// Saves the Panchang tab's own location (it does not move the Ekadashi city).
-    func savePanchangCity(_ city: PanchangCity) { try? PanchangLocationStore(store: store).save(city) }
+    /// Saves the Panchang tab's own location (it does not move the Ekadashi
+    /// city); an open Panchang tab follows [panchangCityRevision].
+    func savePanchangCity(_ city: PanchangCity) {
+        try? PanchangLocationStore(store: store).save(city)
+        panchangCityRevision += 1
+    }
 
     /// Search over Ekadashis, entries and screens, plus [observances].
     func searchIndex(observances: [DatedObservance] = []) -> UnifiedSearch {

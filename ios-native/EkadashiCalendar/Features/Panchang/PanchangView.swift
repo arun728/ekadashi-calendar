@@ -29,7 +29,6 @@ struct PanchangView: View {
     @State private var tradition: EkadashiTradition = .smarta
     @State private var editingLocation = false
     @State private var pickingDate = false
-    @State private var pickingMonth = false
     @State private var showingNotes = false
     @State private var started = false
     @State private var toast: ToastMessage?
@@ -71,15 +70,9 @@ struct PanchangView: View {
         .sheet(isPresented: $editingLocation) {
             PanchangLocationSheet(city: city) { changeCity($0) }
         }
+        // Every sub-tab opens the same full calendar; the monthly ones then
+        // show the picked date's month.
         .sheet(isPresented: $pickingDate) { datePicker }
-        .sheet(isPresented: $pickingMonth) {
-            PanchangMonthPicker(month: month) { picked in
-                // Today in the current month, else the month's first day.
-                let today = city.today()
-                date = picked.firstOfMonth == today.firstOfMonth ? today : picked.firstOfMonth
-            }
-                .presentationDetents([.height(320)])
-        }
         .sheet(isPresented: $showingNotes) { PanchangNotesSheet() }
         .toast($toast)
         .onAppear {
@@ -87,6 +80,15 @@ struct PanchangView: View {
             openFocus()
         }
         .onChange(of: model.panchangFocus) { _, _ in openFocus() }
+        // A city chosen on Home moves the Panchang tab there too.
+        .onChange(of: model.panchangCityRevision) { _, _ in
+            guard initialCity == nil else { return }
+            let saved = model.panchangCity
+            guard saved != city else { return }
+            let wasToday = date == city.today()
+            city = saved
+            if wasToday { date = saved.today() }
+        }
         .task(id: "\(city.id)|\(city.latitude)|\(city.longitude)|\(city.timeZoneId)|\(date.iso)") { await recalculate() }
     }
 
@@ -112,7 +114,7 @@ struct PanchangView: View {
             if page.isMonthly {
                 stepper(title: PanchangFormat.date(date, language: language), symbol: "calendar", monthly: true,
                         previous: { date = date.steppingMonths(-1) }, next: { date = date.steppingMonths(1) },
-                        pick: { pickingMonth = true }, id: "panchang_selected_month")
+                        pick: { pickingDate = true }, id: "panchang_selected_month")
             } else {
                 stepper(title: PanchangFormat.date(date, language: language), symbol: "calendar", monthly: false,
                         previous: { date = date.adding(days: -1) }, next: { date = date.adding(days: 1) },

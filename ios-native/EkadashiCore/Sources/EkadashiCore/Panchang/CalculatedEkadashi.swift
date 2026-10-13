@@ -4,7 +4,7 @@ public enum EkadashiTradition: String, CaseIterable, Sendable, Codable {
     case smarta
     case gaudiya
 
-    public var label: String { self == .smarta ? "Smarta" : "Vaishnava · Gaudiya/ISKCON" }
+    public var label: String { self == .smarta ? "Smarta" : "Vaishnava" }
 }
 
 /// Rule inputs, separated from astronomy to test rare tithi configurations.

@@ -258,12 +258,16 @@ and the Home tradition (Smarta or Vaishnava) and year (2026, 2027). Setting the
 city on Home also sets the Panchang location, not the reverse. Leave the
 Panchang tab's Ekadashi sub-tab as it is. Home and Calendar are free; Panchang
 stays Premium. New years are enabled in `assets/calendar/ekadashi_years.json`;
-texts are reused by Ekadashi. The share card from PR #20 is free (no paywall).
-See docs/EKADASHI_ENGINE_SCHEDULE.md.
+texts are reused by Ekadashi. The share card from PR #20 is free (no paywall)
+and matches Sakthi's Android card in PR #20 exactly (no location on the card).
+Home's dates and times match the Panchang tab's Ekadashi sub-tab to the minute
+(times are cut to the minute, never rounded). The tradition is called "Smarta"
+or "Vaishnava" everywhere. See docs/EKADASHI_ENGINE_SCHEDULE.md.
 
 ## Store links (13 October 2026)
 
-Share texts use `AppLinks` in EkadashiCore:
+Share texts use `AppLinks` in EkadashiCore. Each platform shares only its own
+store link: iOS the App Store link, Android the Play Store link.
 
 - Android (live v1): https://play.google.com/store/apps/details?id=com.applausestudios.ekadashi_calendar
 - iOS: https://apps.apple.com/app/ekadashi-calendar is a **placeholder**. The iOS

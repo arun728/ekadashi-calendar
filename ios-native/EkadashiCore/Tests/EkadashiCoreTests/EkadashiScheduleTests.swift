@@ -27,6 +27,48 @@ final class EkadashiScheduleTests: XCTestCase {
         secondsBetween(ISO8601.instant(a), ISO8601.instant(b)) / 60
     }
 
+    /// Home (and everything that follows it) shows exactly what the Panchang
+    /// tab's Ekadashi sub-tab shows: same dates, and the same hour and minute
+    /// for the fast start and the Parana window, which the sub-tab reads
+    /// from the engine's instants month by month without rounding.
+    func testHomeTimesMatchThePanchangEkadashiSubTabWorldwide() throws {
+        let ids = ["1264527", "1261481", "1275339", "5128581", "5368361", "2643743", "2925533", "2147714", "1880252", "292223"]
+        let all = try PanchangCityCatalog.shared.cities()
+        let cities = ids.map { id in all.first { $0.id == "geonames-\(id)" }! }
+        var mismatches: [String] = []
+        for city in cities {
+            for tradition in EkadashiTradition.allCases {
+                for year in [2026, 2027] {
+                    var panel: [CalculatedEkadashi] = []
+                    for month in 1...12 {
+                        let first = CivilDate(year, month, 1)
+                        panel += try CalculatedEkadashiEngine().calculate(start: first, count: first.daysInMonth, city: city,
+                                                                          tradition: tradition)
+                    }
+                    let home = try schedule.scheduled(EkadashiScheduleKey(city: city, tradition: tradition, year: year))
+                    if home.map(\.date) != panel.map(\.date.iso) {
+                        mismatches.append("\(city.label) \(tradition) \(year) dates")
+                        continue
+                    }
+                    func same(_ iso: String, _ instant: Date?, _ what: String, _ fast: CalculatedEkadashi) {
+                        guard let instant else { return }
+                        let wall = city.wallClock(instant)
+                        let shown = ISO8601.wallClockTime(iso)
+                        if shown?.hour != wall.hour || shown?.minute != wall.minute || !iso.hasPrefix(wall.date.iso) {
+                            mismatches.append("\(city.label) \(tradition) \(fast.date.iso) \(what): home \(iso) panchang \(wall.date.iso) \(wall.hour):\(wall.minute)")
+                        }
+                    }
+                    for (row, fast) in zip(home, panel) {
+                        same(row.fastingStart, fast.fastStarts, "fast start", fast)
+                        same(row.paranaStart, fast.paranaStart, "parana start", fast)
+                        same(row.paranaEnd, fast.paranaEnd, "parana end", fast)
+                    }
+                }
+            }
+        }
+        XCTAssertEqual(mismatches.count, 0, mismatches.prefix(12).joined(separator: "\n"))
+    }
+
     func testEnabledYearsComeFromTheSharedConfig() throws {
         XCTAssertEqual(EkadashiYears.enabled(), [2026, 2027])
         XCTAssertEqual(try Repo.data("assets/calendar/ekadashi_years.json"),

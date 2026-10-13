@@ -10,12 +10,13 @@ final class AppLinksTests: XCTestCase {
         XCTAssertEqual(AppLinks.appStore(id: "123"), "https://apps.apple.com/app/id123")
     }
 
-    func testShareMessageAddsBothStoreLinksAfterTheTranslatedText() {
+    func testIosShareMessageHasOnlyTheAppStoreLink() {
         let text = Localizer.shared.translate("share_card_message", language: "ta", args: ["மோகினி ஏகாதசி", "திங்கள், 27 ஏப். 2026"])
         XCTAssertFalse(text.contains("{value"))
         let message = AppLinks.shareCardMessage(text, appStoreId: "")
         XCTAssertTrue(message.hasPrefix(text))
-        XCTAssertTrue(message.contains(AppLinks.playStore))
-        XCTAssertTrue(message.contains(AppLinks.appStorePlaceholder))
+        XCTAssertFalse(message.contains("play.google.com"), "iOS shares only its own store link")
+        XCTAssertTrue(message.hasSuffix(AppLinks.appStorePlaceholder))
+        XCTAssertTrue(AppLinks.shareCardMessage(text, appStoreId: "123").hasSuffix("https://apps.apple.com/app/id123"))
     }
 }

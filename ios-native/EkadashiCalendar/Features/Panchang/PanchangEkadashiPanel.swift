@@ -1,7 +1,7 @@
 import SwiftUI
 import EkadashiCore
 
-/// Calculated Smarta or Gaudiya/ISKCON fasts for the month and location
+/// Calculated Smarta or Vaishnava fasts for the month and location
 /// (panchang_month_panels.dart), in the app language. A preview: the
 /// published schedule still drives the calendar, reminders and Journey.
 struct PanchangEkadashiPanel: View {
@@ -19,12 +19,12 @@ struct PanchangEkadashiPanel: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 8) {
                 ForEach(EkadashiTradition.allCases, id: \.self) { item in
-                    GlassChip(title: model.t(item == .smarta ? "panchang_smarta" : "panchang_gaudiya"), selected: tradition == item) {
+                    GlassChip(title: model.traditionName(item), selected: tradition == item) {
                         tradition = item
                     }
                 }
             }
-            Text(model.t(tradition == .smarta ? "panchang_smarta_rule" : "panchang_gaudiya_rule"))
+            Text(model.t(tradition == .smarta ? "panchang_smarta_rule" : "panchang_vaishnava_rule"))
                 .font(.subheadline).foregroundStyle(.secondary)
             Group {
                 if failed {

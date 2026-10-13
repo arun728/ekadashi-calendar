@@ -74,16 +74,16 @@ struct TodayView: View {
 struct HomeHeader: View {
     @Environment(AppModel.self) private var model
 
+    /// One row in every language: the city shrinks (truncating) and the
+    /// language menu keeps its size, so neither moves when the other changes.
     var body: some View {
-        ViewThatFits(in: .horizontal) {
-            HStack(spacing: 20) {
-                location.frame(maxWidth: .infinity, alignment: .leading)
-                LanguageMenu()
-            }
-            VStack(alignment: .leading, spacing: 8) {
-                location
-                LanguageMenu().frame(maxWidth: .infinity, alignment: .trailing)
-            }
+        HStack(spacing: 16) {
+            location
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .layoutPriority(0)
+            LanguageMenu()
+                .fixedSize()
+                .layoutPriority(1)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
@@ -106,7 +106,11 @@ struct HomeHeader: View {
                     Image(systemName: model.ekadashiCityIsManual ? "mappin.and.ellipse" : "location.fill")
                         .foregroundStyle(Theme.teal)
                 }
-                Text("\(model.ekadashiCityName) • \(model.timeZoneLabel)").font(.subheadline.weight(.medium)).lineLimit(1)
+                Text(model.ekadashiCityName)
+                    .font(.subheadline.weight(.medium))
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                    .accessibilityIdentifier("home_location_name")
                 Image(systemName: "chevron.down").font(.caption2).foregroundStyle(.secondary)
             }
         }

@@ -30,7 +30,11 @@
   "share_card_saved": "Card saved to Photos.",
   "share_card_save_failed": "Could not save the card.",
   "share_card_photos_denied": "Photo access is off. Allow adding photos in Settings to save cards.",
-  "share_card_message": "{value0} is on {value1}. Fasting and Parana times from the Ekadashi Calendar app are on this card."
+  "share_card_message": "{value0} is on {value1}. Fasting and Parana times from the Ekadashi Calendar app are on this card.",
+  "tradition_smarta": "Smarta",
+  "tradition_vaishnava": "Vaishnava",
+  "panchang_vaishnava_rule": "Vaishnava: Ekadashi must hold 96 minutes before sunrise (Arunodaya), with Mahadvadashi rules.",
+  "home_popular_cities": "Popular cities"
  },
  "ta": {
   "rate_app_desc": "ஆப் ஸ்டோரில் எங்களை மதிப்பிடவும்",
@@ -62,7 +66,11 @@
   "share_card_saved": "அட்டை புகைப்படங்களில் சேமிக்கப்பட்டது.",
   "share_card_save_failed": "அட்டையைச் சேமிக்க முடியவில்லை.",
   "share_card_photos_denied": "புகைப்பட அனுமதி முடக்கப்பட்டுள்ளது. அட்டைகளைச் சேமிக்க அமைப்புகளில் புகைப்படங்களைச் சேர்க்க அனுமதியுங்கள்.",
-  "share_card_message": "{value0} — {value1}. ஏகாதசி காலண்டர் செயலியிலிருந்து விரத, பாரணை நேரங்கள் இந்த அட்டையில் உள்ளன."
+  "share_card_message": "{value0} — {value1}. ஏகாதசி காலண்டர் செயலியிலிருந்து விரத, பாரணை நேரங்கள் இந்த அட்டையில் உள்ளன.",
+  "tradition_smarta": "ஸ்மார்த்த",
+  "tradition_vaishnava": "வைஷ்ணவ",
+  "panchang_vaishnava_rule": "வைஷ்ணவ: சூரிய உதயத்திற்கு 96 நிமிடங்களுக்கு முன் (அருணோதயம்) ஏகாதசி இருக்க வேண்டும், மகாதுவாதசி விதிகளுடன்.",
+  "home_popular_cities": "பிரபல நகரங்கள்"
  },
  "hi": {
   "rate_app_desc": "ऐप स्टोर पर हमें रेट करें",
@@ -94,7 +102,11 @@
   "share_card_saved": "कार्ड फ़ोटो में सहेज लिया गया।",
   "share_card_save_failed": "कार्ड सहेजा नहीं जा सका।",
   "share_card_photos_denied": "फ़ोटो की अनुमति बंद है। कार्ड सहेजने के लिए सेटिंग्स में फ़ोटो जोड़ने की अनुमति दें।",
-  "share_card_message": "{value0} {value1} को है। एकादशी कैलेंडर ऐप से व्रत और पारण का समय इस कार्ड पर है।"
+  "share_card_message": "{value0} {value1} को है। एकादशी कैलेंडर ऐप से व्रत और पारण का समय इस कार्ड पर है।",
+  "tradition_smarta": "स्मार्त",
+  "tradition_vaishnava": "वैष्णव",
+  "panchang_vaishnava_rule": "वैष्णव: सूर्योदय से 96 मिनट पहले (अरुणोदय) एकादशी होनी चाहिए, महाद्वादशी नियमों सहित।",
+  "home_popular_cities": "लोकप्रिय शहर"
  },
  "te": {
   "rate_app_desc": "యాప్ స్టోర్‌లో రేట్ చేయండి",
@@ -126,7 +138,11 @@
   "share_card_saved": "కార్డ్ ఫోటోలలో భద్రపరచబడింది.",
   "share_card_save_failed": "కార్డ్‌ను భద్రపరచలేకపోయాం.",
   "share_card_photos_denied": "ఫోటో అనుమతి ఆపివేయబడింది. కార్డ్‌లను భద్రపరచడానికి సెట్టింగ్స్‌లో ఫోటోలను జోడించడానికి అనుమతించండి.",
-  "share_card_message": "{value0} — {value1}. ఏకాదశి క్యాలెండర్ యాప్ నుండి ఉపవాసం, పారణ సమయాలు ఈ కార్డ్‌లో ఉన్నాయి."
+  "share_card_message": "{value0} — {value1}. ఏకాదశి క్యాలెండర్ యాప్ నుండి ఉపవాసం, పారణ సమయాలు ఈ కార్డ్‌లో ఉన్నాయి.",
+  "tradition_smarta": "స్మార్త",
+  "tradition_vaishnava": "వైష్ణవ",
+  "panchang_vaishnava_rule": "వైష్ణవ: సూర్యోదయానికి 96 నిమిషాల ముందు (అరుణోదయం) ఏకాదశి ఉండాలి, మహాద్వాదశి నియమాలతో.",
+  "home_popular_cities": "ప్రముఖ నగరాలు"
  },
  "gu": {
   "rate_app_desc": "એપ સ્ટોર પર અમને રેટ કરો",
@@ -158,7 +174,11 @@
   "share_card_saved": "કાર્ડ ફોટામાં સાચવ્યું.",
   "share_card_save_failed": "કાર્ડ સાચવી શકાયું નહીં.",
   "share_card_photos_denied": "ફોટાની પરવાનગી બંધ છે. કાર્ડ સાચવવા માટે સેટિંગ્સમાં ફોટા ઉમેરવાની પરવાનગી આપો.",
-  "share_card_message": "{value0} — {value1}. એકાદશી કેલેન્ડર ઍપમાંથી વ્રત અને પારણનો સમય આ કાર્ડ પર છે."
+  "share_card_message": "{value0} — {value1}. એકાદશી કેલેન્ડર ઍપમાંથી વ્રત અને પારણનો સમય આ કાર્ડ પર છે.",
+  "tradition_smarta": "સ્માર્ત",
+  "tradition_vaishnava": "વૈષ્ણવ",
+  "panchang_vaishnava_rule": "વૈષ્ણવ: સૂર્યોદયના 96 મિનિટ પહેલાં (અરુણોદય) એકાદશી હોવી જોઈએ, મહાદ્વાદશીના નિયમો સાથે.",
+  "home_popular_cities": "લોકપ્રિય શહેરો"
  },
  "bn": {
   "rate_app_desc": "অ্যাপ স্টোর-এ আমাদের রেট দিন",
@@ -190,6 +210,10 @@
   "share_card_saved": "কার্ড ফটোতে সংরক্ষিত হয়েছে।",
   "share_card_save_failed": "কার্ড সংরক্ষণ করা যায়নি।",
   "share_card_photos_denied": "ফটোর অনুমতি বন্ধ আছে। কার্ড সংরক্ষণ করতে সেটিংসে ফটো যোগ করার অনুমতি দিন।",
-  "share_card_message": "{value0} — {value1}। একাদশী ক্যালেন্ডার অ্যাপ থেকে ব্রত ও পারণের সময় এই কার্ডে আছে।"
+  "share_card_message": "{value0} — {value1}। একাদশী ক্যালেন্ডার অ্যাপ থেকে ব্রত ও পারণের সময় এই কার্ডে আছে।",
+  "tradition_smarta": "স্মার্ত",
+  "tradition_vaishnava": "বৈষ্ণব",
+  "panchang_vaishnava_rule": "বৈষ্ণব: সূর্যোদয়ের 96 মিনিট আগে (অরুণোদয়ে) একাদশী থাকতে হবে, মহাদ্বাদশীর নিয়মসহ।",
+  "home_popular_cities": "জনপ্রিয় শহর"
  }
 }

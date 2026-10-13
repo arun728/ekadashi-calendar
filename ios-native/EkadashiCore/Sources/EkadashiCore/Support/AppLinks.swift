@@ -14,9 +14,9 @@ public enum AppLinks {
         id.isEmpty ? appStorePlaceholder : "https://apps.apple.com/app/id\(id)"
     }
 
-    /// The text shared with a share card: the translated message, then
-    /// both store links on their own lines (links stay in Latin letters).
+    /// The text shared with a share card on iOS: the translated message,
+    /// then the App Store link only (Android shares its Play Store link).
     public static func shareCardMessage(_ message: String, appStoreId: String) -> String {
-        "\(message)\n\nAndroid: \(playStore)\niOS: \(appStore(id: appStoreId))"
+        "\(message)\n\n\(appStore(id: appStoreId))"
     }
 }

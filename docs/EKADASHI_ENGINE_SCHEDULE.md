@@ -15,7 +15,9 @@ Ekadashi date, fasting start and Parana window from the Panchang engine
   Picking a city on Home also sets the Panchang location (not the other way
   round). "Use current location" goes back to detection.
 - **the tradition** chosen on Home: Smarta (Drik rules) or Vaishnava
-  (Gaudiya/ISKCON rules, the same as the Panchang tab's Ekadashi sub-tab).
+  (Gaudiya/ISKCON rules, the same as the Panchang tab's Ekadashi sub-tab). The
+  app calls them only "Smarta" and "Vaishnava". Switching keeps the Ekadashi on
+  screen.
 - **the year** chosen on Home (2026 or 2027). Calendar opens on that year, and
   moving Calendar into another year moves Home with it.
 
@@ -75,8 +77,17 @@ a day between cities, which is why the schedule is per city, not per time zone.
 - `CalculatedEkadashiEngine` reads a lightweight day (`EkadashiDay`: sunrise,
   sunset, tithi, nakshatra, month) instead of the full Panchang day. The
   Dart-parity tests prove the fasts are unchanged.
+- Times are the engine's instants cut to the minute (06:04:52 → 06:04), exactly
+  as the Panchang tab's Ekadashi sub-tab shows them, so Home, Calendar,
+  reminders, widgets and the share card read the same as that sub-tab
+  (`testHomeTimesMatchThePanchangEkadashiSubTabWorldwide`: 10 cities in India,
+  the US, Europe, Australia, Singapore and Dubai, both traditions, 2026–2027).
+  The disk cache is versioned (`EkadashiSchedule.formatVersion`), so schedules
+  cached with older rules are recalculated.
 - Parana with no bounded end (rare) ends at that day's sunset, so reminders and
   widgets always have a window.
+- The Home city search is never empty: recent picks first, then popular cities
+  worldwide (`RecentCities`, `PanchangCityCatalog.popular()`).
 - Month labels: published rows keep their month; other fasts use the engine's
   amanta month. (The 2026 pack uses amanta names and the 2027 pack purnimanta
   names for Krishna paksha; that inconsistency is pre-existing.)

@@ -51,7 +51,7 @@ public struct EkadashiScheduleKey: Hashable, Sendable {
     /// A stable file-name-safe key, also used for the disk cache.
     public var cacheId: String {
         let place = "\(city.id)_\(String(format: "%.4f", city.latitude))_\(String(format: "%.4f", city.longitude))_\(city.timeZoneId)"
-        return "\(CalculatedEkadashi.ruleVersion)|\(tradition.rawValue)|\(year)|\(place)"
+        return "\(EkadashiSchedule.formatVersion)|\(CalculatedEkadashi.ruleVersion)|\(tradition.rawValue)|\(year)|\(place)"
     }
 }
 
@@ -68,6 +68,9 @@ public struct EkadashiScheduleKey: Hashable, Sendable {
 /// - In other years every fast is numbered in date order, and the texts come
 ///   from the newest pack that has that Ekadashi.
 public final class EkadashiSchedule: @unchecked Sendable {
+    /// Bumped when the cached form changes (2: times cut to the minute like
+    /// the Panchang tab, not rounded), so older caches are recalculated.
+    public static let formatVersion = "schedule-2"
     private let repository: CalendarRepository
     private let localizer: Localizer
     private let engine: CalculatedEkadashiEngine
@@ -189,10 +192,10 @@ public final class EkadashiSchedule: @unchecked Sendable {
     }
 
     /// Local wall-clock time with its offset, to the minute: the form of the
-    /// published packs ("2026-01-14T06:35:00+05:30"). Rounded to the nearest minute.
+    /// published packs ("2026-01-14T06:35:00+05:30"). The seconds are dropped,
+    /// as the Panchang tab shows the same instants, so both read the same.
     static func iso(_ instant: Date, _ zone: TzLocation) -> String {
-        let rounded = Date(timeIntervalSince1970: (instant.timeIntervalSince1970 / 60).rounded() * 60)
-        let wall = zone.wallClock(rounded)
+        let wall = zone.wallClock(instant)
         let offset = abs(wall.offsetSeconds) / 60
         return "\(wall.date.iso)T\(pad2(wall.hour)):\(pad2(wall.minute)):00\(wall.offsetSeconds < 0 ? "-" : "+")"
             + "\(pad2(offset / 60)):\(pad2(offset % 60))"

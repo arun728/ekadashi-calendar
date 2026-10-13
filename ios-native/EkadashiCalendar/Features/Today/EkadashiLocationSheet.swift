@@ -11,6 +11,9 @@ struct EkadashiLocationSheet: View {
     @State private var busy = false
     @State private var message: String?
 
+    /// Before anything is typed: recent picks, then popular cities.
+    private var shortlist: (recent: [PanchangCity], popular: [PanchangCity]) { RecentCities(store: model.store).shortlist() }
+
     private var matches: [PanchangCity] {
         let q = search.trimmingCharacters(in: .whitespaces)
         return q.count < 2 ? [] : PanchangCityCatalog.shared.search(q, language: model.language, limit: 20)
@@ -37,17 +40,7 @@ struct EkadashiLocationSheet: View {
                         .textInputAutocapitalization(.words)
                         .autocorrectionDisabled()
                         .accessibilityIdentifier("ekadashi_location_search")
-                    ForEach(matches, id: \.self) { city in
-                        Button {
-                            model.chooseEkadashiCity(city)
-                            dismiss()
-                        } label: {
-                            VStack(alignment: .leading) {
-                                Text(PlaceNames.shared.label(city.label, language: model.language)).foregroundStyle(.primary)
-                                Text(city.timeZoneLabel(language: model.language)).font(.caption).foregroundStyle(.secondary)
-                            }
-                        }
-                    }
+                    ForEach(matches, id: \.self) { row($0) }
                     Button {
                         Task { await useCurrentLocation() }
                     } label: {
@@ -56,6 +49,15 @@ struct EkadashiLocationSheet: View {
                     .disabled(busy)
                     .accessibilityIdentifier("ekadashi_location_current_button")
                     if let message { Text(message).font(.caption).foregroundStyle(.secondary) }
+                }
+                if search.trimmingCharacters(in: .whitespaces).count < 2 {
+                    let list = shortlist
+                    if !list.recent.isEmpty {
+                        Section(model.t("recent_searches")) { ForEach(list.recent, id: \.self) { row($0) } }
+                            .accessibilityIdentifier("ekadashi_location_recent")
+                    }
+                    Section(model.t("home_popular_cities")) { ForEach(list.popular, id: \.self) { row($0) } }
+                        .accessibilityIdentifier("ekadashi_location_popular")
                 }
             }
             .scrollContentBackground(.hidden)
@@ -66,6 +68,19 @@ struct EkadashiLocationSheet: View {
             }
         }
         .presentationBackground(.thinMaterial)
+    }
+
+    private func row(_ city: PanchangCity) -> some View {
+        Button {
+            model.chooseEkadashiCity(city)
+            dismiss()
+        } label: {
+            VStack(alignment: .leading) {
+                Text(PlaceNames.shared.label(city.label, language: model.language)).foregroundStyle(.primary)
+                Text(city.timeZoneLabel(language: model.language)).font(.caption).foregroundStyle(.secondary)
+            }
+        }
+        .accessibilityIdentifier("ekadashi_city_\(city.id)")
     }
 
     private func useCurrentLocation() async {

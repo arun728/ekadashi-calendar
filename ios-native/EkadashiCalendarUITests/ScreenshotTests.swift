@@ -106,8 +106,8 @@ final class ScreenshotTests: XCTestCase {
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
 
         element("home_tradition_menu").tap()
-        XCTAssertTrue(app.buttons["Vaishnava · Gaudiya/ISKCON"].waitForExistence(timeout: 5))
-        app.buttons["Vaishnava · Gaudiya/ISKCON"].tap()
+        XCTAssertTrue(app.buttons["Vaishnava"].waitForExistence(timeout: 5))
+        app.buttons["Vaishnava"].tap()
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
         snap("12-home-vaishnava")
 
@@ -120,9 +120,13 @@ final class ScreenshotTests: XCTestCase {
         snap("13-calendar-2027")
         tab(0)
 
+        XCTAssertFalse(element("home_location_name").label.contains("•"), "no time zone beside the city")
         element("home_location").tap()
         let search = app.textFields["ekadashi_location_search"]
         XCTAssertTrue(search.waitForExistence(timeout: 5))
+        // Never empty: popular cities before anything is typed.
+        XCTAssertTrue(app.buttons["ekadashi_city_geonames-2643743"].waitForExistence(timeout: 5), "London is offered")
+        snap("14a-home-city-shortlist")
         search.tap()
         search.typeText("Mumbai")
         let mumbai = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Mumbai'")).firstMatch
@@ -136,6 +140,22 @@ final class ScreenshotTests: XCTestCase {
         XCTAssertTrue(app.buttons["share_card_share"].waitForExistence(timeout: 10))
         XCTAssertFalse(app.buttons["premium_close"].exists, "the share card is free")
         snap("15-share-card")
+    }
+
+    /// Every Panchang sub-tab opens the same full calendar to pick a date.
+    func testEveryPanchangSubTabOpensTheFullCalendar() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        tab(3)
+        for page in ["keydays", "daily", "ekadashi"] {
+            app.buttons["panchang_tab_\(page)"].tap()
+            waitSelected("panchang_tab_\(page)")
+            let picker = page == "daily" ? "panchang_selected_date" : "panchang_selected_month"
+            XCTAssertTrue(app.buttons[picker].firstMatch.waitForExistence(timeout: 10), page)
+            app.buttons[picker].firstMatch.tap()
+            XCTAssertTrue(app.datePickers.firstMatch.waitForExistence(timeout: 5), "\(page) opens the full calendar")
+            snap("16-panchang-calendar-\(page)")
+            app.buttons["Done"].firstMatch.tap()
+        }
     }
 
     /// Sub-sections change with a horizontal swipe as well as their chips,

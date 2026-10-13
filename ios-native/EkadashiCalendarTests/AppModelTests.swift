@@ -108,6 +108,24 @@ final class AppModelTests: XCTestCase {
         await model.waitForLoad()
         XCTAssertTrue(model.ekadashis.contains { $0.date == CivilDate(2026, 7, 11) }, "Vaishnava Yogini is a day later")
 
+        // Switching tradition stays on the Ekadashi on screen, both ways.
+        model.homeIndex = min(5, model.homeEkadashis.count - 1)
+        let shown = model.homeEkadashis[model.homeIndex].occurrenceUid
+        model.setTradition(.smarta)
+        await model.waitForLoad()
+        XCTAssertEqual(model.homeEkadashis[model.homeIndex].occurrenceUid, shown)
+        model.setTradition(.gaudiya)
+        await model.waitForLoad()
+        XCTAssertEqual(model.homeEkadashis[model.homeIndex].occurrenceUid, shown)
+        XCTAssertEqual(model.traditionName(.gaudiya), "Vaishnava")
+
+        // A city chosen on Home is offered first next time and moves Panchang.
+        let revision = model.panchangCityRevision
+        model.chooseEkadashiCity(AppModel.defaultCity)
+        XCTAssertGreaterThan(model.panchangCityRevision, revision)
+        XCTAssertEqual(RecentCities(store: model.store).all().first, AppModel.defaultCity)
+        XCTAssertEqual(model.ekadashiCityName, "Chennai (IN)", "city and country code, no time zone")
+
         model.setYear(2027)
         XCTAssertTrue(model.homeEkadashis.allSatisfy { $0.date.year == 2027 })
         XCTAssertEqual(model.calendarFocus?.year, 2027)
