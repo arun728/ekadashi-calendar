@@ -100,6 +100,40 @@ final class ScreenshotTests: XCTestCase {
         snap("11-search-type-word")
     }
 
+    /// The four Home menus line up: location over tradition (same left and
+    /// right edges), language over year (same width), all the same height and
+    /// inside the screen, in English and in a longer script (Tamil).
+    func testHomeMenusLineUpInEveryLanguage() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        func check(_ language: String) {
+            let location = element("home_location").frame, tradition = element("home_tradition_menu").frame
+            let languageMenu = element("language_menu").frame, year = element("home_year_menu").frame
+            let screen = app.windows.firstMatch.frame
+            XCTAssertEqual(location.minX, tradition.minX, accuracy: 1, language)
+            XCTAssertEqual(location.width, tradition.width, accuracy: 1, language)
+            XCTAssertEqual(languageMenu.width, year.width, accuracy: 1, language)
+            XCTAssertEqual(languageMenu.maxX, year.maxX, accuracy: 1, language)
+            XCTAssertEqual(location.height, languageMenu.height, accuracy: 1, language)
+            XCTAssertEqual(tradition.height, year.height, accuracy: 1, language)
+            XCTAssertEqual(location.height, tradition.height, accuracy: 1, language)
+            XCTAssertLessThan(location.maxX, languageMenu.minX, language)
+            for frame in [location, tradition, languageMenu, year] {
+                XCTAssertTrue(screen.contains(frame), "\(language): \(frame) inside \(screen)")
+            }
+        }
+        check("en")
+        snap("18-home-menus-en")
+        element("language_menu").tap()
+        XCTAssertTrue(app.buttons["தமிழ்"].waitForExistence(timeout: 5))
+        app.buttons["தமிழ்"].tap()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 10))
+        check("ta")
+        snap("19-home-menus-ta")
+        element("language_menu").tap()
+        XCTAssertTrue(app.buttons["English"].waitForExistence(timeout: 5))
+        app.buttons["English"].tap()
+    }
+
     /// Home: the tradition and year menus, the city search and the free
     /// share card (no paywall).
     func testHomeMenusCitySearchAndShareCard() {

@@ -13,12 +13,9 @@ struct TodayView: View {
     var body: some View {
         @Bindable var model = model
         VStack(spacing: 0) {
-            HomeHeader()
+            HomeControls()
                 .padding(.horizontal, 20)
                 .padding(.top, 12)
-                .padding(.bottom, 8)
-            HomeFilters()
-                .padding(.horizontal, 20)
                 .padding(.bottom, 12)
             if events.isEmpty && model.isCalculating {
                 VStack(spacing: 12) {
@@ -69,42 +66,42 @@ struct TodayView: View {
     }
 }
 
-/// The Ekadashi city (tap to search or use the current location) and the
-/// language menu, in one glass tube.
-struct HomeHeader: View {
+/// The four Home menus in a 2×2 grid that lines up from top to bottom:
+/// location over tradition on the left (same width, filling the row) and
+/// language over year on the right (same width: each reserves the other's
+/// label). Every pill has the same height and style, and each is its own
+/// glass capsule, so opening one menu (iOS 26 morphs its glass) never hides
+/// another.
+struct HomeControls: View {
     @Environment(AppModel.self) private var model
+    @State private var choosingCity = false
+    static let spacing: CGFloat = 10
+    static let pillHeight: CGFloat = 44
 
-    /// One row in every language, in two separate glass capsules: the city
-    /// shrinks (truncating) and the language menu keeps its size. Opening the
-    /// language menu morphs only its own capsule (iOS 26), so the city stays
-    /// on screen while a language is picked.
     var body: some View {
-        HStack(spacing: 10) {
-            location
-                .padding(.horizontal, 14)
-                .padding(.vertical, 10)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .glassCapsule(interactive: false)
-                .layoutPriority(0)
-            LanguageMenu()
-                .padding(.horizontal, 14)
-                .padding(.vertical, 10)
-                .glassCapsule(interactive: true)
-                .fixedSize()
-                .layoutPriority(1)
+        VStack(spacing: Self.spacing) {
+            HStack(spacing: Self.spacing) {
+                location
+                languageMenu
+            }
+            HStack(spacing: Self.spacing) {
+                traditionMenu
+                yearMenu
+            }
         }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("home_options_tube")
+        .sheet(isPresented: $choosingCity) { EkadashiLocationSheet() }
     }
 
-    @State private var choosingCity = false
+    // MARK: Left column: fills the row
 
     /// The Ekadashi city; tapping it opens the city search.
     private var location: some View {
         Button {
             choosingCity = true
         } label: {
-            HStack(spacing: 6) {
+            pill(alignment: .leading) {
                 if model.locationState == .detecting && !model.ekadashiCityIsManual {
                     ProgressView().controlSize(.small).tint(Theme.teal)
                 } else {
@@ -112,75 +109,43 @@ struct HomeHeader: View {
                         .foregroundStyle(Theme.teal)
                 }
                 Text(model.ekadashiCityName)
-                    .font(.subheadline.weight(.medium))
                     .lineLimit(1)
                     .truncationMode(.tail)
                     .accessibilityIdentifier("home_location_name")
-                Image(systemName: "chevron.down").font(.caption2).foregroundStyle(.secondary)
             }
         }
         .buttonStyle(.plain)
         .accessibilityHint(model.t("home_location_hint"))
         .accessibilityIdentifier("home_location")
-        .sheet(isPresented: $choosingCity) { EkadashiLocationSheet() }
     }
-}
 
-/// Tradition and year: what Home, Calendar, reminders and widgets show.
-struct HomeFilters: View {
-    @Environment(AppModel.self) private var model
-
-    var body: some View {
-        HStack(spacing: 12) {
-            Menu {
-                ForEach(EkadashiTradition.allCases, id: \.self) { tradition in
-                    Button { model.setTradition(tradition) } label: {
-                        if tradition == model.tradition {
-                            Label(model.traditionName(tradition), systemImage: "checkmark")
-                        } else {
-                            Text(model.traditionName(tradition))
-                        }
+    private var traditionMenu: some View {
+        Menu {
+            ForEach(EkadashiTradition.allCases, id: \.self) { tradition in
+                Button { model.setTradition(tradition) } label: {
+                    if tradition == model.tradition {
+                        Label(model.traditionName(tradition), systemImage: "checkmark")
+                    } else {
+                        Text(model.traditionName(tradition))
                     }
                 }
-            } label: {
-                pill(model.traditionName(model.tradition), symbol: "sparkles")
             }
-            .accessibilityLabel("\(model.t("home_tradition")): \(model.traditionName(model.tradition))")
-            .accessibilityIdentifier("home_tradition_menu")
-            Menu {
-                ForEach(model.enabledYears, id: \.self) { year in
-                    Button { model.setYear(year) } label: {
-                        if year == model.selectedYear { Label(String(year), systemImage: "checkmark") } else { Text(String(year)) }
-                    }
-                }
-            } label: {
-                pill(String(model.selectedYear), symbol: "calendar")
+        } label: {
+            pill(alignment: .leading) {
+                Image(systemName: "sparkles").foregroundStyle(Theme.teal)
+                Text(model.traditionName(model.tradition)).lineLimit(1)
             }
-            .accessibilityLabel("\(model.t("year")): \(model.selectedYear)")
-            .accessibilityIdentifier("home_year_menu")
         }
+        .accessibilityLabel("\(model.t("home_tradition")): \(model.traditionName(model.tradition))")
+        .accessibilityIdentifier("home_tradition_menu")
     }
 
-    private func pill(_ text: String, symbol: String) -> some View {
-        HStack(spacing: 6) {
-            Image(systemName: symbol).foregroundStyle(Theme.teal)
-            Text(text).font(.subheadline.weight(.medium)).lineLimit(1)
-            Image(systemName: "chevron.down").font(.caption2).foregroundStyle(.secondary)
-        }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 8)
-        .frame(maxWidth: .infinity)
-        .glassCapsule(interactive: true)
-    }
-}
+    // MARK: Right column: as wide as the wider of language and year
 
-/// The app's only language picker: every tab and subtab, including
-/// Panchang, follows it. Languages appear in registry order (English,
-/// Hindi, Tamil, Telugu, Gujarati, Bengali, then any added later).
-struct LanguageMenu: View {
-    @Environment(AppModel.self) private var model
+    private var languageName: String { Localizer.displayName(model.language) }
+    private var yearText: String { String(model.selectedYear) }
 
-    var body: some View {
+    private var languageMenu: some View {
         Menu {
             ForEach(Localizer.languages, id: \.self) { code in
                 Button {
@@ -190,12 +155,58 @@ struct LanguageMenu: View {
                 }
             }
         } label: {
-            HStack(spacing: 6) {
-                Text(Localizer.displayName(model.language)).font(.subheadline.weight(.medium))
-                Image(systemName: "globe").foregroundStyle(Theme.teal)
+            rightPill(shown: (languageName, "globe"), reserved: (yearText, "calendar"))
+        }
+        .fixedSize()
+        .accessibilityIdentifier("language_menu")
+    }
+
+    private var yearMenu: some View {
+        Menu {
+            ForEach(model.enabledYears, id: \.self) { year in
+                Button { model.setYear(year) } label: {
+                    if year == model.selectedYear { Label(String(year), systemImage: "checkmark") } else { Text(String(year)) }
+                }
+            }
+        } label: {
+            rightPill(shown: (yearText, "calendar"), reserved: (languageName, "globe"))
+        }
+        .fixedSize()
+        .accessibilityLabel("\(model.t("year")): \(model.selectedYear)")
+        .accessibilityIdentifier("home_year_menu")
+    }
+
+    /// A right-column pill sized for both labels, so language and year match.
+    private func rightPill(shown: (String, String), reserved: (String, String)) -> some View {
+        pill(alignment: .center) {
+            ZStack {
+                content(reserved).hidden()
+                content(shown)
             }
         }
-        .accessibilityIdentifier("language_menu")
+    }
+
+    private func content(_ item: (String, String)) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: item.1).foregroundStyle(Theme.teal)
+            Text(item.0).lineLimit(1)
+        }
+    }
+
+    // MARK: Shared pill
+
+    private func pill<Content: View>(alignment: Alignment, @ViewBuilder content: () -> Content) -> some View {
+        HStack(spacing: 6) {
+            content()
+            if alignment == .leading { Spacer(minLength: 0) }
+            Image(systemName: "chevron.down").font(.caption2).foregroundStyle(.secondary)
+        }
+        .font(.subheadline.weight(.medium))
+        .foregroundStyle(.primary)
+        .padding(.horizontal, 14)
+        .frame(maxWidth: alignment == .leading ? .infinity : nil, minHeight: Self.pillHeight)
+        .glassCapsule(interactive: true)
+        .contentShape(Capsule())
     }
 }
 
