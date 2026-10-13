@@ -1,8 +1,11 @@
 import 'package:ekadashi_calendar/l10n/app_language.dart';
 import 'package:ekadashi_calendar/screens/details_screen.dart';
+import 'package:ekadashi_calendar/screens/calendar_screen.dart';
+import 'package:ekadashi_calendar/screens/panchang_screen.dart';
 import 'package:ekadashi_calendar/services/ekadashi_service.dart';
 import 'package:ekadashi_calendar/services/language_service.dart';
 import 'package:ekadashi_calendar/widgets/tab_shell.dart';
+import 'package:ekadashi_calendar/widgets/ios_style.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
@@ -10,6 +13,86 @@ import 'package:provider/provider.dart';
 import '../support/app_harness.dart';
 
 void main() {
+  testWidgets(
+    'Previously opened tabs keep dates and sections after all language switches',
+    (tester) async {
+      final harness = AppHarness();
+      await tester.runAsync(harness.install);
+      addTearDown(harness.uninstall);
+      tester.view.physicalSize = const Size(393, 852);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(harness.app());
+      await tester.pumpAndSettle();
+      Future<void> tab(int index) async {
+        await tester.tap(find.byKey(Key('glass_tab_$index')));
+        await tester.pumpAndSettle();
+      }
+
+      final day = DateTime(2027, 9, 14);
+      await tab(1);
+      tester
+          .state<CalendarScreenState>(find.byType(CalendarScreen))
+          .selectDate(day);
+      await tester.pumpAndSettle();
+      await tab(2);
+      await tester.tap(find.byKey(const Key('journey_tab_history')));
+      await tester.pumpAndSettle();
+      await tab(3);
+      tester
+          .state<PanchangScreenState>(find.byType(PanchangScreen))
+          .showDate(day);
+      await tester.pumpAndSettle();
+      await tab(4);
+      for (final language in [
+        ...AppLanguage.all.skip(1),
+        AppLanguage.all.first,
+      ]) {
+        await tab(0);
+        await tester.tap(find.byKey(const Key('language_menu')));
+        await tester.pumpAndSettle();
+        await tester.tap(
+          find.widgetWithText(PopupMenuItem<String>, language.nativeName),
+        );
+        await tester.pumpAndSettle();
+        await tab(1);
+        expect(
+          find.text(AppStrings.fullDate(day, language.code)).hitTestable(),
+          findsOneWidget,
+        );
+        await tab(2);
+        expect(
+          tester
+              .widget<GlassChip>(find.byKey(const Key('journey_tab_history')))
+              .selected,
+          isTrue,
+        );
+        await tab(3);
+        expect(
+          tester
+              .widget<GlassChip>(find.byKey(const Key('panchang_tab_daily')))
+              .selected,
+          isTrue,
+        );
+        expect(
+          find.text(AppStrings.fullDate(day, language.code)).hitTestable(),
+          findsWidgets,
+        );
+        await tab(4);
+        expect(
+          find
+              .text(AppStrings.translate('appearance', language.code))
+              .hitTestable(),
+          findsOneWidget,
+        );
+        expect(
+          tester.takeException(),
+          isNull,
+          reason: 'Reusing tabs in ${language.code}',
+        );
+      }
+    },
+  );
   for (final tab in [0, 1]) {
     testWidgets(
       'Opening the ${tab == 0 ? 'language' : 'Google'} menu keeps the tab toolbar and layout',
@@ -46,15 +129,17 @@ void main() {
       },
     );
   }
-  for (final width in [393.0, 320.0]) {
+  for (final (width, scale) in [(393.0, 1.0), (320.0, 1.0), (320.0, 2.0)]) {
     testWidgets(
-      'Home language switches preserve the selected fast at ${width}px',
+      'Home language switches preserve the selected fast at ${width}px and ${scale}x text',
       (tester) async {
         final harness = AppHarness();
         await tester.runAsync(harness.install);
         addTearDown(harness.uninstall);
         tester.view.physicalSize = Size(width, 852);
         tester.view.devicePixelRatio = 1;
+        tester.platformDispatcher.textScaleFactorTestValue = scale;
+        addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
         addTearDown(tester.view.reset);
         await tester.pumpWidget(harness.app());
         await tester.pumpAndSettle();
@@ -90,6 +175,9 @@ void main() {
             timezone: 'IST',
             languageCode: language.code,
           )[4];
+          // Large text scrolls inside the card while its actions stay pinned.
+          await tester.ensureVisible(find.text(expected.name));
+          await tester.pumpAndSettle();
           expect(find.text(expected.name).hitTestable(), findsOneWidget);
           expect(find.byType(PopupMenuItem<String>), findsNothing);
           await tester.tap(find.byKey(const Key('view_details')).hitTestable());

@@ -1632,6 +1632,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     final current = AppLanguage.named(lang.currentLocale.languageCode);
     return PopupMenuButton<String>(
       key: const Key('language_menu'),
+      // The menu overlays the app; it is not a page in Home's tab stack.
+      useRootNavigator: true,
       onSelected: (String newValue) => lang.changeLanguage(newValue),
       color: IosColors.sheet(context),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
