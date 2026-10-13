@@ -1,6 +1,6 @@
 import 'package:ekadashi_calendar/widgets/glass_navigation_bar.dart';
 import 'package:ekadashi_calendar/widgets/ios_style.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import '../support/app_harness.dart';

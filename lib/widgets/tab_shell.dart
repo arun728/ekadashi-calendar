@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 
 import 'ios_style.dart';
 
@@ -176,7 +177,7 @@ class ShellTopBar extends StatelessWidget implements PreferredSizeWidget {
             IconButton(
               key: const Key('open_global_search'),
               tooltip: searchTooltip,
-              icon: const Icon(Icons.search),
+              icon: const Icon(CupertinoIcons.search, size: 30),
               onPressed: onSearch,
             ),
             ...actions,

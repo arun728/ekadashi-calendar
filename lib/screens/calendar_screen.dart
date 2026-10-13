@@ -17,6 +17,7 @@ import 'widgets/day_entries_list.dart';
 import 'widgets/add_edit_entry_sheet.dart';
 import 'widgets/google_calendar_picker_sheet.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import '../widgets/tab_shell.dart';
 import '../services/notifications/event_reminder_service.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -648,7 +649,11 @@ class CalendarScreenState extends State<CalendarScreen> {
           key: const Key('calendar_google_menu'),
           tooltip: lang.translate('google_calendar'),
           enabled: _repoReady,
-          icon: const Icon(Icons.change_circle_outlined, color: IosColors.teal),
+          icon: const Icon(
+            CupertinoIcons.arrow_2_circlepath_circle,
+            size: 28,
+            color: IosColors.teal,
+          ),
           color: IosColors.groupedCard(context),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
@@ -661,7 +666,7 @@ class CalendarScreenState extends State<CalendarScreen> {
               value: 'import',
               child: menuRow(
                 'sync_google',
-                Icons.sync,
+                CupertinoIcons.arrow_2_circlepath,
                 IosColors.primary(context),
               ),
             ),
@@ -670,7 +675,7 @@ class CalendarScreenState extends State<CalendarScreen> {
               value: 'disconnect',
               child: menuRow(
                 'disconnect_google',
-                Icons.person_remove_outlined,
+                CupertinoIcons.person_crop_circle_badge_minus,
                 red,
               ),
             ),

@@ -26,6 +26,11 @@ void main() {
     tzdata.initializeTimeZones();
     await initializeDateFormatting();
     ObservanceCalendarService.calculateInline = true;
+    final cupertino = FontLoader('packages/cupertino_icons/CupertinoIcons')
+      ..addFont(
+        rootBundle.load('packages/cupertino_icons/assets/CupertinoIcons.ttf'),
+      );
+    await cupertino.load();
     for (final entry in {
       'Roboto': 'Roboto-Regular.ttf',
       'MaterialIcons': 'MaterialIcons-Regular.otf',

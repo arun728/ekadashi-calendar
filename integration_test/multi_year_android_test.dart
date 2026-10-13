@@ -279,7 +279,7 @@ void main() {
         await frames(tester);
         await binding.takeScreenshot('v2_vrat_$code');
         expect(find.text(lang.translate('journey_tab')), findsWidgets);
-        await tester.tap(find.byIcon(Icons.search));
+        await tester.tap(find.byKey(const Key('open_global_search')));
         await frames(tester);
         expect(find.byType(GlobalSearchScreen).hitTestable(), findsOneWidget);
         await binding.takeScreenshot('v2_search_$code');
@@ -306,7 +306,7 @@ void main() {
         await frames(tester);
         await binding.takeScreenshot('glass_calendar_$code');
       }
-      await tester.tap(find.byIcon(Icons.search));
+      await tester.tap(find.byKey(const Key('open_global_search')));
       await frames(tester);
       await lang.changeLanguage('en');
       await frames(tester, count: 10);

@@ -19,7 +19,7 @@ void main() {
   setUpAll(() async {
     await initializeDateFormatting();
     catalog = await SearchCatalog.load();
-    observances = PanchangEngine().observanceCalendar(2026, city: city);
+    observances = const PanchangEngine().observanceCalendar(2026, city: city);
   });
 
   DateTime ist(String local) => DateTime.parse('$local+05:30');

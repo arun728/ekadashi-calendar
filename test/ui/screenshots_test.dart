@@ -13,6 +13,11 @@ import '../support/app_harness.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUpAll(() async {
+    final cupertino = FontLoader('packages/cupertino_icons/CupertinoIcons')
+      ..addFont(
+        rootBundle.load('packages/cupertino_icons/assets/CupertinoIcons.ttf'),
+      );
+    await cupertino.load();
     for (final entry in {
       'Roboto': ['EkadashiTestFont.ttf'],
       'MaterialIcons': ['MaterialIcons-Regular.otf'],
