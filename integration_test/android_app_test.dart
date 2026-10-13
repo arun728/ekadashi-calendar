@@ -261,6 +261,41 @@ void main() {
       expect(appearance.hitTestable(), findsOneWidget);
       await binding.takeScreenshot('android_settings_$locale');
     }
+    for (final tab in [2, 3]) {
+      await selectTab(tab);
+      if (tab == 2) {
+        await tester.tap(find.byKey(const Key('journey_tab_history')));
+        await pumpUi(tester);
+      }
+      final anchor = find.byKey(
+        Key(tab == 2 ? 'vrat_tabs_tube' : 'panchang_sections_tube'),
+      );
+      final anchorPosition = tester.getTopLeft(anchor);
+      await tester.tap(
+        find.byKey(
+          Key(
+            tab == 2 ? 'journey_history_year_menu' : 'panchang_city_selector',
+          ),
+        ),
+      );
+      final menuItems = find.byWidgetPredicate(
+        (widget) => widget is PopupMenuItem,
+      );
+      await waitForUi(
+        tester,
+        () => menuItems.evaluate().isNotEmpty,
+        reason: 'Tab $tab menu must open',
+      );
+      expect(find.byKey(const Key('open_global_search')), findsOneWidget);
+      expect(tester.getTopLeft(anchor), anchorPosition);
+      await tester.binding.handlePopRoute();
+      await waitForUi(
+        tester,
+        () => menuItems.evaluate().isEmpty,
+        reason: 'System Back must close tab $tab menu',
+      );
+      expect(tester.getTopLeft(anchor), anchorPosition);
+    }
     await selectTab(0);
     final details = find.byKey(const Key('view_details'));
     await tester.ensureVisible(details);

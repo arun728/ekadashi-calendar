@@ -55,19 +55,37 @@ class TabNavigatorObserver extends NavigatorObserver {
   TabNavigatorObserver(this.onChange);
 
   final VoidCallback onChange;
+  final _pages = <PageRoute<dynamic>>{};
+
+  /// Popup menus are overlays, so they keep the root tab's toolbar visible.
+  bool get hasPushedPage => _pages.length > 1;
 
   @override
-  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) =>
-      onChange();
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    // The same observer can attach to a newly built tab navigator.
+    if (previousRoute == null) _pages.clear();
+    if (route is PageRoute<dynamic>) _pages.add(route);
+    onChange();
+  }
+
   @override
-  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) =>
-      onChange();
+  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    _pages.remove(route);
+    onChange();
+  }
+
   @override
-  void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) =>
-      onChange();
+  void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    _pages.remove(route);
+    onChange();
+  }
+
   @override
-  void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) =>
-      onChange();
+  void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
+    _pages.remove(oldRoute);
+    if (newRoute is PageRoute<dynamic>) _pages.add(newRoute);
+    onChange();
+  }
 }
 
 /// The items a tab puts in the shared top bar, like a SwiftUI toolbar:

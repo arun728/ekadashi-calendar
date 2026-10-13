@@ -209,7 +209,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   NavigatorState? get _currentTabNavigator =>
       _tabNavigators[_currentIndex].currentState;
 
-  bool get _tabPushed => _currentTabNavigator?.canPop() ?? false;
+  bool get _tabPushed => _tabObservers[_currentIndex].hasPushedPage;
 
   void _tabStackChanged() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -1150,6 +1150,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     final searchBack = _searchReturn.showsBack(_currentIndex);
     // A page pushed inside the tab brings its own top bar, as on iOS.
     final tabPushed = !_isLoading && _errorMessage.isEmpty && _tabPushed;
+    // System Back also closes popup overlays in the active tab navigator.
+    final tabCanPop = _currentTabNavigator?.canPop() ?? false;
     final slots = switch (_currentIndex) {
       1 => _calendarBar,
       3 => _panchangBar,
@@ -1157,10 +1159,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     };
     // The iOS gradient behind every tab (docs/ROADMAP.md Phase 8).
     return PopScope(
-      canPop: !searchBack && !tabPushed,
+      canPop: !searchBack && !tabCanPop,
       onPopInvokedWithResult: (didPop, _) {
         if (didPop) return;
-        if (tabPushed) {
+        if (tabCanPop) {
           _currentTabNavigator?.maybePop();
         } else if (searchBack) {
           _returnToSearch();
