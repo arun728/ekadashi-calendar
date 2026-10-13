@@ -57,6 +57,20 @@ final class TransliteratorTests: XCTestCase {
                 ($0, Transliterator.transliterate(name, language: $0))
             })
         }
+        // Every catalog name too, as one FNV-1a hash per language: the Dart
+        // port must write the whole catalog identically.
+        var hashes: [String: String] = [:]
+        for language in ["hi", "ta", "te", "gu", "bn"] {
+            var hash: UInt32 = 2_166_136_261
+            for city in all {
+                let name = city.label.replacingOccurrences(of: #" \([A-Z]{2}\)$"#, with: "", options: .regularExpression)
+                for byte in (Transliterator.transliterate(name, language: language) + "\n").utf8 {
+                    hash = (hash ^ UInt32(byte)) &* 16_777_619
+                }
+            }
+            hashes[language] = String(hash, radix: 16)
+        }
+        expected["_catalog_fnv1a32"] = hashes
         if ProcessInfo.processInfo.environment["UPDATE_TRANSLITERATION_FIXTURE"] == "1" {
             let data = try JSONSerialization.data(withJSONObject: expected, options: [.prettyPrinted, .sortedKeys])
             try data.write(to: url)
