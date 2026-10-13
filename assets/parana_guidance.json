@@ -1,0 +1,90 @@
+{
+  "version": "1.0",
+  "source": "Canonical Shastric Sources (Haribhaktivilasa 12-13, Nirnaya Sindhu, Dharma Sindhu, Drik Panchang Nirnay)",
+  "verification_status": "source_verified",
+  "verification_note": "Calculated timestamps in the calendar represent local astronomical windows (Sunrise, Dwadashi tithi, and Hari Vasara termination) for the selected timezone. Ritual guidance is drawn from canonical Vedic and Panchang texts without speculative rules.",
+  "general_guidance": {
+    "meaning": {
+      "en": "Parana means breaking the fast after observing Ekadashi. It is performed on Dwadashi (the 12th lunar day) after sunrise within the prescribed window to attain the complete spiritual fruit of the vrat.",
+      "ta": "பாரணை என்பது ஏகாதசி விரதத்தை நிறைவு செய்து உண்ணும் விசேஷ உணவாகும். விரதத்தின் முழுமையான பலனைப் பெற, துவாதசி திதியில் சூரிய உதயத்திற்குப் பிறகு குறிப்பிடப்பட்ட சுப காலத்திற்குள் பாரணை செய்ய வேண்டும்.",
+      "hi": "पारण का अर्थ है एकादशी व्रत समाप्त कर भोजन ग्रहण करना। एकादशी व्रत का पूर्ण फल प्राप्त करने के लिए द्वादशी तिथि में सूर्योदय के पश्चात निर्धारित शुभ समय में पारण करना अनिवार्य होता है।",
+      "te": "పారణ అంటే ఏకాదశి ఉపవాసాన్ని విరమించి ఆహారం స్వీకరించడం. వ్రతం యొక్క సంపూర్ణ ఫలితాన్ని పొందడానికి ద్వాదశి తిథిలో సూర్యోదయానంతరం నిర్దేశిత శుభ ముహూర్తంలో పారణ చేయాలి."
+    },
+    "when_to_break": {
+      "en": "The fast must be broken after local sunrise on Dwadashi day, before Dwadashi tithi ends, and strictly outside of Hari Vasara (the first quarter / 4th part of Dwadashi tithi).",
+      "ta": "துவாதசி அன்று உள்ளூர் சூரிய உதயத்திற்குப் பிறகும், துவாதசி திதி முடிவதற்கு முன்னும் பாரணை செய்ய வேண்டும். ஹரி வாசரம் (துவாதசியின் முதல் கால் பகுதி) காலத்தில் விரதத்தை முடிக்கக் கூடாது.",
+      "hi": "पारण द्वादशी के दिन स्थानीय सूर्योदय के बाद और द्वादशी तिथि समाप्त होने से पहले किया जाना चाहिए। हरि वासर (द्वादशी की पहली चौथाई अवधि) के दौरान पारण वर्जित है।",
+      "te": "ద్వాదశి నాడు స్థానిక సూర్యోదయానంతరం, ద్వాదశి తిథి ముగిసేలోపు మరియు హరి వాసర సమయం వెలుపల మాత్రమే పారణ చేయాలి."
+    },
+    "window_guidance": {
+      "en": "The displayed start time corresponds to sunrise (or the conclusion of Hari Vasara if it extends past sunrise). The end time indicates the termination of Dwadashi tithi or auspicious morning muhurta. Breaking fast between these timestamps is recommended.",
+      "ta": "காட்டப்படும் தொடக்க நேரம் சூரிய உதயம் (அல்லது சூரிய உதயத்திற்குப் பின் நீடிக்கும் ஹரி வாசரம் முடிவு) ஆகும். முடிவு நேரம் துவாதசி திதி முடிவு அல்லது காலையின் சுப முகூர்த்தத்தைக் குறிக்கிறது. இந்த நேரத்திற்குள் விரதத்தை முடிக்கவும்.",
+      "hi": "प्रदर्शित प्रारंभ समय सूर्योदय (या सूर्योदय के बाद तक रहने वाले हरि वासर की समाप्ति) को दर्शाता है। समाप्ति समय द्वादशी तिथि की समाप्ति या प्रातः शुभ मुहूर्त का सूचक है। इस समय अंतराल में पारण करना श्रेष्ठ है।",
+      "te": "ప్రదర్శిత ప్రారంభ సమయం సూర్యోదయాన్ని (లేదా సూర్యోదయానంతరం వరకు ఉండే హరి వాసర ముగింపును) సూచిస్తుంది. ముగింపు సమయం ద్వాదశి ముగింపు లేదా ఉదయపు శుభ ముహూర్తాన్ని సూచిస్తుంది. ఈ వ్యవధిలో పారణ చేయడం శ్రేష్ఠం."
+    },
+    "dwadashi_observance": {
+      "en": "Begin Dwadashi with morning ablutions and prayer to Lord Vishnu/Krishna. Offer the food (Naivedya) or Tulasi water first. Take a satvik meal, ideally sharing food with guests or needy persons. Avoid sleeping during daytime on Dwadashi.",
+      "ta": "துவாதசி அன்று காலையில் நீராடி மகாவிஷ்ணுவை வழிபடவும். பிரசாதம் அல்லது துளசி தீர்த்தத்தை முதலில் ஏற்கவும். சாத்வீக உணவை உட்கொள்ளவும்; பகல் உறக்கத்தைத் தவிர்க்கவும்.",
+      "hi": "द्वादशी के दिन प्रातः स्नान कर भगवान विष्णु की पूजा करें। सर्वप्रथम भगवान को भोग या तुलसी जल अर्पित करें। सात्विक भोजन ग्रहण करें और द्वादशी के दिन दिन में सोने से बचें।",
+      "te": "ద్వాదశి నాడు ఉదయాన్నే స్నానం చేసి శ్రీమహావిష్ణువును పూజించాలి. ముందుగా తులసి తీర్థం లేదా ప్రసాదం స్వీకరించి, ఆపై సాత్విక భోజనం చేయాలి. ద్వాదశి నాడు పగటి నిద్ర మానుకోవాలి."
+    },
+    "missed_window_guidance": {
+      "en": "If the auspicious Parana window has passed before you could take a full meal: Canonical shastras (Nirnaya Sindhu & Haribhaktivilasa) recommend immediately sipping water or taking Vishnu Charanamrita with a Tulasi leaf. Drinking water satisfies the ritual requirement of breaking the fast on Dwadashi without violating the prohibition of fasting during Dwadashi day, followed by prayer and regular meal.",
+      "ta": "குறிப்பிட்ட பாரணை நேரம் கடந்துவிட்டால்: சாஸ்திரங்களின்படி (நிர்ணய சிந்து & ஹரிபக்திவிலாசம்), துளசி கலந்த விஷ்ணு தீர்த்தம் அல்லது சிறிது தண்ணீர் அருந்தி விரதத்தை உடனே முறைப்படி நிறைவு செய்யலாம். இது விரத விதியை பூர்த்தி செய்யும்; பின்னர் பிரார்த்தனை செய்து உணவு உட்கொள்ளலாம்.",
+      "hi": "यदि पारण का निर्धारित समय बीत जाए: धर्मग्रंथों (निर्णय सिंधु एवं हरिभक्तिविलास) के अनुसार तुरंत तुलसी युक्त चरणामृत या जल ग्रहण करके व्रत का संकल्प पूर्ण करें। जल पान करने से व्रत भंग भी नहीं होता और द्वादशी में उपवास का दोष भी नहीं लगता; इसके बाद सामान्य भोजन करें।",
+      "te": "ఒకవేళ పారణ సమయం దాటిపోతే: ధర్మశాస్త్రాల (నిర్ణయ సింధు, హరిభక్తివిలాస) ప్రకారం వెంటనే తులసి దళం కలిపిన విష్ణు చరణామృతం లేదా నీరు స్వీకరించి వ్రత సంకల్పాన్ని పూర్తి చేయాలి. నీరు తాగడం వల్ల ఉపవాస దోషం కలగదు, ఆపై ప్రార్థన చేసి సాధారణ భోజనం చేయవచ్చు."
+    }
+  },
+  "traditions": {
+    "general": {
+      "title": {
+        "en": "General Parana Guidance",
+        "ta": "பொதுவான பாரணை வழிகாட்டல்",
+        "hi": "सामान्य पारण नियम",
+        "te": "సాధారణ పారణ మార్గదర్శకాలు"
+      },
+      "rules": {
+        "en": "Follow the local sunrise-to-Dwadashi window displayed in the timings box. Conclude fast with light satvik food after offering water or prayer to Lord Vishnu.",
+        "ta": "காட்டப்படும் சூரிய உதய துவாதசி நேரத்திற்குள் மகாவிஷ்ணுவிற்கு தீர்த்தம் அர்ப்பணித்து எளிய சாத்வீக உணவோடு விரதத்தை முடிக்கவும்.",
+        "hi": "प्रदर्शित सूर्योदय व द्वादशी समय का पालन करें। भगवान विष्णु को जल अर्पित कर हल्के सात्विक भोजन से पारण करें।",
+        "te": "ప్రదర్శిత సూర్యోదయ-ద్వాదశి సమయాల్లో శ్రీమహావిష్ణువుకు తీర్థం సమర్పించి తేలికపాటి సాత్విక ఆహారంతో ఉపవాస దీక్షను విరమించండి."
+      },
+      "source": "Vedic Calendar Consensus"
+    },
+    "smarta": {
+      "title": {
+        "en": "Smarta Parana Guidance",
+        "ta": "ஸ்மார்த்த பாரணை வழிகாட்டல்",
+        "hi": "स्मार्त पारण नियम",
+        "te": "స్మార్త పారణ మార్గదర్శకాలు"
+      },
+      "rules": {
+        "en": "In Smarta tradition (following Dharma Sindhu & Nirnaya Sindhu), Parana is strictly done on Dwadashi morning after sunrise. If Dwadashi ends before sunrise, Parana is performed on Trayodashi morning. Breaking during Madhyahna (noon) is avoided unless Dwadashi ends early.",
+        "ta": "ஸ்மார்த்த மரபில் (தர்ம சிந்து & நிர்ணய சிந்து படி), சூரிய உதயத்திற்குப் பிறகு துவாதசியில் பாரணை செய்யப்படுகிறது. துவாதசி சூரிய உதயத்திற்கு முன்பே முடிந்துவிட்டால், திரயோதசி காலையில் பாரணை செய்யப்படுகிறது.",
+        "hi": "स्मार्त परंपरा (धर्म सिंधु एवं निर्णय सिंधु अनुसार) सूर्योदय के बाद द्वादशी में पारण करती है। यदि सूर्योदय से पूर्व द्वादशी समाप्त हो जाए, तो त्रयोदशी को पारण किया जाता है। मध्याह्न में पारण से बचें।",
+        "te": "స్మార్త సంప్రదాయం (ధర్మ సింధు & నిర్ణయ సింధు) ప్రకారం ద్వాదశి ఉదయం సూర్యోదయానంతరం పారణ చేయాలి. సూర్యోదయానికి ముందే ద్వాదశి ముగిస్తే త్రయోదశి ఉదయం పారణ చేస్తారు. మధ్యాహ్న పారణను నివారిస్తారు."
+      },
+      "source": "Dharma Sindhu & Nirnaya Sindhu"
+    },
+    "vaishnava": {
+      "title": {
+        "en": "Vaishnava Parana Guidance",
+        "ta": "வைணவ பாரணை வழிகாட்டல்",
+        "hi": "वैष्णव पारण नियम",
+        "te": "వైష్ణవ పారణ మార్గదర్శకాలు"
+      },
+      "rules": {
+        "en": "In Vaishnava tradition (following Haribhaktivilasa & ISKCON standards), Parana must never be done during Hari Vasara (first 1/4 of Dwadashi). If Dwadashi is short, breaking with Vishnu Charanamrita and Tulasi is required before Dwadashi expires to honor both Ekadashi and Dwadashi sanctity.",
+        "ta": "வைணவ மரபில் (ஹரிபக்திவிலாசம் படி), ஹரி வாசரம் உள்ள காலத்தில் ஒருபோதும் பாரணை செய்யலாகாது. துவாதசி நேரம் குறைவாக இருந்தால், துவாதசி முடிவதற்குள் துளசி தீர்த்தம் அல்லது சரணாமிர்தம் அருந்தி விரதத்தை பூர்த்தி செய்ய வேண்டும்.",
+        "hi": "वैष्णव परंपरा (हरिभक्तिविलास व इस्कॉन अनुसार) हरि वासर की अवधि में पारण कदापि नहीं करती। यदि द्वादशी अवधि अल्प हो, तो द्वादशी समाप्ति से पूर्व तुलसी चरणामृत लेकर पारण सम्पन्न करने का विधान है।",
+        "te": "హరిభక్తివిలాస ప్రకారం వైష్ణవులు హరి వాసర (ద్వాదశి మొదటి 25% సమయం) సమయంలో ఎట్టి పరిస్థితుల్లోనూ పారణ చేయరు. హరి వాసరం ముగిసిన పిమ్మట మాత్రమే మహాప్రసాదం స్వీకరిస్తారు."
+      },
+      "source": "Haribhaktivilasa (Vilasa 12-13)"
+    }
+  },
+  "tradition_differences_note": {
+    "en": "While all traditions agree on breaking fast on Dwadashi after sunrise, Smarta observance calculates based on standard sunrise tithi, whereas Vaishnava adherence strictly enforces the passage of Hari Vasara and respects Mahadvadashi conditions.",
+    "ta": "அனைத்து மரபுகளும் துவாதசி காலையில் விரதம் முடிப்பதை ஏற்றுக்கொண்டாலும், ஸ்மார்த்த முறை சூரிய உதய திதியை அடிப்படையாகக் கொண்டது; வைணவ முறை ஹரி வாசரம் கழிவதையும் மஹாதுவாதசி விதிகளையும் கண்டிப்பாகப் பின்பற்றுகிறது.",
+    "hi": "यद्यपि सभी परंपराएं सूर्योदय के पश्चात द्वादशी में पारण पर सहमत हैं, स्मार्त परंपरा सूर्योदय तिथि को प्राथमिकता देती है, जबकि वैष्णव परंपरा हरि वासर की समाप्ति तथा महाद्वादशी नियमों का कठोरता से पालन करती है।"
+  }
+}

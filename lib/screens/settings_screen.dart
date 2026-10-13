@@ -1,12 +1,20 @@
-import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../services/theme_service.dart';
 import '../services/language_service.dart';
 import '../services/ekadashi_service.dart';
+import '../services/tradition_service.dart';
 import '../services/native_settings_service.dart';
-import '../services/native_notification_service.dart' show NativeNotificationService, EkadashiNotificationData, NotificationSettings;
+import '../services/native_notification_service.dart' show NativeNotificationService, NotificationSettings;
+import '../services/notification_service.dart';
+import '../services/tradition_notification_helper.dart';
+import 'package:intl/intl.dart';
+import '../services/native_location_service.dart';
+import '../services/panchang_calculator.dart';
+import 'widgets/city_picker_dialog.dart';
+import 'food_guide_screen.dart';
 
 /// Settings Screen - Updated to use native Kotlin services for:
 /// - Permission handling (no freeze on return from system settings)
@@ -32,7 +40,6 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
 
   // State
   bool _isInitialized = false;
-  bool _isCheckingPermissions = false;
 
   // Permission states
   PermissionStatus _permissionStatus = PermissionStatus.defaults();
@@ -40,8 +47,10 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
   // Notification settings
   NotificationPrefs _notificationSettings = NotificationPrefs.defaults();
 
-  // Location settings (for timezone in notifications only)
+  // Location settings
   String _currentTimezone = 'IST';
+  LocationData? _currentLocation;
+  bool _isAutoDetect = true;
 
   static const Color tealColor = Color(0xFF00A19B);
 
@@ -84,12 +93,17 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     try {
       // Get all settings at once (more efficient)
       final allSettings = await _settingsService.getAllSettings();
+      final locService = NativeLocationService();
+      final loc = await locService.getCachedLocation() ?? await locService.getCurrentLocation();
+      final isAuto = await locService.isAutoDetectEnabled();
 
       if (mounted) {
         setState(() {
           _permissionStatus = allSettings.permissions;
           _notificationSettings = allSettings.notifications;
-          _currentTimezone = allSettings.location.timezone;
+          _currentTimezone = loc?.timezone ?? allSettings.location.timezone;
+          _currentLocation = loc;
+          _isAutoDetect = isAuto;
         });
       }
     } catch (e) {
@@ -126,25 +140,18 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     if (!_notificationSettings.enabled || !_permissionStatus.hasNotificationPermission) {
       debugPrint('SettingsScreen: Reschedule aborted. Enabled=${_notificationSettings.enabled}, Perm=${_permissionStatus.hasNotificationPermission}');
       _notificationService.cancelAllNotifications();
+      NotificationService().cancelAll();
       return;
     }
 
+    final langService = Provider.of<LanguageService>(context, listen: false);
+    final traditionService = Provider.of<TraditionService>(context, listen: false);
+    final currentTradition = traditionService.currentTradition;
+    final currentLang = langService.currentLocale.languageCode;
+    final baseTexts = langService.localizedStrings;
+
     Future.microtask(() async {
       try {
-        final langService = Provider.of<LanguageService>(context, listen: false);
-        final ekadashis = await _ekadashiService.getUpcomingEkadashis(
-            languageCode: langService.currentLocale.languageCode,
-            timezone: _currentTimezone
-        );
-
-        // Convert to notification data format
-        final notificationData = ekadashis.map((e) => EkadashiNotificationData(
-          id: e.id,
-          name: e.name,
-          fastingStartTime: e.fastingStartIso.isNotEmpty ? e.fastingStartIso : e.fastStartTime,
-          paranaStartTime: e.paranaStartIso.isNotEmpty ? e.paranaStartIso : e.fastBreakTime,
-        )).toList();
-
         // Update native notification service settings
         await _notificationService.updateSettings(NotificationSettings(
           enabled: _notificationSettings.enabled,
@@ -154,10 +161,16 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
           remindOnParana: _notificationSettings.remindOnParana,
         ));
 
-        // Schedule notifications
-        await _notificationService.scheduleAllNotifications(
-          ekadashis: notificationData,
-          texts: langService.localizedStrings,
+        // Use unified TraditionNotificationCoordinator
+        await TraditionNotificationCoordinator.rescheduleForTradition(
+          tradition: currentTradition,
+          languageCode: currentLang,
+          timezone: _currentTimezone,
+          baseTexts: baseTexts,
+          remind1Day: _notificationSettings.remind1Day,
+          remind2Days: _notificationSettings.remind2Days,
+          remindOnDay: _notificationSettings.remindOnStart,
+          remindOnParana: _notificationSettings.remindOnParana,
         );
       } catch (e) {
         debugPrint("Error rescheduling: $e");
@@ -188,6 +201,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
       _rescheduleNotifications();
     } else {
       await _notificationService.cancelAllNotifications();
+      await NotificationService().cancelAll();
     }
   }
 
@@ -219,6 +233,97 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     _rescheduleNotifications();
   }
 
+  Future<void> _openCityPicker() async {
+    final loc = await CityPickerDialog.show(
+      context,
+      currentLocation: _currentLocation,
+    );
+    if (loc != null && mounted) {
+      final auto = await NativeLocationService().isAutoDetectEnabled();
+      setState(() {
+        _currentLocation = loc;
+        _currentTimezone = loc.timezone;
+        _isAutoDetect = auto;
+      });
+      _rescheduleNotifications();
+    }
+  }
+
+  Future<void> _toggleAutoDetectLocation(bool value) async {
+    final locService = NativeLocationService();
+    await locService.setAutoDetectEnabled(value);
+    if (value) {
+      final loc = await locService.getCurrentLocation();
+      if (loc != null && mounted) {
+        setState(() {
+          _currentLocation = loc;
+          _currentTimezone = loc.timezone;
+          _isAutoDetect = true;
+        });
+        _rescheduleNotifications();
+      }
+    } else {
+      if (mounted) {
+        setState(() => _isAutoDetect = false);
+      }
+    }
+  }
+
+  void _showLanguageSelectionDialog(LanguageService langService) {
+    showDialog(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        title: Text(langService.translate('language')),
+        children: [
+          SimpleDialogOption(
+            onPressed: () {
+              langService.changeLanguage('en');
+              Navigator.pop(ctx);
+              _rescheduleNotifications();
+            },
+            child: const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: Text('English', style: TextStyle(fontSize: 16)),
+            ),
+          ),
+          SimpleDialogOption(
+            onPressed: () {
+              langService.changeLanguage('hi');
+              Navigator.pop(ctx);
+              _rescheduleNotifications();
+            },
+            child: const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: Text('हिंदी (Hindi)', style: TextStyle(fontSize: 16)),
+            ),
+          ),
+          SimpleDialogOption(
+            onPressed: () {
+              langService.changeLanguage('ta');
+              Navigator.pop(ctx);
+              _rescheduleNotifications();
+            },
+            child: const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: Text('தமிழ் (Tamil)', style: TextStyle(fontSize: 16)),
+            ),
+          ),
+          SimpleDialogOption(
+            onPressed: () {
+              langService.changeLanguage('te');
+              Navigator.pop(ctx);
+              _rescheduleNotifications();
+            },
+            child: const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: Text('తెలుగు (Telugu)', style: TextStyle(fontSize: 16)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   // ============================================================
   // BUILD UI
   // ============================================================
@@ -231,15 +336,139 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
         _notificationSettings.enabled;
 
     // Show permissions section always on Android (since USE_EXACT_ALARM is auto-granted)
-    final bool showPermissionsSection = Platform.isAndroid;
+    final bool showPermissionsSection = !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
 
     if (!_isInitialized) {
       return const Center(child: CircularProgressIndicator(color: tealColor));
     }
 
+    String todaySunrise = '';
+    if (_currentLocation != null) {
+      try {
+        final rise = PanchangCalculator.calculateSunrise(
+          latitude: _currentLocation!.latitude,
+          longitude: _currentLocation!.longitude,
+          date: DateTime.now(),
+        );
+        if (rise != null) {
+          todaySunrise = DateFormat('hh:mm a').format(rise);
+        }
+      } catch (_) {}
+    }
+
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        // ==================== LOCATION ====================
+        Text(lang.translate('location_settings'),
+            style: const TextStyle(color: tealColor, fontWeight: FontWeight.bold)),
+        SwitchListTile(
+          title: Text(lang.translate('current_location')),
+          subtitle: Text(
+            _isAutoDetect
+                ? 'GPS auto-detection enabled'
+                : 'Using manually selected city',
+            style: const TextStyle(fontSize: 12, color: Colors.grey),
+          ),
+          value: _isAutoDetect,
+          activeColor: tealColor,
+          onChanged: _toggleAutoDetectLocation,
+        ),
+        ListTile(
+          leading: const Icon(Icons.location_city, color: tealColor),
+          title: Text(_currentLocation?.displayName ?? _currentLocation?.city ?? 'Select City'),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (_currentLocation != null) ...[
+                Text(
+                  '${_currentLocation!.latitude.toStringAsFixed(2)}°N, ${_currentLocation!.longitude.toStringAsFixed(2)}°E • $_currentTimezone',
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+                if (todaySunrise.isNotEmpty)
+                  Text(
+                    '${lang.translate('sunrise_time')}: $todaySunrise',
+                    style: const TextStyle(fontSize: 12, color: tealColor, fontWeight: FontWeight.w500),
+                  ),
+              ],
+            ],
+          ),
+          trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+          onTap: _openCityPicker,
+        ),
+        const Divider(),
+
+        // ==================== LANGUAGE ====================
+        Text(lang.translate('language'),
+            style: const TextStyle(color: tealColor, fontWeight: FontWeight.bold)),
+        ListTile(
+          leading: const Icon(Icons.language, color: tealColor),
+          title: Text(lang.translate('language')),
+          subtitle: Text(
+            lang.currentLocale.languageCode == 'ta'
+                ? 'தமிழ்'
+                : (lang.currentLocale.languageCode == 'te'
+                    ? 'తెలుగు'
+                    : (lang.currentLocale.languageCode == 'hi' ? 'हिंदी' : 'English')),
+            style: const TextStyle(fontSize: 13, color: Colors.grey),
+          ),
+          trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+          onTap: () => _showLanguageSelectionDialog(lang),
+        ),
+        const Divider(),
+
+        // ==================== TRADITION ====================
+        Text(lang.translate('tradition_settings_title'),
+            style: const TextStyle(color: tealColor, fontWeight: FontWeight.bold)),
+        Consumer<TraditionService>(
+          builder: (context, traditionService, _) {
+            final currentTradition = traditionService.currentTradition;
+            String traditionName;
+            switch (currentTradition) {
+              case AppTradition.smarta:
+                traditionName = lang.translate('tradition_smarta');
+                break;
+              case AppTradition.vaishnava:
+                traditionName = lang.translate('tradition_vaishnava');
+                break;
+              case AppTradition.general:
+                traditionName = lang.translate('tradition_general');
+                break;
+            }
+
+            return Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.brightness_medium_outlined, color: tealColor),
+                  title: Text(lang.translate('tradition')),
+                  subtitle: Text(
+                    traditionName,
+                    style: const TextStyle(fontSize: 13, color: Colors.grey),
+                  ),
+                  trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+                  onTap: () => _showTraditionSelectionDialog(traditionService, lang),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.restaurant_menu, color: tealColor),
+                  title: Text(lang.translate('food_guide_title')),
+                  subtitle: Text(
+                    lang.translate('food_guide_desc'),
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                  trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const FoodGuideScreen()),
+                    );
+                  },
+                ),
+              ],
+            );
+          },
+        ),
+        const Divider(),
+
         // ==================== APPEARANCE ====================
         Text(lang.translate('appearance'),
             style: const TextStyle(color: tealColor, fontWeight: FontWeight.bold)),
@@ -361,9 +590,18 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
             onTap: () async {
               try {
                 final langService = Provider.of<LanguageService>(context, listen: false);
-                // FIXED: Passing individual strings instead of Map to match method signature
+                final traditionService = Provider.of<TraditionService>(context, listen: false);
+                final tag = TraditionNotificationHelper.getTraditionTag(
+                  traditionService.currentTradition,
+                  langService.currentLocale.languageCode,
+                );
+                final rawTitle = langService.translate('test_notif_title');
+                final title = (tag.isNotEmpty && !rawTitle.startsWith('['))
+                    ? '$tag $rawTitle'
+                    : rawTitle;
+
                 await _notificationService.showTestNotification(
-                  langService.translate('test_notif_title'),
+                  title,
                   langService.translate('test_notif_body'),
                 );
 
@@ -424,6 +662,48 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
           title: Text(lang.translate('version')),
           trailing: const Text("1.1.1", style: TextStyle(color: Colors.grey)),
         ),
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: tealColor.withOpacity(0.06),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: tealColor.withOpacity(0.25)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.verified_outlined, size: 18, color: tealColor),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      lang.translate('religious_disclaimer_title'),
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: tealColor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                lang.translate('religious_disclaimer_text'),
+                style: TextStyle(
+                  fontSize: 12,
+                  height: 1.45,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.grey.shade300
+                      : Colors.grey.shade800,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
       ],
     );
   }
@@ -513,6 +793,93 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
           ),
         ],
       ),
+    );
+  }
+
+  void _showTraditionSelectionDialog(TraditionService traditionService, LanguageService lang) {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        AppTradition selected = traditionService.currentTradition;
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: Text(lang.translate('choose_tradition')),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    RadioListTile<AppTradition>(
+                      title: Text(lang.translate('tradition_general')),
+                      subtitle: Text(
+                        lang.translate('tradition_general_desc'),
+                        style: const TextStyle(fontSize: 11, color: Colors.grey),
+                      ),
+                      value: AppTradition.general,
+                      groupValue: selected,
+                      activeColor: tealColor,
+                      contentPadding: EdgeInsets.zero,
+                      onChanged: (val) {
+                        if (val != null) {
+                          setDialogState(() => selected = val);
+                        }
+                      },
+                    ),
+                    RadioListTile<AppTradition>(
+                      title: Text(lang.translate('tradition_smarta')),
+                      subtitle: Text(
+                        lang.translate('tradition_smarta_desc'),
+                        style: const TextStyle(fontSize: 11, color: Colors.grey),
+                      ),
+                      value: AppTradition.smarta,
+                      groupValue: selected,
+                      activeColor: tealColor,
+                      contentPadding: EdgeInsets.zero,
+                      onChanged: (val) {
+                        if (val != null) {
+                          setDialogState(() => selected = val);
+                        }
+                      },
+                    ),
+                    RadioListTile<AppTradition>(
+                      title: Text(lang.translate('tradition_vaishnava')),
+                      subtitle: Text(
+                        lang.translate('tradition_vaishnava_desc'),
+                        style: const TextStyle(fontSize: 11, color: Colors.grey),
+                      ),
+                      value: AppTradition.vaishnava,
+                      groupValue: selected,
+                      activeColor: tealColor,
+                      contentPadding: EdgeInsets.zero,
+                      onChanged: (val) {
+                        if (val != null) {
+                          setDialogState(() => selected = val);
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  child: Text(lang.translate('cancel'), style: const TextStyle(color: Colors.grey)),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    Navigator.of(ctx).pop();
+                    await traditionService.setTradition(selected);
+                    _ekadashiService.clearCache();
+                    _rescheduleNotifications();
+                  },
+                  style: ElevatedButton.styleFrom(backgroundColor: tealColor),
+                  child: Text(lang.translate('save'), style: const TextStyle(color: Colors.white)),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 }

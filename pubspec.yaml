@@ -13,6 +13,7 @@ dependencies:
 
   # Sharing
   share_plus: ^7.2.2
+  path_provider: ^2.1.5
 
   # Core
   intl: ^0.20.0
@@ -26,6 +27,7 @@ dependencies:
 
   # UI
   table_calendar: ^3.2.0
+  gal: ^2.3.3
 
   # ============================================================
   # REMOVED DEPENDENCIES (v2.0 - replaced with native Kotlin)
@@ -46,6 +48,10 @@ flutter:
   assets:
     - assets/ekadashi_data.json
     - assets/app_icon.png
+    - assets/ekadashi_logo_transparent.png
+    - assets/ekadashi_logo.png
+    - assets/vrat_food_guide.json
+    - assets/parana_guidance.json
 
 flutter_launcher_icons:
   android: true

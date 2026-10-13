@@ -47,6 +47,10 @@
 	<string>This app needs your location to calculate accurate Ekadashi timings for your city.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>This app needs your location to calculate accurate Ekadashi timings for your city.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Ekadashi Calendar needs permission to save sacred Ekadashi cards to your photo library.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Ekadashi Calendar needs permission to save sacred Ekadashi cards to your photo library.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>

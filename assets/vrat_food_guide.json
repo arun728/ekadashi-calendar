@@ -1,0 +1,592 @@
+{
+  "version": "1.0",
+  "source": "Vetted Vedic & Panchang Fasting Guidelines (Haribhaktivilasa, Drik Panchang, ISKCON Vrat Guide)",
+  "notes": "Ekadashi fasting dietary classifications across General, Smarta, and Vaishnava traditions.",
+  "categories": [
+    {
+      "id": "pseudocereals_flours",
+      "name": {
+        "en": "Grains & Flours",
+        "ta": "தானியங்கள் & மாவு",
+        "hi": "अनाज व आटा",
+        "te": "ధాన్యాలు & పిండి"
+      }
+    },
+    {
+      "id": "vegetables_roots",
+      "name": {
+        "en": "Vegetables & Roots",
+        "ta": "காய்கறிகள் & கிழங்குகள்",
+        "hi": "सब्जियां व कंद",
+        "te": "కూరగాయలు & దుంపలు"
+      }
+    },
+    {
+      "id": "dairy_fruits",
+      "name": {
+        "en": "Dairy & Fruits",
+        "ta": "பால் & பழங்கள்",
+        "hi": "डेयरी व फल",
+        "te": "పాల ఉత్పత్తులు & పండ్లు"
+      }
+    },
+    {
+      "id": "spices_seasonings",
+      "name": {
+        "en": "Spices & Seasonings",
+        "ta": "மசாலாக்கள் & உப்பு",
+        "hi": "मसाले व नमक",
+        "te": "మసాలాలు & ఉప్పు"
+      }
+    }
+  ],
+  "food_items": [
+    {
+      "id": "kuttu",
+      "category": "pseudocereals_flours",
+      "status": "allowed",
+      "traditionTags": [
+        "general",
+        "smarta",
+        "vaishnava"
+      ],
+      "regionTags": [
+        "pan-india"
+      ],
+      "name": {
+        "en": "Buckwheat Flour (Kuttu)",
+        "ta": "குட்டு மாவு (பக்வீட்)",
+        "hi": "कुट्टू का आटा",
+        "te": "కుట్టు పిండి (బక్‌వీట్)"
+      },
+      "explanation": {
+        "en": "Non-grain seed flour, rich in protein and fiber, universally permissible for Ekadashi vrat.",
+        "ta": "தானியமற்ற விதை மாவு, புரதச்சத்து நிறைந்தது, ஏகாதசி விரதத்திற்கு அனைத்து மரபுகளிலும் அனுமதிக்கப்பட்டது.",
+        "hi": "अनाज-रहित बीज का आटा, प्रोटीन से भरपूर, एकादशी व्रत में सभी परंपराओं द्वारा मान्य।",
+        "te": "ధాన్యేతర విత్తన పిండి, ప్రోటీన్ మరియు పీచుతో సమృద్ధిగా ఉంటుంది. ఏకాదశి వ్రతానికి సర్వ సంప్రదాయాలలో అనుమతించబడింది."
+      },
+      "alternativeSuggestion": null
+    },
+    {
+      "id": "singhara",
+      "category": "pseudocereals_flours",
+      "status": "allowed",
+      "traditionTags": [
+        "general",
+        "smarta",
+        "vaishnava"
+      ],
+      "regionTags": [
+        "pan-india"
+      ],
+      "name": {
+        "en": "Water Chestnut Flour (Singhara)",
+        "ta": "சிங்காரா மாவு (நீர்முள்ளி)",
+        "hi": "सिंघाड़े का आटा",
+        "te": "సింఘారా పిండి (నీటి చెస్ట్‌నట్)"
+      },
+      "explanation": {
+        "en": "Flour milled from dried water caltrop fruit; completely grain-free and universally allowed.",
+        "ta": "நீர்வாழ் பழத்தின் மாவு; முழுமையாக தானியமற்றது மற்றும் அனைத்து மரபுகளிலும் விரதத்திற்கு ஏற்றது.",
+        "hi": "सिंघाड़े के सूखे फल से बना आटा; पूर्णतः अनाज-मुक्त और उपवास में मान्य।",
+        "te": "నీటి కాయల నుండి తయారుచేసిన పవిత్ర పిండి. వ్రత ఆహారాలలో విస్తృతంగా ఉపయోగిస్తారు."
+      },
+      "alternativeSuggestion": null
+    },
+    {
+      "id": "sama_rice",
+      "category": "pseudocereals_flours",
+      "status": "allowed",
+      "traditionTags": [
+        "general",
+        "smarta",
+        "vaishnava"
+      ],
+      "regionTags": [
+        "pan-india"
+      ],
+      "name": {
+        "en": "Barnyard Millet (Sama / Moraiyo)",
+        "ta": "சாம அரிசி (மொரையோ)",
+        "hi": "समा के चावल (मोरधन)"
+      },
+      "explanation": {
+        "en": "Wild grass seed, not true cereal grain. Widely used to prepare fasting khichdi and porridge.",
+        "ta": "காட்டு புல் விதை, தானியமல்ல. ஏகாதசியில் கிச்சடி மற்றும் கஞ்சி செய்யப் பயன்படுகிறது.",
+        "hi": "जंगली घास का बीज, अनाज नहीं है। व्रत की खिचड़ी व खीर बनाने में व्यापक रूप से मान्य।"
+      },
+      "alternativeSuggestion": null
+    },
+    {
+      "id": "sabudana",
+      "category": "pseudocereals_flours",
+      "status": "allowed",
+      "traditionTags": [
+        "general",
+        "smarta",
+        "vaishnava"
+      ],
+      "regionTags": [
+        "pan-india"
+      ],
+      "name": {
+        "en": "Tapioca Pearls (Sabudana)",
+        "ta": "ஜவ்வரிசி (சாபுதானா)",
+        "hi": "साबूदाना",
+        "te": "సగ్గుబియ్యం (సాబుదానా)"
+      },
+      "explanation": {
+        "en": "Starch extracted from cassava root. Widely consumed non-grain satvik fasting staple.",
+        "ta": "மரவள்ளிக்கிழங்கிலிருந்து பெறப்படும் மாவுச்சத்து. பரவலாகப் பயன்படும் விரத உணவு.",
+        "hi": "कसावा जड़ से बना स्टार्च। एकादशी व्रत में व्यापक रूप से खाया जाने वाला सात्विक आहार।",
+        "te": "టాపికా దుంపల నుండి తయారయ్యే సాత్విక ఆహారం. కిచిడీ, పాయసం రూపంలో అనుమతించబడింది."
+      },
+      "alternativeSuggestion": null
+    },
+    {
+      "id": "rajgira",
+      "category": "pseudocereals_flours",
+      "status": "allowed",
+      "traditionTags": [
+        "general",
+        "smarta",
+        "vaishnava"
+      ],
+      "regionTags": [
+        "pan-india"
+      ],
+      "name": {
+        "en": "Amaranth Seeds & Flour (Rajgira)",
+        "ta": "ராஜ்கிரா விதை & மாவு",
+        "hi": "राजगिरा (चौलाई)",
+        "te": "రాజ్గీరా పిండి (అమరాంత్)"
+      },
+      "explanation": {
+        "en": "Ancient pseudocereal seed packed with calcium and protein, permissible across all traditions.",
+        "ta": "கால்சியம் மற்றும் புரதம் நிறைந்த போலி தானியம், அனைத்து மரபுகளிலும் விரதத்திற்கு அனுமதிக்கப்பட்டது.",
+        "hi": "कैल्शियम और प्रोटीन से भरपूर प्राचीन बीज, सभी परंपराओं में व्रत के लिए अनुमत।",
+        "te": "ప్రాచీన పోషక విత్తన పిండి. ఏకాదశి వ్రతంలో పూరీలు, రోటీలు తయారు చేయడానికి శ్రేష్టం."
+      },
+      "alternativeSuggestion": null
+    },
+    {
+      "id": "cereal_grains",
+      "category": "pseudocereals_flours",
+      "status": "restricted",
+      "traditionTags": [
+        "general",
+        "smarta",
+        "vaishnava"
+      ],
+      "regionTags": [
+        "pan-india"
+      ],
+      "name": {
+        "en": "Cereal Grains (Wheat, Rice, Oats, Corn)",
+        "ta": "தானியங்கள் (அரிசி, கோதுமை, ஓட்ஸ், சோளம்)",
+        "hi": "अनाज (गेहूं, चावल, जई, मक्का, मैदा)"
+      },
+      "explanation": {
+        "en": "All cereal grains are strictly forbidden on Ekadashi in all traditions according to Puranic injunctions.",
+        "ta": "புராண விதிகளின்படி அனைத்து தானியங்களும் ஏகாதசியில் அனைத்து மரபுகளிலும் கண்டிப்பாக விலக்கப்பட வேண்டும்.",
+        "hi": "पौराणिक मान्यताओं के अनुसार एकादशी पर सभी प्रकार के अनाज सभी परंपराओं में पूर्णतः वर्जित हैं।"
+      },
+      "alternativeSuggestion": "Kuttu, Singhara, Rajgira, or Sama"
+    },
+    {
+      "id": "pulses_lentils",
+      "category": "pseudocereals_flours",
+      "status": "restricted",
+      "traditionTags": [
+        "general",
+        "smarta",
+        "vaishnava"
+      ],
+      "regionTags": [
+        "pan-india"
+      ],
+      "name": {
+        "en": "Lentils & Beans (All Dals, Rajma, Chana)",
+        "ta": "பருப்பு வகைகள் (துவரை, பாசி, கடலை, உளுந்து)",
+        "hi": "दालें व फलियां (अरहर, मूंग, चना, उड़द, राजमा)"
+      },
+      "explanation": {
+        "en": "All pulses, legumes, and beans are strictly prohibited on Ekadashi across all traditions.",
+        "ta": "அனைத்துப் பருப்பு வகைகள் மற்றும் பயறுகள் ஏகாதசியில் அனைத்து மரபுகளிலும் முழுமையாகத் தடைசெய்யப்பட்டுள்ளன.",
+        "hi": "सभी प्रकार की दालें और फलियां एकादशी व्रत में सभी परंपराओं में पूर्णतः निषिद्ध हैं।"
+      },
+      "alternativeSuggestion": "Paneer, milk, or potato preparations"
+    },
+    {
+      "id": "potato",
+      "category": "vegetables_roots",
+      "status": "allowed",
+      "traditionTags": [
+        "general",
+        "smarta",
+        "vaishnava"
+      ],
+      "regionTags": [
+        "pan-india"
+      ],
+      "name": {
+        "en": "Potato (Aloo)",
+        "ta": "உருளைக்கிழங்கு",
+        "hi": "आलू",
+        "te": "బంగాళాదుంప"
+      },
+      "explanation": {
+        "en": "Non-grain satvik root tuber universally accepted for Ekadashi fasting meals.",
+        "ta": "அனைத்து மரபுகளிலும் ஏகாதசி விரதத்திற்கு அனுமதிக்கப்பட்ட சாத்வீக கிழங்கு.",
+        "hi": "एकादशी व्रत के भोजन में सभी परंपराओं द्वारा स्वीकार्य सात्विक कंद।",
+        "te": "విశ్వవ్యాప్తంగా అంగీకరించబడిన సాత్విక దుంప. ఏకాదశి వంటలలో ప్రధాన పదార్థం."
+      },
+      "alternativeSuggestion": null
+    },
+    {
+      "id": "sweet_potato",
+      "category": "vegetables_roots",
+      "status": "allowed",
+      "traditionTags": [
+        "general",
+        "smarta",
+        "vaishnava"
+      ],
+      "regionTags": [
+        "pan-india"
+      ],
+      "name": {
+        "en": "Sweet Potato (Shakarkand)",
+        "ta": "சர்க்கரைவள்ளிக்கிழங்கு",
+        "hi": "शकरकंद",
+        "te": "చిలగడదుంప"
+      },
+      "explanation": {
+        "en": "Nutritious root vegetable commonly roasted or boiled with rock salt during fasting.",
+        "ta": "விரதத்தின் போது வேகவைத்து அல்லது சுட்டு உண்ணப்படும் சத்தான கிழங்கு.",
+        "hi": "उबालकर या भूनकर सेंधा नमक के साथ खाया जाने वाला पौष्टिक कंद।",
+        "te": "సహజమైన తీపి గల పోషక దుంప. ఉడకబెట్టి లేదా రోస్ట్ చేసి తీసుకోవచ్చు."
+      },
+      "alternativeSuggestion": null
+    },
+    {
+      "id": "raw_banana",
+      "category": "vegetables_roots",
+      "status": "allowed",
+      "traditionTags": [
+        "general",
+        "smarta",
+        "vaishnava"
+      ],
+      "regionTags": [
+        "pan-india",
+        "south-india"
+      ],
+      "name": {
+        "en": "Raw Banana / Plantain (Vazhaikkai)",
+        "ta": "வாழைக்காய்",
+        "hi": "कच्चा केला",
+        "te": "పచ్చి అరటికాయ"
+      },
+      "explanation": {
+        "en": "Traditional non-grain fasting vegetable widely used in South Indian and pan-Indian vrat recipes.",
+        "ta": "தென்னிந்திய மற்றும் இந்திய விரதங்களில் பரவலாகப் பயன்படும் தானியமற்ற காய்.",
+        "hi": "पारंपरिक व्रत सब्जी, जो दक्षिण भारतीय और उत्तर भारतीय फलाहार में प्रयुक्त होती है।",
+        "te": "అరటికాయ సాత్వికమైనది మరియు ఏకాదశి ఉపవాసంలో విస్తృతంగా అనుమతించబడింది."
+      },
+      "alternativeSuggestion": null
+    },
+    {
+      "id": "colocasia",
+      "category": "vegetables_roots",
+      "status": "allowed",
+      "traditionTags": [
+        "general",
+        "smarta",
+        "vaishnava"
+      ],
+      "regionTags": [
+        "pan-india"
+      ],
+      "name": {
+        "en": "Colocasia / Taro Root (Arbi)",
+        "ta": "சேப்பங்கிழங்கு (அர்பி)",
+        "hi": "अरबी (घुइयां)",
+        "te": "చామదుంప (అర్బీ)"
+      },
+      "explanation": {
+        "en": "Permissible tuber often fried or boiled with cumin and rock salt during vrat.",
+        "ta": "இந்துப்பு மற்றும் சீரகத்துடன் வேகவைத்து உண்ணப்படும் அனுமதிக்கப்பட்ட கிழங்கு.",
+        "hi": "व्रत में जीरे और सेंधा नमक के साथ खाई जाने वाली अनुमत कंद सब्जी।",
+        "te": "సాత్విక వ్రత దుంప. కారం, ఉప్పు తక్కువతో వండుకోవచ్చు."
+      },
+      "alternativeSuggestion": null
+    },
+    {
+      "id": "bottle_gourd",
+      "category": "vegetables_roots",
+      "status": "allowed",
+      "traditionTags": [
+        "general",
+        "smarta",
+        "vaishnava"
+      ],
+      "regionTags": [
+        "pan-india"
+      ],
+      "name": {
+        "en": "Bottle Gourd (Lauki / Dudhi)",
+        "ta": "சுரைக்காய்",
+        "hi": "लौकी (घिया)"
+      },
+      "explanation": {
+        "en": "Light, cooling, and easily digestible satvik vegetable widely recommended for fasting.",
+        "ta": "விரதத்திற்கு மிகவும் உகந்த, எளிதில் செரிமானமாகக்கூடிய சாத்வீக நீர் காய்.",
+        "hi": "हल्की, सुपाच्य और सात्विक सब्जी, जो उपवास में व्यापक रूप से अनुमत है।"
+      },
+      "alternativeSuggestion": null
+    },
+    {
+      "id": "onion_garlic",
+      "category": "vegetables_roots",
+      "status": "restricted",
+      "traditionTags": [
+        "general",
+        "smarta",
+        "vaishnava"
+      ],
+      "regionTags": [
+        "pan-india"
+      ],
+      "name": {
+        "en": "Onion & Garlic (Pyaz & Lehsun)",
+        "ta": "வெங்காயம் & பூண்டு",
+        "hi": "प्याज व लहसुन",
+        "te": "ఉల్లిపాయ & వెల్లుల్లి"
+      },
+      "explanation": {
+        "en": "Classified as tamasic; strictly forbidden in all satvik Hindu fasting and temple worship.",
+        "ta": "தாமஸ குணம் கொண்டவை; சாத்வீக இந்து விரதங்களிலும் வழிபாட்டிலும் முற்றிலும் தடைசெய்யப்பட்டவை.",
+        "hi": "तामसिक माने जाने के कारण सभी सात्विक हिंदू उपवासों और पूजा में पूर्णतः निषिद्ध।",
+        "te": "తామసిక ఆహారాలు. ఆధ్యాత్మిక వ్రతాలలో ఎల్లప్పుడూ నిషిద్ధం."
+      },
+      "alternativeSuggestion": "Ginger, cumin, and rock salt for flavoring"
+    },
+    {
+      "id": "brinjal",
+      "category": "vegetables_roots",
+      "status": "optional",
+      "traditionTags": [
+        "smarta",
+        "vaishnava"
+      ],
+      "regionTags": [
+        "pan-india"
+      ],
+      "name": {
+        "en": "Eggplant / Aubergine (Baingan)",
+        "ta": "கத்தரிக்காய்",
+        "hi": "बैंगन (भांटा)"
+      },
+      "explanation": {
+        "en": "Avoided in orthodox Vaishnava tradition (Hari-bhakti-vilasa); permitted in some regional Smarta households outside Chaturmasya.",
+        "ta": "வைணவ மரபில் ஹரிபக்திவிலாசத்தின்படி தவிர்க்கப்படுகிறது; சில ஸ்மார்த்த குடும்பங்களில் சமைக்கப்படுகிறது.",
+        "hi": "वैष्णव परंपरा (हरिभक्तिविलास) में निषिद्ध; कुछ क्षेत्रीय स्मार्त घरों में चातुर्मास के अतिरिक्त मान्य।"
+      },
+      "alternativeSuggestion": "Bottle gourd (lauki) or raw banana"
+    },
+    {
+      "id": "cow_milk_ghee",
+      "category": "dairy_fruits",
+      "status": "allowed",
+      "traditionTags": [
+        "general",
+        "smarta",
+        "vaishnava"
+      ],
+      "regionTags": [
+        "pan-india"
+      ],
+      "name": {
+        "en": "Cow Milk, Ghee & Butter",
+        "ta": "பசுவின் பால், நெய் & வெண்ணெய்",
+        "hi": "गाय का दूध, घी व मक्खन"
+      },
+      "explanation": {
+        "en": "Pure satvik dairy products universally revered in Vedic traditions for cooking and consuming during vrat.",
+        "ta": "வேத மரபில் விரதத்தின் போது சமைக்கவும் உட்கொள்ளவும் மிகவும் உன்னதமானதாகக் கருதப்படும் தூய பால் பொருட்கள்.",
+        "hi": "वैदिक परंपरा में उपवास के दौरान भोजन पकाने और ग्रहण करने के लिए पवित्र सात्विक पदार्थ।"
+      },
+      "alternativeSuggestion": null
+    },
+    {
+      "id": "fresh_paneer",
+      "category": "dairy_fruits",
+      "status": "allowed",
+      "traditionTags": [
+        "general",
+        "smarta",
+        "vaishnava"
+      ],
+      "regionTags": [
+        "pan-india"
+      ],
+      "name": {
+        "en": "Fresh Paneer (Cottage Cheese)",
+        "ta": "புதிய பன்னீர்",
+        "hi": "ताजा पनीर"
+      },
+      "explanation": {
+        "en": "Allowed when made fresh at home using lemon or yogurt. Avoid commercial varieties containing starch additives.",
+        "ta": "எலுமிச்சை அல்லது தயிர் சேர்த்து வீட்டில் தயாரிக்கப்படும் புதிய பன்னீர் அனுமதிக்கப்படுகிறது. மாவு கலந்த கடைகளைத் தவிர்க்கவும்.",
+        "hi": "घर पर नींबू या दही से ताजा बनाया गया पनीर मान्य है। मिलावटी बाजारू पनीर से बचें।"
+      },
+      "alternativeSuggestion": null
+    },
+    {
+      "id": "fruits_nuts",
+      "category": "dairy_fruits",
+      "status": "allowed",
+      "traditionTags": [
+        "general",
+        "smarta",
+        "vaishnava"
+      ],
+      "regionTags": [
+        "pan-india"
+      ],
+      "name": {
+        "en": "Fresh Fruits, Nuts & Dry Fruits",
+        "ta": "புதிய பழங்கள் & உலர் பருப்புகள்",
+        "hi": "ताजे फल व मेवे (बादाम, काजू, किशमिश)"
+      },
+      "explanation": {
+        "en": "All fresh fruits (apple, banana, coconut) and nuts (almonds, cashews, raisins, walnuts) are universally allowed.",
+        "ta": "ஆப்பிள், வாழைப்பழம், தேங்காய் உள்ளிட்ட அனைத்துப் பழங்களும், பாதாம், முந்திரி, உலர் திராட்சையும் அனுமதிக்கப்பட்டவை.",
+        "hi": "सभी ताजे फल और सूखे मेवे सभी परंपराओं में एकादशी फलाहार के लिए पूर्णतः अनुमत हैं।"
+      },
+      "alternativeSuggestion": null
+    },
+    {
+      "id": "sendha_namak",
+      "category": "spices_seasonings",
+      "status": "allowed",
+      "traditionTags": [
+        "general",
+        "smarta",
+        "vaishnava"
+      ],
+      "regionTags": [
+        "pan-india"
+      ],
+      "name": {
+        "en": "Rock Salt (Sendha Namak)",
+        "ta": "இந்துப்பு (சேந்தா நமக்)",
+        "hi": "सेंधा नमक"
+      },
+      "explanation": {
+        "en": "Pure unrefined mineral rock salt, universally substituted for regular table salt during all Hindu fasts.",
+        "ta": "சுத்திகரிக்கப்படாத தூய கனிம உப்பு, விரத காலங்களில் சாதாரண உப்புக்கு பதிலாக அனைத்து மரபுகளிலும் பயன்படுகிறது.",
+        "hi": "अपरिशोधित शुद्ध प्राकृतिक खनिज नमक, सभी हिंदू उपवासों में साधारण नमक के स्थान पर मान्य।"
+      },
+      "alternativeSuggestion": null
+    },
+    {
+      "id": "jeera_kali_mirch",
+      "category": "spices_seasonings",
+      "status": "allowed",
+      "traditionTags": [
+        "general",
+        "smarta",
+        "vaishnava"
+      ],
+      "regionTags": [
+        "pan-india"
+      ],
+      "name": {
+        "en": "Cumin Seeds & Black Pepper",
+        "ta": "சீரகம் & மிளகுத்தூள்",
+        "hi": "जीरा व काली मिर्च"
+      },
+      "explanation": {
+        "en": "Pure whole spices universally approved across all traditions for seasoning vrat dishes.",
+        "ta": "விரத உணவுகளுக்கு மணம் மற்றும் சுவை சேர்க்க அனைத்து மரபுகளிலும் அங்கீகரிக்கப்பட்ட நறுமணப் பொருட்கள்.",
+        "hi": "व्रत के फलाहार में स्वाद व पाचन के लिए सभी परंपराओं में स्वीकृत शुद्ध मसाले।"
+      },
+      "alternativeSuggestion": null
+    },
+    {
+      "id": "ginger_green_chilli",
+      "category": "spices_seasonings",
+      "status": "allowed",
+      "traditionTags": [
+        "general",
+        "smarta",
+        "vaishnava"
+      ],
+      "regionTags": [
+        "pan-india"
+      ],
+      "name": {
+        "en": "Fresh Ginger & Green Chillies",
+        "ta": "இஞ்சி & பச்சை மிளகாய்",
+        "hi": "अदरक व हरी मिर्च"
+      },
+      "explanation": {
+        "en": "Fresh ginger and green chillies are widely used in moderation for satvik flavor.",
+        "ta": "சாத்வீக உணவுகளில் காரத்திற்கும் சுவைக்கும் மிதமான அளவில் பயன்படுத்தப்படும் இஞ்சி மற்றும் பச்சை மிளகாய்.",
+        "hi": "सात्विक स्वाद के लिए सीमित मात्रा में व्यापक रूप से प्रयुक्त अदरक और हरी मिर्च।"
+      },
+      "alternativeSuggestion": null
+    },
+    {
+      "id": "mustard_seeds",
+      "category": "spices_seasonings",
+      "status": "optional",
+      "traditionTags": [
+        "smarta",
+        "vaishnava"
+      ],
+      "regionTags": [
+        "pan-india"
+      ],
+      "name": {
+        "en": "Mustard Seeds & Mustard Oil (Rai / Sarson)",
+        "ta": "கடுகு & கடுகு எண்ணெய்",
+        "hi": "राई व सरसों का तेल",
+        "te": "ఆవాలు"
+      },
+      "explanation": {
+        "en": "Strictly avoided in orthodox Vaishnava / ISKCON tradition. Allowed in some regional Smarta households for tempering.",
+        "ta": "வைணவ மரபில் கண்டிப்பாகத் தவிர்க்கப்படுகிறது; சில பிராந்திய ஸ்மார்த்த குடும்பங்களில் தாளிப்பிற்குப் பயன்படுகிறது.",
+        "hi": "वैष्णव/इस्कॉन परंपरा में पूर्णतः निषिद्ध। कुछ क्षेत्रीय स्मार्त घरों में तड़के के लिए अनुमत।",
+        "te": "కొన్ని వైష్ణవ సంప్రదాయాలలో ఆవాలు నిషిద్ధం. జీలకర్రను ప్రత్యామ్నాయంగా వాడాలి."
+      },
+      "alternativeSuggestion": "Cumin seeds (jeera) or ginger"
+    },
+    {
+      "id": "asafoetida",
+      "category": "spices_seasonings",
+      "status": "restricted",
+      "traditionTags": [
+        "general",
+        "smarta",
+        "vaishnava"
+      ],
+      "regionTags": [
+        "pan-india"
+      ],
+      "name": {
+        "en": "Commercial Asafoetida (Hing)",
+        "ta": "வணிகப் பெருங்காயம் (ஹிங்)",
+        "hi": "व्यावसायिक हींग"
+      },
+      "explanation": {
+        "en": "Commercial compounded hing contains wheat or rice flour as an anti-caking agent, violating grain fasting. Avoided across traditions.",
+        "ta": "வணிகப் பெருங்காயத்தில் கோதுமை அல்லது அரிசி மாவு கலக்கப்படுவதால் விரத விதியை மீறுகிறது. அனைத்து மரபுகளிலும் விலக்கப்பட வேண்டும்.",
+        "hi": "व्यावसायिक हींग में गेहूं या चावल का आटा मिला होता है, जिससे व्रत खंडित होता है। सभी परंपराओं में वर्जित।"
+      },
+      "alternativeSuggestion": "Cumin seeds, ginger, or crushed black pepper"
+    }
+  ]
+}

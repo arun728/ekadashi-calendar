@@ -3,8 +3,10 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:provider/provider.dart';
 import '../services/ekadashi_service.dart';
 import '../services/language_service.dart';
+import '../services/tradition_service.dart';
 import 'package:intl/intl.dart';
 import 'details_screen.dart';
+import 'widgets/tradition_variant_sheet.dart';
 
 class CalendarScreen extends StatefulWidget {
   final List<EkadashiDate> ekadashiList;
@@ -21,9 +23,9 @@ class CalendarScreen extends StatefulWidget {
 }
 
 class CalendarScreenState extends State<CalendarScreen> {
-  // Fixed date range: 2026 only
+  // Date range: 2026 - 2027
   static final DateTime _firstDay = DateTime(2026, 1, 1);
-  static final DateTime _lastDay = DateTime(2026, 12, 31);
+  static final DateTime _lastDay = DateTime(2027, 12, 31);
 
   late DateTime _focusedDay;
   late DateTime _selectedDay;
@@ -276,6 +278,42 @@ class CalendarScreenState extends State<CalendarScreen> {
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.grey.shade500,
+                  ),
+                ),
+              ],
+              if (ekadashi.hasTraditionVariation) ...[
+                const SizedBox(height: 8),
+                TextButton.icon(
+                  onPressed: () {
+                    final traditionService = Provider.of<TraditionService>(context, listen: false);
+                    final curTrad = traditionService.currentTradition;
+                    final otherTrad = (curTrad == AppTradition.smarta)
+                        ? AppTradition.vaishnava
+                        : (curTrad == AppTradition.vaishnava ? AppTradition.smarta : AppTradition.vaishnava);
+                    final alt = ekadashi.traditionVariants[otherTrad] ??
+                        ekadashi.traditionVariants.values.firstOrNull;
+                    if (alt != null) {
+                      TraditionVariantSheet.show(
+                        context,
+                        ekadashi: ekadashi,
+                        alternateVariant: alt,
+                        timezone: widget.currentTimezone,
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.swap_horiz, size: 16, color: tealColor),
+                  label: Text(
+                    lang.translate('view_other_tradition'),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: tealColor,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                 ),
               ],

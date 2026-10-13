@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ekadashi Calendar — Download the app</title>
+  <meta name="description" content="Check Ekadashi dates, fasting timings, Parana windows, and spiritual significance. Download Ekadashi Calendar for Android.">
+  <style>
+    :root {
+      --bg-gradient-start: #002922;
+      --bg-gradient-end: #001a15;
+      --card-bg: rgba(0, 45, 38, 0.85);
+      --card-border: rgba(128, 203, 196, 0.25);
+      --accent: #80CBC4;
+      --accent-hover: #A7FFEB;
+      --text-main: #FFFFFF;
+      --text-muted: #B2DFDB;
+      --btn-bg: #00A19B;
+      --btn-hover: #00BFA5;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(145deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      line-height: 1.5;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 480px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 32px 24px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(8px);
+      text-align: center;
+    }
+
+    .header-title {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 16px;
+      letter-spacing: -0.02em;
+    }
+
+    .description {
+      font-size: 16px;
+      color: var(--text-muted);
+      margin-bottom: 28px;
+      line-height: 1.6;
+    }
+
+    /* Expandable Accordion Control */
+    .expandable-container {
+      border: 1px solid rgba(128, 203, 196, 0.3);
+      border-radius: 14px;
+      background: rgba(0, 32, 27, 0.7);
+      overflow: hidden;
+      transition: border-color 0.2s ease;
+    }
+
+    .expandable-container:hover,
+    .expandable-container:focus-within {
+      border-color: var(--accent);
+    }
+
+    .expandable-trigger {
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: var(--accent);
+      padding: 16px 20px;
+      font-size: 17px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      outline: none;
+      transition: background-color 0.2s ease, color 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .expandable-trigger:hover {
+      background-color: rgba(128, 203, 196, 0.08);
+      color: var(--accent-hover);
+    }
+
+    .chevron {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .expandable-trigger[aria-expanded="true"] .chevron {
+      transform: rotate(180deg);
+    }
+
+    .expandable-panel {
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease, padding 0.35s ease;
+      padding: 0 20px;
+      background: rgba(0, 20, 17, 0.5);
+    }
+
+    .expandable-panel.open {
+      max-height: 200px;
+      opacity: 1;
+      padding: 16px 20px 20px 20px;
+      border-top: 1px solid rgba(128, 203, 196, 0.15);
+    }
+
+    .playstore-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      background: var(--btn-bg);
+      color: #FFFFFF;
+      text-decoration: none;
+      padding: 14px 20px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      box-shadow: 0 4px 14px rgba(0, 161, 155, 0.35);
+      transition: background-color 0.2s ease, transform 0.15s ease;
+    }
+
+    .playstore-button:hover,
+    .playstore-button:focus {
+      background: var(--btn-hover);
+      transform: translateY(-1px);
+    }
+
+    .playstore-button:active {
+      transform: translateY(0);
+    }
+
+    .collapse-hint {
+      margin-top: 12px;
+      font-size: 13px;
+      color: rgba(178, 223, 219, 0.7);
+    }
+
+    .play-icon {
+      width: 22px;
+      height: 22px;
+      fill: currentColor;
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 24px 18px;
+        border-radius: 16px;
+      }
+      .header-title {
+        font-size: 22px;
+      }
+      .description {
+        font-size: 15px;
+      }
+      .expandable-trigger {
+        font-size: 16px;
+        padding: 14px 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <h1 class="header-title">Ekadashi Calendar</h1>
+    
+    <p class="description">Check Ekadashi dates, fasting timings, Parana windows, and spiritual significance.</p>
+
+    <!-- Expandable Download Section: Initially collapsed; reveals download destination on tap -->
+    <div class="expandable-container">
+      <button 
+        type="button" 
+        id="downloadToggle" 
+        class="expandable-trigger" 
+        aria-expanded="false" 
+        aria-controls="downloadPanel"
+      >
+        <span>Download the app</span>
+        <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+        </svg>
+      </button>
+
+      <div id="downloadPanel" class="expandable-panel" role="region" aria-labelledby="downloadToggle">
+        <a 
+          id="playStoreLink"
+          class="playstore-button" 
+          href="https://play.google.com/store/apps/details?id=com.applausestudios.ekadashi_calendar" 
+          target="_blank" 
+          rel="noopener noreferrer"
+        >
+          <svg class="play-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M3.6 2.2C3.2 2.6 3 3.2 3 4v16c0 .8.2 1.4.6 1.8l.1.1 9-9v-.2l-9.1-8.7zM16.4 15.6l-3.7-3.7 3.7-3.7 4.2 2.4c1.2.7 1.2 1.9 0 2.6l-4.2 2.4zM12.7 11.9l-9.8 9.8c.4.1.9.1 1.4-.2l11.4-6.5-3-3.1zM12.7 12.1l3-3.1-11.4-6.5c-.5-.3-1-.3-1.4-.2l9.8 9.8z"/>
+          </svg>
+          <span>Get it on Google Play</span>
+        </a>
+        <p class="collapse-hint">Tap "Download the app" above to collapse</p>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    (function() {
+      const toggleBtn = document.getElementById('downloadToggle');
+      const panel = document.getElementById('downloadPanel');
+
+      toggleBtn.addEventListener('click', function() {
+        const isExpanded = toggleBtn.getAttribute('aria-expanded') === 'true';
+        if (isExpanded) {
+          // Collapse
+          toggleBtn.setAttribute('aria-expanded', 'false');
+          panel.classList.remove('open');
+        } else {
+          // Expand
+          toggleBtn.setAttribute('aria-expanded', 'true');
+          panel.classList.add('open');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

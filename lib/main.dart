@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -9,16 +8,19 @@ import 'package:provider/provider.dart';
 import 'services/ekadashi_service.dart';
 import 'services/notification_service.dart';
 import 'services/native_location_service.dart';
-import 'services/native_notification_service.dart';
 import 'services/native_settings_service.dart';
 import 'services/theme_service.dart';
 import 'services/language_service.dart';
+import 'services/tradition_service.dart';
+import 'services/tradition_notification_helper.dart';
 import 'screens/calendar_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/details_screen.dart';
 import 'screens/splash_screen.dart';
+import 'screens/widgets/tradition_variant_sheet.dart';
+import 'screens/widgets/city_picker_dialog.dart';
+import 'screens/share_card_preview_screen.dart';
 import 'package:timezone/timezone.dart' as tz;
-import 'package:timezone/data/latest.dart' as tz;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,6 +38,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeService()..loadTheme()),
         ChangeNotifierProvider(create: (_) => LanguageService()),
+        ChangeNotifierProvider(create: (_) => TraditionService()),
       ],
       child: const MyApp(),
     ),
@@ -86,12 +89,14 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   final EkadashiService _ekadashiService = EkadashiService();
   final NativeLocationService _locationService = NativeLocationService();
   String _currentLangCode = '';
+  AppTradition _currentTradition = AppTradition.general;
 
   List<EkadashiDate> _ekadashiList = [];
   bool _isLoading = true;
   String _errorMessage = '';
   String _locationText = '';
   String _currentTimezone = 'IST';
+  LocationData? _currentLocation;
   bool _locationDenied = false;
   bool _isRequestingLocation = false;
   int _currentPage = 0;
@@ -105,6 +110,20 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+
+    // Listen to location changes from settings or city picker
+    NativeLocationService.onLocationChanged = (LocationData loc) {
+      if (mounted) {
+        setState(() {
+          _currentLocation = loc;
+          _locationText = loc.city;
+          _currentTimezone = loc.timezone;
+          _locationDenied = false;
+        });
+        _loadData(shouldScrollToNext: true);
+      }
+    };
+
     // Defer initialization to prevent freeze on process restoration
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeApp();
@@ -115,8 +134,20 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final langService = Provider.of<LanguageService>(context);
+    final traditionService = Provider.of<TraditionService>(context);
+    bool shouldReload = false;
+
     if (_currentLangCode != langService.currentLocale.languageCode) {
       _currentLangCode = langService.currentLocale.languageCode;
+      shouldReload = true;
+    }
+
+    if (_currentTradition != traditionService.currentTradition) {
+      _currentTradition = traditionService.currentTradition;
+      shouldReload = true;
+    }
+
+    if (shouldReload) {
       _loadData();
     }
   }
@@ -153,6 +184,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     final prefs = await SharedPreferences.getInstance();
     final hasLaunched = prefs.getBool('has_launched') ?? false;
     final appVersion = prefs.getString('app_version') ?? '1.0';
+
+    // Wire up tradition notification coordinator for automatic rescheduling
+    TraditionNotificationCoordinator.initialize();
 
     // Load saved timezone
     _currentTimezone = await _locationService.getCurrentTimezone();
@@ -265,6 +299,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
       if (location != null && mounted) {
         setState(() {
+          _currentLocation = location;
           _locationText = location.city;
           _currentTimezone = location.timezone;
           _locationDenied = false;
@@ -298,6 +333,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           final cached = await _locationService.getCachedLocation();
           if (cached != null && mounted) {
             setState(() {
+              _currentLocation = cached;
               _locationText = cached.city;
               _currentTimezone = cached.timezone;
               _locationDenied = false;
@@ -445,6 +481,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         final location = await _locationService.getCurrentLocation();
         if (location != null && mounted) {
           setState(() {
+            _currentLocation = location;
             _locationText = location.city;
             _currentTimezone = location.timezone;
             _locationDenied = false;
@@ -457,16 +494,13 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       // Have permission and not denied - try to get location
       final location = await _locationService.getCurrentLocation();
       if (location != null && mounted) {
-        if (location.timezone != _currentTimezone) {
-          // Timezone changed - reload data
+        if (location.timezone != _currentTimezone || location.city != _locationText) {
           setState(() {
+            _currentLocation = location;
             _locationText = location.city;
             _currentTimezone = location.timezone;
           });
-          await _loadData(shouldScrollToNext: true);
-        } else if (location.city != _locationText) {
-          // Just city name changed
-          setState(() => _locationText = location.city);
+          await _loadData(shouldScrollToNext: location.timezone != _currentTimezone);
         }
       }
     } catch (e) {
@@ -496,8 +530,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     try {
       final lang = _currentLangCode.isEmpty ? 'en' : _currentLangCode;
       final ekadashis = _ekadashiService.getEkadashis(
+        location: _currentLocation,
         timezone: _currentTimezone,
         languageCode: lang,
+        tradition: _currentTradition,
       );
 
       if (mounted) {
@@ -575,7 +611,6 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     }
 
     int indexToScroll = 0;
-    bool found = false;
 
     for (int i = 0; i < _ekadashiList.length; i++) {
         final ekadashi = _ekadashiList[i];
@@ -607,7 +642,6 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         // OR if Parana is still active for a passed Ekadashi
         if (daysUntil >= 0 || isParanaActive) {
             indexToScroll = i;
-            found = true;
             break;
         }
     }
@@ -661,55 +695,16 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   /// Schedule notifications for all Ekadashis
   Future<void> _scheduleNotifications() async {
     if (_ekadashiList.isEmpty) return;
-
-    final prefs = await SharedPreferences.getInstance();
-    final notificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
-    if (!notificationsEnabled) return;
-
-    // Check system notification permission before scheduling
-    try {
-      final status = await NativeSettingsService().checkAllPermissions();
-      if (!status.hasNotificationPermission) {
-        debugPrint('⏭️ Skipping scheduling - System notifications disabled');
-        return;
-      }
-    } catch (e) {
-      debugPrint('⚠️ Failed to check system notification permission: $e');
-      // Continue with scheduling attempt on error
-    }
+    if (!mounted) return;
 
     final lang = Provider.of<LanguageService>(context, listen: false);
-    final texts = lang.localizedStrings;
-
-    // Use native notification service
-    try {
-      final nativeNotifService = NativeNotificationService();
-      final ekadashiData = _ekadashiList.map((e) => EkadashiNotificationData(
-        id: e.id,
-        name: e.name,
-        fastingStartTime: e.fastingStartIso,
-        paranaStartTime: e.paranaStartIso,
-      )).toList();
-
-      await nativeNotifService.scheduleAllNotifications(
-        ekadashis: ekadashiData,
-        texts: texts,
-      );
-    } catch (e) {
-      // Fallback to old notification service
-      debugPrint('Native notifications failed, using fallback: $e');
-      final remind1Day = prefs.getBool('remind_one_day_before') ?? true;
-      final remind2Days = prefs.getBool('remind_two_days_before') ?? true;
-      final remindOnDay = prefs.getBool('remind_on_day') ?? true;
-
-      await NotificationService().scheduleAllNotifications(
-        _ekadashiList,
-        remind1Day,
-        remind2Days,
-        remindOnDay,
-        texts,
-      );
-    }
+    await TraditionNotificationCoordinator.rescheduleForTradition(
+      tradition: _currentTradition,
+      dates: _ekadashiList,
+      languageCode: lang.currentLocale.languageCode,
+      timezone: _currentTimezone,
+      baseTexts: lang.localizedStrings,
+    );
   }
 
   @override
@@ -968,10 +963,23 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       );
     }
 
-    // Show city name and timezone
-    // Show city name and timezone (Clickable to retry)
+    // Show city name and timezone (Clickable to change city or refresh)
     return InkWell(
-      onTap: _handleLocation,
+      onTap: () async {
+        final loc = await CityPickerDialog.show(
+          context,
+          currentLocation: _currentLocation,
+        );
+        if (loc != null && mounted) {
+          setState(() {
+            _currentLocation = loc;
+            _locationText = loc.city;
+            _currentTimezone = loc.timezone;
+            _locationDenied = false;
+          });
+          await _loadData(shouldScrollToNext: true);
+        }
+      },
       borderRadius: BorderRadius.circular(16),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -988,7 +996,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
               ),
             ),
             const SizedBox(width: 4),
-            Icon(Icons.refresh, size: 14, color: Colors.grey.shade400),
+            Icon(Icons.arrow_drop_down, size: 16, color: Colors.grey.shade400),
           ],
         ),
       ),
@@ -1000,6 +1008,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     switch (lang.currentLocale.languageCode) {
       case 'ta':
         displayLanguage = 'தமிழ்';
+        break;
+      case 'te':
+        displayLanguage = 'తెలుగు';
         break;
       case 'hi':
         displayLanguage = 'हिंदी';
@@ -1023,6 +1034,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         const PopupMenuItem(
           value: 'ta',
           child: Text("தமிழ்", style: TextStyle(fontWeight: FontWeight.normal)),
+        ),
+        const PopupMenuItem(
+          value: 'te',
+          child: Text("తెలుగు", style: TextStyle(fontWeight: FontWeight.normal)),
         ),
       ],
       offset: const Offset(0, 40),
@@ -1062,6 +1077,19 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
   const tealColor = Color(0xFF00A19B);
     final lang = Provider.of<LanguageService>(context);
+    final traditionService = Provider.of<TraditionService>(context);
+    final currentTrad = traditionService.currentTradition;
+    final resolvedObservance = _ekadashiService.resolveEkadashiObservance(
+      event: ekadashi,
+      userTradition: currentTrad,
+    );
+    final altVariant = resolvedObservance.alternate ??
+        (currentTrad == AppTradition.smarta
+            ? ekadashi.traditionVariants[AppTradition.vaishnava]
+            : (currentTrad == AppTradition.vaishnava
+                ? ekadashi.traditionVariants[AppTradition.smarta]
+                : (ekadashi.traditionVariants[AppTradition.vaishnava] ??
+                   ekadashi.traditionVariants[AppTradition.smarta])));
 
     String breakTime = ekadashi.fastBreakTime;
     breakTime = breakTime.replaceAll(RegExp(r'^[a-zA-Z]{3} \d{1,2}, '), '');
@@ -1147,7 +1175,59 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 24),
+                    if (ekadashi.hasTraditionVariation) ...[
+                      const SizedBox(height: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: tealColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: tealColor.withOpacity(0.3)),
+                        ),
+                        child: Text(
+                          currentTrad == AppTradition.smarta
+                              ? '${lang.translate('tradition_smarta')} ${lang.translate('tradition')}'
+                              : (currentTrad == AppTradition.vaishnava
+                                  ? '${lang.translate('tradition_vaishnava')} ${lang.translate('tradition')}'
+                                  : lang.translate('tradition_variation_note')),
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: tealColor.withOpacity(0.9),
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      if (altVariant != null) ...[
+                        const SizedBox(height: 6),
+                        TextButton.icon(
+                          onPressed: () {
+                            TraditionVariantSheet.show(
+                              context,
+                              ekadashi: ekadashi,
+                              alternateVariant: altVariant,
+                              timezone: _currentTimezone,
+                            );
+                          },
+                          icon: const Icon(Icons.swap_horiz, size: 16, color: tealColor),
+                          label: Text(
+                            lang.translate('view_other_tradition'),
+                            style: const TextStyle(
+                              color: tealColor,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                        ),
+                      ],
+                    ],
+                    const SizedBox(height: 20),
 
                     // Start Fasting
                     Align(
@@ -1239,35 +1319,58 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             ),
             const SizedBox(height: 16),
 
-            // View Details button
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => DetailsScreen(
-                        ekadashi: ekadashi,
-                        timezone: _currentTimezone,
+            // Action buttons: [ SHARE ] [ VIEW DETAILS ]
+            Row(
+              children: [
+                IconButton.filledTonal(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ShareCardPreviewScreen(ekadashi: ekadashi),
                       ),
+                    );
+                  },
+                  tooltip: lang.translate('share_card'),
+                  icon: const Icon(Icons.share, color: tealColor, size: 20),
+                  style: IconButton.styleFrom(
+                    fixedSize: const Size(48, 48),
+                    padding: EdgeInsets.zero,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: tealColor,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
                   ),
-                  elevation: 0,
                 ),
-                child: Text(
-                  lang.translate('view_details'),
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => DetailsScreen(
+                            ekadashi: ekadashi,
+                            timezone: _currentTimezone,
+                          ),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: tealColor,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: Text(
+                      lang.translate('view_details'),
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
           ],
         ),

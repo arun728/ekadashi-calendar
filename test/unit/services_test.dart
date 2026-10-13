@@ -53,6 +53,43 @@ void main() {
       // 'in_days': 'in {} days'
       expect(service.translateWithArgs('in_days', ['5']), 'in 5 days');
     });
+
+    test('Module 11 tradition keys exist in en, ta, and hi', () async {
+      SharedPreferences.setMockInitialValues({});
+      final service = LanguageService();
+
+      // English
+      expect(service.translate('choose_tradition'), 'Choose Your Tradition');
+      expect(service.translate('tradition_general'), 'General');
+      expect(service.translate('tradition_smarta'), 'Smarta');
+      expect(service.translate('tradition_vaishnava'), 'Vaishnava');
+      expect(service.translate('view_other_tradition'), "View other tradition's date");
+
+      // Tamil
+      await service.changeLanguage('ta');
+      expect(service.translate('choose_tradition'), 'உங்கள் மரபைத் தேர்ந்தெடுக்கவும்');
+      expect(service.translate('tradition_general'), 'பொதுவானது');
+      expect(service.translate('tradition_smarta'), 'ஸ்மார்த்தா');
+      expect(service.translate('tradition_vaishnava'), 'வைணவம்');
+      expect(service.translate('view_other_tradition'), 'பிற மரபின் தேதியைக் காண்க');
+
+      // Hindi
+      await service.changeLanguage('hi');
+      expect(service.translate('choose_tradition'), 'अपनी परंपरा चुनें');
+      expect(service.translate('tradition_general'), 'सामान्य');
+      expect(service.translate('tradition_smarta'), 'स्मार्त');
+      expect(service.translate('tradition_vaishnava'), 'वैष्णव');
+      expect(service.translate('view_other_tradition'), 'अन्य परंपरा की तिथि देखें');
+
+      // Telugu
+      await service.changeLanguage('te');
+      expect(service.translate('app_title'), 'ఏకాదశి క్యాలెండర్');
+      expect(service.translate('choose_tradition'), 'మీ సంప్రదాయాన్ని ఎంచుకోండి');
+      expect(service.translate('tradition_general'), 'సాధారణం');
+      expect(service.translate('tradition_smarta'), 'స్మార్త');
+      expect(service.translate('tradition_vaishnava'), 'వైష్ణవ');
+      expect(service.translate('view_other_tradition'), 'ఇతర సంప్రదాయం తేదీని చూడండి');
+    });
   });
 
   group('EkadashiService Logic Tests', () {

@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import '../main.dart';
 
+import 'package:provider/provider.dart';
 import '../services/ekadashi_service.dart';
 import '../services/notification_service.dart';
+import '../services/tradition_service.dart';
+import 'onboarding_tradition_screen.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:timezone/data/latest.dart' as tz;
+import '../services/tradition_notification_helper.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -24,6 +28,9 @@ class _SplashScreenState extends State<SplashScreen> {
   Future<void> _initializeApp() async {
     final stopwatch = Stopwatch()..start();
 
+    // Wire up tradition notification coordinator for automatic rescheduling
+    TraditionNotificationCoordinator.initialize();
+
     // Run initialization tasks
     // Priority 3: Keep EkadashiService blocking (needed for Home)
     await EkadashiService().initializeData();
@@ -42,16 +49,23 @@ class _SplashScreenState extends State<SplashScreen> {
     });
 
     if (mounted) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const MainScreen()),
-      );
+      final traditionService = Provider.of<TraditionService>(context, listen: false);
+      final hasOnboarded = await traditionService.hasCompletedOnboarding();
+
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => hasOnboarded ? const MainScreen() : const OnboardingTraditionScreen(),
+          ),
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF121212),
+    return const Scaffold(
+      backgroundColor: Color(0xFF121212),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -61,8 +75,8 @@ class _SplashScreenState extends State<SplashScreen> {
               width: 100,
               child: Stack(
                 alignment: Alignment.center,
-                children: const [
-                   Positioned(
+                children: [
+                  Positioned(
                     top: 0,
                     child: Icon(Icons.wb_sunny_outlined, size: 40, color: Colors.orangeAccent),
                   ),
@@ -73,8 +87,8 @@ class _SplashScreenState extends State<SplashScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 20),
-            const Text(
+            SizedBox(height: 20),
+            Text(
               'Ekadashi Calendar',
               style: TextStyle(
                 color: Colors.white,
@@ -82,8 +96,8 @@ class _SplashScreenState extends State<SplashScreen> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 8),
-            const Text(
+            SizedBox(height: 8),
+            Text(
               'Om Namo Narayana!',
               style: TextStyle(
                 color: Colors.white54,
@@ -91,8 +105,8 @@ class _SplashScreenState extends State<SplashScreen> {
                 fontStyle: FontStyle.italic,
               ),
             ),
-            const SizedBox(height: 40),
-            const CircularProgressIndicator(color: Color(0xFF00A19B)),
+            SizedBox(height: 40),
+            CircularProgressIndicator(color: Color(0xFF00A19B)),
           ],
         ),
       ),
