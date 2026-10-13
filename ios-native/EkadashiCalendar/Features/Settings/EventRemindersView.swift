@@ -108,7 +108,6 @@ struct EventReminderEditor: View {
     @State private var target: EventReminderTarget?
     @State private var days: Set<Int>
     @State private var time: Date
-    @State private var showPaywall = false
 
     init(original: EventReminder?) {
         self.original = original
@@ -120,8 +119,6 @@ struct EventReminderEditor: View {
         _time = State(initialValue: calendar.date(from: DateComponents(year: 2026, month: 1, day: 1, hour: reminder.hour,
                                                                         minute: reminder.minute)) ?? Date())
     }
-
-    private var locked: Bool { target?.requiresPremium == true && !model.premium.isPremium }
 
     var body: some View {
         NavigationStack {
@@ -166,16 +163,6 @@ struct EventReminderEditor: View {
                         .tint(Theme.teal)
                 }
 
-                if locked {
-                    Section {
-                        Label(model.t("notifications_premium_events"), systemImage: "lock.fill")
-                            .font(.subheadline)
-                        Button(model.t("premium_upgrade")) { showPaywall = true }
-                            .foregroundStyle(Theme.teal)
-                            .accessibilityIdentifier("event_reminder_upgrade")
-                    }
-                }
-
                 if let original {
                     Section {
                         Button(role: .destructive) {
@@ -201,9 +188,6 @@ struct EventReminderEditor: View {
                         .accessibilityIdentifier("event_reminder_save")
                 }
             }
-            .sheet(isPresented: $showPaywall) {
-                NavigationStack { PremiumView(reason: nil) }
-            }
         }
     }
 
@@ -211,7 +195,8 @@ struct EventReminderEditor: View {
         if days.contains(lead) { days.remove(lead) } else { days.insert(lead) }
     }
 
-    /// Saves even while locked: the reminder starts with Premium.
+    /// Free users can only pick free events (the picker opens the paywall for
+    /// locked ones); a locked reminder saved earlier stays and starts with Premium.
     private func save() {
         guard let target else { return }
         let parts = Calendar.current.dateComponents([.hour, .minute], from: time)
@@ -224,12 +209,15 @@ struct EventReminderEditor: View {
 }
 
 /// Festivals (alphabetical), monthly days and the user's calendars, with a
-/// search field. Premium choices carry a lock for free users.
+/// search field. Premium choices carry a lock for free users: choosing one
+/// opens the paywall, and it is selected only once Premium is active.
 struct EventReminderPicker: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
     @Binding var selection: EventReminderTarget?
     @State private var query = ""
+    @State private var pendingLocked: EventReminderTarget?
+    @State private var showPaywall = false
 
     var body: some View {
         let choices = filtered(EventReminderChoice.all(language: model.language))
@@ -240,8 +228,7 @@ struct EventReminderPicker: View {
                     Section(model.t(group.titleKey)) {
                         ForEach(items) { choice in
                             Button {
-                                selection = choice.target
-                                dismiss()
+                                choose(choice)
                             } label: {
                                 HStack {
                                     Text(choice.title).foregroundStyle(.primary)
@@ -265,6 +252,27 @@ struct EventReminderPicker: View {
                     prompt: model.t("notifications_search_events"))
         .navigationTitle(model.t("notifications_choose_event"))
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $showPaywall, onDismiss: paywallClosed) {
+            NavigationStack { PremiumView(reason: "notifications_premium_events") }
+        }
+    }
+
+    private func choose(_ choice: EventReminderChoice) {
+        if choice.requiresPremium && !model.premium.isPremium {
+            pendingLocked = choice.target
+            showPaywall = true
+        } else {
+            selection = choice.target
+            dismiss()
+        }
+    }
+
+    /// Selects the locked event only if the paywall ended with Premium.
+    private func paywallClosed() {
+        defer { pendingLocked = nil }
+        guard model.premium.isPremium, let target = pendingLocked else { return }
+        selection = target
+        dismiss()
     }
 
     /// Matches the title in the app language or in English, ignoring accents and case.

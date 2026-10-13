@@ -153,15 +153,18 @@ struct SettingsView: View {
         .contentShape(Rectangle())
     }
 
+    /// Off, "Disabled" and greyed out while the master switch (or permission)
+    /// is off, as on Android; the saved choice returns with the master switch.
     private func reminder(_ key: String, _ path: WritableKeyPath<ReminderSettings, Bool>) -> some View {
-        Toggle(isOn: Binding(get: { settings[keyPath: path] }, set: { on in
+        let on = settings[keyPath: path] && togglesEnabled
+        return Toggle(isOn: Binding(get: { on }, set: { value in
             var updated = settings
-            updated[keyPath: path] = on
+            updated[keyPath: path] = value
             model.updateReminders(updated)
         })) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(model.t(key))
-                Text(model.t(settings[keyPath: path] ? "status_active" : "status_disabled")).font(.caption).foregroundStyle(.secondary)
+                Text(model.t(on ? "status_active" : "status_disabled")).font(.caption).foregroundStyle(.secondary)
             }
         }
         .disabled(!togglesEnabled)

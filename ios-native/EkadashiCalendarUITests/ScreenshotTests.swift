@@ -359,6 +359,62 @@ final class ScreenshotTests: XCTestCase {
         snap("14-test-notification")
     }
 
+    /// "No results found for" ends with the query, as on Android (UI parity
+    /// review, 12 October 2026).
+    func testNoResultsNamesTheQuery() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 20))
+        app.buttons["open_global_search"].firstMatch.tap()
+        XCTAssertTrue(app.searchFields.firstMatch.waitForExistence(timeout: 5))
+        app.searchFields.firstMatch.tap()
+        app.searchFields.firstMatch.typeText("zzqxnomatch\n")
+        let title = app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "\"zzqxnomatch\"")).firstMatch
+        XCTAssertTrue(title.waitForExistence(timeout: 10), "No results found for \"zzqxnomatch\"")
+        snap("16-no-results")
+    }
+
+    /// For a free user a locked festival in the reminder picker opens the
+    /// paywall with its reason and is not selected (UI parity review).
+    func testLockedReminderEventOpensThePaywall() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 20))
+        tab(4)
+        let add = app.buttons["notifications_add_event"]
+        for _ in 0..<8 where !(add.exists && add.isHittable) { app.swipeUp() }
+        XCTAssertTrue(add.waitForExistence(timeout: 5))
+        add.tap()
+        let choose = element("event_reminder_choose")
+        XCTAssertTrue(choose.waitForExistence(timeout: 10), "editor sheet")
+        choose.tap()
+        let search = app.searchFields.firstMatch
+        XCTAssertTrue(search.waitForExistence(timeout: 10), "event picker")
+        search.tap()
+        search.typeText("deepa")
+        let deepavali = element("event_choice_observance:deepavali")
+        XCTAssertTrue(deepavali.waitForExistence(timeout: 10))
+        deepavali.tap()
+        XCTAssertTrue(element("premium_reason").waitForExistence(timeout: 10), "the paywall says why it opened")
+        snap("17-locked-reminder-paywall")
+        // Closing the paywall without buying keeps the picker, nothing chosen.
+        app.swipeDown(velocity: .fast)
+        XCTAssertTrue(deepavali.waitForExistence(timeout: 10), "still in the picker")
+        XCTAssertFalse(element("event_reminder_save").isHittable)
+    }
+
+    /// With notifications off, the Ekadashi switches are off, "Disabled" and
+    /// greyed out, as on Android (UI parity review).
+    func testEkadashiRemindersFollowTheMasterSwitch() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 20))
+        tab(4)
+        let master = element("notifications_master")
+        for _ in 0..<6 where !(master.exists && master.isHittable) { app.swipeUp() }
+        XCTAssertTrue(master.waitForExistence(timeout: 5))
+        let reminder = element("notify_toggle_notify_2day")
+        XCTAssertTrue(reminder.waitForExistence(timeout: 5))
+        if (master.value as? String) == "1" { master.switches.firstMatch.exists ? master.switches.firstMatch.tap() : master.tap() }
+        let off = expectation(for: NSPredicate(format: "value == '0' AND isEnabled == false"), evaluatedWith: reminder)
+        XCTAssertEqual(XCTWaiter.wait(for: [off], timeout: 10), .completed, "off and greyed out")
+        snap("18-reminders-off")
+    }
+
     /// Return ends editing, so focus the field again before replacing its text.
     private func replaceSearch(with text: String) {
         let field = app.searchFields.firstMatch

@@ -42,4 +42,21 @@ final class CityShortlistTests: XCTestCase {
         for city in popular.prefix(12) { recents.add(city) }
         XCTAssertEqual(recents.all().count, RecentCities.limit)
     }
+
+    /// Back in the app, a newly detected place recalculates the Ekadashis
+    /// only when the place moved (coordinates or time zone), not when only
+    /// its name changed (lib/main.dart `_placeKey` on Android).
+    func testSamePlaceIgnoresTheNameButNotTheCoordinatesOrZone() {
+        let chennai = PanchangCity(id: "detected", label: "Chennai (IN)", latitude: 13.08, longitude: 80.27,
+                                   timeZoneId: "Asia/Kolkata")
+        let renamed = PanchangCity(id: "geonames-1264527", label: "Madras (IN)", latitude: 13.08, longitude: 80.27,
+                                   timeZoneId: "Asia/Kolkata")
+        XCTAssertTrue(chennai.isSamePlace(as: renamed))
+        let moved = PanchangCity(id: "detected", label: "Chennai (IN)", latitude: 13.09, longitude: 80.27,
+                                 timeZoneId: "Asia/Kolkata")
+        XCTAssertFalse(chennai.isSamePlace(as: moved))
+        let otherZone = PanchangCity(id: "detected", label: "Chennai (IN)", latitude: 13.08, longitude: 80.27,
+                                     timeZoneId: "Asia/Colombo")
+        XCTAssertFalse(chennai.isSamePlace(as: otherZone))
+    }
 }

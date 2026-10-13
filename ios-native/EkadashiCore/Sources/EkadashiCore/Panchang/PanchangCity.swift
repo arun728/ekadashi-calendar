@@ -9,6 +9,12 @@ public struct PanchangCity: Hashable, Codable, Sendable, Identifiable {
     public let timeZoneId: String
     public let searchTerms: String
 
+    /// Whether [other] is the same place for calculations: the coordinates
+    /// and time zone, whatever its name.
+    public func isSamePlace(as other: PanchangCity) -> Bool {
+        latitude == other.latitude && longitude == other.longitude && timeZoneId == other.timeZoneId
+    }
+
     public init(id: String, label: String, latitude: Double, longitude: Double,
                 timeZoneId: String = "Asia/Kolkata", searchTerms: String = "") {
         self.id = id

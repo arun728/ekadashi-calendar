@@ -376,6 +376,29 @@ final class AppModel {
         return city
     }
 
+    @ObservationIgnored private var refreshingLocation = false
+
+    /// Back in the foreground: re-check permission and the place quietly, as
+    /// Android does, so a trip or a permission change shows without a restart.
+    /// A newly detected place becomes the Ekadashi city unless the user picked
+    /// one on Home; the schedule recalculates only when the place moved.
+    func refreshLocationOnResume() async {
+        guard started, !refreshingLocation, locationState != .detecting else { return }
+        refreshingLocation = true
+        defer { refreshingLocation = false }
+        if location.isDenied {
+            if locationState != .denied { locationState = .denied }
+            return
+        }
+        guard location.hasPermission, let fix = await location.currentFix(store: store) else { return }
+        lastCoordinate = (fix.latitude, fix.longitude)
+        if locationState != .located(fix.city) { locationState = .located(fix.city) }
+        guard !ekadashiCityIsManual, let detected = Self.city(from: fix) else { return }
+        let moved = !detected.isSamePlace(as: ekadashiCity)
+        useDetected(fix)
+        if moved { reload(scrollToNext: true) }
+    }
+
     /// Tapping "Location Denied": iOS asks only once, so after a denial the
     /// app's Settings page opens instead.
     func requestLocationAgain() async {
@@ -542,6 +565,7 @@ final class AppModel {
                 await premium.refresh()
                 removeLapsedPremiumImports()
             }
+            Task { await refreshLocationOnResume() }
             premium.startRecheck()
             syncWidgets()
         case .background:
@@ -659,7 +683,10 @@ final class AppModel {
     // MARK: Google Calendar
 
     var coordinator: GoogleSyncCoordinator {
-        if let coordinatorStorage { return coordinatorStorage }
+        if let coordinatorStorage {
+            coordinatorStorage.monthLocale = locale
+            return coordinatorStorage
+        }
         let made = GoogleSyncCoordinator(
             importer: GoogleCalendarImporter(auth: google, store: entries), registry: registry, preferences: store,
             premium: { [snapshot = premium.snapshot] in snapshot.state },
@@ -675,6 +702,7 @@ final class AppModel {
             message: { [weak self] key, args, upsell in
                 Task { @MainActor in self?.show(key, args: args, upsell: upsell) }
             })
+        made.monthLocale = locale
         coordinatorStorage = made
         return made
     }
