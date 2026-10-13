@@ -189,24 +189,11 @@ final class AppModel {
 
     /// The Ekadashi city's time zone in the app language ("भारतीय समय" for
     /// IST, the UTC offset in the language's script elsewhere).
-    var timeZoneLabel: String {
-        ekadashiCity.timeZoneId == "Asia/Kolkata"
-            ? Localizer.shared.timeZoneName("IST", language: language)
-            : ekadashiCity.timeZoneLabel(language: language)
-    }
+    var timeZoneLabel: String { ekadashiCity.timeZoneLabel(language: language) }
 
     /// The Ekadashi city and its country code in the app language
     /// ("Chennai (IN)", "சென்னை (இந்தியா)"); no time zone.
-    var ekadashiCityName: String {
-        guard ekadashiCity.id == Self.detectedCityId else {
-            return PlaceNames.shared.label(ekadashiCity.label, language: language)
-        }
-        // A detected place: the geocoded name in the app language, then the code.
-        let (name, code) = Self.splitCountry(ekadashiCity.label)
-        let local = cityLabel(name)
-        guard let code else { return local }
-        return "\(local) (\(PlaceNames.shared.country(code, language: language)))"
-    }
+    var ekadashiCityName: String { cityDisplayName(ekadashiCity) }
 
     /// "Chennai (IN)" → ("Chennai", "IN").
     static func splitCountry(_ label: String) -> (String, String?) {
@@ -269,19 +256,35 @@ final class AppModel {
     }
 
     private func useDetected(_ fix: LocationService.Fix) {
+        guard let city = Self.city(from: fix) else { return }
+        saveCity(city, manual: false)
+        // The Panchang tab starts from the detected place until one is set there.
+        if PanchangLocationStore(store: store).load() == nil { savePanchangCity(city) }
+    }
+
+    /// A location fix as a city: the geocoded name with the nearest catalog
+    /// city's country code ("Chennai (IN)") and its IANA zone.
+    static func city(from fix: LocationService.Fix) -> PanchangCity? {
         let nearest = PanchangCityCatalog.shared.nearest(latitude: fix.latitude, longitude: fix.longitude)
         let zone = fix.zoneIdentifier ?? nearest?.timeZoneId ?? TimeZone.current.identifier
         // Rounded to about a kilometre (sunrise moves by well under a second),
         // so small GPS drift reuses the cached schedule.
         func rounded(_ value: Double) -> Double { (value * 100).rounded() / 100 }
-        let code = nearest.flatMap { Self.splitCountry($0.label).1 }
-        let name = fix.city.isEmpty ? (nearest.map { Self.splitCountry($0.label).0 } ?? "—") : fix.city
-        let city = PanchangCity(id: Self.detectedCityId, label: code.map { "\(name) (\($0))" } ?? name,
+        let code = nearest.flatMap { splitCountry($0.label).1 }
+        let name = fix.city.isEmpty ? (nearest.map { splitCountry($0.label).0 } ?? "—") : fix.city
+        let city = PanchangCity(id: detectedCityId, label: code.map { "\(name) (\($0))" } ?? name,
                                 latitude: rounded(fix.latitude), longitude: rounded(fix.longitude), timeZoneId: zone)
-        guard (try? city.validate()) != nil else { return }
-        saveCity(city, manual: false)
-        // The Panchang tab starts from the detected place until one is set there.
-        if PanchangLocationStore(store: store).load() == nil { savePanchangCity(city) }
+        return (try? city.validate()) == nil ? nil : city
+    }
+
+    /// A detected place in the app language with its country code; a
+    /// catalog city through the place-name table.
+    func cityDisplayName(_ city: PanchangCity) -> String {
+        guard city.id == Self.detectedCityId else { return PlaceNames.shared.label(city.label, language: language) }
+        let (name, code) = Self.splitCountry(city.label)
+        let local = cityLabel(name)
+        guard let code else { return local }
+        return "\(local) (\(PlaceNames.shared.country(code, language: language)))"
     }
 
     /// The user picked a city on Home: Ekadashis follow it, detection no

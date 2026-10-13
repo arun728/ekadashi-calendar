@@ -1,12 +1,40 @@
 import SwiftUI
 import EkadashiCore
 
-/// Where Home and Calendar calculate Ekadashis: search the offline
-/// worldwide city list (as on the Panchang tab) or use the current location.
-/// Choosing a city here also sets the Panchang location.
+/// Where Home and Calendar calculate Ekadashis. Choosing a city here also
+/// sets the Panchang location.
 struct EkadashiLocationSheet: View {
     @Environment(AppModel.self) private var model
+
+    var body: some View {
+        CityPickerSheet(
+            title: model.t("home_location_title"), footer: model.t("home_location_footer"),
+            current: model.ekadashiCity, symbol: model.ekadashiCityIsManual ? "mappin.and.ellipse" : "location.fill",
+            pick: { model.chooseEkadashiCity($0) },
+            locate: {
+                await model.useCurrentLocationForEkadashis()
+                if case .located = model.locationState { return nil }
+                return model.location.isDenied ? "panchang_location_denied" : "panchang_location_unavailable"
+            }) { EmptyView() }
+    }
+}
+
+/// The one city picker of the app (Home and every Panchang sub-tab): the
+/// current place, a worldwide search, "Use current location", then recent
+/// picks and popular cities, every city with its time zone ("IST", "EDT",
+/// "GMT"…). [extra] adds screen-specific sections at the end.
+struct CityPickerSheet<Extra: View>: View {
+    @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
+    let title: String
+    let footer: String
+    let current: PanchangCity
+    let symbol: String
+    let pick: (PanchangCity) -> Void
+    /// Uses the device location; nil when done, else the message key to show.
+    let locate: () async -> String?
+    @ViewBuilder var extra: () -> Extra
+
     @State private var search = ""
     @State private var busy = false
     @State private var message: String?
@@ -24,16 +52,15 @@ struct EkadashiLocationSheet: View {
             Form {
                 Section {
                     HStack {
-                        Image(systemName: model.ekadashiCityIsManual ? "mappin.and.ellipse" : "location.fill")
-                            .foregroundStyle(Theme.teal)
+                        Image(systemName: symbol).foregroundStyle(Theme.teal)
                         VStack(alignment: .leading) {
-                            Text(model.ekadashiCityName)
-                            Text(model.timeZoneLabel).font(.caption).foregroundStyle(.secondary)
+                            Text(model.cityDisplayName(current))
+                            Text(current.timeZoneLabel(language: model.language)).font(.caption).foregroundStyle(.secondary)
                         }
                     }
                     .accessibilityIdentifier("ekadashi_location_current")
                 } footer: {
-                    Text(model.t("home_location_footer"))
+                    Text(footer)
                 }
                 Section {
                     TextField(model.t("panchang_search_cities"), text: $search)
@@ -59,9 +86,10 @@ struct EkadashiLocationSheet: View {
                     Section(model.t("home_popular_cities")) { ForEach(list.popular, id: \.self) { row($0) } }
                         .accessibilityIdentifier("ekadashi_location_popular")
                 }
+                extra()
             }
             .scrollContentBackground(.hidden)
-            .navigationTitle(model.t("home_location_title"))
+            .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button(model.t("cancel")) { dismiss() } }
@@ -72,11 +100,13 @@ struct EkadashiLocationSheet: View {
 
     private func row(_ city: PanchangCity) -> some View {
         Button {
-            model.chooseEkadashiCity(city)
+            RecentCities(store: model.store).add(city)
+            pick(city)
             dismiss()
         } label: {
-            VStack(alignment: .leading) {
-                Text(PlaceNames.shared.label(city.label, language: model.language)).foregroundStyle(.primary)
+            HStack {
+                Text(model.cityDisplayName(city)).foregroundStyle(.primary)
+                Spacer(minLength: 8)
                 Text(city.timeZoneLabel(language: model.language)).font(.caption).foregroundStyle(.secondary)
             }
         }
@@ -91,11 +121,10 @@ struct EkadashiLocationSheet: View {
             message = model.t("panchang_location_denied")
             return
         }
-        await model.useCurrentLocationForEkadashis()
-        if case .located = model.locationState {
-            dismiss()
+        if let failure = await locate() {
+            message = model.t(failure)
         } else {
-            message = model.t(model.location.isDenied ? "panchang_location_denied" : "panchang_location_unavailable")
+            dismiss()
         }
     }
 }

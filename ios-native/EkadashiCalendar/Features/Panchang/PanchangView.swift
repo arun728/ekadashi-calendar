@@ -105,9 +105,6 @@ struct PanchangView: View {
             HStack(spacing: 8) {
                 locationMenu
                 Spacer(minLength: 0)
-                if city.timeZoneId != "Asia/Kolkata" {
-                    Text(city.timeZoneLabel(language: language)).font(.caption).foregroundStyle(.secondary).lineLimit(1)
-                }
             }
             // Every sub-tab shows the weekday, date, month and year; the
             // monthly ones step a month and keep the day of the month.
@@ -123,24 +120,14 @@ struct PanchangView: View {
         }
     }
 
+    /// The Panchang city with its time zone; opens the same city picker as
+    /// Home (search, current location, recent and popular cities).
     private var locationMenu: some View {
-        Menu {
-            Section {
-                ForEach(Array(Set(PanchangCity.supported + [city])).sorted { $0.label < $1.label }, id: \.self) { item in
-                    Button { changeCity(item) } label: {
-                        let name = PlaceNames.shared.label(item.label, language: language)
-                        if item == city { Label(name, systemImage: "checkmark") } else { Text(name) }
-                    }
-                }
-            }
-            Button { editingLocation = true } label: {
-                Label(model.t("panchang_search_location"), systemImage: "magnifyingglass")
-            }
-            .accessibilityIdentifier("panchang_edit_location")
-        } label: {
+        Button { editingLocation = true } label: {
             HStack(spacing: 6) {
                 Image(systemName: "mappin.and.ellipse").foregroundStyle(Theme.teal)
-                Text(PlaceNames.shared.label(city.label, language: language)).lineLimit(1)
+                Text(model.cityDisplayName(city)).lineLimit(1)
+                Text(city.timeZoneLabel(language: language)).font(.caption).foregroundStyle(.secondary).lineLimit(1)
                 Image(systemName: "chevron.down").font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
             }
             .font(.subheadline.weight(.semibold))
@@ -149,6 +136,7 @@ struct PanchangView: View {
             .padding(.vertical, 9)
             .glassCapsule()
         }
+        .buttonStyle(.plain)
         .accessibilityIdentifier("panchang_city_selector")
     }
 

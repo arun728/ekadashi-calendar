@@ -74,20 +74,25 @@ struct TodayView: View {
 struct HomeHeader: View {
     @Environment(AppModel.self) private var model
 
-    /// One row in every language: the city shrinks (truncating) and the
-    /// language menu keeps its size, so neither moves when the other changes.
+    /// One row in every language, in two separate glass capsules: the city
+    /// shrinks (truncating) and the language menu keeps its size. Opening the
+    /// language menu morphs only its own capsule (iOS 26), so the city stays
+    /// on screen while a language is picked.
     var body: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: 10) {
             location
+                .padding(.horizontal, 14)
+                .padding(.vertical, 10)
                 .frame(maxWidth: .infinity, alignment: .leading)
+                .glassCapsule(interactive: false)
                 .layoutPriority(0)
             LanguageMenu()
+                .padding(.horizontal, 14)
+                .padding(.vertical, 10)
+                .glassCapsule(interactive: true)
                 .fixedSize()
                 .layoutPriority(1)
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
-        .glassCapsule(interactive: false)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("home_options_tube")
     }

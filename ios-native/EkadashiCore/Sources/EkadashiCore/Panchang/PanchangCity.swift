@@ -68,13 +68,25 @@ public struct PanchangCity: Hashable, Codable, Sendable, Identifiable {
     public func wallClock(_ instant: Date) -> WallClock { zone.wallClock(instant) }
     public func midnight(_ date: CivilDate, dayOffset: Int = 0) -> Date { zone.utc(date.adding(days: dayOffset)) }
     public func dateAtHour(_ date: CivilDate, _ hour: Int) -> Date { zone.utc(date, hour: hour) }
-    public var timezoneLabel: String { timeZoneId == "Asia/Kolkata" ? "IST" : timeZoneId }
+    /// The zone's short name now in English: "IST", "EDT", "GMT", "AEST",
+    /// or "UTC+4" where the zone has no lettered abbreviation.
+    public var timezoneLabel: String { timeZoneLabel(language: "en") }
 
-    /// The time zone as [language] shows it: the IANA id in English, the UTC
-    /// offset now in the language's script otherwise.
+    /// The time zone as [language] shows it, like India's "IST" for every
+    /// city: the bundled zone's abbreviation in English ("UTC+5:45" when it
+    /// has none); in other languages India's translated name, elsewhere the
+    /// UTC offset in the language's script (no Latin letters).
     public func timeZoneLabel(language: String, now: Date = Date()) -> String {
-        guard language != "en", let zone = TimeZone(identifier: timeZoneId) else { return timezoneLabel }
-        return Localizer.shared.utcOffset(minutes: zone.secondsFromGMT(for: now) / 60, language: language)
+        if timeZoneId == "Asia/Kolkata" {
+            return language == "en" ? "IST" : Localizer.shared.timeZoneName("IST", language: language)
+        }
+        guard let location = TzDatabase.shared.location(timeZoneId) else { return timeZoneId }
+        let zone = location.zone(at: now)
+        let minutes = zone.offsetSeconds / 60
+        guard language == "en" else { return Localizer.shared.utcOffset(minutes: minutes, language: language) }
+        if zone.abbreviation.first?.isLetter == true { return zone.abbreviation }
+        let sign = minutes < 0 ? "-" : "+", total = abs(minutes)
+        return total % 60 == 0 ? "UTC\(sign)\(total / 60)" : "UTC\(sign)\(total / 60):\(pad2(total % 60))"
     }
     /// Today's civil date at this location.
     public func today(now: Date = Date()) -> CivilDate { wallClock(now).date }

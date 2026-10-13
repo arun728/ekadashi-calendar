@@ -20,8 +20,6 @@ struct CalendarView: View {
     @State private var pickingMonth = false
     /// The direction the month grid slides in (a later month from the right).
     @State private var forward = true
-    /// How far the grid follows a horizontal drag before the month changes.
-    @State private var dragOffset: CGFloat = 0
     /// Month changes slide visibly rather than snapping.
     static let monthSlide = Animation.easeInOut(duration: 0.45)
 
@@ -65,25 +63,18 @@ struct CalendarView: View {
                     MonthGrid(month: month, selected: selected, today: CivilDate.today(), firstDay: firstDay, lastDay: lastDay,
                               markers: { markers(for: $0, loaded.list) }, select: { selected = $0 })
                         .padding(.horizontal, 12)
-                        .offset(x: dragOffset)
                         .id(month)
                         .transition(.push(from: forward ? .trailing : .leading))
                     selectedDay(loaded.list)
                 }
                 .contentShape(Rectangle())
                 .clipped()
-                .simultaneousGesture(DragGesture(minimumDistance: 30)
-                    .onChanged { value in
-                        let dx = value.translation.width, dy = value.translation.height
-                        // The grid follows the finger (damped) so the swipe is visible.
-                        if abs(dx) > abs(dy) { dragOffset = dx * 0.5 }
-                    }
-                    .onEnded { value in
-                        let dx = value.translation.width, dy = value.translation.height
-                        withAnimation(Self.monthSlide) { dragOffset = 0 }
-                        guard abs(dx) > 60, abs(dx) > abs(dy) else { return }
-                        move(dx < 0 ? 1 : -1)
-                    })
+                // A swipe moves the month exactly as the arrows do (same slide).
+                .simultaneousGesture(DragGesture(minimumDistance: 30).onEnded { value in
+                    let dx = value.translation.width, dy = value.translation.height
+                    guard abs(dx) > 60, abs(dx) > abs(dy) else { return }
+                    move(dx < 0 ? 1 : -1)
+                })
             }
             .padding(.top, 4)
             .padding(.bottom, 100)

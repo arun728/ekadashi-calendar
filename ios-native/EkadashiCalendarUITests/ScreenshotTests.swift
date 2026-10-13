@@ -142,6 +142,24 @@ final class ScreenshotTests: XCTestCase {
         snap("15-share-card")
     }
 
+    /// Panchang uses the same city picker as Home on every sub-tab, and every
+    /// city shows its time zone (not only India's IST).
+    func testPanchangUsesTheHomeCityPickerWithTimeZones() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        tab(3)
+        for page in ["keydays", "daily", "ekadashi"] {
+            app.buttons["panchang_tab_\(page)"].tap()
+            waitSelected("panchang_tab_\(page)")
+            app.buttons["panchang_city_selector"].firstMatch.tap()
+            XCTAssertTrue(app.textFields["ekadashi_location_search"].waitForExistence(timeout: 5), page)
+            let newYork = app.buttons["ekadashi_city_geonames-5128581"]
+            XCTAssertTrue(newYork.waitForExistence(timeout: 5), "\(page): popular cities")
+            XCTAssertTrue(newYork.label.contains("EDT") || newYork.label.contains("EST"), newYork.label)
+            snap("17-panchang-city-picker-\(page)")
+            app.buttons["Cancel"].firstMatch.tap()
+        }
+    }
+
     /// Every Panchang sub-tab opens the same full calendar to pick a date.
     func testEveryPanchangSubTabOpensTheFullCalendar() {
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
