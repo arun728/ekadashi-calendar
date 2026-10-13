@@ -1331,9 +1331,10 @@ class _PanchangEkadashiViewState extends State<PanchangEkadashiView> {
                 label: Text(
                   _t(
                     context,
+                    // "Smarta" or "Vaishnava" everywhere.
                     item == EkadashiTradition.smarta
-                        ? 'panchang_smarta'
-                        : 'panchang_gaudiya',
+                        ? 'tradition_smarta'
+                        : 'tradition_vaishnava',
                   ),
                 ),
                 selected: widget.tradition == item,
@@ -1350,7 +1351,7 @@ class _PanchangEkadashiViewState extends State<PanchangEkadashiView> {
             context,
             widget.tradition == EkadashiTradition.smarta
                 ? 'panchang_smarta_rule'
-                : 'panchang_gaudiya_rule',
+                : 'panchang_vaishnava_rule',
           ),
           style: Theme.of(context).textTheme.bodySmall,
         ),

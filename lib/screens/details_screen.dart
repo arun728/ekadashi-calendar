@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/ekadashi_service.dart';
+import '../services/ekadashi_settings.dart';
+import '../services/place_name_resolver.dart';
+import 'share_card_screen.dart';
 import '../services/vrat_recording.dart';
 import '../l10n/app_language.dart';
 import '../services/language_service.dart';
@@ -28,10 +31,28 @@ class DetailsScreen extends StatelessWidget {
       language,
     );
 
+    // Where and how the times are calculated: "Smarta • Chennai (IN) • IST".
+    final settings = context.watch<EkadashiSettings?>();
+    final source = settings == null
+        ? null
+        : [
+            lang.translate(settings.traditionNameKey),
+            PlaceNameResolver.instance.city(settings.city, language),
+            settings.city.timeZoneLabel(language),
+          ].join(' • ');
+
     return Scaffold(
       appBar: AppBar(
         title: Text(lang.translate('app_title')),
         centerTitle: true,
+        actions: [
+          IconButton(
+            key: const Key('details_share_card'),
+            tooltip: lang.translate('share_card'),
+            icon: const Icon(Icons.share),
+            onPressed: () => openShareCard(context, ekadashi),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
@@ -61,8 +82,7 @@ class DetailsScreen extends StatelessWidget {
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  // Show timezone if available
-                  if (timezone != null && timezone!.isNotEmpty) ...[
+                  if (source != null) ...[
                     const SizedBox(height: 4),
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -74,7 +94,9 @@ class DetailsScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        AppStrings.timeZoneName(timezone!, language),
+                        source,
+                        key: const Key('details_source'),
+                        textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 12,
                           color: tealColor.withValues(alpha: 0.8),
@@ -259,7 +281,9 @@ class DetailsScreen extends StatelessWidget {
                 if (!trackerService.trackerEnabled) {
                   return const SizedBox.shrink();
                 }
-                final record = trackerService.getRecord(ekadashi.id);
+                final record = trackerService.getRecordByUid(
+                  ekadashi.occurrenceUid,
+                );
                 final status = record?.status ?? ObservanceStatus.unrecorded;
 
                 String statusLabel;
@@ -317,10 +341,9 @@ class DetailsScreen extends StatelessWidget {
                         )
                         ? null
                         : () async {
-                            final occurrences = EkadashiService().getEkadashis(
-                              timezone: timezone ?? 'IST',
-                              languageCode: lang.currentLocale.languageCode,
-                            );
+                            final occurrences =
+                                settings?.cachedEkadashis(language) ??
+                                const <EkadashiDate>[];
                             final unlocks = await RecordVratDialog.show(
                               context,
                               ekadashi: ekadashi,

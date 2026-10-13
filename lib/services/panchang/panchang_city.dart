@@ -67,19 +67,35 @@ class PanchangCity {
   DateTime dateAtHour(DateTime date, int hour) =>
       tz.TZDateTime(zone, date.year, date.month, date.day, hour).toUtc();
 
-  String get timezoneLabel => timeZoneId == 'Asia/Kolkata' ? 'IST' : timeZoneId;
+  /// The zone's short name now in English: "IST", "EDT", "GMT", "AEST",
+  /// or "UTC+4" where the zone has no lettered abbreviation.
+  String get timezoneLabel => timeZoneLabel('en');
 
-  /// The time zone as [language] shows it: the IANA id in English, the UTC
-  /// offset now in the language's script otherwise.
-  String timeZoneLabel(String language) {
-    if (language == 'en') return timezoneLabel;
+  /// The time zone as [language] shows it, like India's "IST" for every
+  /// city: the zone's abbreviation in English ("UTC+5:45" when it has
+  /// none); in other languages India's translated name, elsewhere the UTC
+  /// offset in the language's script (no Latin letters).
+  String timeZoneLabel(String language, {DateTime? now}) {
+    if (timeZoneId == 'Asia/Kolkata') {
+      return language == 'en'
+          ? 'IST'
+          : AppStrings.timeZoneName('IST', language);
+    }
     try {
-      final offset = zone
-          .timeZone(DateTime.now().millisecondsSinceEpoch)
-          .offset;
-      return AppStrings.utcOffset(offset ~/ 60000, language);
+      final zone = this.zone.timeZone(
+        (now ?? DateTime.now()).millisecondsSinceEpoch,
+      );
+      final minutes = zone.offset ~/ 60000;
+      if (language != 'en') return AppStrings.utcOffset(minutes, language);
+      if (RegExp(r'^[A-Za-z]').hasMatch(zone.abbreviation)) {
+        return zone.abbreviation;
+      }
+      final sign = minutes < 0 ? '-' : '+', total = minutes.abs();
+      return total % 60 == 0
+          ? 'UTC$sign${total ~/ 60}'
+          : 'UTC$sign${total ~/ 60}:${(total % 60).toString().padLeft(2, '0')}';
     } catch (_) {
-      return timezoneLabel;
+      return timeZoneId;
     }
   }
 

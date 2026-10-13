@@ -11,6 +11,7 @@ import 'package:share_plus/share_plus.dart';
 import '../services/theme_service.dart';
 import '../services/language_service.dart';
 import '../services/ekadashi_service.dart';
+import '../services/ekadashi_settings.dart';
 import '../services/native_settings_service.dart';
 import '../services/native_notification_service.dart'
     show
@@ -154,16 +155,24 @@ class _SettingsScreenState extends State<SettingsScreen>
           context,
           listen: false,
         );
-        final ekadashis = await _ekadashiService.getUpcomingEkadashis(
-          languageCode: langService.currentLocale.languageCode,
-          timezone: _currentTimezone,
-        );
+        // Home's city and tradition, as Home schedules them.
+        final settings = context.read<EkadashiSettings?>();
+        final ekadashis = settings == null
+            ? const <EkadashiDate>[]
+            : await _ekadashiService.engineEkadashis(
+                city: settings.city,
+                tradition: settings.tradition,
+                languageCode: langService.currentLocale.languageCode,
+                years: settings.years,
+              );
 
         // Convert to notification data format
         final notificationData = ekadashis
             .map(
               (e) => EkadashiNotificationData(
                 id: e.id,
+                occurrenceUid: e.occurrenceUid,
+                calendarYear: e.date.year,
                 name: e.name,
                 fastingStartTime: e.fastingStartIso.isNotEmpty
                     ? e.fastingStartIso
@@ -320,11 +329,14 @@ class _SettingsScreenState extends State<SettingsScreen>
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (_) => WidgetPreviewScreen(
-                    ekadashiList: _ekadashiService.getEkadashis(
-                      timezone: _currentTimezone,
-                      languageCode: lang.currentLocale.languageCode,
-                    ),
-                    currentTimezone: _currentTimezone,
+                    ekadashiList:
+                        context.read<EkadashiSettings?>()?.cachedEkadashis(
+                          lang.currentLocale.languageCode,
+                        ) ??
+                        const [],
+                    currentTimezone:
+                        context.read<EkadashiSettings?>()?.city.timeZoneId ??
+                        _currentTimezone,
                   ),
                 ),
               ),

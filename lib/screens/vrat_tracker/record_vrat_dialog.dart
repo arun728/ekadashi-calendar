@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../models/vrat_tracker_models.dart';
 import '../../services/ekadashi_service.dart';
+import '../../services/ekadashi_settings.dart';
 import '../../services/vrat_recording.dart';
 import '../../services/language_service.dart';
 import '../../services/vrat_tracker_service.dart';
@@ -156,6 +157,8 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
         note: _noteController.text.trim().isNotEmpty
             ? _noteController.text.trim()
             : null,
+        // Home's tradition at the time of the fast (VratStore.save on iOS).
+        tradition: context.read<EkadashiSettings?>()?.tradition.name,
         timezone: widget.currentTimezone,
         occurrences: widget.allOccurrences,
       );

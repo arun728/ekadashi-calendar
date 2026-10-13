@@ -263,6 +263,14 @@ and matches Sakthi's Android card in PR #20 exactly (no location on the card).
 Home's dates and times match the Panchang tab's Ekadashi sub-tab to the minute
 (times are cut to the minute, never rounded). The tradition is called "Smarta"
 or "Vaishnava" everywhere. See docs/EKADASHI_ENGINE_SCHEDULE.md.
+On 13 October 2026, after testing iOS, Arun asked for the Android port on the
+same branch and PR #22 (no CI, no merge); both platforms now share the
+behaviour, strings and tests. Home's four menus form a 2×2 grid on both:
+location over tradition (same width), language over year (same width), all
+the same height, never off screen. Every city on Home and Panchang is in the
+app language: the place-name table, else the device geocoder, else the name
+written by sound (`Transliterator` / `lib/l10n/transliterator.dart`, kept
+identical by `test/fixtures/transliteration.json`).
 
 ## Store links (13 October 2026)
 

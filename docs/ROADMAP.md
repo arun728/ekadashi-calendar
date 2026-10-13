@@ -38,7 +38,7 @@ status table as each phase moves forward.
 | 8 | Android look and feel parity | n/a | Done (`feature/android-v2`) |
 | 9 | Swipeable sub-sections and back to search | Done | Done (`feature/android-v2`) |
 | 10 | Gujarati and Bengali | Done | Done (`feature/android-v2`) |
-| 11 | Ekadashis from the Panchang engine per city, tradition and year menus on Home, city search on Home, free share card | Draft (`feature/engine-ekadashi`) | After iOS approval |
+| 11 | Ekadashis from the Panchang engine per city, tradition and year menus on Home, city search on Home, free share card | Draft (`feature/engine-ekadashi`, PR #22) | Ported (same PR) |
 
 ## Phase 0: housekeeping
 

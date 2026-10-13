@@ -146,9 +146,20 @@ void main() {
       await tester.fling(panchangPages, const Offset(400, 0), 1500);
       await frames(tester);
       await until(tester, () => chipSelected('panchang_tab_daily'));
+      // The same city picker as Home; coordinates typed by hand are its
+      // last section.
       await tester.tap(find.byKey(const Key('panchang_city_selector')));
       await frames(tester);
-      await tester.tap(find.byKey(const Key('panchang_edit_location')));
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('location_save')),
+        400,
+        scrollable: find
+            .descendant(
+              of: find.byKey(const Key('city_picker_list')),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
       await frames(tester);
       for (final entry in {
         'location_name': 'New York',
@@ -171,7 +182,12 @@ void main() {
             .isNotEmpty,
       );
       expect(find.text('New York'), findsWidgets);
-      expect(find.text('America/New_York'), findsOneWidget);
+      // Every city shows its time zone like IST, never the IANA name.
+      expect(
+        tester.widget<Text>(find.byKey(const Key('panchang_city_zone'))).data,
+        anyOf('EDT', 'EST'),
+      );
+      expect(find.text('America/New_York'), findsNothing);
       expect(
         prefs.getString('panchang_location'),
         contains('America/New_York'),

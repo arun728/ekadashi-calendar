@@ -1,6 +1,5 @@
 import 'panchang_city.dart';
 import 'panchang_engine.dart';
-import 'panchang_models.dart';
 
 enum EkadashiTradition {
   smarta('Smarta'),
@@ -147,6 +146,9 @@ class CalculatedEkadashi {
     required this.tithiStartUtc,
     required this.tithiEndUtc,
     required this.nearBoundary,
+    this.month = '',
+    this.isShukla = false,
+    this.paranaDaySunsetUtc,
   });
   final DateTime date;
   final String name;
@@ -162,6 +164,13 @@ class CalculatedEkadashi {
   final DateTime tithiStartUtc;
   final DateTime tithiEndUtc;
   final bool nearBoundary;
+
+  /// The amanta lunar month of the fast day ("Adhika Jyeshtha" in an Adhika month).
+  final String month;
+  final bool isShukla;
+
+  /// The Parana day's sunset, the end of an after-only Parana.
+  final DateTime? paranaDaySunsetUtc;
   static const ruleVersion = 'current-location-v2';
   // Candidate data deliberately does not implement the published Ekadashi
   // model: no accidental replacement of reminders, tracker IDs or history.
@@ -181,12 +190,12 @@ class CalculatedEkadashiEngine {
       throw ArgumentError('Choose 1–366 civil days');
     }
     final first = DateTime.utc(start.year, start.month, start.day);
-    final days = <PanchangDay>[];
+    final days = <EkadashiDay>[];
     final samples = <EkadashiSample>[];
     // Neighbours across month/year boundaries and the next full/new moon are
     // necessary for repeated/skipped tithi and Pakshavardhini decisions.
     for (var offset = -2; offset < count + 9; offset++) {
-      final day = engine.calculate(
+      final day = engine.ekadashiDay(
         first.add(Duration(days: offset)),
         city: city,
       );
@@ -270,6 +279,9 @@ class CalculatedEkadashiEngine {
           tithiStartUtc: tithiStart,
           tithiEndUtc: tithiEnd,
           nearBoundary: nearBoundary,
+          month: day.amantaMonth,
+          isShukla: ekadashi.paksha == 'Shukla',
+          paranaDaySunsetUtc: next.sunsetUtc,
         ),
       );
     }
@@ -282,7 +294,7 @@ class CalculatedEkadashiEngine {
   /// fifth) until the end of Aparahna (the fourth fifth). Always before
   /// Dwadashi ends, unless Dwadashi ended before sunrise.
   (DateTime?, DateTime?, String) _smartaParana(
-    PanchangDay next,
+    EkadashiDay next,
     DateTime ekadashiEnd,
     DateTime dwadashiEnd,
   ) {
@@ -317,8 +329,8 @@ class CalculatedEkadashiEngine {
   }
 
   (DateTime?, DateTime?, String) _parana(
-    PanchangDay fast,
-    PanchangDay next,
+    EkadashiDay fast,
+    EkadashiDay next,
     EkadashiTradition tradition,
     String rule,
     DateTime hariVasara,
@@ -378,7 +390,7 @@ class CalculatedEkadashiEngine {
     );
   }
 
-  String _name(PanchangDay day, bool bright) {
+  String _name(EkadashiDay day, bool bright) {
     if (day.isAdhikaMonth) {
       return bright ? 'Padmini Ekadashi' : 'Parama Ekadashi';
     }

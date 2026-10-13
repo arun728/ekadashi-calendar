@@ -22,6 +22,8 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/ekadashi_service.dart';
+import '../services/ekadashi_settings.dart';
+import '../services/place_name_resolver.dart';
 import '../services/language_service.dart';
 import 'package:intl/intl.dart';
 import 'details_screen.dart';
@@ -68,8 +70,19 @@ class CalendarScreen extends StatefulWidget {
 }
 
 class CalendarScreenState extends State<CalendarScreen> {
-  List<int> get _years =>
-      (widget.ekadashiList.map((e) => e.date.year).toSet().toList()..sort());
+  /// Month changes slide visibly, the same for arrows, swipes and the
+  /// grid's own paging (CalendarView.monthSlide on iOS).
+  static const monthSlide = Duration(milliseconds: 350);
+
+  /// Home's city, tradition and year; the Calendar stays on Home's year.
+  EkadashiSettings? _settings;
+
+  /// The enabled Ekadashi years (assets/calendar/ekadashi_years.json).
+  List<int> get _years {
+    final enabled = _settings?.years;
+    if (enabled != null && enabled.isNotEmpty) return enabled;
+    return widget.ekadashiList.map((e) => e.date.year).toSet().toList()..sort();
+  }
 
   /// The year shown in the selector; it follows the month on screen.
   late int _selectedYear;
@@ -116,7 +129,27 @@ class CalendarScreenState extends State<CalendarScreen> {
       _selectedDay = date;
       _checkSelectedDayEkadashi();
     });
+    _showsYear(date.year);
     if (_repoReady) _reloadEntries();
+  }
+
+  /// The Calendar moved into another year: Home follows.
+  void _showsYear(int year) => _settings?.setYear(year);
+
+  /// Home's year menu chose another year: today in it, else its January.
+  void _homeYearChanged() {
+    final year = _settings?.year;
+    if (!mounted || year == null || year == _focusedDay.year) return;
+    final now = _now();
+    final target = now.year == year
+        ? DateTime(now.year, now.month, now.day)
+        : DateTime(year, 1, 1);
+    setState(() {
+      _selectedYear = year;
+      _focusedDay = target;
+      _selectedDay = target;
+    });
+    _checkSelectedDayEkadashi();
   }
 
   @override
@@ -130,8 +163,12 @@ class CalendarScreenState extends State<CalendarScreen> {
           repository: _repo,
         );
     _initRepo();
-    // Ensure focused day is within valid range
-    final now = _now();
+    _settings = context.read<EkadashiSettings?>()
+      ?..addListener(_homeYearChanged);
+    // Opens on Home's year: today in it, else its January.
+    var now = _now();
+    final homeYear = _settings?.year;
+    if (homeYear != null && homeYear != now.year) now = DateTime(homeYear);
     _selectedYear = _years.contains(now.year)
         ? now.year
         : (_years.isEmpty ? now.year : _years.last);
@@ -151,6 +188,7 @@ class CalendarScreenState extends State<CalendarScreen> {
   @override
   void dispose() {
     _premium?.removeListener(_onPremiumChanged);
+    _settings?.removeListener(_homeYearChanged);
     if (widget.repository == null) {
       unawaited(_repo.close().catchError((Object _) {}));
     }
@@ -547,6 +585,7 @@ class CalendarScreenState extends State<CalendarScreen> {
       _selectedDay = target;
     });
     _checkSelectedDayEkadashi();
+    _showsYear(target.year);
   }
 
   void resetToToday() {
@@ -570,6 +609,7 @@ class CalendarScreenState extends State<CalendarScreen> {
       _selectedDay = targetDay;
     });
     _checkSelectedDayEkadashi();
+    _showsYear(targetDay.year);
   }
 
   bool _isEkadashiDay(DateTime day) {
@@ -697,6 +737,28 @@ class CalendarScreenState extends State<CalendarScreen> {
               onChanged: (value) => setState(() => _filter = value),
             ),
           ),
+          // Where and how the Ekadashis are calculated (Home's menus).
+          if (_settings != null)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+                child: ListenableBuilder(
+                  listenable: Listenable.merge([
+                    _settings!,
+                    PlaceNameResolver.instance,
+                  ]),
+                  builder: (context, _) => Text(
+                    '${lang.translate(_settings!.traditionNameKey)} • '
+                    '${PlaceNameResolver.instance.city(_settings!.city, lang.currentLocale.languageCode)}',
+                    key: const Key('calendar_ekadashi_source'),
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                  ),
+                ),
+              ),
+            ),
           SliverToBoxAdapter(
             child: _MonthSwipe(
               onSwipe: _swipeMonth,
@@ -716,7 +778,7 @@ class CalendarScreenState extends State<CalendarScreen> {
                         onPressed: _isFirstMonth
                             ? null
                             : () => _monthPager?.previousPage(
-                                duration: const Duration(milliseconds: 300),
+                                duration: monthSlide,
                                 curve: Curves.easeInOut,
                               ),
                         icon: const Icon(Icons.chevron_left),
@@ -766,7 +828,7 @@ class CalendarScreenState extends State<CalendarScreen> {
                         onPressed: _isLastMonth
                             ? null
                             : () => _monthPager?.nextPage(
-                                duration: const Duration(milliseconds: 300),
+                                duration: monthSlide,
                                 curve: Curves.easeInOut,
                               ),
                         icon: const Icon(Icons.chevron_right),
@@ -802,6 +864,7 @@ class CalendarScreenState extends State<CalendarScreen> {
               locale: lang.currentLocale.languageCode,
               calendarFormat: CalendarFormat.month,
               headerVisible: false,
+              pageAnimationDuration: monthSlide,
               onCalendarCreated: (controller) => _monthPager = controller,
               headerStyle: HeaderStyle(
                 formatButtonVisible: false,
@@ -884,6 +947,7 @@ class CalendarScreenState extends State<CalendarScreen> {
                   _selectedYear = day.year;
                 });
                 _checkSelectedDayEkadashi();
+                _showsYear(day.year);
               },
               calendarStyle: CalendarStyle(
                 todayDecoration: BoxDecoration(
@@ -1008,11 +1072,10 @@ class CalendarScreenState extends State<CalendarScreen> {
   /// one, within the data years (the grid's own paging).
   void _swipeMonth(int direction) {
     if (direction > 0 ? _isLastMonth : _isFirstMonth) return;
-    const duration = Duration(milliseconds: 300);
     if (direction > 0) {
-      _monthPager?.nextPage(duration: duration, curve: Curves.easeInOut);
+      _monthPager?.nextPage(duration: monthSlide, curve: Curves.easeInOut);
     } else {
-      _monthPager?.previousPage(duration: duration, curve: Curves.easeInOut);
+      _monthPager?.previousPage(duration: monthSlide, curve: Curves.easeInOut);
     }
   }
 
@@ -1114,15 +1177,6 @@ class CalendarScreenState extends State<CalendarScreen> {
                 ),
               ],
 
-              // Show timezone info if available
-              if (widget.currentTimezone != null &&
-                  widget.currentTimezone!.isNotEmpty) ...[
-                const SizedBox(height: 4),
-                Text(
-                  widget.currentTimezone!,
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
-                ),
-              ],
               const SizedBox(height: 12),
 
               // Action buttons: View Details and Record Vrat (Requirement 17)

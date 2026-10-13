@@ -92,6 +92,27 @@ class CalendarRepository {
     _loaded = true;
   }
 
+  /// The published rows of [year] (identities and texts), in pack order.
+  List<Map<String, dynamic>> rowsForYear(int year) => [
+    for (final pack in _packs)
+      if (pack['year'] == year)
+        for (final row in pack['ekadashis'] as List)
+          Map<String, dynamic>.from(row as Map),
+  ];
+
+  /// The newest published texts of one Ekadashi, for any year.
+  Map<String, dynamic>? contentRow(String contentId) {
+    Map<String, dynamic>? found;
+    for (final pack in _packs) {
+      for (final row in pack['ekadashis'] as List) {
+        if (row['content_id'] == contentId) {
+          found = Map<String, dynamic>.from(row as Map);
+        }
+      }
+    }
+    return found;
+  }
+
   /// Adapter for existing display parsing. The integer is a permanent native
   /// notification ID; occurrence_uid is the durable cross-year domain identity.
   Map<String, dynamic> combinedData() =>

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../l10n/app_language.dart';
 import '../l10n/place_names.dart';
 import '../services/ekadashi_service.dart';
+import '../services/ekadashi_settings.dart';
 import '../services/language_service.dart';
 import '../services/panchang/calculated_ekadashi.dart';
 import '../services/panchang/panchang_city.dart';
@@ -12,11 +13,13 @@ import '../services/panchang/panchang_engine.dart';
 import '../services/panchang/panchang_location_store.dart';
 import '../services/panchang/panchang_models.dart';
 import '../services/panchang/panchang_terms.dart';
+import '../services/place_name_resolver.dart';
 import '../services/premium_service.dart';
 import '../widgets/glass_tube.dart';
 import '../widgets/section_pager.dart';
-import 'panchang_location_dialog.dart';
+import '../services/native_location_service.dart';
 import 'panchang_pages.dart';
+import 'widgets/city_picker_sheet.dart';
 
 /// The Panchang pages, in tab order.
 enum PanchangPage {
@@ -86,6 +89,10 @@ class PanchangScreenState extends State<PanchangScreen> {
   /// A day was opened or picked, so restoring the city keeps it.
   bool _dateChosen = false;
 
+  /// Home's settings: a city chosen on Home moves this tab there too.
+  EkadashiSettings? _settings;
+  int _homeRevision = 0;
+
   @override
   void initState() {
     super.initState();
@@ -102,11 +109,44 @@ class PanchangScreenState extends State<PanchangScreen> {
     PlaceNames.load().then((_) {
       if (mounted) setState(() {});
     });
+    PlaceNameResolver.instance.addListener(_namesChanged);
     if (widget.initialCity == null) _restoreLocation();
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_settings == null) {
+      _settings = context.read<EkadashiSettings?>()?..addListener(_followHome);
+      _homeRevision = _settings?.panchangCityRevision ?? 0;
+    }
+  }
+
+  /// Home set the Panchang location (not the reverse): show that city,
+  /// keeping "today" on its today.
+  Future<void> _followHome() async {
+    final settings = _settings;
+    if (settings == null || widget.initialCity != null) return;
+    if (settings.panchangCityRevision == _homeRevision) return;
+    _homeRevision = settings.panchangCityRevision;
+    final saved = await _locationStore.load();
+    if (!mounted || saved == null || saved == _city) return;
+    _locationChanged = true;
+    final wasToday = _date == _today();
+    setState(() {
+      _city = saved;
+      if (wasToday) {
+        _select(_today());
+      } else {
+        _recalculate();
+      }
+    });
+  }
+
+  @override
   void dispose() {
+    _settings?.removeListener(_followHome);
+    PlaceNameResolver.instance.removeListener(_namesChanged);
     _pages.dispose();
     for (final controller in _scrollControllers.values) {
       controller.dispose();
@@ -188,12 +228,44 @@ class PanchangScreenState extends State<PanchangScreen> {
     }
   }
 
-  Future<void> _editLocation() async {
-    final city = await showDialog<PanchangCity>(
-      context: context,
-      builder: (_) => PanchangLocationDialog(city: _city),
-    );
-    if (mounted) await _changeCity(city);
+  void _namesChanged() {
+    if (mounted) setState(() {});
+  }
+
+  /// The same city picker as Home (search, current location, recent and
+  /// popular cities with their time zones) plus coordinates and a time zone
+  /// typed by hand (PanchangLocationSheet on iOS). Choosing here does not
+  /// move Home's Ekadashi city.
+  void _editLocation() => showCityPicker(
+    context,
+    title: _text('panchang_location_title'),
+    footer: '',
+    current: _city,
+    icon: Icons.place_outlined,
+    onPick: _changeCity,
+    onLocate: _locate,
+    extra: ManualCoordinatesSection(city: _city, onSave: _changeCity),
+  );
+
+  /// "Use current location" here: the detected place for this tab only.
+  Future<String?> _locate() async {
+    final service = NativeLocationService();
+    try {
+      final granted =
+          await service.hasLocationPermission() ||
+          await service.requestLocationPermission();
+      if (!granted) return 'panchang_location_denied';
+      final fix = await service.getCurrentLocation();
+      final place = fix == null
+          ? null
+          : await EkadashiSettings.cityFromFix(fix);
+      if (place == null) return 'panchang_location_unavailable';
+      await RecentCities.add(place);
+      await _changeCity(place);
+      return null;
+    } catch (_) {
+      return 'panchang_location_unavailable';
+    }
   }
 
   void _goToToday() => setState(() => _select(_today()));
@@ -215,27 +287,10 @@ class PanchangScreenState extends State<PanchangScreen> {
     }
   });
 
+  /// Every sub-tab opens the same full calendar; the monthly ones then show
+  /// the picked date's month.
   Future<void> _pick(PanchangPage page) async {
     final language = _language;
-    if (page.isMonthly) {
-      final month = await showDialog<DateTime>(
-        context: context,
-        builder: (_) =>
-            PanchangMonthPickerDialog(month: _month, language: language),
-      );
-      if (month != null && mounted) {
-        // Today in the current month, else the month's first day.
-        final today = _today();
-        setState(
-          () => _select(
-            month.year == today.year && month.month == today.month
-                ? today
-                : month,
-          ),
-        );
-      }
-      return;
-    }
     final date = await showDatePicker(
       context: context,
       initialDate: _date,
@@ -323,18 +378,12 @@ class PanchangScreenState extends State<PanchangScreen> {
     children: [
       Row(
         children: [
-          Flexible(child: _locationMenu(t)),
-          if (_city.timeZoneId != 'Asia/Kolkata') ...[
-            const SizedBox(width: 8),
-            Flexible(
-              child: Text(
-                _city.timeZoneLabel(_language),
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: _locationButton(t),
             ),
-          ],
-          const Spacer(),
+          ),
           IconButton(
             key: const Key('panchang_notes'),
             tooltip: t('panchang_notes_title'),
@@ -363,43 +412,19 @@ class PanchangScreenState extends State<PanchangScreen> {
     ],
   );
 
-  Widget _locationMenu(String Function(String) t) {
-    final cities = {...PanchangCity.supported, _city}.toList()
-      ..sort((a, b) => a.label.compareTo(b.label));
-    return PopupMenuButton<Object>(
+  /// The Panchang city with its time zone; opens the city picker. The time
+  /// zone takes at most a third of the row, the city the rest.
+  Widget _locationButton(String Function(String) t) => LayoutBuilder(
+    builder: (context, constraints) =>
+        _locationButtonOf(t, constraints.maxWidth),
+  );
+
+  Widget _locationButtonOf(String Function(String) t, double width) => Tooltip(
+    message: t('panchang_location_title'),
+    child: InkWell(
       key: const Key('panchang_city_selector'),
-      tooltip: t('panchang_location_title'),
-      onSelected: (value) =>
-          value is PanchangCity ? _changeCity(value) : _editLocation(),
-      itemBuilder: (_) => [
-        for (final city in cities)
-          PopupMenuItem(
-            value: city,
-            child: Row(
-              children: [
-                Expanded(child: Text(PlaceNames.label(city.label, _language))),
-                if (city == _city)
-                  const Icon(
-                    Icons.check,
-                    size: 18,
-                    color: GlassTubeColors.teal,
-                  ),
-              ],
-            ),
-          ),
-        const PopupMenuDivider(),
-        PopupMenuItem<Object>(
-          key: const Key('panchang_edit_location'),
-          value: 'search',
-          child: Row(
-            children: [
-              const Icon(Icons.search, size: 18),
-              const SizedBox(width: 8),
-              Flexible(child: Text(t('panchang_search_location'))),
-            ],
-          ),
-        ),
-      ],
+      borderRadius: BorderRadius.circular(24),
+      onTap: _editLocation,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
         decoration: BoxDecoration(
@@ -420,17 +445,30 @@ class PanchangScreenState extends State<PanchangScreen> {
             const SizedBox(width: 6),
             Flexible(
               child: Text(
-                PlaceNames.label(_city.label, _language),
+                PlaceNameResolver.instance.city(_city, _language),
+                key: const Key('panchang_city_name'),
+                maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ),
+            const SizedBox(width: 6),
+            ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: width / 3),
+              child: Text(
+                _city.timeZoneLabel(_language),
+                key: const Key('panchang_city_zone'),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.bodySmall,
               ),
             ),
             const Icon(Icons.expand_more, size: 18),
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
 
   Widget _stepper(
     String Function(String) t,

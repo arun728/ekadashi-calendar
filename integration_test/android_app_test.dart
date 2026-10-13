@@ -76,7 +76,10 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
     }
     expect(find.byType(CircularProgressIndicator), findsNothing);
-    if (mode == 'denied') expect(find.text('Location Denied'), findsOneWidget);
+    // Without a location Home still names its city (the last known one,
+    // else Chennai); "Use current location" lives in the city picker.
+    expect(find.byKey(const Key('home_location_name')), findsOneWidget);
+    if (mode == 'denied') expect(find.text('Location Denied'), findsNothing);
     await binding.convertFlutterSurfaceToImage();
     await pumpUi(tester);
     await binding.takeScreenshot('android_home');

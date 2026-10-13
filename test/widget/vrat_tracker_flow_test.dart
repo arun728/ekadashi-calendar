@@ -4,11 +4,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ekadashi_calendar/main.dart';
+import 'package:ekadashi_calendar/services/ekadashi_schedule.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUp(() {
+    // Isolates do not run under the widget tests' fake async.
+    EkadashiSchedule.calculateInline = true;
     SharedPreferences.setMockInitialValues({
       'has_launched': true,
       'app_version': '1.0',

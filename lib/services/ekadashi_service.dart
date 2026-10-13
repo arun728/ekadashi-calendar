@@ -2,6 +2,9 @@ import '../l10n/generated/app_localizations.dart';
 import '../l10n/localized_lookup.dart';
 import 'package:flutter/widgets.dart';
 import '../data/calendar_repository.dart';
+import 'ekadashi_schedule.dart';
+import 'panchang/calculated_ekadashi.dart';
+import 'panchang/panchang_city.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 
 /// Ekadashi date with timezone-aware timing
@@ -288,9 +291,119 @@ class EkadashiService {
     if (_isDataLoaded) return;
 
     await _repository.load();
+    await EkadashiYears.load();
     _rawData = _repository.combinedData();
     _isDataLoaded = true;
     debugPrint('Calendar years loaded: $availableYears');
+  }
+
+  /// Ekadashi dates and times from the Panchang engine for any city and
+  /// tradition (docs/EKADASHI_ENGINE_SCHEDULE.md).
+  late final EkadashiSchedule schedule = EkadashiSchedule(
+    publishedRows: _repository.rowsForYear,
+  );
+
+  /// Whether [years] at [city] for [tradition] are already calculated.
+  bool isScheduleCached(
+    PanchangCity city,
+    EkadashiTradition tradition,
+    List<int> years,
+  ) => years.every(
+    (y) => schedule.isCachedInMemory(EkadashiScheduleKey(city, tradition, y)),
+  );
+
+  /// Every Ekadashi of [years] at [city] for [tradition] in [languageCode],
+  /// sorted by date, with the published identities and texts.
+  Future<List<EkadashiDate>> engineEkadashis({
+    required PanchangCity city,
+    required EkadashiTradition tradition,
+    required String languageCode,
+    required List<int> years,
+  }) async {
+    if (!_isDataLoaded) await initializeData();
+    for (final year in years) {
+      await schedule.scheduled(EkadashiScheduleKey(city, tradition, year));
+    }
+    return cachedEngineEkadashis(
+      city: city,
+      tradition: tradition,
+      languageCode: languageCode,
+      years: years,
+    );
+  }
+
+  /// [engineEkadashis] from what is already calculated (search builds every
+  /// language synchronously); empty for a year not calculated yet.
+  List<EkadashiDate> cachedEngineEkadashis({
+    required PanchangCity city,
+    required EkadashiTradition tradition,
+    required String languageCode,
+    required List<int> years,
+  }) {
+    final result = <EkadashiDate>[];
+    for (final year in years) {
+      final fasts = schedule.cached(EkadashiScheduleKey(city, tradition, year));
+      if (fasts == null) continue;
+      final rows = _repository.rowsForYear(year);
+      for (final fast in fasts) {
+        final row =
+            (fast.publishedUid == null
+                ? null
+                : rows
+                      .where((r) => r['occurrence_uid'] == fast.publishedUid)
+                      .firstOrNull) ??
+            _repository.contentRow(fast.contentId) ??
+            const <String, dynamic>{};
+        result.add(fromScheduled(fast, row, languageCode));
+      }
+    }
+    result.sort((a, b) => a.date.compareTo(b.date));
+    return result;
+  }
+
+  /// A calculated fast with the texts of [row] in [languageCode].
+  EkadashiDate fromScheduled(
+    ScheduledEkadashi fast,
+    Map<String, dynamic> row,
+    String languageCode,
+  ) {
+    Map<String, dynamic> map(String key) =>
+        (row[key] as Map?)?.cast<String, dynamic>() ?? const {};
+    final names = map('name'), descriptions = map('description');
+    final stories = map('story'), rules = map('fasting_rules');
+    final benefitsMap = map('benefits');
+    String text(Map<String, dynamic> m, [String fallback = '']) =>
+        m[languageCode] as String? ?? m['en'] as String? ?? fallback;
+    final english = fast.contentId
+        .split('-')
+        .map((w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}')
+        .join(' ');
+    return EkadashiDate(
+      id: fast.notificationId,
+      occurrenceUid: fast.occurrenceUid,
+      legacyId: fast.legacyId,
+      contentId: fast.contentId,
+      usesContentFallback: [
+        names,
+        descriptions,
+        stories,
+        rules,
+        benefitsMap,
+      ].any((m) => !m.containsKey(languageCode)),
+      name: names.isEmpty ? english : text(names),
+      date: DateTime.parse(fast.date),
+      fastStartTime: _formatTimeFromIso(fast.fastingStart),
+      fastBreakTime: _formatParanaWindow(fast.paranaStart, fast.paranaEnd),
+      description: text(descriptions),
+      story: text(stories, 'Story coming soon...'),
+      fastingRules: text(rules, 'Standard Ekadashi fasting rules apply.'),
+      benefits: text(benefitsMap, 'Grants spiritual merit.'),
+      paksha: _calendarTerm(fast.paksha, 'paksha_', languageCode),
+      month: _calendarTerm(fast.month, 'lunar_month_', languageCode),
+      fastingStartIso: fast.fastingStart,
+      paranaStartIso: fast.paranaStart,
+      paranaEndIso: fast.paranaEnd,
+    );
   }
 
   /// Get Ekadashi list for a specific timezone and language

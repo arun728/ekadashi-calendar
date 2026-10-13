@@ -1,7 +1,8 @@
 # Ekadashi dates and times from the Panchang engine
 
-Status: iOS (`ios-native/`), branch `feature/engine-ekadashi`. Android follows
-after Arun approves it on iOS (AGENTS.md "iOS first").
+Status: iOS (`ios-native/`) and Android (Flutter), branch
+`feature/engine-ekadashi` (draft PR #22). Built on iOS first, then ported to
+Android with the same behaviour, strings and tests (AGENTS.md "iOS first").
 
 ## What changed
 
@@ -91,3 +92,48 @@ a day between cities, which is why the schedule is per city, not per time zone.
 - Month labels: published rows keep their month; other fasts use the engine's
   amanta month. (The 2026 pack uses amanta names and the 2027 pack purnimanta
   names for Krishna paksha; that inconsistency is pre-existing.)
+
+## Implementation (Android)
+
+The Flutter app follows the iOS design file by file:
+
+- `lib/services/ekadashi_schedule.dart` (`EkadashiSchedule`,
+  `EkadashiYears`, `ScheduledEkadashi`): the same calculation, identities,
+  minute truncation, sunset fallback and `schedule-2` cache key, calculated
+  in an isolate and cached in memory and in shared preferences. Two screens
+  asking for the same city and year share one calculation.
+- `lib/services/ekadashi_settings.dart` (`EkadashiSettings`, a provider):
+  Home's city (picked, else last detected, else Chennai), tradition and year,
+  with the same preference keys as iOS. Choosing a city on Home also sets the
+  Panchang location (`panchangCityRevision`); the Panchang tab follows it.
+- `lib/main.dart`: Home's four menus in a 2×2 grid
+  (`lib/screens/widgets/home_controls.dart`: location over tradition, language
+  over year, equal widths per column, equal heights), the "calculating" and
+  dimmed states, the share button on each card. Every other tab, reminders,
+  widgets and search use every enabled year from the engine.
+- `lib/screens/widgets/city_picker_sheet.dart`: the one city picker for Home
+  and every Panchang sub-tab (search, "Use current location", recent and
+  popular cities, each with its time zone; Panchang adds coordinates typed by
+  hand).
+- `lib/services/place_name_resolver.dart`: any city in the app language: the
+  shared table, then the phone's geocoder in that language (saved on the
+  phone), and meanwhile `lib/l10n/transliterator.dart` (byte-for-byte the iOS
+  `Transliterator`, checked against `test/fixtures/transliteration.json` for all
+  34,152 cities in five languages).
+- `lib/screens/share_card_screen.dart` and
+  `lib/screens/widgets/ekadashi_share_card.dart`: Sakthi's PR #20 card (no
+  location), Share with the Play Store link only (`lib/services/app_links.dart`)
+  and Save to Gallery (`gal`; Android 10 and older need
+  `WRITE_EXTERNAL_STORAGE`, declared with `maxSdkVersion="29"`, and
+  `requestLegacyExternalStorage`, as the plugin's README asks). Free.
+- Calendar opens on Home's year, moves Home's year when it changes year, shows
+  "Smarta • Chennai (IN)" above the month and slides months in 350 ms for the
+  arrows, swipes and the grid alike.
+
+Tests: `test/unit/ekadashi_schedule_test.dart`,
+`test/unit/transliterator_test.dart`, `test/widget/home_engine_test.dart`
+(the 2×2 grid in every language at 393 and 320 dp and 2× text, tradition,
+year, city search, share card), `test/widget/panchang_screen_test.dart` (the
+city picker with time zones, following Home, the full date picker on every
+sub-tab) and `test/ui/no_english_ui_test.dart` (the new menus, pickers and
+share card in all five other languages).
