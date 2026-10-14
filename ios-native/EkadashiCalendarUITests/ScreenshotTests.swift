@@ -103,6 +103,32 @@ final class ScreenshotTests: XCTestCase {
     /// The four Home menus line up: location over tradition (same left and
     /// right edges), language over year (same width), all the same height and
     /// inside the screen, in English and in a longer script (Tamil).
+    /// Typing a city in Tamil keeps up with the keyboard and finds it (the
+    /// search froze typing and deleting outside English, 14 October 2026).
+    func testCitySearchKeepsUpWithTypingInTamil() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        element("language_menu").tap()
+        XCTAssertTrue(app.buttons["தமிழ்"].waitForExistence(timeout: 5))
+        app.buttons["தமிழ்"].tap()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 10))
+        element("home_location").tap()
+        let search = app.textFields["ekadashi_location_search"]
+        XCTAssertTrue(search.waitForExistence(timeout: 5))
+        search.tap()
+        let start = Date()
+        search.typeText("சென")
+        search.typeText(XCUIKeyboardKey.delete.rawValue)
+        search.typeText("ன")
+        XCTAssertLessThan(Date().timeIntervalSince(start), 10, "typing and deleting are not held up")
+        XCTAssertTrue(app.buttons["ekadashi_city_geonames-1264527"].waitForExistence(timeout: 10), "Chennai")
+        snap("14b-city-search-ta")
+        app.buttons.matching(identifier: "Cancel").firstMatch.exists
+            ? app.buttons.matching(identifier: "Cancel").firstMatch.tap() : app.swipeDown()
+        element("language_menu").tap()
+        XCTAssertTrue(app.buttons["English"].waitForExistence(timeout: 5))
+        app.buttons["English"].tap()
+    }
+
     func testHomeMenusLineUpInEveryLanguage() {
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
         func check(_ language: String) {

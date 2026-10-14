@@ -166,6 +166,33 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('the city search finds cities typed in the app language', (
+    tester,
+  ) async {
+    await tester.pumpWidget(harness.app());
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('language_menu')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(PopupMenuItem<String>, 'தமிழ்'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('home_location')));
+    await tester.pumpAndSettle();
+    for (final typed in ['ச', 'செ', 'சென']) {
+      await tester.enterText(
+        find.byKey(const Key('ekadashi_location_search')),
+        typed,
+      );
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const Key('ekadashi_city_geonames-1264527')),
+      findsWidgets,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('the city search sets the city; the share card is free', (
     tester,
   ) async {

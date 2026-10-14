@@ -32,6 +32,12 @@ class PlaceNames {
     }
   }
 
+  /// The loaded table, to install in a background isolate with [use].
+  static Map<String, dynamic> snapshot() => {
+    'places': _places,
+    'countries': _countries,
+  };
+
   /// Installs a decoded table (tests and the loader).
   static void use(Map<String, dynamic> data) {
     Map<String, Map<String, String>> table(String key) => {

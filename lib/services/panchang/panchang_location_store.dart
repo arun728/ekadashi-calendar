@@ -1,6 +1,9 @@
+import 'dart:isolate';
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../l10n/place_names.dart';
+import 'city_search_index.dart';
 import 'panchang_city.dart';
 
 class PanchangLocationStore {
@@ -86,21 +89,46 @@ class PanchangLocationStore {
     return best;
   }
 
-  /// Names, ASCII names, country codes and names typed in [language].
-  static Future<List<PanchangCity>> search(
-    String query,
-    String Function(PanchangCity) localized, {
-    int limit = 20,
-  }) async {
-    final q = query.trim().toLowerCase();
-    if (q.length < 2) return [];
-    return (await cities())
-        .where(
-          (c) => '${c.label.toLowerCase()} ${c.searchTerms} ${localized(c)}'
-              .contains(q),
-        )
-        .take(limit)
-        .toList();
+  static final _indexes = <String, Future<CitySearchIndex>>{};
+
+  /// Builds indexes on the calling isolate (widget tests, whose fake clock
+  /// never runs other isolates).
+  static bool buildIndexInline = false;
+
+  /// The city search for [language] (names, ASCII names, country codes and
+  /// names in that language), built once in a background isolate and kept:
+  /// writing every city's name at each keystroke froze the keyboard.
+  static Future<CitySearchIndex> searchIndex(String language) {
+    if (buildIndexInline) return _buildInline(language);
+    return _indexes[language] ??= _buildIndex(language).catchError((Object e) {
+      _indexes.remove(language);
+      throw e;
+    });
+  }
+
+  static final _inline = <String, CitySearchIndex>{};
+
+  /// Keeps only finished indexes: a build left waiting on one widget test's
+  /// fake clock must not hold up the next test.
+  static Future<CitySearchIndex> _buildInline(String language) async {
+    final known = _inline[language];
+    if (known != null) return known;
+    final all = _loaded ?? await cities();
+    return _inline[language] ??= CitySearchIndex(
+      all,
+      language,
+      popularIds: popularIds,
+    );
+  }
+
+  static Future<CitySearchIndex> _buildIndex(String language) async {
+    final all = await cities();
+    await PlaceNames.load();
+    final table = PlaceNames.snapshot();
+    return Isolate.run(() {
+      PlaceNames.use(table);
+      return CitySearchIndex(all, language, popularIds: popularIds);
+    });
   }
 
   static Map<String, dynamic> toJson(PanchangCity city) => {

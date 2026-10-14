@@ -341,6 +341,15 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
   /// Initialize app - check settings and load data
   Future<void> _initializeApp() async {
+    // The city search for the app language is built in the background, so
+    // the city sheet answers the first keystroke at once (also after a
+    // language change).
+    final language = context.read<LanguageService>();
+    void prepareCitySearch() => PanchangLocationStore.searchIndex(
+      language.currentLocale.languageCode,
+    ).ignore();
+    prepareCitySearch();
+    language.addListener(prepareCitySearch);
     final prefs = await SharedPreferences.getInstance();
     final hasLaunched = prefs.getBool('has_launched') ?? false;
     final appVersion = prefs.getString('app_version') ?? '1.0';

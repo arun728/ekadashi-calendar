@@ -42,10 +42,9 @@ struct CityPickerSheet<Extra: View>: View {
     /// Before anything is typed: recent picks, then popular cities.
     private var shortlist: (recent: [PanchangCity], popular: [PanchangCity]) { RecentCities(store: model.store).shortlist() }
 
-    private var matches: [PanchangCity] {
-        let q = search.trimmingCharacters(in: .whitespaces)
-        return q.count < 2 ? [] : PanchangCityCatalog.shared.search(q, language: model.language, limit: 20)
-    }
+    /// Results for [search], found off the main thread (see [find]) so the
+    /// keyboard never waits for the search.
+    @State private var matches: [PanchangCity] = []
 
     var body: some View {
         NavigationStack {
@@ -79,7 +78,7 @@ struct CityPickerSheet<Extra: View>: View {
                 }
                 // No identifiers on these Sections: they would replace the
                 // rows' ekadashi_city_<id> identifiers.
-                if search.trimmingCharacters(in: .whitespaces).count < 2 {
+                if CitySearchIndex.query(search) == nil {
                     let list = shortlist
                     if !list.recent.isEmpty {
                         Section(model.t("recent_searches")) { ForEach(list.recent, id: \.self) { row($0) } }
@@ -89,6 +88,10 @@ struct CityPickerSheet<Extra: View>: View {
                 extra()
             }
             .scrollContentBackground(.hidden)
+            // Prepares the names in the app language while the sheet opens.
+            .task { await Self.index(model.language) }
+            // A new keystroke cancels the search for the previous one.
+            .task(id: search) { await find(search) }
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -111,6 +114,28 @@ struct CityPickerSheet<Extra: View>: View {
             }
         }
         .accessibilityIdentifier("ekadashi_city_\(city.id)")
+    }
+
+    /// The language's search index, built off the main thread on first use.
+    private static func index(_ language: String) async -> CitySearchIndex {
+        await Task.detached(priority: .userInitiated) {
+            PanchangCityCatalog.shared.searchIndex(language: language)
+        }.value
+    }
+
+    /// Searches after a short pause in typing, off the main thread, and keeps
+    /// only the answer for the text still in the field.
+    private func find(_ text: String) async {
+        guard CitySearchIndex.query(text) != nil else {
+            matches = []
+            return
+        }
+        try? await Task.sleep(for: .milliseconds(150))
+        guard !Task.isCancelled else { return }
+        let index = await Self.index(model.language)
+        let found = await Task.detached(priority: .userInitiated) { index.search(text, limit: 20) }.value
+        guard !Task.isCancelled, text == search else { return }
+        matches = found
     }
 
     private func useCurrentLocation() async {

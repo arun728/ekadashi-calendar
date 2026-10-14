@@ -337,3 +337,16 @@ store link: iOS the App Store link, Android the Play Store link.
   generated-file checks, Android lint with a baseline, cancelled superseded
   runs, no CI for docs-only changes) and asked for CI to run on PR #22's
   commit that adds them. Other commits keep `[skip ci]` until he asks again.
+
+## City search keeps up with the keyboard (14 October 2026)
+
+The city search (Home and every Panchang sub-tab) froze typing and deleting
+outside English: every keystroke wrote all 34,152 city names in the app's
+script on the main thread (2-2.5 s per Tamil keystroke). Search only through
+`CitySearchIndex` (EkadashiCore and lib/services/panchang/
+city_search_index.dart): built once per language off the main thread (at
+launch, on a language change and when the sheet opens), searched in about
+5 ms, ranked by name prefix, word prefix, popular city, shorter name. Never
+compute place names for the whole catalog in a view body, `onChanged` or
+any other per-keystroke path. Keep CitySearchIndexTests and
+city_search_index_test.dart green.

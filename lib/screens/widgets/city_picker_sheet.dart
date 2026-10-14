@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../l10n/app_language.dart';
-import '../../services/ekadashi_settings.dart';
 import '../../services/language_service.dart';
 import '../../services/panchang/panchang_city.dart';
+import '../../services/panchang/city_search_index.dart';
 import '../../services/panchang/panchang_location_store.dart';
 import '../../services/place_name_resolver.dart';
 import '../../widgets/ios_style.dart';
@@ -80,6 +80,10 @@ class _CityPickerSheetState extends State<CityPickerSheet> {
   void initState() {
     super.initState();
     PlaceNameResolver.instance.addListener(_namesChanged);
+    // Prepares the names in the app language while the sheet opens.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) PanchangLocationStore.searchIndex(_language).ignore();
+    });
     RecentCities.shortlist().then((list) {
       if (mounted) {
         setState(() {
@@ -101,13 +105,16 @@ class _CityPickerSheetState extends State<CityPickerSheet> {
     super.dispose();
   }
 
+  /// Searches the language's prepared index (built in the background when
+  /// the sheet opens), keeping only the answer for the text still typed.
   Future<void> _query(String value) async {
-    final language = _language;
-    final results = await PanchangLocationStore.search(
-      value,
-      (c) => EkadashiSettings.displayName(c, language),
-    );
-    if (mounted && value == _search.text) setState(() => _matches = results);
+    if (CitySearchIndex.query(value) == null) {
+      if (_matches.isNotEmpty) setState(() => _matches = []);
+      return;
+    }
+    final index = await PanchangLocationStore.searchIndex(_language);
+    if (!mounted || value != _search.text) return;
+    setState(() => _matches = index.search(value));
   }
 
   Future<void> _pick(PanchangCity city) async {
@@ -156,7 +163,7 @@ class _CityPickerSheetState extends State<CityPickerSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final typed = _search.text.trim().length >= 2;
+    final typed = CitySearchIndex.query(_search.text) != null;
     return Column(
       children: [
         // iOS: the title in the middle, Cancel on the left.

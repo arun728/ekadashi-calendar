@@ -237,6 +237,7 @@ final class AppModel {
     func start() async {
         guard !started, !Self.isHostingUnitTests else { return }
         started = true
+        prepareCitySearch()
         reload(scrollToNext: true)
         await premium.start()
         premium.startRecheck()
@@ -477,10 +478,18 @@ final class AppModel {
         }
     }
 
+    /// Builds the city search for the app language in the background, so the
+    /// city sheet answers the first keystroke at once.
+    func prepareCitySearch() {
+        let language = self.language
+        Task.detached(priority: .utility) { _ = PanchangCityCatalog.shared.searchIndex(language: language) }
+    }
+
     func setLanguage(_ code: String) {
         guard Localizer.languages.contains(code), code != language else { return }
         language = code
         store.set(code, forKey: "language_code")
+        prepareCitySearch()
         reload()
     }
 
