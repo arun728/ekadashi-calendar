@@ -144,16 +144,23 @@ void main() {
     await binding.takeScreenshot('free_vrat_limit_paywall');
     debugPrint('tracker step: close the paywall');
     await tester.tap(find.byKey(const Key('premium_close')));
-    await pumpUi(tester);
+    // The message shows for four seconds, and the API 33/35 emulators draw
+    // about one frame a second: a fixed six pumps outlasted it (14 October
+    // 2026). Look for it on every frame instead.
+    final limitMessage = find.text(lang.translate('vrat_free_limit_reached'));
+    for (
+      var frame = 0;
+      frame < 60 && limitMessage.evaluate().isEmpty;
+      frame++
+    ) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
     debugPrint(
       'tracker step: after closing, dialog=${find.byType(RecordVratDialog).evaluate().length} '
       'paywall=${find.byType(PremiumScreen).evaluate().length}',
     );
     expect(tracker.getRecordByUid(fourth.occurrenceUid), isNull);
-    expect(
-      find.text(lang.translate('vrat_free_limit_reached')),
-      findsOneWidget,
-    );
+    expect(limitMessage, findsOneWidget);
     await binding.takeScreenshot('free_vrat_limit_message');
     debugPrint('Tracker UI: fourth free entry gated by premium');
     expect(tester.takeException(), isNull);

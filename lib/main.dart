@@ -21,6 +21,7 @@ import 'screens/panchang_screen.dart';
 import 'l10n/generated/app_localizations.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -231,7 +232,15 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
   bool get _tabPushed => _tabObservers[_currentIndex].hasPushedPage;
 
+  /// Rebuilds the shell in the same frame as the tab's new menu, sheet or
+  /// page, so its Back handling is never a frame behind: Android 13+ closed
+  /// the app on a Back in that frame. A push while building waits a frame.
   void _tabStackChanged() {
+    if (SchedulerBinding.instance.schedulerPhase !=
+        SchedulerPhase.persistentCallbacks) {
+      if (mounted) setState(() {});
+      return;
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) setState(() {});
     });

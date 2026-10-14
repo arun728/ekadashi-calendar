@@ -69,4 +69,32 @@ void main() {
       expect(exits, isEmpty, reason: 'Back must not close the app');
     });
   }
+
+  // On a device, Back can come in the frame after a menu or sheet first
+  // appears, before a later frame rebuilds the shell: Android 13+ then closed
+  // the app (android_app_test, API 33 and 35, 14 October 2026).
+  testWidgets('Back in the first frame of a menu or sheet closes it, not '
+      'the app', (tester) async {
+    await tester.pumpWidget(harness.app());
+    await tester.pumpAndSettle();
+    await tab(tester, 2);
+    await tester.tap(find.byKey(const Key('journey_tab_history')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('journey_history_year_menu')));
+    await tester.pump();
+    expect(find.byWidgetPredicate((w) => w is PopupMenuItem), findsWidgets);
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.byWidgetPredicate((w) => w is PopupMenuItem), findsNothing);
+    expect(exits, isEmpty, reason: 'Back must not close the app');
+
+    await tab(tester, 3);
+    await tester.tap(find.byKey(const Key('panchang_city_selector')));
+    await tester.pump();
+    expect(find.byKey(const Key('city_picker_list')), findsOneWidget);
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('city_picker_list')), findsNothing);
+    expect(exits, isEmpty, reason: 'Back must not close the app');
+  });
 }
