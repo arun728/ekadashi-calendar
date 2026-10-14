@@ -122,7 +122,7 @@ void main() {
       await tapIfPresent(tester, find.byKey(const Key('home_share_card')));
       collect(tester, 'share card', found);
       await back(tester);
-      await tapIfPresent(tester, find.byType(ElevatedButton));
+      await tapIfPresent(tester, find.byKey(const Key('view_details')));
       collect(tester, 'details', found);
       await tester.binding.handlePopRoute();
       await settle(tester);

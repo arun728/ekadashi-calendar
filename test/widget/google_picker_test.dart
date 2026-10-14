@@ -40,7 +40,11 @@ void main() {
     await tester.tap(find.text('Open'));
     await tester.pumpAndSettle();
     expect(
-      tester.widget<CheckboxListTile>(find.byType(CheckboxListTile)).value,
+      tester
+          .widget<Switch>(
+            find.byKey(const Key('google_calendar_owner@example.test')),
+          )
+          .value,
       isTrue,
     );
   });

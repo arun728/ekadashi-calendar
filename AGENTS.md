@@ -1,5 +1,30 @@
 # Repository collaboration rules
 
+## Always TDD — critical (12 October 2026)
+
+Arun's standing rule for every agent and chat, for every update, feature, fix
+or any other implementation, on both platforms (Flutter, Kotlin, Swift), with
+no exceptions:
+
+1. **Write the failing tests first.** Before writing the implementation, add
+   tests that describe the new behaviour or UI (keys, widgets, text, colours,
+   sizes, navigation, stored data). Run them and see them fail for the right
+   reason. Commit them on their own ("Failing tests: …"), or, when only one
+   commit is possible, record the failing run in the commit message.
+2. **Then implement** until the new tests pass.
+3. **Run every previous test too**: `flutter analyze` (no errors or
+   warnings), the full `flutter test`, and `swift test` in
+   `ios-native/EkadashiCore`. A change is not done until the new tests and
+   all existing tests pass.
+4. **Every new piece of code has a test that exercises it.** That includes
+   shared components, helpers and bug fixes. A bug fix starts with a test
+   that reproduces the bug.
+5. Where a test cannot run here (XCUITests and the iOS app target without
+   Xcode, Kotlin tests without Gradle, emulator tests), still write it, and
+   say plainly that it was not run.
+6. Report the evidence: the new tests, their failing run before the change,
+   and the passing totals after it.
+
 These rules record Arun's explicit instructions from 3 October 2026.
 
 - Never push or merge to `dev` or `main` without Arun's explicit permission.
@@ -271,6 +296,13 @@ the same height, never off screen. Every city on Home and Panchang is in the
 app language: the place-name table, else the device geocoder, else the name
 written by sound (`Transliterator` / `lib/l10n/transliterator.dart`, kept
 identical by `test/fixtures/transliteration.json`).
+On 13-14 October 2026 Arun approved merging PR #21 (`feature/ui-parity-resume`,
+which contains PR #19) into PR #22, with PR #22 winning every conflict: the
+iOS look, per-tab navigation, sheets and other PR #21 work stay, while Home's
+2×2 menus, the shared city picker (an iOS sheet, also for every Panchang
+sub-tab), the day-picker sheet on every Panchang sub-tab, the engine schedule
+and Smarta/Vaishnava naming come from PR #22. Calendar shows "Smarta • city"
+under the date title (inside the header row) on both platforms.
 
 ## Store links (13 October 2026)
 

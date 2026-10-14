@@ -111,17 +111,25 @@ void main() {
     await tester.pumpAndSettle();
     // 2027 opens on its first Ekadashi.
     expect(text(tester, 'home_page_indicator'), startsWith('1 / '));
-    await tester.tap(find.byIcon(Icons.calendar_month));
+    await tester.tap(find.byKey(const Key('glass_tab_1')));
     await tester.pumpAndSettle();
     final calendar = tester.state<CalendarScreenState>(
       find.byType(CalendarScreen),
     );
     expect(calendar.selectedYear, 2027);
     expect(text(tester, 'calendar_ekadashi_source'), 'Smarta • Chennai (IN)');
+    // Under the date title, inside the month header row (no extra row).
+    final header = box(tester, 'calendar_month_tube');
+    final source = box(tester, 'calendar_ekadashi_source');
+    expect(
+      source.top,
+      greaterThanOrEqualTo(box(tester, 'calendar_year_selector').bottom - 1),
+    );
+    expect(source.bottom, lessThanOrEqualTo(header.bottom + 1));
     // Calendar moving back to this year moves Home too.
     calendar.resetToToday();
     await tester.pumpAndSettle();
-    await tester.tap(find.byIcon(Icons.home));
+    await tester.tap(find.byKey(const Key('glass_tab_0')));
     await tester.pumpAndSettle();
     expect(
       find.descendant(

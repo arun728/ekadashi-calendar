@@ -94,7 +94,7 @@ void main() {
       const Offset(0, 260),
     );
     await pumpUi(tester);
-    await tester.tap(find.byIcon(Icons.calendar_month));
+    await tester.tap(find.byKey(const Key('glass_tab_1')));
     await pumpUi(tester);
     final emptyDay = find.text('No Ekadashi on this day');
     if (emptyDay.evaluate().isNotEmpty &&
@@ -213,6 +213,9 @@ void main() {
 
     for (final locale in ['ta', 'hi', 'en']) {
       await selectTab(0);
+      final headerPosition = tester.getTopLeft(
+        find.byKey(const Key('home_options_tube')),
+      );
       await tester.tap(find.byKey(const Key('language_menu')));
       const names = {'en': 'English', 'ta': 'தமிழ்', 'hi': 'हिंदी'};
       final choice = find.widgetWithText(PopupMenuItem<String>, names[locale]!);
@@ -220,6 +223,11 @@ void main() {
         tester,
         () => choice.hitTestable().evaluate().length == 1,
         reason: 'The $locale language menu item must be ready',
+      );
+      expect(find.byKey(const Key('open_global_search')), findsOneWidget);
+      expect(
+        tester.getTopLeft(find.byKey(const Key('home_options_tube'))),
+        headerPosition,
       );
       await tester.tap(choice.hitTestable());
       // A selected locale alone does not mean the popup has finished closing.
@@ -256,8 +264,43 @@ void main() {
       expect(appearance.hitTestable(), findsOneWidget);
       await binding.takeScreenshot('android_settings_$locale');
     }
+    for (final tab in [2, 3]) {
+      await selectTab(tab);
+      if (tab == 2) {
+        await tester.tap(find.byKey(const Key('journey_tab_history')));
+        await pumpUi(tester);
+      }
+      final anchor = find.byKey(
+        Key(tab == 2 ? 'vrat_tabs_tube' : 'panchang_sections_tube'),
+      );
+      final anchorPosition = tester.getTopLeft(anchor);
+      await tester.tap(
+        find.byKey(
+          Key(
+            tab == 2 ? 'journey_history_year_menu' : 'panchang_city_selector',
+          ),
+        ),
+      );
+      final menuItems = find.byWidgetPredicate(
+        (widget) => widget is PopupMenuItem,
+      );
+      await waitForUi(
+        tester,
+        () => menuItems.evaluate().isNotEmpty,
+        reason: 'Tab $tab menu must open',
+      );
+      expect(find.byKey(const Key('open_global_search')), findsOneWidget);
+      expect(tester.getTopLeft(anchor), anchorPosition);
+      await tester.binding.handlePopRoute();
+      await waitForUi(
+        tester,
+        () => menuItems.evaluate().isEmpty,
+        reason: 'System Back must close tab $tab menu',
+      );
+      expect(tester.getTopLeft(anchor), anchorPosition);
+    }
     await selectTab(0);
-    final details = find.byType(ElevatedButton).first;
+    final details = find.byKey(const Key('view_details'));
     await tester.ensureVisible(details);
     await tester.tap(details);
     await pumpUi(tester);

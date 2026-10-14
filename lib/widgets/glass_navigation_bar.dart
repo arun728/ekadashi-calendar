@@ -61,7 +61,8 @@ class GlassNavigationBar extends StatelessWidget {
                           child: DecoratedBox(
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(38),
-                              color: GlassTubeColors.selection,
+                              // iOS: teal icon and label on a dark pill.
+                              color: const Color(0xF20C1414),
                               border: Border.all(
                                 color: accent.withValues(alpha: .22),
                               ),

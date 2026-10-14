@@ -23,31 +23,77 @@ class ThemeService extends ChangeNotifier {
   }
 }
 
-// FIXED: Added the missing AppTheme class here
+/// The app themes. Material 3 needs an explicit colour scheme: without
+/// one every unstyled control falls back to Material's purple. Teal
+/// #00A19B is the iOS accent (Theme.teal); the top bar is the iOS inline
+/// navigation bar: transparent, a 17 pt semibold title in the primary
+/// colour, teal buttons and the iOS back chevron.
 class AppTheme {
-  static final lightTheme = ThemeData(
-    primarySwatch: Colors.teal,
-    brightness: Brightness.light,
-    scaffoldBackgroundColor: Colors.grey[100],
-    appBarTheme: const AppBarTheme(
-      backgroundColor: Colors.white,
-      foregroundColor: Colors.teal,
-      elevation: 0,
-    ),
-    cardColor: Colors.white,
-    textTheme: const TextTheme(bodyMedium: TextStyle(color: Colors.black87)),
-  );
+  static const teal = Color(0xFF00A19B);
 
-  static final darkTheme = ThemeData(
-    primarySwatch: Colors.teal,
-    brightness: Brightness.dark,
-    scaffoldBackgroundColor: const Color(0xFF121212),
-    appBarTheme: const AppBarTheme(
-      backgroundColor: Color(0xFF1F1F1F),
-      foregroundColor: Colors.teal,
-      elevation: 0,
-    ),
-    cardColor: const Color(0xFF1F1F1F),
-    textTheme: const TextTheme(bodyMedium: TextStyle(color: Colors.white70)),
-  );
+  static ThemeData _theme(Brightness brightness) {
+    final dark = brightness == Brightness.dark;
+    final primaryText = dark ? Colors.white : Colors.black;
+    final typography = Typography.material2021(
+      platform: TargetPlatform.android,
+    );
+    final scheme = ColorScheme.fromSeed(seedColor: teal, brightness: brightness)
+        .copyWith(
+          primary: teal,
+          onPrimary: Colors.white,
+          secondary: teal,
+          onSecondary: Colors.white,
+          tertiary: teal,
+          surfaceTint: Colors.transparent,
+        );
+    return ThemeData(
+      useMaterial3: true,
+      typography: typography,
+      colorScheme: scheme,
+      brightness: brightness,
+      scaffoldBackgroundColor: dark
+          ? const Color(0xFF121212)
+          : const Color(0xFFF5F5F5),
+      cardColor: dark ? const Color(0xFF1F1F1F) : Colors.white,
+      appBarTheme: AppBarTheme(
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        scrolledUnderElevation: 0,
+        foregroundColor: primaryText,
+        elevation: 0,
+        centerTitle: true,
+        iconTheme: const IconThemeData(color: teal),
+        actionsIconTheme: const IconThemeData(color: teal),
+        // From the typography, so the title keeps the app font.
+        titleTextStyle: (dark ? typography.white : typography.black)
+            .titleMedium!
+            .copyWith(
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
+              color: primaryText,
+            ),
+      ),
+      actionIconTheme: ActionIconThemeData(
+        backButtonIconBuilder: (_) =>
+            const Icon(Icons.arrow_back_ios_new_rounded, size: 22),
+        closeButtonIconBuilder: (_) => const Icon(Icons.close_rounded),
+      ),
+      textSelectionTheme: TextSelectionThemeData(
+        cursorColor: teal,
+        selectionHandleColor: teal,
+        selectionColor: teal.withValues(alpha: .3),
+      ),
+      progressIndicatorTheme: const ProgressIndicatorThemeData(color: teal),
+      snackBarTheme: const SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        actionTextColor: teal,
+      ),
+      textTheme: TextTheme(
+        bodyMedium: TextStyle(color: dark ? Colors.white70 : Colors.black87),
+      ),
+    );
+  }
+
+  static final lightTheme = _theme(Brightness.light);
+  static final darkTheme = _theme(Brightness.dark);
 }

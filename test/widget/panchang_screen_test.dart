@@ -314,12 +314,14 @@ void main() {
     final premium = await premiumService(true);
     addTearDown(premium.dispose);
     await showPanchang(tester, premium: premium, date: DateTime(2026, 10, 8));
-    for (final (page, key) in [
-      ('keydays', 'panchang_selected_month'),
-      ('daily', 'panchang_selected_date'),
-      ('muhurta', 'panchang_selected_date'),
-      ('ekadashi', 'panchang_selected_month'),
-      ('rashi', 'panchang_selected_date'),
+    // The iOS graphical date picker in a sheet; a picked day shows at once
+    // and Done closes it (a different day on each sub-tab).
+    for (final (page, key, day, shown) in [
+      ('keydays', 'panchang_selected_month', '20', 'Tue, 20 Oct 2026'),
+      ('daily', 'panchang_selected_date', '21', 'Wed, 21 Oct 2026'),
+      ('muhurta', 'panchang_selected_date', '22', 'Thu, 22 Oct 2026'),
+      ('ekadashi', 'panchang_selected_month', '23', 'Fri, 23 Oct 2026'),
+      ('rashi', 'panchang_selected_date', '24', 'Sat, 24 Oct 2026'),
     ]) {
       await tester.ensureVisible(find.byKey(Key('panchang_tab_$page')));
       await tester.pumpAndSettle();
@@ -327,23 +329,28 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(Key(key)));
       await tester.pumpAndSettle();
-      expect(find.byType(DatePickerDialog), findsOneWidget, reason: page);
-      await tester.tap(
-        find.descendant(
-          of: find.byType(DatePickerDialog),
-          matching: find.text('20'),
-        ),
+      final picker = find.byKey(const Key('panchang_day_picker'));
+      expect(picker, findsOneWidget, reason: page);
+      expect(
+        find.descendant(of: picker, matching: find.byType(CalendarDatePicker)),
+        findsOneWidget,
+        reason: page,
       );
-      await tester.tap(find.text('OK'));
+      await tester.tap(
+        find.descendant(of: picker, matching: find.text(day)).first,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('panchang_day_picker_done')));
       await tester.pumpAndSettle();
       // The picked day on this sub-tab; the monthly ones browse its month.
-      expect(find.text('Tue, 20 Oct 2026'), findsOneWidget, reason: page);
-      await tester.tap(find.byKey(const Key('panchang_today')));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byKey(Key(key)));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Cancel'));
-      await tester.pumpAndSettle();
+      expect(
+        find.descendant(
+          of: find.byKey(const Key('panchang_stepper')),
+          matching: find.text(shown),
+        ),
+        findsOneWidget,
+        reason: page,
+      );
     }
     expect(find.byKey(const Key('panchang_month_picker')), findsNothing);
     expect(tester.takeException(), isNull);
@@ -417,9 +424,11 @@ void main() {
       find.byKey(const Key('location_timezone')),
       'America/New_York',
     );
+    await tester.pump();
+    // As on iOS, Save stays disabled until the location is valid.
     await tester.tap(find.byKey(const Key('location_save')));
     await tester.pumpAndSettle();
-    expect(find.text('Enter a number from -90 to 90'), findsOneWidget);
+    expect(find.byKey(const Key('location_latitude')), findsOneWidget);
     await tester.enterText(
       find.byKey(const Key('location_latitude')),
       '40.7128',

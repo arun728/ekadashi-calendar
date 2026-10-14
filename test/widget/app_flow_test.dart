@@ -27,7 +27,7 @@ void main() {
       );
       final events = (request.arguments as Map)['ekadashis'] as List;
       expect((events.first as Map)['fastingStart'], endsWith('+05:30'));
-      await tester.tap(find.byIcon(Icons.calendar_month));
+      await tester.tap(find.byKey(const Key('glass_tab_1')));
       await tester.pumpAndSettle();
       expect(find.byIcon(Icons.settings), findsOneWidget);
       expect(tester.takeException(), isNull);
@@ -137,7 +137,7 @@ void main() {
     // offers the search and "Use current location".
     expect(homeCity(tester), 'Chennai (IN)');
     expect(find.text('Location Denied'), findsNothing);
-    await tester.tap(find.byIcon(Icons.calendar_month));
+    await tester.tap(find.byKey(const Key('glass_tab_1')));
     await tester.pumpAndSettle();
     await tester.tap(find.byIcon(Icons.settings));
     await tester.pumpAndSettle();
@@ -151,7 +151,7 @@ void main() {
   ) async {
     await tester.pumpWidget(harness.app());
     await tester.pumpAndSettle();
-    await tester.tap(find.byIcon(Icons.calendar_month));
+    await tester.tap(find.byKey(const Key('glass_tab_1')));
     await tester.pumpAndSettle();
     await tester.tap(find.byIcon(Icons.settings));
     await tester.pumpAndSettle();

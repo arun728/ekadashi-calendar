@@ -40,6 +40,30 @@ class EkadashiNotificationWorker(
         const val KEY_NOTIFICATION_ID = "notification_id"
         /** Optional ekadashi:// link the notification opens (event reminders). */
         const val KEY_URL = "url"
+
+        /** The channel's name and description in the app language. */
+        const val CHANNEL_PREFS = "ekadashi_notification_channel"
+        const val KEY_CHANNEL_NAME = "channel_name"
+        const val KEY_CHANNEL_DESCRIPTION = "channel_description"
+        private const val CHANNEL_DESCRIPTION = "Reminders for Ekadashi fasting days"
+
+        /**
+         * Creates the reminder channel, or renames it (same id) when the app
+         * language changed. English only until the app first sends its words.
+         */
+        fun ensureChannel(context: Context) {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+            val prefs = context.getSharedPreferences(CHANNEL_PREFS, Context.MODE_PRIVATE)
+            val name = prefs.getString(KEY_CHANNEL_NAME, null)?.takeIf { it.isNotBlank() } ?: CHANNEL_NAME
+            val text = prefs.getString(KEY_CHANNEL_DESCRIPTION, null)?.takeIf { it.isNotBlank() } ?: CHANNEL_DESCRIPTION
+            val channel = NotificationChannel(CHANNEL_ID, name, NotificationManager.IMPORTANCE_HIGH).apply {
+                description = text
+                enableVibration(true)
+                enableLights(true)
+            }
+            val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            manager.createNotificationChannel(channel)
+        }
     }
 
     override suspend fun doWork(): Result {
@@ -66,19 +90,8 @@ class EkadashiNotificationWorker(
     private fun showNotification(title: String, body: String, notificationId: Int, url: String? = null) {
         val notificationManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        // Create notification channel for Android O+
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                CHANNEL_NAME,
-                NotificationManager.IMPORTANCE_HIGH
-            ).apply {
-                description = "Reminders for Ekadashi fasting days"
-                enableVibration(true)
-                enableLights(true)
-            }
-            notificationManager.createNotificationChannel(channel)
-        }
+        // The channel, named in the app language (Android O+).
+        ensureChannel(applicationContext)
 
         // Create intent to open app when notification is tapped
         val intent = Intent(applicationContext, MainActivity::class.java).apply {

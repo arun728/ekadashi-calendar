@@ -35,7 +35,7 @@ status table as each phase moves forward.
 | 5 | Settings and Premium card | Done | Done (`feature/android-v2`) |
 | 6 | Widgets (two widgets) | Done | Done (`feature/android-v2`) |
 | 7 | Notifications revamp | Done | Done (`feature/android-v2`) |
-| 8 | Android look and feel parity | n/a | Done (`feature/android-v2`) |
+| 8 | Android look and feel parity | Reference implementation | `feature/ui-parity-resume`: screenshot/icon parity and menu-navigation fixes; device review pending ([handoff](UI_PARITY_HANDOFF.md)) |
 | 9 | Swipeable sub-sections and back to search | Done | Done (`feature/android-v2`) |
 | 10 | Gujarati and Bengali | Done | Done (`feature/android-v2`) |
 | 11 | Ekadashis from the Panchang engine per city, tradition and year menus on Home, city search on Home, free share card | Draft (`feature/engine-ekadashi`, PR #22) | Ported (same PR) |

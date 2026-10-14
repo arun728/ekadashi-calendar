@@ -138,10 +138,10 @@ void main() {
     await tester.pumpAndSettle();
 
     // 1. Verify Home screen loaded
-    expect(find.byIcon(Icons.spa_outlined), findsOneWidget);
+    expect(find.byKey(const Key('glass_tab_2')), findsOneWidget);
 
     // 2. Navigate to Vrat Tracker tab
-    await tester.tap(find.byIcon(Icons.spa_outlined));
+    await tester.tap(find.byKey(const Key('glass_tab_2')));
     await tester.pumpAndSettle();
 
     expect(find.text('Enable Vrat Tracker'), findsNothing);
@@ -177,14 +177,16 @@ void main() {
     expect(find.text('First Vrat'), findsOneWidget);
     expect(find.text('5 Ekadashis'), findsOneWidget);
 
-    // Scroll to bottom of GridView to reveal remaining achievements
+    // The intro, Premium button and grid scroll together (iOS).
     await tester.scrollUntilVisible(
       find.text('Consistent Observance'),
       160,
-      scrollable: find.descendant(
-        of: find.byType(GridView),
-        matching: find.byType(Scrollable),
-      ),
+      scrollable: find
+          .ancestor(
+            of: find.text('First Vrat'),
+            matching: find.byType(Scrollable),
+          )
+          .first,
     );
     await tester.pumpAndSettle();
     expect(find.text('Consistent Observance'), findsOneWidget);

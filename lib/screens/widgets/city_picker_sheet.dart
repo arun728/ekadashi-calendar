@@ -7,6 +7,7 @@ import '../../services/language_service.dart';
 import '../../services/panchang/panchang_city.dart';
 import '../../services/panchang/panchang_location_store.dart';
 import '../../services/place_name_resolver.dart';
+import '../../widgets/ios_style.dart';
 
 /// The one city picker of the app (Home and every Panchang sub-tab, as
 /// CityPickerSheet on iOS): the current place, a worldwide search, "Use
@@ -24,11 +25,9 @@ Future<void> showCityPicker(
   /// Uses the device location; null when done, else the message key to show.
   required Future<String?> Function() onLocate,
   Widget? extra,
-}) => showModalBottomSheet<void>(
-  context: context,
-  isScrollControlled: true,
-  useSafeArea: true,
-  showDragHandle: true,
+}) => showAppSheet<void>(
+  context,
+  // An iOS sheet over the whole app, not a page in the tab's stack.
   builder: (_) => CityPickerSheet(
     title: title,
     footer: footer,
@@ -157,84 +156,89 @@ class _CityPickerSheetState extends State<CityPickerSheet> {
   @override
   Widget build(BuildContext context) {
     final typed = _search.text.trim().length >= 2;
-    return DraggableScrollableSheet(
-      expand: false,
-      initialChildSize: 0.9,
-      minChildSize: 0.5,
-      maxChildSize: 0.95,
-      builder: (context, controller) => ListView(
-        key: const Key('city_picker_list'),
-        controller: controller,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-            child: Text(
-              widget.title,
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
+    return Column(
+      children: [
+        // iOS: the title in the middle, Cancel on the left.
+        SheetBar(
+          title: widget.title,
+          leading: BarTextButton(
+            key: const Key('city_picker_cancel'),
+            label: _t('cancel'),
+            onPressed: () => Navigator.of(context).pop(),
           ),
-          ListTile(
-            key: const Key('ekadashi_location_current'),
-            leading: Icon(
-              widget.icon,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            title: Text(
-              PlaceNameResolver.instance.city(widget.current, _language),
-            ),
-            subtitle: Text(widget.current.timeZoneLabel(_language)),
-          ),
-          if (widget.footer.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                widget.footer,
-                style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+        ),
+        Expanded(
+          child: ListView(
+            key: const Key('city_picker_list'),
+            children: [
+              ListTile(
+                key: const Key('ekadashi_location_current'),
+                leading: Icon(
+                  widget.icon,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                title: Text(
+                  PlaceNameResolver.instance.city(widget.current, _language),
+                ),
+                subtitle: Text(widget.current.timeZoneLabel(_language)),
               ),
-            ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-            child: TextField(
-              key: const Key('ekadashi_location_search'),
-              controller: _search,
-              textCapitalization: TextCapitalization.words,
-              decoration: InputDecoration(
-                labelText: _t('panchang_search_cities'),
-                prefixIcon: const Icon(Icons.search),
+              if (widget.footer.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Text(
+                    widget.footer,
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                  ),
+                ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                child: TextField(
+                  key: const Key('ekadashi_location_search'),
+                  controller: _search,
+                  textCapitalization: TextCapitalization.words,
+                  decoration: InputDecoration(
+                    labelText: _t('panchang_search_cities'),
+                    prefixIcon: const Icon(Icons.search),
+                  ),
+                  onChanged: (value) {
+                    setState(() {});
+                    _query(value);
+                  },
+                ),
               ),
-              onChanged: (value) {
-                setState(() {});
-                _query(value);
-              },
-            ),
-          ),
-          for (final city in _matches.where((_) => typed)) _row(city),
-          ListTile(
-            key: const Key('ekadashi_location_current_button'),
-            leading: const Icon(Icons.my_location),
-            title: Text(
-              _t(_busy ? 'panchang_locating' : 'panchang_use_current_location'),
-            ),
-            enabled: !_busy,
-            onTap: _locate,
-          ),
-          if (_message != null)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(_message!, style: const TextStyle(fontSize: 12)),
-            ),
-          if (!typed) ...[
-            if (_recent.isNotEmpty) ...[
-              _header(_t('recent_searches')),
-              for (final city in _recent) _row(city),
+              for (final city in _matches.where((_) => typed)) _row(city),
+              ListTile(
+                key: const Key('ekadashi_location_current_button'),
+                leading: const Icon(Icons.my_location),
+                title: Text(
+                  _t(
+                    _busy
+                        ? 'panchang_locating'
+                        : 'panchang_use_current_location',
+                  ),
+                ),
+                enabled: !_busy,
+                onTap: _locate,
+              ),
+              if (_message != null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Text(_message!, style: const TextStyle(fontSize: 12)),
+                ),
+              if (!typed) ...[
+                if (_recent.isNotEmpty) ...[
+                  _header(_t('recent_searches')),
+                  for (final city in _recent) _row(city),
+                ],
+                _header(_t('home_popular_cities')),
+                for (final city in _popular) _row(city),
+              ],
+              if (widget.extra != null) widget.extra!,
+              const SizedBox(height: 24),
             ],
-            _header(_t('home_popular_cities')),
-            for (final city in _popular) _row(city),
-          ],
-          if (widget.extra != null) widget.extra!,
-          const SizedBox(height: 24),
-        ],
-      ),
+          ),
+        ),
+      ],
     );
   }
 }

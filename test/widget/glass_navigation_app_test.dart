@@ -69,7 +69,8 @@ void main() {
               .state<CalendarScreenState>(find.byType(CalendarScreen))
               .selectDate(DateTime(2026, month, month == 8 ? 1 : 4));
           await tester.pumpAndSettle();
-          final empty = find.text('No Ekadashi on this day');
+          // Calendar opens on All: an empty day says so (iOS).
+          final empty = find.text('No entries for this day');
           final capsule = tester.getRect(
             find.byKey(const Key('glass_capsule_surface')),
           );
@@ -125,7 +126,14 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('month_picker_year_2027')));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(Key('panchang_month_${1}')));
+    await tester.dragUntilVisible(
+      find.byKey(const Key('panchang_month_1')),
+      find.byKey(const Key('month_picker_month_wheel')),
+      const Offset(0, 40),
+    );
+    await tester.tap(find.byKey(const Key('panchang_month_1')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('month_picker_done')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('glass_tab_2')));
     await tester.pumpAndSettle();
@@ -143,7 +151,7 @@ void main() {
       tester.widget<TextField>(find.byType(TextField)).controller!.text,
       'parvsa',
     );
-    await tester.tap(find.byIcon(Icons.arrow_back).first);
+    await tester.tap(find.byKey(const Key('global_search_back')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('glass_tab_4')));
     await tester.pumpAndSettle();
@@ -190,7 +198,7 @@ void main() {
       expect(find.byType(TextField).hitTestable(), findsOneWidget);
       tester.view.resetViewInsets();
       await tester.pumpAndSettle();
-      await tester.tap(find.byIcon(Icons.arrow_back).first);
+      await tester.tap(find.byKey(const Key('global_search_back')));
       await tester.pumpAndSettle();
       expect(
         find.byKey(const Key('glass_tab_3')).hitTestable(),

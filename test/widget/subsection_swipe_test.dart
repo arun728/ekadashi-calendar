@@ -1,3 +1,5 @@
+import 'package:ekadashi_calendar/widgets/glass_tube.dart';
+import 'package:ekadashi_calendar/widgets/ios_style.dart';
 import 'package:ekadashi_calendar/screens/global_search_screen.dart';
 import 'package:ekadashi_calendar/screens/panchang_screen.dart';
 import 'package:ekadashi_calendar/screens/vrat_tracker/vrat_tracker_screen.dart';
@@ -11,7 +13,6 @@ import 'package:ekadashi_calendar/services/search/search_catalog.dart';
 import 'package:ekadashi_calendar/services/search/search_return.dart';
 import 'package:ekadashi_calendar/services/theme_service.dart';
 import 'package:ekadashi_calendar/services/vrat_tracker_service.dart';
-import 'package:ekadashi_calendar/widgets/glass_tube.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -53,7 +54,11 @@ void main() {
   }
 
   bool selected(WidgetTester tester, String key) =>
-      tester.widget<GlassFilterChip>(find.byKey(Key(key))).selected;
+      switch (tester.widget(find.byKey(Key(key)))) {
+        GlassChip chip => chip.selected,
+        GlassFilterChip chip => chip.selected,
+        final other => throw StateError('Not a chip: $other'),
+      };
 
   /// Chips past the screen edge are scrolled into view first, as by hand.
   Future<void> tapChip(WidgetTester tester, String key) async {

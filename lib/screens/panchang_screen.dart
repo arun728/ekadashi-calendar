@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/tab_shell.dart';
 import '../services/notifications/event_reminder_service.dart';
 import 'package:provider/provider.dart';
 
@@ -6,6 +7,7 @@ import '../l10n/app_language.dart';
 import '../l10n/place_names.dart';
 import '../services/ekadashi_service.dart';
 import '../services/ekadashi_settings.dart';
+import '../services/native_location_service.dart';
 import '../services/language_service.dart';
 import '../services/panchang/calculated_ekadashi.dart';
 import '../services/panchang/panchang_city.dart';
@@ -15,11 +17,14 @@ import '../services/panchang/panchang_models.dart';
 import '../services/panchang/panchang_terms.dart';
 import '../services/place_name_resolver.dart';
 import '../services/premium_service.dart';
+import '../widgets/app_background.dart';
 import '../widgets/glass_tube.dart';
+import '../widgets/ios_style.dart';
 import '../widgets/section_pager.dart';
-import '../services/native_location_service.dart';
 import 'panchang_pages.dart';
 import 'widgets/city_picker_sheet.dart';
+
+export 'widgets/month_year_picker.dart' show PanchangMonthPickerDialog;
 
 /// The Panchang pages, in tab order.
 enum PanchangPage {
@@ -53,7 +58,11 @@ class PanchangScreen extends StatefulWidget {
     this.ekadashiList = const [],
     this.engine = const PanchangEngine(),
     this.locationStore,
+    this.barSlots,
   });
+
+  /// Today and the calculation notes go in the shared top bar (iOS toolbar).
+  final TabBarSlots? barSlots;
 
   final DateTime? initialDate;
   final PanchangCity? initialCity;
@@ -111,6 +120,7 @@ class PanchangScreenState extends State<PanchangScreen> {
     });
     PlaceNameResolver.instance.addListener(_namesChanged);
     if (widget.initialCity == null) _restoreLocation();
+    widget.barSlots?.attach(leading: _barLeading, actions: _barActions);
   }
 
   @override
@@ -143,8 +153,13 @@ class PanchangScreenState extends State<PanchangScreen> {
     });
   }
 
+  void _namesChanged() {
+    if (mounted) setState(() {});
+  }
+
   @override
   void dispose() {
+    widget.barSlots?.detach();
     _settings?.removeListener(_followHome);
     PlaceNameResolver.instance.removeListener(_namesChanged);
     _pages.dispose();
@@ -174,9 +189,6 @@ class PanchangScreenState extends State<PanchangScreen> {
     final now = _city.wallClock(DateTime.now());
     return DateTime.utc(now.year, now.month, now.day);
   }
-
-  /// Every sub-tab shows the selected date, so Today means today's date.
-  bool _isToday(PanchangPage page) => _date == _today();
 
   /// Selects [date] on every sub-tab; the monthly ones browse its month.
   void _select(DateTime date) {
@@ -220,16 +232,8 @@ class PanchangScreenState extends State<PanchangScreen> {
       // Festival reminders follow the Panchang location.
       EventReminderService.instance.changed();
     } catch (_) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_text('panchang_location_not_saved'))),
-        );
-      }
+      if (mounted) showToast(context, _text('panchang_location_not_saved'));
     }
-  }
-
-  void _namesChanged() {
-    if (mounted) setState(() {});
   }
 
   /// The same city picker as Home (search, current location, recent and
@@ -241,7 +245,7 @@ class PanchangScreenState extends State<PanchangScreen> {
     title: _text('panchang_location_title'),
     footer: '',
     current: _city,
-    icon: Icons.place_outlined,
+    icon: Icons.pin_drop,
     onPick: _changeCity,
     onLocate: _locate,
     extra: ManualCoordinatesSection(city: _city, onSave: _changeCity),
@@ -287,21 +291,54 @@ class PanchangScreenState extends State<PanchangScreen> {
     }
   });
 
-  /// Every sub-tab opens the same full calendar; the monthly ones then show
-  /// the picked date's month.
+  /// Every sub-tab opens the same full calendar (the iOS graphical date
+  /// picker); the monthly ones then show the picked date's month.
   Future<void> _pick(PanchangPage page) async {
     final language = _language;
-    final date = await showDatePicker(
-      context: context,
-      initialDate: _date,
-      firstDate: DateTime(1900),
-      lastDate: DateTime(2100, 12, 31),
-      locale: Locale(language),
+    // iOS: a sheet with the graphical calendar; a picked day shows at
+    // once, Today jumps to today and Done closes.
+    await showAppSheet<void>(
+      context,
+      large: false,
+      builder: (sheetContext) => PanchangDayPickerSheet(
+        date: _date,
+        language: language,
+        onPicked: (date) {
+          if (mounted) setState(() => _select(date));
+        },
+        onToday: () {
+          if (mounted) _goToToday();
+          Navigator.of(sheetContext).pop();
+        },
+      ),
     );
-    if (date != null && mounted) {
-      setState(() => _select(date));
-    }
   }
+
+  /// The iOS toolbar: Today (leading) and the calculation notes (trailing).
+  Widget _barLeading(BuildContext context) => BarTextButton(
+    key: const Key('panchang_today'),
+    label: _text('today'),
+    onPressed: _date == _today() ? null : _goToToday,
+  );
+
+  List<Widget> _barActions(BuildContext context) => [
+    IconButton(
+      key: const Key('panchang_notes'),
+      tooltip: _text('panchang_notes_title'),
+      color: IosColors.teal,
+      icon: const Icon(Icons.info_outline),
+      onPressed: _showNotes,
+    ),
+  ];
+
+  void _showNotes() => showAppSheet<void>(
+    context,
+    large: false,
+    builder: (_) => PanchangNotesSheet(language: _language),
+  );
+
+  /// What the top bar shows; it is rebuilt when this changes.
+  String? _barState;
 
   String get _language =>
       context.read<LanguageService>().currentLocale.languageCode;
@@ -318,6 +355,11 @@ class PanchangScreenState extends State<PanchangScreen> {
       (service) => service?.isPremium ?? false,
     );
     String t(String key) => AppStrings.translate(key, language);
+    final barState = '$language|${_date == _today()}';
+    if (barState != _barState) {
+      _barState = barState;
+      widget.barSlots?.refresh();
+    }
     return SafeArea(
       top: false,
       child: Column(
@@ -368,80 +410,44 @@ class PanchangScreenState extends State<PanchangScreen> {
     onSelected: (index) => _showPage(PanchangPage.values[index]),
   );
 
-  /// The location and notes, then the month or day being shown and Today.
+  /// The location (time zone at the far right), then the month or day
+  /// being shown (iOS PanchangView.controls).
   Widget _controls(
     String Function(String) t,
     String language,
     PanchangPage page,
   ) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
+    crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
-      Row(
-        children: [
-          Expanded(
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: _locationButton(t),
-            ),
-          ),
-          IconButton(
-            key: const Key('panchang_notes'),
-            tooltip: t('panchang_notes_title'),
-            icon: const Icon(Icons.info_outline),
-            onPressed: () => showModalBottomSheet<void>(
-              context: context,
-              isScrollControlled: true,
-              showDragHandle: true,
-              builder: (_) => PanchangNotesSheet(language: language),
-            ),
-          ),
-        ],
+      Align(
+        alignment: Alignment.centerLeft,
+        child: LayoutBuilder(
+          builder: (context, constraints) =>
+              _locationButton(t, constraints.maxWidth),
+        ),
       ),
-      const SizedBox(height: 8),
-      Row(
-        children: [
-          Expanded(child: _stepper(t, language, page)),
-          const SizedBox(width: 6),
-          TextButton(
-            key: const Key('panchang_today'),
-            onPressed: _isToday(page) ? null : _goToToday,
-            child: Text(t('today')),
-          ),
-        ],
-      ),
+      const SizedBox(height: 10),
+      _stepper(t, language, page),
     ],
   );
 
-  /// The Panchang city with its time zone; opens the city picker. The time
-  /// zone takes at most a third of the row, the city the rest.
-  Widget _locationButton(String Function(String) t) => LayoutBuilder(
-    builder: (context, constraints) =>
-        _locationButtonOf(t, constraints.maxWidth),
-  );
-
-  Widget _locationButtonOf(String Function(String) t, double width) => Tooltip(
+  /// The Panchang city with its time zone, in a glass capsule; opens the
+  /// city picker. The time zone takes at most a third of the row.
+  Widget _locationButton(String Function(String) t, double width) => Tooltip(
     message: t('panchang_location_title'),
     child: InkWell(
       key: const Key('panchang_city_selector'),
-      borderRadius: BorderRadius.circular(24),
+      borderRadius: BorderRadius.circular(999),
       onTap: _editLocation,
-      child: Container(
+      // iOS: mappin.and.ellipse, the city (subheadline semibold), its time
+      // zone (caption, secondary) and a small chevron.
+      child: GlassPanel(
+        radius: 999,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(24),
-          color: GlassTubeColors.foreground(context).withValues(alpha: .08),
-          border: Border.all(
-            color: GlassTubeColors.foreground(context).withValues(alpha: .14),
-          ),
-        ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.place_outlined,
-              size: 18,
-              color: GlassTubeColors.teal,
-            ),
+            const Icon(Icons.pin_drop, size: 17, color: IosColors.teal),
             const SizedBox(width: 6),
             Flexible(
               child: Text(
@@ -449,7 +455,11 @@ class PanchangScreenState extends State<PanchangScreen> {
                 key: const Key('panchang_city_name'),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontWeight: FontWeight.w600),
+                style: const TextStyle(
+                  fontSize: IosText.subheadline,
+                  fontWeight: FontWeight.w600,
+                  color: IosColors.teal,
+                ),
               ),
             ),
             const SizedBox(width: 6),
@@ -460,10 +470,18 @@ class PanchangScreenState extends State<PanchangScreen> {
                 key: const Key('panchang_city_zone'),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.bodySmall,
+                style: TextStyle(
+                  fontSize: IosText.caption,
+                  color: IosColors.secondary(context),
+                ),
               ),
             ),
-            const Icon(Icons.expand_more, size: 18),
+            const SizedBox(width: 6),
+            const Icon(
+              Icons.keyboard_arrow_down,
+              size: 15,
+              color: IosColors.teal,
+            ),
           ],
         ),
       ),
@@ -478,11 +496,12 @@ class PanchangScreenState extends State<PanchangScreen> {
     final monthly = page.isMonthly;
     // Every sub-tab shows the weekday, date, month and year.
     final title = PanchangFormat.date(_date, language);
-    return GlassTube(
+    // The stepper's buttons are all teal (iOS foregroundStyle(Theme.teal)).
+    const primary = IosColors.teal;
+    return GlassPanel(
       key: const Key('panchang_stepper'),
-      optionCount: 3,
-      padding: const EdgeInsets.symmetric(horizontal: 2),
       radius: 16,
+      padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Row(
         children: [
           IconButton(
@@ -490,9 +509,12 @@ class PanchangScreenState extends State<PanchangScreen> {
               monthly ? 'panchang_previous_month' : 'panchang_previous_day',
             ),
             tooltip: t('panchang_previous'),
-            icon: const Icon(Icons.chevron_left, color: GlassTubeColors.teal),
+            constraints: const BoxConstraints.tightFor(width: 44, height: 44),
+            padding: EdgeInsets.zero,
+            icon: const Icon(Icons.chevron_left, color: IosColors.teal),
             onPressed: () => _step(page, -1),
           ),
+          const SizedBox(width: 4),
           Expanded(
             child: TextButton(
               key: Key(
@@ -500,7 +522,7 @@ class PanchangScreenState extends State<PanchangScreen> {
               ),
               onPressed: () => _pick(page),
               style: TextButton.styleFrom(
-                foregroundColor: GlassTubeColors.foreground(context),
+                foregroundColor: primary,
                 padding: const EdgeInsets.symmetric(horizontal: 4),
               ),
               child: FittedBox(
@@ -508,13 +530,19 @@ class PanchangScreenState extends State<PanchangScreen> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.calendar_month, size: 18),
+                    const Icon(
+                      Icons.calendar_month_outlined,
+                      size: 16,
+                      color: primary,
+                    ),
                     const SizedBox(width: 6),
                     Text(
                       title,
+                      maxLines: 1,
                       style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
+                        fontSize: IosText.headline,
+                        fontWeight: FontWeight.w600,
+                        color: primary,
                       ),
                     ),
                   ],
@@ -522,10 +550,13 @@ class PanchangScreenState extends State<PanchangScreen> {
               ),
             ),
           ),
+          const SizedBox(width: 4),
           IconButton(
             key: Key(monthly ? 'panchang_next_month' : 'panchang_next_day'),
             tooltip: t('panchang_next'),
-            icon: const Icon(Icons.chevron_right, color: GlassTubeColors.teal),
+            constraints: const BoxConstraints.tightFor(width: 44, height: 44),
+            padding: EdgeInsets.zero,
+            icon: const Icon(Icons.chevron_right, color: IosColors.teal),
             onPressed: () => _step(page, 1),
           ),
         ],
@@ -573,123 +604,8 @@ class PanchangScreenState extends State<PanchangScreen> {
   }
 }
 
-/// A year and its twelve months (the iOS month and year wheels).
-class PanchangMonthPickerDialog extends StatefulWidget {
-  const PanchangMonthPickerDialog({
-    super.key,
-    required this.month,
-    required this.language,
-    this.years,
-  });
-  final DateTime month;
-  final String language;
-
-  /// The years offered as chips (the Calendar's data years); any year with
-  /// arrows when null.
-  final List<int>? years;
-
-  @override
-  State<PanchangMonthPickerDialog> createState() =>
-      _PanchangMonthPickerDialogState();
-}
-
-class _PanchangMonthPickerDialogState extends State<PanchangMonthPickerDialog> {
-  late int _year = widget.month.year;
-
-  @override
-  Widget build(BuildContext context) {
-    final language = widget.language;
-    final years = widget.years;
-    return AlertDialog(
-      key: const Key('panchang_month_picker'),
-      title: years != null
-          ? Wrap(
-              alignment: WrapAlignment.center,
-              spacing: 8,
-              children: [
-                for (final year in years)
-                  ChoiceChip(
-                    key: Key('month_picker_year_$year'),
-                    label: Text('$year'),
-                    selected: _year == year,
-                    showCheckmark: false,
-                    selectedColor: GlassTubeColors.teal.withValues(alpha: .2),
-                    onSelected: (_) => setState(() => _year = year),
-                  ),
-              ],
-            )
-          : Row(
-              children: [
-                IconButton(
-                  onPressed: _year > 1900
-                      ? () => setState(() => _year--)
-                      : null,
-                  icon: const Icon(Icons.chevron_left),
-                ),
-                Expanded(child: Text('$_year', textAlign: TextAlign.center)),
-                IconButton(
-                  onPressed: _year < 2100
-                      ? () => setState(() => _year++)
-                      : null,
-                  icon: const Icon(Icons.chevron_right),
-                ),
-              ],
-            ),
-      content: SizedBox(
-        width: 320,
-        child: GridView.count(
-          crossAxisCount: 3,
-          shrinkWrap: true,
-          childAspectRatio: 1.8,
-          mainAxisSpacing: 8,
-          crossAxisSpacing: 8,
-          children: [
-            for (var m = 1; m <= 12; m++)
-              () {
-                final selected =
-                    _year == widget.month.year && m == widget.month.month;
-                return Material(
-                  color: selected
-                      ? GlassTubeColors.teal
-                      : GlassTubeColors.foreground(
-                          context,
-                        ).withValues(alpha: .06),
-                  borderRadius: BorderRadius.circular(12),
-                  child: InkWell(
-                    key: Key('panchang_month_$m'),
-                    borderRadius: BorderRadius.circular(12),
-                    onTap: () =>
-                        Navigator.of(context).pop(DateTime.utc(_year, m)),
-                    child: Center(
-                      child: Text(
-                        PanchangFormat.format(
-                          DateTime.utc(2026, m),
-                          'LLL',
-                          language,
-                        ),
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: selected ? Colors.white : null,
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              }(),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(AppStrings.translate('cancel', language)),
-        ),
-      ],
-    );
-  }
-}
-
-/// How the Panchang is calculated, in a few lines (replaces the Guide tab).
+/// How the Panchang is calculated, in a few lines (replaces the Guide tab):
+/// an iOS sheet with an inline title and Done.
 class PanchangNotesSheet extends StatelessWidget {
   const PanchangNotesSheet({super.key, required this.language});
   final String language;
@@ -697,29 +613,187 @@ class PanchangNotesSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     String t(String key) => AppStrings.translate(key, language);
-    return SafeArea(
-      child: SingleChildScrollView(
-        key: const Key('panchang_notes_sheet'),
-        padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              t('panchang_notes_title'),
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 12),
-            Text(t('panchang_notes_body')),
-            const SizedBox(height: 12),
-            Text(t('panchang_notes_traditions')),
-            const SizedBox(height: 12),
-            Text(
-              t('panchang_notes_sources'),
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ],
+    final body = TextStyle(
+      fontSize: IosText.body,
+      color: IosColors.primary(context),
+    );
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SheetBar(
+          title: t('panchang_notes_title'),
+          trailing: BarTextButton(
+            key: const Key('panchang_notes_done'),
+            label: t('panchang_done'),
+            bold: true,
+            onPressed: () => Navigator.of(context).pop(),
+          ),
         ),
-      ),
+        Flexible(
+          child: SingleChildScrollView(
+            key: const Key('panchang_notes_sheet'),
+            padding: const EdgeInsets.all(20),
+            child: SafeArea(
+              top: false,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(t('panchang_notes_body'), style: body),
+                  const SizedBox(height: 14),
+                  Text(t('panchang_notes_traditions'), style: body),
+                  const SizedBox(height: 14),
+                  Text(
+                    t('panchang_notes_sources'),
+                    style: TextStyle(
+                      fontSize: IosText.footnote,
+                      color: IosColors.secondary(context),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
+}
+
+/// The day picker (iOS: a sheet with the graphical DatePicker, Today and
+/// Done). A tapped day applies at once, as the iOS binding does.
+class PanchangDayPickerSheet extends StatefulWidget {
+  const PanchangDayPickerSheet({
+    super.key,
+    required this.date,
+    required this.language,
+    required this.onPicked,
+    required this.onToday,
+  });
+
+  final DateTime date;
+  final String language;
+  final ValueChanged<DateTime> onPicked;
+  final VoidCallback onToday;
+
+  @override
+  State<PanchangDayPickerSheet> createState() => _PanchangDayPickerSheetState();
+}
+
+class _PanchangDayPickerSheetState extends State<PanchangDayPickerSheet> {
+  late final DateTime _initial = DateTime(
+    widget.date.year,
+    widget.date.month,
+    widget.date.day,
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    String t(String key) => AppStrings.translate(key, widget.language);
+    return Column(
+      key: const Key('panchang_day_picker'),
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SheetBar(
+          title: '',
+          leading: BarTextButton(
+            key: const Key('panchang_day_picker_today'),
+            label: t('today'),
+            onPressed: widget.onToday,
+          ),
+          trailing: BarTextButton(
+            key: const Key('panchang_day_picker_done'),
+            label: t('panchang_done'),
+            bold: true,
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ),
+        Flexible(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: SafeArea(
+              top: false,
+              child: Localizations.override(
+                context: context,
+                locale: Locale(widget.language),
+                child: CalendarDatePicker(
+                  initialDate: _initial,
+                  firstDate: DateTime(1900),
+                  lastDate: DateTime(2100, 12, 31),
+                  onDateChanged: widget.onPicked,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Panchang opened from a search result. iOS pushes PanchangView in the
+/// search's navigation stack: the teal background, an inline title with
+/// the back button and Today, and the calculation notes on the right.
+class PanchangPushedPage extends StatefulWidget {
+  const PanchangPushedPage({
+    super.key,
+    required this.title,
+    this.initialDate,
+    this.initialCity,
+  });
+
+  final String title;
+  final DateTime? initialDate;
+  final PanchangCity? initialCity;
+
+  @override
+  State<PanchangPushedPage> createState() => _PanchangPushedPageState();
+}
+
+class _PanchangPushedPageState extends State<PanchangPushedPage> {
+  final _slots = TabBarSlots();
+
+  @override
+  void dispose() {
+    _slots.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AppBackground(
+    child: Scaffold(
+      backgroundColor: Colors.transparent,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: ListenableBuilder(
+          listenable: _slots,
+          builder: (context, _) {
+            final today = _slots.leading(context);
+            return AppBar(
+              automaticallyImplyLeading: false,
+              leadingWidth: 150,
+              leading: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: AlignmentDirectional.centerStart,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [const BackButton(), ?today],
+                ),
+              ),
+              title: Text(
+                widget.title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              actions: [..._slots.actions(context), const SizedBox(width: 4)],
+            );
+          },
+        ),
+      ),
+      body: PanchangScreen(
+        barSlots: _slots,
+        initialDate: widget.initialDate,
+        initialCity: widget.initialCity,
+      ),
+    ),
+  );
 }

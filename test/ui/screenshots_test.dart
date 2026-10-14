@@ -13,6 +13,11 @@ import '../support/app_harness.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUpAll(() async {
+    final cupertino = FontLoader('packages/cupertino_icons/CupertinoIcons')
+      ..addFont(
+        rootBundle.load('packages/cupertino_icons/assets/CupertinoIcons.ttf'),
+      );
+    await cupertino.load();
     for (final entry in {
       'Roboto': ['EkadashiTestFont.ttf'],
       'MaterialIcons': ['MaterialIcons-Regular.otf'],
@@ -75,7 +80,7 @@ void main() {
         }
 
         await capture('home');
-        await tester.tap(find.byIcon(Icons.calendar_month));
+        await tester.tap(find.byKey(const Key('glass_tab_1')));
         await tester.pumpAndSettle();
         await capture('calendar');
         await tester.tap(find.byKey(const Key('open_global_search')));
@@ -85,7 +90,7 @@ void main() {
         await tester.pump(const Duration(milliseconds: 450));
         await tester.pumpAndSettle();
         await capture('search_results');
-        await tester.tap(find.byIcon(Icons.arrow_back).first);
+        await tester.tap(find.byKey(const Key('global_search_back')));
         await tester.pumpAndSettle();
 
         await tester.tap(find.byKey(const Key('glass_tab_3')));
@@ -109,7 +114,18 @@ void main() {
         await tester.tap(find.byKey(const Key('journey_tab_history')));
         await tester.pumpAndSettle();
         await capture('vrat_history');
-        await tester.tap(find.byType(Card).first);
+        // Journey rows are glass panels (iOS), not Cards.
+        await tester.tap(
+          find
+              .byWidgetPredicate(
+                (w) =>
+                    w.key is ValueKey<String> &&
+                    (w.key! as ValueKey<String>).value.startsWith(
+                      'journey_row_',
+                    ),
+              )
+              .first,
+        );
         await tester.pumpAndSettle();
         await capture('vrat_record');
         await tester.binding.handlePopRoute();
@@ -163,9 +179,10 @@ void main() {
         await capture('settings_light');
         await tester.tap(find.byIcon(Icons.home));
         await tester.pumpAndSettle();
-        final button = find
-            .widgetWithText(ElevatedButton, language.translate('view_details'))
-            .first;
+        final button = find.widgetWithText(
+          FilledButton,
+          language.translate('view_details'),
+        );
         expect(
           button,
           findsOneWidget,
@@ -178,7 +195,7 @@ void main() {
         await capture('details');
         await tester.tap(find.byType(BackButton));
         await tester.pumpAndSettle();
-        expect(find.byIcon(Icons.calendar_month), findsOneWidget);
+        expect(find.byKey(const Key('glass_tab_1')), findsOneWidget);
       },
     );
   }

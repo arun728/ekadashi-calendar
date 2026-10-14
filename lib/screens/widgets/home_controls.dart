@@ -7,6 +7,7 @@ import '../../services/language_service.dart';
 import '../../services/panchang/calculated_ekadashi.dart';
 import '../../services/place_name_resolver.dart';
 import '../../widgets/glass_tube.dart';
+import '../../widgets/ios_style.dart';
 
 /// The four Home menus in a 2×2 grid that lines up from top to bottom
 /// (HomeControls in TodayView.swift): location over tradition on the left
@@ -94,7 +95,8 @@ class HomeControls extends StatelessWidget {
               child: CircularProgressIndicator(strokeWidth: 2, color: _teal),
             )
           : Icon(
-              settings.isManual ? Icons.place : Icons.my_location,
+              // iOS mappin.and.ellipse / location.fill.
+              settings.isManual ? Icons.pin_drop : Icons.near_me,
               size: 18,
               color: _teal,
             ),
@@ -118,7 +120,10 @@ class HomeControls extends StatelessWidget {
     key: const Key('home_tradition_menu'),
     tooltip: lang.translate('home_tradition'),
     onSelected: settings.setTradition,
-    color: Theme.of(context).cardColor,
+    // The menu overlays the app; it is not a page in Home's tab stack.
+    useRootNavigator: true,
+    color: IosColors.sheet(context),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
     offset: const Offset(0, pillHeight),
     itemBuilder: (_) => [
       for (final tradition in EkadashiTradition.values)
@@ -150,7 +155,10 @@ class HomeControls extends StatelessWidget {
   ) => PopupMenuButton<String>(
     key: const Key('language_menu'),
     onSelected: lang.changeLanguage,
-    color: Theme.of(context).cardColor,
+    // The menu overlays the app; it is not a page in Home's tab stack.
+    useRootNavigator: true,
+    color: IosColors.sheet(context),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
     offset: const Offset(0, pillHeight),
     itemBuilder: (_) => [
       for (final language in AppLanguage.all)
@@ -178,7 +186,10 @@ class HomeControls extends StatelessWidget {
     key: const Key('home_year_menu'),
     tooltip: lang.translate('year'),
     onSelected: settings.setYear,
-    color: Theme.of(context).cardColor,
+    // The menu overlays the app; it is not a page in Home's tab stack.
+    useRootNavigator: true,
+    color: IosColors.sheet(context),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
     offset: const Offset(0, pillHeight),
     itemBuilder: (_) => [
       for (final year in settings.years)
@@ -222,16 +233,29 @@ class HomeControls extends StatelessWidget {
     ],
   );
 
-  static PopupMenuItem<T> _item<T>(T value, String text, bool selected) =>
-      PopupMenuItem<T>(
-        value: value,
-        child: Row(
-          children: [
-            Expanded(child: Text(text)),
-            if (selected) const Icon(Icons.check, size: 18, color: _teal),
-          ],
-        ),
-      );
+  /// A menu item as on iOS: the check mark first, then the name.
+  static PopupMenuItem<T> _item<T>(
+    T value,
+    String text,
+    bool selected,
+  ) => PopupMenuItem<T>(
+    value: value,
+    child: Builder(
+      builder: (context) => Row(
+        children: [
+          SizedBox(
+            width: 28,
+            child: selected
+                ? Icon(Icons.check, size: 18, color: IosColors.primary(context))
+                : null,
+          ),
+          Expanded(
+            child: Text(text, style: const TextStyle(fontSize: IosText.body)),
+          ),
+        ],
+      ),
+    ),
+  );
 }
 
 /// One Home menu: a glass capsule with the icon and label, then a chevron.
@@ -265,7 +289,7 @@ class _Pill extends StatelessWidget {
       child: GlassTube.single(
         child: DefaultTextStyle.merge(
           style: TextStyle(
-            fontSize: 14,
+            fontSize: IosText.subheadline,
             fontWeight: FontWeight.w500,
             color: GlassTubeColors.foreground(context),
           ),

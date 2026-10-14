@@ -1,11 +1,12 @@
 import 'dart:io';
 import 'services/premium_service.dart';
 import 'services/play_billing_service.dart';
-import 'widgets/glass_tube.dart';
 import 'package:flutter/foundation.dart';
 import 'widgets/glass_navigation_bar.dart';
 import 'data/calendar_entry_repository.dart';
 import 'widgets/app_background.dart';
+import 'widgets/ios_style.dart';
+import 'widgets/tab_shell.dart';
 import 'data/sqflite_calendar_entry_repository.dart';
 import 'models/calendar_entry.dart';
 import 'services/notifications/event_reminder_service.dart';
@@ -211,6 +212,33 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   final GlobalKey<CalendarScreenState> _calendarKey = GlobalKey();
   final GlobalKey<PanchangScreenState> _panchangKey = GlobalKey();
   bool _panchangOpened = false;
+
+  /// One navigation stack per tab (iOS NavigationStack per tab): pages a
+  /// tab pushes keep the tab bar; the shell's top bar gives way to theirs.
+  final _tabNavigators = List.generate(5, (_) => GlobalKey<NavigatorState>());
+  late final _tabObservers = List.generate(
+    5,
+    (_) => TabNavigatorObserver(_tabStackChanged),
+  );
+
+  /// Toolbar items of the Calendar and Panchang tabs.
+  final _calendarBar = TabBarSlots();
+  final _panchangBar = TabBarSlots();
+
+  NavigatorState? get _currentTabNavigator =>
+      _tabNavigators[_currentIndex].currentState;
+
+  bool get _tabPushed => _tabObservers[_currentIndex].hasPushedPage;
+
+  void _tabStackChanged() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  /// Back to a tab's first page (re-tapping the tab, or a deep link).
+  void _popTabToRoot(int index) =>
+      _tabNavigators[index].currentState?.popUntil((route) => route.isFirst);
 
   @override
   void initState() {
@@ -486,7 +514,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       title: AppStrings.translate('home_location_title', language),
       footer: AppStrings.translate('home_location_footer', language),
       current: settings.city,
-      icon: settings.isManual ? Icons.place : Icons.my_location,
+      icon: settings.isManual ? Icons.pin_drop : Icons.near_me,
       onPick: settings.chooseCity,
       onLocate: _useCurrentLocation,
     );
@@ -782,9 +810,11 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     if (tab == null) return;
     // A deep link is not a search result.
     _searchReturn.clear();
-    if (_searchOpen && Navigator.of(context).canPop()) {
-      Navigator.of(context).pop();
-    }
+    // Sheets, the paywall and the search close first, and the target tab
+    // shows its first page, so the link never lands under another page.
+    Navigator.of(context).popUntil((route) => route.isFirst);
+    _popTabToRoot(tab);
+    _popTabToRoot(_currentIndex);
     setState(() => _currentIndex = tab);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -802,32 +832,33 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     if (restore == null) setState(_searchReturn.clear);
     _searchOpen = true;
     try {
-      await Navigator.of(context).push<void>(
-        MaterialPageRoute<void>(
-          builder: (_) => GlobalSearchScreen(
-            ekadashiList: _allEkadashis,
-            ekadashisFor: (code) => _settings!.cachedEkadashis(code),
-            currentTimezone: _currentTimezone,
-            availableYears: _settings!.years,
-            initialSession: restore,
-            onOpenTab: (tab, session) {
-              if (!mounted) return;
-              setState(() {
-                _currentIndex = tab;
-                _searchReturn.opened(tab, session);
-              });
-            },
-            onOpenCalendar: (day, session) {
-              if (!mounted) return;
-              setState(() {
-                _currentIndex = 1;
-                _searchReturn.opened(1, session);
-              });
-              WidgetsBinding.instance.addPostFrameCallback(
-                (_) => _calendarKey.currentState?.selectDate(day),
-              );
-            },
-          ),
+      // A sheet with its own navigation, as on iOS: results open inside it.
+      await showAppSheet<void>(
+        context,
+        nested: true,
+        builder: (_) => GlobalSearchScreen(
+          ekadashiList: _allEkadashis,
+          ekadashisFor: (code) => _settings!.cachedEkadashis(code),
+          currentTimezone: _currentTimezone,
+          availableYears: _settings!.years,
+          initialSession: restore,
+          onOpenTab: (tab, session) {
+            if (!mounted) return;
+            setState(() {
+              _currentIndex = tab;
+              _searchReturn.opened(tab, session);
+            });
+          },
+          onOpenCalendar: (day, session) {
+            if (!mounted) return;
+            setState(() {
+              _currentIndex = 1;
+              _searchReturn.opened(1, session);
+            });
+            WidgetsBinding.instance.addPostFrameCallback(
+              (_) => _calendarKey.currentState?.selectDate(day),
+            );
+          },
         ),
       );
     } finally {
@@ -866,6 +897,11 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     // Another tab forgets the way back to a search.
     _searchReturn.selected(index);
     if (index == _currentIndex) {
+      // Re-tapping a tab first returns to its first page, as on iOS.
+      if (_tabPushed) {
+        _popTabToRoot(index);
+        return;
+      }
       // Already on this tab - special actions
       if (index == 0) {
         // User explicitly tapped Home - strictly go to next upcoming (skip Parana)
@@ -874,15 +910,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         _calendarKey.currentState?.resetToToday();
       }
     } else {
-      // Switching tabs
+      // Switching tabs keeps each tab where it was (Home keeps its card),
+      // as on iOS.
       setState(() => _currentIndex = index);
-
-      // When switching TO Home tab, scroll to upcoming Ekadashi
-      if (index == 0) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _scrollToNextEkadashi(animate: false, includeParana: true);
-        });
-      }
     }
   }
 
@@ -927,6 +957,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   /// Schedule notifications for all Ekadashis
   Future<void> _scheduleNotifications() async {
     _scheduleEventReminders();
+    // The channel follows the app language, even while reminders are off.
+    NativeNotificationService().localizeChannel(
+      context.read<LanguageService>().localizedStrings,
+    );
     if (_allEkadashis.isEmpty) return;
 
     final settingsService = NativeSettingsService();
@@ -1005,18 +1039,17 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         icon: const Icon(Icons.home),
         label: lang.translate('home'),
       ),
+      // The iOS tab symbols: calendar, leaf and sparkles.
       BottomNavigationBarItem(
-        icon: const Icon(Icons.calendar_month),
+        icon: const Icon(Icons.calendar_today),
         label: lang.translate('calendar'),
       ),
       BottomNavigationBarItem(
-        icon: const Icon(Icons.spa_outlined),
-        activeIcon: const Icon(Icons.spa),
+        icon: const Icon(Icons.eco),
         label: lang.translate('journey_tab'),
       ),
       BottomNavigationBarItem(
-        icon: const Icon(Icons.auto_awesome_outlined),
-        activeIcon: const Icon(Icons.auto_awesome),
+        icon: const Icon(Icons.auto_awesome),
         label: lang.translate('search_screen_panchang'),
       ),
       BottomNavigationBarItem(
@@ -1024,42 +1057,43 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         label: lang.translate('settings'),
       ),
     ];
-    // A search result opened this tab: the top bar's back arrow and the
-    // system back reopen its results (docs/ROADMAP.md Phase 9).
+    // A search result opened this tab: the top bar's "Search" back button
+    // and the system back reopen its results (docs/ROADMAP.md Phase 9).
     final searchBack = _searchReturn.showsBack(_currentIndex);
+    // A page pushed inside the tab brings its own top bar, as on iOS.
+    final tabPushed = !_isLoading && _errorMessage.isEmpty && _tabPushed;
+    // System Back also closes popup overlays in the active tab navigator.
+    final tabCanPop = _currentTabNavigator?.canPop() ?? false;
+    final slots = switch (_currentIndex) {
+      1 => _calendarBar,
+      3 => _panchangBar,
+      _ => null,
+    };
     // The iOS gradient behind every tab (docs/ROADMAP.md Phase 8).
     return PopScope(
-      canPop: !searchBack,
+      canPop: !searchBack && !tabCanPop,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop && searchBack) _returnToSearch();
+        if (didPop) return;
+        if (tabCanPop) {
+          _currentTabNavigator?.maybePop();
+        } else if (searchBack) {
+          _returnToSearch();
+        }
       },
       child: AppBackground(
         child: Scaffold(
           backgroundColor: Colors.transparent,
           extendBody: glass,
-          appBar: AppBar(
-            backgroundColor: Colors.transparent,
-            surfaceTintColor: Colors.transparent,
-            leading: searchBack
-                ? IconButton(
-                    key: const Key('search_return'),
-                    tooltip: lang.translate('search'),
-                    icon: const BackButtonIcon(),
-                    onPressed: _returnToSearch,
-                  )
-                : null,
-            title: Text(lang.translate('app_title')),
-            centerTitle: true,
-            actions: [
-              IconButton(
-                key: const Key('open_global_search'),
-                tooltip: lang.translate('search'),
-                icon: const Icon(Icons.search),
-                onPressed: _openSearch,
-              ),
-              const SizedBox(width: 4),
-            ],
-          ),
+          appBar: tabPushed
+              ? null
+              : PreferredSize(
+                  preferredSize: const Size.fromHeight(kToolbarHeight),
+                  child: ListenableBuilder(
+                    listenable: slots ?? const AlwaysStoppedAnimation(0),
+                    builder: (context, _) =>
+                        _topBar(context, lang, searchBack, slots),
+                  ),
+                ),
           body: _buildBody(lang, tealColor),
           bottomNavigationBar: glass
               ? (keyboardOpen
@@ -1081,7 +1115,50 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     );
   }
 
+  /// The iOS inline navigation bar: "‹ Search" when a search result opened
+  /// the tab, the tab's leading items (Today), the centred title, the
+  /// tab's actions and the search button.
+  PreferredSizeWidget _topBar(
+    BuildContext context,
+    LanguageService lang,
+    bool searchBack,
+    TabBarSlots? slots,
+  ) {
+    final tabLeading = slots?.leading(context);
+    final leading = [
+      if (searchBack)
+        TextButton.icon(
+          key: const Key('search_return'),
+          onPressed: _returnToSearch,
+          style: TextButton.styleFrom(
+            foregroundColor: IosColors.teal,
+            padding: const EdgeInsets.only(left: 4, right: 8),
+            minimumSize: const Size(44, 44),
+          ),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          label: Text(
+            lang.translate('search'),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: IosText.body),
+          ),
+        ),
+      ?tabLeading,
+    ];
+    // The iPhone top bar: Today and "‹ Search" in a glass capsule on the
+    // left, search and the tab's actions in one on the right.
+    return ShellTopBar(
+      title: lang.translate('app_title'),
+      searchTooltip: lang.translate('search'),
+      onSearch: _openSearch,
+      leading: leading,
+      actions: slots?.actions(context) ?? const [],
+    );
+  }
+
   Widget _buildBody(LanguageService lang, Color tealColor) {
+    // Loading and error states as iOS RootView: a spinner with
+    // "Locating...", or the unavailable view with a prominent Try again.
     if (_isLoading) {
       return Center(
         child: Column(
@@ -1091,7 +1168,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             const SizedBox(height: 16),
             Text(
               lang.translate('locating'),
-              style: TextStyle(color: Colors.grey.shade500),
+              style: TextStyle(
+                fontSize: IosText.body,
+                color: IosColors.secondary(context),
+              ),
             ),
           ],
         ),
@@ -1099,87 +1179,105 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     }
 
     if (_errorMessage.isNotEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.error_outline, size: 48, color: Colors.grey.shade400),
-            const SizedBox(height: 16),
-            Text(_errorMessage, style: TextStyle(color: Colors.grey.shade500)),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => _loadData(),
-              style: ElevatedButton.styleFrom(backgroundColor: tealColor),
-              child: Text(lang.translate('retry')),
-            ),
-          ],
+      return UnavailableView(
+        icon: Icons.error_outline,
+        title: _errorMessage,
+        action: FilledButton(
+          onPressed: () => _loadData(),
+          style: IosButtons.prominent(),
+          child: Text(lang.translate('retry'), style: IosButtons.label),
         ),
       );
     }
 
     if (_currentIndex == 3) _panchangOpened = true;
-    return IndexedStack(
-      index: _currentIndex,
-      children: [
-        SafeArea(top: false, child: _buildHomeContent(lang, tealColor)),
-        CalendarScreen(
-          key: _calendarKey,
-          repository: context.read<CalendarEntryRepository?>(),
+    // Each tab is a navigation stack whose first page is built here.
+    Widget tabRoot(int index) => switch (index) {
+      0 => SafeArea(top: false, child: _buildHomeContent(lang, tealColor)),
+      1 => CalendarScreen(
+        key: _calendarKey,
+        repository: context.read<CalendarEntryRepository?>(),
+        ekadashiList: _allEkadashis,
+        currentTimezone: _currentTimezone,
+        barSlots: _calendarBar,
+      ),
+      2 => SafeArea(
+        top: false,
+        child: VratTrackerScreen(
           ekadashiList: _allEkadashis,
           currentTimezone: _currentTimezone,
         ),
-        SafeArea(
-          top: false,
-          child: VratTrackerScreen(
-            ekadashiList: _allEkadashis,
-            currentTimezone: _currentTimezone,
-          ),
-        ),
-        // Built when first opened: the Panchang calculates a year of
-        // festivals, which the other tabs never need.
-        if (_currentIndex == 3 || _panchangOpened)
-          PanchangScreen(key: _panchangKey, ekadashiList: _allEkadashis)
-        else
-          const SizedBox.shrink(),
-        SettingsScreen(currentTimezone: _currentTimezone),
-      ],
+      ),
+      // Built when first opened: the Panchang calculates a year of
+      // festivals, which the other tabs never need.
+      3 =>
+        _currentIndex == 3 || _panchangOpened
+            ? PanchangScreen(
+                key: _panchangKey,
+                ekadashiList: _allEkadashis,
+                barSlots: _panchangBar,
+              )
+            : const SizedBox.shrink(),
+      _ => SettingsScreen(currentTimezone: _currentTimezone),
+    };
+    return TabContentScope(
+      build: tabRoot,
+      child: IndexedStack(
+        index: _currentIndex,
+        children: [
+          for (var i = 0; i < 5; i++)
+            TabNavigator(
+              index: i,
+              navigatorKey: _tabNavigators[i],
+              observer: _tabObservers[i],
+            ),
+        ],
+      ),
     );
   }
 
-  /// Home (TodayView.swift): the four menus, then one card per Ekadashi of
-  /// the chosen year with arrows, opening on the current or next Ekadashi.
+  /// The Home header as iOS HomeHeader: location and language in one glass
+  /// tube, side by side when they fit, stacked otherwise (ViewThatFits).
+  /// Home's four menus in a 2×2 grid (HomeControls in TodayView.swift).
+  Widget _buildHomeHeader(LanguageService lang, Color tealColor) => Padding(
+    padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+    child: HomeControls(
+      locating: _isRequestingLocation,
+      onLocation: _openLocationPicker,
+    ),
+  );
+
   Widget _buildHomeContent(LanguageService lang, Color tealColor) {
-    final controls = Padding(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-      child: HomeControls(
-        locating: _isRequestingLocation,
-        onLocation: _openLocationPicker,
-      ),
-    );
     if (_ekadashiList.isEmpty) {
+      // iOS keeps the header above ContentUnavailableView, or the progress
+      // view while another city or tradition is calculated.
       return Column(
         children: [
-          controls,
+          _buildHomeHeader(lang, tealColor),
           Expanded(
-            child: Center(
-              child: _isCalculating
-                  ? Column(
+            child: _isCalculating
+                ? Center(
+                    child: Column(
                       key: const Key('home_calculating'),
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        CircularProgressIndicator(color: tealColor),
+                        const CircularProgressIndicator(color: IosColors.teal),
                         const SizedBox(height: 12),
                         Text(
                           lang.translate('calculating_ekadashis'),
-                          style: TextStyle(color: Colors.grey.shade500),
+                          style: TextStyle(
+                            fontSize: IosText.subheadline,
+                            color: IosColors.secondary(context),
+                          ),
                         ),
                       ],
-                    )
-                  : Text(
-                      lang.translate('no_ekadashi'),
-                      style: TextStyle(color: Colors.grey.shade500),
                     ),
-            ),
+                  )
+                : UnavailableView(
+                    key: const Key('home_empty'),
+                    icon: Icons.event_busy_outlined,
+                    title: lang.translate('no_ekadashi'),
+                  ),
           ),
         ],
       );
@@ -1190,7 +1288,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
     return Column(
       children: [
-        controls,
+        _buildHomeHeader(lang, tealColor),
 
         // Page indicator
         Padding(
@@ -1198,7 +1296,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           child: Text(
             '${_currentPage + 1} / ${_ekadashiList.length}',
             key: const Key('home_page_indicator'),
-            style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+            style: TextStyle(
+              fontSize: IosText.footnote,
+              color: IosColors.secondary(context),
+            ),
           ),
         ),
 
@@ -1206,12 +1307,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         // tradition is calculated.
         Expanded(
           child: Padding(
-            padding: const EdgeInsets.only(
-              left: 4,
-              right: 4,
-              top: 8,
-              bottom: 8,
-            ),
+            padding: const EdgeInsets.only(left: 4, right: 4, bottom: 8),
             child: Stack(
               alignment: Alignment.center,
               children: [
@@ -1219,25 +1315,16 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                   opacity: _isCalculating ? 0.5 : 1,
                   child: Row(
                     children: [
-                      // Left arrow
-                      SizedBox(
-                        width: 44,
-                        child: IconButton(
-                          onPressed: isFirstPage
-                              ? null
-                              : () {
-                                  _pageController.previousPage(
-                                    duration: const Duration(milliseconds: 300),
-                                    curve: Curves.easeInOut,
-                                  );
-                                },
-                          icon: const Icon(Icons.chevron_left, size: 36),
-                          color: isFirstPage ? Colors.grey.shade600 : tealColor,
-                          padding: EdgeInsets.zero,
+                      _homeArrow(
+                        key: const Key('home_previous'),
+                        icon: Icons.arrow_back_ios_new_rounded,
+                        target: _currentPage - 1,
+                        enabled: !isFirstPage,
+                        onPressed: () => _pageController.previousPage(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
                         ),
                       ),
-
-                      // Card with PageView
                       Expanded(
                         child: PageView.builder(
                           controller: _pageController,
@@ -1247,36 +1334,29 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                               setState(() => _currentPage = index);
                             }
                           },
-                          itemBuilder: (context, index) {
-                            return _buildEkadashiCard(_ekadashiList[index]);
-                          },
+                          itemBuilder: (context, index) => Padding(
+                            padding: const EdgeInsets.all(4),
+                            child: _buildEkadashiCard(_ekadashiList[index]),
+                          ),
                         ),
                       ),
-
-                      // Right arrow
-                      SizedBox(
-                        width: 44,
-                        child: IconButton(
-                          onPressed: isLastPage
-                              ? null
-                              : () {
-                                  _pageController.nextPage(
-                                    duration: const Duration(milliseconds: 300),
-                                    curve: Curves.easeInOut,
-                                  );
-                                },
-                          icon: const Icon(Icons.chevron_right, size: 36),
-                          color: isLastPage ? Colors.grey.shade600 : tealColor,
-                          padding: EdgeInsets.zero,
+                      _homeArrow(
+                        key: const Key('home_next'),
+                        icon: Icons.arrow_forward_ios_rounded,
+                        target: _currentPage + 1,
+                        enabled: !isLastPage,
+                        onPressed: () => _pageController.nextPage(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
                         ),
                       ),
                     ],
                   ),
                 ),
                 if (_isCalculating)
-                  CircularProgressIndicator(
-                    key: const Key('home_recalculating'),
-                    color: tealColor,
+                  const CircularProgressIndicator(
+                    key: Key('home_recalculating'),
+                    color: IosColors.teal,
                   ),
               ],
             ),
@@ -1286,6 +1366,37 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     );
   }
 
+  /// An arrow to the card at [target] (iOS: 28 pt semibold chevron in a
+  /// 40 x 60 frame), read out as that Ekadashi's name.
+  Widget _homeArrow({
+    required Key key,
+    required IconData icon,
+    required int target,
+    required bool enabled,
+    required VoidCallback onPressed,
+  }) {
+    final name = enabled ? _ekadashiList[target].name : '';
+    return SizedBox(
+      width: 40,
+      height: 60,
+      child: IconButton(
+        key: key,
+        onPressed: enabled ? onPressed : null,
+        padding: EdgeInsets.zero,
+        icon: Icon(
+          icon,
+          size: 26,
+          weight: 600,
+          semanticLabel: name,
+          color: enabled ? IosColors.teal : IosColors.gray(context),
+        ),
+      ),
+    );
+  }
+
+  /// One Ekadashi as the iOS EkadashiCard: a glass panel (radius 24) with
+  /// the countdown, dates, fast and Parana times, the description, View
+  /// Details (prominent) and the Vrat record button (glass).
   Widget _buildEkadashiCard(EkadashiDate ekadashi) {
     // Use timezone-aware "today" calculation
     DateTime today;
@@ -1307,13 +1418,13 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     );
     final daysUntil = ekadashiDate.difference(today).inDays;
 
-    const tealColor = Color(0xFF00A19B);
+    const tealColor = IosColors.teal;
     final lang = Provider.of<LanguageService>(context);
+    final code = lang.currentLocale.languageCode;
 
-    String breakTime = ekadashi.fastBreakTime;
-    breakTime = AppStrings.localizeClock(
-      breakTime.replaceAll(RegExp(r'^[a-zA-Z]{3} \d{1,2}, '), ''),
-      lang.currentLocale.languageCode,
+    final breakTime = AppStrings.localizeClock(
+      ekadashi.fastBreakTime.replaceAll(RegExp(r'^[a-zA-Z]{3} \d{1,2}, '), ''),
+      code,
     );
 
     String daysText;
@@ -1327,329 +1438,271 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       daysText = lang.translateWithArgs('in_days', [daysUntil.toString()]);
     }
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 10,
-            spreadRadius: 1,
+    Widget timing(String title, DateTime date, String time) => SizedBox(
+      width: double.infinity,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              color: tealColor,
+              fontWeight: FontWeight.bold,
+              fontSize: IosText.callout,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            AppStrings.fullDate(date, code),
+            style: TextStyle(
+              fontSize: IosText.subheadline,
+              color: IosColors.secondary(context),
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            time,
+            style: TextStyle(
+              fontSize: IosText.title3,
+              fontWeight: FontWeight.w600,
+              color: IosColors.primary(context),
+            ),
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    // Days badge
-                    Align(
-                      alignment: Alignment.topRight,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: daysUntil < 0 ? Colors.grey : tealColor,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Text(
-                          daysText,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
+    );
 
-                    // Date: weekday, date, month and year, as on every tab.
-                    Text(
-                      AppStrings.fullDate(
-                        ekadashi.date,
-                        lang.currentLocale.languageCode,
-                      ),
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w300,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Ekadashi name
-                    Text(
-                      ekadashi.name,
-                      style: const TextStyle(
-                        color: tealColor,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Start Fasting
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        lang.translate('start_fasting'),
-                        style: const TextStyle(
-                          color: tealColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        AppStrings.fullDate(
-                          ekadashi.date,
-                          lang.currentLocale.languageCode,
-                        ),
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: Colors.grey.shade500,
-                        ),
-                      ),
-                    ),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        AppStrings.localizeClock(
-                          ekadashi.fastStartTime,
-                          lang.currentLocale.languageCode,
-                        ),
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Break Fasting
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        lang.translate('break_fasting'),
-                        style: const TextStyle(
-                          color: tealColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        AppStrings.fullDate(
-                          ekadashi.date.add(const Duration(days: 1)),
-                          lang.currentLocale.languageCode,
-                        ),
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: Colors.grey.shade500,
-                        ),
-                      ),
-                    ),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        breakTime,
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    Divider(color: Colors.grey.shade400, height: 1),
-                    const SizedBox(height: 16),
-
-                    // Description
-                    Text(
-                      ekadashi.description,
-                      style: TextStyle(
-                        fontStyle: FontStyle.italic,
-                        fontSize: 15,
-                        color: Theme.of(
-                          context,
-                        ).textTheme.bodyMedium?.color?.withValues(alpha: 0.8),
-                        height: 1.4,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Action buttons: View Details, Share and Record Vrat
-            GlassOptionGroup(
-              key: const Key('home_card_actions_tube'),
-              optionCount: context.watch<VratTrackerService>().trackerEnabled
-                  ? 3
-                  : 2,
-              child: Row(
+    final tracker = context.watch<VratTrackerService>();
+    return GlassPanel(
+      key: const Key('home_ekadashi_card'),
+      radius: 24,
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+      child: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
                 children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => DetailsScreen(
-                              ekadashi: ekadashi,
-                              timezone: _currentTimezone,
-                            ),
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        foregroundColor: GlassTubeColors.teal,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 0,
+                  // Days badge
+                  Align(
+                    alignment: AlignmentDirectional.centerEnd,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 6,
                       ),
-                      // One line beside Share and Record, scaled down on
-                      // narrow screens with large text.
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          lang.translate('view_details'),
-                          maxLines: 1,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
-                          ),
+                      decoration: ShapeDecoration(
+                        color: daysUntil < 0
+                            ? IosColors.gray(context)
+                            : tealColor,
+                        shape: const StadiumBorder(),
+                      ),
+                      child: Text(
+                        daysText,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: IosText.footnote,
                         ),
                       ),
                     ),
                   ),
-                  // The free share card (no paywall).
-                  Padding(
-                    padding: const EdgeInsets.only(left: 8),
-                    child: Tooltip(
-                      message: lang.translate('share_card'),
-                      child: OutlinedButton(
-                        key: const Key('home_share_card'),
-                        onPressed: () => openShareCard(context, ekadashi),
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide.none,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 14,
-                          ),
-                        ),
-                        child: const Icon(
-                          Icons.share,
-                          color: GlassTubeColors.teal,
-                          size: 20,
-                        ),
-                      ),
+                  const SizedBox(height: 16),
+                  // Date: weekday, date, month and year, as on every tab.
+                  Text(
+                    AppStrings.fullDate(ekadashi.date, code),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: IosText.title2,
+                      fontWeight: FontWeight.w300,
+                      color: IosColors.primary(context),
                     ),
                   ),
-                  Consumer<VratTrackerService>(
-                    builder: (ctx, trackerService, _) {
-                      if (!trackerService.trackerEnabled) {
-                        return const SizedBox.shrink();
-                      }
-                      final record = trackerService.getRecordByUid(
-                        ekadashi.occurrenceUid,
-                      );
-                      final isObserved =
-                          record?.status == ObservanceStatus.observed;
-                      final isPartial =
-                          record?.status == ObservanceStatus.partial;
-                      final isMissed =
-                          record?.status == ObservanceStatus.missed;
-                      const iconColor = GlassTubeColors.teal;
-
-                      return Padding(
-                        padding: const EdgeInsets.only(left: 8),
-                        child: Tooltip(
-                          message: lang.translate(
-                            record == null ? 'record_vrat' : 'edit_record',
-                          ),
-                          child: OutlinedButton(
-                            key: const Key('home_record_vrat'),
-                            // Open once the fast is over: after Parana begins.
-                            onPressed:
-                                !VratRecording.isOpen(
-                                  ekadashi,
-                                  now: DateTime.now(),
-                                  timezone: _currentTimezone,
-                                )
-                                ? null
-                                : () async {
-                                    final unlocks = await RecordVratDialog.show(
-                                      context,
-                                      ekadashi: ekadashi,
-                                      allOccurrences: _allEkadashis,
-                                      currentTimezone: _currentTimezone,
-                                    );
-                                    if (unlocks != null &&
-                                        unlocks.isNotEmpty &&
-                                        mounted) {
-                                      for (final u in unlocks) {
-                                        await AchievementUnlockDialog.show(
-                                          context,
-                                          u,
-                                        );
-                                      }
-                                    }
-                                  },
-                            style: OutlinedButton.styleFrom(
-                              side: BorderSide.none,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                                vertical: 14,
-                              ),
-                            ),
-                            child: Icon(
-                              isObserved
-                                  ? Icons.check_circle
-                                  : (isPartial
-                                        ? Icons.adjust
-                                        : (isMissed
-                                              ? Icons.highlight_off
-                                              : Icons.edit_calendar_outlined)),
-                              color: iconColor,
-                              size: 20,
-                            ),
-                          ),
-                        ),
-                      );
-                    },
+                  const SizedBox(height: 16),
+                  Text(
+                    ekadashi.name,
+                    style: const TextStyle(
+                      color: tealColor,
+                      fontSize: IosText.title,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  timing(
+                    lang.translate('start_fasting'),
+                    ekadashi.date,
+                    AppStrings.localizeClock(ekadashi.fastStartTime, code),
+                  ),
+                  const SizedBox(height: 16),
+                  timing(
+                    lang.translate('break_fasting'),
+                    ekadashi.date.add(const Duration(days: 1)),
+                    breakTime,
+                  ),
+                  Divider(height: 33, color: IosColors.separator(context)),
+                  Text(
+                    ekadashi.description,
+                    style: TextStyle(
+                      fontStyle: FontStyle.italic,
+                      fontSize: IosText.callout,
+                      color: IosColors.primary(context).withValues(alpha: 0.8),
+                      height: 1.45,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
                 ],
               ),
             ),
+          ),
+          const SizedBox(height: 16),
+          // View Details (prominent teal capsule) and the Vrat record button
+          // (glass capsule), as the iOS GlassGroup.
+          Row(
+            children: [
+              Expanded(
+                child: FilledButton(
+                  key: const Key('view_details'),
+                  onPressed: () => _openDetails(ekadashi),
+                  style: IosButtons.prominent(vertical: 12).copyWith(
+                    minimumSize: const WidgetStatePropertyAll(Size(0, 48)),
+                    fixedSize: const WidgetStatePropertyAll(
+                      Size.fromHeight(48),
+                    ),
+                  ),
+                  child: Text(
+                    lang.translate('view_details'),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: IosText.callout,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              _homeShareButton(ekadashi, lang),
+              if (tracker.trackerEnabled) ...[
+                const SizedBox(width: 8),
+                _homeRecordButton(ekadashi, tracker, lang),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// The free share card (no paywall), a round glass button like Record.
+  Widget _homeShareButton(EkadashiDate ekadashi, LanguageService lang) =>
+      Tooltip(
+        message: lang.translate('share_card'),
+        child: OutlinedButton(
+          key: const Key('home_share_card'),
+          onPressed: () => openShareCard(context, ekadashi),
+          style: IosButtons.glass(context).copyWith(
+            shape: const WidgetStatePropertyAll(CircleBorder()),
+            padding: const WidgetStatePropertyAll(EdgeInsets.zero),
+            fixedSize: const WidgetStatePropertyAll(Size.square(48)),
+            minimumSize: const WidgetStatePropertyAll(Size.square(48)),
+            backgroundColor: WidgetStatePropertyAll(
+              IosColors.teal.withValues(alpha: .10),
+            ),
+            side: const WidgetStatePropertyAll(BorderSide.none),
+          ),
+          child: const Icon(Icons.ios_share, color: IosColors.teal),
+        ),
+      );
+
+  /// Ekadashi details are pushed inside the Home tab, so the tab bar stays.
+  void _openDetails(EkadashiDate ekadashi) {
+    _tabNavigators[0].currentState?.push(
+      MaterialPageRoute<void>(
+        builder: (_) =>
+            DetailsScreen(ekadashi: ekadashi, timezone: _currentTimezone),
+      ),
+    );
+  }
+
+  /// The card's Vrat button (iOS VratStatusStyle.cardSymbol), dimmed until
+  /// Parana begins.
+  Widget _homeRecordButton(
+    EkadashiDate ekadashi,
+    VratTrackerService tracker,
+    LanguageService lang,
+  ) {
+    final record = tracker.getRecordByUid(ekadashi.occurrenceUid);
+    final open = VratRecording.isOpen(
+      ekadashi,
+      now: DateTime.now(),
+      timezone: _currentTimezone,
+    );
+    final color = open ? IosColors.teal : IosColors.tertiary(context);
+    final Widget icon = switch (record?.status) {
+      ObservanceStatus.observed => Icon(Icons.check_circle, color: color),
+      ObservanceStatus.partial => Icon(Icons.adjust, color: color),
+      ObservanceStatus.missed => Icon(Icons.highlight_off, color: color),
+      // calendar.badge.plus: a calendar with a plus badge.
+      _ => SizedBox(
+        width: 24,
+        height: 24,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Icon(Icons.calendar_month_outlined, size: 22, color: color),
+            Positioned(
+              right: -1,
+              bottom: -1,
+              child: Icon(Icons.add_circle, size: 11, color: color),
+            ),
           ],
         ),
+      ),
+    };
+    return OutlinedButton(
+      key: const Key('home_record_vrat'),
+      onPressed: open
+          ? () async {
+              final unlocks = await RecordVratDialog.show(
+                context,
+                ekadashi: ekadashi,
+                allOccurrences: _allEkadashis,
+                currentTimezone: _currentTimezone,
+              );
+              if (unlocks != null && unlocks.isNotEmpty && mounted) {
+                for (final u in unlocks) {
+                  await AchievementUnlockDialog.show(context, u);
+                }
+              }
+            }
+          : null,
+      // A round glass button, neutral grey while recording is closed.
+      style: IosButtons.glass(context).copyWith(
+        shape: const WidgetStatePropertyAll(CircleBorder()),
+        padding: const WidgetStatePropertyAll(EdgeInsets.zero),
+        fixedSize: const WidgetStatePropertyAll(Size.square(48)),
+        minimumSize: const WidgetStatePropertyAll(Size.square(48)),
+        backgroundColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.disabled)
+              ? IosColors.gray(context).withValues(alpha: .18)
+              : IosColors.teal.withValues(alpha: .10),
+        ),
+        side: WidgetStateProperty.resolveWith(
+          (states) => BorderSide(
+            color:
+                (states.contains(WidgetState.disabled)
+                        ? IosColors.gray(context)
+                        : IosColors.teal)
+                    .withValues(alpha: .28),
+            width: .7,
+          ),
+        ),
+      ),
+      child: Semantics(
+        label: lang.translate(record == null ? 'record_vrat' : 'edit_record'),
+        hint: open ? null : lang.translate('journey_record_after_parana'),
+        child: SizedBox(height: 24, child: Center(child: icon)),
       ),
     );
   }

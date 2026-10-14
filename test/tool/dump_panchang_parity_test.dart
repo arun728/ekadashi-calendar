@@ -202,8 +202,9 @@ void _compare(Object? expected, Object? actual, String path, List<String> out) {
       _compare(expected[i], actual[i], '$path[$i]', out);
     }
   } else if (expected is num && actual is num) {
-    if ((expected - actual).abs() > 1e-9)
+    if ((expected - actual).abs() > 1e-9) {
       out.add('$path: $expected vs $actual');
+    }
   } else if (expected is String &&
       actual is String &&
       _instant.hasMatch(expected) &&
