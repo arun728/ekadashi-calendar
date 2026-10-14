@@ -192,8 +192,11 @@ final class ScreenshotTests: XCTestCase {
         let search = app.textFields["ekadashi_location_search"]
         XCTAssertTrue(search.waitForExistence(timeout: 5))
         // Never empty: popular cities before anything is typed.
-        XCTAssertTrue(app.buttons["ekadashi_city_geonames-2643743"].waitForExistence(timeout: 5), "London is offered")
+        // Lists build only the rows on screen: London is further down.
+        let london = app.buttons["ekadashi_city_geonames-2643743"]
+        XCTAssertTrue(reveal(london), "London is offered")
         snap("14a-home-city-shortlist")
+        XCTAssertTrue(reveal(search, upwards: true), "search field")
         search.tap()
         search.typeText("Mumbai")
         let mumbai = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Mumbai'")).firstMatch
@@ -220,7 +223,7 @@ final class ScreenshotTests: XCTestCase {
             app.buttons["panchang_city_selector"].firstMatch.tap()
             XCTAssertTrue(app.textFields["ekadashi_location_search"].waitForExistence(timeout: 5), page)
             let newYork = app.buttons["ekadashi_city_geonames-5128581"]
-            XCTAssertTrue(newYork.waitForExistence(timeout: 5), "\(page): popular cities")
+            XCTAssertTrue(reveal(newYork), "\(page): popular cities")
             XCTAssertTrue(newYork.label.contains("EDT") || newYork.label.contains("EST"), newYork.label)
             snap("17-panchang-city-picker-\(page)")
             app.buttons["city_picker_cancel"].firstMatch.tap()
@@ -486,6 +489,19 @@ final class ScreenshotTests: XCTestCase {
             _ = query.firstMatch.waitForExistence(timeout: 0.5)
         } while Date() < end
         return nil
+    }
+
+    /// Scrolls a third of the screen at a time (down the list, or back up)
+    /// until [target] can be tapped: lists build only the rows on screen,
+    /// and a full-screen swipe can pass a row.
+    @discardableResult
+    private func reveal(_ target: XCUIElement, upwards: Bool = false) -> Bool {
+        for _ in 0..<15 where !(target.exists && target.isHittable) {
+            let from = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: upwards ? 0.4 : 0.7))
+            from.press(forDuration: 0.05,
+                       thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: upwards ? 0.7 : 0.4)))
+        }
+        return target.waitForExistence(timeout: 2) && target.isHittable
     }
 
     private func element(_ identifier: String) -> XCUIElement {
