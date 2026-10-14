@@ -3,8 +3,10 @@
 Plain-text checks, so the test needs nothing beyond the standard library.
 """
 
+import os
 from pathlib import Path
 import subprocess
+import tempfile
 import unittest
 
 
@@ -78,6 +80,35 @@ class DeviceTestDiscoveryTests(unittest.TestCase):
         self.assertNotIn("integration_test/search_android_test.dart", listed)
         for target in listed:
             self.assertTrue((ROOT / target).exists(), target)
+
+
+class DeviceTestRunTests(unittest.TestCase):
+    def test_every_device_test_runs_even_when_the_runner_reads_stdin(self):
+        """adb and flutter read stdin; that must not swallow the next targets."""
+        with tempfile.TemporaryDirectory() as folder:
+            log = Path(folder) / "runs"
+            fake = Path(folder) / "fake.sh"
+            fake.write_text(f'cat > /dev/null\necho "$0 $*" >> "{log}"\n')
+            env = dict(
+                os.environ,
+                ANDROID_APP_RUNNER=str(fake),
+                ANDROID_FEATURE_RUNNER=str(fake),
+                ANDROID_WIDGET_RUNNER=str(fake),
+            )
+            subprocess.run(
+                ["bash", "tool/android-all-integration.sh", "granted"],
+                cwd=ROOT, env=env, check=True, capture_output=True, text=True,
+                stdin=subprocess.DEVNULL, timeout=60,
+            )
+            runs = log.read_text().split("\n")
+        targets = subprocess.run(
+            ["bash", "tool/android-all-integration.sh", "--list"],
+            cwd=ROOT, check=True, capture_output=True, text=True,
+        ).stdout.split()
+        for target in targets:
+            self.assertTrue(any(run.endswith(target) for run in runs), target)
+        # The app test, each feature test, and the widgets after multi-year.
+        self.assertEqual(len([r for r in runs if r]), len(targets) + 2)
 
 
 class GeneratedFilesTests(unittest.TestCase):

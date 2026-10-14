@@ -282,9 +282,11 @@ void main() {
           ),
         ),
       );
-      final menuItems = find.byWidgetPredicate(
-        (widget) => widget is PopupMenuItem,
-      );
+      // Journey's year is a menu; Panchang's city opens the shared city
+      // picker sheet.
+      final menuItems = tab == 2
+          ? find.byWidgetPredicate((widget) => widget is PopupMenuItem)
+          : find.byKey(const Key('city_picker_list'));
       await waitForUi(
         tester,
         () => menuItems.evaluate().isNotEmpty,

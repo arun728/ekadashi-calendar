@@ -20,17 +20,24 @@ if [[ "${1:-}" == --list ]]; then
   exit 0
 fi
 mode=${1:-granted}
+# Overridable for test/tool/test_ci_workflow.py.
+app_runner=${ANDROID_APP_RUNNER:-tool/android-integration.sh}
+feature_runner=${ANDROID_FEATURE_RUNNER:-tool/android-feature-integration.sh}
+widget_runner=${ANDROID_WIDGET_RUNNER:-tool/android-launcher-widgets.sh}
 result=0
-bash tool/android-integration.sh "$mode" || result=$?
+bash "$app_runner" "$mode" || result=$?
 if [[ "$mode" == granted ]]; then
-  while read -r target; do
-    if bash tool/android-feature-integration.sh "$target"; then
+  # Read the list first: adb and flutter read stdin, so a `while read` loop
+  # would lose every target after the first.
+  mapfile -t all < <(targets)
+  for target in "${all[@]}"; do
+    if bash "$feature_runner" "$target"; then
       if [[ "$target" == integration_test/multi_year_android_test.dart ]]; then
-        bash tool/android-launcher-widgets.sh || result=$?
+        bash "$widget_runner" || result=$?
       fi
     else
       result=$?
     fi
-  done < <(targets)
+  done
 fi
 exit "$result"
