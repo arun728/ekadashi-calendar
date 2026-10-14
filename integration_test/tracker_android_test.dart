@@ -137,12 +137,18 @@ void main() {
     );
     await tester.ensureVisible(saveFourth);
     await pumpUi(tester);
+    debugPrint('tracker step: save the fourth entry');
     await tester.tap(saveFourth);
     await pumpUi(tester, frames: 12);
     expect(find.byType(PremiumScreen), findsOneWidget);
     await binding.takeScreenshot('free_vrat_limit_paywall');
+    debugPrint('tracker step: close the paywall');
     await tester.tap(find.byKey(const Key('premium_close')));
     await pumpUi(tester);
+    debugPrint(
+      'tracker step: after closing, dialog=${find.byType(RecordVratDialog).evaluate().length} '
+      'paywall=${find.byType(PremiumScreen).evaluate().length}',
+    );
     expect(tracker.getRecordByUid(fourth.occurrenceUid), isNull);
     expect(
       find.text(lang.translate('vrat_free_limit_reached')),

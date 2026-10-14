@@ -266,6 +266,9 @@ void main() {
       await binding.takeScreenshot('android_settings_$locale');
     }
     for (final tab in [2, 3]) {
+      // Step markers: on API 33 and 35 the app closed somewhere in this loop
+      // (14 October 2026); the log shows which step it reached.
+      debugPrint('android_app_test step: tab $tab');
       await selectTab(tab);
       if (tab == 2) {
         await tester.tap(find.byKey(const Key('journey_tab_history')));
@@ -292,9 +295,12 @@ void main() {
         () => menuItems.evaluate().isNotEmpty,
         reason: 'Tab $tab menu must open',
       );
+      debugPrint('android_app_test step: tab $tab menu open');
       expect(find.byKey(const Key('open_global_search')), findsOneWidget);
       expect(tester.getTopLeft(anchor), anchorPosition);
+      debugPrint('android_app_test step: tab $tab system Back');
       await tester.binding.handlePopRoute();
+      debugPrint('android_app_test step: tab $tab Back handled');
       await waitForUi(
         tester,
         () => menuItems.evaluate().isEmpty,
@@ -302,6 +308,7 @@ void main() {
       );
       expect(tester.getTopLeft(anchor), anchorPosition);
     }
+    debugPrint('android_app_test step: details');
     await selectTab(0);
     final details = find.byKey(const Key('view_details'));
     await tester.ensureVisible(details);
