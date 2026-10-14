@@ -95,7 +95,10 @@ struct CityPickerSheet<Extra: View>: View {
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button(model.t("cancel")) { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) {
+                    // Same key as Android's city_picker_cancel.
+                    Button(model.t("cancel")) { dismiss() }.accessibilityIdentifier("city_picker_cancel")
+                }
             }
         }
         .presentationBackground(.thinMaterial)

@@ -122,8 +122,8 @@ final class ScreenshotTests: XCTestCase {
         XCTAssertLessThan(Date().timeIntervalSince(start), 10, "typing and deleting are not held up")
         XCTAssertTrue(app.buttons["ekadashi_city_geonames-1264527"].waitForExistence(timeout: 10), "Chennai")
         snap("14b-city-search-ta")
-        app.buttons.matching(identifier: "Cancel").firstMatch.exists
-            ? app.buttons.matching(identifier: "Cancel").firstMatch.tap() : app.swipeDown()
+        // Cancel by its key: its label is in Tamil here.
+        app.buttons["city_picker_cancel"].firstMatch.tap()
         element("language_menu").tap()
         XCTAssertTrue(app.buttons["English"].waitForExistence(timeout: 5))
         app.buttons["English"].tap()
@@ -223,7 +223,7 @@ final class ScreenshotTests: XCTestCase {
             XCTAssertTrue(newYork.waitForExistence(timeout: 5), "\(page): popular cities")
             XCTAssertTrue(newYork.label.contains("EDT") || newYork.label.contains("EST"), newYork.label)
             snap("17-panchang-city-picker-\(page)")
-            app.buttons["Cancel"].firstMatch.tap()
+            app.buttons["city_picker_cancel"].firstMatch.tap()
         }
     }
 
