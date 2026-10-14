@@ -8,6 +8,7 @@ import '../../services/panchang/panchang_city.dart';
 import '../../services/panchang/panchang_location_store.dart';
 import '../../services/place_name_resolver.dart';
 import '../../widgets/ios_style.dart';
+import '../../widgets/app_icons.dart';
 
 /// The one city picker of the app (Home and every Panchang sub-tab, as
 /// CityPickerSheet on iOS): the current place, a worldwide search, "Use
@@ -198,7 +199,6 @@ class _CityPickerSheetState extends State<CityPickerSheet> {
                   textCapitalization: TextCapitalization.words,
                   decoration: InputDecoration(
                     labelText: _t('panchang_search_cities'),
-                    prefixIcon: const Icon(Icons.search),
                   ),
                   onChanged: (value) {
                     setState(() {});
@@ -209,7 +209,7 @@ class _CityPickerSheetState extends State<CityPickerSheet> {
               for (final city in _matches.where((_) => typed)) _row(city),
               ListTile(
                 key: const Key('ekadashi_location_current_button'),
-                leading: const Icon(Icons.my_location),
+                leading: const Icon(AppIcons.useCurrentLocation),
                 title: Text(
                   _t(
                     _busy

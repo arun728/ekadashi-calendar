@@ -64,18 +64,18 @@ public enum VratStatistics {
 public enum AchievementEvaluator {
     public static let all: [Achievement] = [
         Achievement(id: "first_vrat", titleKey: "achievement_first_vrat_title", descriptionKey: "achievement_first_vrat_desc",
-                    condition: .count, targetValue: 1, symbol: "leaf.fill", sortOrder: 1),
+                    condition: .count, targetValue: 1, symbol: AppSymbol.achievementFirst, sortOrder: 1),
         Achievement(id: "vrat_5", titleKey: "achievement_5_vrat_title", descriptionKey: "achievement_5_vrat_desc",
-                    condition: .count, targetValue: 5, symbol: "star", sortOrder: 2),
+                    condition: .count, targetValue: 5, symbol: AppSymbol.achievementFive, sortOrder: 2),
         Achievement(id: "vrat_10", titleKey: "achievement_10_vrat_title", descriptionKey: "achievement_10_vrat_desc",
-                    condition: .count, targetValue: 10, symbol: "medal", sortOrder: 3),
+                    condition: .count, targetValue: 10, symbol: AppSymbol.achievementTen, sortOrder: 3),
         Achievement(id: "vrat_12", titleKey: "achievement_12_vrat_title", descriptionKey: "achievement_12_vrat_desc",
-                    condition: .count, targetValue: 12, symbol: "rosette", sortOrder: 4),
+                    condition: .count, targetValue: 12, symbol: AppSymbol.achievementTwelve, sortOrder: 4),
         Achievement(id: "consistent_observance", titleKey: "achievement_consistent_title",
-                    descriptionKey: "achievement_consistent_desc", condition: .streak, targetValue: 3, symbol: "bolt.fill", sortOrder: 5),
+                    descriptionKey: "achievement_consistent_desc", condition: .streak, targetValue: 3, symbol: AppSymbol.achievementStreak, sortOrder: 5),
         Achievement(id: "full_year_observance", titleKey: "achievement_full_year_title",
                     descriptionKey: "achievement_full_year_desc", condition: .annualFull, targetValue: 100,
-                    symbol: "sun.max.fill", sortOrder: 6),
+                    symbol: AppSymbol.achievementFullYear, sortOrder: 6),
     ]
 
     /// Progress stays free; [newUnlockLimit] limits only new badges, and

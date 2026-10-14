@@ -1,3 +1,4 @@
+import 'package:ekadashi_calendar/widgets/app_icons.dart';
 import 'dart:async';
 
 import 'package:ekadashi_calendar/screens/premium_screen.dart';
@@ -76,7 +77,7 @@ void main() {
     expect(
       find.descendant(
         of: find.byKey(const Key('premium_close')),
-        matching: find.byIcon(Icons.close),
+        matching: find.byIcon(AppIcons.close),
       ),
       findsOneWidget,
     );
@@ -90,7 +91,7 @@ void main() {
     // Why it opened: a teal info icon and a 17 pt semibold line.
     final reason = find.byKey(const Key('premium_reason'));
     final info = tester.widget<Icon>(
-      find.descendant(of: reason, matching: find.byIcon(Icons.info_outline)),
+      find.descendant(of: reason, matching: find.byIcon(AppIcons.info)),
     );
     expect(info.color, IosColors.teal);
     final reasonText = tester.widget<Text>(
@@ -101,9 +102,9 @@ void main() {
     // The three features at 17 pt with the iOS symbols; the Panchang one
     // uses the iOS wording.
     for (final (key, icon) in [
-      ('premium_feature_calendar', Icons.sync),
-      ('premium_feature_vrat', Icons.self_improvement),
-      ('premium_feature_panchang_v2', Icons.wb_twilight),
+      ('premium_feature_calendar', AppIcons.premiumCalendar),
+      ('premium_feature_vrat', AppIcons.premiumVrat),
+      ('premium_feature_panchang_v2', AppIcons.premiumPanchang),
     ]) {
       final text = tester.widget<Text>(find.text(lang.translate(key)));
       expect(text.style?.fontSize, IosText.body, reason: key);

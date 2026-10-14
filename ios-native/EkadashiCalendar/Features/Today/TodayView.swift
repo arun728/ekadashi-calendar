@@ -25,7 +25,7 @@ struct TodayView: View {
                 .frame(maxHeight: .infinity)
                 .accessibilityIdentifier("home_calculating")
             } else if events.isEmpty {
-                ContentUnavailableView(model.t("no_ekadashi"), systemImage: "calendar.badge.exclamationmark")
+                ContentUnavailableView(model.t("no_ekadashi"), systemImage: AppSymbol.noEkadashi)
             } else {
                 Text("\(model.homeIndex + 1) / \(events.count)")
                     .font(.footnote)
@@ -33,7 +33,7 @@ struct TodayView: View {
                     .padding(.bottom, 8)
                     .accessibilityIdentifier("home_page_indicator")
                 HStack(spacing: 0) {
-                    arrow("chevron.left", target: model.homeIndex - 1) { model.homeIndex -= 1 }
+                    arrow(AppSymbol.previous, target: model.homeIndex - 1) { model.homeIndex -= 1 }
                     TabView(selection: $model.homeIndex) {
                         ForEach(Array(events.enumerated()), id: \.element.occurrenceUid) { index, event in
                             EkadashiCard(event: event)
@@ -42,7 +42,7 @@ struct TodayView: View {
                         }
                     }
                     .tabViewStyle(.page(indexDisplayMode: .never))
-                    arrow("chevron.right", target: model.homeIndex + 1) { model.homeIndex += 1 }
+                    arrow(AppSymbol.next, target: model.homeIndex + 1) { model.homeIndex += 1 }
                 }
                 .padding(.horizontal, 4)
                 .padding(.bottom, 8)
@@ -105,7 +105,7 @@ struct HomeControls: View {
                 if model.locationState == .detecting && !model.ekadashiCityIsManual {
                     ProgressView().controlSize(.small).tint(Theme.teal)
                 } else {
-                    Image(systemName: model.ekadashiCityIsManual ? "mappin.and.ellipse" : "location.fill")
+                    Image(systemName: model.ekadashiCityIsManual ? AppSymbol.locationPicked : AppSymbol.locationDetected)
                         .foregroundStyle(Theme.teal)
                 }
                 Text(model.ekadashiCityName)
@@ -124,7 +124,7 @@ struct HomeControls: View {
             ForEach(EkadashiTradition.allCases, id: \.self) { tradition in
                 Button { model.setTradition(tradition) } label: {
                     if tradition == model.tradition {
-                        Label(model.traditionName(tradition), systemImage: "checkmark")
+                        Label(model.traditionName(tradition), systemImage: AppSymbol.checkmark)
                     } else {
                         Text(model.traditionName(tradition))
                     }
@@ -132,7 +132,7 @@ struct HomeControls: View {
             }
         } label: {
             pill(alignment: .leading) {
-                Image(systemName: "sparkles").foregroundStyle(Theme.teal)
+                Image(systemName: AppSymbol.homeTradition).foregroundStyle(Theme.teal)
                 Text(model.traditionName(model.tradition)).lineLimit(1)
             }
         }
@@ -151,11 +151,11 @@ struct HomeControls: View {
                 Button {
                     model.setLanguage(code)
                 } label: {
-                    if code == model.language { Label(Localizer.displayName(code), systemImage: "checkmark") } else { Text(Localizer.displayName(code)) }
+                    if code == model.language { Label(Localizer.displayName(code), systemImage: AppSymbol.checkmark) } else { Text(Localizer.displayName(code)) }
                 }
             }
         } label: {
-            rightPill(shown: (languageName, "globe"), reserved: (yearText, "calendar"))
+            rightPill(shown: (languageName, AppSymbol.homeLanguage), reserved: (yearText, AppSymbol.homeYear))
         }
         .fixedSize()
         .accessibilityIdentifier("language_menu")
@@ -165,11 +165,11 @@ struct HomeControls: View {
         Menu {
             ForEach(model.enabledYears, id: \.self) { year in
                 Button { model.setYear(year) } label: {
-                    if year == model.selectedYear { Label(String(year), systemImage: "checkmark") } else { Text(String(year)) }
+                    if year == model.selectedYear { Label(String(year), systemImage: AppSymbol.checkmark) } else { Text(String(year)) }
                 }
             }
         } label: {
-            rightPill(shown: (yearText, "calendar"), reserved: (languageName, "globe"))
+            rightPill(shown: (yearText, AppSymbol.homeYear), reserved: (languageName, AppSymbol.homeLanguage))
         }
         .fixedSize()
         .accessibilityLabel("\(model.t("year")): \(model.selectedYear)")
@@ -199,7 +199,7 @@ struct HomeControls: View {
         HStack(spacing: 6) {
             content()
             if alignment == .leading { Spacer(minLength: 0) }
-            Image(systemName: "chevron.down").font(.caption2).foregroundStyle(.secondary)
+            Image(systemName: AppSymbol.menuDisclosure).font(.caption2).foregroundStyle(.secondary)
         }
         .font(.subheadline.weight(.medium))
         .foregroundStyle(.primary)
@@ -270,7 +270,7 @@ struct EkadashiCard: View {
                     Button {
                         sharing = true
                     } label: {
-                        Image(systemName: "square.and.arrow.up").font(.title3).padding(.vertical, 4)
+                        Image(systemName: AppSymbol.share).font(.title3).padding(.vertical, 4)
                     }
                     .secondaryActionStyle()
                     .accessibilityLabel(model.t("share_card"))

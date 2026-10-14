@@ -603,7 +603,7 @@
       }
     }
   },
-  "event_reminder_all_custom": "All my entries",
+  "event_reminder_all_custom": "All custom events",
   "event_reminder_all_google": "All Google Calendar events",
   "event_reminder_group_festival": "Festivals",
   "event_reminder_group_monthly": "Monthly observances",

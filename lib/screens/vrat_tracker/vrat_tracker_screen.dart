@@ -17,6 +17,7 @@ import '../../widgets/section_pager.dart';
 import '../premium_screen.dart';
 import 'achievement_unlock_dialog.dart';
 import 'record_vrat_dialog.dart';
+import '../../widgets/app_icons.dart';
 
 /// The Journey (Vrat) tab: Overview, History, Statistics and Achievements
 /// (iOS VratView). Recording, history, streaks and statistics are free;
@@ -73,7 +74,7 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
       return Material(
         type: MaterialType.transparency,
         child: UnavailableView(
-          icon: Icons.sd_card_alert_outlined,
+          icon: AppIcons.journeyStorageFailed,
           title: lang.translate('tracker_storage_failed'),
           description: tracker.storageError,
           action: FilledButton(
@@ -180,7 +181,7 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
             title: lang.translate('current_streak'),
             value: '$currentStreak',
             subtitle: unit,
-            icon: Icons.local_fire_department_outlined,
+            icon: AppIcons.journeyStreak,
             color: IosColors.orange(context),
           ),
           _MetricCard(
@@ -188,7 +189,7 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
             title: lang.translate('longest_streak'),
             value: '$longestStreak',
             subtitle: unit,
-            icon: Icons.military_tech_outlined,
+            icon: AppIcons.journeyBest,
             color: IosColors.amber,
           ),
         ),
@@ -200,7 +201,7 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
             value: '${yearStats.completionPercentage.round()}%',
             subtitle:
                 '${yearStats.observedCount} / ${yearStats.totalOccurrences}',
-            icon: Icons.pie_chart_outline,
+            icon: AppIcons.journeyRate,
             color: teal,
           ),
           _MetricCard(
@@ -208,7 +209,7 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
             title: lang.translate('total_observed'),
             value: '$totalObserved',
             subtitle: unit,
-            icon: Icons.check_circle_outline,
+            icon: AppIcons.journeyObserved,
             color: IosColors.green(context),
           ),
         ),
@@ -270,7 +271,7 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.flag_outlined, size: 14, color: teal),
+              const Icon(AppIcons.journeyMilestone, size: 14, color: teal),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(lang.translate('next_milestone'), style: caption),
@@ -383,7 +384,7 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
                 SliverFillRemaining(
                   hasScrollBody: false,
                   child: UnavailableView(
-                    icon: Icons.eco,
+                    icon: AppIcons.journeyEmpty,
                     title: lang.translate('no_ekadashi'),
                   ),
                 )
@@ -422,7 +423,7 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
             mainAxisSize: MainAxisSize.min,
             spacing: 6,
             children: [
-              const Icon(Icons.calendar_today, size: 15, color: teal),
+              const Icon(AppIcons.journeyYear, size: 15, color: teal),
               Text(
                 '$selected',
                 style: const TextStyle(
@@ -453,16 +454,19 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
     final (statusLabel, statusIcon) = switch (status) {
       ObservanceStatus.observed => (
         lang.translate('observed'),
-        Icons.check_circle_outline,
+        AppIcons.statusObserved,
       ),
-      ObservanceStatus.partial => (lang.translate('partial'), Icons.adjust),
+      ObservanceStatus.partial => (
+        lang.translate('partial'),
+        AppIcons.statusPartial,
+      ),
       ObservanceStatus.missed => (
         lang.translate('missed'),
-        Icons.highlight_off,
+        AppIcons.statusMissed,
       ),
       ObservanceStatus.unrecorded => (
         lang.translate('not_recorded'),
-        Icons.help_outline,
+        AppIcons.statusUnrecorded,
       ),
     };
     final open = VratRecording.isOpen(
@@ -556,7 +560,7 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
                     child: StatusPill(text: statusLabel, color: color),
                   ),
                   Icon(
-                    open ? Icons.chevron_right : Icons.schedule,
+                    open ? AppIcons.rowDisclosure : AppIcons.journeyPending,
                     size: 14,
                     color: IosColors.tertiary(context),
                   ),
@@ -783,7 +787,7 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
                       : gray.withValues(alpha: 0.08),
                 ),
                 child: Icon(
-                  unlocked ? ach.icon : Icons.lock_outline,
+                  unlocked ? ach.icon : AppIcons.achievementLocked,
                   size: 26,
                   color: unlocked ? teal : gray,
                 ),

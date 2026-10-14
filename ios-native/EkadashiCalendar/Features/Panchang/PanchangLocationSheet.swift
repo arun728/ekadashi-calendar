@@ -12,7 +12,7 @@ struct PanchangLocationSheet: View {
 
     var body: some View {
         CityPickerSheet(
-            title: model.t("panchang_location_title"), footer: "", current: city, symbol: "mappin.and.ellipse",
+            title: model.t("panchang_location_title"), footer: "", current: city, symbol: AppSymbol.panchangCity,
             pick: save,
             locate: {
                 guard await model.location.requestPermission() else { return "panchang_location_denied" }

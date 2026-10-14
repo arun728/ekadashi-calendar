@@ -211,6 +211,59 @@ void main() {
     expect(choices.any((c) => c.title.startsWith('event_reminder_')), isFalse);
   });
 
+  test('Add a reminder lists my calendar first, then monthly observances, '
+      'then festivals; custom entries are "All custom events"', () {
+    expect(EventReminderGroup.values, [
+      EventReminderGroup.myCalendar,
+      EventReminderGroup.monthly,
+      EventReminderGroup.festival,
+    ]);
+    final groups = EventReminderChoice.all('en').map((c) => c.group).toList();
+    final firstMonthly = groups.indexOf(EventReminderGroup.monthly);
+    final firstFestival = groups.indexOf(EventReminderGroup.festival);
+    expect(
+      groups.lastIndexOf(EventReminderGroup.myCalendar),
+      lessThan(firstMonthly),
+    );
+    expect(
+      groups.lastIndexOf(EventReminderGroup.monthly),
+      lessThan(firstFestival),
+    );
+    expect(
+      EventReminderChoice.titleFor(
+        const EventReminderTarget.calendar(CalendarEntrySource.custom),
+        'en',
+      ),
+      'All custom events',
+    );
+  });
+
+  test('the same Google event from two calendars is reminded once', () {
+    CalendarEntry copy(String calendar) => CalendarEntry(
+      id: 'google_$calendar',
+      title: 'Dussehra',
+      startAt: DateTime(2026, 10, 20),
+      endAt: DateTime(2026, 10, 21),
+      isAllDay: true,
+      source: CalendarEntrySource.google,
+      calendarId: calendar,
+      updatedAt: DateTime(2026),
+    );
+    final planned = plan(
+      [
+        EventReminder(
+          target: const EventReminderTarget.calendar(
+            CalendarEntrySource.google,
+          ),
+          daysBefore: const [1],
+        ),
+      ],
+      entries: [copy('holidays'), copy('primary')],
+      now: ist('2026-10-01T09:00:00'),
+    );
+    expect(planned, hasLength(1));
+  });
+
   test('stored reminders survive bad data and replace by event', () {
     expect(EventReminderSettings.decode('not json').reminders, isEmpty);
     var settings = EventReminderSettings();

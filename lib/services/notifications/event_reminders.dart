@@ -310,7 +310,9 @@ class EventReminderPlanner {
           );
         }
       } else {
-        for (final item in entries.where((e) => e.source == target.source)) {
+        for (final item in CalendarEntry.withoutDuplicateGoogle(
+          entries.where((e) => e.source == target.source),
+        )) {
           final start = item.isAllDay
               ? item.startAt
               : entryZone == null
@@ -395,18 +397,20 @@ class EventReminderPlanner {
   );
 }
 
+/// In the order the Add a reminder sheet lists them: the user's calendars,
+/// then monthly observances, then festivals.
 enum EventReminderGroup {
-  festival('festival'),
+  myCalendar('my_calendar'),
   monthly('monthly'),
-  myCalendar('my_calendar');
+  festival('festival');
 
   const EventReminderGroup(this.raw);
   final String raw;
   String get titleKey => 'event_reminder_group_$raw';
 }
 
-/// The events a reminder can be set for, in the app language: festivals
-/// (alphabetical), monthly days (catalogue order) and the user's calendars.
+/// The events a reminder can be set for, in the app language: the user's
+/// calendars, monthly days (catalogue order) and festivals (alphabetical).
 class EventReminderChoice {
   const EventReminderChoice({
     required this.target,
@@ -454,7 +458,7 @@ class EventReminderChoice {
           group: EventReminderGroup.myCalendar,
         ),
     ];
-    return [...festivals, ...monthly, ...calendars];
+    return [...calendars, ...monthly, ...festivals];
   }
 
   /// The title of a stored reminder's event.

@@ -1,3 +1,4 @@
+import 'package:ekadashi_calendar/widgets/app_icons.dart';
 import 'dart:async';
 
 import 'package:ekadashi_calendar/screens/panchang_screen.dart';
@@ -135,7 +136,7 @@ void main() {
     expect(find.byKey(const Key('panchang_key_days')), findsOneWidget);
     expect(find.byKey(const Key('panchang_key_days_unlock')), findsOneWidget);
     expect(find.text('Deepavali (Lakshmi Puja)'), findsOneWidget);
-    expect(find.byIcon(Icons.lock), findsWidgets);
+    expect(find.byIcon(AppIcons.lock), findsWidgets);
     await tester.tap(find.byKey(const Key('panchang_key_filter_ekadashi')));
     await tester.pumpAndSettle();
     expect(find.text('Deepavali (Lakshmi Puja)'), findsNothing);

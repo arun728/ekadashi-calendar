@@ -66,8 +66,9 @@ class CalendarDayMerge {
       }
     }
 
-    final dayEntries = entries.where((e) => e.occursOn(day)).toList()
-      ..sort((a, b) => a.startAt.compareTo(b.startAt));
+    final dayEntries = CalendarEntry.withoutDuplicateGoogle(
+      entries.where((e) => e.occursOn(day)),
+    )..sort((a, b) => a.startAt.compareTo(b.startAt));
 
     for (final e in dayEntries) {
       if (e.source == CalendarEntrySource.google && !showGoogle) continue;

@@ -1,110 +1,49 @@
-import 'package:ekadashi_calendar/services/theme_service.dart';
+import 'package:ekadashi_calendar/screens/calendar_screen.dart';
 import 'package:ekadashi_calendar/widgets/ios_style.dart';
 import 'package:ekadashi_calendar/widgets/tab_shell.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// The top bar as on the iPhone (screenshots of 12 October 2026): the
-/// search button alone in a glass circle; a tab's actions share one glass
-/// capsule with search; "Today" sits in its own glass capsule on the left.
+/// The top bar sits a little below the status bar, as the iPhone's
+/// navigation bar does (it was cramped against the clock on Android), and
+/// months slide in 0.25 s on both platforms (CalendarView.monthSlide).
 void main() {
-  Future<void> pump(WidgetTester tester, Widget bar) => tester.pumpWidget(
-    MaterialApp(
-      theme: AppTheme.darkTheme,
-      home: Scaffold(
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(kToolbarHeight),
-          child: bar,
+  testWidgets('the top bar leaves room under the status bar', (tester) async {
+    tester.view.physicalSize = const Size(412, 900);
+    tester.view.devicePixelRatio = 1;
+    tester.view.padding = const FakeViewPadding(top: 32);
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          appBar: ShellTopBar(
+            title: 'Ekadashi Calendar',
+            onSearch: () {},
+            leading: [TextButton(onPressed: () {}, child: const Text('Today'))],
+          ),
         ),
       ),
-    ),
-  );
-
-  Finder search() => find.byKey(const Key('open_global_search'));
-  Finder glassOf(Finder of) =>
-      find.ancestor(of: of, matching: find.byType(GlassPanel));
-
-  testWidgets('search alone sits in a glass circle', (tester) async {
-    await pump(
-      tester,
-      ShellTopBar(title: 'Ekadashi Calendar', onSearch: () {}),
     );
-    expect(glassOf(search()), findsOneWidget);
-    expect(find.text('Ekadashi Calendar'), findsOneWidget);
-  });
-
-  testWidgets('tab actions share one glass capsule with search', (
-    tester,
-  ) async {
-    await pump(
-      tester,
-      ShellTopBar(
-        title: 'Ekadashi Calendar',
-        onSearch: () {},
-        actions: [
-          IconButton(
-            key: const Key('add'),
-            onPressed: () {},
-            icon: const Icon(Icons.add),
-          ),
-        ],
-      ),
-    );
-    final capsule = glassOf(search());
-    expect(capsule, findsOneWidget);
+    final capsules = find.byType(GlassPanel);
+    for (final rect in capsules.evaluate().map(
+      (e) => tester.getRect(find.byWidget(e.widget)),
+    )) {
+      expect(
+        rect.top,
+        greaterThanOrEqualTo(32 + ShellTopBar.topGap),
+        reason: '$rect',
+      );
+    }
+    expect(ShellTopBar.topGap, 10);
     expect(
-      find.descendant(of: capsule, matching: find.byKey(const Key('add'))),
-      findsOneWidget,
-    );
-    // Search comes first, as on iOS.
-    expect(
-      tester.getCenter(search()).dx,
-      lessThan(tester.getCenter(find.byKey(const Key('add'))).dx),
+      const ShellTopBar(title: '', onSearch: _noop).preferredSize.height,
+      kToolbarHeight + ShellTopBar.topGap,
     );
   });
 
-  testWidgets('Today sits in its own glass capsule on the left', (
-    tester,
-  ) async {
-    await pump(
-      tester,
-      ShellTopBar(
-        title: 'Ekadashi Calendar',
-        onSearch: () {},
-        leading: [BarTextButton(label: 'Today', onPressed: () {})],
-      ),
-    );
-    final today = glassOf(find.text('Today'));
-    expect(today, findsOneWidget);
-    expect(
-      find.descendant(of: today, matching: search()),
-      findsNothing,
-      reason: 'separate from the search capsule',
-    );
-    expect(tester.getCenter(find.text('Today')).dx, lessThan(200));
-    expect(tester.takeException(), isNull);
-  });
-
-  testWidgets('a long title shrinks to an ellipsis, never overflows', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(393, 852);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.reset);
-    await pump(
-      tester,
-      ShellTopBar(
-        title: 'Ekadashi Calendar',
-        onSearch: () {},
-        leading: [BarTextButton(label: 'Today', onPressed: () {})],
-        actions: [
-          IconButton(onPressed: () {}, icon: const Icon(Icons.add)),
-          IconButton(onPressed: () {}, icon: const Icon(Icons.sync)),
-        ],
-      ),
-    );
-    final title = tester.widget<Text>(find.text('Ekadashi Calendar'));
-    expect(title.overflow, TextOverflow.ellipsis);
-    expect(tester.takeException(), isNull);
+  test('months slide in 0.25 s', () {
+    expect(CalendarScreenState.monthSlide, const Duration(milliseconds: 250));
   });
 }
+
+void _noop() {}

@@ -4,6 +4,7 @@ import '../../services/language_service.dart';
 import 'package:flutter/material.dart';
 import '../../models/calendar_day_merge.dart';
 import '../../widgets/ios_style.dart';
+import '../../widgets/app_icons.dart';
 
 /// Google and custom entries of one day as glass cards
 /// (CalendarView.swift DayEntriesList). Custom entries open the editor on a
@@ -13,9 +14,14 @@ class DayEntriesList extends StatelessWidget {
   final void Function(DayListItem item)? onTap;
   final void Function(DayListItem item)? onDeleteCustom;
 
+  /// "No entries for this day" when [items] is empty; off when the day
+  /// shows its Ekadashi.
+  final bool showEmptyText;
+
   const DayEntriesList({
     super.key,
     required this.items,
+    this.showEmptyText = true,
     this.onTap,
     this.onDeleteCustom,
   });
@@ -67,7 +73,7 @@ class DayEntriesList extends StatelessWidget {
           value: 'edit',
           child: _MenuRow(
             label: lang.translate('edit_entry'),
-            icon: Icons.edit_outlined,
+            icon: AppIcons.edit,
             color: primary,
           ),
         ),
@@ -76,7 +82,7 @@ class DayEntriesList extends StatelessWidget {
           value: 'delete',
           child: _MenuRow(
             label: lang.translate('delete_record'),
-            icon: Icons.delete_outline,
+            icon: AppIcons.delete,
             color: red,
           ),
         ),
@@ -89,10 +95,11 @@ class DayEntriesList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final lang = context.watch<LanguageService>();
+    if (items.isEmpty && !showEmptyText) return const SizedBox.shrink();
     if (items.isEmpty) {
       // Grey and centred with padding, as on the iPhone.
       return Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         child: Text(
           lang.translate('no_entries'),
           textAlign: TextAlign.center,
@@ -167,7 +174,7 @@ class DayEntriesList extends StatelessWidget {
             if (item.editable) ...[
               const SizedBox(width: 12),
               Icon(
-                Icons.edit_outlined,
+                AppIcons.edit,
                 size: IosText.footnote + 2,
                 color: IosColors.secondary(context),
               ),

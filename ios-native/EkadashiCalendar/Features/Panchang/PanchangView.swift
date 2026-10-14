@@ -62,7 +62,7 @@ struct PanchangView: View {
                     .accessibilityIdentifier("panchang_today")
             }
             ToolbarItem(placement: .topBarTrailing) {
-                Button { showingNotes = true } label: { Image(systemName: "info.circle") }
+                Button { showingNotes = true } label: { Image(systemName: AppSymbol.info) }
                     .accessibilityLabel(model.t("panchang_notes_title"))
                     .accessibilityIdentifier("panchang_notes")
             }
@@ -109,11 +109,11 @@ struct PanchangView: View {
             // Every sub-tab shows the weekday, date, month and year; the
             // monthly ones step a month and keep the day of the month.
             if page.isMonthly {
-                stepper(title: PanchangFormat.date(date, language: language), symbol: "calendar", monthly: true,
+                stepper(title: PanchangFormat.date(date, language: language), symbol: AppSymbol.panchangDate, monthly: true,
                         previous: { date = date.steppingMonths(-1) }, next: { date = date.steppingMonths(1) },
                         pick: { pickingDate = true }, id: "panchang_selected_month")
             } else {
-                stepper(title: PanchangFormat.date(date, language: language), symbol: "calendar", monthly: false,
+                stepper(title: PanchangFormat.date(date, language: language), symbol: AppSymbol.panchangDate, monthly: false,
                         previous: { date = date.adding(days: -1) }, next: { date = date.adding(days: 1) },
                         pick: { pickingDate = true }, id: "panchang_selected_date")
             }
@@ -125,10 +125,10 @@ struct PanchangView: View {
     private var locationMenu: some View {
         Button { editingLocation = true } label: {
             HStack(spacing: 6) {
-                Image(systemName: "mappin.and.ellipse").foregroundStyle(Theme.teal)
+                Image(systemName: AppSymbol.panchangCity).foregroundStyle(Theme.teal)
                 Text(model.cityDisplayName(city)).lineLimit(1)
                 Text(city.timeZoneLabel(language: language)).font(.caption).foregroundStyle(.secondary).lineLimit(1)
-                Image(systemName: "chevron.down").font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
+                Image(systemName: AppSymbol.menuDisclosure).font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
             }
             .font(.subheadline.weight(.semibold))
             .foregroundStyle(.primary)
@@ -143,7 +143,7 @@ struct PanchangView: View {
     private func stepper(title: String, symbol: String, monthly: Bool, previous: @escaping () -> Void, next: @escaping () -> Void,
                          pick: @escaping () -> Void, id: String) -> some View {
         HStack(spacing: 0) {
-            Button(action: previous) { Image(systemName: "chevron.left").frame(width: 44, height: 44) }
+            Button(action: previous) { Image(systemName: AppSymbol.previous).frame(width: 44, height: 44) }
                 .accessibilityLabel(model.t("panchang_previous"))
                 .accessibilityIdentifier(monthly ? "panchang_previous_month" : "panchang_previous_day")
             Spacer(minLength: 4)
@@ -156,7 +156,7 @@ struct PanchangView: View {
             }
             .accessibilityIdentifier(id)
             Spacer(minLength: 4)
-            Button(action: next) { Image(systemName: "chevron.right").frame(width: 44, height: 44) }
+            Button(action: next) { Image(systemName: AppSymbol.next).frame(width: 44, height: 44) }
                 .accessibilityLabel(model.t("panchang_next"))
                 .accessibilityIdentifier(monthly ? "panchang_next_month" : "panchang_next_day")
         }
@@ -349,13 +349,13 @@ struct PanchangUpgradeCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Label(model.t("panchang_premium_title"), systemImage: "lock.fill")
+            Label(model.t("panchang_premium_title"), systemImage: AppSymbol.lock)
                 .font(.headline).foregroundStyle(Theme.amber)
             Text(model.t("panchang_premium_body")).font(.subheadline).foregroundStyle(.secondary)
             Button {
                 model.openPaywall()
             } label: {
-                Label(model.t("panchang_unlock"), systemImage: "star.fill").frame(maxWidth: .infinity).padding(.vertical, 4)
+                Label(model.t("panchang_unlock"), systemImage: AppSymbol.panchangUnlock).frame(maxWidth: .infinity).padding(.vertical, 4)
             }
             .primaryActionStyle()
             .padding(.top, 4)

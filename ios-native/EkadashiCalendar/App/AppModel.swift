@@ -244,7 +244,7 @@ final class AppModel {
             store.set(true, forKey: "has_launched")
             await requestPermissionsOnFirstLaunch()
         } else {
-            await handleLocation()
+            await handleLocation(atLaunch: true)
         }
         removeLapsedPremiumImports()
         scheduleBackgroundRefresh()
@@ -258,30 +258,39 @@ final class AppModel {
             updateReminders(settings)
         }
         _ = await location.requestPermission()
-        await handleLocation()
+        await handleLocation(atLaunch: true)
     }
 
-    /// A detected place becomes the Ekadashi city unless the user chose one;
-    /// without a fix the last known (or chosen) city stays, else Chennai.
-    func handleLocation() async {
+    /// A detected place becomes the Ekadashi city unless the user chose one
+    /// since the app opened ([atLaunch]: the place found at launch wins, as
+    /// in v1); without a fix the last known (or chosen) city stays, else
+    /// Chennai.
+    func handleLocation(atLaunch: Bool = false) async {
         locationState = .detecting
         var fix = await location.currentFix(store: store)
         if fix == nil, location.hasPermission { fix = location.cachedFix(store: store) }
         if let fix {
             lastCoordinate = (fix.latitude, fix.longitude)
             locationState = .located(fix.city)
-            if !ekadashiCityIsManual { useDetected(fix) }
+            if DetectedCityPolicy.replaces(manual: ekadashiCityIsManual, atLaunch: atLaunch) {
+                useDetected(fix, atLaunch: atLaunch)
+            }
         } else {
             locationState = location.isDenied ? .denied : .unknown
         }
         reload(scrollToNext: true)
     }
 
-    private func useDetected(_ fix: LocationService.Fix) {
+    private func useDetected(_ fix: LocationService.Fix, atLaunch: Bool = false) {
         guard let city = Self.city(from: fix) else { return }
+        let previous = ekadashiCity
         saveCity(city, manual: false)
-        // The Panchang tab starts from the detected place until one is set there.
-        if PanchangLocationStore(store: store).load() == nil { savePanchangCity(city) }
+        // The Panchang tab starts from the detected place until one is set
+        // there, and at a launch moves with Home when it showed Home's city.
+        if DetectedCityPolicy.panchangFollows(panchang: PanchangLocationStore(store: store).load(), previousHome: previous,
+                                              detected: city, atLaunch: atLaunch) {
+            savePanchangCity(city)
+        }
     }
 
     /// A location fix as a city: the geocoded name with the nearest catalog

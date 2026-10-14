@@ -1,3 +1,4 @@
+import 'package:ekadashi_calendar/widgets/app_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import '../support/app_harness.dart';
@@ -29,7 +30,7 @@ void main() {
       expect((events.first as Map)['fastingStart'], endsWith('+05:30'));
       await tester.tap(find.byKey(const Key('glass_tab_1')));
       await tester.pumpAndSettle();
-      expect(find.byIcon(Icons.settings), findsOneWidget);
+      expect(find.byIcon(AppIcons.tabSettings), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );
@@ -40,7 +41,7 @@ void main() {
       harness.notificationGranted = false;
       await tester.pumpWidget(harness.app());
       await tester.pumpAndSettle();
-      await tester.tap(find.byIcon(Icons.settings));
+      await tester.tap(find.byIcon(AppIcons.tabSettings));
       await tester.pumpAndSettle();
       // Notifications sits below the Premium card and the Appearance section.
       await tester.ensureVisible(
@@ -68,7 +69,7 @@ void main() {
     (tester) async {
       await tester.pumpWidget(harness.app());
       await tester.pumpAndSettle();
-      await tester.tap(find.byIcon(Icons.settings));
+      await tester.tap(find.byIcon(AppIcons.tabSettings));
       await tester.pumpAndSettle();
       // Notifications sits below the Premium card and the Appearance section.
       await tester.ensureVisible(
@@ -109,7 +110,7 @@ void main() {
     await tester.pumpAndSettle();
     // The detected city and its country, without a time zone.
     expect(homeCity(tester), 'Chennai (IN)');
-    expect(find.byIcon(Icons.home), findsOneWidget);
+    expect(find.byIcon(AppIcons.tabHome), findsOneWidget);
     final request = harness.notificationCalls.lastWhere(
       (c) => c.method == 'scheduleAllNotifications',
     );
@@ -139,7 +140,7 @@ void main() {
     expect(find.text('Location Denied'), findsNothing);
     await tester.tap(find.byKey(const Key('glass_tab_1')));
     await tester.pumpAndSettle();
-    await tester.tap(find.byIcon(Icons.settings));
+    await tester.tap(find.byIcon(AppIcons.tabSettings));
     await tester.pumpAndSettle();
     expect(find.text('Appearance'), findsOneWidget);
     expect(find.text('Dark Mode'), findsOneWidget);
@@ -153,13 +154,13 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('glass_tab_1')));
     await tester.pumpAndSettle();
-    await tester.tap(find.byIcon(Icons.settings));
+    await tester.tap(find.byIcon(AppIcons.tabSettings));
     await tester.pumpAndSettle();
     expect(
       find.text('Enable Notifications', skipOffstage: false),
       findsOneWidget,
     );
-    await tester.tap(find.byIcon(Icons.home));
+    await tester.tap(find.byIcon(AppIcons.tabHome));
     await tester.pumpAndSettle();
     expect(homeCity(tester), 'Chennai (IN)');
     expect(tester.takeException(), isNull);

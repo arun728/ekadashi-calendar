@@ -326,14 +326,9 @@ final class ScreenshotTests: XCTestCase {
         let choose = element("event_reminder_choose")
         XCTAssertTrue(choose.waitForExistence(timeout: 10), "editor sheet")
         choose.tap()
-        // My calendar is last in a long list whose off-screen rows are not in
-        // the accessibility tree; search narrows it to the entry.
-        let search = app.searchFields.firstMatch
-        XCTAssertTrue(search.waitForExistence(timeout: 10), "event picker")
-        search.tap()
-        search.typeText("my entries")
+        // My calendar comes first (then monthly observances, then festivals).
         let choice = element("event_choice_calendar:custom")
-        XCTAssertTrue(choice.waitForExistence(timeout: 10), "All my entries")
+        XCTAssertTrue(choice.waitForExistence(timeout: 10), "All custom events")
         choice.tap()
         XCTAssertTrue(element("event_reminder_lead_2").waitForExistence(timeout: 10))
         snap("12-event-reminder-editor")

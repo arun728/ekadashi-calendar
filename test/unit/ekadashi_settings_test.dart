@@ -118,6 +118,57 @@ void main() {
     expect(restarted.isManual, isFalse);
   });
 
+  const sanJose = PanchangCity(
+    id: 'geonames-5392171',
+    label: 'San Jose (US)',
+    latitude: 37.33939,
+    longitude: -121.89496,
+    timeZoneId: 'America/Los_Angeles',
+  );
+
+  test('reopening the app detects the place again, even after a city was '
+      'picked on Home, and Panchang follows Home', () async {
+    SharedPreferences.setMockInitialValues({});
+    catalogAvailable = true;
+    final settings = EkadashiSettings();
+    await settings.load();
+    await settings.chooseCity(sanJose);
+    expect(settings.isManual, isTrue);
+
+    // A launch: the place found now replaces the picked city.
+    final reopened = EkadashiSettings();
+    await reopened.load();
+    final revision = reopened.panchangCityRevision;
+    expect(await reopened.useDetected(fix('Chennai'), atLaunch: true), isTrue);
+    expect(reopened.city.label, 'Chennai (IN)');
+    expect(reopened.isManual, isFalse);
+    // Panchang showed Home's city, so it moves with Home.
+    expect((await PanchangLocationStore().load())?.label, 'Chennai (IN)');
+    expect(reopened.panchangCityRevision, greaterThan(revision));
+  });
+
+  test(
+    'a launch keeps a Panchang city that was set on the Panchang tab',
+    () async {
+      SharedPreferences.setMockInitialValues({});
+      catalogAvailable = true;
+      final settings = EkadashiSettings();
+      await settings.load();
+      await settings.chooseCity(sanJose);
+      const london = PanchangCity(
+        id: 'geonames-2643743',
+        label: 'London (GB)',
+        latitude: 51.50853,
+        longitude: -0.12574,
+        timeZoneId: 'Europe/London',
+      );
+      await PanchangLocationStore().save(london);
+      await settings.useDetected(fix('Chennai'), atLaunch: true);
+      expect(settings.city.label, 'Chennai (IN)');
+      expect(await PanchangLocationStore().load(), london);
+    },
+  );
+
   test('the first detected place also starts the Panchang tab', () async {
     SharedPreferences.setMockInitialValues({});
     catalogAvailable = true;

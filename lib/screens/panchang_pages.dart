@@ -19,6 +19,7 @@ import '../services/search/search_catalog.dart';
 import '../widgets/ios_style.dart';
 import 'global_search_screen.dart' show searchCategoryIcon;
 import 'premium_screen.dart';
+import '../widgets/app_icons.dart';
 
 /// Colours shared by the Panchang pages (the iOS Theme: teal, amber,
 /// Theme.missed; good is Theme.observed, SwiftUI .green, see [good]).
@@ -231,80 +232,6 @@ class PanchangValueRow extends StatelessWidget {
   }
 }
 
-/// SF Symbol "sparkle": a four-point star.
-class PanchangSparkle extends StatelessWidget {
-  const PanchangSparkle({super.key, this.size = 15, this.color});
-  final double size;
-  final Color? color;
-
-  @override
-  Widget build(BuildContext context) => CustomPaint(
-    size: Size.square(size),
-    painter: _SparklePainter(color ?? IosColors.primary(context)),
-  );
-}
-
-class _SparklePainter extends CustomPainter {
-  _SparklePainter(this.color);
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final c = size.center(Offset.zero);
-    final r = size.shortestSide / 2;
-    final w = r * .28;
-    final path = Path()
-      ..moveTo(c.dx, c.dy - r)
-      ..quadraticBezierTo(c.dx + w * .4, c.dy - w * .4, c.dx + r, c.dy)
-      ..quadraticBezierTo(c.dx + w * .4, c.dy + w * .4, c.dx, c.dy + r)
-      ..quadraticBezierTo(c.dx - w * .4, c.dy + w * .4, c.dx - r, c.dy)
-      ..quadraticBezierTo(c.dx - w * .4, c.dy - w * .4, c.dx, c.dy - r)
-      ..close();
-    canvas.drawPath(path, Paint()..color = color);
-  }
-
-  @override
-  bool shouldRepaint(_SparklePainter old) => old.color != color;
-}
-
-/// SF Symbol "circle.grid.3x3": nine dots in a square.
-class PanchangDotGrid extends StatelessWidget {
-  const PanchangDotGrid({super.key, this.size = 18});
-  final double size;
-
-  @override
-  Widget build(BuildContext context) {
-    final icon = IconTheme.of(context);
-    return CustomPaint(
-      size: Size.square(icon.size ?? size),
-      painter: _DotGridPainter(icon.color ?? IosColors.teal),
-    );
-  }
-}
-
-class _DotGridPainter extends CustomPainter {
-  _DotGridPainter(this.color);
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final step = size.width / 3;
-    final paint = Paint()..color = color;
-    for (var row = 0; row < 3; row++) {
-      for (var col = 0; col < 3; col++) {
-        canvas.drawCircle(
-          Offset(step * (col + .5), step * (row + .5)),
-          step * .32,
-          paint,
-        );
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(_DotGridPainter old) => old.color != color;
-}
-
 /// A tappable disclosure row like SwiftUI's DisclosureGroup: the label,
 /// then a teal chevron that turns down when open.
 class _Disclosure extends StatefulWidget {
@@ -342,7 +269,7 @@ class _DisclosureState extends State<_Disclosure> {
                 turns: _open ? .25 : 0,
                 duration: const Duration(milliseconds: 200),
                 child: const Icon(
-                  Icons.chevron_right,
+                  AppIcons.rowDisclosure,
                   size: 20,
                   color: IosColors.teal,
                 ),
@@ -378,7 +305,7 @@ class PanchangUpgradeCard extends StatelessWidget {
       children: [
         Row(
           children: [
-            const Icon(Icons.lock, color: PanchangColors.amber, size: 18),
+            const Icon(AppIcons.lock, color: PanchangColors.amber, size: 18),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
@@ -404,7 +331,7 @@ class PanchangUpgradeCard extends StatelessWidget {
             key: const Key('panchang_unlock_button'),
             style: IosButtons.prominent(),
             onPressed: () => openPremium(context),
-            icon: const Icon(Icons.star, size: 18),
+            icon: const Icon(AppIcons.panchangUnlock, size: 18),
             label: Text(
               _t(context, 'panchang_unlock'),
               style: IosButtons.label,
@@ -557,7 +484,7 @@ class _PanchangKeyDaysViewState extends State<PanchangKeyDaysView> {
     padding: const EdgeInsets.all(14),
     child: Row(
       children: [
-        const Icon(Icons.lock, color: PanchangColors.amber, size: 18),
+        const Icon(AppIcons.lock, color: PanchangColors.amber, size: 18),
         const SizedBox(width: 12),
         Expanded(
           child: Text(
@@ -634,7 +561,7 @@ class _PanchangKeyDaysViewState extends State<PanchangKeyDaysView> {
             ),
             child: locked
                 ? const Icon(
-                    Icons.lock,
+                    AppIcons.lock,
                     color: PanchangColors.amber,
                     size: IosText.title3,
                   )
@@ -702,7 +629,7 @@ class _PanchangKeyDaysViewState extends State<PanchangKeyDaysView> {
           ),
           const SizedBox(width: 4),
           Icon(
-            locked ? Icons.lock : Icons.chevron_right,
+            locked ? AppIcons.lock : AppIcons.rowDisclosure,
             size: locked ? 14 : 18,
             color: locked ? PanchangColors.amber : secondary,
           ),
@@ -805,7 +732,7 @@ class PanchangDailyView extends StatelessWidget {
                 text:
                     '${terms.month(day.amantaMonth, language)} · ${_t(context, 'panchang_amanta')}',
                 color: PanchangColors.teal,
-                icon: Icons.dark_mode_outlined,
+                icon: AppIcons.panchangTithi,
               ),
               StatusPill(
                 text: terms.translate(
@@ -814,13 +741,13 @@ class PanchangDailyView extends StatelessWidget {
                   language,
                 ),
                 color: PanchangColors.teal,
-                icon: Icons.calendar_today,
+                icon: AppIcons.panchangVara,
               ),
               for (final event in majors)
                 StatusPill(
                   text: terms.observanceName(event, language),
                   color: Color(SearchCategory.festival.color),
-                  icon: Icons.auto_awesome,
+                  icon: AppIcons.panchangObservance,
                 ),
             ],
           ),
@@ -834,14 +761,14 @@ class PanchangDailyView extends StatelessWidget {
   /// arrow) in glass tiles, radius 18.
   Widget _sunAndMoon(BuildContext context, String Function(DateTime?) time) {
     final tiles = [
-      (true, true, 'panchang_sunrise', day.sunriseUtc),
-      (true, false, 'panchang_sunset', day.sunsetUtc),
-      (false, true, 'panchang_moonrise', day.moonriseUtc),
-      (false, false, 'panchang_moonset', day.moonsetUtc),
+      (true, AppIcons.sunrise, 'panchang_sunrise', day.sunriseUtc),
+      (true, AppIcons.sunset, 'panchang_sunset', day.sunsetUtc),
+      (false, AppIcons.moonrise, 'panchang_moonrise', day.moonriseUtc),
+      (false, AppIcons.moonset, 'panchang_moonset', day.moonsetUtc),
     ];
     final secondary = IosColors.secondary(context);
-    Widget tile((bool, bool, String, DateTime?) data) {
-      final (sun, rising, key, instant) = data;
+    Widget tile((bool, IconData, String, DateTime?) data) {
+      final (sun, icon, key, instant) = data;
       return PanchangPanel(
         radius: 18,
         padding: const EdgeInsets.all(14),
@@ -850,32 +777,11 @@ class PanchangDailyView extends StatelessWidget {
           children: [
             Row(
               children: [
-                SizedBox(
-                  width: 20,
-                  height: 18,
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      Positioned(
-                        left: 0,
-                        bottom: 0,
-                        child: Icon(
-                          sun ? Icons.wb_twilight : Icons.nightlight_round,
-                          size: sun ? 16 : 14,
-                          color: sun ? IosColors.yellow(context) : secondary,
-                        ),
-                      ),
-                      Positioned(
-                        right: 0,
-                        top: -2,
-                        child: Icon(
-                          rising ? Icons.arrow_upward : Icons.arrow_downward,
-                          size: 9,
-                          color: secondary,
-                        ),
-                      ),
-                    ],
-                  ),
+                Icon(
+                  icon,
+                  key: Key('${key}_icon'),
+                  size: 16,
+                  color: sun ? IosColors.yellow(context) : secondary,
                 ),
                 const SizedBox(width: 6),
                 Expanded(
@@ -969,7 +875,7 @@ class PanchangDailyView extends StatelessWidget {
     return PanchangCard(
       key: const Key('panchang_limbs'),
       title: _t(context, 'panchang_five_limbs'),
-      icon: const Icon(Icons.hive_outlined),
+      icon: const Icon(AppIcons.fiveLimbs),
       children: [
         for (final (index, row) in rows.indexed) ...[
           if (index > 0) _divider(context),
@@ -1019,7 +925,7 @@ class PanchangDailyView extends StatelessWidget {
     return PanchangCard(
       key: const Key('panchang_timings'),
       title: _t(context, 'panchang_timings'),
-      icon: const Icon(Icons.schedule),
+      icon: const Icon(AppIcons.timings),
       children: [
         heading('panchang_good_times', goodColor),
         for (final p in good) row(p, goodColor),
@@ -1037,7 +943,7 @@ class PanchangDailyView extends StatelessWidget {
     return PanchangCard(
       key: const Key('panchang_observances'),
       title: _t(context, 'panchang_observances'),
-      icon: const Icon(Icons.auto_awesome),
+      icon: const Icon(AppIcons.observances),
       children: [
         for (final event in day.observances)
           Row(
@@ -1048,12 +954,13 @@ class PanchangDailyView extends StatelessWidget {
                 height: 20,
                 child: Center(
                   child: event.isMajor
-                      ? PanchangSparkle(
+                      ? Icon(
+                          AppIcons.observanceMajor,
                           key: const Key('panchang_sparkle'),
                           size: 15,
                           color: primary,
                         )
-                      : Icon(Icons.circle, size: 7, color: primary),
+                      : Icon(AppIcons.observanceMinor, size: 7, color: primary),
                 ),
               ),
               const SizedBox(width: 8),
@@ -1096,7 +1003,11 @@ class PanchangDailyView extends StatelessWidget {
       child: _Disclosure(
         label: Row(
           children: [
-            const Icon(Icons.list_alt, size: 18, color: PanchangColors.teal),
+            const Icon(
+              AppIcons.moreDetails,
+              size: 18,
+              color: PanchangColors.teal,
+            ),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
@@ -1312,7 +1223,7 @@ class _PanchangMuhurtaViewState extends State<PanchangMuhurtaView> {
         ),
         PanchangCard(
           title: _t(context, 'panchang_choghadiya'),
-          icon: const PanchangDotGrid(key: Key('panchang_dot_grid')),
+          icon: const Icon(AppIcons.choghadiya, key: Key('panchang_dot_grid')),
           children: [
             Text(
               _t(context, 'panchang_choghadiya_hint'),
@@ -1330,8 +1241,7 @@ class _PanchangMuhurtaViewState extends State<PanchangMuhurtaView> {
         ),
         PanchangCard(
           title: _t(context, 'panchang_hora'),
-          // clock.arrow.2.circlepath
-          icon: const Icon(Icons.update),
+          icon: const Icon(AppIcons.hora),
           children: [
             if (hora.isEmpty) unavailable(),
             for (final p in hora) row(p.name, PanchangTermKind.hora, p),
@@ -1339,7 +1249,7 @@ class _PanchangMuhurtaViewState extends State<PanchangMuhurtaView> {
         ),
         PanchangCard(
           title: _t(context, 'panchang_lagna'),
-          icon: const Icon(Icons.public),
+          icon: const Icon(AppIcons.lagna),
           children: [
             if (day.lagna.isEmpty) unavailable(),
             for (final p in day.lagna) row(p.name, PanchangTermKind.rashi, p),
@@ -1370,7 +1280,7 @@ class PanchangRashiView extends StatelessWidget {
       children: _spaced([
         PanchangCard(
           title: _t(context, 'panchang_sun_rashi'),
-          icon: const Icon(Icons.wb_sunny),
+          icon: const Icon(AppIcons.sunRashi),
           children: [
             PanchangValueRow(
               label: _t(context, 'panchang_rashi'),
@@ -1385,7 +1295,7 @@ class PanchangRashiView extends StatelessWidget {
         ),
         PanchangCard(
           title: _t(context, 'panchang_moon_rashi'),
-          icon: const Icon(Icons.nightlight_round),
+          icon: const Icon(AppIcons.moonRashi),
           children: [
             PanchangValueRow(
               label: _t(context, 'panchang_rashi'),
@@ -1400,7 +1310,7 @@ class PanchangRashiView extends StatelessWidget {
         ),
         PanchangCard(
           title: _t(context, 'panchang_nakshatra'),
-          icon: const Icon(Icons.star),
+          icon: const Icon(AppIcons.nakshatra),
           children: [
             PanchangValueRow(
               label: _t(context, 'panchang_nakshatra'),
@@ -1633,7 +1543,7 @@ class _PanchangEkadashiViewState extends State<PanchangEkadashiView> {
             if (fast.nearBoundary)
               Row(
                 children: [
-                  Icon(Icons.warning_amber_rounded, size: 14, color: orange),
+                  Icon(AppIcons.warning, size: 14, color: orange),
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(

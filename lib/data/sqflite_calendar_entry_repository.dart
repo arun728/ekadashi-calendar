@@ -7,10 +7,17 @@ import '../models/calendar_entry.dart';
 import 'calendar_entry_repository.dart';
 
 class SqfliteCalendarEntryRepository implements CalendarEntryRepository {
-  SqfliteCalendarEntryRepository({this.inMemory = false, this.debugName});
+  SqfliteCalendarEntryRepository({
+    this.inMemory = false,
+    this.debugName,
+    this.path,
+  });
 
   final bool inMemory;
   final String? debugName;
+
+  /// The database file; the app's entries database when null.
+  final String? path;
   Database? _db;
   Future<void>? _initializing;
 
@@ -42,9 +49,9 @@ class SqfliteCalendarEntryRepository implements CalendarEntryRepository {
         singleInstance: false,
       );
     } else {
-      final dbPath = await getDatabasesPath();
       _db = await openDatabase(
-        p.join(dbPath, 'ekadashi_calendar_entries.db'),
+        path ??
+            p.join(await getDatabasesPath(), 'ekadashi_calendar_entries.db'),
         version: 2,
         onUpgrade: _onUpgrade,
         onCreate: _onCreate,
@@ -106,20 +113,34 @@ class SqfliteCalendarEntryRepository implements CalendarEntryRepository {
     return d;
   }
 
+  /// Opens the database again when it was closed under this repository
+  /// (the shared connection closed elsewhere), so saves and imports keep
+  /// working instead of failing with "database_closed".
+  Future<void> _ready() async {
+    final d = _db;
+    if (d != null && d.isOpen) return;
+    _db = null;
+    _initializing = null;
+    await init();
+  }
+
   @override
   Future<List<CalendarEntry>> getAll() async {
+    await _ready();
     final rows = await db.query(_table, orderBy: 'start_at ASC');
     return rows.map(CalendarEntry.fromMap).toList();
   }
 
   @override
   Future<List<CalendarEntry>> getForDay(DateTime day) async {
+    await _ready();
     final all = await getAll();
     return all.where((e) => e.occursOn(day)).toList();
   }
 
   @override
   Future<List<CalendarEntry>> getBySource(CalendarEntrySource source) async {
+    await _ready();
     final rows = await db.query(
       _table,
       where: 'source = ?',
@@ -131,6 +152,7 @@ class SqfliteCalendarEntryRepository implements CalendarEntryRepository {
 
   @override
   Future<void> upsert(CalendarEntry entry) async {
+    await _ready();
     await db.insert(
       _table,
       entry.toMap(),
@@ -140,11 +162,13 @@ class SqfliteCalendarEntryRepository implements CalendarEntryRepository {
 
   @override
   Future<void> delete(String id) async {
+    await _ready();
     await db.delete(_table, where: 'id = ?', whereArgs: [id]);
   }
 
   @override
   Future<void> deleteByGoogleEventId(String googleEventId) async {
+    await _ready();
     await db.delete(
       _table,
       where: 'google_event_id = ?',
@@ -154,6 +178,7 @@ class SqfliteCalendarEntryRepository implements CalendarEntryRepository {
 
   @override
   Future<void> upsertGoogleBatch(List<CalendarEntry> entries) async {
+    await _ready();
     final batch = db.batch();
     for (final e in entries) {
       batch.insert(
@@ -167,6 +192,7 @@ class SqfliteCalendarEntryRepository implements CalendarEntryRepository {
 
   @override
   Future<void> clearGoogleEntries({String? accountId}) async {
+    await _ready();
     await db.delete(
       _table,
       where: accountId == null ? 'source = ?' : 'source = ? AND account_id = ?',
@@ -185,6 +211,7 @@ class SqfliteCalendarEntryRepository implements CalendarEntryRepository {
     required DateTime timeMax,
     required List<CalendarEntry> entries,
   }) async {
+    await _ready();
     for (final entry in entries) {
       if (entry.source != CalendarEntrySource.google ||
           entry.accountId != accountId ||
@@ -216,10 +243,13 @@ class SqfliteCalendarEntryRepository implements CalendarEntryRepository {
     });
   }
 
+  /// Lets go of the database. The app's file is one connection shared by
+  /// every repository (sqflite returns the same open database for a path),
+  /// so it stays open for the others; only a private test database closes.
   @override
   Future<void> close() async {
     if (_initializing != null) await _initializing;
-    await _db?.close();
+    if (inMemory) await _db?.close();
     _db = null;
     _initializing = null;
   }

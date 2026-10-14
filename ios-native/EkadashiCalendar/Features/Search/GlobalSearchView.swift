@@ -49,7 +49,7 @@ struct GlobalSearchView: View {
         .onChange(of: query) { _, value in changed(value) }
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
-                Button { dismiss() } label: { Image(systemName: "chevron.down") }
+                Button { dismiss() } label: { Image(systemName: AppSymbol.dismissDown) }
                     .accessibilityIdentifier("global_search_back")
             }
             if loadingObservances {
@@ -84,7 +84,7 @@ struct GlobalSearchView: View {
                                 Button(String(value)) { year = value; run() }
                             }
                         } label: {
-                            Label(year.map(String.init) ?? model.t("year"), systemImage: "calendar")
+                            Label(year.map(String.init) ?? model.t("year"), systemImage: AppSymbol.year)
                                 .font(.subheadline.weight(year == nil ? .regular : .semibold))
                                 .padding(.horizontal, 14)
                                 .padding(.vertical, 8)
@@ -94,7 +94,7 @@ struct GlobalSearchView: View {
                         .accessibilityIdentifier("search_year_selector")
                         ForEach(SearchCategory.pages, id: \.self) { type in
                             GlassChip(title: model.t(type?.localizationKey ?? "filter_all"),
-                                      systemImage: type?.symbol ?? "square.grid.2x2",
+                                      systemImage: type?.symbol ?? AppSymbol.searchAllCategories,
                                       color: type.map { Theme.hex($0.colorHex) } ?? Theme.teal,
                                       selected: category == type) {
                                 // The selected type's chip goes back to All.
@@ -131,7 +131,7 @@ struct GlobalSearchView: View {
         } else if results.isEmpty {
             ContentUnavailableView {
                 // The query follows the sentence, as on Android: No results found for "xyz".
-                Label("\(model.t("no_results_found")) \"\(query.trimmingCharacters(in: .whitespacesAndNewlines))\"", systemImage: "magnifyingglass")
+                Label("\(model.t("no_results_found")) \"\(query.trimmingCharacters(in: .whitespacesAndNewlines))\"", systemImage: AppSymbol.search)
             } description: {
                 Text(model.t("search_no_results_hint"))
             }
@@ -164,14 +164,14 @@ struct GlobalSearchView: View {
                     ForEach(recents, id: \.self) { term in
                         HStack {
                             Button { submit(term) } label: {
-                                Label(term, systemImage: "clock.arrow.circlepath").foregroundStyle(.primary)
+                                Label(term, systemImage: AppSymbol.recentSearch).foregroundStyle(.primary)
                             }
                             Spacer()
                             Button {
                                 model.recents.remove(term)
                                 recents = model.recents.all()
                             } label: {
-                                Image(systemName: "xmark").font(.caption).foregroundStyle(.secondary)
+                                Image(systemName: AppSymbol.close).font(.caption).foregroundStyle(.secondary)
                             }
                         }
                     }
@@ -344,7 +344,7 @@ struct SearchResultRow: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text(item.title).font(.headline).lineLimit(2)
                 if locked {
-                    Label(model.t("search_premium_locked"), systemImage: "lock.fill")
+                    Label(model.t("search_premium_locked"), systemImage: AppSymbol.lock)
                         .font(.caption).foregroundStyle(Theme.amber)
                 } else if let date = item.date {
                     Text(model.format(date, "EEE, d MMM yyyy")).font(.subheadline).foregroundStyle(.secondary)
@@ -352,7 +352,7 @@ struct SearchResultRow: View {
                 Text(model.t(category.localizationKey)).font(.caption2.weight(.semibold)).foregroundStyle(color)
             }
             Spacer(minLength: 8)
-            Image(systemName: locked ? "lock.fill" : "chevron.right")
+            Image(systemName: locked ? AppSymbol.lock : AppSymbol.rowDisclosure)
                 .font(.footnote.weight(.semibold))
                 .foregroundStyle(locked ? Theme.amber : Color.secondary)
         }

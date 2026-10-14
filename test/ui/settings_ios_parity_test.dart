@@ -1,3 +1,4 @@
+import 'package:ekadashi_calendar/widgets/app_icons.dart';
 import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
@@ -145,15 +146,15 @@ void main() {
         Finder inTube(Finder tube, Finder matching) =>
             find.descendant(of: tube, matching: matching);
         expect(
-          inTube(appearance, find.byIcon(Icons.grid_view)),
+          inTube(appearance, find.byIcon(AppIcons.widgetPreview)),
           findsOneWidget,
         );
         expect(
-          inTube(appearance, find.byIcon(Icons.chevron_right_rounded)),
+          inTube(appearance, find.byIcon(AppIcons.rowDisclosure)),
           findsOneWidget,
         );
         expect(
-          inTube(appearance, find.byIcon(Icons.dark_mode)),
+          inTube(appearance, find.byIcon(AppIcons.darkMode)),
           findsOneWidget,
         );
         expect(
@@ -209,7 +210,7 @@ void main() {
           inTube(about, find.text(lang.translate('version'))),
           findsOneWidget,
         );
-        expect(inTube(about, find.byIcon(Icons.ios_share)), findsOneWidget);
+        expect(inTube(about, find.byIcon(AppIcons.share)), findsOneWidget);
         expect(inTube(about, find.text('2.0.0')), findsOneWidget);
         expect(inTube(about, find.text('1.1.1')), findsNothing);
 

@@ -151,7 +151,7 @@ public enum EventReminderPlanner {
                                       language: language, now: now, localizer: localizer)
                 }
             case .calendar(let source):
-                for item in entries where item.source == source {
+                for item in CalendarEntry.withoutDuplicateGoogle(entries) where item.source == source {
                     let day = item.allDayStart ?? CivilDate.today(in: entryZone, now: item.start)
                     result += planned(reminder, name: item.title, day: day, zone: entryZone, url: AppRoute.calendarURL(day),
                                       language: language, now: now, localizer: localizer, entryId: item.id)
@@ -189,12 +189,14 @@ public enum EventReminderPlanner {
     }
 }
 
-/// The events a reminder can be set for, in the app language: festivals
-/// (alphabetical), monthly days (catalogue order) and the user's calendars.
+/// The events a reminder can be set for, in the app language: the user's
+/// calendars, monthly days (catalogue order) and festivals (alphabetical).
 public struct EventReminderChoice: Equatable, Identifiable, Sendable {
+    /// In the order the Add a reminder sheet lists them: the user's calendars,
+    /// then monthly observances, then festivals.
     public enum Kind: String, CaseIterable, Sendable {
-        case festival, monthly
         case myCalendar = "my_calendar"
+        case monthly, festival
 
         public var titleKey: String { "event_reminder_group_\(rawValue)" }
     }
@@ -221,7 +223,7 @@ public struct EventReminderChoice: Equatable, Identifiable, Sendable {
             EventReminderChoice(target: .calendar($0), title: localizer.translate("event_reminder_all_\($0.rawValue)", language: language),
                                 group: .myCalendar)
         }
-        return festivals + monthly + calendars
+        return calendars + monthly + festivals
     }
 
     /// The title of a stored reminder's event.

@@ -31,10 +31,10 @@ struct SettingsView: View {
                 NavigationLink {
                     WidgetPreviewView()
                 } label: {
-                    row("square.grid.2x2", model.t("widget_preview"), model.t("widget_preview_desc"))
+                    row(AppSymbol.widgetPreview, model.t("widget_preview"), model.t("widget_preview_desc"))
                 }
                 Toggle(isOn: Binding(get: { model.isDarkMode }, set: { model.setDarkMode($0) })) {
-                    Label(model.t("dark_mode"), systemImage: "moon.fill")
+                    Label(model.t("dark_mode"), systemImage: AppSymbol.darkMode)
                 }
                 .tint(Theme.teal)
             }
@@ -62,7 +62,7 @@ struct SettingsView: View {
                             model.show("notif_sent_msg")
                         }
                     } label: {
-                        row("bell.badge", model.t("test_notification"), model.t("test_notification_desc"))
+                        row(AppSymbol.testNotification, model.t("test_notification"), model.t("test_notification_desc"))
                     }
                     .buttonStyle(.plain)
                 }
@@ -91,26 +91,26 @@ struct SettingsView: View {
 
             Section(model.t("permissions")) {
                 Button { openSettings() } label: {
-                    row("gearshape", model.t("app_settings"), model.t("app_settings_desc"))
+                    row(AppSymbol.appSettings, model.t("app_settings"), model.t("app_settings_desc"))
                 }
                 .buttonStyle(.plain)
                 HStack {
-                    row("arrow.clockwise.circle", model.t("ios_background_refresh"), model.t("ios_background_refresh_desc"))
+                    row(AppSymbol.backgroundRefresh, model.t("ios_background_refresh"), model.t("ios_background_refresh_desc"))
                     Spacer()
                     StatusPill(text: model.t(backgroundRefresh == .available ? "status_active" : "status_disabled"),
                                color: backgroundRefresh == .available ? Theme.observed : .orange)
                 }
                 Button { showGuide = true } label: {
-                    row("info.circle", model.t("perm_guide_title"), nil)
+                    row(AppSymbol.info, model.t("perm_guide_title"), nil)
                 }
                 .buttonStyle(.plain)
             }
 
             Section(model.t("about")) {
-                Button { rate() } label: { row("star.fill", model.t("rate_app"), model.t("rate_app_desc")) }
+                Button { rate() } label: { row(AppSymbol.rateApp, model.t("rate_app"), model.t("rate_app_desc")) }
                     .buttonStyle(.plain)
                 ShareLink(item: model.t("ios_share_message", appStoreLink)) {
-                    row("square.and.arrow.up", model.t("share_app"), model.t("share_app_desc"))
+                    row(AppSymbol.share, model.t("share_app"), model.t("share_app_desc"))
                 }
                 .buttonStyle(.plain)
                 HStack {
@@ -228,7 +228,7 @@ struct SettingsPremiumCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(spacing: 14) {
-                Image(systemName: "crown.fill")
+                Image(systemName: AppSymbol.premium)
                     .font(.title2)
                     .foregroundStyle(LinearGradient(colors: [Theme.amber, .orange], startPoint: .top, endPoint: .bottom))
                     .frame(width: 52, height: 52)
@@ -258,9 +258,9 @@ struct SettingsPremiumCard: View {
 
     private var offer: some View {
         VStack(alignment: .leading, spacing: 10) {
-            benefit("calendar.badge.clock", "premium_feature_calendar")
-            benefit("leaf.fill", "premium_feature_vrat")
-            benefit("sparkles", "premium_feature_panchang_v2")
+            benefit(AppSymbol.premiumCalendar, "premium_feature_calendar")
+            benefit(AppSymbol.premiumVrat, "premium_feature_vrat")
+            benefit(AppSymbol.premiumPanchang, "premium_feature_panchang_v2")
             if let monthly = model.premium.products[.monthly]?.displayPrice,
                let lifetime = model.premium.products[.lifetime]?.displayPrice {
                 Text(model.t("settings_premium_from", monthly, lifetime)).font(.footnote.weight(.semibold))

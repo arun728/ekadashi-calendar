@@ -17,7 +17,6 @@ import 'widgets/day_entries_list.dart';
 import 'widgets/add_edit_entry_sheet.dart';
 import 'widgets/google_calendar_picker_sheet.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import '../widgets/tab_shell.dart';
 import '../services/notifications/event_reminder_service.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -32,6 +31,7 @@ import 'details_screen.dart';
 import 'widgets/month_year_picker.dart';
 import '../services/vrat_tracker_service.dart';
 import '../models/vrat_tracker_models.dart';
+import '../widgets/app_icons.dart';
 
 class CalendarScreen extends StatefulWidget {
   final List<EkadashiDate> ekadashiList;
@@ -78,7 +78,7 @@ class CalendarScreen extends StatefulWidget {
 class CalendarScreenState extends State<CalendarScreen> {
   /// Month changes slide visibly, the same for arrows, swipes and the
   /// grid's own paging (CalendarView.monthSlide on iOS).
-  static const monthSlide = Duration(milliseconds: 350);
+  static const monthSlide = Duration(milliseconds: 250);
 
   /// Home's city, tradition and year; the Calendar stays on Home's year.
   EkadashiSettings? _settings;
@@ -670,7 +670,7 @@ class CalendarScreenState extends State<CalendarScreen> {
         tooltip: lang.translate('add_entry'),
         color: IosColors.teal,
         onPressed: _repoReady ? () => _editEntry() : null,
-        icon: const Icon(Icons.add),
+        icon: const Icon(AppIcons.add),
       ),
       if (_syncing)
         const Padding(
@@ -690,7 +690,7 @@ class CalendarScreenState extends State<CalendarScreen> {
           tooltip: lang.translate('google_calendar'),
           enabled: _repoReady,
           icon: const Icon(
-            CupertinoIcons.arrow_2_circlepath_circle,
+            AppIcons.googleMenu,
             size: 28,
             color: IosColors.teal,
           ),
@@ -706,7 +706,7 @@ class CalendarScreenState extends State<CalendarScreen> {
               value: 'import',
               child: menuRow(
                 'sync_google',
-                CupertinoIcons.arrow_2_circlepath,
+                AppIcons.googleSync,
                 IosColors.primary(context),
               ),
             ),
@@ -715,7 +715,7 @@ class CalendarScreenState extends State<CalendarScreen> {
               value: 'disconnect',
               child: menuRow(
                 'disconnect_google',
-                CupertinoIcons.person_crop_circle_badge_minus,
+                AppIcons.googleDisconnect,
                 red,
               ),
             ),
@@ -843,7 +843,7 @@ class CalendarScreenState extends State<CalendarScreen> {
                       ),
                       const SizedBox(width: 6),
                       const Icon(
-                        Icons.keyboard_arrow_down_rounded,
+                        AppIcons.menuDisclosure,
                         size: 18,
                         color: IosColors.teal,
                       ),
@@ -881,7 +881,7 @@ class CalendarScreenState extends State<CalendarScreen> {
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints.tightFor(width: 44, height: 44),
           onPressed: _isFirstMonth ? null : () => _swipeMonth(-1),
-          icon: const Icon(Icons.chevron_left_rounded),
+          icon: const Icon(AppIcons.previous),
         ),
         IconButton(
           key: const Key('calendar_next_month'),
@@ -890,7 +890,7 @@ class CalendarScreenState extends State<CalendarScreen> {
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints.tightFor(width: 44, height: 44),
           onPressed: _isLastMonth ? null : () => _swipeMonth(1),
-          icon: const Icon(Icons.chevron_right_rounded),
+          icon: const Icon(AppIcons.next),
         ),
       ],
     ),
@@ -1076,6 +1076,8 @@ class CalendarScreenState extends State<CalendarScreen> {
         if (_filter != CalendarFilter.ekadashi) ...[
           if (ekadashi != null && showEkadashi) const SizedBox(height: 10),
           DayEntriesList(
+            // An Ekadashi is the day's entry: no "No entries for this day".
+            showEmptyText: ekadashi == null || !showEkadashi,
             items: CalendarDayMerge.merge(
               day: _selectedDay,
               ekadashis: const [],
@@ -1125,13 +1127,10 @@ class CalendarScreenState extends State<CalendarScreen> {
     final pill = switch (status) {
       ObservanceStatus.observed => (
         IosColors.green(context),
-        Icons.check_circle_outline,
+        AppIcons.statusObserved,
       ),
-      ObservanceStatus.partial => (
-        IosColors.partial,
-        Icons.radio_button_checked,
-      ),
-      ObservanceStatus.missed => (IosColors.missed, Icons.highlight_off),
+      ObservanceStatus.partial => (IosColors.partial, AppIcons.statusPartial),
+      ObservanceStatus.missed => (IosColors.missed, AppIcons.statusMissed),
       _ => null,
     };
     final breakTime = AppStrings.localizeClock(

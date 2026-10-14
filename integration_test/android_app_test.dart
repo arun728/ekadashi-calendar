@@ -1,3 +1,4 @@
+import 'package:ekadashi_calendar/widgets/app_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
@@ -61,12 +62,12 @@ void main() {
     // Location service has its own timeout; poll for a usable Home surface.
     for (
       var attempt = 0;
-      attempt < 60 && find.byIcon(Icons.home).evaluate().isEmpty;
+      attempt < 60 && find.byIcon(AppIcons.tabHome).evaluate().isEmpty;
       attempt++
     ) {
       await tester.pump(const Duration(seconds: 1));
     }
-    expect(find.byIcon(Icons.home), findsOneWidget);
+    expect(find.byIcon(AppIcons.tabHome), findsOneWidget);
     for (
       var attempt = 0;
       attempt < 45 &&
@@ -108,7 +109,7 @@ void main() {
       );
     }
     await binding.takeScreenshot('android_calendar');
-    await tester.tap(find.byIcon(Icons.settings));
+    await tester.tap(find.byIcon(AppIcons.tabSettings));
     await pumpUi(tester);
     expect(find.text('Appearance'), findsOneWidget);
     final themeSwitch = find.byType(SwitchListTile).first;
@@ -308,7 +309,7 @@ void main() {
     await binding.takeScreenshot('android_details');
     await tester.pageBack();
     await pumpUi(tester);
-    expect(find.byIcon(Icons.home), findsOneWidget);
+    expect(find.byIcon(AppIcons.tabHome), findsOneWidget);
     expect(tester.takeException(), isNull);
     if (permissions.hasNotificationPermission) {
       expect(

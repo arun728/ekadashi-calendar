@@ -488,7 +488,7 @@
   "event_reminder_today": "{value0} ఈ రోజు ({value1})",
   "event_reminder_tomorrow": "{value0} రేపు ({value1})",
   "event_reminder_in_days": "{value0} ఇంకా {value2} రోజుల్లో ({value1})",
-  "event_reminder_all_custom": "నా అన్ని ఎంట్రీలు",
+  "event_reminder_all_custom": "అన్ని వ్యక్తిగత ఈవెంట్‌లు",
   "event_reminder_all_google": "అన్ని గూగుల్ క్యాలెండర్ ఈవెంట్‌లు",
   "event_reminder_group_festival": "పండుగలు",
   "event_reminder_group_monthly": "నెలవారీ వ్రత దినాలు",

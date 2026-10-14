@@ -1510,7 +1510,7 @@ class AppLocalizationsTe extends AppLocalizations {
   }
 
   @override
-  String get event_reminder_all_custom => 'నా అన్ని ఎంట్రీలు';
+  String get event_reminder_all_custom => 'అన్ని వ్యక్తిగత ఈవెంట్‌లు';
 
   @override
   String get event_reminder_all_google => 'అన్ని గూగుల్ క్యాలెండర్ ఈవెంట్‌లు';

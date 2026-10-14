@@ -99,20 +99,26 @@ class EkadashiSettings extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// A detected place becomes the Ekadashi city unless the user chose one.
-  /// Returns true when the city changed.
-  Future<bool> useDetected(LocationData fix) async {
-    if (isManual) return false;
+  /// A detected place becomes the Ekadashi city unless the user chose one
+  /// since the app opened: at a launch ([atLaunch]) the place found now wins
+  /// over a picked city, as in v1. Returns true when the city changed.
+  Future<bool> useDetected(LocationData fix, {bool atLaunch = false}) async {
+    if (isManual && !atLaunch) return false;
     final detected = await cityFromFix(fix);
     if (detected == null) return false;
+    final previous = city;
     final changed =
         detected.latitude != city.latitude ||
         detected.longitude != city.longitude ||
         detected.timeZoneId != city.timeZoneId ||
         detected.label != city.label;
     await _saveCity(detected, manual: false);
-    // The Panchang tab starts from the detected place until one is set there.
-    if (await PanchangLocationStore().load() == null) {
+    final panchang = await PanchangLocationStore().load();
+    if (panchang == null) {
+      // The Panchang tab starts from the detected place until one is set there.
+      await savePanchangCity(detected);
+    } else if (atLaunch && changed && panchang == previous) {
+      // Panchang showed Home's city: it moves with Home.
       await savePanchangCity(detected);
     }
     if (changed) notifyListeners();

@@ -155,6 +155,28 @@ final class GoogleReconciliationTests: XCTestCase {
         XCTAssertEqual(try store.all().first?.title, "Changed")
     }
 
+    /// The same event from two picked calendars, or twice from one, keeps
+    /// its own identity in storage but is shown, searched and reminded once
+    /// (CalendarEntry.withoutDuplicateGoogle on Android).
+    func testIdenticalGoogleEventsAreShownOnce() {
+        let copies = [imported("a", "holidays", "e1", "2026-10-20"), imported("a", "primary", "e2", "2026-10-20"),
+                      imported("a", "holidays", "e3", "2026-10-20")].map { entry -> CalendarEntry in
+            var copy = entry
+            copy.title = "Dussehra"
+            return copy
+        }
+        let other = imported("a", "primary", "e4", "2026-10-20")
+        let unique = CalendarEntry.withoutDuplicateGoogle(copies + [other])
+        XCTAssertEqual(unique.map(\.id), [copies[0].id, other.id])
+        // Custom entries are never merged.
+        let custom = (1...2).map {
+            CalendarEntry(id: "c\($0)", title: "Dussehra", start: copies[0].start, end: copies[0].end, isAllDay: true,
+                          source: .custom, updatedAt: Date())
+        }
+        XCTAssertEqual(CalendarEntry.withoutDuplicateGoogle(custom + copies).count, 3)
+        XCTAssertEqual(SearchCorpus.entryItems(copies, timeZone: zone).count, 1)
+    }
+
     func testFailedFetchPreservesPreviousCacheAndCustomNotes() async throws {
         auth.events = [event("a")]
         try await sync()

@@ -11,6 +11,7 @@ import '../../services/language_service.dart';
 import '../../services/vrat_tracker_service.dart';
 import '../../services/premium_service.dart';
 import '../premium_screen.dart';
+import '../../widgets/app_icons.dart';
 
 /// Records, edits or deletes one observance (iOS RecordVratSheet): a sheet
 /// with Cancel and a trash button in its bar.
@@ -247,10 +248,7 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
                     key: const Key('vrat_record_delete'),
                     tooltip: lang.translate('delete_record'),
                     onPressed: _delete,
-                    icon: Icon(
-                      Icons.delete_outline,
-                      color: IosColors.red(context),
-                    ),
+                    icon: Icon(AppIcons.delete, color: IosColors.red(context)),
                   ),
           ),
           Expanded(
@@ -297,7 +295,7 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
                       child: Row(
                         children: [
                           Icon(
-                            Icons.info_outline,
+                            AppIcons.info,
                             size: IosText.caption + 2,
                             color: orange,
                           ),
@@ -326,17 +324,17 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
                       _buildStatusChip(
                         ObservanceStatus.observed,
                         lang.translate('observed'),
-                        Icons.check_circle_outline,
+                        AppIcons.statusObserved,
                       ),
                       _buildStatusChip(
                         ObservanceStatus.partial,
                         lang.translate('partial'),
-                        Icons.adjust,
+                        AppIcons.statusPartial,
                       ),
                       _buildStatusChip(
                         ObservanceStatus.missed,
                         lang.translate('missed'),
-                        Icons.highlight_off,
+                        AppIcons.statusMissed,
                       ),
                     ],
                   ),

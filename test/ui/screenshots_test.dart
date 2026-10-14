@@ -1,3 +1,4 @@
+import 'package:ekadashi_calendar/widgets/app_icons.dart';
 import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
@@ -177,7 +178,7 @@ void main() {
           isFalse,
         );
         await capture('settings_light');
-        await tester.tap(find.byIcon(Icons.home));
+        await tester.tap(find.byIcon(AppIcons.tabHome));
         await tester.pumpAndSettle();
         final button = find.widgetWithText(
           FilledButton,

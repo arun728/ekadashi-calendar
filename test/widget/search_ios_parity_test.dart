@@ -1,3 +1,4 @@
+import 'package:ekadashi_calendar/widgets/app_icons.dart';
 import 'package:ekadashi_calendar/screens/details_screen.dart';
 import 'package:ekadashi_calendar/screens/global_search_screen.dart';
 import 'package:ekadashi_calendar/screens/panchang_screen.dart';
@@ -119,10 +120,7 @@ void main() {
     await open(tester);
     final close = find.byKey(const Key('global_search_back'));
     expect(
-      find.descendant(
-        of: close,
-        matching: find.byIcon(Icons.keyboard_arrow_down),
-      ),
+      find.descendant(of: close, matching: find.byIcon(AppIcons.dismissDown)),
       findsOneWidget,
     );
     expect(find.text('Search'), findsOneWidget);
@@ -141,7 +139,7 @@ void main() {
     expect(
       find.descendant(
         of: find.byKey(const Key('global_search_bar')),
-        matching: find.byIcon(Icons.search),
+        matching: find.byIcon(AppIcons.search),
       ),
       findsOneWidget,
     );
@@ -173,7 +171,7 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.descendant(of: year, matching: find.byIcon(Icons.calendar_today)),
+      find.descendant(of: year, matching: find.byIcon(AppIcons.year)),
       findsOneWidget,
     );
     expect(
@@ -206,11 +204,11 @@ void main() {
     expect(clear.style?.color, IosColors.teal);
     final recent = find.byKey(const Key('search_recent_Mohini'));
     expect(
-      find.descendant(of: recent, matching: find.byIcon(Icons.history)),
+      find.descendant(of: recent, matching: find.byIcon(AppIcons.recentSearch)),
       findsOneWidget,
     );
     expect(
-      find.descendant(of: recent, matching: find.byIcon(Icons.close)),
+      find.descendant(of: recent, matching: find.byIcon(AppIcons.close)),
       findsOneWidget,
     );
     // A compact row, not a 56 dp list tile.
@@ -249,7 +247,7 @@ void main() {
     expect(empty, findsOneWidget);
     expect(tester.widget(empty), isA<UnavailableView>());
     final view = tester.widget<UnavailableView>(empty);
-    expect(view.icon, Icons.search);
+    expect(view.icon, AppIcons.search);
     expect(view.title, 'No results found for "zzzznomatch9999"');
     expect(tester.takeException(), isNull);
   });
@@ -275,7 +273,7 @@ void main() {
     await search(tester, 'Diwali');
     final locked = result('observance:deepavali:').first;
     final locks = tester.widgetList<Icon>(
-      find.descendant(of: locked, matching: find.byIcon(Icons.lock)),
+      find.descendant(of: locked, matching: find.byIcon(AppIcons.lock)),
     );
     expect(locks, isNotEmpty);
     expect(locks.every((icon) => icon.color == IosColors.amber), isTrue);

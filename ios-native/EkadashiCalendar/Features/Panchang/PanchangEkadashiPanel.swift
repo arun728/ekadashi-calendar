@@ -80,7 +80,7 @@ struct PanchangEkadashiPanel: View {
             PanchangRow(label: model.t("panchang_parana"), value: PanchangFormat.date(fast.paranaDate, language: language),
                         detail: parana)
             if fast.nearBoundary {
-                Label(model.t("panchang_near_boundary"), systemImage: "exclamationmark.triangle")
+                Label(model.t("panchang_near_boundary"), systemImage: AppSymbol.warning)
                     .font(.caption).foregroundStyle(.orange)
             }
             DisclosureGroup(model.t("panchang_calculation_details")) {

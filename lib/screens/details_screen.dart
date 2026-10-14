@@ -13,6 +13,7 @@ import '../widgets/app_background.dart';
 import '../widgets/ios_style.dart';
 import 'vrat_tracker/record_vrat_dialog.dart';
 import 'vrat_tracker/achievement_unlock_dialog.dart';
+import '../widgets/app_icons.dart';
 
 /// Significance, story, rules, benefits, timings and the Vrat button, as
 /// the iOS EkadashiDetailsView. It is pushed inside the Home or Calendar
@@ -106,7 +107,7 @@ class DetailsScreen extends StatelessWidget {
             IconButton(
               key: const Key('details_share_card'),
               tooltip: lang.translate('share_card'),
-              icon: const Icon(Icons.ios_share, color: tealColor),
+              icon: const Icon(AppIcons.share, color: tealColor),
               onPressed: () => openShareCard(context, ekadashi),
             ),
           ],
@@ -179,7 +180,7 @@ class DetailsScreen extends StatelessWidget {
                 child: Column(
                   children: [
                     timing(
-                      Icons.restaurant,
+                      AppIcons.startFasting,
                       lang.translate('start_fasting'),
                       ekadashi.date,
                       AppStrings.localizeClock(
@@ -189,7 +190,7 @@ class DetailsScreen extends StatelessWidget {
                     ),
                     Divider(height: 25, color: IosColors.separator(context)),
                     timing(
-                      Icons.wb_twilight,
+                      AppIcons.breakFasting,
                       lang.translate('break_fasting'),
                       ekadashi.date.add(const Duration(days: 1)),
                       breakTime,
@@ -294,10 +295,10 @@ class _StatusStyle {
   };
 
   IconData get icon => switch (status) {
-    ObservanceStatus.observed => Icons.check_circle_outline,
-    ObservanceStatus.partial => Icons.adjust,
-    ObservanceStatus.missed => Icons.highlight_off,
-    ObservanceStatus.unrecorded => Icons.help_outline,
+    ObservanceStatus.observed => AppIcons.statusObserved,
+    ObservanceStatus.partial => AppIcons.statusPartial,
+    ObservanceStatus.missed => AppIcons.statusMissed,
+    ObservanceStatus.unrecorded => AppIcons.statusUnrecorded,
   };
 
   String get detailKey =>

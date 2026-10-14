@@ -1,3 +1,4 @@
+import 'package:ekadashi_calendar/widgets/app_icons.dart';
 import 'dart:async';
 
 import 'package:ekadashi_calendar/models/vrat_tracker_models.dart';
@@ -208,7 +209,7 @@ void main() {
         findsOneWidget,
       );
       expect(
-        find.descendant(of: menu, matching: find.byIcon(Icons.calendar_today)),
+        find.descendant(of: menu, matching: find.byIcon(AppIcons.journeyYear)),
         findsOneWidget,
       );
     });
@@ -226,7 +227,7 @@ void main() {
         findsOneWidget,
       );
       expect(
-        find.descendant(of: menu, matching: find.byIcon(Icons.calendar_today)),
+        find.descendant(of: menu, matching: find.byIcon(AppIcons.journeyYear)),
         findsOneWidget,
       );
       expect(find.byType(DropdownButton<int>), findsNothing);
@@ -276,7 +277,7 @@ void main() {
       );
       final empty = find.byType(UnavailableView);
       expect(empty, findsOneWidget);
-      expect(tester.widget<UnavailableView>(empty).icon, Icons.eco);
+      expect(tester.widget<UnavailableView>(empty).icon, AppIcons.journeyEmpty);
     });
 
     testWidgets('rows are glass panels with the pill and chevron side by side '
@@ -297,7 +298,7 @@ void main() {
       expect(tester.widget<StatusPill>(pill).color, IosColors.green(context));
       final chevron = find.descendant(
         of: row,
-        matching: find.byIcon(Icons.chevron_right),
+        matching: find.byIcon(AppIcons.rowDisclosure),
       );
       expect(chevron, findsOneWidget);
       expect(
@@ -324,11 +325,17 @@ void main() {
       await tester.ensureVisible(future);
       await tester.pumpAndSettle();
       expect(
-        find.descendant(of: future, matching: find.byIcon(Icons.schedule)),
+        find.descendant(
+          of: future,
+          matching: find.byIcon(AppIcons.journeyPending),
+        ),
         findsOneWidget,
       );
       expect(
-        find.descendant(of: future, matching: find.byIcon(Icons.chevron_right)),
+        find.descendant(
+          of: future,
+          matching: find.byIcon(AppIcons.rowDisclosure),
+        ),
         findsNothing,
       );
       await tester.tap(future);
@@ -392,7 +399,10 @@ void main() {
       expect(tops.toSet(), hasLength(1));
 
       // Top-aligned content: the badge sits 14 below the card's top.
-      final badge = find.descendant(of: card, matching: find.byIcon(Icons.eco));
+      final badge = find.descendant(
+        of: card,
+        matching: find.byIcon(AppIcons.achievementFirst),
+      );
       expect(badge, findsOneWidget, reason: 'first_vrat is a leaf, as iOS');
       final circleTop = tester
           .getTopLeft(
@@ -419,8 +429,8 @@ void main() {
       final icons = {
         for (final a in AchievementEvaluator.allAchievements) a.id: a.icon,
       };
-      expect(icons['first_vrat'], Icons.eco);
-      expect(icons['full_year_observance'], Icons.wb_sunny);
+      expect(icons['first_vrat'], AppIcons.achievementFirst);
+      expect(icons['full_year_observance'], AppIcons.achievementFullYear);
     });
   });
 
@@ -458,9 +468,9 @@ void main() {
 
       final context = tester.element(find.byType(RecordVratDialog));
       final statuses = {
-        'observed': (IosColors.green(context), Icons.check_circle_outline),
-        'partial': (IosColors.partial, Icons.adjust),
-        'missed': (IosColors.missed, Icons.highlight_off),
+        'observed': (IosColors.green(context), AppIcons.statusObserved),
+        'partial': (IosColors.partial, AppIcons.statusPartial),
+        'missed': (IosColors.missed, AppIcons.statusMissed),
       };
       for (final MapEntry(:key, :value) in statuses.entries) {
         final chip = find.byKey(Key('vrat_status_$key'));
@@ -535,7 +545,7 @@ void main() {
       final icon = tester.widget<Icon>(
         find.descendant(of: trash, matching: find.byType(Icon)),
       );
-      expect(icon.icon, Icons.delete_outline);
+      expect(icon.icon, AppIcons.delete);
       expect(icon.color, IosColors.red(tester.element(trash)));
     });
 
@@ -702,16 +712,10 @@ void main() {
       await pumpJourney(tester, brightness: Brightness.dark);
       final context = tester.element(find.byType(VratTrackerScreen));
       final expected = {
-        'current_streak': (
-          IosColors.orange(context),
-          Icons.local_fire_department_outlined,
-        ),
-        'longest_streak': (IosColors.amber, Icons.military_tech_outlined),
-        'annual_completion': (IosColors.teal, Icons.pie_chart_outline),
-        'total_observed': (
-          IosColors.green(context),
-          Icons.check_circle_outline,
-        ),
+        'current_streak': (IosColors.orange(context), AppIcons.journeyStreak),
+        'longest_streak': (IosColors.amber, AppIcons.journeyBest),
+        'annual_completion': (IosColors.teal, AppIcons.journeyRate),
+        'total_observed': (IosColors.green(context), AppIcons.statusObserved),
       };
       for (final MapEntry(:key, :value) in expected.entries) {
         final card = find.byKey(Key('journey_metric_$key'));
@@ -815,13 +819,13 @@ void main() {
           recent[0],
           'Not Recorded',
           IosColors.gray(context),
-          Icons.help_outline,
+          AppIcons.statusUnrecorded,
         ),
         (
           recent[1],
           'Observed',
           IosColors.green(context),
-          Icons.check_circle_outline,
+          AppIcons.statusObserved,
         ),
       ]) {
         final row = find.byKey(Key('journey_row_${event.occurrenceUid}'));
@@ -837,7 +841,7 @@ void main() {
         expect(tester.widget<Icon>(status).color, color);
         final chevron = find.descendant(
           of: row,
-          matching: find.byIcon(Icons.chevron_right),
+          matching: find.byIcon(AppIcons.rowDisclosure),
         );
         expect(
           (tester.getCenter(pill).dy - tester.getCenter(chevron).dy).abs(),

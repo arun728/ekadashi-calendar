@@ -1499,7 +1499,7 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get event_reminder_all_custom => 'मेरी सभी प्रविष्टियाँ';
+  String get event_reminder_all_custom => 'सभी निजी इवेंट';
 
   @override
   String get event_reminder_all_google => 'गूगल कैलेंडर के सभी इवेंट';

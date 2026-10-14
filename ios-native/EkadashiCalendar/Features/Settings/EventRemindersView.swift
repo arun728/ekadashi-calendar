@@ -28,13 +28,14 @@ struct EventReminderRows: View {
                     .accessibilityIdentifier("event_reminder_row_\(reminder.id)")
                     .swipeActions {
                         Button(role: .destructive) { delete(reminder) } label: {
-                            Label(model.t("notifications_delete_event"), systemImage: "trash")
+                            Label(model.t("notifications_delete_event"), systemImage: AppSymbol.delete)
                         }
                     }
             }
             Button { editing = EditorRequest(reminder: nil) } label: {
-                Label(model.t("notifications_add_event"), systemImage: "plus.circle.fill")
-                    .foregroundStyle(Theme.teal)
+                Label(model.t("notifications_add_event"), systemImage: AppSymbol.addReminder)
+                    // Greyed out with notifications off, as on Android.
+                    .foregroundStyle(enabled ? Theme.teal : Color.secondary)
             }
             .accessibilityIdentifier("notifications_add_event")
         }
@@ -44,26 +45,28 @@ struct EventReminderRows: View {
     private func row(_ reminder: EventReminder) -> some View {
         let locked = reminder.target.requiresPremium && !model.premium.isPremium
         return HStack(spacing: 12) {
-            Image(systemName: symbol(reminder.target)).foregroundStyle(Theme.teal).frame(width: 24)
+            Image(systemName: symbol(reminder.target)).foregroundStyle(enabled ? Theme.teal : Color.secondary)
+                .frame(width: 24)
             VStack(alignment: .leading, spacing: 2) {
-                Text(EventReminderChoice.title(reminder.target, language: model.language)).foregroundStyle(.primary)
+                Text(EventReminderChoice.title(reminder.target, language: model.language))
+                    .foregroundStyle(enabled ? Color.primary : Color.secondary)
                 Text(EventReminderText.summary(reminder, model: model)).font(.caption).foregroundStyle(.secondary)
             }
             Spacer(minLength: 8)
             if locked {
-                Image(systemName: "lock.fill").font(.caption).foregroundStyle(.secondary)
+                Image(systemName: AppSymbol.lock).font(.caption).foregroundStyle(.secondary)
                     .accessibilityLabel(model.t("search_premium_locked"))
             }
-            Image(systemName: "chevron.right").font(.caption.weight(.semibold)).foregroundStyle(.tertiary)
+            Image(systemName: AppSymbol.rowDisclosure).font(.caption.weight(.semibold)).foregroundStyle(.tertiary)
         }
         .contentShape(Rectangle())
     }
 
     private func symbol(_ target: EventReminderTarget) -> String {
         switch target {
-        case .observance: return "sparkles"
-        case .calendar(.google): return "g.circle"
-        case .calendar: return "calendar"
+        case .observance: return AppSymbol.reminderObservance
+        case .calendar(.google): return AppSymbol.reminderGoogle
+        case .calendar: return AppSymbol.reminderCustom
         }
     }
 
@@ -142,7 +145,7 @@ struct EventReminderEditor: View {
                                 Text(EventReminderText.lead(lead, model: model)).foregroundStyle(.primary)
                                 Spacer()
                                 if days.contains(lead) {
-                                    Image(systemName: "checkmark").font(.body.weight(.semibold)).foregroundStyle(Theme.teal)
+                                    Image(systemName: AppSymbol.checkmark).font(.body.weight(.semibold)).foregroundStyle(Theme.teal)
                                 }
                             }
                             .contentShape(Rectangle())
@@ -234,9 +237,9 @@ struct EventReminderPicker: View {
                                     Text(choice.title).foregroundStyle(.primary)
                                     Spacer()
                                     if selection == choice.target {
-                                        Image(systemName: "checkmark").foregroundStyle(Theme.teal)
+                                        Image(systemName: AppSymbol.checkmark).foregroundStyle(Theme.teal)
                                     } else if choice.requiresPremium && !model.premium.isPremium {
-                                        Image(systemName: "lock.fill").font(.caption).foregroundStyle(.secondary)
+                                        Image(systemName: AppSymbol.lock).font(.caption).foregroundStyle(.secondary)
                                     }
                                 }
                                 .contentShape(Rectangle())

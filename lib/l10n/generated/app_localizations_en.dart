@@ -1507,7 +1507,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get event_reminder_all_custom => 'All my entries';
+  String get event_reminder_all_custom => 'All custom events';
 
   @override
   String get event_reminder_all_google => 'All Google Calendar events';

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../widgets/app_icons.dart';
 
 class ThemeService extends ChangeNotifier {
   ThemeMode _themeMode = ThemeMode.dark;
@@ -74,9 +75,8 @@ class AppTheme {
             ),
       ),
       actionIconTheme: ActionIconThemeData(
-        backButtonIconBuilder: (_) =>
-            const Icon(Icons.arrow_back_ios_new_rounded, size: 22),
-        closeButtonIconBuilder: (_) => const Icon(Icons.close_rounded),
+        backButtonIconBuilder: (_) => const Icon(AppIcons.back, size: 22),
+        closeButtonIconBuilder: (_) => const Icon(AppIcons.close),
       ),
       textSelectionTheme: TextSelectionThemeData(
         cursorColor: teal,

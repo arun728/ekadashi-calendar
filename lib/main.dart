@@ -50,6 +50,7 @@ import 'screens/vrat_tracker/record_vrat_dialog.dart';
 import 'screens/vrat_tracker/achievement_unlock_dialog.dart';
 import 'models/vrat_tracker_models.dart';
 import 'package:timezone/timezone.dart' as tz;
+import 'widgets/app_icons.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -365,7 +366,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           debugPrint('  ✅ Enabled Break Fasting Reminder by default');
         }
       }
-      _handleLocation();
+      _handleLocation(atLaunch: true);
       // Ensure permissions are requested if missing (handles reinstall case)
       _ensurePermissionsOnResume();
     }
@@ -429,14 +430,15 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     debugPrint('📍 Location permission result: $locationGranted');
 
     // Now handle location after permission is requested
-    await _handleLocation();
+    await _handleLocation(atLaunch: true);
   }
 
-  /// A detected place becomes the Ekadashi city unless the user chose one;
-  /// without a fix the last known (or chosen) city stays, else Chennai
+  /// A detected place becomes the Ekadashi city unless the user chose one
+  /// since the app opened ([atLaunch]: the place found at launch wins, as in
+  /// v1); without a fix the last known (or chosen) city stays, else Chennai
   /// (AppModel.handleLocation). The settings listener recalculates when the
   /// city changes.
-  Future<void> _handleLocation() async {
+  Future<void> _handleLocation({bool atLaunch = false}) async {
     if (!mounted) return;
     setState(() => _isRequestingLocation = true);
     LocationData? fix;
@@ -452,7 +454,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       debugPrint('Location error: $e');
     }
     await _settingsLoad;
-    if (fix != null) await _settings?.useDetected(fix);
+    if (fix != null) await _settings?.useDetected(fix, atLaunch: atLaunch);
     if (mounted) setState(() => _isRequestingLocation = false);
   }
 
@@ -514,7 +516,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       title: AppStrings.translate('home_location_title', language),
       footer: AppStrings.translate('home_location_footer', language),
       current: settings.city,
-      icon: settings.isManual ? Icons.pin_drop : Icons.near_me,
+      icon: settings.isManual
+          ? AppIcons.locationPicked
+          : AppIcons.locationDetected,
       onPick: settings.chooseCity,
       onLocate: _useCurrentLocation,
     );
@@ -1036,24 +1040,24 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     final keyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
     final items = [
       BottomNavigationBarItem(
-        icon: const Icon(Icons.home),
+        icon: const Icon(AppIcons.tabHome),
         label: lang.translate('home'),
       ),
-      // The iOS tab symbols: calendar, leaf and sparkles.
+      // The iOS tab symbols (AppIcons): calendar, rosette and sparkles.
       BottomNavigationBarItem(
-        icon: const Icon(Icons.calendar_today),
+        icon: const Icon(AppIcons.tabCalendar),
         label: lang.translate('calendar'),
       ),
       BottomNavigationBarItem(
-        icon: const Icon(Icons.eco),
+        icon: const Icon(AppIcons.tabJourney),
         label: lang.translate('journey_tab'),
       ),
       BottomNavigationBarItem(
-        icon: const Icon(Icons.auto_awesome),
+        icon: const Icon(AppIcons.tabPanchang),
         label: lang.translate('search_screen_panchang'),
       ),
       BottomNavigationBarItem(
-        icon: const Icon(Icons.settings),
+        icon: const Icon(AppIcons.tabSettings),
         label: lang.translate('settings'),
       ),
     ];
@@ -1087,7 +1091,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           appBar: tabPushed
               ? null
               : PreferredSize(
-                  preferredSize: const Size.fromHeight(kToolbarHeight),
+                  preferredSize: const Size.fromHeight(
+                    kToolbarHeight + ShellTopBar.topGap,
+                  ),
                   child: ListenableBuilder(
                     listenable: slots ?? const AlwaysStoppedAnimation(0),
                     builder: (context, _) =>
@@ -1135,7 +1141,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             padding: const EdgeInsets.only(left: 4, right: 8),
             minimumSize: const Size(44, 44),
           ),
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          icon: const Icon(AppIcons.back, size: 20),
           label: Text(
             lang.translate('search'),
             maxLines: 1,
@@ -1180,7 +1186,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
     if (_errorMessage.isNotEmpty) {
       return UnavailableView(
-        icon: Icons.error_outline,
+        icon: AppIcons.error,
         title: _errorMessage,
         action: FilledButton(
           onPressed: () => _loadData(),
@@ -1275,7 +1281,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                   )
                 : UnavailableView(
                     key: const Key('home_empty'),
-                    icon: Icons.event_busy_outlined,
+                    icon: AppIcons.noEkadashi,
                     title: lang.translate('no_ekadashi'),
                   ),
           ),
@@ -1317,7 +1323,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                     children: [
                       _homeArrow(
                         key: const Key('home_previous'),
-                        icon: Icons.arrow_back_ios_new_rounded,
+                        icon: AppIcons.previous,
                         target: _currentPage - 1,
                         enabled: !isFirstPage,
                         onPressed: () => _pageController.previousPage(
@@ -1342,7 +1348,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                       ),
                       _homeArrow(
                         key: const Key('home_next'),
-                        icon: Icons.arrow_forward_ios_rounded,
+                        icon: AppIcons.next,
                         target: _currentPage + 1,
                         enabled: !isLastPage,
                         onPressed: () => _pageController.nextPage(
@@ -1611,7 +1617,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             ),
             side: const WidgetStatePropertyAll(BorderSide.none),
           ),
-          child: const Icon(Icons.ios_share, color: IosColors.teal),
+          child: const Icon(AppIcons.share, color: IosColors.teal),
         ),
       );
 
@@ -1640,25 +1646,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     );
     final color = open ? IosColors.teal : IosColors.tertiary(context);
     final Widget icon = switch (record?.status) {
-      ObservanceStatus.observed => Icon(Icons.check_circle, color: color),
-      ObservanceStatus.partial => Icon(Icons.adjust, color: color),
-      ObservanceStatus.missed => Icon(Icons.highlight_off, color: color),
-      // calendar.badge.plus: a calendar with a plus badge.
-      _ => SizedBox(
-        width: 24,
-        height: 24,
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Icon(Icons.calendar_month_outlined, size: 22, color: color),
-            Positioned(
-              right: -1,
-              bottom: -1,
-              child: Icon(Icons.add_circle, size: 11, color: color),
-            ),
-          ],
-        ),
-      ),
+      ObservanceStatus.observed => Icon(AppIcons.cardObserved, color: color),
+      ObservanceStatus.partial => Icon(AppIcons.statusPartial, color: color),
+      ObservanceStatus.missed => Icon(AppIcons.statusMissed, color: color),
+      _ => Icon(AppIcons.cardUnrecorded, color: color),
     };
     return OutlinedButton(
       key: const Key('home_record_vrat'),

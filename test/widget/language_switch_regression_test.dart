@@ -1,3 +1,4 @@
+import 'package:ekadashi_calendar/screens/settings_screen.dart';
 import 'package:ekadashi_calendar/l10n/app_language.dart';
 import 'package:ekadashi_calendar/screens/details_screen.dart';
 import 'package:ekadashi_calendar/screens/calendar_screen.dart';
@@ -79,6 +80,24 @@ void main() {
           findsWidgets,
         );
         await tab(4);
+        // Below the fold on a short screen: scroll to it.
+        final settingsList = find
+            .descendant(
+              of: find.descendant(
+                of: find.byType(SettingsScreen),
+                matching: find.byType(ListView),
+              ),
+              matching: find.byType(Scrollable),
+            )
+            .first;
+        tester.state<ScrollableState>(settingsList).position.jumpTo(0);
+        await tester.pump();
+        await tester.scrollUntilVisible(
+          find.text(AppStrings.translate('appearance', language.code)),
+          200,
+          scrollable: settingsList,
+        );
+        await tester.pumpAndSettle();
         expect(
           find
               .text(AppStrings.translate('appearance', language.code))

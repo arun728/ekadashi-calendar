@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:ekadashi_calendar/l10n/app_language.dart';
 import 'package:ekadashi_calendar/screens/calendar_screen.dart';
+import 'package:ekadashi_calendar/services/ekadashi_settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -138,6 +141,28 @@ void main() {
       ),
       findsOneWidget,
     );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('reopening the app shows the place detected now, even after '
+      'a city was picked', (tester) async {
+    await tester.runAsync(
+      () => harness.install(
+        preferences: {
+          EkadashiSettings.cityKey: jsonEncode({
+            'id': 'geonames-5392171',
+            'label': 'San Jose (US)',
+            'latitude': 37.33939,
+            'longitude': -121.89496,
+            'timezone': 'America/Los_Angeles',
+          }),
+          EkadashiSettings.manualKey: true,
+        },
+      ),
+    );
+    await tester.pumpWidget(harness.app());
+    await tester.pumpAndSettle();
+    expect(text(tester, 'home_location_name'), 'Chennai (IN)');
     expect(tester.takeException(), isNull);
   });
 

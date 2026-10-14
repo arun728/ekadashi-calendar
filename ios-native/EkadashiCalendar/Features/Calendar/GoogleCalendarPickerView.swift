@@ -15,7 +15,7 @@ struct GoogleCalendarPickerView: View {
                     Text(model.t("choose_calendars_help")).font(.footnote).foregroundStyle(.secondary)
                     if let email = request.email {
                         HStack {
-                            Label(email, systemImage: "person.crop.circle").font(.subheadline).lineLimit(1)
+                            Label(email, systemImage: AppSymbol.googleAccount).font(.subheadline).lineLimit(1)
                             Spacer()
                             Button(model.t("switch_google_account")) { model.pickerFinished(.switchAccount) }
                                 .font(.subheadline)

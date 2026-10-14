@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'glass_tube.dart';
+import 'app_icons.dart';
 
 /// The iOS grouped-list look of Settings (SettingsView.swift): section
 /// headers and footers outside rounded cards, icon rows with inset hairline
@@ -153,7 +154,7 @@ class SettingsChevron extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Icon(
-    Icons.chevron_right_rounded,
+    AppIcons.rowDisclosure,
     size: 22,
     color: SettingsStyle.tertiary(context),
   );

@@ -27,9 +27,9 @@ struct EkadashiDetailsView: View {
                 section("fasting_rules", event.fastingRules)
                 section("spiritual_benefits", event.benefits)
                 VStack(spacing: 0) {
-                    timing("fork.knife", model.t("start_fasting"), event.date, event.fastStartTime)
+                    timing(AppSymbol.startFasting, model.t("start_fasting"), event.date, event.fastStartTime)
                     Divider().padding(.vertical, 12)
-                    timing("sunrise", model.t("break_fasting"), event.date.adding(days: 1), EkadashiDisplay.breakTime(event))
+                    timing(AppSymbol.breakFasting, model.t("break_fasting"), event.date.adding(days: 1), EkadashiDisplay.breakTime(event))
                 }
                 .padding(16)
                 .glassPanel(cornerRadius: 16, tint: Theme.teal)
@@ -44,7 +44,7 @@ struct EkadashiDetailsView: View {
         .sheet(isPresented: $sharing) { ShareCardSheet(event: event) }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button { sharing = true } label: { Image(systemName: "square.and.arrow.up") }
+                Button { sharing = true } label: { Image(systemName: AppSymbol.share) }
                     .accessibilityLabel(model.t("share_card"))
                     .accessibilityIdentifier("details_share_card")
             }

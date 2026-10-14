@@ -1,6 +1,6 @@
+import 'package:ekadashi_calendar/widgets/app_icons.dart';
 import 'package:ekadashi_calendar/widgets/glass_navigation_bar.dart';
 import 'package:ekadashi_calendar/widgets/ios_style.dart';
-import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import '../support/app_harness.dart';
@@ -34,7 +34,7 @@ void main() {
         final icon = tester.widget<Icon>(
           find.descendant(of: search, matching: find.byType(Icon)),
         );
-        expect(icon.icon, CupertinoIcons.search);
+        expect(icon.icon, AppIcons.search);
         expect(icon.size, 30);
         expect(
           find.ancestor(of: search, matching: find.byType(GlassPanel)),
@@ -55,10 +55,7 @@ void main() {
     await tester.pumpAndSettle();
     final google = find.byKey(const Key('calendar_google_menu'));
     expect(
-      find.descendant(
-        of: google,
-        matching: find.byIcon(CupertinoIcons.arrow_2_circlepath_circle),
-      ),
+      find.descendant(of: google, matching: find.byIcon(AppIcons.googleMenu)),
       findsOneWidget,
     );
     await tester.tap(google);
@@ -66,14 +63,14 @@ void main() {
     expect(
       find.descendant(
         of: find.byKey(const Key('import_google_year')),
-        matching: find.byIcon(CupertinoIcons.arrow_2_circlepath),
+        matching: find.byIcon(AppIcons.googleSync),
       ),
       findsOneWidget,
     );
     expect(
       find.descendant(
         of: find.byKey(const Key('disconnect_google')),
-        matching: find.byIcon(CupertinoIcons.person_crop_circle_badge_minus),
+        matching: find.byIcon(AppIcons.googleDisconnect),
       ),
       findsOneWidget,
     );

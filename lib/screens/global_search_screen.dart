@@ -25,21 +25,22 @@ import 'details_screen.dart';
 import 'panchang_screen.dart';
 import 'premium_screen.dart';
 import 'widget_preview_screen.dart';
+import '../widgets/app_icons.dart';
 
 /// Icons for the search categories (the iOS SF Symbols).
 IconData searchCategoryIcon(SearchCategory category) => switch (category) {
-  SearchCategory.ekadashi => Icons.spa_outlined,
-  SearchCategory.festival => Icons.auto_awesome,
-  SearchCategory.amavasya => Icons.dark_mode_outlined,
-  SearchCategory.purnima => Icons.brightness_1,
-  SearchCategory.shivaratri => Icons.nights_stay_outlined,
-  SearchCategory.chaturthi => Icons.verified_outlined,
-  SearchCategory.pradosham => Icons.wb_twilight,
-  SearchCategory.navaratri => Icons.local_fire_department_outlined,
-  SearchCategory.sankranti => Icons.wb_sunny_outlined,
-  SearchCategory.jayanti => Icons.star_outline,
-  SearchCategory.myCalendar => Icons.event_outlined,
-  SearchCategory.screen => Icons.open_in_new,
+  SearchCategory.ekadashi => AppIcons.categoryEkadashi,
+  SearchCategory.festival => AppIcons.categoryFestival,
+  SearchCategory.amavasya => AppIcons.categoryAmavasya,
+  SearchCategory.purnima => AppIcons.categoryPurnima,
+  SearchCategory.shivaratri => AppIcons.categoryShivaratri,
+  SearchCategory.chaturthi => AppIcons.categoryChaturthi,
+  SearchCategory.pradosham => AppIcons.categoryPradosham,
+  SearchCategory.navaratri => AppIcons.categoryNavaratri,
+  SearchCategory.sankranti => AppIcons.categorySankranti,
+  SearchCategory.jayanti => AppIcons.categoryJayanti,
+  SearchCategory.myCalendar => AppIcons.categoryMyCalendar,
+  SearchCategory.screen => AppIcons.categoryScreen,
 };
 
 /// One search for the whole app (docs/ROADMAP.md Phase 1): Ekadashis,
@@ -322,7 +323,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
           centerTitle: true,
           leading: IconButton(
             key: const Key('global_search_back'),
-            icon: const Icon(Icons.keyboard_arrow_down, size: 30),
+            icon: const Icon(AppIcons.dismissDown, size: 30),
             color: IosColors.teal,
             tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
             onPressed: () =>
@@ -384,7 +385,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 8),
         child: Row(
           children: [
-            Icon(Icons.search, size: 20, color: secondary),
+            Icon(AppIcons.search, size: 20, color: secondary),
             const SizedBox(width: 6),
             Expanded(
               child: TextField(
@@ -423,7 +424,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
                 child: Padding(
                   padding: const EdgeInsets.all(4),
                   child: Icon(
-                    Icons.cancel,
+                    AppIcons.searchClear,
                     size: 18,
                     color: secondary,
                     semanticLabel: MaterialLocalizations.of(
@@ -479,7 +480,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.calendar_today, size: 15, color: yearColor),
+                    Icon(AppIcons.year, size: 15, color: yearColor),
                     const SizedBox(width: 6),
                     Text(
                       _year?.toString() ?? lang.translate('year'),
@@ -512,7 +513,9 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
       child: GlassChip(
         key: Key('search_filter_${type?.raw ?? 'all'}'),
         label: lang.translate(type?.localizationKey ?? 'filter_all'),
-        icon: type == null ? Icons.grid_view : searchCategoryIcon(type),
+        icon: type == null
+            ? AppIcons.searchAllCategories
+            : searchCategoryIcon(type),
         color: type == null ? IosColors.teal : Color(type.color),
         selected: selected,
         // The selected type's chip goes back to All.
@@ -574,7 +577,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
       // The query follows the sentence: No results found for "xyz".
       return UnavailableView(
         key: const Key('search_no_results'),
-        icon: Icons.search,
+        icon: AppIcons.search,
         title:
             '${lang.translate('no_results_found')} "${_controller.text.trim()}"',
         description: lang.translate('search_no_results_hint'),
@@ -646,7 +649,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
                     onTap: () => _submit(term),
                     child: Row(
                       children: [
-                        Icon(Icons.history, size: 18, color: primary),
+                        Icon(AppIcons.recentSearch, size: 18, color: primary),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
@@ -669,7 +672,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(12, 4, 0, 4),
                     child: Icon(
-                      Icons.close,
+                      AppIcons.close,
                       size: IosText.caption,
                       color: secondary,
                       semanticLabel: MaterialLocalizations.of(
@@ -757,7 +760,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
                   Row(
                     children: [
                       const Icon(
-                        Icons.lock,
+                        AppIcons.lock,
                         size: IosText.caption,
                         color: IosColors.amber,
                       ),
@@ -795,7 +798,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
           ),
           const SizedBox(width: 8),
           Icon(
-            locked ? Icons.lock : Icons.chevron_right,
+            locked ? AppIcons.lock : AppIcons.rowDisclosure,
             size: 16,
             color: locked ? IosColors.amber : secondary,
           ),

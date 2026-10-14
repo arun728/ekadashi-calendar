@@ -1,3 +1,5 @@
+import 'package:ekadashi_calendar/widgets/app_icons.dart';
+import 'package:ekadashi_calendar/l10n/app_language.dart';
 import 'package:ekadashi_calendar/l10n/generated/app_localizations.dart';
 import 'package:ekadashi_calendar/models/calendar_entry.dart';
 import 'package:ekadashi_calendar/screens/calendar_screen.dart';
@@ -113,6 +115,31 @@ void main() {
   final grid = find.byWidgetPredicate((w) => w is TableCalendar);
   Finder inGrid(String text) =>
       find.descendant(of: grid, matching: find.text(text));
+
+  testWidgets('an Ekadashi day never says "No entries for this day", in '
+      'any year or language', (tester) async {
+    await open(tester);
+    final years = ekadashis().map((e) => e.date.year).toSet();
+    expect(years, containsAll([2026, 2027]));
+    for (final code in AppLanguage.all.map((l) => l.code)) {
+      await language.changeLanguage(code);
+      await tester.pumpAndSettle();
+      final empty = AppStrings.translate('no_entries', code);
+      for (final event in ekadashis()) {
+        await select(tester, event.date);
+        expect(
+          find.byKey(const Key('calendar_ekadashi_card')),
+          findsOneWidget,
+          reason: '$code ${event.date}',
+        );
+        expect(find.text(empty), findsNothing, reason: '$code ${event.date}');
+      }
+    }
+    // A day without an Ekadashi or entries still says so.
+    await language.changeLanguage('en');
+    await select(tester, DateTime(2026, 10, 5));
+    expect(find.text('No entries for this day'), findsOneWidget);
+  });
 
   group('Filters', () {
     testWidgets('open on All, as separate glass chips with their colours', (
@@ -252,7 +279,7 @@ void main() {
       expect(
         find.descendant(
           of: find.byKey(const Key('calendar_year_selector')),
-          matching: find.byIcon(Icons.keyboard_arrow_down_rounded),
+          matching: find.byIcon(AppIcons.menuDisclosure),
         ),
         findsOneWidget,
       );

@@ -1,3 +1,4 @@
+import 'package:ekadashi_calendar/widgets/app_icons.dart';
 import 'package:ekadashi_calendar/screens/panchang_pages.dart';
 import 'package:ekadashi_calendar/screens/panchang_screen.dart';
 import 'package:ekadashi_calendar/services/ekadashi_service.dart';
@@ -194,7 +195,7 @@ void main() {
     final name = find.descendant(of: pill, matching: find.text('New York'));
     expect(panelAround(tester, name).radius, greaterThanOrEqualTo(100));
     expect(
-      find.descendant(of: pill, matching: find.byIcon(Icons.pin_drop)),
+      find.descendant(of: pill, matching: find.byIcon(AppIcons.panchangCity)),
       findsOneWidget,
     );
     expect(styleOf(tester, name).fontSize, IosText.subheadline);
@@ -206,7 +207,7 @@ void main() {
           .widget<Icon>(
             find.descendant(
               of: pill,
-              matching: find.byIcon(Icons.keyboard_arrow_down),
+              matching: find.byIcon(AppIcons.menuDisclosure),
             ),
           )
           .color,
@@ -233,7 +234,7 @@ void main() {
     expect(
       find.descendant(
         of: stepper,
-        matching: find.byIcon(Icons.calendar_month_outlined),
+        matching: find.byIcon(AppIcons.panchangDate),
       ),
       findsOneWidget,
     );
@@ -245,9 +246,9 @@ void main() {
     // The screenshot: the date, its calendar icon and both chevrons teal.
     expect(styleOf(tester, title).color, IosColors.teal);
     for (final icon in [
-      Icons.calendar_month_outlined,
-      Icons.chevron_left,
-      Icons.chevron_right,
+      AppIcons.panchangDate,
+      AppIcons.previous,
+      AppIcons.next,
     ]) {
       expect(
         tester
@@ -391,7 +392,7 @@ void main() {
       matching: find.byType(PanchangPanel),
     );
     expect(
-      find.descendant(of: locked, matching: find.byIcon(Icons.lock)),
+      find.descendant(of: locked, matching: find.byIcon(AppIcons.lock)),
       findsNWidgets(2),
     );
     final festival = find.descendant(
@@ -407,7 +408,7 @@ void main() {
     expect(
       find.descendant(
         of: find.byKey(const Key('panchang_key_days')),
-        matching: find.byIcon(Icons.chevron_right),
+        matching: find.byIcon(AppIcons.rowDisclosure),
       ),
       findsWidgets,
       reason: 'the free Ekadashi rows end in a chevron',
@@ -436,7 +437,15 @@ void main() {
     );
     final sunrise = find.text('Sunrise');
     expect(panelAround(tester, sunrise).radius, 18);
-    expect(find.byIcon(Icons.wb_twilight), findsNWidgets(2));
+    // One SF Symbol per tile, no composed arrow overlay.
+    for (final (key, icon) in [
+      ('panchang_sunrise', AppIcons.sunrise),
+      ('panchang_sunset', AppIcons.sunset),
+      ('panchang_moonrise', AppIcons.moonrise),
+      ('panchang_moonset', AppIcons.moonset),
+    ]) {
+      expect(tester.widget<Icon>(find.byKey(Key('${key}_icon'))).icon, icon);
+    }
     final unlock = find.byKey(const Key('panchang_unlock_button'));
     await tester.ensureVisible(unlock);
     await tester.pumpAndSettle();
@@ -471,15 +480,24 @@ void main() {
     final label = find.descendant(of: limbs, matching: find.text('Nakshatra'));
     expect(styleOf(tester, label).fontSize, IosText.subheadline);
     expect(
-      find.descendant(of: limbs, matching: find.byIcon(Icons.hexagon_outlined)),
-      findsNothing,
+      find.descendant(of: limbs, matching: find.byIcon(AppIcons.fiveLimbs)),
+      findsOneWidget,
     );
     final observances = find.byKey(const Key('panchang_observances'));
     await tester.ensureVisible(observances);
     await tester.pumpAndSettle();
     expect(
-      find.descendant(of: observances, matching: find.byIcon(Icons.star)),
-      findsNothing,
+      tester
+          .widget<Icon>(
+            find
+                .descendant(
+                  of: observances,
+                  matching: find.byKey(const Key('panchang_sparkle')),
+                )
+                .first,
+          )
+          .icon,
+      AppIcons.observanceMajor,
     );
     expect(
       find.descendant(
@@ -528,7 +546,10 @@ void main() {
     );
     expect(find.byType(SegmentedButton<bool>), findsNothing);
     expect(find.byKey(const Key('panchang_dot_grid')), findsOneWidget);
-    expect(find.byIcon(Icons.grid_view), findsNothing);
+    expect(
+      tester.widget<Icon>(find.byKey(const Key('panchang_dot_grid'))).icon,
+      AppIcons.choghadiya,
+    );
     await tester.tap(find.text('Night'));
     await tester.pumpAndSettle();
     expect(

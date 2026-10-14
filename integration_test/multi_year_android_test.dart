@@ -1,3 +1,4 @@
+import 'package:ekadashi_calendar/widgets/app_icons.dart';
 import '../test/support/premium_fixture.dart';
 import '../test/support/fake_free_sync_registry.dart';
 import 'package:ekadashi_calendar/widgets/ios_style.dart';
@@ -96,7 +97,10 @@ void main() {
       await NativeNotificationService().updateSettings(NotificationSettings());
       app.main();
       await tester.pump();
-      await until(tester, () => find.byIcon(Icons.home).evaluate().isNotEmpty);
+      await until(
+        tester,
+        () => find.byIcon(AppIcons.tabHome).evaluate().isNotEmpty,
+      );
       await until(
         tester,
         () => find.byType(CircularProgressIndicator).evaluate().isEmpty,
@@ -265,7 +269,7 @@ void main() {
       await lang.changeLanguage('te');
       await frames(tester);
       await binding.takeScreenshot('v2_calendar_telugu_2027');
-      await tester.tap(find.byIcon(Icons.home));
+      await tester.tap(find.byIcon(AppIcons.tabHome));
       await frames(tester);
       await binding.takeScreenshot('v2_home_telugu');
       expect(tester.takeException(), isNull);
@@ -303,9 +307,9 @@ void main() {
         await frames(tester);
         await until(
           tester,
-          () => find.byIcon(Icons.settings).evaluate().isNotEmpty,
+          () => find.byIcon(AppIcons.tabSettings).evaluate().isNotEmpty,
         );
-        await tester.tap(find.byIcon(Icons.settings));
+        await tester.tap(find.byIcon(AppIcons.tabSettings));
         await frames(tester);
         await binding.takeScreenshot('glass_settings_dark_$code');
         await tester.ensureVisible(find.byType(SwitchListTile).first);
@@ -315,7 +319,7 @@ void main() {
         await binding.takeScreenshot('glass_settings_light_$code');
         await tester.tap(find.byType(SwitchListTile).first);
         await frames(tester);
-        await tester.tap(find.byIcon(Icons.home));
+        await tester.tap(find.byIcon(AppIcons.tabHome));
         await frames(tester);
         await binding.takeScreenshot('glass_home_$code');
         await tester.tap(find.byKey(const Key('glass_tab_1')));

@@ -13,6 +13,7 @@ import '../../widgets/glass_tube.dart';
 import '../../widgets/ios_style.dart';
 import '../../widgets/settings_group.dart';
 import '../premium_screen.dart';
+import '../../widgets/app_icons.dart';
 
 typedef UpgradeAction = Future<void> Function(BuildContext context);
 
@@ -40,9 +41,9 @@ String _summary(BuildContext context, EventReminder reminder, String language) {
 }
 
 IconData _icon(EventReminderTarget target) => switch (target.source) {
-  null => Icons.auto_awesome,
-  CalendarEntrySource.google => Icons.event_available,
-  CalendarEntrySource.custom => Icons.calendar_today,
+  null => AppIcons.reminderObservance,
+  CalendarEntrySource.google => AppIcons.reminderGoogle,
+  CalendarEntrySource.custom => AppIcons.reminderCustom,
 };
 
 /// The "Festivals and events" part of Notifications (docs/ROADMAP.md
@@ -117,7 +118,7 @@ class EventReminderRows extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsetsDirectional.only(end: 6),
                         child: Icon(
-                          Icons.lock,
+                          AppIcons.lock,
                           size: 14,
                           color: secondary,
                           semanticLabel: AppStrings.translate(
@@ -137,7 +138,7 @@ class EventReminderRows extends StatelessWidget {
               key: const Key('notifications_add_event'),
               enabled: enabled,
               leading: SettingsIcon(
-                Icons.add_circle,
+                AppIcons.addReminder,
                 color: enabled ? GlassTubeColors.teal : secondary,
               ),
               title: Text(
@@ -327,7 +328,10 @@ class _EventReminderEditorState extends State<EventReminderEditor> {
                   selectedColor: SettingsStyle.primary(context),
                   title: Text(_lead(lead, language)),
                   trailing: _days.contains(lead)
-                      ? const Icon(Icons.check, color: GlassTubeColors.teal)
+                      ? const Icon(
+                          AppIcons.checkmark,
+                          color: GlassTubeColors.teal,
+                        )
                       : null,
                   onTap: () => setState(
                     () => _days.contains(lead)
@@ -479,7 +483,7 @@ class _EventReminderPickerState extends State<EventReminderPicker> {
       ),
       child: Row(
         children: [
-          Icon(Icons.search, size: 20, color: secondary),
+          Icon(AppIcons.search, size: 20, color: secondary),
           const SizedBox(width: 6),
           Expanded(
             child: TextField(
@@ -554,10 +558,13 @@ class _EventReminderPickerState extends State<EventReminderPicker> {
                             key: Key('event_choice_${choice.id}'),
                             title: Text(choice.title),
                             trailing: widget.selection == choice.target
-                                ? const Icon(Icons.check, color: IosColors.teal)
+                                ? const Icon(
+                                    AppIcons.checkmark,
+                                    color: IosColors.teal,
+                                  )
                                 : choice.requiresPremium && !premium
                                 ? Icon(
-                                    Icons.lock,
+                                    AppIcons.lock,
                                     size: IosText.caption,
                                     color: secondary,
                                     semanticLabel: AppStrings.translate(

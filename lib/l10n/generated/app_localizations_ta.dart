@@ -1515,7 +1515,7 @@ class AppLocalizationsTa extends AppLocalizations {
   }
 
   @override
-  String get event_reminder_all_custom => 'என் அனைத்து பதிவுகளும்';
+  String get event_reminder_all_custom => 'அனைத்து தனிப்பட்ட நிகழ்வுகளும்';
 
   @override
   String get event_reminder_all_google =>

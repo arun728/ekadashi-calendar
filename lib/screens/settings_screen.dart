@@ -20,6 +20,7 @@ import '../services/native_notification_service.dart'
         NativeNotificationService,
         EkadashiNotificationData,
         NotificationSettings;
+import '../widgets/app_icons.dart';
 
 /// Settings Screen - Updated to use native Kotlin services for:
 /// - Permission handling (no freeze on return from system settings)
@@ -330,7 +331,7 @@ class _SettingsScreenState extends State<SettingsScreen>
           key: const Key('settings_appearance_tube'),
           children: [
             ListTile(
-              leading: const SettingsIcon(Icons.grid_view),
+              leading: const SettingsIcon(AppIcons.widgetPreview),
               title: Text(lang.translate('widget_preview')),
               subtitle: Text(lang.translate('widget_preview_desc')),
               trailing: const SettingsChevron(),
@@ -351,7 +352,7 @@ class _SettingsScreenState extends State<SettingsScreen>
             ),
             const SettingsSeparator(inset: SettingsStyle.iconInset),
             SettingsSwitchTile(
-              icon: Icons.dark_mode,
+              icon: AppIcons.darkMode,
               title: Text(lang.translate('dark_mode')),
               value: Provider.of<ThemeService>(context).isDarkMode,
               onChanged: (value) {
@@ -414,9 +415,7 @@ class _SettingsScreenState extends State<SettingsScreen>
             if (togglesEnabled) ...[
               const SettingsSeparator(),
               ListTile(
-                leading: const SettingsIcon(
-                  Icons.notifications_active_outlined,
-                ),
+                leading: const SettingsIcon(AppIcons.testNotification),
                 title: Text(lang.translate('test_notification')),
                 subtitle: Text(lang.translate('test_notification_desc')),
                 onTap: () async {
@@ -510,14 +509,14 @@ class _SettingsScreenState extends State<SettingsScreen>
           key: const Key('settings_about_tube'),
           children: [
             ListTile(
-              leading: const SettingsIcon(Icons.star),
+              leading: const SettingsIcon(AppIcons.rateApp),
               title: Text(lang.translate('rate_app')),
               subtitle: Text(lang.translate('rate_app_desc')),
               onTap: () => _settingsService.openStoreListing(),
             ),
             const SettingsSeparator(inset: SettingsStyle.iconInset),
             ListTile(
-              leading: const SettingsIcon(Icons.ios_share),
+              leading: const SettingsIcon(AppIcons.share),
               title: Text(lang.translate('share_app')),
               subtitle: Text(lang.translate('share_app_desc')),
               onTap: _shareApp,

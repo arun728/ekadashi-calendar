@@ -23,6 +23,7 @@ import '../widgets/ios_style.dart';
 import '../widgets/section_pager.dart';
 import 'panchang_pages.dart';
 import 'widgets/city_picker_sheet.dart';
+import '../widgets/app_icons.dart';
 
 export 'widgets/month_year_picker.dart' show PanchangMonthPickerDialog;
 
@@ -245,7 +246,7 @@ class PanchangScreenState extends State<PanchangScreen> {
     title: _text('panchang_location_title'),
     footer: '',
     current: _city,
-    icon: Icons.pin_drop,
+    icon: AppIcons.panchangCity,
     onPick: _changeCity,
     onLocate: _locate,
     extra: ManualCoordinatesSection(city: _city, onSave: _changeCity),
@@ -326,7 +327,7 @@ class PanchangScreenState extends State<PanchangScreen> {
       key: const Key('panchang_notes'),
       tooltip: _text('panchang_notes_title'),
       color: IosColors.teal,
-      icon: const Icon(Icons.info_outline),
+      icon: const Icon(AppIcons.info),
       onPressed: _showNotes,
     ),
   ];
@@ -447,7 +448,7 @@ class PanchangScreenState extends State<PanchangScreen> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.pin_drop, size: 17, color: IosColors.teal),
+            const Icon(AppIcons.panchangCity, size: 17, color: IosColors.teal),
             const SizedBox(width: 6),
             Flexible(
               child: Text(
@@ -478,7 +479,7 @@ class PanchangScreenState extends State<PanchangScreen> {
             ),
             const SizedBox(width: 6),
             const Icon(
-              Icons.keyboard_arrow_down,
+              AppIcons.menuDisclosure,
               size: 15,
               color: IosColors.teal,
             ),
@@ -511,7 +512,7 @@ class PanchangScreenState extends State<PanchangScreen> {
             tooltip: t('panchang_previous'),
             constraints: const BoxConstraints.tightFor(width: 44, height: 44),
             padding: EdgeInsets.zero,
-            icon: const Icon(Icons.chevron_left, color: IosColors.teal),
+            icon: const Icon(AppIcons.previous, color: IosColors.teal),
             onPressed: () => _step(page, -1),
           ),
           const SizedBox(width: 4),
@@ -530,11 +531,7 @@ class PanchangScreenState extends State<PanchangScreen> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
-                      Icons.calendar_month_outlined,
-                      size: 16,
-                      color: primary,
-                    ),
+                    const Icon(AppIcons.panchangDate, size: 16, color: primary),
                     const SizedBox(width: 6),
                     Text(
                       title,
@@ -556,7 +553,7 @@ class PanchangScreenState extends State<PanchangScreen> {
             tooltip: t('panchang_next'),
             constraints: const BoxConstraints.tightFor(width: 44, height: 44),
             padding: EdgeInsets.zero,
-            icon: const Icon(Icons.chevron_right, color: IosColors.teal),
+            icon: const Icon(AppIcons.next, color: IosColors.teal),
             onPressed: () => _step(page, 1),
           ),
         ],

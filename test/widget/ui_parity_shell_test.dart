@@ -1,3 +1,4 @@
+import 'package:ekadashi_calendar/widgets/app_icons.dart';
 import 'package:ekadashi_calendar/main.dart';
 import 'package:ekadashi_calendar/screens/details_screen.dart';
 import 'package:ekadashi_calendar/screens/global_search_screen.dart';
@@ -107,13 +108,13 @@ void main() {
           .items;
       IconData icon(int i) => (items[i].icon as Icon).icon!;
       IconData active(int i) => (items[i].activeIcon as Icon).icon!;
-      expect(icon(0), Icons.home);
-      expect(icon(1), Icons.calendar_today);
-      expect(icon(2), Icons.eco);
-      expect(icon(3), Icons.auto_awesome);
+      expect(icon(0), AppIcons.tabHome);
+      expect(icon(1), AppIcons.tabCalendar);
+      expect(icon(2), AppIcons.tabJourney);
+      expect(icon(3), AppIcons.tabPanchang);
       // Panchang keeps one symbol (no outline/filled swap).
-      expect(active(3), Icons.auto_awesome);
-      expect(icon(4), Icons.settings);
+      expect(active(3), AppIcons.tabPanchang);
+      expect(icon(4), AppIcons.tabSettings);
     });
 
     testWidgets('the top bar title is the iOS inline title', (tester) async {

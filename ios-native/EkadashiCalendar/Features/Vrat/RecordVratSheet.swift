@@ -33,7 +33,7 @@ struct RecordVratSheet: View {
                         Text(model.fullDate(event.date)).font(.footnote).foregroundStyle(.secondary)
                     }
                     if isClosed {
-                        Label(model.t("journey_record_after_parana"), systemImage: "info.circle")
+                        Label(model.t("journey_record_after_parana"), systemImage: AppSymbol.info)
                             .font(.caption)
                             .foregroundStyle(.orange)
                             .padding(10)
@@ -43,9 +43,9 @@ struct RecordVratSheet: View {
                     label("status_active")
                     GlassGroup(spacing: 8) {
                         HStack(spacing: 8) {
-                            statusChip(.observed, "observed", "checkmark.circle")
-                            statusChip(.partial, "partial", "circle.circle")
-                            statusChip(.missed, "missed", "xmark.circle")
+                            statusChip(.observed, "observed", AppSymbol.statusObserved)
+                            statusChip(.partial, "partial", AppSymbol.statusPartial)
+                            statusChip(.missed, "missed", AppSymbol.statusMissed)
                         }
                     }
                     .accessibilityElement(children: .contain)
@@ -91,7 +91,7 @@ struct RecordVratSheet: View {
                         Button(role: .destructive) {
                             confirmDelete = true
                         } label: {
-                            Image(systemName: "trash").foregroundStyle(.red)
+                            Image(systemName: AppSymbol.delete).foregroundStyle(.red)
                         }
                         .accessibilityLabel(model.t("delete_record"))
                     }

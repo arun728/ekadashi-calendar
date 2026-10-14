@@ -91,7 +91,7 @@ struct EkadashiShareCard: View {
                 .padding(.top, 12)
             timings.padding(.top, 12)
             HStack(spacing: 6) {
-                Image(systemName: "leaf.fill").font(.system(size: 13)).foregroundStyle(accent.opacity(0.85))
+                Image(systemName: AppSymbol.shareCardBrand).font(.system(size: 13)).foregroundStyle(accent.opacity(0.85))
                 Text(content.branding)
                     .font(.system(size: 11.5, weight: .semibold))
                     .kerning(0.8)
@@ -119,7 +119,7 @@ struct EkadashiShareCard: View {
     private var header: some View {
         HStack(spacing: 8) {
             HStack(spacing: 8) {
-                Image(systemName: "sun.max.fill").font(.system(size: 19)).foregroundStyle(accent)
+                Image(systemName: AppSymbol.shareCardSun).font(.system(size: 19)).foregroundStyle(accent)
                 Text(content.observance.uppercased())
                     .font(.system(size: 11.5, weight: .bold))
                     .kerning(1.4)
@@ -143,12 +143,12 @@ struct EkadashiShareCard: View {
     private var timings: some View {
         HStack(alignment: .center, spacing: 12) {
             VStack(alignment: .leading, spacing: 0) {
-                row("sunrise.fill", accent, content.fastingTitle, content.fastingTime)
+                row(AppSymbol.shareCardFasting, accent, content.fastingTitle, content.fastingTime)
                 divider
-                row("sun.max.fill", Self.color(0xFFD54F), content.paranaTitle, content.paranaTime)
+                row(AppSymbol.shareCardParana, Self.color(0xFFD54F), content.paranaTitle, content.paranaTime)
                 if !content.significance.isEmpty {
                     divider
-                    row("sparkles", accent, content.significanceTitle, content.significance,
+                    row(AppSymbol.shareCardSignificance, accent, content.significanceTitle, content.significance,
                         lines: 3, size: 12.5, weight: .semibold)
                 }
             }

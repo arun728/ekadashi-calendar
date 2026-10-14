@@ -92,6 +92,25 @@ final class EventReminderTests: XCTestCase {
         XCTAssertFalse(choices.contains { $0.title.hasPrefix("event_reminder_") }, "every title is translated")
     }
 
+    func testAddAReminderListsMyCalendarThenMonthlyThenFestivals() {
+        XCTAssertEqual(EventReminderChoice.Kind.allCases, [.myCalendar, .monthly, .festival])
+        let groups = EventReminderChoice.all(language: "en").map(\.group)
+        let firstMonthly = groups.firstIndex(of: .monthly)!, firstFestival = groups.firstIndex(of: .festival)!
+        XCTAssertLessThan(groups.lastIndex(of: .myCalendar)!, firstMonthly)
+        XCTAssertLessThan(groups.lastIndex(of: .monthly)!, firstFestival)
+        XCTAssertEqual(EventReminderChoice.title(.calendar(.custom), language: "en"), "All custom events")
+    }
+
+    func testTheSameGoogleEventFromTwoCalendarsIsRemindedOnce() {
+        let start = CivilDate(2026, 10, 20).utcMidnight
+        let copies = ["holidays", "primary"].map {
+            CalendarEntry(id: "google_\($0)", title: "Dussehra", start: start, end: CivilDate(2026, 10, 21).utcMidnight,
+                          isAllDay: true, source: .google, calendarId: $0, updatedAt: start)
+        }
+        let google = EventReminder(target: .calendar(.google), daysBefore: [1], hour: 7, minute: 0)
+        XCTAssertEqual(plan([google], entries: copies, now: instant("2026-10-01T09:00:00+05:30")).count, 1)
+    }
+
     func testRemindersOpenTheDayInPanchang() {
         XCTAssertEqual(AppRoute(url: AppRoute.panchangURL(CivilDate(2026, 10, 10))), .panchang(CivilDate(2026, 10, 10)))
         XCTAssertEqual(AppRoute(url: URL(string: "ekadashi://panchang")!), .tab(.panchang))

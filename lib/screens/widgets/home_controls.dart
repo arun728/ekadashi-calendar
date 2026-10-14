@@ -8,6 +8,7 @@ import '../../services/panchang/calculated_ekadashi.dart';
 import '../../services/place_name_resolver.dart';
 import '../../widgets/glass_tube.dart';
 import '../../widgets/ios_style.dart';
+import '../../widgets/app_icons.dart';
 
 /// The four Home menus in a 2×2 grid that lines up from top to bottom
 /// (HomeControls in TodayView.swift): location over tradition on the left
@@ -95,8 +96,9 @@ class HomeControls extends StatelessWidget {
               child: CircularProgressIndicator(strokeWidth: 2, color: _teal),
             )
           : Icon(
-              // iOS mappin.and.ellipse / location.fill.
-              settings.isManual ? Icons.pin_drop : Icons.near_me,
+              settings.isManual
+                  ? AppIcons.locationPicked
+                  : AppIcons.locationDetected,
               size: 18,
               color: _teal,
             ),
@@ -134,7 +136,7 @@ class HomeControls extends StatelessWidget {
         ),
     ],
     child: _Pill(
-      leading: const Icon(Icons.auto_awesome, size: 18, color: _teal),
+      leading: const Icon(AppIcons.homeTradition, size: 18, color: _teal),
       label: Text(
         lang.translate(settings.traditionNameKey),
         maxLines: 1,
@@ -171,8 +173,8 @@ class HomeControls extends StatelessWidget {
     child: _Pill(
       centered: true,
       label: _reserving(
-        shown: (current.nativeName, Icons.language),
-        reserved: (yearText, Icons.calendar_today),
+        shown: (current.nativeName, AppIcons.homeLanguage),
+        reserved: (yearText, AppIcons.homeYear),
       ),
     ),
   );
@@ -198,8 +200,8 @@ class HomeControls extends StatelessWidget {
     child: _Pill(
       centered: true,
       label: _reserving(
-        shown: ('${settings.year}', Icons.calendar_today),
-        reserved: (languageName, Icons.language),
+        shown: ('${settings.year}', AppIcons.homeYear),
+        reserved: (languageName, AppIcons.homeLanguage),
       ),
     ),
   );
@@ -234,28 +236,32 @@ class HomeControls extends StatelessWidget {
   );
 
   /// A menu item as on iOS: the check mark first, then the name.
-  static PopupMenuItem<T> _item<T>(
-    T value,
-    String text,
-    bool selected,
-  ) => PopupMenuItem<T>(
-    value: value,
-    child: Builder(
-      builder: (context) => Row(
-        children: [
-          SizedBox(
-            width: 28,
-            child: selected
-                ? Icon(Icons.check, size: 18, color: IosColors.primary(context))
-                : null,
+  static PopupMenuItem<T> _item<T>(T value, String text, bool selected) =>
+      PopupMenuItem<T>(
+        value: value,
+        child: Builder(
+          builder: (context) => Row(
+            children: [
+              SizedBox(
+                width: 28,
+                child: selected
+                    ? Icon(
+                        AppIcons.checkmark,
+                        size: 18,
+                        color: IosColors.primary(context),
+                      )
+                    : null,
+              ),
+              Expanded(
+                child: Text(
+                  text,
+                  style: const TextStyle(fontSize: IosText.body),
+                ),
+              ),
+            ],
           ),
-          Expanded(
-            child: Text(text, style: const TextStyle(fontSize: IosText.body)),
-          ),
-        ],
-      ),
-    ),
-  );
+        ),
+      );
 }
 
 /// One Home menu: a glass capsule with the icon and label, then a chevron.
@@ -281,7 +287,7 @@ class _Pill extends StatelessWidget {
         if (leading != null) ...[leading!, const SizedBox(width: 6)],
         if (centered) Flexible(child: label) else Expanded(child: label),
         const SizedBox(width: 4),
-        Icon(Icons.expand_more, size: 16, color: Colors.grey.shade500),
+        Icon(AppIcons.menuDisclosure, size: 16, color: Colors.grey.shade500),
       ],
     );
     final pill = ConstrainedBox(

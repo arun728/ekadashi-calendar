@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../services/language_service.dart';
 import '../services/premium_service.dart';
 import '../services/play_billing_service.dart';
+import '../widgets/app_icons.dart';
 
 /// Opens the paywall; [reasonKey] is a translation key saying why (for
 /// example, the free Google Calendar sync was used).
@@ -358,7 +359,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
               leading: IconButton(
                 key: const Key('premium_close'),
                 tooltip: lang.translate('premium_continue_free'),
-                icon: const Icon(Icons.close),
+                icon: const Icon(AppIcons.close),
                 color: IosColors.teal,
                 onPressed: () => Navigator.maybePop(context),
               ),
@@ -436,7 +437,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
                                   const SizedBox(
                                     width: 26,
                                     child: Icon(
-                                      Icons.info_outline,
+                                      AppIcons.info,
                                       color: IosColors.teal,
                                       size: 22,
                                     ),
@@ -456,15 +457,15 @@ class _PremiumScreenState extends State<PremiumScreen> {
                               ),
                             ),
                           _feature(
-                            Icons.sync,
+                            AppIcons.premiumCalendar,
                             lang.translate('premium_feature_calendar'),
                           ),
                           _feature(
-                            Icons.self_improvement,
+                            AppIcons.premiumVrat,
                             lang.translate('premium_feature_vrat'),
                           ),
                           _feature(
-                            Icons.wb_twilight,
+                            AppIcons.premiumPanchang,
                             lang.translate('premium_feature_panchang_v2'),
                           ),
                           const SizedBox(height: 20),

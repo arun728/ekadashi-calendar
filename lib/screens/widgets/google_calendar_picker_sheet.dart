@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../services/google_calendar_service.dart';
 import '../../widgets/ios_style.dart';
 import '../../widgets/settings_group.dart';
+import '../../widgets/app_icons.dart';
 
 /// Returned by the picker when the user wants another Google account.
 const switchGoogleAccountResult = ['__switch_google_account__'];
@@ -101,7 +102,7 @@ class _GoogleCalendarPickerBodyState extends State<_GoogleCalendarPickerBody> {
                       child: Row(
                         children: [
                           const Icon(
-                            Icons.account_circle_outlined,
+                            AppIcons.googleAccount,
                             size: 20,
                             color: IosColors.teal,
                           ),

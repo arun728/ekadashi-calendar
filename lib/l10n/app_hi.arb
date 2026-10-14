@@ -488,7 +488,7 @@
   "event_reminder_today": "{value0} आज है ({value1})",
   "event_reminder_tomorrow": "{value0} कल है ({value1})",
   "event_reminder_in_days": "{value0} {value2} दिन बाद है ({value1})",
-  "event_reminder_all_custom": "मेरी सभी प्रविष्टियाँ",
+  "event_reminder_all_custom": "सभी निजी इवेंट",
   "event_reminder_all_google": "गूगल कैलेंडर के सभी इवेंट",
   "event_reminder_group_festival": "त्योहार",
   "event_reminder_group_monthly": "मासिक व्रत-तिथियाँ",

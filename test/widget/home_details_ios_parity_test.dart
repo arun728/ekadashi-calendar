@@ -1,3 +1,4 @@
+import 'package:ekadashi_calendar/widgets/app_icons.dart';
 import 'package:ekadashi_calendar/l10n/app_language.dart';
 import 'package:ekadashi_calendar/models/vrat_tracker_models.dart';
 import 'package:ekadashi_calendar/screens/details_screen.dart';
@@ -65,7 +66,10 @@ void main() {
       final tube = find.byKey(const Key('home_options_tube'));
       final location = find.byKey(const Key('home_location'));
       expect(
-        find.descendant(of: location, matching: find.byIcon(Icons.near_me)),
+        find.descendant(
+          of: location,
+          matching: find.byIcon(AppIcons.locationDetected),
+        ),
         findsOneWidget,
       );
       expect(
@@ -94,7 +98,7 @@ void main() {
       expect(
         find.descendant(
           of: find.byKey(const Key('home_location')),
-          matching: find.byIcon(Icons.near_me),
+          matching: find.byIcon(AppIcons.locationDetected),
         ),
         findsOneWidget,
       );
@@ -114,7 +118,7 @@ void main() {
       expect(
         find.descendant(
           of: find.byKey(const Key('home_location')),
-          matching: find.byIcon(Icons.pin_drop),
+          matching: find.byIcon(AppIcons.locationPicked),
         ),
         findsOneWidget,
       );
@@ -125,12 +129,12 @@ void main() {
     ) async {
       await pumpHome(tester);
       final menu = find.byKey(const Key('language_menu'));
-      expect(iconColor(tester, menu, Icons.language), IosColors.teal);
+      expect(iconColor(tester, menu, AppIcons.homeLanguage), IosColors.teal);
       expect(
         iconColor(
           tester,
           find.byKey(const Key('home_tradition_menu')),
-          Icons.auto_awesome,
+          AppIcons.homeTradition,
         ),
         IosColors.teal,
       );
@@ -143,7 +147,7 @@ void main() {
       );
       await tester.tap(menu);
       await tester.pumpAndSettle();
-      final check = find.byIcon(Icons.check);
+      final check = find.byIcon(AppIcons.checkmark);
       expect(check, findsOneWidget);
       final english = find.text(AppLanguage.named('en').nativeName).last;
       expect(
@@ -265,12 +269,8 @@ void main() {
         IosColors.gray(context).withValues(alpha: .18),
       );
       expect(
-        iconColor(tester, record, Icons.calendar_month_outlined),
+        iconColor(tester, record, AppIcons.cardUnrecorded),
         IosColors.tertiary(context),
-      );
-      expect(
-        find.descendant(of: record, matching: find.byIcon(Icons.add_circle)),
-        findsOneWidget,
       );
       expect(
         tester.getSemantics(record),
@@ -289,7 +289,7 @@ void main() {
       record = find.byKey(const Key('home_record_vrat'));
       expect(tester.widget<OutlinedButton>(record).onPressed, isNotNull);
       expect(
-        iconColor(tester, record, Icons.calendar_month_outlined),
+        iconColor(tester, record, AppIcons.cardUnrecorded),
         IosColors.teal,
       );
     });
@@ -398,7 +398,7 @@ void main() {
       expect(tester.widget<GlassPanel>(box).radius, 16);
       expect(tester.widget<GlassPanel>(box).tint, IosColors.teal);
       expect(
-        find.descendant(of: box, matching: find.byIcon(Icons.restaurant)),
+        find.descendant(of: box, matching: find.byIcon(AppIcons.startFasting)),
         findsOneWidget,
       );
       expect(
@@ -429,7 +429,10 @@ void main() {
         findsOneWidget,
       );
       expect(
-        find.descendant(of: button, matching: find.byIcon(Icons.help_outline)),
+        find.descendant(
+          of: button,
+          matching: find.byIcon(AppIcons.statusUnrecorded),
+        ),
         findsOneWidget,
       );
       // Dimmed: the whole button is drawn faded.
@@ -464,7 +467,7 @@ void main() {
       );
       final context = tester.element(button);
       expect(
-        iconColor(tester, button, Icons.help_outline),
+        iconColor(tester, button, AppIcons.statusUnrecorded),
         IosColors.gray(context),
       );
       final tracker = Provider.of<VratTrackerService>(context, listen: false);
@@ -484,7 +487,7 @@ void main() {
         findsOneWidget,
       );
       expect(
-        iconColor(tester, button, Icons.check_circle_outline),
+        iconColor(tester, button, AppIcons.statusObserved),
         IosColors.green(context),
       );
       // Home shows the filled check for an observed fast.
@@ -492,7 +495,10 @@ void main() {
       await tester.pumpAndSettle();
       final record = find.byKey(const Key('home_record_vrat'));
       expect(
-        find.descendant(of: record, matching: find.byIcon(Icons.check_circle)),
+        find.descendant(
+          of: record,
+          matching: find.byIcon(AppIcons.cardObserved),
+        ),
         findsOneWidget,
       );
     });

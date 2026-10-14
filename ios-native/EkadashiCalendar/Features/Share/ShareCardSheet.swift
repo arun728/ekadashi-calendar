@@ -33,7 +33,7 @@ struct ShareCardSheet: View {
                             HStack(spacing: 10) {
                                 ShareLink(item: Image(uiImage: image), message: Text(message),
                                           preview: SharePreview(event.name, image: Image(uiImage: image))) {
-                                    Label(model.t("share"), systemImage: "square.and.arrow.up")
+                                    Label(model.t("share"), systemImage: AppSymbol.share)
                                         .font(.callout.bold()).frame(maxWidth: .infinity).padding(.vertical, 6)
                                 }
                                 .primaryActionStyle()
@@ -41,7 +41,7 @@ struct ShareCardSheet: View {
                                 Button {
                                     Task { await save(image) }
                                 } label: {
-                                    Label(model.t("ios_share_card_save"), systemImage: "square.and.arrow.down")
+                                    Label(model.t("ios_share_card_save"), systemImage: AppSymbol.save)
                                         .font(.callout.bold()).frame(maxWidth: .infinity).padding(.vertical, 6)
                                 }
                                 .secondaryActionStyle()

@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 
 import '../../l10n/app_language.dart';
 import '../../services/ekadashi_service.dart';
+import '../../widgets/app_icons.dart';
 
 /// The texts on a share card, all in the app language (ShareCardContent in
 /// EkadashiShareCard.swift). No location is shown on the card.
@@ -194,7 +195,7 @@ class EkadashiShareCard extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
-                        Icons.eco_rounded,
+                        AppIcons.shareCardBrand,
                         size: 14,
                         color: _accent.withValues(alpha: 0.85),
                       ),
@@ -232,7 +233,7 @@ class EkadashiShareCard extends StatelessWidget {
 
   Widget _header() => Row(
     children: [
-      const Icon(Icons.brightness_7_rounded, color: _accent, size: 21),
+      const Icon(AppIcons.shareCardSun, color: _accent, size: 21),
       const SizedBox(width: 8),
       Expanded(
         child: Text(
@@ -300,14 +301,14 @@ class EkadashiShareCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _row(
-                  Icons.wb_twilight_rounded,
+                  AppIcons.shareCardFasting,
                   _accent,
                   content.fastingTitle,
                   content.fastingTime,
                 ),
                 divider,
                 _row(
-                  Icons.wb_sunny_rounded,
+                  AppIcons.shareCardParana,
                   const Color(0xFFFFD54F),
                   content.paranaTitle,
                   content.paranaTime,
@@ -315,7 +316,7 @@ class EkadashiShareCard extends StatelessWidget {
                 if (content.significance.isNotEmpty) ...[
                   divider,
                   _row(
-                    Icons.auto_awesome_rounded,
+                    AppIcons.shareCardSignificance,
                     _accent,
                     content.significanceTitle,
                     content.significance,

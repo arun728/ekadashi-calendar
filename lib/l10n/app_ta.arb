@@ -488,7 +488,7 @@
   "event_reminder_today": "{value0} இன்று ({value1})",
   "event_reminder_tomorrow": "{value0} நாளை ({value1})",
   "event_reminder_in_days": "{value0} இன்னும் {value2} நாட்களில் ({value1})",
-  "event_reminder_all_custom": "என் அனைத்து பதிவுகளும்",
+  "event_reminder_all_custom": "அனைத்து தனிப்பட்ட நிகழ்வுகளும்",
   "event_reminder_all_google": "அனைத்து கூகுள் நாள்காட்டி நிகழ்வுகளும்",
   "event_reminder_group_festival": "பண்டிகைகள்",
   "event_reminder_group_monthly": "மாதாந்திர விரத நாட்கள்",

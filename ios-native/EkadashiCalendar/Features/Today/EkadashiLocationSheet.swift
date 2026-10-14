@@ -9,7 +9,7 @@ struct EkadashiLocationSheet: View {
     var body: some View {
         CityPickerSheet(
             title: model.t("home_location_title"), footer: model.t("home_location_footer"),
-            current: model.ekadashiCity, symbol: model.ekadashiCityIsManual ? "mappin.and.ellipse" : "location.fill",
+            current: model.ekadashiCity, symbol: model.ekadashiCityIsManual ? AppSymbol.locationPicked : AppSymbol.locationDetected,
             pick: { model.chooseEkadashiCity($0) },
             locate: {
                 await model.useCurrentLocationForEkadashis()
@@ -71,7 +71,7 @@ struct CityPickerSheet<Extra: View>: View {
                     Button {
                         Task { await useCurrentLocation() }
                     } label: {
-                        Label(model.t(busy ? "panchang_locating" : "panchang_use_current_location"), systemImage: "location")
+                        Label(model.t(busy ? "panchang_locating" : "panchang_use_current_location"), systemImage: AppSymbol.useCurrentLocation)
                     }
                     .disabled(busy)
                     .accessibilityIdentifier("ekadashi_location_current_button")

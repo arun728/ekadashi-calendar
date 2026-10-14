@@ -1,3 +1,4 @@
+import 'package:ekadashi_calendar/widgets/app_icons.dart';
 import 'package:ekadashi_calendar/models/calendar_entry.dart';
 import 'package:ekadashi_calendar/screens/premium_screen.dart';
 import 'package:ekadashi_calendar/services/play_billing_service.dart';
@@ -139,7 +140,7 @@ void main() {
       find.byKey(const Key('event_reminder_row_calendar:custom')),
       findsOneWidget,
     );
-    expect(find.text('All my entries'), findsOneWidget);
+    expect(find.text('All custom events'), findsOneWidget);
     expect(
       find.text('On the day, 1 day before, 2 days before · 7:00 AM'),
       findsOneWidget,
@@ -223,7 +224,7 @@ void main() {
     await openPicker(tester);
     final deepavali = await findDeepavali(tester);
     expect(
-      find.descendant(of: deepavali, matching: find.byIcon(Icons.lock)),
+      find.descendant(of: deepavali, matching: find.byIcon(AppIcons.lock)),
       findsOneWidget,
     );
     expect(
@@ -291,7 +292,7 @@ void main() {
     );
     expect(row, findsOneWidget);
     expect(
-      find.descendant(of: row, matching: find.byIcon(Icons.lock)),
+      find.descendant(of: row, matching: find.byIcon(AppIcons.lock)),
       findsOneWidget,
     );
   });
@@ -314,7 +315,7 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.descendant(of: row, matching: find.byIcon(Icons.lock)),
+      find.descendant(of: row, matching: find.byIcon(AppIcons.lock)),
       findsNothing,
     );
     await tester.tap(row);

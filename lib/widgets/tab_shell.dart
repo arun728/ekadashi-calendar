@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart' show CupertinoIcons;
 
 import 'ios_style.dart';
+import 'app_icons.dart';
 
 /// Each tab keeps its own navigation stack, as iOS does with a
 /// NavigationStack per tab: pages pushed from a tab (Ekadashi details,
@@ -158,8 +158,12 @@ class ShellTopBar extends StatelessWidget implements PreferredSizeWidget {
   final List<Widget> leading;
   final List<Widget> actions;
 
+  /// Room between the status bar and the bar's capsules, as under the
+  /// iPhone's clock (it was cramped against Android's status bar).
+  static const topGap = 10.0;
+
   @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight + topGap);
 
   Widget _capsule(List<Widget> children) => GlassPanel(
     radius: 999,
@@ -174,9 +178,9 @@ class ShellTopBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) => SafeArea(
     bottom: false,
     child: SizedBox(
-      height: kToolbarHeight,
+      height: kToolbarHeight + topGap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        padding: const EdgeInsets.fromLTRB(16, 4 + topGap, 16, 4),
         child: NavigationToolbar(
           leading: leading.isEmpty
               ? null
@@ -195,7 +199,7 @@ class ShellTopBar extends StatelessWidget implements PreferredSizeWidget {
             IconButton(
               key: const Key('open_global_search'),
               tooltip: searchTooltip,
-              icon: const Icon(CupertinoIcons.search, size: 30),
+              icon: const Icon(AppIcons.search, size: 30),
               onPressed: onSearch,
             ),
             ...actions,

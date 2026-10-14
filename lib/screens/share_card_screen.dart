@@ -15,6 +15,7 @@ import '../services/ekadashi_service.dart';
 import '../services/ekadashi_settings.dart';
 import '../services/language_service.dart';
 import 'widgets/ekadashi_share_card.dart';
+import '../widgets/app_icons.dart';
 
 /// Opens the share card of [event] (Home's share button, Details).
 Future<void> openShareCard(BuildContext context, EkadashiDate event) =>
@@ -171,7 +172,7 @@ class _ShareCardScreenState extends State<ShareCardScreen> {
                         backgroundColor: teal,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
-                      icon: const Icon(Icons.share),
+                      icon: const Icon(AppIcons.share),
                       label: Text(lang.translate('share')),
                     ),
                   ),
@@ -184,7 +185,7 @@ class _ShareCardScreenState extends State<ShareCardScreen> {
                         foregroundColor: teal,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
-                      icon: const Icon(Icons.download),
+                      icon: const Icon(AppIcons.save),
                       label: Text(lang.translate('share_card_save')),
                     ),
                   ),

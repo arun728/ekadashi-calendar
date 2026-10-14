@@ -21,7 +21,7 @@ struct CalendarView: View {
     /// The direction the month grid slides in (a later month from the right).
     @State private var forward = true
     /// Month changes slide visibly rather than snapping.
-    static let monthSlide = Animation.easeInOut(duration: 0.35)
+    static let monthSlide = Animation.easeInOut(duration: CalendarMotion.monthSlideSeconds)
 
     /// The enabled Ekadashi years (assets/calendar/ekadashi_years.json).
     private var years: [Int] { model.enabledYears }
@@ -82,7 +82,7 @@ struct CalendarView: View {
                     .accessibilityIdentifier("calendar_today")
             }
             ToolbarItemGroup(placement: .topBarTrailing) {
-                Button { editing = EntryEditorRequest(day: selected, existing: nil) } label: { Image(systemName: "plus") }
+                Button { editing = EntryEditorRequest(day: selected, existing: nil) } label: { Image(systemName: AppSymbol.add) }
                     .disabled(loaded.failed)
                     .accessibilityLabel(model.t("add_entry"))
                     .accessibilityIdentifier("add_calendar_entry")
@@ -113,15 +113,15 @@ struct CalendarView: View {
         } else {
             Menu {
                 Button { Task { await sync() } } label: {
-                    Label(model.t("sync_google"), systemImage: "arrow.triangle.2.circlepath")
+                    Label(model.t("sync_google"), systemImage: AppSymbol.googleSync)
                 }
                 .accessibilityIdentifier("import_google_year")
                 Button(role: .destructive) { Task { await disconnect() } } label: {
-                    Label(model.t("disconnect_google"), systemImage: "person.crop.circle.badge.minus")
+                    Label(model.t("disconnect_google"), systemImage: AppSymbol.googleDisconnect)
                 }
                 .accessibilityIdentifier("disconnect_google")
             } label: {
-                Image(systemName: "arrow.triangle.2.circlepath.circle")
+                Image(systemName: AppSymbol.googleMenu)
             }
             .accessibilityLabel(model.t("google_calendar"))
             .accessibilityIdentifier("calendar_google_menu")
@@ -156,7 +156,7 @@ struct CalendarView: View {
                     HStack(spacing: 6) {
                         // The selected date in full, as on every tab.
                         Text(model.fullDate(selected)).font(.title3.weight(.bold)).foregroundStyle(.primary)
-                        Image(systemName: "chevron.down").font(.footnote.weight(.bold)).foregroundStyle(Theme.teal)
+                        Image(systemName: AppSymbol.menuDisclosure).font(.footnote.weight(.bold)).foregroundStyle(Theme.teal)
                     }
                 }
                 .accessibilityIdentifier("calendar_year_selector")
@@ -169,11 +169,11 @@ struct CalendarView: View {
                     .accessibilityIdentifier("calendar_ekadashi_source")
             }
             Spacer()
-            Button { move(-1) } label: { Image(systemName: "chevron.left").frame(width: 44, height: 44) }
+            Button { move(-1) } label: { Image(systemName: AppSymbol.previous).frame(width: 44, height: 44) }
                 .disabled(isFirstMonth)
                 .accessibilityLabel(model.fullDate(selected.steppingMonths(-1)))
                 .accessibilityIdentifier("calendar_previous_month")
-            Button { move(1) } label: { Image(systemName: "chevron.right").frame(width: 44, height: 44) }
+            Button { move(1) } label: { Image(systemName: AppSymbol.next).frame(width: 44, height: 44) }
                 .disabled(isLastMonth)
                 .accessibilityLabel(model.fullDate(selected.steppingMonths(1)))
                 .accessibilityIdentifier("calendar_next_month")
@@ -193,7 +193,9 @@ struct CalendarView: View {
                 Text(model.t("no_ekadashi")).font(.subheadline).foregroundStyle(.secondary)
             }
             if filter != .ekadashi {
+                // An Ekadashi is the day's entry: no "No entries for this day".
                 DayEntriesList(day: selected, entries: list, filter: filter,
+                               showsEmptyText: selectedEkadashi == nil || filter != .all,
                                edit: { editing = EntryEditorRequest(day: selected, existing: $0) }, delete: delete)
             }
         }
@@ -378,13 +380,15 @@ struct DayEntriesList: View {
     let day: CivilDate
     let entries: [CalendarEntry]
     let filter: CalendarFilter
+    /// "No entries for this day" when nothing is listed; off when the day
+    /// shows its Ekadashi.
+    var showsEmptyText = true
     let edit: (CalendarEntry) -> Void
     let delete: (CalendarEntry) -> Void
 
     var body: some View {
         let zone = TimeZone.current
-        let items = entries
-            .filter { $0.occurs(on: day, in: zone) }
+        let items = CalendarEntry.withoutDuplicateGoogle(entries.filter { $0.occurs(on: day, in: zone) })
             .filter { entry in
                 switch filter {
                 case .all: return true
@@ -395,7 +399,10 @@ struct DayEntriesList: View {
             }
             .sorted { $0.interval(in: zone).0 < $1.interval(in: zone).0 }
         if items.isEmpty {
-            Text(model.t("no_entries")).font(.subheadline).foregroundStyle(.secondary).padding(24)
+            if showsEmptyText {
+                Text(model.t("no_entries")).font(.subheadline).foregroundStyle(.secondary)
+                    .padding(.horizontal, 24).padding(.vertical, 16)
+            }
         } else {
             VStack(spacing: 8) {
                 ForEach(items) { entry in row(entry) }
@@ -413,7 +420,7 @@ struct DayEntriesList: View {
                 Text(subtitle).font(.caption).foregroundStyle(.secondary).lineLimit(2)
             }
             Spacer()
-            if entry.source == .custom { Image(systemName: "pencil").font(.footnote).foregroundStyle(.secondary) }
+            if entry.source == .custom { Image(systemName: AppSymbol.edit).font(.footnote).foregroundStyle(.secondary) }
         }
         .padding(12)
         .glassPanel(cornerRadius: 14)
@@ -421,8 +428,8 @@ struct DayEntriesList: View {
         .onTapGesture { if entry.source == .custom { edit(entry) } }
         .contextMenu {
             if entry.source == .custom {
-                Button(model.t("edit_entry"), systemImage: "pencil") { edit(entry) }
-                Button(model.t("delete_record"), systemImage: "trash", role: .destructive) { delete(entry) }
+                Button(model.t("edit_entry"), systemImage: AppSymbol.edit) { edit(entry) }
+                Button(model.t("delete_record"), systemImage: AppSymbol.delete, role: .destructive) { delete(entry) }
             }
         }
     }

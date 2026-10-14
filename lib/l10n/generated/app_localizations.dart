@@ -2869,7 +2869,7 @@ abstract class AppLocalizations {
   /// No description provided for @event_reminder_all_custom.
   ///
   /// In en, this message translates to:
-  /// **'All my entries'**
+  /// **'All custom events'**
   String get event_reminder_all_custom;
 
   /// No description provided for @event_reminder_all_google.
