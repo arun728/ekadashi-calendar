@@ -77,14 +77,14 @@ struct CityPickerSheet<Extra: View>: View {
                     .accessibilityIdentifier("ekadashi_location_current_button")
                     if let message { Text(message).font(.caption).foregroundStyle(.secondary) }
                 }
+                // No identifiers on these Sections: they would replace the
+                // rows' ekadashi_city_<id> identifiers.
                 if search.trimmingCharacters(in: .whitespaces).count < 2 {
                     let list = shortlist
                     if !list.recent.isEmpty {
                         Section(model.t("recent_searches")) { ForEach(list.recent, id: \.self) { row($0) } }
-                            .accessibilityIdentifier("ekadashi_location_recent")
                     }
                     Section(model.t("home_popular_cities")) { ForEach(list.popular, id: \.self) { row($0) } }
-                        .accessibilityIdentifier("ekadashi_location_popular")
                 }
                 extra()
             }

@@ -68,7 +68,8 @@ struct SettingsView: View {
                 }
             }
             .tint(Theme.teal)
-            .accessibilityIdentifier("settings_notifications_tube")
+            // No identifier on this Section: it would replace those of its
+            // rows (notifications_master, notify_toggle_*), which UI tests use.
 
             // Sub-sections under the master switch (docs/ROADMAP.md Phase 7).
             Section {

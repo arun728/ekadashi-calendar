@@ -342,8 +342,7 @@ final class ScreenshotTests: XCTestCase {
     func testTestNotificationKeepsTheAppRunning() {
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 20))
         tab(4)
-        // Found by its title: the Notifications section's own identifier
-        // (settings_notifications_tube) replaces the identifiers of its rows.
+        // Found by its title (the row has no identifier of its own).
         let send = app.staticTexts["Test Notification"].firstMatch
         // The row sits just below the first screen, under the floating tab
         // bar; scroll a third of the screen at a time until it can be tapped.
@@ -407,7 +406,12 @@ final class ScreenshotTests: XCTestCase {
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 20))
         tab(4)
         let master = element("notifications_master")
-        for _ in 0..<6 where !(master.exists && master.isHittable) { app.swipeUp() }
+        // Small steps: a full-screen swipe scrolls past the row and the lazy
+        // list drops it.
+        for _ in 0..<12 where !(master.exists && master.isHittable) {
+            app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7))
+                .press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.4)))
+        }
         XCTAssertTrue(master.waitForExistence(timeout: 5))
         let reminder = element("notify_toggle_notify_2day")
         XCTAssertTrue(reminder.waitForExistence(timeout: 5))
