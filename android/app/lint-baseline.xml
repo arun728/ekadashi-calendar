@@ -1,0 +1,1812 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<issues format="6" by="lint 8.13.1" type="baseline" client="gradle" dependencies="false" name="AGP (8.13.1)" variant="all" version="8.13.1">
+
+    <issue
+        id="ApplySharedPref"
+        message="Consider using `apply()` instead; `commit` writes its data to persistent storage immediately, whereas `apply` will handle it in the background"
+        errorLine1="        prefs.edit().clear().commit()"
+        errorLine2="                             ~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/applausestudios/ekadashi_calendar/widget/data/WidgetDataRepository.kt"
+            line="145"
+            column="30"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="`android:forceDarkAllowed` requires API level 29 (current min is 24)"
+        errorLine1="        &lt;item name=&quot;android:forceDarkAllowed&quot;>false&lt;/item>"
+        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values-night/styles.xml"
+            line="8"
+            column="15"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="`android:windowLayoutInDisplayCutoutMode` requires API level 27 (current min is 24)"
+        errorLine1="        &lt;item name=&quot;android:windowLayoutInDisplayCutoutMode&quot;>shortEdges&lt;/item>"
+        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values-night/styles.xml"
+            line="11"
+            column="15"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `enableOnBackInvokedCallback` is only used in API level 33 and higher (current min is 24)"
+        errorLine1="        android:enableOnBackInvokedCallback=&quot;true&quot;>"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/AndroidManifest.xml"
+            line="22"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `targetCellWidth` is only used in API level 31 and higher (current min is 24)"
+        errorLine1="    android:targetCellWidth=&quot;2&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/xml/ekadashi_widget_info.xml"
+            line="7"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `targetCellHeight` is only used in API level 31 and higher (current min is 24)"
+        errorLine1="    android:targetCellHeight=&quot;2&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/xml/ekadashi_widget_info.xml"
+            line="8"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `maxResizeWidth` is only used in API level 31 and higher (current min is 24)"
+        errorLine1="    android:maxResizeWidth=&quot;500dp&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/xml/ekadashi_widget_info.xml"
+            line="9"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `maxResizeHeight` is only used in API level 31 and higher (current min is 24)"
+        errorLine1="    android:maxResizeHeight=&quot;500dp&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/xml/ekadashi_widget_info.xml"
+            line="10"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `previewLayout` is only used in API level 31 and higher (current min is 24)"
+        errorLine1="    android:previewLayout=&quot;@layout/preview_widget_next&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/xml/ekadashi_widget_info.xml"
+            line="15"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `targetCellWidth` is only used in API level 31 and higher (current min is 24)"
+        errorLine1="    android:targetCellWidth=&quot;4&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/xml/widget_ekadashi_today_info.xml"
+            line="7"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `targetCellHeight` is only used in API level 31 and higher (current min is 24)"
+        errorLine1="    android:targetCellHeight=&quot;2&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/xml/widget_ekadashi_today_info.xml"
+            line="8"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `maxResizeWidth` is only used in API level 31 and higher (current min is 24)"
+        errorLine1="    android:maxResizeWidth=&quot;500dp&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/xml/widget_ekadashi_today_info.xml"
+            line="9"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `maxResizeHeight` is only used in API level 31 and higher (current min is 24)"
+        errorLine1="    android:maxResizeHeight=&quot;300dp&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/xml/widget_ekadashi_today_info.xml"
+            line="10"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `previewLayout` is only used in API level 31 and higher (current min is 24)"
+        errorLine1="    android:previewLayout=&quot;@layout/preview_widget_today&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/xml/widget_ekadashi_today_info.xml"
+            line="15"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `widgetFeatures` is only used in API level 28 and higher (current min is 24)"
+        errorLine1="    android:widgetFeatures=&quot;hide_from_picker&quot;>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/xml/widget_ekadashi_today_info.xml"
+            line="18"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `targetCellWidth` is only used in API level 31 and higher (current min is 24)"
+        errorLine1="    android:targetCellWidth=&quot;4&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/xml/widget_upcoming_ekadashis_info.xml"
+            line="7"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `targetCellHeight` is only used in API level 31 and higher (current min is 24)"
+        errorLine1="    android:targetCellHeight=&quot;4&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/xml/widget_upcoming_ekadashis_info.xml"
+            line="8"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `maxResizeWidth` is only used in API level 31 and higher (current min is 24)"
+        errorLine1="    android:maxResizeWidth=&quot;500dp&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/xml/widget_upcoming_ekadashis_info.xml"
+            line="9"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `maxResizeHeight` is only used in API level 31 and higher (current min is 24)"
+        errorLine1="    android:maxResizeHeight=&quot;600dp&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/xml/widget_upcoming_ekadashis_info.xml"
+            line="10"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UnusedAttribute"
+        message="Attribute `previewLayout` is only used in API level 31 and higher (current min is 24)"
+        errorLine1="    android:previewLayout=&quot;@layout/preview_widget_upcoming&quot;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/xml/widget_upcoming_ekadashis_info.xml"
+            line="15"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="AppBundleLocaleChanges"
+        message="Found dynamic locale changes, but did not find corresponding Play Core library calls for downloading languages and splitting by language is not disabled in the `bundle` configuration"
+        errorLine1="                                    config.setLocale(java.util.Locale.forLanguageTag(locale))"
+        errorLine2="                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/applausestudios/ekadashi_calendar/widget/data/WidgetDataRepository.kt"
+            line="238"
+            column="37"/>
+    </issue>
+
+    <issue
+        id="BatteryLife"
+        message="Use of `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` violates the Play Store Content Policy regarding acceptable use cases, as described in https://developer.android.com/training/monitoring-device-state/doze-standby.html"
+        errorLine1="            val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {"
+        errorLine2="                                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/applausestudios/ekadashi_calendar/SettingsService.kt"
+            line="230"
+            column="42"/>
+    </issue>
+
+    <issue
+        id="AndroidGradlePluginVersion"
+        message="A newer version of Gradle than 8.14 is available: 8.14.6"
+        errorLine1="distributionUrl=https\://services.gradle.org/distributions/gradle-8.14-all.zip"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../gradle/wrapper/gradle-wrapper.properties"
+            line="5"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.test:runner than 1.6.2 is available: 1.7.0"
+        errorLine1="    debugImplementation(&quot;androidx.test:runner:1.6.2&quot;)"
+        errorLine2="                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle.kts"
+            line="98"
+            column="25"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.test:runner than 1.6.2 is available: 1.7.0"
+        errorLine1="    androidTestImplementation(&quot;androidx.test:runner:1.6.2&quot;)"
+        errorLine2="                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle.kts"
+            line="99"
+            column="31"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.test.ext:junit than 1.2.1 is available: 1.3.0"
+        errorLine1="    androidTestImplementation(&quot;androidx.test.ext:junit:1.2.1&quot;)"
+        errorLine2="                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle.kts"
+            line="100"
+            column="31"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.test.uiautomator:uiautomator than 2.3.0 is available: 2.4.0"
+        errorLine1="    androidTestImplementation(&quot;androidx.test.uiautomator:uiautomator:2.3.0&quot;)"
+        errorLine2="                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle.kts"
+            line="101"
+            column="31"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.test:core than 1.6.1 is available: 1.7.0"
+        errorLine1="    testImplementation(&quot;androidx.test:core:1.6.1&quot;)"
+        errorLine2="                       ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle.kts"
+            line="108"
+            column="24"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.work:work-testing than 2.9.0 is available: 2.12.0"
+        errorLine1="    testImplementation(&quot;androidx.work:work-testing:2.9.0&quot;)"
+        errorLine2="                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle.kts"
+            line="109"
+            column="24"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of com.android.tools:desugar_jdk_libs than 2.1.4 is available: 2.1.5"
+        errorLine1="    coreLibraryDesugaring(&quot;com.android.tools:desugar_jdk_libs:2.1.4&quot;)"
+        errorLine2="                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle.kts"
+            line="111"
+            column="27"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of com.google.android.gms:play-services-location than 21.0.1 is available: 21.4.0"
+        errorLine1="    implementation(&quot;com.google.android.gms:play-services-location:21.0.1&quot;)"
+        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle.kts"
+            line="118"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.work:work-runtime-ktx than 2.9.0 is available: 2.12.0"
+        errorLine1="    implementation(&quot;androidx.work:work-runtime-ktx:2.9.0&quot;)"
+        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle.kts"
+            line="121"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.core:core-splashscreen than 1.0.1 is available: 1.2.0"
+        errorLine1="    implementation(&quot;androidx.core:core-splashscreen:1.0.1&quot;)"
+        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle.kts"
+            line="128"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="LockedOrientationActivity"
+        message="Expecting `android:screenOrientation=&quot;unspecified&quot;` or `&quot;fullSensor&quot;` for this activity so the user can use the application in any orientation and provide a great experience on Chrome OS devices"
+        errorLine1="            android:screenOrientation=&quot;portrait&quot;"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/AndroidManifest.xml"
+            line="31"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="NewerVersionAvailable"
+        message="A newer version of com.google.guava:guava than 28.1-android is available: 33.7.2-android"
+        errorLine1="    compileOnly(&quot;com.google.guava:guava:28.1-android&quot;)"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle.kts"
+            line="105"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="NewerVersionAvailable"
+        message="A newer version of org.robolectric:robolectric than 4.14.1 is available: 4.17"
+        errorLine1="    testImplementation(&quot;org.robolectric:robolectric:4.14.1&quot;)"
+        errorLine2="                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle.kts"
+            line="107"
+            column="24"/>
+    </issue>
+
+    <issue
+        id="NewerVersionAvailable"
+        message="A newer version of org.jetbrains.kotlinx:kotlinx-coroutines-android than 1.7.3 is available: 1.11.0"
+        errorLine1="    implementation(&quot;org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3&quot;)"
+        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle.kts"
+            line="124"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="NewerVersionAvailable"
+        message="A newer version of org.jetbrains.kotlinx:kotlinx-coroutines-play-services than 1.7.3 is available: 1.11.0"
+        errorLine1="    implementation(&quot;org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3&quot;)"
+        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle.kts"
+            line="125"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="DiscouragedApi"
+        message="Fixed screen orientations will be ignored in most cases, starting from Android 16. Android is moving toward a model where apps are expected to adapt to various orientations, display sizes, and aspect ratios."
+        errorLine1="            android:screenOrientation=&quot;portrait&quot;"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/AndroidManifest.xml"
+            line="31"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="ObsoleteSdkInt"
+        message="Unnecessary; `SDK_INT` is always >= 31"
+        errorLine1="                val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {"
+        errorLine2="                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/applausestudios/ekadashi_calendar/MainActivity.kt"
+            line="744"
+            column="32"/>
+    </issue>
+
+    <issue
+        id="ObsoleteSdkInt"
+        message="This folder configuration (`v21`) is unnecessary; `minSdkVersion` is 24. Merge all the resources in this folder into `drawable-night`.">
+        <location
+            file="src/main/res/drawable-night-v21"/>
+    </issue>
+
+    <issue
+        id="ObsoleteSdkInt"
+        message="This folder configuration (`v21`) is unnecessary; `minSdkVersion` is 24. Merge all the resources in this folder into `drawable`.">
+        <location
+            file="src/main/res/drawable-v21"/>
+    </issue>
+
+    <issue
+        id="StaticFieldLeak"
+        message="Do not place Android context classes in static fields (static reference to `WidgetDataRepository` which has field `context` pointing to `Context`); this is a memory leak"
+        errorLine1="        @Volatile"
+        errorLine2="        ^">
+        <location
+            file="src/main/kotlin/com/applausestudios/ekadashi_calendar/widget/data/WidgetDataRepository.kt"
+            line="33"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="DisableBaselineAlignment"
+        message="Set `android:baselineAligned=&quot;false&quot;` on this element for better performance"
+        errorLine1="        &lt;LinearLayout"
+        errorLine2="         ~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/widget_large.xml"
+            line="99"
+            column="10"/>
+    </issue>
+
+    <issue
+        id="DisableBaselineAlignment"
+        message="Set `android:baselineAligned=&quot;false&quot;` on this element for better performance"
+        errorLine1="    &lt;LinearLayout"
+        errorLine2="     ~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/widget_medium.xml"
+            line="138"
+            column="6"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.color.widget_teal` appears to be unused"
+        errorLine1="    &lt;color name=&quot;widget_teal&quot;>#00A19B&lt;/color>"
+        errorLine2="           ~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/colors.xml"
+            line="4"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.color.widget_gold_light` appears to be unused"
+        errorLine1="    &lt;color name=&quot;widget_gold_light&quot;>#FBBF24&lt;/color>"
+        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/colors.xml"
+            line="7"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.color.widget_blue_accent` appears to be unused"
+        errorLine1="    &lt;color name=&quot;widget_blue_accent&quot;>#38BDF8&lt;/color>"
+        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/colors.xml"
+            line="9"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.color.widget_bg` appears to be unused"
+        errorLine1="    &lt;color name=&quot;widget_bg&quot;>#090E1A&lt;/color>"
+        errorLine2="           ~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/colors.xml"
+            line="10"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.color.widget_gradient_start` appears to be unused"
+        errorLine1="    &lt;color name=&quot;widget_gradient_start&quot;>#0D1527&lt;/color>"
+        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/colors.xml"
+            line="11"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.color.widget_gradient_center` appears to be unused"
+        errorLine1="    &lt;color name=&quot;widget_gradient_center&quot;>#0A0F1D&lt;/color>"
+        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/colors.xml"
+            line="12"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.color.widget_gradient_end` appears to be unused"
+        errorLine1="    &lt;color name=&quot;widget_gradient_end&quot;>#030712&lt;/color>"
+        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/colors.xml"
+            line="13"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.color.widget_border` appears to be unused"
+        errorLine1="    &lt;color name=&quot;widget_border&quot;>#2B3954&lt;/color>"
+        errorLine2="           ~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/colors.xml"
+            line="14"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.color.widget_card_bg` appears to be unused"
+        errorLine1="    &lt;color name=&quot;widget_card_bg&quot;>#1E293B&lt;/color>"
+        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/colors.xml"
+            line="15"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.color.widget_card_border` appears to be unused"
+        errorLine1="    &lt;color name=&quot;widget_card_border&quot;>#334155&lt;/color>"
+        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/colors.xml"
+            line="16"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.color.widget_text_primary` appears to be unused"
+        errorLine1="    &lt;color name=&quot;widget_text_primary&quot;>#FFFFFF&lt;/color>"
+        errorLine2="           ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/colors.xml"
+            line="17"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.mipmap.launcher_icon` appears to be unused">
+        <location
+            file="src/main/res/mipmap-hdpi/launcher_icon.png"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.drawable.notification_icon_backup` appears to be unused">
+        <location
+            file="src/main/res/drawable/notification_icon_backup.png"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.app_name` appears to be unused"
+        errorLine1="    &lt;string name=&quot;app_name&quot;>Ekadashi Calendar&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="3"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.drawable.vishnu_card1_reclining` appears to be unused">
+        <location
+            file="src/main/res/drawable-nodpi/vishnu_card1_reclining.jpg"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.drawable.vishnu_card2_meditative` appears to be unused">
+        <location
+            file="src/main/res/drawable-nodpi/vishnu_card2_meditative.jpg"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.drawable.vishnu_card3_dashavatara` appears to be unused">
+        <location
+            file="src/main/res/drawable-nodpi/vishnu_card3_dashavatara.jpg"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.drawable.widget_action_button_bg` appears to be unused"
+        errorLine1="&lt;shape xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;"
+        errorLine2="^">
+        <location
+            file="src/main/res/drawable/widget_action_button_bg.xml"
+            line="2"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.drawable.widget_banner_bg` appears to be unused">
+        <location
+            file="src/main/res/drawable/widget_banner_bg.png"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.drawable.widget_date_tile_background` appears to be unused"
+        errorLine1="&lt;shape xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;"
+        errorLine2="^">
+        <location
+            file="src/main/res/drawable/widget_date_tile_background.xml"
+            line="2"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.drawable.widget_logo_background` appears to be unused"
+        errorLine1="&lt;shape xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;"
+        errorLine2="^">
+        <location
+            file="src/main/res/drawable/widget_logo_background.xml"
+            line="2"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.drawable.widget_lotus_divider` appears to be unused"
+        errorLine1="&lt;vector xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;"
+        errorLine2="^">
+        <location
+            file="src/main/res/drawable/widget_lotus_divider.xml"
+            line="2"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.drawable.widget_vishnu_bg` appears to be unused">
+        <location
+            file="src/main/res/drawable-nodpi/widget_vishnu_bg.png"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.drawable.widget_vishnu_large` appears to be unused">
+        <location
+            file="src/main/res/drawable-nodpi/widget_vishnu_large.png"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.drawable.widget_vishnu_medium` appears to be unused">
+        <location
+            file="src/main/res/drawable-nodpi/widget_vishnu_medium.png"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.drawable.widget_vishnu_small` appears to be unused">
+        <location
+            file="src/main/res/drawable-nodpi/widget_vishnu_small.png"/>
+    </issue>
+
+    <issue
+        id="UselessLeaf"
+        message="This `FrameLayout` view is unnecessary (no children, no `background`, no `id`, no `style`)"
+        errorLine1="        &lt;FrameLayout"
+        errorLine2="         ~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/widget_medium.xml"
+            line="37"
+            column="10"/>
+    </issue>
+
+    <issue
+        id="UselessLeaf"
+        message="This `FrameLayout` view is unnecessary (no children, no `background`, no `id`, no `style`)"
+        errorLine1="    &lt;FrameLayout"
+        errorLine2="     ~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/widget_medium.xml"
+            line="132"
+            column="6"/>
+    </issue>
+
+    <issue
+        id="UselessLeaf"
+        message="This `FrameLayout` view is unnecessary (no children, no `background`, no `id`, no `style`)"
+        errorLine1="    &lt;FrameLayout"
+        errorLine2="     ~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/widget_small.xml"
+            line="100"
+            column="6"/>
+    </issue>
+
+    <issue
+        id="IconLauncherShape"
+        message="Launcher icons should not fill every pixel of their square region; see the design guide for details">
+        <location
+            file="src/main/res/mipmap-hdpi/ic_launcher.png"/>
+    </issue>
+
+    <issue
+        id="IconLauncherShape"
+        message="Launcher icons should not fill every pixel of their square region; see the design guide for details">
+        <location
+            file="src/main/res/mipmap-mdpi/ic_launcher.png"/>
+    </issue>
+
+    <issue
+        id="IconLauncherShape"
+        message="Launcher icons should not fill every pixel of their square region; see the design guide for details">
+        <location
+            file="src/main/res/mipmap-xhdpi/ic_launcher.png"/>
+    </issue>
+
+    <issue
+        id="IconLauncherShape"
+        message="Launcher icons should not fill every pixel of their square region; see the design guide for details">
+        <location
+            file="src/main/res/mipmap-xxhdpi/ic_launcher.png"/>
+    </issue>
+
+    <issue
+        id="IconLauncherShape"
+        message="Launcher icons should not fill every pixel of their square region; see the design guide for details">
+        <location
+            file="src/main/res/mipmap-xxxhdpi/ic_launcher.png"/>
+    </issue>
+
+    <issue
+        id="IconDuplicatesConfig"
+        message="The `app_icon.png` icon has identical contents in the following configuration folders: drawable-nodpi, drawable">
+        <location
+            file="src/main/res/drawable/app_icon.png"/>
+        <location
+            file="src/main/res/drawable-nodpi/app_icon.png"/>
+    </issue>
+
+    <issue
+        id="IconDuplicatesConfig"
+        message="The `background.png` icon has identical contents in the following configuration folders: drawable-night-v21, drawable-night, drawable-v21, drawable">
+        <location
+            file="src/main/res/drawable/background.png"/>
+        <location
+            file="src/main/res/drawable-v21/background.png"/>
+        <location
+            file="src/main/res/drawable-night/background.png"/>
+        <location
+            file="src/main/res/drawable-night-v21/background.png"/>
+    </issue>
+
+    <issue
+        id="IconDuplicatesConfig"
+        message="The `widget_preview_medium.png` icon has identical contents in the following configuration folders: drawable-nodpi, drawable">
+        <location
+            file="src/main/res/drawable/widget_preview_medium.png"/>
+        <location
+            file="src/main/res/drawable-nodpi/widget_preview_medium.png"/>
+    </issue>
+
+    <issue
+        id="IconLocation"
+        message="Found bitmap drawable `res/drawable/app_icon.png` in densityless folder">
+        <location
+            file="src/main/res/drawable/app_icon.png"/>
+    </issue>
+
+    <issue
+        id="IconLocation"
+        message="Found bitmap drawable `res/drawable/background.png` in densityless folder">
+        <location
+            file="src/main/res/drawable/background.png"/>
+    </issue>
+
+    <issue
+        id="IconLocation"
+        message="Found bitmap drawable `res/drawable/notification_icon.png` in densityless folder">
+        <location
+            file="src/main/res/drawable/notification_icon.png"/>
+    </issue>
+
+    <issue
+        id="IconLocation"
+        message="Found bitmap drawable `res/drawable/notification_icon_backup.png` in densityless folder">
+        <location
+            file="src/main/res/drawable/notification_icon_backup.png"/>
+    </issue>
+
+    <issue
+        id="IconLocation"
+        message="Found bitmap drawable `res/drawable/widget_banner_bg.png` in densityless folder">
+        <location
+            file="src/main/res/drawable/widget_banner_bg.png"/>
+    </issue>
+
+    <issue
+        id="IconLocation"
+        message="Found bitmap drawable `res/drawable/widget_lotus_deity.png` in densityless folder">
+        <location
+            file="src/main/res/drawable/widget_lotus_deity.png"/>
+    </issue>
+
+    <issue
+        id="IconLocation"
+        message="Found bitmap drawable `res/drawable/widget_preview_large.png` in densityless folder">
+        <location
+            file="src/main/res/drawable/widget_preview_large.png"/>
+    </issue>
+
+    <issue
+        id="IconLocation"
+        message="Found bitmap drawable `res/drawable/widget_preview_medium.png` in densityless folder">
+        <location
+            file="src/main/res/drawable/widget_preview_medium.png"/>
+    </issue>
+
+    <issue
+        id="IconLocation"
+        message="Found bitmap drawable `res/drawable/widget_preview_small.png` in densityless folder">
+        <location
+            file="src/main/res/drawable/widget_preview_small.png"/>
+    </issue>
+
+    <issue
+        id="IconDuplicates"
+        message="The following unrelated icon files have identical contents: ic_launcher.png, launcher_icon.png">
+        <location
+            file="src/main/res/mipmap-hdpi/launcher_icon.png"/>
+        <location
+            file="src/main/res/mipmap-hdpi/ic_launcher.png"/>
+    </issue>
+
+    <issue
+        id="IconDuplicates"
+        message="The following unrelated icon files have identical contents: ic_launcher.png, launcher_icon.png">
+        <location
+            file="src/main/res/mipmap-mdpi/launcher_icon.png"/>
+        <location
+            file="src/main/res/mipmap-mdpi/ic_launcher.png"/>
+    </issue>
+
+    <issue
+        id="IconDuplicates"
+        message="The following unrelated icon files have identical contents: ic_launcher.png, launcher_icon.png">
+        <location
+            file="src/main/res/mipmap-xhdpi/launcher_icon.png"/>
+        <location
+            file="src/main/res/mipmap-xhdpi/ic_launcher.png"/>
+    </issue>
+
+    <issue
+        id="IconDuplicates"
+        message="The following unrelated icon files have identical contents: ic_launcher.png, launcher_icon.png">
+        <location
+            file="src/main/res/mipmap-xxhdpi/launcher_icon.png"/>
+        <location
+            file="src/main/res/mipmap-xxhdpi/ic_launcher.png"/>
+    </issue>
+
+    <issue
+        id="IconDuplicates"
+        message="The following unrelated icon files have identical contents: ic_launcher.png, launcher_icon.png">
+        <location
+            file="src/main/res/mipmap-xxxhdpi/launcher_icon.png"/>
+        <location
+            file="src/main/res/mipmap-xxxhdpi/ic_launcher.png"/>
+    </issue>
+
+    <issue
+        id="IconDuplicates"
+        message="The following unrelated icon files have identical contents: notification_icon.png, notification_icon_backup.png">
+        <location
+            file="src/main/res/drawable/notification_icon_backup.png"/>
+        <location
+            file="src/main/res/drawable/notification_icon.png"/>
+    </issue>
+
+    <issue
+        id="IconDuplicates"
+        message="The following unrelated icon files have identical contents: android12splash.png, splash.png, android12splash.png, splash.png">
+        <location
+            file="src/main/res/drawable-night-hdpi/splash.png"/>
+        <location
+            file="src/main/res/drawable-night-hdpi/android12splash.png"/>
+        <location
+            file="src/main/res/drawable-hdpi/splash.png"/>
+        <location
+            file="src/main/res/drawable-hdpi/android12splash.png"/>
+    </issue>
+
+    <issue
+        id="IconDuplicates"
+        message="The following unrelated icon files have identical contents: android12splash.png, splash.png, android12splash.png, splash.png">
+        <location
+            file="src/main/res/drawable-night-mdpi/splash.png"/>
+        <location
+            file="src/main/res/drawable-night-mdpi/android12splash.png"/>
+        <location
+            file="src/main/res/drawable-mdpi/splash.png"/>
+        <location
+            file="src/main/res/drawable-mdpi/android12splash.png"/>
+    </issue>
+
+    <issue
+        id="IconDuplicates"
+        message="The following unrelated icon files have identical contents: android12splash.png, splash.png, android12splash.png, splash.png">
+        <location
+            file="src/main/res/drawable-xhdpi/splash.png"/>
+        <location
+            file="src/main/res/drawable-xhdpi/android12splash.png"/>
+        <location
+            file="src/main/res/drawable-night-xhdpi/splash.png"/>
+        <location
+            file="src/main/res/drawable-night-xhdpi/android12splash.png"/>
+    </issue>
+
+    <issue
+        id="IconDuplicates"
+        message="The following unrelated icon files have identical contents: android12splash.png, splash.png, android12splash.png, splash.png">
+        <location
+            file="src/main/res/drawable-xxhdpi/splash.png"/>
+        <location
+            file="src/main/res/drawable-xxhdpi/android12splash.png"/>
+        <location
+            file="src/main/res/drawable-night-xxhdpi/splash.png"/>
+        <location
+            file="src/main/res/drawable-night-xxhdpi/android12splash.png"/>
+    </issue>
+
+    <issue
+        id="IconDuplicates"
+        message="The following unrelated icon files have identical contents: android12splash.png, splash.png, android12splash.png, splash.png">
+        <location
+            file="src/main/res/drawable-xxxhdpi/splash.png"/>
+        <location
+            file="src/main/res/drawable-xxxhdpi/android12splash.png"/>
+        <location
+            file="src/main/res/drawable-night-xxxhdpi/splash.png"/>
+        <location
+            file="src/main/res/drawable-night-xxxhdpi/android12splash.png"/>
+    </issue>
+
+    <issue
+        id="IconDuplicates"
+        message="The following unrelated icon files have identical contents: widget_lotus_deity.png, widget_lotus_deity.png, widget_preview_large.png, widget_preview_small.png">
+        <location
+            file="src/main/res/drawable/widget_preview_small.png"/>
+        <location
+            file="src/main/res/drawable/widget_preview_large.png"/>
+        <location
+            file="src/main/res/drawable/widget_lotus_deity.png"/>
+        <location
+            file="src/main/res/drawable-nodpi/widget_lotus_deity.png"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toUri` instead?"
+        errorLine1="                data = android.net.Uri.parse(url)"
+        errorLine2="                       ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/applausestudios/ekadashi_calendar/EkadashiNotificationWorker.kt"
+            line="101"
+            column="24"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toUri` instead?"
+        errorLine1="                data = android.net.Uri.parse(url)"
+        errorLine2="                       ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/applausestudios/ekadashi_calendar/EkadashiNotificationWorker.kt"
+            line="101"
+            column="24"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toUri` instead?"
+        errorLine1="            data = Uri.parse(toUri(Intent.URI_INTENT_SCHEME))"
+        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/applausestudios/ekadashi_calendar/widget/provider/EkadashiWidgetReceiver.kt"
+            line="253"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toUri` instead?"
+        errorLine1="            data = Uri.parse(toUri(Intent.URI_INTENT_SCHEME))"
+        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/applausestudios/ekadashi_calendar/widget/provider/EkadashiWidgetReceiver.kt"
+            line="253"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="        prefs.edit().putString(KEY_SELECTED_CITY_ID, cityId).apply()"
+        errorLine2="        ~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/applausestudios/ekadashi_calendar/LocationService.kt"
+            line="537"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="        prefs.edit().putBoolean(KEY_AUTO_DETECT, enabled).apply()"
+        errorLine2="        ~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/applausestudios/ekadashi_calendar/LocationService.kt"
+            line="551"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="        prefs.edit().putString(KEY_TIMEZONE, timezone).apply()"
+        errorLine2="        ~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/applausestudios/ekadashi_calendar/LocationService.kt"
+            line="565"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="        prefs.edit().clear().apply()"
+        errorLine2="        ~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/applausestudios/ekadashi_calendar/LocationService.kt"
+            line="572"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toUri` instead?"
+        errorLine1="                    data = Uri.parse(&quot;package:$packageName&quot;)"
+        errorLine2="                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/applausestudios/ekadashi_calendar/MainActivity.kt"
+            line="672"
+            column="28"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toUri` instead?"
+        errorLine1="                    data = Uri.parse(&quot;package:$packageName&quot;)"
+        errorLine2="                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/applausestudios/ekadashi_calendar/MainActivity.kt"
+            line="672"
+            column="28"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toUri` instead?"
+        errorLine1="                            data = Uri.parse(&quot;package:$packageName&quot;)"
+        errorLine2="                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/applausestudios/ekadashi_calendar/MainActivity.kt"
+            line="694"
+            column="36"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toUri` instead?"
+        errorLine1="                            data = Uri.parse(&quot;package:$packageName&quot;)"
+        errorLine2="                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/applausestudios/ekadashi_calendar/MainActivity.kt"
+            line="694"
+            column="36"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toUri` instead?"
+        errorLine1="                    data = Uri.parse(&quot;package:$packageName&quot;)"
+        errorLine2="                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/applausestudios/ekadashi_calendar/MainActivity.kt"
+            line="709"
+            column="28"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toUri` instead?"
+        errorLine1="                    data = Uri.parse(&quot;package:$packageName&quot;)"
+        errorLine2="                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/applausestudios/ekadashi_calendar/MainActivity.kt"
+            line="709"
+            column="28"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="        context.getSharedPreferences(EkadashiNotificationWorker.CHANNEL_PREFS, Context.MODE_PRIVATE).edit()"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/applausestudios/ekadashi_calendar/NotificationScheduler.kt"
+            line="53"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="        prefs.edit().putBoolean(KEY_NOTIFICATIONS_ENABLED, enabled).apply()"
+        errorLine2="        ~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/applausestudios/ekadashi_calendar/NotificationScheduler.kt"
+            line="287"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="        prefs.edit().putBoolean(KEY_REMIND_2_DAYS, enabled).apply()"
+        errorLine2="        ~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/applausestudios/ekadashi_calendar/NotificationScheduler.kt"
+            line="296"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="        prefs.edit().putBoolean(KEY_REMIND_1_DAY, enabled).apply()"
+        errorLine2="        ~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/applausestudios/ekadashi_calendar/NotificationScheduler.kt"
+            line="302"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="        prefs.edit().putBoolean(KEY_REMIND_ON_START, enabled).apply()"
+        errorLine2="        ~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/applausestudios/ekadashi_calendar/NotificationScheduler.kt"
+            line="308"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="        prefs.edit().putBoolean(KEY_REMIND_ON_PARANA, enabled).apply()"
+        errorLine2="        ~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/applausestudios/ekadashi_calendar/NotificationScheduler.kt"
+            line="314"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toUri` instead?"
+        errorLine1="                    data = Uri.parse(&quot;package:${context.packageName}&quot;)"
+        errorLine2="                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/applausestudios/ekadashi_calendar/SettingsService.kt"
+            line="210"
+            column="28"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toUri` instead?"
+        errorLine1="                    data = Uri.parse(&quot;package:${context.packageName}&quot;)"
+        errorLine2="                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/applausestudios/ekadashi_calendar/SettingsService.kt"
+            line="210"
+            column="28"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toUri` instead?"
+        errorLine1="                data = Uri.parse(&quot;package:${context.packageName}&quot;)"
+        errorLine2="                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/applausestudios/ekadashi_calendar/SettingsService.kt"
+            line="231"
+            column="24"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toUri` instead?"
+        errorLine1="                data = Uri.parse(&quot;package:${context.packageName}&quot;)"
+        errorLine2="                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/applausestudios/ekadashi_calendar/SettingsService.kt"
+            line="231"
+            column="24"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toUri` instead?"
+        errorLine1="                data = Uri.parse(&quot;package:${context.packageName}&quot;)"
+        errorLine2="                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/applausestudios/ekadashi_calendar/SettingsService.kt"
+            line="257"
+            column="24"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toUri` instead?"
+        errorLine1="                data = Uri.parse(&quot;package:${context.packageName}&quot;)"
+        errorLine2="                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/applausestudios/ekadashi_calendar/SettingsService.kt"
+            line="257"
+            column="24"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toUri` instead?"
+        errorLine1="            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(&quot;market://details?id=${context.packageName}&quot;)).apply {"
+        errorLine2="                                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/applausestudios/ekadashi_calendar/SettingsService.kt"
+            line="289"
+            column="53"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toUri` instead?"
+        errorLine1="                val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(&quot;https://play.google.com/store/apps/details?id=${context.packageName}&quot;)).apply {"
+        errorLine2="                                                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/applausestudios/ekadashi_calendar/SettingsService.kt"
+            line="298"
+            column="64"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="            prefs.edit().putBoolean(key, value).apply()"
+        errorLine2="            ~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/applausestudios/ekadashi_calendar/SettingsService.kt"
+            line="351"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="            prefs.edit().putBoolean(KEY_DARK_MODE, enabled).apply()"
+        errorLine2="            ~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/applausestudios/ekadashi_calendar/SettingsService.kt"
+            line="412"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="            prefs.edit().putString(KEY_LANGUAGE_CODE, code).apply()"
+        errorLine2="            ~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/applausestudios/ekadashi_calendar/SettingsService.kt"
+            line="436"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="            prefs.edit().clear().apply()"
+        errorLine2="            ~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/applausestudios/ekadashi_calendar/SettingsService.kt"
+            line="470"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="        prefs.edit().clear().commit()"
+        errorLine2="        ~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/applausestudios/ekadashi_calendar/widget/data/WidgetDataRepository.kt"
+            line="145"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toUri` instead?"
+        errorLine1="        return Uri.parse(&quot;$SCHEME://$HOST_DASHBOARD&quot;)"
+        errorLine2="               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/applausestudios/ekadashi_calendar/widget/deeplink/WidgetDeepLinks.kt"
+            line="21"
+            column="16"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toUri` instead?"
+        errorLine1="        return Uri.parse(&quot;$SCHEME://$HOST_DASHBOARD?$PARAM_ACTION=$ACTION_PARANA&quot;)"
+        errorLine2="               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/applausestudios/ekadashi_calendar/widget/deeplink/WidgetDeepLinks.kt"
+            line="25"
+            column="16"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toUri` instead?"
+        errorLine1="        return Uri.parse(&quot;$SCHEME://$HOST_TODAY&quot;)"
+        errorLine2="               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/applausestudios/ekadashi_calendar/widget/deeplink/WidgetDeepLinks.kt"
+            line="29"
+            column="16"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toUri` instead?"
+        errorLine1="        return Uri.parse(&quot;$SCHEME://$HOST_CALENDAR?$PARAM_DATE=$isoDate&quot;)"
+        errorLine2="               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/applausestudios/ekadashi_calendar/widget/deeplink/WidgetDeepLinks.kt"
+            line="33"
+            column="16"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;🕉️&quot;, should use `@string` resource"
+        errorLine1="                android:text=&quot;🕉️&quot;"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/widget_large.xml"
+            line="28"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;NEXT EKADASHI&quot;, should use `@string` resource"
+        errorLine1="                android:text=&quot;NEXT EKADASHI&quot;"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/widget_large.xml"
+            line="55"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;Indira Ekadashi&quot;, should use `@string` resource"
+        errorLine1="                android:text=&quot;Indira Ekadashi&quot;"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/widget_large.xml"
+            line="75"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;→&quot;, should use `@string` resource"
+        errorLine1="                android:text=&quot;→&quot;"
+        errorLine2="                ~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/widget_large.xml"
+            line="84"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;24 September 2026 • Krishna Paksha&quot;, should use `@string` resource"
+        errorLine1="            android:text=&quot;24 September 2026 • Krishna Paksha&quot;"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/widget_large.xml"
+            line="94"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;FASTING START&quot;, should use `@string` resource"
+        errorLine1="                    android:text=&quot;FASTING START&quot;"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/widget_large.xml"
+            line="116"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;05:48 AM&quot;, should use `@string` resource"
+        errorLine1="                    android:text=&quot;05:48 AM&quot;"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/widget_large.xml"
+            line="125"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;PARANA WINDOW&quot;, should use `@string` resource"
+        errorLine1="                    android:text=&quot;PARANA WINDOW&quot;"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/widget_large.xml"
+            line="141"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;06:24 AM - 08:42 AM&quot;, should use `@string` resource"
+        errorLine1="                    android:text=&quot;06:24 AM - 08:42 AM&quot;"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/widget_large.xml"
+            line="150"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;UPCOMING EKADASHIS&quot;, should use `@string` resource"
+        errorLine1="        android:text=&quot;UPCOMING EKADASHIS&quot;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/widget_large.xml"
+            line="165"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;Open app to refresh upcoming Ekadashis&quot;, should use `@string` resource"
+        errorLine1="        android:text=&quot;Open app to refresh upcoming Ekadashis&quot;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/widget_large.xml"
+            line="193"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;📍 Chennai • IST&quot;, should use `@string` resource"
+        errorLine1="        android:text=&quot;📍 Chennai • IST&quot;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/widget_large.xml"
+            line="206"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;🕉️&quot;, should use `@string` resource"
+        errorLine1="            android:text=&quot;🕉️&quot;"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/widget_medium.xml"
+            line="20"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;FASTING ACTIVE&quot;, should use `@string` resource"
+        errorLine1="            android:text=&quot;FASTING ACTIVE&quot;"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/widget_medium.xml"
+            line="53"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;Aja Ekadashi&quot;, should use `@string` resource"
+        errorLine1="            android:text=&quot;Aja Ekadashi&quot;"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/widget_medium.xml"
+            line="74"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;→&quot;, should use `@string` resource"
+        errorLine1="            android:text=&quot;→&quot;"
+        errorLine2="            ~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/widget_medium.xml"
+            line="83"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;Date • Paksha&quot;, should use `@string` resource"
+        errorLine1="            android:text=&quot;Date • Paksha&quot;"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/widget_medium.xml"
+            line="102"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;📍 Chennai • IST&quot;, should use `@string` resource"
+        errorLine1="            android:text=&quot;📍 Chennai • IST&quot;"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/widget_medium.xml"
+            line="114"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;FASTING START&quot;, should use `@string` resource"
+        errorLine1="                android:text=&quot;FASTING START&quot;"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/widget_medium.xml"
+            line="157"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;05:48 AM&quot;, should use `@string` resource"
+        errorLine1="                android:text=&quot;05:48 AM&quot;"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/widget_medium.xml"
+            line="166"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;PARANA WINDOW&quot;, should use `@string` resource"
+        errorLine1="                android:text=&quot;PARANA WINDOW&quot;"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/widget_medium.xml"
+            line="191"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;06:24 AM - 08:42 AM&quot;, should use `@string` resource"
+        errorLine1="                android:text=&quot;06:24 AM - 08:42 AM&quot;"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/widget_medium.xml"
+            line="200"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;STARTS IN&quot;, should use `@string` resource"
+        errorLine1="                android:text=&quot;STARTS IN&quot;"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/widget_medium.xml"
+            line="225"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;2 days&quot;, should use `@string` resource"
+        errorLine1="                android:text=&quot;2 days&quot;"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/widget_medium.xml"
+            line="234"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;📅&quot;, should use `@string` resource"
+        errorLine1="            android:text=&quot;📅&quot;"
+        errorLine2="            ~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/widget_small.xml"
+            line="20"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;NEXT EKADASHI&quot;, should use `@string` resource"
+        errorLine1="            android:text=&quot;NEXT EKADASHI&quot;"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/widget_small.xml"
+            line="35"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;Indira Ekadashi&quot;, should use `@string` resource"
+        errorLine1="            android:text=&quot;Indira Ekadashi&quot;"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/widget_small.xml"
+            line="60"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;→&quot;, should use `@string` resource"
+        errorLine1="            android:text=&quot;→&quot;"
+        errorLine2="            ~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/widget_small.xml"
+            line="69"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;24 September 2026&quot;, should use `@string` resource"
+        errorLine1="        android:text=&quot;24 September 2026&quot;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/widget_small.xml"
+            line="83"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;◷ STARTS IN&quot;, should use `@string` resource"
+        errorLine1="        android:text=&quot;◷ STARTS IN&quot;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/widget_small.xml"
+            line="110"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;2d 08h 36m&quot;, should use `@string` resource"
+        errorLine1="        android:text=&quot;2d 08h 36m&quot;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/widget_small.xml"
+            line="120"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;24 SEP&quot;, should use `@string` resource"
+        errorLine1="        android:text=&quot;24 SEP&quot;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/widget_upcoming_item.xml"
+            line="23"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;Indira Ekadashi&quot;, should use `@string` resource"
+        errorLine1="        android:text=&quot;Indira Ekadashi&quot;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/widget_upcoming_item.xml"
+            line="36"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;→&quot;, should use `@string` resource"
+        errorLine1="        android:text=&quot;→&quot;"
+        errorLine2="        ~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/widget_upcoming_item.xml"
+            line="46"
+            column="9"/>
+    </issue>
+
+</issues>

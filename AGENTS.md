@@ -315,3 +315,25 @@ store link: iOS the App Store link, Android the Play Store link.
   When it has a listing, replace the placeholder in `AppLinks.appStorePlaceholder`
   (or set `APP_STORE_ID` in `ios-native/Config/Secrets.xcconfig`) and in the
   Android port.
+
+## Icons, launch location and CI (14 October 2026)
+
+- Every icon on both platforms comes from `test/fixtures/app_icons.json`
+  (`AppSymbol` on iOS, `AppIcons` on Android; see docs/ICONS.md). Never use
+  an SF Symbol name, `Icons.` or `CupertinoIcons.` directly in a screen; add
+  a role to the table instead. The Journey tab is an award rosette.
+- Every launch detects the place again and Home shows it, even after a city
+  was picked on Home (as in v1); Panchang follows when it showed Home's city.
+  Back in the app without a relaunch, a picked city stays.
+- The Calendar shows "No entries for this day" only when the day has no
+  Ekadashi and no entries; identical Google events from several calendars are
+  shown, searched and reminded once. Add a reminder lists My calendar ("All
+  custom events"), then monthly observances, then festivals.
+- Months slide in 0.25 s on both platforms; Android's time pickers are the
+  iOS wheel.
+- On 14 October 2026 Arun approved the CI changes in docs/TESTING.md (backend
+  tests only when `backend/` changes, no glass preview job, every
+  `*_android_test.dart` runs, analyzer warnings fail, `dart format` and
+  generated-file checks, Android lint with a baseline, cancelled superseded
+  runs, no CI for docs-only changes) and asked for CI to run on PR #22's
+  commit that adds them. Other commits keep `[skip ci]` until he asks again.
