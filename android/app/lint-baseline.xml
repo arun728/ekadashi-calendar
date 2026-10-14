@@ -456,17 +456,6 @@
     </issue>
 
     <issue
-        id="StaticFieldLeak"
-        message="Do not place Android context classes in static fields (static reference to `WidgetDataRepository` which has field `context` pointing to `Context`); this is a memory leak"
-        errorLine1="        @Volatile"
-        errorLine2="        ^">
-        <location
-            file="src/main/kotlin/com/applausestudios/ekadashi_calendar/widget/data/WidgetDataRepository.kt"
-            line="33"
-            column="9"/>
-    </issue>
-
-    <issue
         id="DisableBaselineAlignment"
         message="Set `android:baselineAligned=&quot;false&quot;` on this element for better performance"
         errorLine1="        &lt;LinearLayout"

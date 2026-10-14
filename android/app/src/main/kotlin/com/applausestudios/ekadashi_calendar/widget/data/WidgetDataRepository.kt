@@ -1,5 +1,6 @@
 package com.applausestudios.ekadashi_calendar.widget.data
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
@@ -30,6 +31,9 @@ class WidgetDataRepository private constructor(private val context: Context) {
         private const val EXPECTED_SCHEMA_VERSION = 2
         private const val MAX_CACHE_AGE_MS = 14L * 24 * 60 * 60 * 1000 // 14 days
 
+        // Holds only the application context (see getInstance), which lives as
+        // long as the process, so nothing can leak.
+        @SuppressLint("StaticFieldLeak")
         @Volatile
         private var instance: WidgetDataRepository? = null
 
