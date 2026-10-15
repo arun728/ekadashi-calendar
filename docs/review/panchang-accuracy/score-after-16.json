@@ -1,0 +1,908 @@
+{
+ "label": "engine",
+ "categories": {
+  "Sunrise": {
+   "passed": 11680,
+   "total": 11680,
+   "accuracy": 100.0,
+   "mean_error_min": 0.0,
+   "p95_error_min": 0.0,
+   "max_error_min": 0.0,
+   "examples": []
+  },
+  "Sunrise (displayed minute)": {
+   "passed": 11680,
+   "total": 11680,
+   "accuracy": 100.0,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": []
+  },
+  "Sunset": {
+   "passed": 11680,
+   "total": 11680,
+   "accuracy": 100.0,
+   "mean_error_min": 0.0,
+   "p95_error_min": 0.0,
+   "max_error_min": 0.0,
+   "examples": []
+  },
+  "Sunset (displayed minute)": {
+   "passed": 11680,
+   "total": 11680,
+   "accuracy": 100.0,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": []
+  },
+  "Moonrise": {
+   "passed": 11680,
+   "total": 11680,
+   "accuracy": 100.0,
+   "mean_error_min": 0.0,
+   "p95_error_min": 0.0,
+   "max_error_min": 0.001,
+   "examples": []
+  },
+  "Moonrise (displayed minute)": {
+   "passed": 11280,
+   "total": 11280,
+   "accuracy": 100.0,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": []
+  },
+  "Moonset": {
+   "passed": 11680,
+   "total": 11680,
+   "accuracy": 100.0,
+   "mean_error_min": 0.0,
+   "p95_error_min": 0.001,
+   "max_error_min": 0.001,
+   "examples": []
+  },
+  "Moonset (displayed minute)": {
+   "passed": 11294,
+   "total": 11296,
+   "accuracy": 99.98,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": [
+    [
+     "kolkata",
+     "2027-01-26",
+     "2027-01-26T03:21:59.995019Z",
+     "2027-01-26T03:22:00.003623Z"
+    ],
+    [
+     "los-angeles",
+     "2026-01-22",
+     "2026-01-23T05:22:00.019052Z",
+     "2026-01-23T05:21:59.994181Z"
+    ]
+   ]
+  },
+  "Tithi at sunrise": {
+   "passed": 11680,
+   "total": 11680,
+   "accuracy": 100.0,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": []
+  },
+  "Tithi end time": {
+   "passed": 11680,
+   "total": 11680,
+   "accuracy": 100.0,
+   "mean_error_min": 0.003,
+   "p95_error_min": 0.008,
+   "max_error_min": 0.016,
+   "examples": []
+  },
+  "Tithi end (displayed minute)": {
+   "passed": 11665,
+   "total": 11680,
+   "accuracy": 99.87,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": [
+    [
+     "new-delhi",
+     "2027-05-15",
+     "2027-05-15T12:48:00.178068Z",
+     "2027-05-15T12:47:59.956859Z"
+    ],
+    [
+     "mumbai",
+     "2027-05-15",
+     "2027-05-15T12:48:00.178067Z",
+     "2027-05-15T12:47:59.956859Z"
+    ],
+    [
+     "chennai",
+     "2027-05-15",
+     "2027-05-15T12:48:00.178066Z",
+     "2027-05-15T12:47:59.956859Z"
+    ],
+    [
+     "kolkata",
+     "2027-05-15",
+     "2027-05-15T12:48:00.178067Z",
+     "2027-05-15T12:47:59.956859Z"
+    ],
+    [
+     "ujjain",
+     "2027-05-15",
+     "2027-05-15T12:48:00.178067Z",
+     "2027-05-15T12:47:59.956859Z"
+    ],
+    [
+     "kathmandu",
+     "2027-05-15",
+     "2027-05-15T12:48:00.178067Z",
+     "2027-05-15T12:47:59.956859Z"
+    ],
+    [
+     "dubai",
+     "2027-05-15",
+     "2027-05-15T12:48:00.178067Z",
+     "2027-05-15T12:47:59.956859Z"
+    ],
+    [
+     "singapore",
+     "2027-05-15",
+     "2027-05-15T12:48:00.178069Z",
+     "2027-05-15T12:47:59.956859Z"
+    ],
+    [
+     "london",
+     "2027-05-15",
+     "2027-05-15T12:48:00.178066Z",
+     "2027-05-15T12:47:59.956859Z"
+    ],
+    [
+     "johannesburg",
+     "2027-05-15",
+     "2027-05-15T12:48:00.178066Z",
+     "2027-05-15T12:47:59.956859Z"
+    ],
+    [
+     "new-york",
+     "2027-05-15",
+     "2027-05-15T12:48:00.178068Z",
+     "2027-05-15T12:47:59.956859Z"
+    ],
+    [
+     "chicago",
+     "2027-05-15",
+     "2027-05-15T12:48:00.178068Z",
+     "2027-05-15T12:47:59.956859Z"
+    ]
+   ]
+  },
+  "Nakshatra at sunrise": {
+   "passed": 11680,
+   "total": 11680,
+   "accuracy": 100.0,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": []
+  },
+  "Nakshatra end time": {
+   "passed": 11680,
+   "total": 11680,
+   "accuracy": 100.0,
+   "mean_error_min": 0.003,
+   "p95_error_min": 0.008,
+   "max_error_min": 0.017,
+   "examples": []
+  },
+  "Nakshatra end (displayed minute)": {
+   "passed": 11664,
+   "total": 11680,
+   "accuracy": 99.86,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": [
+    [
+     "new-delhi",
+     "2026-06-20",
+     "2026-06-20T03:55:59.779069Z",
+     "2026-06-20T03:56:00.193402Z"
+    ],
+    [
+     "mumbai",
+     "2026-06-20",
+     "2026-06-20T03:55:59.779069Z",
+     "2026-06-20T03:56:00.193402Z"
+    ],
+    [
+     "chennai",
+     "2026-06-20",
+     "2026-06-20T03:55:59.779068Z",
+     "2026-06-20T03:56:00.193402Z"
+    ],
+    [
+     "kolkata",
+     "2026-06-20",
+     "2026-06-20T03:55:59.779068Z",
+     "2026-06-20T03:56:00.193402Z"
+    ],
+    [
+     "ujjain",
+     "2026-06-20",
+     "2026-06-20T03:55:59.779069Z",
+     "2026-06-20T03:56:00.193402Z"
+    ],
+    [
+     "kathmandu",
+     "2026-06-20",
+     "2026-06-20T03:55:59.779068Z",
+     "2026-06-20T03:56:00.193402Z"
+    ],
+    [
+     "dubai",
+     "2026-06-20",
+     "2026-06-20T03:55:59.779069Z",
+     "2026-06-20T03:56:00.193402Z"
+    ],
+    [
+     "singapore",
+     "2026-06-20",
+     "2026-06-20T03:55:59.779068Z",
+     "2026-06-20T03:56:00.193402Z"
+    ],
+    [
+     "london",
+     "2026-06-20",
+     "2026-06-20T03:55:59.779068Z",
+     "2026-06-20T03:56:00.193402Z"
+    ],
+    [
+     "johannesburg",
+     "2026-06-19",
+     "2026-06-20T03:55:59.779069Z",
+     "2026-06-20T03:56:00.193402Z"
+    ],
+    [
+     "new-york",
+     "2026-06-19",
+     "2026-06-20T03:55:59.779068Z",
+     "2026-06-20T03:56:00.193402Z"
+    ],
+    [
+     "chicago",
+     "2026-06-19",
+     "2026-06-20T03:55:59.779069Z",
+     "2026-06-20T03:56:00.193402Z"
+    ]
+   ]
+  },
+  "Yoga at sunrise": {
+   "passed": 11680,
+   "total": 11680,
+   "accuracy": 100.0,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": []
+  },
+  "Yoga end time": {
+   "passed": 11680,
+   "total": 11680,
+   "accuracy": 100.0,
+   "mean_error_min": 0.004,
+   "p95_error_min": 0.009,
+   "max_error_min": 0.018,
+   "examples": []
+  },
+  "Yoga end (displayed minute)": {
+   "passed": 11650,
+   "total": 11680,
+   "accuracy": 99.74,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": [
+    [
+     "new-delhi",
+     "2026-08-30",
+     "2026-08-30T22:15:59.760043Z",
+     "2026-08-30T22:16:00.284619Z"
+    ],
+    [
+     "new-delhi",
+     "2027-09-22",
+     "2027-09-22T20:29:59.934049Z",
+     "2027-09-22T20:30:00.186870Z"
+    ],
+    [
+     "mumbai",
+     "2026-08-30",
+     "2026-08-30T22:15:59.760043Z",
+     "2026-08-30T22:16:00.284619Z"
+    ],
+    [
+     "mumbai",
+     "2027-09-22",
+     "2027-09-22T20:29:59.934050Z",
+     "2027-09-22T20:30:00.186870Z"
+    ],
+    [
+     "chennai",
+     "2026-08-30",
+     "2026-08-30T22:15:59.760042Z",
+     "2026-08-30T22:16:00.284619Z"
+    ],
+    [
+     "chennai",
+     "2027-09-22",
+     "2027-09-22T20:29:59.934050Z",
+     "2027-09-22T20:30:00.186870Z"
+    ],
+    [
+     "kolkata",
+     "2027-09-22",
+     "2027-09-22T20:29:59.934050Z",
+     "2027-09-22T20:30:00.186870Z"
+    ],
+    [
+     "ujjain",
+     "2026-08-30",
+     "2026-08-30T22:15:59.760043Z",
+     "2026-08-30T22:16:00.284619Z"
+    ],
+    [
+     "ujjain",
+     "2027-09-22",
+     "2027-09-22T20:29:59.934049Z",
+     "2027-09-22T20:30:00.186870Z"
+    ],
+    [
+     "kathmandu",
+     "2026-08-30",
+     "2026-08-30T22:15:59.760043Z",
+     "2026-08-30T22:16:00.284619Z"
+    ],
+    [
+     "kathmandu",
+     "2027-09-22",
+     "2027-09-22T20:29:59.934050Z",
+     "2027-09-22T20:30:00.186870Z"
+    ],
+    [
+     "dubai",
+     "2026-08-30",
+     "2026-08-30T22:15:59.760043Z",
+     "2026-08-30T22:16:00.284619Z"
+    ]
+   ]
+  },
+  "Karana at sunrise": {
+   "passed": 11680,
+   "total": 11680,
+   "accuracy": 100.0,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": []
+  },
+  "Karana end time": {
+   "passed": 11680,
+   "total": 11680,
+   "accuracy": 100.0,
+   "mean_error_min": 0.003,
+   "p95_error_min": 0.008,
+   "max_error_min": 0.016,
+   "examples": []
+  },
+  "Karana end (displayed minute)": {
+   "passed": 11658,
+   "total": 11680,
+   "accuracy": 99.81,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": [
+    [
+     "new-delhi",
+     "2027-03-02",
+     "2027-03-02T09:55:00.016017Z",
+     "2027-03-02T09:54:59.734466Z"
+    ],
+    [
+     "mumbai",
+     "2027-03-02",
+     "2027-03-02T09:55:00.016019Z",
+     "2027-03-02T09:54:59.734466Z"
+    ],
+    [
+     "chennai",
+     "2027-03-02",
+     "2027-03-02T09:55:00.016018Z",
+     "2027-03-02T09:54:59.734466Z"
+    ],
+    [
+     "kolkata",
+     "2027-03-02",
+     "2027-03-02T09:55:00.016019Z",
+     "2027-03-02T09:54:59.734466Z"
+    ],
+    [
+     "ujjain",
+     "2027-03-02",
+     "2027-03-02T09:55:00.016020Z",
+     "2027-03-02T09:54:59.734466Z"
+    ],
+    [
+     "kathmandu",
+     "2027-03-02",
+     "2027-03-02T09:55:00.016019Z",
+     "2027-03-02T09:54:59.734466Z"
+    ],
+    [
+     "dubai",
+     "2027-03-02",
+     "2027-03-02T09:55:00.016019Z",
+     "2027-03-02T09:54:59.734466Z"
+    ],
+    [
+     "dubai",
+     "2027-05-15",
+     "2027-05-15T12:48:00.178067Z",
+     "2027-05-15T12:47:59.956859Z"
+    ],
+    [
+     "singapore",
+     "2027-03-02",
+     "2027-03-02T09:55:00.016019Z",
+     "2027-03-02T09:54:59.734466Z"
+    ],
+    [
+     "london",
+     "2027-03-02",
+     "2027-03-02T09:55:00.016018Z",
+     "2027-03-02T09:54:59.734466Z"
+    ],
+    [
+     "london",
+     "2027-04-18",
+     "2027-04-18T13:23:59.922091Z",
+     "2027-04-18T13:24:00.115410Z"
+    ],
+    [
+     "london",
+     "2027-05-15",
+     "2027-05-15T12:48:00.178066Z",
+     "2027-05-15T12:47:59.956859Z"
+    ]
+   ]
+  },
+  "Lunar month (Amanta, Adhika)": {
+   "passed": 11680,
+   "total": 11680,
+   "accuracy": 100.0,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": []
+  },
+  "Sun rashi": {
+   "passed": 11680,
+   "total": 11680,
+   "accuracy": 100.0,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": []
+  },
+  "Moon rashi": {
+   "passed": 11680,
+   "total": 11680,
+   "accuracy": 100.0,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": []
+  },
+  "Sankranti day": {
+   "passed": 384,
+   "total": 384,
+   "accuracy": 100.0,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": []
+  },
+  "Smarta Ekadashi date (all cities, Drik rules)": {
+   "passed": 784,
+   "total": 784,
+   "accuracy": 100.0,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": []
+  },
+  "Smarta Parana (all cities)": {
+   "passed": 1568,
+   "total": 1568,
+   "accuracy": 100.0,
+   "mean_error_min": 0.0,
+   "p95_error_min": 0.003,
+   "max_error_min": 0.015,
+   "examples": []
+  },
+  "Smarta Parana (displayed minute)": {
+   "passed": 1566,
+   "total": 1566,
+   "accuracy": 100.0,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": []
+  },
+  "Gaudiya Ekadashi date (GCAL)": {
+   "passed": 734,
+   "total": 734,
+   "accuracy": 100.0,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": []
+  },
+  "Gaudiya Parana (GCAL rule, JPL timing)": {
+   "passed": 1459,
+   "total": 1459,
+   "accuracy": 100.0,
+   "mean_error_min": 0.002,
+   "p95_error_min": 0.005,
+   "max_error_min": 1.918,
+   "examples": []
+  },
+  "Gaudiya Parana (displayed minute)": {
+   "passed": 1458,
+   "total": 1459,
+   "accuracy": 99.93,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": [
+    [
+     "auckland",
+     "2026-04-27",
+     "start",
+     1.92
+    ]
+   ]
+  },
+  "Published Ekadashi date (Drik data)": {
+   "passed": 231,
+   "total": 232,
+   "accuracy": 99.57,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": [
+    [
+     2027,
+     "EST",
+     "Saphala Ekadashi",
+     "2027-01-03",
+     [
+      "2027-01-02"
+     ]
+    ]
+   ]
+  },
+  "Published Ekadashi name": {
+   "passed": 231,
+   "total": 231,
+   "accuracy": 100.0,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": []
+  },
+  "Published Parana (Drik, Delhi 2027)": {
+   "passed": 48,
+   "total": 48,
+   "accuracy": 100.0,
+   "mean_error_min": 0.28,
+   "p95_error_min": 0.626,
+   "max_error_min": 1.207,
+   "examples": []
+  },
+  "Festival dates (India, public lists)": {
+   "passed": 47,
+   "total": 47,
+   "accuracy": 100.0,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": []
+  },
+  "Festival lunar month/tithi (all cities)": {
+   "passed": 672,
+   "total": 672,
+   "accuracy": 100.0,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": []
+  },
+  "Festival occurs once per year (all cities)": {
+   "passed": 768,
+   "total": 768,
+   "accuracy": 100.0,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": []
+  }
+ },
+ "supplementary": {
+  "Gaudiya Parana vs raw GCAL times": {
+   "mean_error_min": 0.738,
+   "within_2_min": 97.81,
+   "n": 1462
+  }
+ },
+ "excluded_published_rows": [
+  [
+   "mumbai",
+   "2026-08-23",
+   "Gaudiya date decided within 2 min of sunrise or Arunodaya"
+  ],
+  [
+   "mumbai",
+   "2026-08-24",
+   "Gaudiya date decided within 2 min of sunrise or Arunodaya"
+  ],
+  [
+   "los-angeles",
+   "2027-06-30",
+   "GCAL Parana decision reverses under JPL timing"
+  ],
+  [
+   "sydney",
+   "2027-07-30",
+   "GCAL Parana decision reverses under JPL timing"
+  ],
+  [
+   "auckland",
+   "2026-10-07",
+   "GCAL Parana decision reverses under JPL timing"
+  ],
+  [
+   2026,
+   "EST",
+   "Shattila Ekadashi",
+   "2026-01-13",
+   "Parana starts before Ekadashi ends"
+  ],
+  [
+   2026,
+   "EST",
+   "Mohini Ekadashi",
+   "2026-04-26",
+   "Parana starts before Ekadashi ends"
+  ],
+  [
+   2026,
+   "CST",
+   "Mohini Ekadashi",
+   "2026-04-26",
+   "Parana starts before Ekadashi ends"
+  ],
+  [
+   2026,
+   "MST",
+   "Mohini Ekadashi",
+   "2026-04-26",
+   "Parana starts before Ekadashi ends"
+  ],
+  [
+   2026,
+   "EST",
+   "Aja Ekadashi",
+   "2026-09-06",
+   "Parana starts before Ekadashi ends"
+  ],
+  [
+   2026,
+   "CST",
+   "Aja Ekadashi",
+   "2026-09-06",
+   "Parana starts before Ekadashi ends"
+  ],
+  [
+   2026,
+   "IST",
+   "Prabodhini Ekadashi",
+   "2026-11-20",
+   "Parana starts before Ekadashi ends"
+  ],
+  [
+   2026,
+   "EST",
+   "Mokshada Ekadashi",
+   "2026-12-19",
+   "Parana starts before Ekadashi ends"
+  ]
+ ],
+ "worst_locations": [
+  [
+   "london",
+   {
+    "Nakshatra end (displayed minute)": 1,
+    "Yoga end (displayed minute)": 2,
+    "Karana end (displayed minute)": 3,
+    "Tithi end (displayed minute)": 1
+   }
+  ],
+  [
+   "johannesburg",
+   {
+    "Nakshatra end (displayed minute)": 1,
+    "Yoga end (displayed minute)": 2,
+    "Karana end (displayed minute)": 3,
+    "Tithi end (displayed minute)": 1
+   }
+  ],
+  [
+   "dubai",
+   {
+    "Nakshatra end (displayed minute)": 1,
+    "Yoga end (displayed minute)": 2,
+    "Karana end (displayed minute)": 2,
+    "Tithi end (displayed minute)": 1
+   }
+  ],
+  [
+   "new-york",
+   {
+    "Nakshatra end (displayed minute)": 1,
+    "Yoga end (displayed minute)": 2,
+    "Karana end (displayed minute)": 2,
+    "Tithi end (displayed minute)": 1
+   }
+  ],
+  [
+   "chicago",
+   {
+    "Nakshatra end (displayed minute)": 1,
+    "Yoga end (displayed minute)": 2,
+    "Karana end (displayed minute)": 2,
+    "Tithi end (displayed minute)": 1
+   }
+  ],
+  [
+   "denver",
+   {
+    "Nakshatra end (displayed minute)": 1,
+    "Yoga end (displayed minute)": 2,
+    "Karana end (displayed minute)": 2,
+    "Tithi end (displayed minute)": 1
+   }
+  ],
+  [
+   "new-delhi",
+   {
+    "Nakshatra end (displayed minute)": 1,
+    "Yoga end (displayed minute)": 2,
+    "Karana end (displayed minute)": 1,
+    "Tithi end (displayed minute)": 1
+   }
+  ],
+  [
+   "mumbai",
+   {
+    "Nakshatra end (displayed minute)": 1,
+    "Yoga end (displayed minute)": 2,
+    "Karana end (displayed minute)": 1,
+    "Tithi end (displayed minute)": 1
+   }
+  ],
+  [
+   "chennai",
+   {
+    "Nakshatra end (displayed minute)": 1,
+    "Yoga end (displayed minute)": 2,
+    "Karana end (displayed minute)": 1,
+    "Tithi end (displayed minute)": 1
+   }
+  ],
+  [
+   "kolkata",
+   {
+    "Nakshatra end (displayed minute)": 1,
+    "Moonset (displayed minute)": 1,
+    "Karana end (displayed minute)": 1,
+    "Tithi end (displayed minute)": 1,
+    "Yoga end (displayed minute)": 1
+   }
+  ],
+  [
+   "ujjain",
+   {
+    "Nakshatra end (displayed minute)": 1,
+    "Yoga end (displayed minute)": 2,
+    "Karana end (displayed minute)": 1,
+    "Tithi end (displayed minute)": 1
+   }
+  ],
+  [
+   "kathmandu",
+   {
+    "Nakshatra end (displayed minute)": 1,
+    "Yoga end (displayed minute)": 2,
+    "Karana end (displayed minute)": 1,
+    "Tithi end (displayed minute)": 1
+   }
+  ],
+  [
+   "los-angeles",
+   {
+    "Moonset (displayed minute)": 1,
+    "Nakshatra end (displayed minute)": 1,
+    "Yoga end (displayed minute)": 2,
+    "Karana end (displayed minute)": 1
+   }
+  ],
+  [
+   "auckland",
+   {
+    "Nakshatra end (displayed minute)": 1,
+    "Yoga end (displayed minute)": 2,
+    "Tithi end (displayed minute)": 1,
+    "Gaudiya Parana (displayed minute)": 1
+   }
+  ],
+  [
+   "singapore",
+   {
+    "Nakshatra end (displayed minute)": 1,
+    "Karana end (displayed minute)": 1,
+    "Tithi end (displayed minute)": 1,
+    "Yoga end (displayed minute)": 1
+   }
+  ],
+  [
+   "sydney",
+   {
+    "Nakshatra end (displayed minute)": 1,
+    "Yoga end (displayed minute)": 2,
+    "Tithi end (displayed minute)": 1
+   }
+  ]
+ ],
+ "failures_by_location": {
+  "new-delhi": 5,
+  "mumbai": 5,
+  "chennai": 5,
+  "kolkata": 5,
+  "ujjain": 5,
+  "kathmandu": 5,
+  "dubai": 6,
+  "singapore": 4,
+  "london": 7,
+  "johannesburg": 7,
+  "new-york": 6,
+  "chicago": 6,
+  "denver": 6,
+  "los-angeles": 5,
+  "sydney": 4,
+  "auckland": 5
+ },
+ "overall_category_mean": 99.97,
+ "overall_pooled": 99.97,
+ "checks": 277808
+}

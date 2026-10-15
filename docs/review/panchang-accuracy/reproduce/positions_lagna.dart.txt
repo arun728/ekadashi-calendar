@@ -1,0 +1,28 @@
+// Prints engine longitudes for instants read from stdin (ISO-8601 UTC).
+// Used by check_positions.py to compare against Swiss Ephemeris.
+import 'dart:convert';
+import 'dart:io';
+import 'astronomy_calculator.dart';
+
+void main() {
+  final out = <List<double>>[];
+  for (final line in File(
+    Platform.environment['POSITIONS_IN']!,
+  ).readAsLinesSync()) {
+    if (line.trim().isEmpty) continue;
+    final fields=line.trim().split('|');
+    final t = DateTime.parse(fields[0]);
+    out.add([
+      AstronomyCalculator.sunLongitude(t),
+      AstronomyCalculator.moonLongitude(t),
+      AstronomyCalculator.apparentLahiriAyanamsa(t),
+      AstronomyCalculator.moonLatitude(t),
+      AstronomyCalculator.moonDistanceKm(t),
+      AstronomyCalculator.sunDistanceAu(t),
+      AstronomyCalculator.terrestrialJulianDay(t),
+      AstronomyCalculator.ascendantLongitude(t,double.parse(fields[1]),double.parse(fields[2])),
+      AstronomyCalculator.siderealDegrees(t),
+    ]);
+  }
+  stdout.write(jsonEncode(out));
+}

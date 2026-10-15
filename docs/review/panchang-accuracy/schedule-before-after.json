@@ -1,0 +1,10 @@
+{
+  "scheduleOccurrences": 1480,
+  "startBoundaries": 2960,
+  "beforeEarlyByMoreThan1ms": 2960,
+  "beforeMeanSecondsEarly": 29.980294256756757,
+  "beforeMaxSecondsEarly": 59.963,
+  "inventedParanaDeadlinesRemoved": 11,
+  "monthsCorrected": 260,
+  "afterMaximumInwardQuantizationSeconds": 0.001
+}

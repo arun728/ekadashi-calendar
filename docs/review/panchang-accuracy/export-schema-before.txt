@@ -1,0 +1,14 @@
+00:00 +0: loading /workspace/ekadashi-calendar/test/tool/export_accuracy_audit_test.dart
+00:00 +0: accuracy export includes independently auditable Anandadi labels
+Shell: exported chennai
+00:00 +0 -1: accuracy export includes independently auditable Anandadi labels [E]
+  Expected: 'Ananda'
+    Actual: <null>
+     Which: not an <Instance of 'String'>
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/tool/export_accuracy_audit_test.dart 16:5      main.<fn>
+  
+00:00 +0 -1: export configured independent accuracy audit
+00:00 +0 ~1 -1: Some tests failed.

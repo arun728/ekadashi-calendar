@@ -1,0 +1,703 @@
+warning: 'ekadashicore': found 2 file(s) which are unhandled; explicitly declare them as resources or exclude from the target
+    /workspace/ekadashi-calendar/ios-native/EkadashiCore/Tests/EkadashiCoreTests/Fixtures/panchang_parity.json
+    /workspace/ekadashi-calendar/ios-native/EkadashiCore/Tests/EkadashiCoreTests/Fixtures/ekadashi_schedule_parity.json
+[0/1] Planning build
+Building for production...
+[0/3] Write sources
+[1/3] Write swift-version-63F30219E57E058.txt
+[3/4] Compiling EkadashiCoreTests AppLinksTests.swift
+/workspace/ekadashi-calendar/ios-native/EkadashiCore/Tests/EkadashiCoreTests/EventReminderTests.swift:107:41: warning: string interpolation produces a debug description for an optional value; did you mean to make this explicit?
+105 |         let start = CivilDate(2026, 10, 20).utcMidnight
+106 |         let copies = ["holidays", "primary"].map {
+107 |             CalendarEntry(id: "google_\($0)", title: "Dussehra", start: start, end: CivilDate(2026, 10, 21).utcMidnight,
+    |                                         |- warning: string interpolation produces a debug description for an optional value; did you mean to make this explicit?
+    |                                         |- note: use 'String(describing:)' to silence this warning
+    |                                         `- note: provide a default value to avoid this warning
+108 |                           isAllDay: true, source: .google, calendarId: $0, updatedAt: start)
+109 |         }
+
+/workspace/ekadashi-calendar/ios-native/EkadashiCore/Tests/EkadashiCoreTests/GoogleSyncTests.swift:468:39: warning: capture 'self' was never used
+466 |             calendar: calendar, premium: { [unowned self] in self.premium }, refreshPremium: { [unowned self] in self.premium },
+467 |             presentPaywall: { _ in false },
+468 |             pickCalendars: { [unowned self] _, _, _ in
+    |                                       `- warning: capture 'self' was never used
+469 |                 calls += 1
+470 |                 return calls == 1 ? .switchAccount : .chosen(["primary"])
+[3/7] /workspace/ekadashi-calendar/ios-native/EkadashiCore/.build/x86_64-unknown-linux-gnu/release/EkadashiCorePackageDiscoveredTests.derived/all-discovered-tests.swift
+[4/8] Write sources
+[6/9] Compiling EkadashiCorePackageDiscoveredTests EkadashiCoreTests.swift
+[6/8] Write Objects.LinkFileList
+[7/8] Linking EkadashiCorePackageTests.xctest
+Build complete! (40.57s)
+Test Suite 'All tests' started at 2026-10-15 22:00:55.773
+Test Suite 'release.xctest' started at 2026-10-15 22:00:55.774
+Test Suite 'AppLanguageTests' started at 2026-10-15 22:00:55.774
+Test Case 'AppLanguageTests.testEveryLanguageHasANativeNameAndALocale' started at 2026-10-15 22:00:55.774
+Test Case 'AppLanguageTests.testEveryLanguageHasANativeNameAndALocale' passed (0.001 seconds)
+Test Case 'AppLanguageTests.testEveryRegisteredLanguageHasEveryEnglishKey' started at 2026-10-15 22:00:55.775
+Test Case 'AppLanguageTests.testEveryRegisteredLanguageHasEveryEnglishKey' passed (0.004 seconds)
+Test Case 'AppLanguageTests.testLanguagesKeepTheirOrderAndNewOnesAreAppended' started at 2026-10-15 22:00:55.780
+Test Case 'AppLanguageTests.testLanguagesKeepTheirOrderAndNewOnesAreAppended' passed (0.0 seconds)
+Test Suite 'AppLanguageTests' passed at 2026-10-15 22:00:55.780
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.005 (0.005) seconds
+Test Suite 'AppLinksTests' started at 2026-10-15 22:00:55.780
+Test Case 'AppLinksTests.testIosShareMessageHasOnlyTheAppStoreLink' started at 2026-10-15 22:00:55.780
+Test Case 'AppLinksTests.testIosShareMessageHasOnlyTheAppStoreLink' passed (0.0 seconds)
+Test Case 'AppLinksTests.testStoreLinks' started at 2026-10-15 22:00:55.780
+Test Case 'AppLinksTests.testStoreLinks' passed (0.0 seconds)
+Test Suite 'AppLinksTests' passed at 2026-10-15 22:00:55.780
+	 Executed 2 tests, with 0 failures (0 unexpected) in 0.0 (0.0) seconds
+Test Suite 'AppSymbolTests' started at 2026-10-15 22:00:55.780
+Test Case 'AppSymbolTests.testCategoriesAndAchievementsUseTheTable' started at 2026-10-15 22:00:55.780
+Test Case 'AppSymbolTests.testCategoriesAndAchievementsUseTheTable' passed (0.0 seconds)
+Test Case 'AppSymbolTests.testEveryRoleIsTheSymbolInTheSharedTable' started at 2026-10-15 22:00:55.780
+Test Case 'AppSymbolTests.testEveryRoleIsTheSymbolInTheSharedTable' passed (0.0 seconds)
+Test Case 'AppSymbolTests.testScreensTakeEveryIconFromAppSymbol' started at 2026-10-15 22:00:55.780
+Test Case 'AppSymbolTests.testScreensTakeEveryIconFromAppSymbol' passed (0.274 seconds)
+Test Case 'AppSymbolTests.testTheTabBar' started at 2026-10-15 22:00:56.054
+Test Case 'AppSymbolTests.testTheTabBar' passed (0.0 seconds)
+Test Suite 'AppSymbolTests' passed at 2026-10-15 22:00:56.054
+	 Executed 4 tests, with 0 failures (0 unexpected) in 0.274 (0.274) seconds
+Test Suite 'AstronomyTests' started at 2026-10-15 22:00:56.054
+Test Case 'AstronomyTests.testAscendantAgreesWithIndependentHouseAngles' started at 2026-10-15 22:00:56.054
+Test Case 'AstronomyTests.testAscendantAgreesWithIndependentHouseAngles' passed (0.001 seconds)
+Test Case 'AstronomyTests.testDartStyleModuloIsNeverNegative' started at 2026-10-15 22:00:56.055
+Test Case 'AstronomyTests.testDartStyleModuloIsNeverNegative' passed (0.002 seconds)
+Test Case 'AstronomyTests.testDeltaTFollowsTheTableAndItsTrend' started at 2026-10-15 22:00:56.057
+Test Case 'AstronomyTests.testDeltaTFollowsTheTableAndItsTrend' passed (0.0 seconds)
+Test Case 'AstronomyTests.testJulianDayRoundTripsToTheMillisecond' started at 2026-10-15 22:00:56.057
+Test Case 'AstronomyTests.testJulianDayRoundTripsToTheMillisecond' passed (0.0 seconds)
+Test Case 'AstronomyTests.testLongitudesAgreeWithIndependent2026And2027Fixtures' started at 2026-10-15 22:00:56.057
+Test Case 'AstronomyTests.testLongitudesAgreeWithIndependent2026And2027Fixtures' passed (0.005 seconds)
+Test Case 'AstronomyTests.testMeeusLunarLongitudeExample' started at 2026-10-15 22:00:56.062
+Test Case 'AstronomyTests.testMeeusLunarLongitudeExample' passed (0.004 seconds)
+Test Case 'AstronomyTests.testSunMoonAndLahiriAgreeWithSwissEphemerisToAnArcsecond' started at 2026-10-15 22:00:56.067
+Test Case 'AstronomyTests.testSunMoonAndLahiriAgreeWithSwissEphemerisToAnArcsecond' passed (0.014 seconds)
+Test Suite 'AstronomyTests' passed at 2026-10-15 22:00:56.081
+	 Executed 7 tests, with 0 failures (0 unexpected) in 0.026 (0.026) seconds
+Test Suite 'CalculatedEkadashiEngineTests' started at 2026-10-15 22:00:56.081
+Test Case 'CalculatedEkadashiEngineTests.testDelhi2027SmartaFastsAndParanaMatchPublishedDrikData' started at 2026-10-15 22:00:56.081
+Test Case 'CalculatedEkadashiEngineTests.testDelhi2027SmartaFastsAndParanaMatchPublishedDrikData' passed (1.665 seconds)
+Test Case 'CalculatedEkadashiEngineTests.testEkadashiNamesFollowTheAmantaMonthAndAdhika' started at 2026-10-15 22:00:57.746
+Test Case 'CalculatedEkadashiEngineTests.testEkadashiNamesFollowTheAmantaMonthAndAdhika' passed (0.454 seconds)
+Test Case 'CalculatedEkadashiEngineTests.testGaudiya2027FullYearMatchesGcalInFourCities' started at 2026-10-15 22:00:58.200
+Test Case 'CalculatedEkadashiEngineTests.testGaudiya2027FullYearMatchesGcalInFourCities' passed (4.837 seconds)
+Test Case 'CalculatedEkadashiEngineTests.testGaudiyaFastsMatchTheIskconBangalorePublishedCalendar' started at 2026-10-15 22:01:03.037
+Test Case 'CalculatedEkadashiEngineTests.testGaudiyaFastsMatchTheIskconBangalorePublishedCalendar' passed (1.316 seconds)
+Test Case 'CalculatedEkadashiEngineTests.testRejectsRangesOutsideOneTo366Days' started at 2026-10-15 22:01:04.353
+Test Case 'CalculatedEkadashiEngineTests.testRejectsRangesOutsideOneTo366Days' passed (0.103 seconds)
+Test Case 'CalculatedEkadashiEngineTests.testSmartaSkippedAndRepeatedEkadashiFollowDrikInChennai' started at 2026-10-15 22:01:04.456
+Test Case 'CalculatedEkadashiEngineTests.testSmartaSkippedAndRepeatedEkadashiFollowDrikInChennai' passed (0.916 seconds)
+Test Suite 'CalculatedEkadashiEngineTests' passed at 2026-10-15 22:01:05.372
+	 Executed 6 tests, with 0 failures (0 unexpected) in 9.291 (9.291) seconds
+Test Suite 'CalendarDataTests' started at 2026-10-15 22:01:05.372
+Test Case 'CalendarDataTests.testAvailableYearsComeFromTheManifest' started at 2026-10-15 22:01:05.372
+Test Case 'CalendarDataTests.testAvailableYearsComeFromTheManifest' passed (0.01 seconds)
+Test Case 'CalendarDataTests.testCitySelectionRoundTripsCountryAndTimezone' started at 2026-10-15 22:01:05.382
+Test Case 'CalendarDataTests.testCitySelectionRoundTripsCountryAndTimezone' passed (0.01 seconds)
+Test Case 'CalendarDataTests.testDeviceTimezoneMapsToTheNearestPublishedSchedule' started at 2026-10-15 22:01:05.391
+Test Case 'CalendarDataTests.testDeviceTimezoneMapsToTheNearestPublishedSchedule' passed (0.044 seconds)
+Test Case 'CalendarDataTests.testDisplayTimesAreReadFromTheStoredWallClock' started at 2026-10-15 22:01:05.436
+Test Case 'CalendarDataTests.testDisplayTimesAreReadFromTheStoredWallClock' passed (0.009 seconds)
+Test Case 'CalendarDataTests.testEveryTimezoneIsCompleteOrderedUniqueAndUtcConsistent' started at 2026-10-15 22:01:05.445
+Test Case 'CalendarDataTests.testEveryTimezoneIsCompleteOrderedUniqueAndUtcConsistent' passed (0.023 seconds)
+Test Case 'CalendarDataTests.testHomeOpensTheNextEkadashiOrAnActiveParana' started at 2026-10-15 22:01:05.468
+Test Case 'CalendarDataTests.testHomeOpensTheNextEkadashiOrAnActiveParana' passed (0.011 seconds)
+Test Case 'CalendarDataTests.testInvalidPacksAreRejectedBeforePublishing' started at 2026-10-15 22:01:05.479
+Test Case 'CalendarDataTests.testInvalidPacksAreRejectedBeforePublishing' passed (0.066 seconds)
+Test Case 'CalendarDataTests.testLocationFixMapsToAScheduleLikeAndroid' started at 2026-10-15 22:01:05.544
+Test Case 'CalendarDataTests.testLocationFixMapsToAScheduleLikeAndroid' passed (0.34 seconds)
+Test Case 'CalendarDataTests.testTimezonesStayIsolated' started at 2026-10-15 22:01:05.884
+Test Case 'CalendarDataTests.testTimezonesStayIsolated' passed (0.075 seconds)
+Test Case 'CalendarDataTests.testTranslatedContentKeepsOccurrenceIdentity' started at 2026-10-15 22:01:05.960
+Test Case 'CalendarDataTests.testTranslatedContentKeepsOccurrenceIdentity' passed (0.129 seconds)
+Test Case 'CalendarDataTests.testUnknownLanguageFallsBackToEnglish' started at 2026-10-15 22:01:06.089
+Test Case 'CalendarDataTests.testUnknownLanguageFallsBackToEnglish' passed (0.059 seconds)
+Test Suite 'CalendarDataTests' passed at 2026-10-15 22:01:06.147
+	 Executed 11 tests, with 0 failures (0 unexpected) in 0.775 (0.775) seconds
+Test Suite 'CitySearchIndexTests' started at 2026-10-15 22:01:06.147
+Test Case 'CitySearchIndexTests.testCitiesAreFoundByTheirNameInTheAppLanguage' started at 2026-10-15 22:01:06.147
+Test Case 'CitySearchIndexTests.testCitiesAreFoundByTheirNameInTheAppLanguage' passed (9.496 seconds)
+Test Case 'CitySearchIndexTests.testEveryKeystrokeIsFastOnceTheIndexIsBuilt' started at 2026-10-15 22:01:15.643
+Test Case 'CitySearchIndexTests.testEveryKeystrokeIsFastOnceTheIndexIsBuilt' passed (9.488 seconds)
+Test Case 'CitySearchIndexTests.testShortQueriesSearchNothing' started at 2026-10-15 22:01:25.131
+Test Case 'CitySearchIndexTests.testShortQueriesSearchNothing' passed (0.0 seconds)
+Test Case 'CitySearchIndexTests.testTheIndexIsBuiltOncePerLanguage' started at 2026-10-15 22:01:25.131
+Test Case 'CitySearchIndexTests.testTheIndexIsBuiltOncePerLanguage' passed (0.0 seconds)
+Test Suite 'CitySearchIndexTests' passed at 2026-10-15 22:01:25.131
+	 Executed 4 tests, with 0 failures (0 unexpected) in 18.984 (18.984) seconds
+Test Suite 'CityShortlistTests' started at 2026-10-15 22:01:25.131
+Test Case 'CityShortlistTests.testEveryPopularCityHasItsNameInEveryLanguage' started at 2026-10-15 22:01:25.131
+Test Case 'CityShortlistTests.testEveryPopularCityHasItsNameInEveryLanguage' passed (0.017 seconds)
+Test Case 'CityShortlistTests.testEveryPopularCityIsInTheCatalog' started at 2026-10-15 22:01:25.148
+Test Case 'CityShortlistTests.testEveryPopularCityIsInTheCatalog' passed (0.021 seconds)
+Test Case 'CityShortlistTests.testRecentPicksComeFirstNewestFirstWithoutDuplicates' started at 2026-10-15 22:01:25.170
+Test Case 'CityShortlistTests.testRecentPicksComeFirstNewestFirstWithoutDuplicates' passed (0.089 seconds)
+Test Case 'CityShortlistTests.testSamePlaceIgnoresTheNameButNotTheCoordinatesOrZone' started at 2026-10-15 22:01:25.259
+Test Case 'CityShortlistTests.testSamePlaceIgnoresTheNameButNotTheCoordinatesOrZone' passed (0.0 seconds)
+Test Suite 'CityShortlistTests' passed at 2026-10-15 22:01:25.259
+	 Executed 4 tests, with 0 failures (0 unexpected) in 0.128 (0.128) seconds
+Test Suite 'DateConsistencyTests' started at 2026-10-15 22:01:25.259
+Test Case 'DateConsistencyTests.testAMonthStepKeepsTheDayOfTheMonth' started at 2026-10-15 22:01:25.259
+Test Case 'DateConsistencyTests.testAMonthStepKeepsTheDayOfTheMonth' passed (0.0 seconds)
+Test Case 'DateConsistencyTests.testNoScreenFormatsADateAnotherWay' started at 2026-10-15 22:01:25.259
+Test Case 'DateConsistencyTests.testNoScreenFormatsADateAnotherWay' passed (0.012 seconds)
+Test Case 'DateConsistencyTests.testTheFullDateHasWeekdayDateMonthAndYear' started at 2026-10-15 22:01:25.272
+Test Case 'DateConsistencyTests.testTheFullDateHasWeekdayDateMonthAndYear' passed (0.001 seconds)
+Test Suite 'DateConsistencyTests' passed at 2026-10-15 22:01:25.272
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.013 (0.013) seconds
+Test Suite 'DeepLinkTests' started at 2026-10-15 22:01:25.272
+Test Case 'DeepLinkTests.testRoutesMatchTheAndroidLinks' started at 2026-10-15 22:01:25.272
+Test Case 'DeepLinkTests.testRoutesMatchTheAndroidLinks' passed (0.0 seconds)
+Test Suite 'DeepLinkTests' passed at 2026-10-15 22:01:25.273
+	 Executed 1 test, with 0 failures (0 unexpected) in 0.0 (0.0) seconds
+Test Suite 'DetectedCityPolicyTests' started at 2026-10-15 22:01:25.273
+Test Case 'DetectedCityPolicyTests.testALaunchDetectsThePlaceEvenAfterACityWasPicked' started at 2026-10-15 22:01:25.273
+Test Case 'DetectedCityPolicyTests.testALaunchDetectsThePlaceEvenAfterACityWasPicked' passed (0.0 seconds)
+Test Case 'DetectedCityPolicyTests.testMonthsSlideInAQuarterSecond' started at 2026-10-15 22:01:25.273
+Test Case 'DetectedCityPolicyTests.testMonthsSlideInAQuarterSecond' passed (0.0 seconds)
+Test Case 'DetectedCityPolicyTests.testPanchangFollowsHomeOnlyWhenItShowedHomesCity' started at 2026-10-15 22:01:25.273
+Test Case 'DetectedCityPolicyTests.testPanchangFollowsHomeOnlyWhenItShowedHomesCity' passed (0.0 seconds)
+Test Suite 'DetectedCityPolicyTests' passed at 2026-10-15 22:01:25.273
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.0 (0.0) seconds
+Test Suite 'EkadashiRulesTests' started at 2026-10-15 22:01:25.273
+Test Case 'EkadashiRulesTests.testDwadashiKshayaSelectsTrisprishaAndExtendedDwadashiVyanjuli' started at 2026-10-15 22:01:25.273
+Test Case 'EkadashiRulesTests.testDwadashiKshayaSelectsTrisprishaAndExtendedDwadashiVyanjuli' passed (0.0 seconds)
+Test Case 'EkadashiRulesTests.testMissingSunriseNeverProducesAFast' started at 2026-10-15 22:01:25.273
+Test Case 'EkadashiRulesTests.testMissingSunriseNeverProducesAFast' passed (0.0 seconds)
+Test Case 'EkadashiRulesTests.testNakshatraMahadvadashiIsExplicit' started at 2026-10-15 22:01:25.273
+Test Case 'EkadashiRulesTests.testNakshatraMahadvadashiIsExplicit' passed (0.0 seconds)
+Test Case 'EkadashiRulesTests.testPakshavardhiniIsNotBypassed' started at 2026-10-15 22:01:25.273
+Test Case 'EkadashiRulesTests.testPakshavardhiniIsNotBypassed' passed (0.0 seconds)
+Test Case 'EkadashiRulesTests.testRepeatedEkadashiWithExtendedDwadashiIsTheSecondDay' started at 2026-10-15 22:01:25.273
+Test Case 'EkadashiRulesTests.testRepeatedEkadashiWithExtendedDwadashiIsTheSecondDay' passed (0.0 seconds)
+Test Case 'EkadashiRulesTests.testRepeatedEkadashiWithoutExtendedDwadashiIsTheFirstDay' started at 2026-10-15 22:01:25.273
+Test Case 'EkadashiRulesTests.testRepeatedEkadashiWithoutExtendedDwadashiIsTheFirstDay' passed (0.0 seconds)
+Test Case 'EkadashiRulesTests.testSmartaSkippedEkadashiOrDwadashiFastsOnTheDashamiDay' started at 2026-10-15 22:01:25.273
+Test Case 'EkadashiRulesTests.testSmartaSkippedEkadashiOrDwadashiFastsOnTheDashamiDay' passed (0.0 seconds)
+Test Case 'EkadashiRulesTests.testSmartaSunriseVersusGaudiyaDashamiContamination' started at 2026-10-15 22:01:25.273
+Test Case 'EkadashiRulesTests.testSmartaSunriseVersusGaudiyaDashamiContamination' passed (0.0 seconds)
+Test Suite 'EkadashiRulesTests' passed at 2026-10-15 22:01:25.273
+	 Executed 8 tests, with 0 failures (0 unexpected) in 0.0 (0.0) seconds
+Test Suite 'EkadashiScheduleParityTests' started at 2026-10-15 22:01:25.273
+Test Case 'EkadashiScheduleParityTests.testEverySwiftFastMatchesTheDartSchedule' started at 2026-10-15 22:01:25.273
+Test Case 'EkadashiScheduleParityTests.testEverySwiftFastMatchesTheDartSchedule' passed (90.19 seconds)
+Test Suite 'EkadashiScheduleParityTests' passed at 2026-10-15 22:02:55.464
+	 Executed 1 test, with 0 failures (0 unexpected) in 90.19 (90.19) seconds
+Test Suite 'EkadashiScheduleTests' started at 2026-10-15 22:02:55.464
+Test Case 'EkadashiScheduleTests.testAFutureYearNeedsNoNewData' started at 2026-10-15 22:02:55.464
+Test Case 'EkadashiScheduleTests.testAFutureYearNeedsNoNewData' passed (0.826 seconds)
+Test Case 'EkadashiScheduleTests.testCalculatedYearsAreCachedOnDisk' started at 2026-10-15 22:02:56.290
+Test Case 'EkadashiScheduleTests.testCalculatedYearsAreCachedOnDisk' passed (1.158 seconds)
+Test Case 'EkadashiScheduleTests.testChennaiSmarta2026MatchesThePublishedSchedule' started at 2026-10-15 22:02:57.447
+Test Case 'EkadashiScheduleTests.testChennaiSmarta2026MatchesThePublishedSchedule' passed (0.9 seconds)
+Test Case 'EkadashiScheduleTests.testEnabledYearsComeFromTheSharedConfig' started at 2026-10-15 22:02:58.348
+Test Case 'EkadashiScheduleTests.testEnabledYearsComeFromTheSharedConfig' passed (0.001 seconds)
+Test Case 'EkadashiScheduleTests.testEngineNamesMapToPublishedContentIds' started at 2026-10-15 22:02:58.348
+Test Case 'EkadashiScheduleTests.testEngineNamesMapToPublishedContentIds' passed (0.0 seconds)
+Test Case 'EkadashiScheduleTests.testEveryEngineNameHasPublishedContent' started at 2026-10-15 22:02:58.348
+Test Case 'EkadashiScheduleTests.testEveryEngineNameHasPublishedContent' passed (6.831 seconds)
+Test Case 'EkadashiScheduleTests.testGaudiyaShiftKeepsThePublishedIdentity' started at 2026-10-15 22:03:05.180
+Test Case 'EkadashiScheduleTests.testGaudiyaShiftKeepsThePublishedIdentity' passed (0.886 seconds)
+Test Case 'EkadashiScheduleTests.testHomeTimesMatchThePanchangEkadashiSubTabWorldwide' started at 2026-10-15 22:03:06.066
+Test Case 'EkadashiScheduleTests.testHomeTimesMatchThePanchangEkadashiSubTabWorldwide' passed (98.164 seconds)
+Test Case 'EkadashiScheduleTests.testNewDelhiSmarta2027KeepsIdentitiesAndAddsTheDecemberSaphala' started at 2026-10-15 22:04:44.230
+Test Case 'EkadashiScheduleTests.testNewDelhiSmarta2027KeepsIdentitiesAndAddsTheDecemberSaphala' passed (0.003 seconds)
+Test Case 'EkadashiScheduleTests.testNewYorkUsesLocalDatesAndOffsets' started at 2026-10-15 22:04:44.233
+Test Case 'EkadashiScheduleTests.testNewYorkUsesLocalDatesAndOffsets' passed (0.001 seconds)
+Test Case 'EkadashiScheduleTests.testOneYearForOneCityIsQuick' started at 2026-10-15 22:04:44.235
+One city, one year, one tradition: 0.95 s
+Test Case 'EkadashiScheduleTests.testOneYearForOneCityIsQuick' passed (0.947 seconds)
+Test Suite 'EkadashiScheduleTests' passed at 2026-10-15 22:04:45.182
+	 Executed 11 tests, with 0 failures (0 unexpected) in 109.718 (109.718) seconds
+Test Suite 'EnglishFallbackTests' started at 2026-10-15 22:04:45.182
+Test Case 'EnglishFallbackTests.testClockTimesUseTheLanguagesOwnWords' started at 2026-10-15 22:04:45.182
+Test Case 'EnglishFallbackTests.testClockTimesUseTheLanguagesOwnWords' passed (0.0 seconds)
+Test Case 'EnglishFallbackTests.testEveryIndianPanchangCityIsNamedInEachLanguage' started at 2026-10-15 22:04:45.183
+Test Case 'EnglishFallbackTests.testEveryIndianPanchangCityIsNamedInEachLanguage' passed (0.37 seconds)
+Test Case 'EnglishFallbackTests.testNoEnglishIsLeftInOtherLanguages' started at 2026-10-15 22:04:45.552
+Test Case 'EnglishFallbackTests.testNoEnglishIsLeftInOtherLanguages' passed (0.024 seconds)
+Test Case 'EnglishFallbackTests.testNoStringIsAccidentallyEnglish' started at 2026-10-15 22:04:45.576
+Test Case 'EnglishFallbackTests.testNoStringIsAccidentallyEnglish' passed (0.003 seconds)
+Test Case 'EnglishFallbackTests.testPlacesAndCountriesAreNamedInEachLanguage' started at 2026-10-15 22:04:45.579
+Test Case 'EnglishFallbackTests.testPlacesAndCountriesAreNamedInEachLanguage' passed (0.0 seconds)
+Test Suite 'EnglishFallbackTests' passed at 2026-10-15 22:04:45.579
+	 Executed 5 tests, with 0 failures (0 unexpected) in 0.397 (0.397) seconds
+Test Suite 'EventReminderTests' started at 2026-10-15 22:04:45.579
+Test Case 'EventReminderTests.testAddAReminderListsMyCalendarThenMonthlyThenFestivals' started at 2026-10-15 22:04:45.579
+Test Case 'EventReminderTests.testAddAReminderListsMyCalendarThenMonthlyThenFestivals' passed (0.001 seconds)
+Test Case 'EventReminderTests.testAmavasyaOneDayBeforeAtSevenThirty' started at 2026-10-15 22:04:45.580
+Test Case 'EventReminderTests.testAmavasyaOneDayBeforeAtSevenThirty' passed (0.001 seconds)
+Test Case 'EventReminderTests.testCalendarEntriesBySource' started at 2026-10-15 22:04:45.581
+Test Case 'EventReminderTests.testCalendarEntriesBySource' passed (0.001 seconds)
+Test Case 'EventReminderTests.testChoicesListFestivalsMonthlyDaysAndCalendars' started at 2026-10-15 22:04:45.582
+Test Case 'EventReminderTests.testChoicesListFestivalsMonthlyDaysAndCalendars' passed (0.001 seconds)
+Test Case 'EventReminderTests.testPanchangRemindersNeedPremiumAndTheMasterSwitch' started at 2026-10-15 22:04:45.582
+Test Case 'EventReminderTests.testPanchangRemindersNeedPremiumAndTheMasterSwitch' passed (0.001 seconds)
+Test Case 'EventReminderTests.testPastTimesAreSkippedAndTheLimitKeepsTheSoonest' started at 2026-10-15 22:04:45.583
+Test Case 'EventReminderTests.testPastTimesAreSkippedAndTheLimitKeepsTheSoonest' passed (0.011 seconds)
+Test Case 'EventReminderTests.testRemindersOpenTheDayInPanchang' started at 2026-10-15 22:04:45.594
+Test Case 'EventReminderTests.testRemindersOpenTheDayInPanchang' passed (0.0 seconds)
+Test Case 'EventReminderTests.testSettingsRoundTripAndDefaults' started at 2026-10-15 22:04:45.594
+Test Case 'EventReminderTests.testSettingsRoundTripAndDefaults' passed (0.001 seconds)
+Test Case 'EventReminderTests.testSeveralLeadTimesAndSameDay' started at 2026-10-15 22:04:45.594
+Test Case 'EventReminderTests.testSeveralLeadTimesAndSameDay' passed (0.0 seconds)
+Test Case 'EventReminderTests.testStoredRemindersSurviveBadDataAndReplaceByEvent' started at 2026-10-15 22:04:45.595
+Test Case 'EventReminderTests.testStoredRemindersSurviveBadDataAndReplaceByEvent' passed (0.0 seconds)
+Test Case 'EventReminderTests.testTheSameGoogleEventFromTwoCalendarsIsRemindedOnce' started at 2026-10-15 22:04:45.595
+Test Case 'EventReminderTests.testTheSameGoogleEventFromTwoCalendarsIsRemindedOnce' passed (0.0 seconds)
+Test Suite 'EventReminderTests' passed at 2026-10-15 22:04:45.595
+	 Executed 11 tests, with 0 failures (0 unexpected) in 0.016 (0.016) seconds
+Test Suite 'FestivalRuleTests' started at 2026-10-15 22:04:45.595
+Test Case 'FestivalRuleTests.testEachNewFestivalHappensOnceAYearAndIsMajor' started at 2026-10-15 22:04:45.595
+Test Case 'FestivalRuleTests.testEachNewFestivalHappensOnceAYearAndIsMajor' passed (12.486 seconds)
+Test Case 'FestivalRuleTests.testNewFestivalsAreSearchableInEveryLanguage' started at 2026-10-15 22:04:58.081
+Test Case 'FestivalRuleTests.testNewFestivalsAreSearchableInEveryLanguage' passed (0.0 seconds)
+Test Case 'FestivalRuleTests.testPublishedDates' started at 2026-10-15 22:04:58.082
+Test Case 'FestivalRuleTests.testPublishedDates' passed (0.0 seconds)
+Test Suite 'FestivalRuleTests' passed at 2026-10-15 22:04:58.082
+	 Executed 3 tests, with 0 failures (0 unexpected) in 12.486 (12.486) seconds
+Test Suite 'FreeSyncRegistryTests' started at 2026-10-15 22:04:58.082
+Test Case 'FreeSyncRegistryTests.testOnlyEnabledWhenFirebaseSettingsAreBuiltIn' started at 2026-10-15 22:04:58.082
+Test Case 'FreeSyncRegistryTests.testOnlyEnabledWhenFirebaseSettingsAreBuiltIn' passed (0.003 seconds)
+Test Case 'FreeSyncRegistryTests.testRecordsTheMonthOncePerAccount' started at 2026-10-15 22:04:58.085
+Test Case 'FreeSyncRegistryTests.testRecordsTheMonthOncePerAccount' passed (0.001 seconds)
+Test Case 'FreeSyncRegistryTests.testSignsInWithTheGoogleIdTokenAndReadsTheAccountRecord' started at 2026-10-15 22:04:58.086
+Test Case 'FreeSyncRegistryTests.testSignsInWithTheGoogleIdTokenAndReadsTheAccountRecord' passed (0.0 seconds)
+Test Case 'FreeSyncRegistryTests.testUnreachableRegistryThrows' started at 2026-10-15 22:04:58.086
+Test Case 'FreeSyncRegistryTests.testUnreachableRegistryThrows' passed (0.0 seconds)
+Test Suite 'FreeSyncRegistryTests' passed at 2026-10-15 22:04:58.087
+	 Executed 4 tests, with 0 failures (0 unexpected) in 0.005 (0.005) seconds
+Test Suite 'GoogleEventMapperTests' started at 2026-10-15 22:04:58.087
+Test Case 'GoogleEventMapperTests.testAllDayEventWithoutALaterEndCoversItsStartDay' started at 2026-10-15 22:04:58.087
+Test Case 'GoogleEventMapperTests.testAllDayEventWithoutALaterEndCoversItsStartDay' passed (0.0 seconds)
+Test Case 'GoogleEventMapperTests.testDecodesTheCalendarApiJson' started at 2026-10-15 22:04:58.087
+Test Case 'GoogleEventMapperTests.testDecodesTheCalendarApiJson' passed (0.0 seconds)
+Test Case 'GoogleEventMapperTests.testEventEndingBeforeItStartsBecomesAnInstant' started at 2026-10-15 22:04:58.087
+Test Case 'GoogleEventMapperTests.testEventEndingBeforeItStartsBecomesAnInstant' passed (0.0 seconds)
+Test Case 'GoogleEventMapperTests.testEventWithoutAStartIsRejectedAndCancelledIsSkipped' started at 2026-10-15 22:04:58.087
+Test Case 'GoogleEventMapperTests.testEventWithoutAStartIsRejectedAndCancelledIsSkipped' passed (0.0 seconds)
+Test Case 'GoogleEventMapperTests.testIdentityIsScopedToAccountCalendarAndEvent' started at 2026-10-15 22:04:58.088
+Test Case 'GoogleEventMapperTests.testIdentityIsScopedToAccountCalendarAndEvent' passed (0.0 seconds)
+Test Case 'GoogleEventMapperTests.testZeroLengthEventIsImported' started at 2026-10-15 22:04:58.088
+Test Case 'GoogleEventMapperTests.testZeroLengthEventIsImported' passed (0.0 seconds)
+Test Suite 'GoogleEventMapperTests' passed at 2026-10-15 22:04:58.088
+	 Executed 6 tests, with 0 failures (0 unexpected) in 0.001 (0.001) seconds
+Test Suite 'GoogleReconciliationTests' started at 2026-10-15 22:04:58.088
+Test Case 'GoogleReconciliationTests.testAccountCalendarAndYearIsolationSurvivesReconciliation' started at 2026-10-15 22:04:58.088
+Test Case 'GoogleReconciliationTests.testAccountCalendarAndYearIsolationSurvivesReconciliation' passed (0.001 seconds)
+Test Case 'GoogleReconciliationTests.testCancelledEventIsRemovedAndSignOutRemovesOnlyThatAccount' started at 2026-10-15 22:04:58.088
+Test Case 'GoogleReconciliationTests.testCancelledEventIsRemovedAndSignOutRemovesOnlyThatAccount' passed (0.0 seconds)
+Test Case 'GoogleReconciliationTests.testFailedFetchPreservesPreviousCacheAndCustomNotes' started at 2026-10-15 22:04:58.089
+Test Case 'GoogleReconciliationTests.testFailedFetchPreservesPreviousCacheAndCustomNotes' passed (0.001 seconds)
+Test Case 'GoogleReconciliationTests.testFileStoreWritesAtomicallyAndReloads' started at 2026-10-15 22:04:58.089
+Test Case 'GoogleReconciliationTests.testFileStoreWritesAtomicallyAndReloads' passed (0.001 seconds)
+Test Case 'GoogleReconciliationTests.testGoogleExclusiveEndExcludesTheNextDayAndExactMidnight' started at 2026-10-15 22:04:58.090
+Test Case 'GoogleReconciliationTests.testGoogleExclusiveEndExcludesTheNextDayAndExactMidnight' passed (0.0 seconds)
+Test Case 'GoogleReconciliationTests.testIdenticalGoogleEventsAreShownOnce' started at 2026-10-15 22:04:58.090
+Test Case 'GoogleReconciliationTests.testIdenticalGoogleEventsAreShownOnce' passed (0.0 seconds)
+Test Case 'GoogleReconciliationTests.testMalformedEventAbortsWithoutDeletingValidCache' started at 2026-10-15 22:04:58.091
+Test Case 'GoogleReconciliationTests.testMalformedEventAbortsWithoutDeletingValidCache' passed (0.0 seconds)
+Test Case 'GoogleReconciliationTests.testReimportRemovesEventsDeletedOnGoogleIncludingAnEmptyYear' started at 2026-10-15 22:04:58.091
+Test Case 'GoogleReconciliationTests.testReimportRemovesEventsDeletedOnGoogleIncludingAnEmptyYear' passed (0.0 seconds)
+Test Case 'GoogleReconciliationTests.testRepeatedImportsUpdateOneEvent' started at 2026-10-15 22:04:58.091
+Test Case 'GoogleReconciliationTests.testRepeatedImportsUpdateOneEvent' passed (0.0 seconds)
+Test Suite 'GoogleReconciliationTests' passed at 2026-10-15 22:04:58.092
+	 Executed 9 tests, with 0 failures (0 unexpected) in 0.004 (0.004) seconds
+Test Suite 'GoogleSyncCoordinatorTests' started at 2026-10-15 22:04:58.092
+Test Case 'GoogleSyncCoordinatorTests.testASecondFreeSyncOpensThePaywall' started at 2026-10-15 22:04:58.092
+Test Case 'GoogleSyncCoordinatorTests.testASecondFreeSyncOpensThePaywall' passed (0.0 seconds)
+Test Case 'GoogleSyncCoordinatorTests.testAnUnreachableRegistryHandsNothingOutButKeepsTheFreeSync' started at 2026-10-15 22:04:58.092
+Test Case 'GoogleSyncCoordinatorTests.testAnUnreachableRegistryHandsNothingOutButKeepsTheFreeSync' passed (0.0 seconds)
+Test Case 'GoogleSyncCoordinatorTests.testBuyingFromThePaywallContinuesIntoTheSubscriptionYear' started at 2026-10-15 22:04:58.092
+Test Case 'GoogleSyncCoordinatorTests.testBuyingFromThePaywallContinuesIntoTheSubscriptionYear' passed (0.002 seconds)
+Test Case 'GoogleSyncCoordinatorTests.testClosingThePickerOrAFailedImportKeepsTheFreeSync' started at 2026-10-15 22:04:58.094
+Test Case 'GoogleSyncCoordinatorTests.testClosingThePickerOrAFailedImportKeepsTheFreeSync' passed (0.0 seconds)
+Test Case 'GoogleSyncCoordinatorTests.testConfirmedLapseRemovesPremiumEventsButKeepsTheFreeMonth' started at 2026-10-15 22:04:58.094
+Test Case 'GoogleSyncCoordinatorTests.testConfirmedLapseRemovesPremiumEventsButKeepsTheFreeMonth' passed (0.0 seconds)
+Test Case 'GoogleSyncCoordinatorTests.testImportedRangeMonthsFollowTheAppLanguage' started at 2026-10-15 22:04:58.094
+Test Case 'GoogleSyncCoordinatorTests.testImportedRangeMonthsFollowTheAppLanguage' passed (0.001 seconds)
+Test Case 'GoogleSyncCoordinatorTests.testLifetimeImportsEveryCalendarYear' started at 2026-10-15 22:04:58.096
+Test Case 'GoogleSyncCoordinatorTests.testLifetimeImportsEveryCalendarYear' passed (0.001 seconds)
+Test Case 'GoogleSyncCoordinatorTests.testPremiumSyncRecordsMergeForTheSameAccount' started at 2026-10-15 22:04:58.097
+Test Case 'GoogleSyncCoordinatorTests.testPremiumSyncRecordsMergeForTheSameAccount' passed (0.0 seconds)
+Test Case 'GoogleSyncCoordinatorTests.testSignInFailuresAreReportedPlainly' started at 2026-10-15 22:04:58.097
+Test Case 'GoogleSyncCoordinatorTests.testSignInFailuresAreReportedPlainly' passed (0.033 seconds)
+Test Case 'GoogleSyncCoordinatorTests.testSwitchAccountForgetsTheSignInAndRetries' started at 2026-10-15 22:04:58.130
+Test Case 'GoogleSyncCoordinatorTests.testSwitchAccountForgetsTheSignInAndRetries' passed (0.002 seconds)
+Test Case 'GoogleSyncCoordinatorTests.testTheOneFreeSyncImportsTheViewedMonthAndIsRecordedEverywhere' started at 2026-10-15 22:04:58.132
+Test Case 'GoogleSyncCoordinatorTests.testTheOneFreeSyncImportsTheViewedMonthAndIsRecordedEverywhere' passed (0.001 seconds)
+Test Case 'GoogleSyncCoordinatorTests.testTheRegistryRemembersAFreeSyncUsedBeforeAReinstall' started at 2026-10-15 22:04:58.133
+Test Case 'GoogleSyncCoordinatorTests.testTheRegistryRemembersAFreeSyncUsedBeforeAReinstall' passed (0.0 seconds)
+Test Suite 'GoogleSyncCoordinatorTests' passed at 2026-10-15 22:04:58.134
+	 Executed 12 tests, with 0 failures (0 unexpected) in 0.042 (0.042) seconds
+Test Suite 'KeyDaysTests' started at 2026-10-15 22:04:58.134
+Test Case 'KeyDaysTests.testAMonthListsPublishedEkadashisAndCataloguedObservancesInDateOrder' started at 2026-10-15 22:04:58.134
+Test Case 'KeyDaysTests.testAMonthListsPublishedEkadashisAndCataloguedObservancesInDateOrder' passed (6.434 seconds)
+Test Case 'KeyDaysTests.testTitlesFollowTheLanguageAndFiltersWork' started at 2026-10-15 22:05:04.568
+Test Case 'KeyDaysTests.testTitlesFollowTheLanguageAndFiltersWork' passed (6.108 seconds)
+Test Suite 'KeyDaysTests' passed at 2026-10-15 22:05:10.676
+	 Executed 2 tests, with 0 failures (0 unexpected) in 12.542 (12.542) seconds
+Test Suite 'LocalizationTests' started at 2026-10-15 22:05:10.676
+Test Case 'LocalizationTests.testEveryLanguageHasEveryKeyNativeScriptAndPlaceholders' started at 2026-10-15 22:05:10.676
+Test Case 'LocalizationTests.testEveryLanguageHasEveryKeyNativeScriptAndPlaceholders' passed (0.019 seconds)
+Test Case 'LocalizationTests.testIosNeverNamesGooglePlayOrAndroidBattery' started at 2026-10-15 22:05:10.695
+Test Case 'LocalizationTests.testIosNeverNamesGooglePlayOrAndroidBattery' passed (0.037 seconds)
+Test Case 'LocalizationTests.testOverridesOnlyReplacePlatformWordingInEveryLanguage' started at 2026-10-15 22:05:10.732
+Test Case 'LocalizationTests.testOverridesOnlyReplacePlatformWordingInEveryLanguage' passed (0.002 seconds)
+Test Case 'LocalizationTests.testTranslateWithArgumentsFillsPlaceholdersInOrder' started at 2026-10-15 22:05:10.734
+Test Case 'LocalizationTests.testTranslateWithArgumentsFillsPlaceholdersInOrder' passed (0.0 seconds)
+Test Suite 'LocalizationTests' passed at 2026-10-15 22:05:10.734
+	 Executed 4 tests, with 0 failures (0 unexpected) in 0.058 (0.058) seconds
+Test Suite 'ObservanceCalendarTests' started at 2026-10-15 22:05:10.734
+Test Case 'ObservanceCalendarTests.testObservanceCalendarCoversTheWholeYearInDateOrder' started at 2026-10-15 22:05:10.734
+Test Case 'ObservanceCalendarTests.testObservanceCalendarCoversTheWholeYearInDateOrder' passed (6.158 seconds)
+Test Case 'ObservanceCalendarTests.testObservancesOnlyPathMatchesTheFullCalculation' started at 2026-10-15 22:05:16.893
+Test Case 'ObservanceCalendarTests.testObservancesOnlyPathMatchesTheFullCalculation' passed (4.465 seconds)
+Test Suite 'ObservanceCalendarTests' passed at 2026-10-15 22:05:21.357
+	 Executed 2 tests, with 0 failures (0 unexpected) in 10.623 (10.623) seconds
+Test Suite 'PanchangEngineTests' started at 2026-10-15 22:05:21.357
+Test Case 'PanchangEngineTests.testAdhikaMonthKeepsTheSameNameInBothConventions' started at 2026-10-15 22:05:21.357
+Test Case 'PanchangEngineTests.testAdhikaMonthKeepsTheSameNameInBothConventions' passed (0.017 seconds)
+Test Case 'PanchangEngineTests.testAnnualObservancesUseTheirKalaRules' started at 2026-10-15 22:05:21.375
+Test Case 'PanchangEngineTests.testAnnualObservancesUseTheirKalaRules' passed (0.193 seconds)
+Test Case 'PanchangEngineTests.testFestivalDatesMatchPublicIndianLists' started at 2026-10-15 22:05:21.567
+Test Case 'PanchangEngineTests.testFestivalDatesMatchPublicIndianLists' passed (6.465 seconds)
+Test Case 'PanchangEngineTests.testFormatsTimesWithZoneAndDayMarker' started at 2026-10-15 22:05:28.032
+Test Case 'PanchangEngineTests.testFormatsTimesWithZoneAndDayMarker' passed (0.024 seconds)
+Test Case 'PanchangEngineTests.testFullMoonBoundaryAgreesWithUsnoPhase' started at 2026-10-15 22:05:28.056
+Test Case 'PanchangEngineTests.testFullMoonBoundaryAgreesWithUsnoPhase' passed (0.038 seconds)
+Test Case 'PanchangEngineTests.testHoraFollowsWeekdayRulerAndIsContiguous' started at 2026-10-15 22:05:28.095
+Test Case 'PanchangEngineTests.testHoraFollowsWeekdayRulerAndIsContiguous' passed (0.061 seconds)
+Test Case 'PanchangEngineTests.testIntercalaryJyeshtha2026IsIdentified' started at 2026-10-15 22:05:28.156
+Test Case 'PanchangEngineTests.testIntercalaryJyeshtha2026IsIdentified' passed (0.039 seconds)
+Test Case 'PanchangEngineTests.testInvalidCoordinatesAndZonesAreRejected' started at 2026-10-15 22:05:28.195
+Test Case 'PanchangEngineTests.testInvalidCoordinatesAndZonesAreRejected' passed (0.0 seconds)
+Test Case 'PanchangEngineTests.testLimbTimelineKeepsTheFourLimbsInOrder' started at 2026-10-15 22:05:28.196
+Test Case 'PanchangEngineTests.testLimbTimelineKeepsTheFourLimbsInOrder' passed (0.049 seconds)
+Test Case 'PanchangEngineTests.testLimbsAreSampledAtSunriseAndExposeTheirNextTransition' started at 2026-10-15 22:05:28.245
+Test Case 'PanchangEngineTests.testLimbsAreSampledAtSunriseAndExposeTheirNextTransition' passed (0.015 seconds)
+Test Case 'PanchangEngineTests.testMakarSankrantiAfterSunsetIsObservedTheNextDay' started at 2026-10-15 22:05:28.260
+Test Case 'PanchangEngineTests.testMakarSankrantiAfterSunsetIsObservedTheNextDay' passed (0.032 seconds)
+Test Case 'PanchangEngineTests.testMonthlyObservancesAreCalculatedLocally' started at 2026-10-15 22:05:28.292
+Test Case 'PanchangEngineTests.testMonthlyObservancesAreCalculatedLocally' passed (0.064 seconds)
+Test Case 'PanchangEngineTests.testNewYorkMeshaSankrantiFallsOnItsLocalCivilDate' started at 2026-10-15 22:05:28.356
+Test Case 'PanchangEngineTests.testNewYorkMeshaSankrantiFallsOnItsLocalCivilDate' passed (0.084 seconds)
+Test Case 'PanchangEngineTests.testPanchangDayUsesLocalSunriseAndCityCoordinates' started at 2026-10-15 22:05:28.440
+Test Case 'PanchangEngineTests.testPanchangDayUsesLocalSunriseAndCityCoordinates' passed (0.038 seconds)
+Test Case 'PanchangEngineTests.testPolarDateLineOddOffsetAndDstLocationsMatchSwissEphemeris' started at 2026-10-15 22:05:28.479
+Test Case 'PanchangEngineTests.testPolarDateLineOddOffsetAndDstLocationsMatchSwissEphemeris' passed (4.952 seconds)
+Test Case 'PanchangEngineTests.testSankrantiIsShownOnPolarDaysWithoutSunriseOrSunset' started at 2026-10-15 22:05:33.431
+Test Case 'PanchangEngineTests.testSankrantiIsShownOnPolarDaysWithoutSunriseOrSunset' passed (0.013 seconds)
+Test Case 'PanchangEngineTests.testSolarIngressIsIncludedOnTheIstCivilDate' started at 2026-10-15 22:05:33.444
+Test Case 'PanchangEngineTests.testSolarIngressIsIncludedOnTheIstCivilDate' passed (0.022 seconds)
+Test Case 'PanchangEngineTests.testSunAndMoonRiseSetAgreeWithSwissEphemerisWithinASecond' started at 2026-10-15 22:05:33.467
+Test Case 'PanchangEngineTests.testSunAndMoonRiseSetAgreeWithSwissEphemerisWithinASecond' passed (2.496 seconds)
+Test Case 'PanchangEngineTests.testSundayNightFollowsItsOwnChoghadiyaOrder' started at 2026-10-15 22:05:35.962
+Test Case 'PanchangEngineTests.testSundayNightFollowsItsOwnChoghadiyaOrder' passed (0.068 seconds)
+Test Case 'PanchangEngineTests.testSunsetJustAfterLocalMidnightBelongsToTheSolarDay' started at 2026-10-15 22:05:36.030
+Test Case 'PanchangEngineTests.testSunsetJustAfterLocalMidnightBelongsToTheSolarDay' passed (0.02 seconds)
+Test Case 'PanchangEngineTests.testVancouverSunriseUsesTheUtcMinusSevenCivilDay' started at 2026-10-15 22:05:36.051
+Test Case 'PanchangEngineTests.testVancouverSunriseUsesTheUtcMinusSevenCivilDay' passed (0.019 seconds)
+Test Case 'PanchangEngineTests.testWednesdayExcludesAbhijitAndIncludesEighthDurMuhurta' started at 2026-10-15 22:05:36.070
+Test Case 'PanchangEngineTests.testWednesdayExcludesAbhijitAndIncludesEighthDurMuhurta' passed (0.062 seconds)
+Test Case 'PanchangEngineTests.testWorldwideCatalogLoadsAndSearches' started at 2026-10-15 22:05:36.132
+Test Case 'PanchangEngineTests.testWorldwideCatalogLoadsAndSearches' passed (0.004 seconds)
+Test Suite 'PanchangEngineTests' passed at 2026-10-15 22:05:36.136
+	 Executed 23 tests, with 0 failures (0 unexpected) in 14.778 (14.778) seconds
+Test Suite 'PanchangLocalizationTests' started at 2026-10-15 22:05:36.136
+Test Case 'PanchangLocalizationTests.testCalculatedEkadashiNamesRulesAndReasonsAreTranslated' started at 2026-10-15 22:05:36.136
+Test Case 'PanchangLocalizationTests.testCalculatedEkadashiNamesRulesAndReasonsAreTranslated' passed (1.818 seconds)
+Test Case 'PanchangLocalizationTests.testTimesAndDatesFollowTheLanguage' started at 2026-10-15 22:05:37.954
+Test Case 'PanchangLocalizationTests.testTimesAndDatesFollowTheLanguage' passed (0.001 seconds)
+Test Suite 'PanchangLocalizationTests' passed at 2026-10-15 22:05:37.955
+	 Executed 2 tests, with 0 failures (0 unexpected) in 1.819 (1.819) seconds
+Test Suite 'PanchangParityTests' started at 2026-10-15 22:05:37.955
+Test Case 'PanchangParityTests.testCalculatedFastsMatchTheFlutterEngine' started at 2026-10-15 22:05:37.955
+Test Case 'PanchangParityTests.testCalculatedFastsMatchTheFlutterEngine' passed (1.791 seconds)
+Test Case 'PanchangParityTests.testEveryPanchangFieldMatchesTheFlutterEngine' started at 2026-10-15 22:05:39.746
+Test Case 'PanchangParityTests.testEveryPanchangFieldMatchesTheFlutterEngine' passed (3.817 seconds)
+Test Suite 'PanchangParityTests' passed at 2026-10-15 22:05:43.564
+	 Executed 2 tests, with 0 failures (0 unexpected) in 5.608 (5.608) seconds
+Test Suite 'PanchangPrecisionTests' started at 2026-10-15 22:05:43.564
+Test Case 'PanchangPrecisionTests.testAfterOnlyWidgetsStayAvailableWithoutAdvertisingAnEnd' started at 2026-10-15 22:05:43.564
+Test Case 'PanchangPrecisionTests.testAfterOnlyWidgetsStayAvailableWithoutAdvertisingAnEnd' passed (0.003 seconds)
+Test Case 'PanchangPrecisionTests.testAnAfterOnlyParanaDoesNotAcquireAnInventedEnd' started at 2026-10-15 22:05:43.567
+Test Case 'PanchangPrecisionTests.testAnAfterOnlyParanaDoesNotAcquireAnInventedEnd' passed (1.21 seconds)
+Test Case 'PanchangPrecisionTests.testApparentLagnaMatchesIndependentSwissGeometry' started at 2026-10-15 22:05:44.777
+Test Case 'PanchangPrecisionTests.testApparentLagnaMatchesIndependentSwissGeometry' passed (0.003 seconds)
+Test Case 'PanchangPrecisionTests.testGrazingSunriseAndSunsetAreNotLostBetweenFiveMinuteSamples' started at 2026-10-15 22:05:44.780
+Test Case 'PanchangPrecisionTests.testGrazingSunriseAndSunsetAreNotLostBetweenFiveMinuteSamples' passed (0.051 seconds)
+Test Case 'PanchangPrecisionTests.testNarrowParanaDisplayStaysWithinItsCalculatedWindow' started at 2026-10-15 22:05:44.831
+Test Case 'PanchangPrecisionTests.testNarrowParanaDisplayStaysWithinItsCalculatedWindow' passed (0.001 seconds)
+Test Case 'PanchangPrecisionTests.testScheduleCacheIncludesExactCoordinatesAndTimezoneRelease' started at 2026-10-15 22:05:44.832
+Test Case 'PanchangPrecisionTests.testScheduleCacheIncludesExactCoordinatesAndTimezoneRelease' passed (0.0 seconds)
+Test Case 'PanchangPrecisionTests.testScheduleMonthUsesTheCalculatedAmantaConventionInEveryYear' started at 2026-10-15 22:05:44.832
+Test Case 'PanchangPrecisionTests.testScheduleMonthUsesTheCalculatedAmantaConventionInEveryYear' passed (1.238 seconds)
+Test Case 'PanchangPrecisionTests.testSerializationAndSubsecondDisplayAcrossMidnight' started at 2026-10-15 22:05:46.070
+Test Case 'PanchangPrecisionTests.testSerializationAndSubsecondDisplayAcrossMidnight' passed (0.0 seconds)
+Test Case 'PanchangPrecisionTests.testStoredStartsNeverPrecedeTheCalculatedBoundary' started at 2026-10-15 22:05:46.070
+Test Case 'PanchangPrecisionTests.testStoredStartsNeverPrecedeTheCalculatedBoundary' passed (1.191 seconds)
+Test Case 'PanchangPrecisionTests.testTuesdayAshleshaBeginsWithAnanda' started at 2026-10-15 22:05:47.261
+Test Case 'PanchangPrecisionTests.testTuesdayAshleshaBeginsWithAnanda' passed (0.022 seconds)
+Test Suite 'PanchangPrecisionTests' passed at 2026-10-15 22:05:47.283
+	 Executed 10 tests, with 0 failures (0 unexpected) in 3.719 (3.719) seconds
+Test Suite 'PanchangTermsTests' started at 2026-10-15 22:05:47.283
+Test Case 'PanchangTermsTests.testBundledTermsAreByteIdenticalToTheSharedAsset' started at 2026-10-15 22:05:47.283
+Test Case 'PanchangTermsTests.testBundledTermsAreByteIdenticalToTheSharedAsset' passed (0.0 seconds)
+Test Case 'PanchangTermsTests.testCompoundTermsAreTranslatedPartByPart' started at 2026-10-15 22:05:47.283
+Test Case 'PanchangTermsTests.testCompoundTermsAreTranslatedPartByPart' passed (0.0 seconds)
+Test Case 'PanchangTermsTests.testEveryEngineObservanceHasALocalizedName' started at 2026-10-15 22:05:47.283
+Test Case 'PanchangTermsTests.testEveryEngineObservanceHasALocalizedName' passed (6.09 seconds)
+Test Case 'PanchangTermsTests.testEveryEngineTermIsTranslatedInEveryLanguage' started at 2026-10-15 22:05:53.374
+Test Case 'PanchangTermsTests.testEveryEngineTermIsTranslatedInEveryLanguage' passed (0.001 seconds)
+Test Suite 'PanchangTermsTests' passed at 2026-10-15 22:05:53.374
+	 Executed 4 tests, with 0 failures (0 unexpected) in 6.091 (6.091) seconds
+Test Suite 'PendingNotificationTests' started at 2026-10-15 22:05:53.374
+Test Case 'PendingNotificationTests.testMergeKeepsTheSoonestAcrossBothKinds' started at 2026-10-15 22:05:53.374
+Test Case 'PendingNotificationTests.testMergeKeepsTheSoonestAcrossBothKinds' passed (0.0 seconds)
+Test Suite 'PendingNotificationTests' passed at 2026-10-15 22:05:53.375
+	 Executed 1 test, with 0 failures (0 unexpected) in 0.0 (0.0) seconds
+Test Suite 'PremiumTests' started at 2026-10-15 22:05:53.375
+Test Case 'PremiumTests.testAFreeUserCanBuyEveryPlan' started at 2026-10-15 22:05:53.375
+Test Case 'PremiumTests.testAFreeUserCanBuyEveryPlan' passed (0.0 seconds)
+Test Case 'PremiumTests.testCancelledSubscriptionCanBeReactivatedOnTheSamePlan' started at 2026-10-15 22:05:53.375
+Test Case 'PremiumTests.testCancelledSubscriptionCanBeReactivatedOnTheSamePlan' passed (0.0 seconds)
+Test Case 'PremiumTests.testCancelledSubscriptionStaysPremiumUntilItEnds' started at 2026-10-15 22:05:53.375
+Test Case 'PremiumTests.testCancelledSubscriptionStaysPremiumUntilItEnds' passed (0.0 seconds)
+Test Case 'PremiumTests.testDefaultPlanPrefersYearlyThenWhatCanBeBought' started at 2026-10-15 22:05:53.375
+Test Case 'PremiumTests.testDefaultPlanPrefersYearlyThenWhatCanBeBought' passed (0.0 seconds)
+Test Case 'PremiumTests.testExpiredOrRefundedSubscriptionIsRevoked' started at 2026-10-15 22:05:53.375
+Test Case 'PremiumTests.testExpiredOrRefundedSubscriptionIsRevoked' passed (0.0 seconds)
+Test Case 'PremiumTests.testLapsedOnlyAfterTheStoreAnswers' started at 2026-10-15 22:05:53.375
+Test Case 'PremiumTests.testLapsedOnlyAfterTheStoreAnswers' passed (0.0 seconds)
+Test Case 'PremiumTests.testLifetimeOwnersAndPendingPurchasesCannotBuy' started at 2026-10-15 22:05:53.375
+Test Case 'PremiumTests.testLifetimeOwnersAndPendingPurchasesCannotBuy' passed (0.0 seconds)
+Test Case 'PremiumTests.testMonthlySubscriberCanUpgradeButNotRebuyTheSamePlan' started at 2026-10-15 22:05:53.375
+Test Case 'PremiumTests.testMonthlySubscriberCanUpgradeButNotRebuyTheSamePlan' passed (0.0 seconds)
+Test Case 'PremiumTests.testNothingOwnedMeansTheFreeTier' started at 2026-10-15 22:05:53.375
+Test Case 'PremiumTests.testNothingOwnedMeansTheFreeTier' passed (0.0 seconds)
+Test Case 'PremiumTests.testStoreFailureFailsClosedAndIsNotALapse' started at 2026-10-15 22:05:53.375
+Test Case 'PremiumTests.testStoreFailureFailsClosedAndIsNotALapse' passed (0.0 seconds)
+Test Case 'PremiumTests.testSubscriptionDateGovernsSyncWhileBothAreOwned' started at 2026-10-15 22:05:53.375
+Test Case 'PremiumTests.testSubscriptionDateGovernsSyncWhileBothAreOwned' passed (0.0 seconds)
+Test Case 'PremiumTests.testSubscriptionOrLifetimeUnlocksPremium' started at 2026-10-15 22:05:53.375
+Test Case 'PremiumTests.testSubscriptionOrLifetimeUnlocksPremium' passed (0.0 seconds)
+Test Case 'PremiumTests.testSubscriptionYearIsAnchoredOnThePurchaseMonth' started at 2026-10-15 22:05:53.376
+Test Case 'PremiumTests.testSubscriptionYearIsAnchoredOnThePurchaseMonth' passed (0.0 seconds)
+Test Case 'PremiumTests.testSyncWindowUsesTheStorePurchaseDateAndLifetimeYears' started at 2026-10-15 22:05:53.376
+Test Case 'PremiumTests.testSyncWindowUsesTheStorePurchaseDateAndLifetimeYears' passed (0.0 seconds)
+Test Case 'PremiumTests.testUnrelatedProductsNeverUnlockPremium' started at 2026-10-15 22:05:53.376
+Test Case 'PremiumTests.testUnrelatedProductsNeverUnlockPremium' passed (0.0 seconds)
+Test Suite 'PremiumTests' passed at 2026-10-15 22:05:53.376
+	 Executed 15 tests, with 0 failures (0 unexpected) in 0.001 (0.001) seconds
+Test Suite 'ReminderPlannerTests' started at 2026-10-15 22:05:53.376
+Test Case 'ReminderPlannerTests.testPlansTheFourAndroidRemindersWithStableIds' started at 2026-10-15 22:05:53.376
+Test Case 'ReminderPlannerTests.testPlansTheFourAndroidRemindersWithStableIds' passed (0.0 seconds)
+Test Case 'ReminderPlannerTests.testRespectsSwitchesSkipsThePastAndCapsAtSixtyFour' started at 2026-10-15 22:05:53.376
+Test Case 'ReminderPlannerTests.testRespectsSwitchesSkipsThePastAndCapsAtSixtyFour' passed (0.001 seconds)
+Test Case 'ReminderPlannerTests.testSettingsUseTheAndroidKeysAndDefaults' started at 2026-10-15 22:05:53.378
+Test Case 'ReminderPlannerTests.testSettingsUseTheAndroidKeysAndDefaults' passed (0.0 seconds)
+Test Suite 'ReminderPlannerTests' passed at 2026-10-15 22:05:53.378
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.002 (0.002) seconds
+Test Suite 'ResourceSyncTests' started at 2026-10-15 22:05:53.378
+Test Case 'ResourceSyncTests.testCalendarAndCityAssetsAreByteIdentical' started at 2026-10-15 22:05:53.378
+Test Case 'ResourceSyncTests.testCalendarAndCityAssetsAreByteIdentical' passed (0.01 seconds)
+Test Case 'ResourceSyncTests.testEveryCalendarYearInTheManifestIsBundled' started at 2026-10-15 22:05:53.388
+Test Case 'ResourceSyncTests.testEveryCalendarYearInTheManifestIsBundled' passed (0.046 seconds)
+Test Case 'ResourceSyncTests.testEveryIosStringKeyIsTranslatedInAllLanguages' started at 2026-10-15 22:05:53.433
+Test Case 'ResourceSyncTests.testEveryIosStringKeyIsTranslatedInAllLanguages' passed (0.241 seconds)
+Test Case 'ResourceSyncTests.testIosAppSourcesDoNotBypassLocalization' started at 2026-10-15 22:05:53.675
+Test Case 'ResourceSyncTests.testIosAppSourcesDoNotBypassLocalization' passed (0.066 seconds)
+Test Case 'ResourceSyncTests.testStringsMatchTheArbFiles' started at 2026-10-15 22:05:53.741
+Test Case 'ResourceSyncTests.testStringsMatchTheArbFiles' passed (0.007 seconds)
+Test Suite 'ResourceSyncTests' passed at 2026-10-15 22:05:53.747
+	 Executed 5 tests, with 0 failures (0 unexpected) in 0.369 (0.369) seconds
+Test Suite 'SearchCatalogTests' started at 2026-10-15 22:05:53.747
+Test Case 'SearchCatalogTests.testBundledCatalogIsByteIdenticalToTheSharedAsset' started at 2026-10-15 22:05:53.747
+Test Case 'SearchCatalogTests.testBundledCatalogIsByteIdenticalToTheSharedAsset' passed (0.0 seconds)
+Test Case 'SearchCatalogTests.testEveryFilterHasALabelInEveryLanguage' started at 2026-10-15 22:05:53.748
+Test Case 'SearchCatalogTests.testEveryFilterHasALabelInEveryLanguage' passed (0.0 seconds)
+Test Case 'SearchCatalogTests.testEveryMajorEngineObservanceIsCataloguedOrExcluded' started at 2026-10-15 22:05:53.748
+Test Case 'SearchCatalogTests.testEveryMajorEngineObservanceIsCataloguedOrExcluded' passed (12.023 seconds)
+Test Case 'SearchCatalogTests.testEveryObservanceHasANameInEveryLanguageAndKnownCategories' started at 2026-10-15 22:06:05.771
+Test Case 'SearchCatalogTests.testEveryObservanceHasANameInEveryLanguageAndKnownCategories' passed (0.001 seconds)
+Test Case 'SearchCatalogTests.testScreenTitlesAreTranslatedInEveryLanguage' started at 2026-10-15 22:06:05.772
+Test Case 'SearchCatalogTests.testScreenTitlesAreTranslatedInEveryLanguage' passed (0.0 seconds)
+Test Suite 'SearchCatalogTests' passed at 2026-10-15 22:06:05.772
+	 Executed 5 tests, with 0 failures (0 unexpected) in 12.025 (12.025) seconds
+Test Suite 'SearchGoldenTests' started at 2026-10-15 22:06:05.772
+Test Case 'SearchGoldenTests.testGoldenCases' started at 2026-10-15 22:06:05.772
+Test Case 'SearchGoldenTests.testGoldenCases' passed (12.058 seconds)
+Test Case 'SearchGoldenTests.testOnlyPanchangObservancesNeedPremium' started at 2026-10-15 22:06:17.831
+Test Case 'SearchGoldenTests.testOnlyPanchangObservancesNeedPremium' passed (5.256 seconds)
+Test Case 'SearchGoldenTests.testTitlesFollowTheAppLanguage' started at 2026-10-15 22:06:23.086
+Test Case 'SearchGoldenTests.testTitlesFollowTheAppLanguage' passed (5.791 seconds)
+Test Suite 'SearchGoldenTests' passed at 2026-10-15 22:06:28.877
+	 Executed 3 tests, with 0 failures (0 unexpected) in 23.105 (23.105) seconds
+Test Suite 'SearchMatchingTests' started at 2026-10-15 22:06:28.877
+Test Case 'SearchMatchingTests.testEqualScoresShowUpcomingFirstThenRecentPast' started at 2026-10-15 22:06:28.877
+Test Case 'SearchMatchingTests.testEqualScoresShowUpcomingFirstThenRecentPast' passed (0.002 seconds)
+Test Case 'SearchMatchingTests.testEveryWordMustMatchSomething' started at 2026-10-15 22:06:28.879
+Test Case 'SearchMatchingTests.testEveryWordMustMatchSomething' passed (0.001 seconds)
+Test Case 'SearchMatchingTests.testFiltersAndListing' started at 2026-10-15 22:06:28.880
+Test Case 'SearchMatchingTests.testFiltersAndListing' passed (0.001 seconds)
+Test Case 'SearchMatchingTests.testInOrderLettersNeedThreeLettersAndTheSameFirstLetter' started at 2026-10-15 22:06:28.881
+Test Case 'SearchMatchingTests.testInOrderLettersNeedThreeLettersAndTheSameFirstLetter' passed (0.001 seconds)
+Test Case 'SearchMatchingTests.testRankingTiersExactThenPrefixThenTypoThenBodyThenInOrderLetters' started at 2026-10-15 22:06:28.881
+Test Case 'SearchMatchingTests.testRankingTiersExactThenPrefixThenTypoThenBodyThenInOrderLetters' passed (0.001 seconds)
+Test Suite 'SearchMatchingTests' passed at 2026-10-15 22:06:28.882
+	 Executed 5 tests, with 0 failures (0 unexpected) in 0.005 (0.005) seconds
+Test Suite 'SearchQueryParserTests' started at 2026-10-15 22:06:28.882
+Test Case 'SearchQueryParserTests.testATypeWordAloneListsThatType' started at 2026-10-15 22:06:28.882
+Test Case 'SearchQueryParserTests.testATypeWordAloneListsThatType' passed (0.0 seconds)
+Test Case 'SearchQueryParserTests.testNumbersThatAreNotYearsStayText' started at 2026-10-15 22:06:28.883
+Test Case 'SearchQueryParserTests.testNumbersThatAreNotYearsStayText' passed (0.0 seconds)
+Test Case 'SearchQueryParserTests.testShortFragmentsAreNotTypeWordsAndChipsWin' started at 2026-10-15 22:06:28.883
+Test Case 'SearchQueryParserTests.testShortFragmentsAreNotTypeWordsAndChipsWin' passed (0.0 seconds)
+Test Case 'SearchQueryParserTests.testTypeWordsWithOtherWordsFilterAndStillMatch' started at 2026-10-15 22:06:28.883
+Test Case 'SearchQueryParserTests.testTypeWordsWithOtherWordsFilterAndStillMatch' passed (0.0 seconds)
+Test Case 'SearchQueryParserTests.testYearsBecomeTheYearFilter' started at 2026-10-15 22:06:28.884
+Test Case 'SearchQueryParserTests.testYearsBecomeTheYearFilter' passed (0.001 seconds)
+Test Suite 'SearchQueryParserTests' passed at 2026-10-15 22:06:28.885
+	 Executed 5 tests, with 0 failures (0 unexpected) in 0.002 (0.002) seconds
+Test Suite 'SearchReturnTests' started at 2026-10-15 22:06:28.885
+Test Case 'SearchReturnTests.testAScreenOpenedFromSearchGoesBackToTheSameSearch' started at 2026-10-15 22:06:28.885
+Test Case 'SearchReturnTests.testAScreenOpenedFromSearchGoesBackToTheSameSearch' passed (0.0 seconds)
+Test Case 'SearchReturnTests.testCalendarEntriesAndPanchangDaysReturnFromTheirTabs' started at 2026-10-15 22:06:28.885
+Test Case 'SearchReturnTests.testCalendarEntriesAndPanchangDaysReturnFromTheirTabs' passed (0.0 seconds)
+Test Case 'SearchReturnTests.testChoosingAnotherTabOrANewSearchForgetsTheReturn' started at 2026-10-15 22:06:28.885
+Test Case 'SearchReturnTests.testChoosingAnotherTabOrANewSearchForgetsTheReturn' passed (0.0 seconds)
+Test Case 'SearchReturnTests.testRoutesNameTheirTab' started at 2026-10-15 22:06:28.885
+Test Case 'SearchReturnTests.testRoutesNameTheirTab' passed (0.0 seconds)
+Test Case 'SearchReturnTests.testSearchPagesStartWithAll' started at 2026-10-15 22:06:28.885
+Test Case 'SearchReturnTests.testSearchPagesStartWithAll' passed (0.101 seconds)
+Test Suite 'SearchReturnTests' passed at 2026-10-15 22:06:28.987
+	 Executed 5 tests, with 0 failures (0 unexpected) in 0.102 (0.102) seconds
+Test Suite 'SearchTests' started at 2026-10-15 22:06:28.987
+Test Case 'SearchTests.testExactTitleTokenRanksAboveAPrefixAndTitleAboveBody' started at 2026-10-15 22:06:28.987
+Test Case 'SearchTests.testExactTitleTokenRanksAboveAPrefixAndTitleAboveBody' passed (0.002 seconds)
+Test Case 'SearchTests.testOneEditTranspositionAndTwoEditsFindTheIntendedEkadashi' started at 2026-10-15 22:06:28.989
+Test Case 'SearchTests.testOneEditTranspositionAndTwoEditsFindTheIntendedEkadashi' passed (0.004 seconds)
+Test Case 'SearchTests.testRecentSearchesDeduplicateDropTypingPrefixesAndCapAtTen' started at 2026-10-15 22:06:28.992
+Test Case 'SearchTests.testRecentSearchesDeduplicateDropTypingPrefixesAndCapAtTen' passed (0.003 seconds)
+Test Case 'SearchTests.testTeluguQueryKeepsItsLettersAndEveryLanguageNameMatches' started at 2026-10-15 22:06:28.996
+Test Case 'SearchTests.testTeluguQueryKeepsItsLettersAndEveryLanguageNameMatches' passed (0.001 seconds)
+Test Case 'SearchTests.testUnmatchedAndPunctuationOnlyQueriesReturnNothing' started at 2026-10-15 22:06:28.996
+Test Case 'SearchTests.testUnmatchedAndPunctuationOnlyQueriesReturnNothing' passed (0.0 seconds)
+Test Case 'SearchTests.testYearSelectionDistinguishesOccurrences' started at 2026-10-15 22:06:28.997
+Test Case 'SearchTests.testYearSelectionDistinguishesOccurrences' passed (0.002 seconds)
+Test Suite 'SearchTests' passed at 2026-10-15 22:06:28.999
+	 Executed 6 tests, with 0 failures (0 unexpected) in 0.012 (0.012) seconds
+Test Suite 'TimeZoneDatabaseTests' started at 2026-10-15 22:06:28.999
+Test Case 'TimeZoneDatabaseTests.testBritishColumbiaStaysOnUtcMinusSevenFromNovember2026' started at 2026-10-15 22:06:28.999
+Test Case 'TimeZoneDatabaseTests.testBritishColumbiaStaysOnUtcMinusSevenFromNovember2026' passed (0.0 seconds)
+Test Case 'TimeZoneDatabaseTests.testBundlesTheSameIanaReleaseAsAndroid' started at 2026-10-15 22:06:28.999
+Test Case 'TimeZoneDatabaseTests.testBundlesTheSameIanaReleaseAsAndroid' passed (0.001 seconds)
+Test Case 'TimeZoneDatabaseTests.testHalfHourDaylightSavingAtLordHowe' started at 2026-10-15 22:06:29.000
+Test Case 'TimeZoneDatabaseTests.testHalfHourDaylightSavingAtLordHowe' passed (0.002 seconds)
+Test Case 'TimeZoneDatabaseTests.testKolkataAndNewYorkOffsetsAndAbbreviations' started at 2026-10-15 22:06:29.002
+Test Case 'TimeZoneDatabaseTests.testKolkataAndNewYorkOffsetsAndAbbreviations' passed (0.0 seconds)
+Test Case 'TimeZoneDatabaseTests.testLocalTimeInADaylightSavingGapMovesForwardLikeDart' started at 2026-10-15 22:06:29.002
+Test Case 'TimeZoneDatabaseTests.testLocalTimeInADaylightSavingGapMovesForwardLikeDart' passed (0.0 seconds)
+Test Case 'TimeZoneDatabaseTests.testWallClockFieldsAndCivilDate' started at 2026-10-15 22:06:29.002
+Test Case 'TimeZoneDatabaseTests.testWallClockFieldsAndCivilDate' passed (0.0 seconds)
+Test Suite 'TimeZoneDatabaseTests' passed at 2026-10-15 22:06:29.002
+	 Executed 6 tests, with 0 failures (0 unexpected) in 0.003 (0.003) seconds
+Test Suite 'TimeZoneLabelTests' started at 2026-10-15 22:06:29.002
+Test Case 'TimeZoneLabelTests.testEnglishAbbreviationsWorldwide' started at 2026-10-15 22:06:29.002
+Test Case 'TimeZoneLabelTests.testEnglishAbbreviationsWorldwide' passed (0.0 seconds)
+Test Case 'TimeZoneLabelTests.testOtherLanguagesUseTheirScript' started at 2026-10-15 22:06:29.003
+Test Case 'TimeZoneLabelTests.testOtherLanguagesUseTheirScript' passed (0.0 seconds)
+Test Suite 'TimeZoneLabelTests' passed at 2026-10-15 22:06:29.003
+	 Executed 2 tests, with 0 failures (0 unexpected) in 0.0 (0.0) seconds
+Test Suite 'TransliteratorTests' started at 2026-10-15 22:06:29.003
+Test Case 'TransliteratorTests.testEveryCatalogCityIsInEachLanguagesScript' started at 2026-10-15 22:06:29.003
+Test Case 'TransliteratorTests.testEveryCatalogCityIsInEachLanguagesScript' passed (13.533 seconds)
+Test Case 'TransliteratorTests.testMatchesTheSharedFixture' started at 2026-10-15 22:06:42.535
+Test Case 'TransliteratorTests.testMatchesTheSharedFixture' passed (12.51 seconds)
+Test Case 'TransliteratorTests.testPlaceNamesFallBackToTransliteration' started at 2026-10-15 22:06:55.046
+Test Case 'TransliteratorTests.testPlaceNamesFallBackToTransliteration' passed (0.0 seconds)
+Test Case 'TransliteratorTests.testWritesNamesBySound' started at 2026-10-15 22:06:55.046
+Test Case 'TransliteratorTests.testWritesNamesBySound' passed (0.001 seconds)
+Test Suite 'TransliteratorTests' passed at 2026-10-15 22:06:55.046
+	 Executed 4 tests, with 0 failures (0 unexpected) in 26.044 (26.044) seconds
+Test Suite 'VratRecordingWindowTests' started at 2026-10-15 22:06:55.046
+Test Case 'VratRecordingWindowTests.testBundledScheduleOpensOnlyPastFasts' started at 2026-10-15 22:06:55.046
+Test Case 'VratRecordingWindowTests.testBundledScheduleOpensOnlyPastFasts' passed (0.009 seconds)
+Test Case 'VratRecordingWindowTests.testFutureEkadashiCannotBeRecorded' started at 2026-10-15 22:06:55.056
+Test Case 'VratRecordingWindowTests.testFutureEkadashiCannotBeRecorded' passed (0.0 seconds)
+Test Case 'VratRecordingWindowTests.testPastEkadashiIsOpenEvenWithoutParanaTime' started at 2026-10-15 22:06:55.056
+Test Case 'VratRecordingWindowTests.testPastEkadashiIsOpenEvenWithoutParanaTime' passed (0.0 seconds)
+Test Case 'VratRecordingWindowTests.testTodaysEkadashiOpensAtParanaStart' started at 2026-10-15 22:06:55.056
+Test Case 'VratRecordingWindowTests.testTodaysEkadashiOpensAtParanaStart' passed (0.0 seconds)
+Test Suite 'VratRecordingWindowTests' passed at 2026-10-15 22:06:55.056
+	 Executed 4 tests, with 0 failures (0 unexpected) in 0.01 (0.01) seconds
+Test Suite 'VratTrackerTests' started at 2026-10-15 22:06:55.056
+Test Case 'VratTrackerTests.testAllowanceCountsEarnedBadges' started at 2026-10-15 22:06:55.056
+Test Case 'VratTrackerTests.testAllowanceCountsEarnedBadges' passed (0.0 seconds)
+Test Case 'VratTrackerTests.testAnnualCompletionUsesTheYearsOccurrences' started at 2026-10-15 22:06:55.057
+Test Case 'VratTrackerTests.testAnnualCompletionUsesTheYearsOccurrences' passed (0.0 seconds)
+Test Case 'VratTrackerTests.testCorruptStorageBlocksWritesInsteadOfLosingHistory' started at 2026-10-15 22:06:55.057
+Test Case 'VratTrackerTests.testCorruptStorageBlocksWritesInsteadOfLosingHistory' passed (0.0 seconds)
+Test Case 'VratTrackerTests.testCurrentAndLongestStreak' started at 2026-10-15 22:06:55.057
+Test Case 'VratTrackerTests.testCurrentAndLongestStreak' passed (0.0 seconds)
+Test Case 'VratTrackerTests.testDeleteRemovesOnlyHistory' started at 2026-10-15 22:06:55.057
+Test Case 'VratTrackerTests.testDeleteRemovesOnlyHistory' passed (0.001 seconds)
+Test Case 'VratTrackerTests.testEvaluatesAllSixMilestonesAndNextMilestone' started at 2026-10-15 22:06:55.058
+Test Case 'VratTrackerTests.testEvaluatesAllSixMilestonesAndNextMilestone' passed (0.0 seconds)
+Test Case 'VratTrackerTests.testFutureEkadashisCannotBeRecordedButPastOnesCan' started at 2026-10-15 22:06:55.059
+Test Case 'VratTrackerTests.testFutureEkadashisCannotBeRecordedButPastOnesCan' passed (0.0 seconds)
+Test Case 'VratTrackerTests.testGrandfatheredBadgesSurviveAZeroAllowance' started at 2026-10-15 22:06:55.059
+Test Case 'VratTrackerTests.testGrandfatheredBadgesSurviveAZeroAllowance' passed (0.0 seconds)
+Test Case 'VratTrackerTests.testPremiumUpgradeUnlocksProgressOnceAndDowngradeKeepsBadges' started at 2026-10-15 22:06:55.059
+Test Case 'VratTrackerTests.testPremiumUpgradeUnlocksProgressOnceAndDowngradeKeepsBadges' passed (0.02 seconds)
+Test Case 'VratTrackerTests.testRecordsMethodAndNoteAndEditsWithoutDuplicates' started at 2026-10-15 22:06:55.079
+Test Case 'VratTrackerTests.testRecordsMethodAndNoteAndEditsWithoutDuplicates' passed (0.001 seconds)
+Test Case 'VratTrackerTests.testRecordsSurviveRecreationFromTheSameStore' started at 2026-10-15 22:06:55.080
+Test Case 'VratTrackerTests.testRecordsSurviveRecreationFromTheSameStore' passed (0.001 seconds)
+Test Case 'VratTrackerTests.testStoredRecordsUseTheAndroidSchema' started at 2026-10-15 22:06:55.081
+Test Case 'VratTrackerTests.testStoredRecordsUseTheAndroidSchema' passed (0.0 seconds)
+Test Case 'VratTrackerTests.testThreeFreeEntriesThenPremiumForNewOnesButEditingStaysFree' started at 2026-10-15 22:06:55.081
+Test Case 'VratTrackerTests.testThreeFreeEntriesThenPremiumForNewOnesButEditingStaysFree' passed (0.002 seconds)
+Test Case 'VratTrackerTests.testTrackerIsAvailableFreeByDefault' started at 2026-10-15 22:06:55.083
+Test Case 'VratTrackerTests.testTrackerIsAvailableFreeByDefault' passed (0.0 seconds)
+Test Case 'VratTrackerTests.testUnlockDialogsAreShownOnlyOncePerBadge' started at 2026-10-15 22:06:55.083
+Test Case 'VratTrackerTests.testUnlockDialogsAreShownOnlyOncePerBadge' passed (0.001 seconds)
+Test Suite 'VratTrackerTests' passed at 2026-10-15 22:06:55.084
+	 Executed 15 tests, with 0 failures (0 unexpected) in 0.027 (0.027) seconds
+Test Suite 'WidgetRedesignTests' started at 2026-10-15 22:06:55.084
+Test Case 'WidgetRedesignTests.testBeforeAnEkadashiTheWidgetShowsTheNextOneAndDaysToGo' started at 2026-10-15 22:06:55.084
+Test Case 'WidgetRedesignTests.testBeforeAnEkadashiTheWidgetShowsTheNextOneAndDaysToGo' passed (0.014 seconds)
+Test Case 'WidgetRedesignTests.testEveryLanguageHasTheNewWidgetStrings' started at 2026-10-15 22:06:55.098
+Test Case 'WidgetRedesignTests.testEveryLanguageHasTheNewWidgetStrings' passed (0.0 seconds)
+Test Case 'WidgetRedesignTests.testOnTheEkadashiTheWidgetShowsProgressUntilParana' started at 2026-10-15 22:06:55.098
+Test Case 'WidgetRedesignTests.testOnTheEkadashiTheWidgetShowsProgressUntilParana' passed (0.05 seconds)
+Test Suite 'WidgetRedesignTests' passed at 2026-10-15 22:06:55.148
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.064 (0.064) seconds
+Test Suite 'WidgetSnapshotTests' started at 2026-10-15 22:06:55.148
+Test Case 'WidgetSnapshotTests.testCountdownTargetsChangeAtExactTransitions' started at 2026-10-15 22:06:55.148
+Test Case 'WidgetSnapshotTests.testCountdownTargetsChangeAtExactTransitions' passed (0.001 seconds)
+Test Case 'WidgetSnapshotTests.testEveryLanguageProvidesAllWidgetLabels' started at 2026-10-15 22:06:55.148
+Test Case 'WidgetSnapshotTests.testEveryLanguageProvidesAllWidgetLabels' passed (0.002 seconds)
+Test Case 'WidgetSnapshotTests.testExhaustedCalendarFallsBack' started at 2026-10-15 22:06:55.150
+Test Case 'WidgetSnapshotTests.testExhaustedCalendarFallsBack' passed (0.0 seconds)
+Test Case 'WidgetSnapshotTests.testRemainingTimeTextMatchesTheAndroidWidget' started at 2026-10-15 22:06:55.150
+Test Case 'WidgetSnapshotTests.testRemainingTimeTextMatchesTheAndroidWidget' passed (0.0 seconds)
+Test Case 'WidgetSnapshotTests.testSnapshotRoundTripsThroughTheAppGroupJson' started at 2026-10-15 22:06:55.150
+Test Case 'WidgetSnapshotTests.testSnapshotRoundTripsThroughTheAppGroupJson' passed (0.001 seconds)
+Test Case 'WidgetSnapshotTests.testTimelineRefreshesAtEveryStateChange' started at 2026-10-15 22:06:55.151
+Test Case 'WidgetSnapshotTests.testTimelineRefreshesAtEveryStateChange' passed (0.0 seconds)
+Test Case 'WidgetSnapshotTests.testTodayUsesTheSelectedLocationAcrossMidnight' started at 2026-10-15 22:06:55.151
+Test Case 'WidgetSnapshotTests.testTodayUsesTheSelectedLocationAcrossMidnight' passed (0.0 seconds)
+Test Case 'WidgetSnapshotTests.testUnsortedArchiveSkipsExpiredRowsAndSelects2027' started at 2026-10-15 22:06:55.152
+Test Case 'WidgetSnapshotTests.testUnsortedArchiveSkipsExpiredRowsAndSelects2027' passed (0.001 seconds)
+Test Suite 'WidgetSnapshotTests' passed at 2026-10-15 22:06:55.152
+	 Executed 8 tests, with 0 failures (0 unexpected) in 0.005 (0.005) seconds
+Test Suite 'release.xctest' passed at 2026-10-15 22:06:55.152
+	 Executed 262 tests, with 0 failures (0 unexpected) in 359.371 (359.371) seconds
+Test Suite 'All tests' passed at 2026-10-15 22:06:55.153
+	 Executed 262 tests, with 0 failures (0 unexpected) in 359.371 (359.371) seconds
+◇ Test run started.
+↳ Testing Library Version: 6.0.3 (18c42c19cac3faf)
+✔ Test run with 0 tests passed after 0.001 seconds.

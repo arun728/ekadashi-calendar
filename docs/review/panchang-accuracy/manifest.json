@@ -1,0 +1,41 @@
+{
+  "auditDate": "2026-10-15",
+  "sourceBranch": "feature/engine-ekadashi",
+  "sourceCommit": "c15bce71a753d0ca36da5b704d6edc3f106a6919",
+  "implementationCommit": "77c9f681e5a0c2baa0b8ab7aa37f3c14b92ae636",
+  "prBase": "dev",
+  "scoredYears": [
+    2026,
+    2027
+  ],
+  "exportStart": "2025-12-01",
+  "exportDays": 790,
+  "originalChecks": 700242,
+  "expandedChecks": 728492,
+  "cities": 41,
+  "randomPositions": {
+    "count": 10000,
+    "seed": 271828,
+    "years": [
+      1900,
+      2100
+    ]
+  },
+  "randomLagna": {
+    "count": 1000,
+    "seed": 314159,
+    "years": [
+      2000,
+      2040
+    ],
+    "latitudeRange": [
+      -65,
+      65
+    ]
+  },
+  "ephemerisSha256": {
+    "sepl_18.se1": "ca1393ceab3a44fbc895887cf789c68819ae6a1cbc9b22225872dbe4ccd99a66",
+    "semo_18.se1": "1ca07bd67c24374d77226180c20a4f9996cba013697894810518e7eb582ca4f7",
+    "de440s.bsp": "c1c7feeab882263fc493a9d5a5b2ddd71b54826cdf65d8d17a76126b260a49f2"
+  }
+}
