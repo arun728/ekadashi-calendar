@@ -1,0 +1,104 @@
+00:00 +0: loading /workspace/ekadashi-calendar/test/unit/panchang_precision_test.dart
+00:00 +0: Tuesday Ashlesha begins with Ananda
+00:00 +0 -1: Tuesday Ashlesha begins with Ananda [E]
+  Expected: 'Ananda'
+    Actual: 'Kaladanda'
+     Which: is different.
+            Expected: Ananda
+              Actual: Kaladanda
+                      ^
+             Differ at offset 0
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/unit/panchang_precision_test.dart 33:5         main.<fn>
+  
+00:00 +0 -1: Lagna uses a consistent apparent equinox and independent Swiss boundaries
+00:00 +0 -2: Lagna uses a consistent apparent equinox and independent Swiss boundaries [E]
+  Expected: a value less than <0.2>
+    Actual: <42.051716670357564>
+     Which: is not a value less than <0.2>
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/unit/panchang_precision_test.dart 41:7         main.<fn>
+  
+00:00 +0 -2: Grazing rise and set are found between five-minute samples
+00:00 +0 -3: Grazing rise and set are found between five-minute samples [E]
+  Expected: not null
+    Actual: <null>
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/unit/panchang_precision_test.dart 53:5         main.<fn>
+  
+00:00 +0 -3: Stored schedule retains inward-rounded millisecond boundaries
+00:00 +0 -4: Stored schedule retains inward-rounded millisecond boundaries [E]
+  Expected: false
+    Actual: <true>
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/unit/panchang_precision_test.dart 64:5         main.<fn>
+  
+00:00 +0 -4: After-only Parana has no invented end in Home
+00:01 +0 -5: After-only Parana has no invented end in Home [E]
+  Expected: empty
+    Actual: '2026-12-20T16:31:00-05:00'
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/unit/panchang_precision_test.dart 72:5         main.<fn>
+  
+00:01 +0 -5: Narrow and subsecond windows are displayed inside the allowed interval
+00:01 +0 -6: Narrow and subsecond windows are displayed inside the allowed interval [E]
+  Expected: '06:04:57 AM - 06:05:09 AM'
+    Actual: '06:04 AM - 06:05 AM'
+     Which: is different.
+            Expected: 06:04:57 AM - 0 ...
+              Actual: 06:04 AM - 06:0 ...
+                           ^
+             Differ at offset 5
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/unit/panchang_precision_test.dart 80:5         main.<fn>
+  
+00:01 +0 -6: After-only widgets retain the event without fabricating a deadline
+00:01 +0 -7: After-only widgets retain the event without fabricating a deadline [E]
+  Expected: 'PARANA_AVAILABLE'
+    Actual: 'FALLBACK'
+     Which: is different.
+            Expected: PARANA_AVA ...
+              Actual: FALLBACK
+                      ^
+             Differ at offset 0
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/unit/panchang_precision_test.dart 91:5         main.<fn>
+  
+00:01 +0 -7: Every schedule year uses the calculated Amanta month
+00:02 +0 -8: Every schedule year uses the calculated Amanta month [E]
+  Expected: 'margashirsha'
+    Actual: 'pausha'
+     Which: is different.
+            Expected: margashirs ...
+              Actual: pausha
+                      ^
+             Differ at offset 0
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/unit/panchang_precision_test.dart 99:5         main.<fn>
+  
+00:02 +0 -8: Cache separates exact positions and versions the timezone rules
+00:02 +0 -9: Cache separates exact positions and versions the timezone rules [E]
+  Expected: not 'schedule-2|current-location-v2|smarta|2026|gps_13.0827_80.2707_Asia/Kolkata'
+    Actual: 'schedule-2|current-location-v2|smarta|2026|gps_13.0827_80.2707_Asia/Kolkata'
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test/unit/panchang_precision_test.dart 106:5        main.<fn>
+  
+00:02 +0 -9: Some tests failed.
