@@ -171,7 +171,7 @@ class CalculatedEkadashi {
 
   /// The Parana day's sunset, the end of an after-only Parana.
   final DateTime? paranaDaySunsetUtc;
-  static const ruleVersion = 'current-location-v2';
+  static const ruleVersion = 'current-location-v3';
   // Candidate data deliberately does not implement the published Ekadashi
   // model: no accidental replacement of reminders, tracker IDs or history.
 }

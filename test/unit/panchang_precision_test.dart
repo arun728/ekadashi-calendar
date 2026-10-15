@@ -93,11 +93,12 @@ void main() {
           lessThan(.2),
         );
         var day = engine.calculate(time, city: city);
-        if (day.sunriseUtc!.isAfter(time))
+        if (day.sunriseUtc!.isAfter(time)) {
           day = engine.calculate(
             time.subtract(const Duration(days: 1)),
             city: city,
           );
+        }
         final period = day.lagna.firstWhere(
           (p) => !p.startUtc.isAfter(time) && p.endUtc.isAfter(time),
         );

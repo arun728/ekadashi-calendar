@@ -92,7 +92,9 @@ data class EkadashiItem(
     val paranaEndUTC: String,
     val targetTimestampUTC: String = fastingStartUTC,
     val countdownTarget: String = fastingStartUTC,
-    val description: String? = null
+    val description: String? = null,
+    val contextExpiresAtUTC: String = "",
+    val paranaWindowText: String = ""
 ) {
     fun toJsonObject(): JSONObject {
         return JSONObject().apply {
@@ -107,6 +109,8 @@ data class EkadashiItem(
             put("fastingEndUTC", fastingEndUTC)
             put("paranaStartUTC", paranaStartUTC)
             put("paranaEndUTC", paranaEndUTC)
+            put("contextExpiresAtUTC", contextExpiresAtUTC)
+            put("paranaWindowText", paranaWindowText)
             put("targetTimestampUTC", targetTimestampUTC)
             put("countdownTarget", countdownTarget)
             if (description != null) put("description", description)
@@ -125,6 +129,10 @@ data class EkadashiItem(
     val paranaEndInstant: Instant?
         get() = parseInstant(paranaEndUTC)
 
+    // Context expiry is a UI rollover boundary, never a ritual deadline.
+    val activeUntilInstant: Instant?
+        get() = paranaEndInstant ?: parseInstant(contextExpiresAtUTC)
+
     val targetTimestampInstant: Instant?
         get() = parseInstant(targetTimestampUTC) ?: fastingStartInstant
 
@@ -134,13 +142,13 @@ data class EkadashiItem(
     fun stateAt(instant: Instant = Instant.now()): WidgetState {
         val fStart = fastingStartInstant ?: return WidgetState.BEFORE_EKADASHI
         val pStart = paranaStartInstant ?: return WidgetState.BEFORE_EKADASHI
-        val pEnd = paranaEndInstant ?: return WidgetState.BEFORE_EKADASHI
+        val pEnd = activeUntilInstant ?: return WidgetState.BEFORE_EKADASHI
 
         return when {
             instant.isBefore(fStart) -> WidgetState.BEFORE_EKADASHI
             !instant.isBefore(fStart) && instant.isBefore(pStart) -> WidgetState.FASTING_ACTIVE
             !instant.isBefore(pStart) && instant.isBefore(pEnd) -> WidgetState.PARANA_AVAILABLE
-            else -> WidgetState.PARANA_COMPLETED
+            else -> if (paranaEndInstant == null) WidgetState.FALLBACK else WidgetState.PARANA_COMPLETED
         }
     }
 
@@ -185,7 +193,9 @@ data class EkadashiItem(
                 paranaEndUTC = json.optString("paranaEndUTC", ""),
                 targetTimestampUTC = target,
                 countdownTarget = countTarget,
-                description = if (json.has("description")) json.optString("description") else null
+                description = if (json.has("description")) json.optString("description") else null,
+                contextExpiresAtUTC = json.optString("contextExpiresAtUTC", ""),
+                paranaWindowText = json.optString("paranaWindowText", "")
             )
         }
     }

@@ -3,6 +3,7 @@ import 'dart:isolate';
 
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'time_zone_data.dart';
 
 import 'panchang/calculated_ekadashi.dart';
 import 'panchang/panchang_city.dart';
@@ -67,6 +68,7 @@ class ScheduledEkadashi {
     required this.paksha,
     required this.month,
     required this.rule,
+    this.contextExpiresAt,
   });
 
   final String occurrenceUid;
@@ -84,6 +86,9 @@ class ScheduledEkadashi {
   final String month;
   final String rule;
 
+  /// Widget context expiry, separate from an unknown religious Parana end.
+  final String? contextExpiresAt;
+
   Map<String, dynamic> toJson() => {
     'occurrenceUid': occurrenceUid,
     'notificationId': notificationId,
@@ -97,6 +102,7 @@ class ScheduledEkadashi {
     'paksha': paksha,
     'month': month,
     'rule': rule,
+    'contextExpiresAt': contextExpiresAt,
   };
 
   factory ScheduledEkadashi.fromJson(Map<String, dynamic> json) =>
@@ -113,6 +119,7 @@ class ScheduledEkadashi {
         paksha: json['paksha'] as String,
         month: json['month'] as String,
         rule: json['rule'] as String,
+        contextExpiresAt: json['contextExpiresAt'] as String?,
       );
 
   @override
@@ -134,8 +141,8 @@ class EkadashiScheduleKey {
   /// A stable key, also used for the stored cache.
   String get cacheId =>
       '${EkadashiSchedule.formatVersion}|${CalculatedEkadashi.ruleVersion}|'
-      '${tradition.name}|$year|${city.id}_${city.latitude.toStringAsFixed(4)}_'
-      '${city.longitude.toStringAsFixed(4)}_${city.timeZoneId}';
+      '$timeZoneDataRelease|${tradition.name}|$year|${city.id}_${city.latitude}_'
+      '${city.longitude}_${city.timeZoneId}';
 }
 
 /// Ekadashi dates and times from the Panchang engine for any city and
@@ -153,7 +160,7 @@ class EkadashiSchedule {
   EkadashiSchedule({required this.publishedRows, this.persist = true});
 
   /// Bumped when the cached form changes, so older caches are recalculated.
-  static const formatVersion = 'schedule-2';
+  static const formatVersion = 'schedule-3';
 
   /// The published rows of a year (identities and texts).
   final List<Map<String, dynamic>> Function(int year) publishedRows;
@@ -269,23 +276,21 @@ class EkadashiSchedule {
       }
       String uid;
       int notificationId, legacyId;
-      var paksha = fast.isShukla ? 'shukla' : 'krishna';
-      var month = monthKey(fast.month);
+      final paksha = fast.isShukla ? 'shukla' : 'krishna';
+      final month = monthKey(fast.month);
       if (match != null) {
         unused.remove(match);
         final row = published[match];
         uid = row['occurrence_uid'] as String;
         notificationId = row['notification_id'] as int;
         legacyId = (row['legacy_id'] as int?) ?? notificationId;
-        paksha = (row['paksha'] as String?) ?? paksha;
-        month = (row['month'] as String?) ?? month;
       } else {
         final number = published.isEmpty ? ordinal + 1 : ++nextNumber;
         uid = 'ekadashi:${key.year}:${number.toString().padLeft(2, '0')}';
         notificationId = key.year * 1000 + number;
         legacyId = number;
       }
-      final end = fast.paranaEndUtc ?? fast.paranaDaySunsetUtc;
+      final end = fast.paranaEndUtc;
       result.add(
         ScheduledEkadashi(
           occurrenceUid: uid,
@@ -298,10 +303,20 @@ class EkadashiSchedule {
           paranaStart: fast.paranaStartUtc == null
               ? ''
               : iso(fast.paranaStartUtc!, key.city),
-          paranaEnd: end == null ? '' : iso(end, key.city),
+          paranaEnd: end == null ? '' : iso(end, key.city, roundUp: false),
           paksha: paksha,
           month: month,
           rule: fast.rule,
+          contextExpiresAt: end == null && fast.paranaStartUtc != null
+              ? iso(
+                  key.city.midnight(
+                    key.city.wallClock(fast.paranaStartUtc!),
+                    dayOffset: 1,
+                  ),
+                  key.city,
+                  roundUp: false,
+                )
+              : null,
         ),
       );
     }
@@ -312,15 +327,24 @@ class EkadashiSchedule {
   static String _isoDate(DateTime d) =>
       '${d.year.toString().padLeft(4, '0')}-${_two(d.month)}-${_two(d.day)}';
 
-  /// Local wall-clock time with its offset, to the minute: the form of the
-  /// published packs ("2026-01-14T06:35:00+05:30"). The seconds are dropped,
-  /// as the Panchang tab shows the same instants, so both read the same.
-  static String iso(DateTime instant, PanchangCity city) {
-    final wall = city.wallClock(instant);
+  /// Millisecond ISO time. Starts round inward (up), ends down, so saving
+  /// a schedule cannot open a window before the calculated boundary.
+  static String iso(
+    DateTime instant,
+    PanchangCity city, {
+    bool roundUp = true,
+  }) {
+    final micros = instant.toUtc().microsecondsSinceEpoch;
+    var millis = micros ~/ 1000;
+    if (micros < 0 && micros % 1000 != 0) millis--;
+    if (roundUp && micros % 1000 != 0) millis++;
+    final wall = city.wallClock(
+      DateTime.fromMillisecondsSinceEpoch(millis, isUtc: true),
+    );
     final offset = wall.timeZoneOffset;
     final minutes = offset.inMinutes.abs();
     final sign = offset.isNegative ? '-' : '+';
-    return '${_isoDate(wall)}T${_two(wall.hour)}:${_two(wall.minute)}:00'
+    return '${_isoDate(wall)}T${_two(wall.hour)}:${_two(wall.minute)}:${_two(wall.second)}.${wall.millisecond.toString().padLeft(3, '0')}'
         '$sign${_two(minutes ~/ 60)}:${_two(minutes % 60)}';
   }
 }

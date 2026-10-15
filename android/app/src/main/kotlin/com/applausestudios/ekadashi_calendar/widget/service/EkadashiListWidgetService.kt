@@ -48,7 +48,7 @@ class EkadashiListRemoteViewsFactory(
             val payload = storage.loadPayload().payload
             val upcoming = com.applausestudios.ekadashi_calendar.widget.model.WidgetTimeline.remaining(payload)
             val now=java.time.Instant.now()
-            items.addAll(upcoming.filter { it.paranaEndInstant?.isAfter(now)==true })
+            items.addAll(upcoming.filter { it.activeUntilInstant?.isAfter(now)==true })
             Log.d(TAG, "Loaded ${items.size} upcoming Ekadashi items for scrollable list")
         } catch (e: Exception) {
             Log.e(TAG, "Error loading upcoming list items: ${e.message}", e)
