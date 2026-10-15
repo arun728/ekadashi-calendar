@@ -34,6 +34,8 @@ public struct ScheduledEkadashi: Codable, Equatable, Sendable {
     public let paksha: String
     public let month: String
     public let rule: String
+    /// Expiry for the widget's daily context, never a religious Parana limit.
+    public var contextExpiresAt: String? = nil
 }
 
 /// Where the Ekadashi times are calculated (CalculatedEkadashi.ruleVersion).
@@ -50,8 +52,8 @@ public struct EkadashiScheduleKey: Hashable, Sendable {
 
     /// A stable file-name-safe key, also used for the disk cache.
     public var cacheId: String {
-        let place = "\(city.id)_\(String(format: "%.4f", city.latitude))_\(String(format: "%.4f", city.longitude))_\(city.timeZoneId)"
-        return "\(EkadashiSchedule.formatVersion)|\(CalculatedEkadashi.ruleVersion)|\(tradition.rawValue)|\(year)|\(place)"
+        let place = "\(city.id)_\(city.latitude)_\(city.longitude)_\(city.timeZoneId)"
+        return "\(EkadashiSchedule.formatVersion)|\(CalculatedEkadashi.ruleVersion)|\(TzDatabase.shared.release)|\(tradition.rawValue)|\(year)|\(place)"
     }
 }
 
@@ -68,9 +70,8 @@ public struct EkadashiScheduleKey: Hashable, Sendable {
 /// - In other years every fast is numbered in date order, and the texts come
 ///   from the newest pack that has that Ekadashi.
 public final class EkadashiSchedule: @unchecked Sendable {
-    /// Bumped when the cached form changes (2: times cut to the minute like
-    /// the Panchang tab, not rounded), so older caches are recalculated.
-    public static let formatVersion = "schedule-2"
+    /// Version 3 keeps millisecond boundaries and preserves after-only Parana.
+    public static let formatVersion = "schedule-3"
     private let repository: CalendarRepository
     private let localizer: Localizer
     private let engine: CalculatedEkadashiEngine
@@ -145,16 +146,14 @@ public final class EkadashiSchedule: @unchecked Sendable {
                 }
                 .min { $0.1 < $1.1 }?.0
             let uid: String, notificationId: Int, legacyId: Int
-            var paksha = fast.isShukla ? "shukla" : "krishna"
-            var month = Self.monthKey(fast.month)
+            let paksha = fast.isShukla ? "shukla" : "krishna"
+            let month = Self.monthKey(fast.month)
             if let match {
                 unused.remove(match)
                 let row = published[match]
                 uid = row["occurrence_uid"] as? String ?? ""
                 notificationId = row["notification_id"] as? Int ?? 0
                 legacyId = row["legacy_id"] as? Int ?? notificationId
-                paksha = row["paksha"] as? String ?? paksha
-                month = row["month"] as? String ?? month
             } else {
                 let number: Int
                 if published.isEmpty {
@@ -167,12 +166,15 @@ public final class EkadashiSchedule: @unchecked Sendable {
                 notificationId = key.year * 1000 + number
                 legacyId = number
             }
-            let end = fast.paranaEnd ?? fast.paranaDaySunset
             result.append(ScheduledEkadashi(
                 occurrenceUid: uid, notificationId: notificationId, legacyId: legacyId, contentId: contentId,
                 publishedUid: match == nil ? nil : uid, date: fast.date.iso,
                 fastingStart: Self.iso(fast.fastStarts, zone), paranaStart: fast.paranaStart.map { Self.iso($0, zone) } ?? "",
-                paranaEnd: end.map { Self.iso($0, zone) } ?? "", paksha: paksha, month: month, rule: fast.rule))
+                paranaEnd: fast.paranaEnd.map { Self.iso($0, zone, roundUp: false) } ?? "",
+                paksha: paksha, month: month, rule: fast.rule,
+                contextExpiresAt: fast.paranaEnd == nil ? fast.paranaStart.map {
+                    Self.iso(key.city.midnight(key.city.wallClock($0).date, dayOffset: 1), zone, roundUp: false)
+                } : nil))
         }
         return result
     }
@@ -191,13 +193,14 @@ public final class EkadashiSchedule: @unchecked Sendable {
         return ["ashvina": "ashwin", "kartika": "kartik"][key] ?? key
     }
 
-    /// Local wall-clock time with its offset, to the minute: the form of the
-    /// published packs ("2026-01-14T06:35:00+05:30"). The seconds are dropped,
-    /// as the Panchang tab shows the same instants, so both read the same.
-    static func iso(_ instant: Date, _ zone: TzLocation) -> String {
-        let wall = zone.wallClock(instant)
+    /// Millisecond ISO times. Starts round inward (up), ends down, so saving
+    /// a schedule never opens a window before its calculated boundary.
+    static func iso(_ instant: Date, _ zone: TzLocation, roundUp: Bool = true) -> String {
+        let millis = Int64((instant.timeIntervalSince1970 * 1000).rounded(roundUp ? .up : .down))
+        let wall = zone.wallClock(Date(timeIntervalSince1970: Double(millis) / 1000))
         let offset = abs(wall.offsetSeconds) / 60
-        return "\(wall.date.iso)T\(pad2(wall.hour)):\(pad2(wall.minute)):00\(wall.offsetSeconds < 0 ? "-" : "+")"
+        let fraction = String(format: "%03d", Int((millis % 1000 + 1000) % 1000))
+        return "\(wall.date.iso)T\(pad2(wall.hour)):\(pad2(wall.minute)):\(pad2(wall.second)).\(fraction)\(wall.offsetSeconds < 0 ? "-" : "+")"
             + "\(pad2(offset / 60)):\(pad2(offset % 60))"
     }
 
@@ -218,11 +221,11 @@ public final class EkadashiSchedule: @unchecked Sendable {
             id: fast.notificationId, occurrenceUid: fast.occurrenceUid, legacyId: fast.legacyId, contentId: fast.contentId,
             usesContentFallback: maps.contains { $0[language] == nil }, name: name, date: CivilDate(iso: fast.date)!,
             fastStartTime: EkadashiTimeFormat.displayTime(fast.fastingStart),
-            fastBreakTime: EkadashiTimeFormat.window(fast.paranaStart, fast.paranaEnd), description: text(maps[1]),
+            fastBreakTime: EkadashiTimeFormat.window(fast.paranaStart, fast.paranaEnd, language: language), description: text(maps[1]),
             story: text(maps[2], "Story coming soon..."), fastingRules: text(maps[3], "Standard Ekadashi fasting rules apply."),
             benefits: text(maps[4], "Grants spiritual merit."), paksha: term("paksha_", fast.paksha),
             month: term("lunar_month_", fast.month), fastingStartISO: fast.fastingStart, paranaStartISO: fast.paranaStart,
-            paranaEndISO: fast.paranaEnd)
+            paranaEndISO: fast.paranaEnd, contextExpiresAtISO: fast.contextExpiresAt ?? "")
     }
 
     // MARK: Disk cache

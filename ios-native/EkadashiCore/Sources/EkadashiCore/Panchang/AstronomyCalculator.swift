@@ -237,10 +237,10 @@ public enum AstronomyCalculator {
     }
 
     /// Tropical ecliptic longitude of the eastern horizon intersection.
+    /// Apparent sidereal time and true obliquity share the same equinox.
     public static func ascendantLongitude(_ instant: Date, latitude: Double, longitude: Double) -> Double {
         let theta = (siderealDegrees(instant) + longitude) * rad
-        let t = (terrestrialJulianDay(instant) - j2000) / 36525
-        let epsilon = meanObliquity(t) * rad
+        let epsilon = trueObliquity(terrestrialJulianDay(instant)) * rad
         return normalize(atan2(-cos(theta), sin(epsilon) * tan(latitude * rad) + cos(epsilon) * sin(theta)) * deg + 180)
     }
 
