@@ -95,7 +95,7 @@ void main() {
     for (final feature in [
       'premium_feature_calendar',
       'premium_feature_vrat',
-      'premium_feature_panchang',
+      'premium_feature_panchang_v2',
     ]) {
       expect(find.text(lang.translate(feature)), findsOneWidget);
     }
@@ -320,8 +320,15 @@ void main() {
   }
 
   // The sync spinner animates while the picker is open, so avoid settling.
+  // Import and Disconnect live in the Google menu of the top bar (iOS).
+  Future<void> googleAction(WidgetTester tester, String key) async {
+    await tester.tap(find.byKey(const Key('calendar_google_menu')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(Key(key)));
+  }
+
   Future<void> tapImport(WidgetTester tester) async {
-    await tester.tap(find.byKey(const Key('import_google_year')));
+    await googleAction(tester, 'import_google_year');
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
   }
@@ -346,10 +353,16 @@ void main() {
     expect(google.min, DateTime(2026, 10, 1));
     expect(google.max, DateTime(2026, 11, 1));
     expect(find.text(lang.translate('google_free_sync_used')), findsOneWidget);
-    // A compact floating message with one short action.
-    final snack = tester.widget<SnackBar>(find.byType(SnackBar));
-    expect(snack.behavior, SnackBarBehavior.floating);
-    expect((snack.action!).label, 'Upgrade');
+    // The iOS toast with one short action.
+    expect(find.byKey(const Key('app_toast')), findsOneWidget);
+    expect(find.byType(SnackBar), findsNothing);
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('app_toast')),
+        matching: find.text('Upgrade'),
+      ),
+      findsOneWidget,
+    );
     expect(lang.translate('google_free_sync_used').length, lessThan(60));
     expect(await freeSyncUsed(), isTrue);
     // Also recorded for the Google account (free database), so a reinstall
@@ -358,7 +371,7 @@ void main() {
     expect(registry.tokens, everyElement('google-id-token-account-a'));
     // The free sync is used: the next sync, even of the same month, is paid.
     google.min = null;
-    await tester.tap(find.byKey(const Key('import_google_year')));
+    await googleAction(tester, 'import_google_year');
     await tester.pumpAndSettle();
     expect(find.byType(PremiumScreen), findsOneWidget);
     // ...and the paywall says why it opened.
@@ -443,7 +456,7 @@ void main() {
     final premium = freeUser(PremiumFixture());
     final registry = FakeFreeSyncRegistry()..fail = true;
     final google = await pumpCalendar(tester, premium, registry: registry);
-    await tester.tap(find.byKey(const Key('import_google_year')));
+    await googleAction(tester, 'import_google_year');
     await tester.pumpAndSettle();
     expect(find.text('Import selected'), findsNothing);
     expect(find.byType(PremiumScreen), findsOneWidget);
@@ -545,7 +558,7 @@ void main() {
     final source = PremiumFixture();
     final premium = freeUser(source);
     final google = await pumpCalendar(tester, premium);
-    await tester.tap(find.byKey(const Key('import_google_year')));
+    await googleAction(tester, 'import_google_year');
     await tester.pumpAndSettle();
     expect(find.byType(PremiumScreen), findsOneWidget);
     expect(google.min, isNull);
@@ -611,7 +624,7 @@ void main() {
     source.premium = false;
     await premium.refresh();
     google.min = null;
-    await tester.tap(find.byKey(const Key('import_google_year')));
+    await googleAction(tester, 'import_google_year');
     await tester.pumpAndSettle();
     expect(find.byType(PremiumScreen), findsOneWidget);
     expect(google.min, isNull);
@@ -622,7 +635,7 @@ void main() {
   ) async {
     final premium = freeUser(PremiumFixture());
     await pumpCalendar(tester, premium, google: SignInFailingGoogle());
-    await tester.tap(find.byKey(const Key('import_google_year')));
+    await googleAction(tester, 'import_google_year');
     await tester.pumpAndSettle();
     expect(find.text(lang.translate('google_sign_in_failed')), findsOneWidget);
     expect(find.text(lang.translate('sign_in_cancelled')), findsNothing);
@@ -635,9 +648,7 @@ void main() {
     addTearDown(premium.dispose);
     await premium.refresh();
     await pumpCalendar(tester, premium);
-    final disconnect = find.byKey(const Key('disconnect_google'));
-    await tester.ensureVisible(disconnect);
-    await tester.tap(disconnect);
+    await googleAction(tester, 'disconnect_google');
     await tester.pumpAndSettle();
     expect(premium.isPremium, isTrue);
   });
@@ -701,7 +712,7 @@ void main() {
   }
 
   Future<void> save(WidgetTester tester, String label) async {
-    final button = find.widgetWithText(ElevatedButton, lang.translate(label));
+    final button = find.widgetWithText(FilledButton, lang.translate(label));
     await tester.ensureVisible(button);
     await tester.tap(button);
     await tester.pumpAndSettle();

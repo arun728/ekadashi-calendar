@@ -173,6 +173,53 @@ class PanchangEngine {
     );
   }
 
+  /// The parts of a day the Ekadashi rules read: the same sunrise, sunset,
+  /// tithi, nakshatra and month as [calculate], without the muhurtas, hora,
+  /// lagna and festivals, so a year of fasts for any city is quick.
+  EkadashiDay ekadashiDay(
+    DateTime date, {
+    PanchangCity city = PanchangCity.newDelhi,
+  }) {
+    city.validate();
+    final calendarDate = DateTime.utc(date.year, date.month, date.day);
+    final startUtc = startFor(calendarDate, city: city);
+    final endUtc = endFor(calendarDate, city: city);
+    final sunrise = _findCrossing(
+      startUtc,
+      endUtc,
+      city,
+      moon: false,
+      rising: true,
+    );
+    var sunset = _findCrossing(
+      startUtc,
+      endUtc,
+      city,
+      moon: false,
+      rising: false,
+    );
+    if (sunrise != null && (sunset == null || sunset.isBefore(sunrise))) {
+      sunset = _findCrossing(
+        sunrise,
+        city.midnight(calendarDate, dayOffset: 2),
+        city,
+        moon: false,
+        rising: false,
+      );
+    }
+    final localSunrise = sunrise ?? city.dateAtHour(calendarDate, 6);
+    final month = _monthFor(localSunrise);
+    return EkadashiDay(
+      date: calendarDate,
+      sunriseUtc: sunrise,
+      sunsetUtc: sunset,
+      tithi: _tithiAt(localSunrise),
+      nakshatra: _nakshatraAt(localSunrise),
+      amantaMonth: month.name,
+      isAdhikaMonth: month.adhika,
+    );
+  }
+
   /// Every observance of [year] at [city], in date order.
   List<DatedObservance> observanceCalendar(
     int year, {
@@ -1866,4 +1913,24 @@ class _Occurrence {
     }
     return null;
   }
+}
+
+/// A day as the Ekadashi rules read it (see [PanchangEngine.ekadashiDay]).
+class EkadashiDay {
+  const EkadashiDay({
+    required this.date,
+    required this.sunriseUtc,
+    required this.sunsetUtc,
+    required this.tithi,
+    required this.nakshatra,
+    required this.amantaMonth,
+    required this.isAdhikaMonth,
+  });
+  final DateTime date;
+  final DateTime? sunriseUtc;
+  final DateTime? sunsetUtc;
+  final PanchangLimb tithi;
+  final PanchangLimb nakshatra;
+  final String amantaMonth;
+  final bool isAdhikaMonth;
 }

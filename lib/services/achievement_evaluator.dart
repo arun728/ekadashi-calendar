@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
 import '../models/vrat_tracker_models.dart';
 import 'ekadashi_service.dart';
 import 'vrat_statistics_service.dart';
+import '../widgets/app_icons.dart';
 
 /// Service responsible for evaluating and unlocking devotional achievements.
 /// The Achievement System is part of the same module and directly consumes
@@ -16,7 +16,7 @@ class AchievementEvaluator {
       descriptionKey: 'achievement_first_vrat_desc',
       conditionType: 'count',
       targetValue: 1,
-      icon: Icons.spa,
+      icon: AppIcons.achievementFirst,
       sortOrder: 1,
     ),
     Achievement(
@@ -26,7 +26,7 @@ class AchievementEvaluator {
       descriptionKey: 'achievement_5_vrat_desc',
       conditionType: 'count',
       targetValue: 5,
-      icon: Icons.star_border,
+      icon: AppIcons.achievementFive,
       sortOrder: 2,
     ),
     Achievement(
@@ -36,7 +36,7 @@ class AchievementEvaluator {
       descriptionKey: 'achievement_10_vrat_desc',
       conditionType: 'count',
       targetValue: 10,
-      icon: Icons.military_tech_outlined,
+      icon: AppIcons.achievementTen,
       sortOrder: 3,
     ),
     Achievement(
@@ -46,7 +46,7 @@ class AchievementEvaluator {
       descriptionKey: 'achievement_12_vrat_desc',
       conditionType: 'count',
       targetValue: 12,
-      icon: Icons.workspace_premium_outlined,
+      icon: AppIcons.achievementTwelve,
       sortOrder: 4,
     ),
     Achievement(
@@ -56,7 +56,7 @@ class AchievementEvaluator {
       descriptionKey: 'achievement_consistent_desc',
       conditionType: 'streak',
       targetValue: 3,
-      icon: Icons.bolt,
+      icon: AppIcons.achievementStreak,
       sortOrder: 5,
     ),
     Achievement(
@@ -66,7 +66,7 @@ class AchievementEvaluator {
       descriptionKey: 'achievement_full_year_desc',
       conditionType: 'annual_full',
       targetValue: 100, // 100% of year occurrences
-      icon: Icons.brightness_high,
+      icon: AppIcons.achievementFullYear,
       sortOrder: 6,
     ),
   ];

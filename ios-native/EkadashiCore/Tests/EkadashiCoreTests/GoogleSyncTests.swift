@@ -155,6 +155,28 @@ final class GoogleReconciliationTests: XCTestCase {
         XCTAssertEqual(try store.all().first?.title, "Changed")
     }
 
+    /// The same event from two picked calendars, or twice from one, keeps
+    /// its own identity in storage but is shown, searched and reminded once
+    /// (CalendarEntry.withoutDuplicateGoogle on Android).
+    func testIdenticalGoogleEventsAreShownOnce() {
+        let copies = [imported("a", "holidays", "e1", "2026-10-20"), imported("a", "primary", "e2", "2026-10-20"),
+                      imported("a", "holidays", "e3", "2026-10-20")].map { entry -> CalendarEntry in
+            var copy = entry
+            copy.title = "Dussehra"
+            return copy
+        }
+        let other = imported("a", "primary", "e4", "2026-10-20")
+        let unique = CalendarEntry.withoutDuplicateGoogle(copies + [other])
+        XCTAssertEqual(unique.map(\.id), [copies[0].id, other.id])
+        // Custom entries are never merged.
+        let custom = (1...2).map {
+            CalendarEntry(id: "c\($0)", title: "Dussehra", start: copies[0].start, end: copies[0].end, isAllDay: true,
+                          source: .custom, updatedAt: Date())
+        }
+        XCTAssertEqual(CalendarEntry.withoutDuplicateGoogle(custom + copies).count, 3)
+        XCTAssertEqual(SearchCorpus.entryItems(copies, timeZone: zone).count, 1)
+    }
+
     func testFailedFetchPreservesPreviousCacheAndCustomNotes() async throws {
         auth.events = [event("a")]
         try await sync()
@@ -416,6 +438,17 @@ final class GoogleSyncCoordinatorTests: XCTestCase {
         XCTAssertEqual(auth.range?.1, calendar.date(from: DateComponents(year: 2027, month: 10)))
         XCTAssertNotNil(prefs.string(forKey: GoogleSyncCoordinator.premiumSyncKey))
         XCTAssertEqual(messages.last, "imported_google_range")
+    }
+
+    /// Month names in "Imported … (Oct 2026 – Sep 2027)" follow the app
+    /// language, not the device locale (as on Android).
+    func testImportedRangeMonthsFollowTheAppLanguage() {
+        let october = calendar.date(from: DateComponents(year: 2026, month: 10, day: 15))!
+        let english = GoogleSyncCoordinator.monthLabel(october, calendar, Localizer.locale("en"))
+        let hindi = GoogleSyncCoordinator.monthLabel(october, calendar, Localizer.locale("hi"))
+        XCTAssertTrue(english.contains("Oct"), english)
+        XCTAssertFalse(hindi.contains("Oct"), hindi)
+        XCTAssertTrue(hindi.unicodeScalars.contains { ("\u{0900}"..."\u{097F}").contains($0) }, hindi)
     }
 
     func testLifetimeImportsEveryCalendarYear() async {

@@ -7,6 +7,7 @@ struct EkadashiDetailsView: View {
     @Environment(AppModel.self) private var model
     let event: EkadashiOccurrence
     @State private var recording = false
+    @State private var sharing = false
 
     var body: some View {
         ScrollView {
@@ -14,7 +15,8 @@ struct EkadashiDetailsView: View {
                 VStack(spacing: 4) {
                     Text(model.fullDate(event.date)).font(.title2.weight(.light))
                     Text(event.name).font(.largeTitle.bold()).foregroundStyle(Theme.teal).multilineTextAlignment(.center)
-                    StatusPill(text: model.timeZoneLabel, color: Theme.teal)
+                    StatusPill(text: "\(model.traditionName(model.tradition)) • \(model.ekadashiCityName) • \(model.timeZoneLabel)",
+                               color: Theme.teal)
                 }
                 .frame(maxWidth: .infinity)
                 if event.usesContentFallback {
@@ -25,9 +27,9 @@ struct EkadashiDetailsView: View {
                 section("fasting_rules", event.fastingRules)
                 section("spiritual_benefits", event.benefits)
                 VStack(spacing: 0) {
-                    timing("fork.knife", model.t("start_fasting"), event.date, event.fastStartTime)
+                    timing(AppSymbol.startFasting, model.t("start_fasting"), event.date, event.fastStartTime)
                     Divider().padding(.vertical, 12)
-                    timing("sunrise", model.t("break_fasting"), event.date.adding(days: 1), EkadashiDisplay.breakTime(event))
+                    timing(AppSymbol.breakFasting, model.t("break_fasting"), event.date.adding(days: 1), EkadashiDisplay.breakTime(event))
                 }
                 .padding(16)
                 .glassPanel(cornerRadius: 16, tint: Theme.teal)
@@ -39,6 +41,14 @@ struct EkadashiDetailsView: View {
         .navigationTitle(model.t("app_title"))
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $recording) { RecordVratSheet(event: event) }
+        .sheet(isPresented: $sharing) { ShareCardSheet(event: event) }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button { sharing = true } label: { Image(systemName: AppSymbol.share) }
+                    .accessibilityLabel(model.t("share_card"))
+                    .accessibilityIdentifier("details_share_card")
+            }
+        }
     }
 
     private func section(_ key: String, _ text: String) -> some View {

@@ -55,7 +55,8 @@ targets:
         EkadashiFirebaseProjectId: $(FIREBASE_PROJECT_ID)
         EkadashiAppStoreId: $(APP_STORE_ID)
         EkadashiAppGroup: $(APP_GROUP)
-        NSLocationWhenInUseUsageDescription: Your location chooses the Ekadashi schedule and the city shown for your area.
+        NSLocationWhenInUseUsageDescription: Your location sets the city Ekadashi dates and times are calculated for.
+        NSPhotoLibraryAddUsageDescription: Save Ekadashi share cards to your photo library.
         UIBackgroundModes: [fetch]
         BGTaskSchedulerPermittedIdentifiers: [com.applausestudios.ekadashi-calendar.refresh]
         UILaunchScreen:

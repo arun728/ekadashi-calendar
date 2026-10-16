@@ -35,7 +35,7 @@ class CalendarDayMerge {
     CalendarFilter.custom,
   ];
 
-  static const defaultFilter = CalendarFilter.ekadashi;
+  static const defaultFilter = CalendarFilter.all;
 
   static List<DayListItem> merge({
     required DateTime day,
@@ -66,8 +66,9 @@ class CalendarDayMerge {
       }
     }
 
-    final dayEntries = entries.where((e) => e.occursOn(day)).toList()
-      ..sort((a, b) => a.startAt.compareTo(b.startAt));
+    final dayEntries = CalendarEntry.withoutDuplicateGoogle(
+      entries.where((e) => e.occursOn(day)),
+    )..sort((a, b) => a.startAt.compareTo(b.startAt));
 
     for (final e in dayEntries) {
       if (e.source == CalendarEntrySource.google && !showGoogle) continue;

@@ -1,3 +1,4 @@
+import 'package:ekadashi_calendar/widgets/app_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import '../support/app_harness.dart';
@@ -10,23 +11,26 @@ void main() {
     await harness.install();
   });
   tearDown(() => harness.uninstall());
+  String? homeCity(WidgetTester tester) =>
+      tester.widget<Text>(find.byKey(const Key('home_location_name'))).data;
 
   testWidgets(
-    'GPS unavailable uses the US device timezone and retains navigation',
+    'GPS unavailable keeps Chennai, not the device time zone, and retains navigation',
     (tester) async {
       harness.gpsAvailable = false;
       harness.deviceTimezone = 'America/New_York';
       await tester.pumpWidget(harness.app());
       await tester.pumpAndSettle();
       expect(find.text('Location Denied'), findsNothing);
+      expect(homeCity(tester), 'Chennai (IN)');
       final request = harness.notificationCalls.lastWhere(
         (call) => call.method == 'scheduleAllNotifications',
       );
       final events = (request.arguments as Map)['ekadashis'] as List;
-      expect((events.first as Map)['fastingStart'], endsWith('-05:00'));
-      await tester.tap(find.byIcon(Icons.calendar_month));
+      expect((events.first as Map)['fastingStart'], endsWith('+05:30'));
+      await tester.tap(find.byKey(const Key('glass_tab_1')));
       await tester.pumpAndSettle();
-      expect(find.byIcon(Icons.settings), findsOneWidget);
+      expect(find.byIcon(AppIcons.tabSettings), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );
@@ -37,7 +41,7 @@ void main() {
       harness.notificationGranted = false;
       await tester.pumpWidget(harness.app());
       await tester.pumpAndSettle();
-      await tester.tap(find.byIcon(Icons.settings));
+      await tester.tap(find.byIcon(AppIcons.tabSettings));
       await tester.pumpAndSettle();
       // Notifications sits below the Premium card and the Appearance section.
       await tester.ensureVisible(
@@ -65,7 +69,7 @@ void main() {
     (tester) async {
       await tester.pumpWidget(harness.app());
       await tester.pumpAndSettle();
-      await tester.tap(find.byIcon(Icons.settings));
+      await tester.tap(find.byIcon(AppIcons.tabSettings));
       await tester.pumpAndSettle();
       // Notifications sits below the Premium card and the Appearance section.
       await tester.ensureVisible(
@@ -104,13 +108,15 @@ void main() {
   ) async {
     await tester.pumpWidget(harness.app());
     await tester.pumpAndSettle();
-    expect(find.text('Chennai • IST'), findsOneWidget);
-    expect(find.byIcon(Icons.home), findsOneWidget);
+    // The detected city and its country, without a time zone.
+    expect(homeCity(tester), 'Chennai (IN)');
+    expect(find.byIcon(AppIcons.tabHome), findsOneWidget);
     final request = harness.notificationCalls.lastWhere(
       (c) => c.method == 'scheduleAllNotifications',
     );
     final events = (request.arguments as Map)['ekadashis'] as List;
-    expect(events, hasLength(48));
+    // Every enabled year from the Panchang engine at Chennai (Smarta).
+    expect(events, hasLength(49));
     expect(events.cast<Map>().map((e) => e['calendarYear']).toSet(), {
       2026,
       2027,
@@ -128,11 +134,13 @@ void main() {
     harness.locationGranted = false;
     await tester.pumpWidget(harness.app());
     await tester.pumpAndSettle();
-    expect(find.text('Location Denied'), findsOneWidget);
-    await tester.tap(find.byIcon(Icons.calendar_month));
-    await tester.pumpAndSettle();
+    // Without a location Home calculates for Chennai; the city picker
+    // offers the search and "Use current location".
+    expect(homeCity(tester), 'Chennai (IN)');
     expect(find.text('Location Denied'), findsNothing);
-    await tester.tap(find.byIcon(Icons.settings));
+    await tester.tap(find.byKey(const Key('glass_tab_1')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(AppIcons.tabSettings));
     await tester.pumpAndSettle();
     expect(find.text('Appearance'), findsOneWidget);
     expect(find.text('Dark Mode'), findsOneWidget);
@@ -144,17 +152,17 @@ void main() {
   ) async {
     await tester.pumpWidget(harness.app());
     await tester.pumpAndSettle();
-    await tester.tap(find.byIcon(Icons.calendar_month));
+    await tester.tap(find.byKey(const Key('glass_tab_1')));
     await tester.pumpAndSettle();
-    await tester.tap(find.byIcon(Icons.settings));
+    await tester.tap(find.byIcon(AppIcons.tabSettings));
     await tester.pumpAndSettle();
     expect(
       find.text('Enable Notifications', skipOffstage: false),
       findsOneWidget,
     );
-    await tester.tap(find.byIcon(Icons.home));
+    await tester.tap(find.byIcon(AppIcons.tabHome));
     await tester.pumpAndSettle();
-    expect(find.text('Chennai • IST'), findsOneWidget);
+    expect(homeCity(tester), 'Chennai (IN)');
     expect(tester.takeException(), isNull);
   });
 }

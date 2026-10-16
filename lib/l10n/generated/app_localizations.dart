@@ -2869,7 +2869,7 @@ abstract class AppLocalizations {
   /// No description provided for @event_reminder_all_custom.
   ///
   /// In en, this message translates to:
-  /// **'All my entries'**
+  /// **'All custom events'**
   String get event_reminder_all_custom;
 
   /// No description provided for @event_reminder_all_google.
@@ -3063,6 +3063,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'UTC{value0}'**
   String utc_offset(String value0);
+
+  /// No description provided for @calculating_ekadashis.
+  ///
+  /// In en, this message translates to:
+  /// **'Calculating Ekadashis for this place…'**
+  String get calculating_ekadashis;
+
+  /// No description provided for @home_location_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search a city or use your current location'**
+  String get home_location_hint;
+
+  /// No description provided for @home_location_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Ekadashi location'**
+  String get home_location_title;
+
+  /// No description provided for @home_location_footer.
+  ///
+  /// In en, this message translates to:
+  /// **'Ekadashi dates and times are calculated for this place. Choosing a city here also sets the Panchang location.'**
+  String get home_location_footer;
+
+  /// No description provided for @home_tradition.
+  ///
+  /// In en, this message translates to:
+  /// **'Tradition'**
+  String get home_tradition;
+
+  /// No description provided for @share_card.
+  ///
+  /// In en, this message translates to:
+  /// **'Share card'**
+  String get share_card;
+
+  /// No description provided for @share_card_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Share Ekadashi card'**
+  String get share_card_title;
+
+  /// No description provided for @share_card_observance.
+  ///
+  /// In en, this message translates to:
+  /// **'Ekadashi observance'**
+  String get share_card_observance;
+
+  /// No description provided for @share_card_fasting_begins.
+  ///
+  /// In en, this message translates to:
+  /// **'Fasting begins'**
+  String get share_card_fasting_begins;
+
+  /// No description provided for @share_card_parana_window.
+  ///
+  /// In en, this message translates to:
+  /// **'Parana window'**
+  String get share_card_parana_window;
+
+  /// No description provided for @share_card_preparing.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing card…'**
+  String get share_card_preparing;
+
+  /// No description provided for @share_card_save_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save the card.'**
+  String get share_card_save_failed;
+
+  /// No description provided for @share_card_message.
+  ///
+  /// In en, this message translates to:
+  /// **'{value0} is on {value1}. Fasting and Parana times from the Ekadashi Calendar app are on this card.'**
+  String share_card_message(String value0, String value1);
+
+  /// No description provided for @tradition_smarta.
+  ///
+  /// In en, this message translates to:
+  /// **'Smarta'**
+  String get tradition_smarta;
+
+  /// No description provided for @tradition_vaishnava.
+  ///
+  /// In en, this message translates to:
+  /// **'Vaishnava'**
+  String get tradition_vaishnava;
+
+  /// No description provided for @panchang_vaishnava_rule.
+  ///
+  /// In en, this message translates to:
+  /// **'Vaishnava: Ekadashi must hold 96 minutes before sunrise (Arunodaya), with Mahadvadashi rules.'**
+  String get panchang_vaishnava_rule;
+
+  /// No description provided for @home_popular_cities.
+  ///
+  /// In en, this message translates to:
+  /// **'Popular cities'**
+  String get home_popular_cities;
+
+  /// No description provided for @share_card_save.
+  ///
+  /// In en, this message translates to:
+  /// **'Save to Gallery'**
+  String get share_card_save;
+
+  /// No description provided for @share_card_saved.
+  ///
+  /// In en, this message translates to:
+  /// **'Card saved to Gallery.'**
+  String get share_card_saved;
+
+  /// No description provided for @share_card_photos_denied.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo access is off. Allow it in Settings to save cards.'**
+  String get share_card_photos_denied;
 }
 
 class _AppLocalizationsDelegate

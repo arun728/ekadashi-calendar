@@ -36,8 +36,10 @@ void main() {
           expect(find.byKey(const Key('home_options_tube')), findsOneWidget);
           await tester.tap(find.byKey(const Key('glass_tab_1')));
           await tester.pumpAndSettle();
+          // iOS: Today, Add and Google sit in the top bar; filters are
+          // separate chips and the month header has no tube.
           for (final key in [
-            'calendar_actions_tube',
+            'add_calendar_entry',
             'calendar_filters_tube',
             'calendar_month_tube',
           ]) {
@@ -102,7 +104,23 @@ void main() {
             find.byKey(const Key('vrat_history_filters_tube')),
             findsOneWidget,
           );
-          await tester.tap(find.byType(Card).first);
+          // Journey rows are glass panels (iOS), not Cards.
+          final firstRow = find
+              .byWidgetPredicate(
+                (w) =>
+                    w.key is ValueKey<String> &&
+                    (w.key! as ValueKey<String>).value.startsWith(
+                      'journey_row_',
+                    ),
+              )
+              .first;
+          await tester.ensureVisible(firstRow);
+          await tester.pumpAndSettle();
+          // Tap the name: at large text the row's centre can sit under
+          // the floating tab bar.
+          await tester.tap(
+            find.descendant(of: firstRow, matching: find.byType(Text)).first,
+          );
           await tester.pumpAndSettle();
           expect(
             find.byKey(const Key('vrat_record_status_tube')),

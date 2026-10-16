@@ -20,8 +20,9 @@ struct RecordVratSheet: View {
     @State private var paywallOpen = false
     @State private var toast: ToastMessage?
 
-    /// Device calendar day, as the Android dialog.
-    private var isFuture: Bool { event.date > CivilDate.today() }
+    /// Recording opens once Parana begins (VratRecording.isOpen), as on Android;
+    /// an existing record stays editable.
+    private var isClosed: Bool { !model.canRecord(event) }
 
     var body: some View {
         NavigationStack {
@@ -31,8 +32,8 @@ struct RecordVratSheet: View {
                         Text(event.name).font(.title3.bold())
                         Text(model.fullDate(event.date)).font(.footnote).foregroundStyle(.secondary)
                     }
-                    if isFuture {
-                        Label(model.t("cannot_record_future"), systemImage: "info.circle")
+                    if isClosed {
+                        Label(model.t("journey_record_after_parana"), systemImage: AppSymbol.info)
                             .font(.caption)
                             .foregroundStyle(.orange)
                             .padding(10)
@@ -42,9 +43,9 @@ struct RecordVratSheet: View {
                     label("status_active")
                     GlassGroup(spacing: 8) {
                         HStack(spacing: 8) {
-                            statusChip(.observed, "observed", "checkmark.circle")
-                            statusChip(.partial, "partial", "circle.circle")
-                            statusChip(.missed, "missed", "xmark.circle")
+                            statusChip(.observed, "observed", AppSymbol.statusObserved)
+                            statusChip(.partial, "partial", AppSymbol.statusPartial)
+                            statusChip(.missed, "missed", AppSymbol.statusMissed)
                         }
                     }
                     .accessibilityElement(children: .contain)
@@ -90,7 +91,7 @@ struct RecordVratSheet: View {
                         Button(role: .destructive) {
                             confirmDelete = true
                         } label: {
-                            Image(systemName: "trash").foregroundStyle(.red)
+                            Image(systemName: AppSymbol.delete).foregroundStyle(.red)
                         }
                         .accessibilityLabel(model.t("delete_record"))
                     }
@@ -120,8 +121,8 @@ struct RecordVratSheet: View {
 
     private func statusChip(_ value: ObservanceStatus, _ key: String, _ symbol: String) -> some View {
         GlassChip(title: model.t(key), systemImage: symbol, color: VratStatusStyle(value).color, selected: status == value) {
-            if isFuture {
-                show("cannot_record_future")
+            if isClosed {
+                show("journey_record_after_parana")
             } else {
                 status = value
             }
@@ -133,7 +134,7 @@ struct RecordVratSheet: View {
         guard !loaded else { return }
         loaded = true
         existing = model.vrat.record(for: event.occurrenceUid)
-        status = existing?.status ?? (isFuture ? .unrecorded : .observed)
+        status = existing?.status ?? (isClosed ? .unrecorded : .observed)
         method = existing?.fastingMethod ?? .fullFast
         methodOther = existing?.fastingMethodOther ?? ""
         note = existing?.note ?? ""
@@ -142,8 +143,8 @@ struct RecordVratSheet: View {
     private func show(_ key: String) { toast = ToastMessage(text: model.t(key)) }
 
     private func save() async {
-        if isFuture {
-            show("cannot_record_future")
+        if isClosed {
+            show("journey_record_after_parana")
             return
         }
         if status != .unrecorded && model.vrat.needsPremium(uid: event.occurrenceUid, premium: model.premium.isPremium) {
@@ -171,7 +172,7 @@ struct RecordVratSheet: View {
                 method: status == .observed || status == .partial ? method : nil,
                 methodOther: method == .other ? methodOther.trimmingCharacters(in: .whitespacesAndNewlines) : nil,
                 note: trimmedNote.isEmpty ? nil : trimmedNote,
-                timezone: model.timezone.rawValue, occurrences: model.ekadashis)
+                timezone: model.ekadashiCity.timeZoneId, tradition: model.tradition.rawValue, occurrences: model.ekadashis)
             dismiss()
             model.announce(unlocked, afterDismissal: true)
         } catch {

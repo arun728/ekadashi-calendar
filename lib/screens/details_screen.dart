@@ -1,14 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/ekadashi_service.dart';
+import '../services/ekadashi_settings.dart';
+import '../services/place_name_resolver.dart';
+import 'share_card_screen.dart';
 import '../services/vrat_recording.dart';
 import '../l10n/app_language.dart';
 import '../services/language_service.dart';
 import '../services/vrat_tracker_service.dart';
 import '../models/vrat_tracker_models.dart';
+import '../widgets/app_background.dart';
+import '../widgets/ios_style.dart';
 import 'vrat_tracker/record_vrat_dialog.dart';
 import 'vrat_tracker/achievement_unlock_dialog.dart';
+import '../widgets/app_icons.dart';
 
+/// Significance, story, rules, benefits, timings and the Vrat button, as
+/// the iOS EkadashiDetailsView. It is pushed inside the Home or Calendar
+/// tab, so it paints the app background itself, keeps its own inline bar
+/// (back chevron, no search) and scrolls clear of the floating tab bar.
 class DetailsScreen extends StatelessWidget {
   final EkadashiDate ekadashi;
   final String? timezone;
@@ -17,332 +27,280 @@ class DetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const tealColor = Color(0xFF00A19B);
+    const tealColor = IosColors.teal;
     final lang = Provider.of<LanguageService>(context);
-
-    // Clean up break time string
     final language = lang.currentLocale.languageCode;
-    String breakTime = ekadashi.fastBreakTime;
-    breakTime = AppStrings.localizeClock(
-      breakTime.replaceAll(RegExp(r'^[a-zA-Z]{3} \d{1,2}, '), ''),
+    final zone = timezone ?? 'IST';
+    // Where and how the times are calculated: "Smarta • Chennai (IN) • IST"
+    // (EkadashiDetailsView on iOS).
+    final settings = context.watch<EkadashiSettings?>();
+    final source = settings == null
+        ? AppStrings.timeZoneName(zone, language)
+        : [
+            lang.translate(settings.traditionNameKey),
+            PlaceNameResolver.instance.city(settings.city, language),
+            settings.city.timeZoneLabel(language),
+          ].join(' • ');
+
+    final breakTime = AppStrings.localizeClock(
+      ekadashi.fastBreakTime.replaceAll(RegExp(r'^[a-zA-Z]{3} \d{1,2}, '), ''),
       language,
     );
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(lang.translate('app_title')),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    Widget section(String key, String text) => Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          lang.translate(key),
+          style: const TextStyle(
+            color: tealColor,
+            fontSize: IosText.title3,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(text, style: const TextStyle(fontSize: IosText.body, height: 1.5)),
+      ],
+    );
+
+    Widget timing(IconData icon, String title, DateTime date, String time) =>
+        Row(
           children: [
-            // Date Header
-            Center(
+            SizedBox(width: 28, child: Icon(icon, color: tealColor)),
+            const SizedBox(width: 12),
+            Expanded(
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    AppStrings.fullDate(
-                      ekadashi.date,
-                      lang.currentLocale.languageCode,
-                    ),
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w300,
-                    ),
-                  ),
-                  Text(
-                    ekadashi.name,
+                    title,
                     style: const TextStyle(
                       color: tealColor,
-                      fontSize: 32,
+                      fontSize: IosText.body,
                       fontWeight: FontWeight.bold,
                     ),
-                    textAlign: TextAlign.center,
                   ),
-                  // Show timezone if available
-                  if (timezone != null && timezone!.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: tealColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        AppStrings.timeZoneName(timezone!, language),
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: tealColor.withValues(alpha: 0.8),
-                          fontWeight: FontWeight.w500,
-                        ),
+                  const SizedBox(height: 2),
+                  Text(
+                    AppStrings.fullDate(date, language),
+                    style: TextStyle(
+                      fontSize: IosText.footnote,
+                      color: IosColors.secondary(context),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(time, style: const TextStyle(fontSize: IosText.title3)),
+                ],
+              ),
+            ),
+          ],
+        );
+
+    const gap = SizedBox(height: 24);
+    return AppBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: Text(lang.translate('app_title')),
+          actions: [
+            // The free share card (no paywall).
+            IconButton(
+              key: const Key('details_share_card'),
+              tooltip: lang.translate('share_card'),
+              icon: const Icon(AppIcons.share, color: tealColor),
+              onPressed: () => openShareCard(context, ekadashi),
+            ),
+          ],
+        ),
+        body: SingleChildScrollView(
+          padding: EdgeInsets.fromLTRB(
+            20,
+            20,
+            20,
+            100 + MediaQuery.paddingOf(context).bottom,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Date, name and the time zone of the timings.
+              Center(
+                child: Column(
+                  children: [
+                    Text(
+                      AppStrings.fullDate(ekadashi.date, language),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: IosText.title2,
+                        fontWeight: FontWeight.w300,
                       ),
                     ),
-                  ],
-                ],
-              ),
-            ),
-            const SizedBox(height: 30),
-
-            if (ekadashi.usesContentFallback) ...[
-              Text(
-                lang.translate('content_fallback'),
-                style: const TextStyle(fontStyle: FontStyle.italic),
-              ),
-              const SizedBox(height: 16),
-            ],
-            // Significance Section
-            Text(
-              lang.translate('significance'),
-              style: const TextStyle(
-                color: tealColor,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              ekadashi.description,
-              style: const TextStyle(fontSize: 16, height: 1.5),
-            ),
-            const SizedBox(height: 24),
-
-            // Story Section
-            Text(
-              lang.translate('story_history'),
-              style: const TextStyle(
-                color: tealColor,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              ekadashi.story,
-              style: const TextStyle(fontSize: 16, height: 1.5),
-            ),
-            const SizedBox(height: 24),
-
-            // Rules Section
-            Text(
-              lang.translate('fasting_rules'),
-              style: const TextStyle(
-                color: tealColor,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              ekadashi.fastingRules,
-              style: const TextStyle(fontSize: 16, height: 1.5),
-            ),
-            const SizedBox(height: 24),
-
-            // Benefits Section
-            Text(
-              lang.translate('spiritual_benefits'),
-              style: const TextStyle(
-                color: tealColor,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              ekadashi.benefits,
-              style: const TextStyle(fontSize: 16, height: 1.5),
-            ),
-            const SizedBox(height: 40), // Extra padding at the bottom
-            // Timings Box
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Theme.of(context).cardColor,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: tealColor.withValues(alpha: 0.3)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 10,
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  // Fasting Start
-                  Row(
-                    children: [
-                      const Icon(Icons.restaurant_menu, color: tealColor),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              lang.translate('start_fasting'),
-                              style: const TextStyle(
-                                color: tealColor,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              AppStrings.fullDate(
-                                ekadashi.date,
-                                lang.currentLocale.languageCode,
-                              ),
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey,
-                              ),
-                            ),
-                            Text(
-                              AppStrings.localizeClock(
-                                ekadashi.fastStartTime,
-                                language,
-                              ),
-                              style: const TextStyle(fontSize: 18),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const Divider(height: 24),
-                  // Parana (Break Fast) Time
-                  Row(
-                    children: [
-                      const Icon(Icons.wb_twilight, color: tealColor),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              lang.translate('break_fasting'),
-                              style: const TextStyle(
-                                color: tealColor,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              AppStrings.fullDate(
-                                ekadashi.date.add(const Duration(days: 1)),
-                                lang.currentLocale.languageCode,
-                              ),
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey,
-                              ),
-                            ),
-                            Text(
-                              breakTime,
-                              style: const TextStyle(fontSize: 18),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Vrat Tracker Action Button (if enabled)
-            Consumer<VratTrackerService>(
-              builder: (ctx, trackerService, _) {
-                if (!trackerService.trackerEnabled) {
-                  return const SizedBox.shrink();
-                }
-                final record = trackerService.getRecord(ekadashi.id);
-                final status = record?.status ?? ObservanceStatus.unrecorded;
-
-                String statusLabel;
-                Color statusColor;
-                IconData statusIcon;
-
-                switch (status) {
-                  case ObservanceStatus.observed:
-                    statusLabel = lang.translate('observed');
-                    statusColor = Colors.green;
-                    statusIcon = Icons.check_circle;
-                    break;
-                  case ObservanceStatus.partial:
-                    statusLabel = lang.translate('partial');
-                    statusColor = Colors.amber.shade700;
-                    statusIcon = Icons.adjust;
-                    break;
-                  case ObservanceStatus.missed:
-                    statusLabel = lang.translate('missed');
-                    statusColor = Colors.red.shade400;
-                    statusIcon = Icons.highlight_off;
-                    break;
-                  case ObservanceStatus.unrecorded:
-                    statusLabel = lang.translate('record_observance');
-                    statusColor = tealColor;
-                    statusIcon = Icons.edit_calendar_outlined;
-                    break;
-                }
-
-                return SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    icon: Icon(statusIcon, color: statusColor),
-                    label: Text(
-                      record != null
-                          ? '${lang.translate('vrat')}: $statusLabel'
-                          : lang.translate('record_vrat'),
-                      style: TextStyle(
-                        color: statusColor,
+                    const SizedBox(height: 4),
+                    Text(
+                      ekadashi.name,
+                      style: const TextStyle(
+                        color: tealColor,
+                        fontSize: IosText.largeTitle,
                         fontWeight: FontWeight.bold,
                       ),
+                      textAlign: TextAlign.center,
                     ),
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: statusColor, width: 1.5),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                    const SizedBox(height: 4),
+                    StatusPill(
+                      key: const Key('details_source'),
+                      text: source,
+                      color: tealColor,
+                    ),
+                  ],
+                ),
+              ),
+              gap,
+              if (ekadashi.usesContentFallback) ...[
+                Text(
+                  lang.translate('content_fallback'),
+                  style: const TextStyle(
+                    fontSize: IosText.body,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+                gap,
+              ],
+              section('significance', ekadashi.description),
+              gap,
+              section('story_history', ekadashi.story),
+              gap,
+              section('fasting_rules', ekadashi.fastingRules),
+              gap,
+              section('spiritual_benefits', ekadashi.benefits),
+              gap,
+              GlassPanel(
+                key: const Key('details_timings'),
+                radius: 16,
+                tint: tealColor,
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    timing(
+                      AppIcons.startFasting,
+                      lang.translate('start_fasting'),
+                      ekadashi.date,
+                      AppStrings.localizeClock(
+                        ekadashi.fastStartTime,
+                        language,
                       ),
                     ),
-                    onPressed:
-                        !VratRecording.isOpen(
-                          ekadashi,
-                          now: DateTime.now(),
-                          timezone: timezone ?? 'IST',
-                        )
-                        ? null
-                        : () async {
-                            final occurrences = EkadashiService().getEkadashis(
-                              timezone: timezone ?? 'IST',
-                              languageCode: lang.currentLocale.languageCode,
-                            );
-                            final unlocks = await RecordVratDialog.show(
-                              context,
-                              ekadashi: ekadashi,
-                              allOccurrences: occurrences,
-                              currentTimezone: timezone ?? 'IST',
-                            );
-                            if (unlocks != null &&
-                                unlocks.isNotEmpty &&
-                                context.mounted) {
-                              for (final u in unlocks) {
-                                await AchievementUnlockDialog.show(context, u);
-                              }
-                            }
-                          },
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 30),
-          ],
+                    Divider(height: 25, color: IosColors.separator(context)),
+                    timing(
+                      AppIcons.breakFasting,
+                      lang.translate('break_fasting'),
+                      ekadashi.date.add(const Duration(days: 1)),
+                      breakTime,
+                    ),
+                  ],
+                ),
+              ),
+              Consumer<VratTrackerService>(
+                builder: (ctx, tracker, _) => tracker.trackerEnabled
+                    ? Padding(
+                        padding: const EdgeInsets.only(top: 24),
+                        child: _vratButton(context, tracker, lang, zone),
+                      )
+                    : const SizedBox.shrink(),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
+
+  /// The Vrat button (iOS vratButton): the record's status, or Record Vrat,
+  /// or, until Parana begins, a dimmed "You can record this fast once
+  /// Parana begins".
+  Widget _vratButton(
+    BuildContext context,
+    VratTrackerService tracker,
+    LanguageService lang,
+    String zone,
+  ) {
+    final record = tracker.getRecordByUid(ekadashi.occurrenceUid);
+    final style = _StatusStyle(record?.status, context);
+    final open = VratRecording.isOpen(
+      ekadashi,
+      now: DateTime.now(),
+      timezone: zone,
+    );
+    final label = record != null
+        ? '${lang.translate('vrat')}: ${lang.translate(style.detailKey)}'
+        : lang.translate(open ? 'record_vrat' : 'journey_record_after_parana');
+    final button = SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        key: const Key('details_record_vrat'),
+        icon: Icon(style.icon, color: style.color, size: 20),
+        label: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: style.color,
+            fontSize: IosText.callout,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        style: IosButtons.glass(
+          context,
+          vertical: 14,
+        ).copyWith(side: const WidgetStatePropertyAll(BorderSide.none)),
+        onPressed: !open
+            ? null
+            : () async {
+                // Every enabled year from the engine, as on Home.
+                final occurrences =
+                    context.read<EkadashiSettings?>()?.cachedEkadashis(
+                      lang.currentLocale.languageCode,
+                    ) ??
+                    const <EkadashiDate>[];
+                final unlocks = await RecordVratDialog.show(
+                  context,
+                  ekadashi: ekadashi,
+                  allOccurrences: occurrences,
+                  currentTimezone: zone,
+                );
+                if (unlocks != null && unlocks.isNotEmpty && context.mounted) {
+                  for (final u in unlocks) {
+                    await AchievementUnlockDialog.show(context, u);
+                  }
+                }
+              },
+      ),
+    );
+    // A disabled iOS button is drawn faded.
+    return open ? button : Opacity(opacity: .45, child: button);
+  }
+}
+
+/// Colour, symbol and label of a status (iOS VratStatusStyle).
+class _StatusStyle {
+  _StatusStyle(ObservanceStatus? status, BuildContext context)
+    : status = status ?? ObservanceStatus.unrecorded,
+      _context = context;
+
+  final ObservanceStatus status;
+  final BuildContext _context;
+
+  Color get color => switch (status) {
+    ObservanceStatus.observed => IosColors.green(_context),
+    ObservanceStatus.partial => IosColors.partial,
+    ObservanceStatus.missed => IosColors.missed,
+    ObservanceStatus.unrecorded => IosColors.gray(_context),
+  };
+
+  IconData get icon => switch (status) {
+    ObservanceStatus.observed => AppIcons.statusObserved,
+    ObservanceStatus.partial => AppIcons.statusPartial,
+    ObservanceStatus.missed => AppIcons.statusMissed,
+    ObservanceStatus.unrecorded => AppIcons.statusUnrecorded,
+  };
+
+  String get detailKey =>
+      status == ObservanceStatus.unrecorded ? 'record_observance' : status.name;
 }

@@ -109,7 +109,20 @@ void main() {
       final found = <String, Set<String>>{};
 
       collect(tester, 'home', found);
-      await tapIfPresent(tester, find.byType(ElevatedButton));
+      for (final menu in ['home_tradition_menu', 'home_year_menu']) {
+        await tapIfPresent(tester, find.byKey(Key(menu)));
+        collect(tester, menu, found);
+        await back(tester);
+      }
+      // Home's city picker: popular cities with their time zones.
+      await tapIfPresent(tester, find.byKey(const Key('home_location')));
+      collect(tester, 'home city picker', found);
+      await back(tester);
+      // The free share card and its preview screen.
+      await tapIfPresent(tester, find.byKey(const Key('home_share_card')));
+      collect(tester, 'share card', found);
+      await back(tester);
+      await tapIfPresent(tester, find.byKey(const Key('view_details')));
       collect(tester, 'details', found);
       await tester.binding.handlePopRoute();
       await settle(tester);
@@ -151,12 +164,20 @@ void main() {
         tester,
         find.byKey(const Key('panchang_city_selector')),
       );
-      collect(tester, 'panchang city menu', found);
-      await tapIfPresent(
-        tester,
-        find.byKey(const Key('panchang_edit_location')),
+      collect(tester, 'panchang city picker', found);
+      // Its last section: coordinates and a time zone typed by hand.
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('location_save')),
+        400,
+        scrollable: find
+            .descendant(
+              of: find.byKey(const Key('city_picker_list')),
+              matching: find.byType(Scrollable),
+            )
+            .first,
       );
-      collect(tester, 'panchang location dialog', found);
+      await settle(tester);
+      collect(tester, 'panchang manual location', found);
       await back(tester);
 
       await tester.tap(find.byKey(const Key('glass_tab_4')));

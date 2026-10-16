@@ -1,3 +1,4 @@
+import 'package:ekadashi_calendar/widgets/app_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
@@ -61,12 +62,12 @@ void main() {
     // Location service has its own timeout; poll for a usable Home surface.
     for (
       var attempt = 0;
-      attempt < 60 && find.byIcon(Icons.home).evaluate().isEmpty;
+      attempt < 60 && find.byIcon(AppIcons.tabHome).evaluate().isEmpty;
       attempt++
     ) {
       await tester.pump(const Duration(seconds: 1));
     }
-    expect(find.byIcon(Icons.home), findsOneWidget);
+    expect(find.byIcon(AppIcons.tabHome), findsOneWidget);
     for (
       var attempt = 0;
       attempt < 45 &&
@@ -76,7 +77,10 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
     }
     expect(find.byType(CircularProgressIndicator), findsNothing);
-    if (mode == 'denied') expect(find.text('Location Denied'), findsOneWidget);
+    // Without a location Home still names its city (the last known one,
+    // else Chennai); "Use current location" lives in the city picker.
+    expect(find.byKey(const Key('home_location_name')), findsOneWidget);
+    if (mode == 'denied') expect(find.text('Location Denied'), findsNothing);
     await binding.convertFlutterSurfaceToImage();
     await pumpUi(tester);
     await binding.takeScreenshot('android_home');
@@ -91,7 +95,7 @@ void main() {
       const Offset(0, 260),
     );
     await pumpUi(tester);
-    await tester.tap(find.byIcon(Icons.calendar_month));
+    await tester.tap(find.byKey(const Key('glass_tab_1')));
     await pumpUi(tester);
     final emptyDay = find.text('No Ekadashi on this day');
     if (emptyDay.evaluate().isNotEmpty &&
@@ -105,7 +109,7 @@ void main() {
       );
     }
     await binding.takeScreenshot('android_calendar');
-    await tester.tap(find.byIcon(Icons.settings));
+    await tester.tap(find.byIcon(AppIcons.tabSettings));
     await pumpUi(tester);
     expect(find.text('Appearance'), findsOneWidget);
     final themeSwitch = find.byType(SwitchListTile).first;
@@ -210,6 +214,9 @@ void main() {
 
     for (final locale in ['ta', 'hi', 'en']) {
       await selectTab(0);
+      final headerPosition = tester.getTopLeft(
+        find.byKey(const Key('home_options_tube')),
+      );
       await tester.tap(find.byKey(const Key('language_menu')));
       const names = {'en': 'English', 'ta': 'தமிழ்', 'hi': 'हिंदी'};
       final choice = find.widgetWithText(PopupMenuItem<String>, names[locale]!);
@@ -217,6 +224,11 @@ void main() {
         tester,
         () => choice.hitTestable().evaluate().length == 1,
         reason: 'The $locale language menu item must be ready',
+      );
+      expect(find.byKey(const Key('open_global_search')), findsOneWidget);
+      expect(
+        tester.getTopLeft(find.byKey(const Key('home_options_tube'))),
+        headerPosition,
       );
       await tester.tap(choice.hitTestable());
       // A selected locale alone does not mean the popup has finished closing.
@@ -253,8 +265,52 @@ void main() {
       expect(appearance.hitTestable(), findsOneWidget);
       await binding.takeScreenshot('android_settings_$locale');
     }
+    for (final tab in [2, 3]) {
+      // Step markers: on API 33 and 35 the app closed somewhere in this loop
+      // (14 October 2026); the log shows which step it reached.
+      debugPrint('android_app_test step: tab $tab');
+      await selectTab(tab);
+      if (tab == 2) {
+        await tester.tap(find.byKey(const Key('journey_tab_history')));
+        await pumpUi(tester);
+      }
+      final anchor = find.byKey(
+        Key(tab == 2 ? 'vrat_tabs_tube' : 'panchang_sections_tube'),
+      );
+      final anchorPosition = tester.getTopLeft(anchor);
+      await tester.tap(
+        find.byKey(
+          Key(
+            tab == 2 ? 'journey_history_year_menu' : 'panchang_city_selector',
+          ),
+        ),
+      );
+      // Journey's year is a menu; Panchang's city opens the shared city
+      // picker sheet.
+      final menuItems = tab == 2
+          ? find.byWidgetPredicate((widget) => widget is PopupMenuItem)
+          : find.byKey(const Key('city_picker_list'));
+      await waitForUi(
+        tester,
+        () => menuItems.evaluate().isNotEmpty,
+        reason: 'Tab $tab menu must open',
+      );
+      debugPrint('android_app_test step: tab $tab menu open');
+      expect(find.byKey(const Key('open_global_search')), findsOneWidget);
+      expect(tester.getTopLeft(anchor), anchorPosition);
+      debugPrint('android_app_test step: tab $tab system Back');
+      await tester.binding.handlePopRoute();
+      debugPrint('android_app_test step: tab $tab Back handled');
+      await waitForUi(
+        tester,
+        () => menuItems.evaluate().isEmpty,
+        reason: 'System Back must close tab $tab menu',
+      );
+      expect(tester.getTopLeft(anchor), anchorPosition);
+    }
+    debugPrint('android_app_test step: details');
     await selectTab(0);
-    final details = find.byType(ElevatedButton).first;
+    final details = find.byKey(const Key('view_details'));
     await tester.ensureVisible(details);
     await tester.tap(details);
     await pumpUi(tester);
@@ -262,7 +318,7 @@ void main() {
     await binding.takeScreenshot('android_details');
     await tester.pageBack();
     await pumpUi(tester);
-    expect(find.byIcon(Icons.home), findsOneWidget);
+    expect(find.byIcon(AppIcons.tabHome), findsOneWidget);
     expect(tester.takeException(), isNull);
     if (permissions.hasNotificationPermission) {
       expect(

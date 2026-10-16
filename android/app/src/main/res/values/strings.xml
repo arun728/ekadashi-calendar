@@ -4,9 +4,9 @@
     <string name="widget_a_title">Ekadashi</string>
     <string name="widget_b_title">Ekadashi Today</string>
     <string name="widget_c_title">Upcoming Ekadashis</string>
-    <string name="widget_a_description">Next Ekadashi</string>
-    <string name="widget_b_description">Ekadashi Today</string>
-    <string name="widget_c_description">Upcoming Ekadashis</string>
+    <string name="widget_a_description">Today\'s Ekadashi with your fast\'s progress, or the next Ekadashi and the days to go.</string>
+    <string name="widget_b_description">Today\'s Ekadashi with your fast\'s progress, or the next Ekadashi and the days to go.</string>
+    <string name="widget_c_description">The next Ekadashis at a glance.</string>
     <string name="widget_title">Ekadashi Calendar</string>
     <string name="widget_next_ekadashi">Next Ekadashi</string>
     <string name="widget_fasting_active">Fasting active</string>

@@ -28,13 +28,14 @@ struct EventReminderRows: View {
                     .accessibilityIdentifier("event_reminder_row_\(reminder.id)")
                     .swipeActions {
                         Button(role: .destructive) { delete(reminder) } label: {
-                            Label(model.t("notifications_delete_event"), systemImage: "trash")
+                            Label(model.t("notifications_delete_event"), systemImage: AppSymbol.delete)
                         }
                     }
             }
             Button { editing = EditorRequest(reminder: nil) } label: {
-                Label(model.t("notifications_add_event"), systemImage: "plus.circle.fill")
-                    .foregroundStyle(Theme.teal)
+                Label(model.t("notifications_add_event"), systemImage: AppSymbol.addReminder)
+                    // Greyed out with notifications off, as on Android.
+                    .foregroundStyle(enabled ? Theme.teal : Color.secondary)
             }
             .accessibilityIdentifier("notifications_add_event")
         }
@@ -44,26 +45,28 @@ struct EventReminderRows: View {
     private func row(_ reminder: EventReminder) -> some View {
         let locked = reminder.target.requiresPremium && !model.premium.isPremium
         return HStack(spacing: 12) {
-            Image(systemName: symbol(reminder.target)).foregroundStyle(Theme.teal).frame(width: 24)
+            Image(systemName: symbol(reminder.target)).foregroundStyle(enabled ? Theme.teal : Color.secondary)
+                .frame(width: 24)
             VStack(alignment: .leading, spacing: 2) {
-                Text(EventReminderChoice.title(reminder.target, language: model.language)).foregroundStyle(.primary)
+                Text(EventReminderChoice.title(reminder.target, language: model.language))
+                    .foregroundStyle(enabled ? Color.primary : Color.secondary)
                 Text(EventReminderText.summary(reminder, model: model)).font(.caption).foregroundStyle(.secondary)
             }
             Spacer(minLength: 8)
             if locked {
-                Image(systemName: "lock.fill").font(.caption).foregroundStyle(.secondary)
+                Image(systemName: AppSymbol.lock).font(.caption).foregroundStyle(.secondary)
                     .accessibilityLabel(model.t("search_premium_locked"))
             }
-            Image(systemName: "chevron.right").font(.caption.weight(.semibold)).foregroundStyle(.tertiary)
+            Image(systemName: AppSymbol.rowDisclosure).font(.caption.weight(.semibold)).foregroundStyle(.tertiary)
         }
         .contentShape(Rectangle())
     }
 
     private func symbol(_ target: EventReminderTarget) -> String {
         switch target {
-        case .observance: return "sparkles"
-        case .calendar(.google): return "g.circle"
-        case .calendar: return "calendar"
+        case .observance: return AppSymbol.reminderObservance
+        case .calendar(.google): return AppSymbol.reminderGoogle
+        case .calendar: return AppSymbol.reminderCustom
         }
     }
 
@@ -108,7 +111,6 @@ struct EventReminderEditor: View {
     @State private var target: EventReminderTarget?
     @State private var days: Set<Int>
     @State private var time: Date
-    @State private var showPaywall = false
 
     init(original: EventReminder?) {
         self.original = original
@@ -120,8 +122,6 @@ struct EventReminderEditor: View {
         _time = State(initialValue: calendar.date(from: DateComponents(year: 2026, month: 1, day: 1, hour: reminder.hour,
                                                                         minute: reminder.minute)) ?? Date())
     }
-
-    private var locked: Bool { target?.requiresPremium == true && !model.premium.isPremium }
 
     var body: some View {
         NavigationStack {
@@ -145,7 +145,7 @@ struct EventReminderEditor: View {
                                 Text(EventReminderText.lead(lead, model: model)).foregroundStyle(.primary)
                                 Spacer()
                                 if days.contains(lead) {
-                                    Image(systemName: "checkmark").font(.body.weight(.semibold)).foregroundStyle(Theme.teal)
+                                    Image(systemName: AppSymbol.checkmark).font(.body.weight(.semibold)).foregroundStyle(Theme.teal)
                                 }
                             }
                             .contentShape(Rectangle())
@@ -164,16 +164,6 @@ struct EventReminderEditor: View {
                     DatePicker(model.t("notifications_time"), selection: $time, displayedComponents: .hourAndMinute)
                         .environment(\.locale, model.timePickerLocale)
                         .tint(Theme.teal)
-                }
-
-                if locked {
-                    Section {
-                        Label(model.t("notifications_premium_events"), systemImage: "lock.fill")
-                            .font(.subheadline)
-                        Button(model.t("premium_upgrade")) { showPaywall = true }
-                            .foregroundStyle(Theme.teal)
-                            .accessibilityIdentifier("event_reminder_upgrade")
-                    }
                 }
 
                 if let original {
@@ -201,9 +191,6 @@ struct EventReminderEditor: View {
                         .accessibilityIdentifier("event_reminder_save")
                 }
             }
-            .sheet(isPresented: $showPaywall) {
-                NavigationStack { PremiumView(reason: nil) }
-            }
         }
     }
 
@@ -211,7 +198,8 @@ struct EventReminderEditor: View {
         if days.contains(lead) { days.remove(lead) } else { days.insert(lead) }
     }
 
-    /// Saves even while locked: the reminder starts with Premium.
+    /// Free users can only pick free events (the picker opens the paywall for
+    /// locked ones); a locked reminder saved earlier stays and starts with Premium.
     private func save() {
         guard let target else { return }
         let parts = Calendar.current.dateComponents([.hour, .minute], from: time)
@@ -224,12 +212,15 @@ struct EventReminderEditor: View {
 }
 
 /// Festivals (alphabetical), monthly days and the user's calendars, with a
-/// search field. Premium choices carry a lock for free users.
+/// search field. Premium choices carry a lock for free users: choosing one
+/// opens the paywall, and it is selected only once Premium is active.
 struct EventReminderPicker: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
     @Binding var selection: EventReminderTarget?
     @State private var query = ""
+    @State private var pendingLocked: EventReminderTarget?
+    @State private var showPaywall = false
 
     var body: some View {
         let choices = filtered(EventReminderChoice.all(language: model.language))
@@ -240,16 +231,15 @@ struct EventReminderPicker: View {
                     Section(model.t(group.titleKey)) {
                         ForEach(items) { choice in
                             Button {
-                                selection = choice.target
-                                dismiss()
+                                choose(choice)
                             } label: {
                                 HStack {
                                     Text(choice.title).foregroundStyle(.primary)
                                     Spacer()
                                     if selection == choice.target {
-                                        Image(systemName: "checkmark").foregroundStyle(Theme.teal)
+                                        Image(systemName: AppSymbol.checkmark).foregroundStyle(Theme.teal)
                                     } else if choice.requiresPremium && !model.premium.isPremium {
-                                        Image(systemName: "lock.fill").font(.caption).foregroundStyle(.secondary)
+                                        Image(systemName: AppSymbol.lock).font(.caption).foregroundStyle(.secondary)
                                     }
                                 }
                                 .contentShape(Rectangle())
@@ -265,6 +255,27 @@ struct EventReminderPicker: View {
                     prompt: model.t("notifications_search_events"))
         .navigationTitle(model.t("notifications_choose_event"))
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $showPaywall, onDismiss: paywallClosed) {
+            NavigationStack { PremiumView(reason: "notifications_premium_events") }
+        }
+    }
+
+    private func choose(_ choice: EventReminderChoice) {
+        if choice.requiresPremium && !model.premium.isPremium {
+            pendingLocked = choice.target
+            showPaywall = true
+        } else {
+            selection = choice.target
+            dismiss()
+        }
+    }
+
+    /// Selects the locked event only if the paywall ended with Premium.
+    private func paywallClosed() {
+        defer { pendingLocked = nil }
+        guard model.premium.isPremium, let target = pendingLocked else { return }
+        selection = target
+        dismiss()
     }
 
     /// Matches the title in the app language or in English, ignoring accents and case.

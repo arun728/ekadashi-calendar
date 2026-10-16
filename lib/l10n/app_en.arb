@@ -603,7 +603,7 @@
       }
     }
   },
-  "event_reminder_all_custom": "All my entries",
+  "event_reminder_all_custom": "All custom events",
   "event_reminder_all_google": "All Google Calendar events",
   "event_reminder_group_festival": "Festivals",
   "event_reminder_group_monthly": "Monthly observances",
@@ -666,5 +666,35 @@
         "type": "String"
       }
     }
-  }
+  },
+  "calculating_ekadashis": "Calculating Ekadashis for this place…",
+  "home_location_hint": "Search a city or use your current location",
+  "home_location_title": "Ekadashi location",
+  "home_location_footer": "Ekadashi dates and times are calculated for this place. Choosing a city here also sets the Panchang location.",
+  "home_tradition": "Tradition",
+  "share_card": "Share card",
+  "share_card_title": "Share Ekadashi card",
+  "share_card_observance": "Ekadashi observance",
+  "share_card_fasting_begins": "Fasting begins",
+  "share_card_parana_window": "Parana window",
+  "share_card_preparing": "Preparing card…",
+  "share_card_save_failed": "Could not save the card.",
+  "share_card_message": "{value0} is on {value1}. Fasting and Parana times from the Ekadashi Calendar app are on this card.",
+  "@share_card_message": {
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      },
+      "value1": {
+        "type": "String"
+      }
+    }
+  },
+  "tradition_smarta": "Smarta",
+  "tradition_vaishnava": "Vaishnava",
+  "panchang_vaishnava_rule": "Vaishnava: Ekadashi must hold 96 minutes before sunrise (Arunodaya), with Mahadvadashi rules.",
+  "home_popular_cities": "Popular cities",
+  "share_card_save": "Save to Gallery",
+  "share_card_saved": "Card saved to Gallery.",
+  "share_card_photos_denied": "Photo access is off. Allow it in Settings to save cards."
 }

@@ -1515,7 +1515,7 @@ class AppLocalizationsTa extends AppLocalizations {
   }
 
   @override
-  String get event_reminder_all_custom => 'என் அனைத்து பதிவுகளும்';
+  String get event_reminder_all_custom => 'அனைத்து தனிப்பட்ட நிகழ்வுகளும்';
 
   @override
   String get event_reminder_all_google =>
@@ -1627,4 +1627,71 @@ class AppLocalizationsTa extends AppLocalizations {
   String utc_offset(String value0) {
     return 'யூடிசி $value0';
   }
+
+  @override
+  String get calculating_ekadashis =>
+      'இந்த இடத்திற்கான ஏகாதசிகள் கணக்கிடப்படுகின்றன…';
+
+  @override
+  String get home_location_hint =>
+      'நகரத்தைத் தேடுங்கள் அல்லது உங்கள் தற்போதைய இருப்பிடத்தைப் பயன்படுத்துங்கள்';
+
+  @override
+  String get home_location_title => 'ஏகாதசி இருப்பிடம்';
+
+  @override
+  String get home_location_footer =>
+      'ஏகாதசி தேதிகளும் நேரங்களும் இந்த இடத்திற்காகக் கணக்கிடப்படுகின்றன. இங்கே நகரத்தைத் தேர்ந்தெடுத்தால் பஞ்சாங்க இருப்பிடமும் மாறும்.';
+
+  @override
+  String get home_tradition => 'மரபு';
+
+  @override
+  String get share_card => 'அட்டையைப் பகிர்';
+
+  @override
+  String get share_card_title => 'ஏகாதசி அட்டையைப் பகிர்';
+
+  @override
+  String get share_card_observance => 'ஏகாதசி விரத நாள்';
+
+  @override
+  String get share_card_fasting_begins => 'விரதம் தொடக்கம்';
+
+  @override
+  String get share_card_parana_window => 'பாரணை நேரம்';
+
+  @override
+  String get share_card_preparing => 'அட்டை தயாராகிறது…';
+
+  @override
+  String get share_card_save_failed => 'அட்டையைச் சேமிக்க முடியவில்லை.';
+
+  @override
+  String share_card_message(String value0, String value1) {
+    return '$value0 — $value1. ஏகாதசி காலண்டர் செயலியிலிருந்து விரத, பாரணை நேரங்கள் இந்த அட்டையில் உள்ளன.';
+  }
+
+  @override
+  String get tradition_smarta => 'ஸ்மார்த்த';
+
+  @override
+  String get tradition_vaishnava => 'வைஷ்ணவ';
+
+  @override
+  String get panchang_vaishnava_rule =>
+      'வைஷ்ணவ: சூரிய உதயத்திற்கு 96 நிமிடங்களுக்கு முன் (அருணோதயம்) ஏகாதசி இருக்க வேண்டும், மகாதுவாதசி விதிகளுடன்.';
+
+  @override
+  String get home_popular_cities => 'பிரபல நகரங்கள்';
+
+  @override
+  String get share_card_save => 'கேலரியில் சேமி';
+
+  @override
+  String get share_card_saved => 'அட்டை கேலரியில் சேமிக்கப்பட்டது.';
+
+  @override
+  String get share_card_photos_denied =>
+      'புகைப்பட அனுமதி முடக்கப்பட்டுள்ளது. அட்டைகளைச் சேமிக்க அமைப்புகளில் அனுமதியுங்கள்.';
 }

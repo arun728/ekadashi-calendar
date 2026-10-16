@@ -33,6 +33,14 @@ android {
         unitTests.isIncludeAndroidResources = true
     }
 
+    // CI runs lintDebug: issues already in lint-baseline.xml are reported,
+    // new ones fail the build.
+    lint {
+        baseline = file("lint-baseline.xml")
+        checkDependencies = false
+        abortOnError = true
+    }
+
     signingConfigs {
         create("release") {
             keyAlias = keystoreProperties.getProperty("keyAlias")

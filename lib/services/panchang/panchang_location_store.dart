@@ -1,17 +1,39 @@
+import 'dart:isolate';
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../l10n/place_names.dart';
+import 'city_search_index.dart';
 import 'panchang_city.dart';
 
 class PanchangLocationStore {
   static const key = 'panchang_location';
   static Future<List<PanchangCity>>? _catalog;
+  static List<PanchangCity>? _loaded;
 
-  static Future<List<PanchangCity>> cities() => _catalog ??= _loadCities();
+  /// The worldwide catalog, read once. Kept as a list so later callers get a
+  /// future of their own (widget tests run on a fake clock).
+  static Future<List<PanchangCity>> cities() async {
+    final known = _loaded;
+    if (known != null) return known;
+    try {
+      return _loaded = await (_catalog ??= _loadCities());
+    } catch (_) {
+      _catalog = null; // A failed read is tried again next time.
+      rethrow;
+    }
+  }
 
   static Future<List<PanchangCity>> _loadCities() async {
     final rows =
-        jsonDecode(await rootBundle.loadString('assets/panchang/cities.json'))
+        // Not cached by the bundle: a failed read would be kept forever, and
+        // the parsed list is kept here anyway.
+        jsonDecode(
+              await rootBundle.loadString(
+                'assets/panchang/cities.json',
+                cache: false,
+              ),
+            )
             as List;
     return List.unmodifiable(
       rows.map(
@@ -25,6 +47,112 @@ class PanchangLocationStore {
         ),
       ),
     );
+  }
+
+  /// Cities offered before anything is typed: where most users live, India
+  /// first, then the diaspora (GeoNames ids, as CityShortlist.swift).
+  static const popularIds = [
+    '1264527', '1261481', '1275339', '1277333', '1269843', '1275004', //
+    '1259229', '1279233', '1253405', '1269515', '5128581', '5097529', //
+    '5368361', '5391959', '4887398', '4699066', '5809844', '4180439', //
+    '4140963', '6167865', '6173331', '2643743', '2925533', '2988507', //
+    '292223', '290030', '1880252', '1735161', '2147714', '2158177', //
+    '2063523', '2193733', '993800', '184745', '1283240', '1248991', //
+    '934154',
+  ];
+
+  /// The popular cities, in the order above.
+  static Future<List<PanchangCity>> popular() async {
+    final byId = {for (final c in await cities()) c.id: c};
+    return [
+      for (final id in popularIds)
+        if (byId['geonames-$id'] != null) byId['geonames-$id']!,
+    ];
+  }
+
+  /// The closest catalog city, for naming a location fix without a network.
+  static Future<PanchangCity?> nearest(
+    double latitude,
+    double longitude,
+  ) async {
+    PanchangCity? best;
+    var bestDistance = double.infinity;
+    for (final c in await cities()) {
+      final d =
+          (c.latitude - latitude) * (c.latitude - latitude) +
+          (c.longitude - longitude) * (c.longitude - longitude);
+      if (d < bestDistance) {
+        bestDistance = d;
+        best = c;
+      }
+    }
+    return best;
+  }
+
+  static final _indexes = <String, Future<CitySearchIndex>>{};
+
+  /// Builds indexes on the calling isolate (widget tests, whose fake clock
+  /// never runs other isolates).
+  static bool buildIndexInline = false;
+
+  /// The city search for [language] (names, ASCII names, country codes and
+  /// names in that language), built once in a background isolate and kept:
+  /// writing every city's name at each keystroke froze the keyboard.
+  static Future<CitySearchIndex> searchIndex(String language) {
+    if (buildIndexInline) return _buildInline(language);
+    return _indexes[language] ??= _buildIndex(language).catchError((Object e) {
+      _indexes.remove(language);
+      throw e;
+    });
+  }
+
+  static final _inline = <String, CitySearchIndex>{};
+
+  /// Keeps only finished indexes: a build left waiting on one widget test's
+  /// fake clock must not hold up the next test.
+  static Future<CitySearchIndex> _buildInline(String language) async {
+    final known = _inline[language];
+    if (known != null) return known;
+    final all = _loaded ?? await cities();
+    return _inline[language] ??= CitySearchIndex(
+      all,
+      language,
+      popularIds: popularIds,
+    );
+  }
+
+  static Future<CitySearchIndex> _buildIndex(String language) async {
+    final all = await cities();
+    await PlaceNames.load();
+    final table = PlaceNames.snapshot();
+    return Isolate.run(() {
+      PlaceNames.use(table);
+      return CitySearchIndex(all, language, popularIds: popularIds);
+    });
+  }
+
+  static Map<String, dynamic> toJson(PanchangCity city) => {
+    'id': city.id,
+    'label': city.label,
+    'latitude': city.latitude,
+    'longitude': city.longitude,
+    'timezone': city.timeZoneId,
+  };
+
+  static PanchangCity? fromJson(Map<String, dynamic> data) {
+    try {
+      final city = PanchangCity(
+        id: data['id'] as String,
+        label: data['label'] as String,
+        latitude: (data['latitude'] as num).toDouble(),
+        longitude: (data['longitude'] as num).toDouble(),
+        timeZoneId: data['timezone'] as String,
+      );
+      city.validate();
+      return city;
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<PanchangCity?> load() async {
@@ -58,5 +186,60 @@ class PanchangLocationStore {
       }),
     );
     if (!ok) throw StateError('Could not save Panchang location');
+  }
+}
+
+/// The cities picked in the city picker, newest first (at most [limit]),
+/// shown above the popular cities (CityShortlist.swift `RecentCities`).
+class RecentCities {
+  static const key = 'ekadashi_recent_cities';
+  static const limit = 8;
+
+  static Future<List<PanchangCity>> all() async {
+    try {
+      final raw = (await SharedPreferences.getInstance()).getString(key);
+      if (raw == null) return [];
+      return [
+        for (final row in jsonDecode(raw) as List)
+          if (PanchangLocationStore.fromJson(row as Map<String, dynamic>)
+              case final city?)
+            city,
+      ];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  static Future<void> add(PanchangCity city) async {
+    final list =
+        (await all())
+            .where(
+              (c) =>
+                  c.id != city.id ||
+                  c.latitude != city.latitude ||
+                  c.longitude != city.longitude,
+            )
+            .toList()
+          ..insert(0, city);
+    await (await SharedPreferences.getInstance()).setString(
+      key,
+      jsonEncode([
+        for (final c in list.take(limit)) PanchangLocationStore.toJson(c),
+      ]),
+    );
+  }
+
+  /// What the picker shows with an empty query: recent picks, then popular
+  /// cities not already among them. Never empty.
+  static Future<({List<PanchangCity> recent, List<PanchangCity> popular})>
+  shortlist() async {
+    final recent = await all();
+    final ids = {for (final c in recent) c.id};
+    return (
+      recent: recent,
+      popular: (await PanchangLocationStore.popular())
+          .where((c) => !ids.contains(c.id))
+          .toList(),
+    );
   }
 }

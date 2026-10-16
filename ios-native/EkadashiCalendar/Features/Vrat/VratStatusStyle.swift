@@ -19,20 +19,20 @@ struct VratStatusStyle {
     /// Status symbol in lists and the details button.
     var symbol: String {
         switch status {
-        case .observed: return "checkmark.circle"
-        case .partial: return "circle.circle"
-        case .missed: return "xmark.circle"
-        case .unrecorded: return "questionmark.circle"
+        case .observed: return AppSymbol.statusObserved
+        case .partial: return AppSymbol.statusPartial
+        case .missed: return AppSymbol.statusMissed
+        case .unrecorded: return AppSymbol.statusUnrecorded
         }
     }
 
     /// The home card's record button.
     var cardSymbol: String {
         switch status {
-        case .observed: return "checkmark.circle.fill"
-        case .partial: return "circle.circle"
-        case .missed: return "xmark.circle"
-        case .unrecorded: return "calendar.badge.plus"
+        case .observed: return AppSymbol.cardObserved
+        case .partial: return AppSymbol.statusPartial
+        case .missed: return AppSymbol.statusMissed
+        case .unrecorded: return AppSymbol.cardUnrecorded
         }
     }
 

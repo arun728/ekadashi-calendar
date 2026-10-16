@@ -36,6 +36,26 @@ class CalendarEntry {
   DateTime get localStart => isAllDay ? startAt : startAt.toLocal();
   DateTime get localEnd => isAllDay ? endAt : endAt.toLocal();
 
+  /// [entries] with each Google event once: the same event can arrive from
+  /// two picked calendars, or twice from one. Copies keep their own identity
+  /// in storage (for reconciling deletions) but are shown, searched and
+  /// reminded once, the first kept. Custom entries are never merged.
+  static List<CalendarEntry> withoutDuplicateGoogle(
+    Iterable<CalendarEntry> entries,
+  ) {
+    final seen = <String>{};
+    return [
+      for (final e in entries)
+        if (e.source != CalendarEntrySource.google ||
+            seen.add(
+              '${e.title.trim()}|${e.isAllDay}|'
+              '${e.startAt.toUtc().toIso8601String()}|'
+              '${e.endAt.toUtc().toIso8601String()}',
+            ))
+          e,
+    ];
+  }
+
   bool occursOn(DateTime day) {
     final d = DateTime(day.year, day.month, day.day);
     final next = DateTime(day.year, day.month, day.day + 1);
@@ -111,7 +131,7 @@ class CalendarEntry {
   }
 }
 
-/// Filter for calendar tab. Default is [ekadashi].
+/// Filter for calendar tab. Default is [all], as on iOS.
 enum CalendarFilter { all, ekadashi, google, custom }
 
 /// Marker colors (app accent teal for Ekadashi).

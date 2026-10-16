@@ -9,6 +9,12 @@ public struct PanchangCity: Hashable, Codable, Sendable, Identifiable {
     public let timeZoneId: String
     public let searchTerms: String
 
+    /// Whether [other] is the same place for calculations: the coordinates
+    /// and time zone, whatever its name.
+    public func isSamePlace(as other: PanchangCity) -> Bool {
+        latitude == other.latitude && longitude == other.longitude && timeZoneId == other.timeZoneId
+    }
+
     public init(id: String, label: String, latitude: Double, longitude: Double,
                 timeZoneId: String = "Asia/Kolkata", searchTerms: String = "") {
         self.id = id
@@ -68,13 +74,25 @@ public struct PanchangCity: Hashable, Codable, Sendable, Identifiable {
     public func wallClock(_ instant: Date) -> WallClock { zone.wallClock(instant) }
     public func midnight(_ date: CivilDate, dayOffset: Int = 0) -> Date { zone.utc(date.adding(days: dayOffset)) }
     public func dateAtHour(_ date: CivilDate, _ hour: Int) -> Date { zone.utc(date, hour: hour) }
-    public var timezoneLabel: String { timeZoneId == "Asia/Kolkata" ? "IST" : timeZoneId }
+    /// The zone's short name now in English: "IST", "EDT", "GMT", "AEST",
+    /// or "UTC+4" where the zone has no lettered abbreviation.
+    public var timezoneLabel: String { timeZoneLabel(language: "en") }
 
-    /// The time zone as [language] shows it: the IANA id in English, the UTC
-    /// offset now in the language's script otherwise.
+    /// The time zone as [language] shows it, like India's "IST" for every
+    /// city: the bundled zone's abbreviation in English ("UTC+5:45" when it
+    /// has none); in other languages India's translated name, elsewhere the
+    /// UTC offset in the language's script (no Latin letters).
     public func timeZoneLabel(language: String, now: Date = Date()) -> String {
-        guard language != "en", let zone = TimeZone(identifier: timeZoneId) else { return timezoneLabel }
-        return Localizer.shared.utcOffset(minutes: zone.secondsFromGMT(for: now) / 60, language: language)
+        if timeZoneId == "Asia/Kolkata" {
+            return language == "en" ? "IST" : Localizer.shared.timeZoneName("IST", language: language)
+        }
+        guard let location = TzDatabase.shared.location(timeZoneId) else { return timeZoneId }
+        let zone = location.zone(at: now)
+        let minutes = zone.offsetSeconds / 60
+        guard language == "en" else { return Localizer.shared.utcOffset(minutes: minutes, language: language) }
+        if zone.abbreviation.first?.isLetter == true { return zone.abbreviation }
+        let sign = minutes < 0 ? "-" : "+", total = abs(minutes)
+        return total % 60 == 0 ? "UTC\(sign)\(total / 60)" : "UTC\(sign)\(total / 60):\(pad2(total % 60))"
     }
     /// Today's civil date at this location.
     public func today(now: Date = Date()) -> CivilDate { wallClock(now).date }
@@ -131,18 +149,100 @@ public final class PanchangCityCatalog: @unchecked Sendable {
         return all.min { distance($0) < distance($1) }
     }
 
+    private let indexes = Locked<[String: CitySearchIndex]>([:])
+
+    /// The search index for [language], built on first use and kept. It
+    /// writes every city's name in that language, so build it off the main
+    /// thread (the city sheet does when it opens).
+    public func searchIndex(language: String) -> CitySearchIndex {
+        if let known = indexes.withLock({ $0[language] }) { return known }
+        let index = CitySearchIndex(cities: (try? cities()) ?? [], language: language)
+        return indexes.withLock { all in
+            if let known = all[language] { return known }
+            all[language] = index
+            return index
+        }
+    }
+
     /// Matches names, ASCII names and country codes, as the Android picker,
     /// and names typed in the app [language].
     public func search(_ query: String, language: String = "en", limit: Int = 12) -> [PanchangCity] {
-        let q = query.trimmingCharacters(in: .whitespaces).lowercased()
-        guard q.count >= 2, let all = try? cities() else { return [] }
-        var result: [PanchangCity] = []
-        let names = PlaceNames.shared
-        for city in all where "\(city.label.lowercased()) \(city.searchTerms) \(names.label(city.label, language: language))".contains(q) {
-            result.append(city)
-            if result.count >= limit { break }
+        searchIndex(language: language).search(query, limit: limit)
+    }
+}
+
+/// Every city with the text a search matches (its name, ASCII name, country
+/// code and its name in [language]), prepared once per language: writing
+/// 34,152 names in a script at every keystroke froze the keyboard. Results
+/// are ranked as in Apple's and Google's city pickers: a name that starts
+/// with the text, then a word that does, then any match; popular cities,
+/// then shorter names, then catalog order break ties (CitySearchIndex in
+/// lib/services/panchang/city_search_index.dart, the same ranking).
+public final class CitySearchIndex: @unchecked Sendable {
+    public let language: String
+    private let cities: [PanchangCity]
+    /// Each city's names, lowercased, as UTF-8 (byte comparison is many
+    /// times faster than String.contains for Indic scripts).
+    private let names: [[[UInt8]]]
+    private let popularRank: [String: Int]
+
+    public init(cities: [PanchangCity], language: String, names: PlaceNames = .shared) {
+        self.language = language
+        self.cities = cities
+        self.names = cities.map { city in
+            [city.label, city.searchTerms, names.label(city.label, language: language)]
+                .map { Array($0.lowercased().utf8) }
         }
-        return result
+        popularRank = Dictionary(uniqueKeysWithValues: PanchangCityCatalog.popularIds.enumerated()
+            .map { ("geonames-\($1)", $0) })
+    }
+
+    /// The text to look for, or nil for fewer than two characters (UTF-16
+    /// units, as Dart counts, so "मुं" is a query).
+    public static func query(_ text: String) -> String? {
+        let q = text.trimmingCharacters(in: .whitespaces).lowercased()
+        return q.utf16.count >= 2 ? q : nil
+    }
+
+    public func search(_ text: String, limit: Int = 20) -> [PanchangCity] {
+        guard let q = Self.query(text) else { return [] }
+        let needle = Array(q.utf8)
+        var found: [(tier: Int, popular: Int, length: Int, order: Int)] = []
+        for (order, fields) in names.enumerated() {
+            var tier = 3
+            for field in fields {
+                tier = min(tier, Self.tier(of: needle, in: field))
+                if tier == 0 { break }
+            }
+            guard tier < 3 else { continue }
+            let city = cities[order]
+            found.append((tier, popularRank[city.id] ?? Int.max, city.label.utf16.count, order))
+        }
+        found.sort { ($0.tier, $0.popular, $0.length, $0.order) < ($1.tier, $1.popular, $1.length, $1.order) }
+        return found.prefix(max(limit, 0)).map { cities[$0.order] }
+    }
+
+    /// 0: [field] starts with [needle]; 1: a word in it does; 2: it contains
+    /// [needle]; 3: no match.
+    static func tier(of needle: [UInt8], in field: [UInt8]) -> Int {
+        guard !needle.isEmpty, field.count >= needle.count else { return 3 }
+        var best = 3
+        let first = needle[0]
+        var i = 0
+        let last = field.count - needle.count
+        while i <= last {
+            if field[i] == first {
+                var j = 1
+                while j < needle.count && field[i + j] == needle[j] { j += 1 }
+                if j == needle.count {
+                    if i == 0 { return 0 }
+                    let before = field[i - 1]
+                    best = min(best, before == 0x20 || before == 0x28 || before == 0x2D ? 1 : 2)
+                }
+            }
+            i += 1
+        }
+        return best
     }
 }
 

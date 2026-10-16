@@ -1,0 +1,44 @@
+name: Billing backend tests
+# The backend is dormant for v2 (AGENTS.md: Play-only premium). Its tests run
+# only when it changes, and never hold up the app's checks.
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main, dev]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-tests.yml'
+permissions:
+  contents: read
+concurrency:
+  group: backend-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  billing-backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: ekadashi_test
+          POSTGRES_PASSWORD: local-ci-only
+          POSTGRES_DB: ekadashi_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U ekadashi_test"
+          --health-interval 10s --health-timeout 5s --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r backend/requirements-test.txt ruff==0.16.10
+      - run: ruff check backend && ruff format --check backend
+      - run: python -m pytest backend/tests -q --junitxml=build/billing-backend-tests.xml
+        env:
+          EKADASHI_TEST_DATABASE_URL: postgresql+psycopg://ekadashi_test:local-ci-only@localhost:5432/ekadashi_test
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: billing-postgresql-tests
+          path: build/billing-backend-tests.xml

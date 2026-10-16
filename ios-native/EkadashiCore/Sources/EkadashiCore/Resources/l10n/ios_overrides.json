@@ -14,7 +14,10 @@
   "premium_unavailable": "Purchases are unavailable right now. Check your Apple ID and try again. Free features still work.",
   "ios_background_refresh": "Background App Refresh",
   "ios_background_refresh_desc": "Keeps reminders and widgets up to date",
-  "ios_share_message": "🙏 Ekadashi Calendar - Never miss an Ekadashi!\n\nGet reminders for fasting times, read stories & significance of each Ekadashi.\n\nDownload now: {value0}"
+  "ios_share_message": "🙏 Ekadashi Calendar - Never miss an Ekadashi!\n\nGet reminders for fasting times, read stories & significance of each Ekadashi.\n\nDownload now: {value0}",
+  "ios_share_card_save": "Save to Photos",
+  "ios_share_card_saved": "Card saved to Photos.",
+  "ios_share_card_photos_denied": "Photo access is off. Allow adding photos in Settings to save cards."
  },
  "ta": {
   "rate_app_desc": "ஆப் ஸ்டோரில் எங்களை மதிப்பிடவும்",
@@ -30,7 +33,10 @@
   "premium_unavailable": "தற்போது வாங்க முடியவில்லை. உங்கள் ஆப்பிள் ஐடி-ஐச் சரிபார்த்து மீண்டும் முயலவும். இலவச அம்சங்கள் தொடர்ந்து செயல்படும்.",
   "ios_background_refresh": "பின்னணி ஆப் புதுப்பிப்பு",
   "ios_background_refresh_desc": "நினைவூட்டல்களையும் விட்ஜெட்களையும் புதுப்பித்து வைக்கிறது",
-  "ios_share_message": "🙏 ஏகாதசி நாட்காட்டி - எந்த ஏகாதசியையும் தவறவிடாதீர்கள்!\n\nவிரத நேரங்களுக்கான நினைவூட்டல்களைப் பெறுங்கள், ஒவ்வொரு ஏகாதசியின் கதைகளையும் முக்கியத்துவத்தையும் படியுங்கள்.\n\nஇப்போதே பதிவிறக்குங்கள்: {value0}"
+  "ios_share_message": "🙏 ஏகாதசி நாட்காட்டி - எந்த ஏகாதசியையும் தவறவிடாதீர்கள்!\n\nவிரத நேரங்களுக்கான நினைவூட்டல்களைப் பெறுங்கள், ஒவ்வொரு ஏகாதசியின் கதைகளையும் முக்கியத்துவத்தையும் படியுங்கள்.\n\nஇப்போதே பதிவிறக்குங்கள்: {value0}",
+  "ios_share_card_save": "புகைப்படங்களில் சேமி",
+  "ios_share_card_saved": "அட்டை புகைப்படங்களில் சேமிக்கப்பட்டது.",
+  "ios_share_card_photos_denied": "புகைப்பட அனுமதி முடக்கப்பட்டுள்ளது. அட்டைகளைச் சேமிக்க அமைப்புகளில் புகைப்படங்களைச் சேர்க்க அனுமதியுங்கள்."
  },
  "hi": {
   "rate_app_desc": "ऐप स्टोर पर हमें रेट करें",
@@ -46,7 +52,10 @@
   "premium_unavailable": "अभी खरीदारी उपलब्ध नहीं है। अपनी ऐपल आईडी जांचकर फिर प्रयास करें। मुफ़्त सुविधाएँ काम करती रहेंगी।",
   "ios_background_refresh": "बैकग्राउंड ऐप रिफ्रेश",
   "ios_background_refresh_desc": "रिमाइंडर और विजेट अपडेट रखता है",
-  "ios_share_message": "🙏 एकादशी कैलेंडर - कोई भी एकादशी न चूकें!\n\nव्रत के समय के लिए रिमाइंडर पाएं, हर एकादशी की कथा और महत्व पढ़ें।\n\nअभी डाउनलोड करें: {value0}"
+  "ios_share_message": "🙏 एकादशी कैलेंडर - कोई भी एकादशी न चूकें!\n\nव्रत के समय के लिए रिमाइंडर पाएं, हर एकादशी की कथा और महत्व पढ़ें।\n\nअभी डाउनलोड करें: {value0}",
+  "ios_share_card_save": "फ़ोटो में सहेजें",
+  "ios_share_card_saved": "कार्ड फ़ोटो में सहेज लिया गया।",
+  "ios_share_card_photos_denied": "फ़ोटो की अनुमति बंद है। कार्ड सहेजने के लिए सेटिंग्स में फ़ोटो जोड़ने की अनुमति दें।"
  },
  "te": {
   "rate_app_desc": "యాప్ స్టోర్‌లో రేట్ చేయండి",
@@ -62,7 +71,10 @@
   "premium_unavailable": "ప్రస్తుతం కొనుగోళ్లు అందుబాటులో లేవు. మీ ఆపిల్ ఐడీని తనిఖీ చేసి మళ్లీ ప్రయత్నించండి. ఉచిత ఫీచర్లు పనిచేస్తాయి.",
   "ios_background_refresh": "బ్యాక్‌గ్రౌండ్ యాప్ రిఫ్రెష్",
   "ios_background_refresh_desc": "రిమైండర్లు మరియు విడ్జెట్‌లను తాజాగా ఉంచుతుంది",
-  "ios_share_message": "🙏 ఏకాదశి క్యాలెండర్ - ఏ ఏకాదశినీ మిస్ అవ్వకండి!\n\nఉపవాస సమయాల రిమైండర్లు పొందండి, ప్రతి ఏకాదశి కథలు మరియు ప్రాముఖ్యత చదవండి.\n\nఇప్పుడే డౌన్‌లోడ్ చేయండి: {value0}"
+  "ios_share_message": "🙏 ఏకాదశి క్యాలెండర్ - ఏ ఏకాదశినీ మిస్ అవ్వకండి!\n\nఉపవాస సమయాల రిమైండర్లు పొందండి, ప్రతి ఏకాదశి కథలు మరియు ప్రాముఖ్యత చదవండి.\n\nఇప్పుడే డౌన్‌లోడ్ చేయండి: {value0}",
+  "ios_share_card_save": "ఫోటోలలో భద్రపరచండి",
+  "ios_share_card_saved": "కార్డ్ ఫోటోలలో భద్రపరచబడింది.",
+  "ios_share_card_photos_denied": "ఫోటో అనుమతి ఆపివేయబడింది. కార్డ్‌లను భద్రపరచడానికి సెట్టింగ్స్‌లో ఫోటోలను జోడించడానికి అనుమతించండి."
  },
  "gu": {
   "rate_app_desc": "એપ સ્ટોર પર અમને રેટ કરો",
@@ -78,7 +90,10 @@
   "premium_unavailable": "હાલમાં ખરીદી ઉપલબ્ધ નથી. તમારી એપલ આઈડી તપાસીને ફરી પ્રયાસ કરો. મફત સુવિધાઓ ચાલુ રહે છે.",
   "ios_background_refresh": "બેકગ્રાઉન્ડ એપ રિફ્રેશ",
   "ios_background_refresh_desc": "રિમાઇન્ડર અને વિજેટ અદ્યતન રાખે છે",
-  "ios_share_message": "🙏 એકાદશી કેલેન્ડર - કોઈ એકાદશી ચૂકશો નહીં!\n\nઉપવાસના સમયના રિમાઇન્ડર મેળવો, દરેક એકાદશીની કથા અને મહત્વ વાંચો.\n\nહમણાં ડાઉનલોડ કરો: {value0}"
+  "ios_share_message": "🙏 એકાદશી કેલેન્ડર - કોઈ એકાદશી ચૂકશો નહીં!\n\nઉપવાસના સમયના રિમાઇન્ડર મેળવો, દરેક એકાદશીની કથા અને મહત્વ વાંચો.\n\nહમણાં ડાઉનલોડ કરો: {value0}",
+  "ios_share_card_save": "ફોટામાં સાચવો",
+  "ios_share_card_saved": "કાર્ડ ફોટામાં સાચવ્યું.",
+  "ios_share_card_photos_denied": "ફોટાની પરવાનગી બંધ છે. કાર્ડ સાચવવા માટે સેટિંગ્સમાં ફોટા ઉમેરવાની પરવાનગી આપો."
  },
  "bn": {
   "rate_app_desc": "অ্যাপ স্টোর-এ আমাদের রেট দিন",
@@ -94,6 +109,9 @@
   "premium_unavailable": "এখন কেনাকাটা করা যাচ্ছে না। আপনার অ্যাপল আইডি যাচাই করে আবার চেষ্টা করুন। বিনামূল্যের সুবিধাগুলো চালু থাকবে।",
   "ios_background_refresh": "ব্যাকগ্রাউন্ড অ্যাপ রিফ্রেশ",
   "ios_background_refresh_desc": "রিমাইন্ডার ও উইজেট হালনাগাদ রাখে",
-  "ios_share_message": "🙏 একাদশী ক্যালেন্ডার - কোনো একাদশী আর বাদ যাবে না!\n\nউপবাসের সময়ের রিমাইন্ডার পান, প্রতিটি একাদশীর কথা ও মাহাত্ম্য পড়ুন।\n\nএখনই ডাউনলোড করুন: {value0}"
+  "ios_share_message": "🙏 একাদশী ক্যালেন্ডার - কোনো একাদশী আর বাদ যাবে না!\n\nউপবাসের সময়ের রিমাইন্ডার পান, প্রতিটি একাদশীর কথা ও মাহাত্ম্য পড়ুন।\n\nএখনই ডাউনলোড করুন: {value0}",
+  "ios_share_card_save": "ফটোতে সংরক্ষণ করুন",
+  "ios_share_card_saved": "কার্ড ফটোতে সংরক্ষিত হয়েছে।",
+  "ios_share_card_photos_denied": "ফটোর অনুমতি বন্ধ আছে। কার্ড সংরক্ষণ করতে সেটিংসে ফটো যোগ করার অনুমতি দিন।"
  }
 }

@@ -44,6 +44,9 @@ final class ScreenshotTests: XCTestCase {
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 20))
         XCTAssertTrue(app.descendants(matching: .any)["home_options_tube"].exists)
         XCTAssertTrue(app.descendants(matching: .any)["language_menu"].exists)
+        XCTAssertTrue(element("home_tradition_menu").exists)
+        XCTAssertTrue(element("home_year_menu").exists)
+        XCTAssertTrue(element("home_location").exists)
         snap("01-today")
 
         app.buttons["view_details"].firstMatch.tap()
@@ -95,6 +98,152 @@ final class ScreenshotTests: XCTestCase {
         replaceSearch(with: "amavasai")
         XCTAssertTrue(result("search_result_observance:amavasya:").waitForExistence(timeout: 10))
         snap("11-search-type-word")
+    }
+
+    /// The four Home menus line up: location over tradition (same left and
+    /// right edges), language over year (same width), all the same height and
+    /// inside the screen, in English and in a longer script (Tamil).
+    /// Typing a city in Tamil keeps up with the keyboard and finds it (the
+    /// search froze typing and deleting outside English, 14 October 2026).
+    func testCitySearchKeepsUpWithTypingInTamil() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        element("language_menu").tap()
+        XCTAssertTrue(app.buttons["தமிழ்"].waitForExistence(timeout: 5))
+        app.buttons["தமிழ்"].tap()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 10))
+        element("home_location").tap()
+        let search = app.textFields["ekadashi_location_search"]
+        XCTAssertTrue(search.waitForExistence(timeout: 5))
+        search.tap()
+        let start = Date()
+        search.typeText("சென")
+        search.typeText(XCUIKeyboardKey.delete.rawValue)
+        search.typeText("ன")
+        XCTAssertLessThan(Date().timeIntervalSince(start), 10, "typing and deleting are not held up")
+        XCTAssertTrue(app.buttons["ekadashi_city_geonames-1264527"].waitForExistence(timeout: 10), "Chennai")
+        snap("14b-city-search-ta")
+        // Cancel by its key: its label is in Tamil here.
+        app.buttons["city_picker_cancel"].firstMatch.tap()
+        element("language_menu").tap()
+        XCTAssertTrue(app.buttons["English"].waitForExistence(timeout: 5))
+        app.buttons["English"].tap()
+    }
+
+    func testHomeMenusLineUpInEveryLanguage() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        func check(_ language: String) {
+            let location = element("home_location").frame, tradition = element("home_tradition_menu").frame
+            let languageMenu = element("language_menu").frame, year = element("home_year_menu").frame
+            let screen = app.windows.firstMatch.frame
+            XCTAssertEqual(location.minX, tradition.minX, accuracy: 1, language)
+            XCTAssertEqual(location.width, tradition.width, accuracy: 1, language)
+            XCTAssertEqual(languageMenu.width, year.width, accuracy: 1, language)
+            XCTAssertEqual(languageMenu.maxX, year.maxX, accuracy: 1, language)
+            XCTAssertEqual(location.height, languageMenu.height, accuracy: 1, language)
+            XCTAssertEqual(tradition.height, year.height, accuracy: 1, language)
+            XCTAssertEqual(location.height, tradition.height, accuracy: 1, language)
+            XCTAssertLessThan(location.maxX, languageMenu.minX, language)
+            for frame in [location, tradition, languageMenu, year] {
+                XCTAssertTrue(screen.contains(frame), "\(language): \(frame) inside \(screen)")
+            }
+        }
+        check("en")
+        snap("18-home-menus-en")
+        element("language_menu").tap()
+        XCTAssertTrue(app.buttons["தமிழ்"].waitForExistence(timeout: 5))
+        app.buttons["தமிழ்"].tap()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 10))
+        check("ta")
+        snap("19-home-menus-ta")
+        element("language_menu").tap()
+        XCTAssertTrue(app.buttons["English"].waitForExistence(timeout: 5))
+        app.buttons["English"].tap()
+    }
+
+    /// Home: the tradition and year menus, the city search and the free
+    /// share card (no paywall).
+    func testHomeMenusCitySearchAndShareCard() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+
+        element("home_tradition_menu").tap()
+        XCTAssertTrue(app.buttons["Vaishnava"].waitForExistence(timeout: 5))
+        app.buttons["Vaishnava"].tap()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        snap("12-home-vaishnava")
+
+        element("home_year_menu").tap()
+        XCTAssertTrue(app.buttons["2027"].waitForExistence(timeout: 5))
+        app.buttons["2027"].tap()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 10))
+        tab(1)
+        XCTAssertTrue(element("calendar_ekadashi_source").waitForExistence(timeout: 5))
+        // "Smarta • Chennai (IN)" sits under the date title, within the month
+        // header row (no extra row, so short screens keep the day in view).
+        let source = element("calendar_ekadashi_source").frame
+        let title = element("calendar_year_selector").frame
+        let next = element("calendar_next_month").frame
+        XCTAssertGreaterThanOrEqual(source.minY, title.maxY - 1)
+        XCTAssertLessThanOrEqual(source.maxY, next.maxY + 8)
+        snap("13-calendar-2027")
+        tab(0)
+
+        XCTAssertFalse(element("home_location_name").label.contains("•"), "no time zone beside the city")
+        element("home_location").tap()
+        let search = app.textFields["ekadashi_location_search"]
+        XCTAssertTrue(search.waitForExistence(timeout: 5))
+        // Never empty: popular cities before anything is typed.
+        // Lists build only the rows on screen: London is further down.
+        let london = app.buttons["ekadashi_city_geonames-2643743"]
+        XCTAssertTrue(reveal(london), "London is offered")
+        snap("14a-home-city-shortlist")
+        XCTAssertTrue(reveal(search, upwards: true), "search field")
+        search.tap()
+        search.typeText("Mumbai")
+        let mumbai = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Mumbai'")).firstMatch
+        XCTAssertTrue(mumbai.waitForExistence(timeout: 10))
+        snap("14-home-city-search")
+        mumbai.tap()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+
+        app.buttons["home_share_card"].firstMatch.tap()
+        XCTAssertTrue(element("share_card_preview").waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["share_card_share"].waitForExistence(timeout: 10))
+        XCTAssertFalse(app.buttons["premium_close"].exists, "the share card is free")
+        snap("15-share-card")
+    }
+
+    /// Panchang uses the same city picker as Home on every sub-tab, and every
+    /// city shows its time zone (not only India's IST).
+    func testPanchangUsesTheHomeCityPickerWithTimeZones() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        tab(3)
+        for page in ["keydays", "daily", "ekadashi"] {
+            app.buttons["panchang_tab_\(page)"].tap()
+            waitSelected("panchang_tab_\(page)")
+            app.buttons["panchang_city_selector"].firstMatch.tap()
+            XCTAssertTrue(app.textFields["ekadashi_location_search"].waitForExistence(timeout: 5), page)
+            let newYork = app.buttons["ekadashi_city_geonames-5128581"]
+            XCTAssertTrue(reveal(newYork), "\(page): popular cities")
+            XCTAssertTrue(newYork.label.contains("EDT") || newYork.label.contains("EST"), newYork.label)
+            snap("17-panchang-city-picker-\(page)")
+            app.buttons["city_picker_cancel"].firstMatch.tap()
+        }
+    }
+
+    /// Every Panchang sub-tab opens the same full calendar to pick a date.
+    func testEveryPanchangSubTabOpensTheFullCalendar() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        tab(3)
+        for page in ["keydays", "daily", "ekadashi"] {
+            app.buttons["panchang_tab_\(page)"].tap()
+            waitSelected("panchang_tab_\(page)")
+            let picker = page == "daily" ? "panchang_selected_date" : "panchang_selected_month"
+            XCTAssertTrue(app.buttons[picker].firstMatch.waitForExistence(timeout: 10), page)
+            app.buttons[picker].firstMatch.tap()
+            XCTAssertTrue(app.datePickers.firstMatch.waitForExistence(timeout: 5), "\(page) opens the full calendar")
+            snap("16-panchang-calendar-\(page)")
+            app.buttons["Done"].firstMatch.tap()
+        }
     }
 
     /// Sub-sections change with a horizontal swipe as well as their chips,
@@ -206,14 +355,9 @@ final class ScreenshotTests: XCTestCase {
         let choose = element("event_reminder_choose")
         XCTAssertTrue(choose.waitForExistence(timeout: 10), "editor sheet")
         choose.tap()
-        // My calendar is last in a long list whose off-screen rows are not in
-        // the accessibility tree; search narrows it to the entry.
-        let search = app.searchFields.firstMatch
-        XCTAssertTrue(search.waitForExistence(timeout: 10), "event picker")
-        search.tap()
-        search.typeText("my entries")
+        // My calendar comes first (then monthly observances, then festivals).
         let choice = element("event_choice_calendar:custom")
-        XCTAssertTrue(choice.waitForExistence(timeout: 10), "All my entries")
+        XCTAssertTrue(choice.waitForExistence(timeout: 10), "All custom events")
         choice.tap()
         XCTAssertTrue(element("event_reminder_lead_2").waitForExistence(timeout: 10))
         snap("12-event-reminder-editor")
@@ -227,8 +371,7 @@ final class ScreenshotTests: XCTestCase {
     func testTestNotificationKeepsTheAppRunning() {
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 20))
         tab(4)
-        // Found by its title: the Notifications section's own identifier
-        // (settings_notifications_tube) replaces the identifiers of its rows.
+        // Found by its title (the row has no identifier of its own).
         let send = app.staticTexts["Test Notification"].firstMatch
         // The row sits just below the first screen, under the floating tab
         // bar; scroll a third of the screen at a time until it can be tapped.
@@ -244,6 +387,67 @@ final class ScreenshotTests: XCTestCase {
         XCTAssertEqual(app.state, .runningForeground, "the app survived the notification")
         XCTAssertTrue(send.exists, "Settings is still on screen and responsive")
         snap("14-test-notification")
+    }
+
+    /// "No results found for" ends with the query, as on Android (UI parity
+    /// review, 12 October 2026).
+    func testNoResultsNamesTheQuery() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 20))
+        app.buttons["open_global_search"].firstMatch.tap()
+        XCTAssertTrue(app.searchFields.firstMatch.waitForExistence(timeout: 5))
+        app.searchFields.firstMatch.tap()
+        app.searchFields.firstMatch.typeText("zzqxnomatch\n")
+        let title = app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "\"zzqxnomatch\"")).firstMatch
+        XCTAssertTrue(title.waitForExistence(timeout: 10), "No results found for \"zzqxnomatch\"")
+        snap("16-no-results")
+    }
+
+    /// For a free user a locked festival in the reminder picker opens the
+    /// paywall with its reason and is not selected (UI parity review).
+    func testLockedReminderEventOpensThePaywall() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 20))
+        tab(4)
+        let add = app.buttons["notifications_add_event"]
+        for _ in 0..<8 where !(add.exists && add.isHittable) { app.swipeUp() }
+        XCTAssertTrue(add.waitForExistence(timeout: 5))
+        add.tap()
+        let choose = element("event_reminder_choose")
+        XCTAssertTrue(choose.waitForExistence(timeout: 10), "editor sheet")
+        choose.tap()
+        let search = app.searchFields.firstMatch
+        XCTAssertTrue(search.waitForExistence(timeout: 10), "event picker")
+        search.tap()
+        search.typeText("deepa")
+        let deepavali = element("event_choice_observance:deepavali")
+        XCTAssertTrue(deepavali.waitForExistence(timeout: 10))
+        deepavali.tap()
+        XCTAssertTrue(element("premium_reason").waitForExistence(timeout: 10), "the paywall says why it opened")
+        snap("17-locked-reminder-paywall")
+        // Closing the paywall without buying keeps the picker, nothing chosen.
+        app.swipeDown(velocity: .fast)
+        XCTAssertTrue(deepavali.waitForExistence(timeout: 10), "still in the picker")
+        XCTAssertFalse(element("event_reminder_save").isHittable)
+    }
+
+    /// With notifications off, the Ekadashi switches are off, "Disabled" and
+    /// greyed out, as on Android (UI parity review).
+    func testEkadashiRemindersFollowTheMasterSwitch() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 20))
+        tab(4)
+        let master = element("notifications_master")
+        // Small steps: a full-screen swipe scrolls past the row and the lazy
+        // list drops it.
+        for _ in 0..<12 where !(master.exists && master.isHittable) {
+            app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7))
+                .press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.4)))
+        }
+        XCTAssertTrue(master.waitForExistence(timeout: 5))
+        let reminder = element("notify_toggle_notify_2day")
+        XCTAssertTrue(reminder.waitForExistence(timeout: 5))
+        if (master.value as? String) == "1" { master.switches.firstMatch.exists ? master.switches.firstMatch.tap() : master.tap() }
+        let off = expectation(for: NSPredicate(format: "value == '0' AND isEnabled == false"), evaluatedWith: reminder)
+        XCTAssertEqual(XCTWaiter.wait(for: [off], timeout: 10), .completed, "off and greyed out")
+        snap("18-reminders-off")
     }
 
     /// Return ends editing, so focus the field again before replacing its text.
@@ -285,6 +489,19 @@ final class ScreenshotTests: XCTestCase {
             _ = query.firstMatch.waitForExistence(timeout: 0.5)
         } while Date() < end
         return nil
+    }
+
+    /// Scrolls a third of the screen at a time (down the list, or back up)
+    /// until [target] can be tapped: lists build only the rows on screen,
+    /// and a full-screen swipe can pass a row.
+    @discardableResult
+    private func reveal(_ target: XCUIElement, upwards: Bool = false) -> Bool {
+        for _ in 0..<15 where !(target.exists && target.isHittable) {
+            let from = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: upwards ? 0.4 : 0.7))
+            from.press(forDuration: 0.05,
+                       thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: upwards ? 0.7 : 0.4)))
+        }
+        return target.waitForExistence(timeout: 2) && target.isHittable
     }
 
     private func element(_ identifier: String) -> XCUIElement {

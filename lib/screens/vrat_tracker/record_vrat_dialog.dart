@@ -1,17 +1,20 @@
 import '../../l10n/app_language.dart';
-import '../../widgets/glass_tube.dart';
+import '../../widgets/ios_style.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../models/vrat_tracker_models.dart';
 import '../../services/ekadashi_service.dart';
+import '../../services/ekadashi_settings.dart';
 import '../../services/vrat_recording.dart';
 import '../../services/language_service.dart';
 import '../../services/vrat_tracker_service.dart';
 import '../../services/premium_service.dart';
 import '../premium_screen.dart';
+import '../../widgets/app_icons.dart';
 
-/// Modal bottom sheet for recording, editing, or deleting an Ekadashi observance.
+/// Records, edits or deletes one observance (iOS RecordVratSheet): a sheet
+/// with Cancel and a trash button in its bar.
 class RecordVratDialog extends StatefulWidget {
   final EkadashiDate ekadashi;
   final List<EkadashiDate> allOccurrences;
@@ -30,10 +33,9 @@ class RecordVratDialog extends StatefulWidget {
     required List<EkadashiDate> allOccurrences,
     required String currentTimezone,
   }) {
-    return showModalBottomSheet<List<Achievement>>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+    // An iOS sheet (.large) over the tab bar.
+    return showAppSheet<List<Achievement>>(
+      context,
       builder: (ctx) => RecordVratDialog(
         ekadashi: ekadashi,
         allOccurrences: allOccurrences,
@@ -47,13 +49,12 @@ class RecordVratDialog extends StatefulWidget {
 }
 
 class _RecordVratDialogState extends State<RecordVratDialog> {
-  static const Color tealColor = Color(0xFF00A19B);
-
   late ObservanceStatus _status;
   FastingMethod? _fastingMethod;
   late TextEditingController _otherMethodController;
   late TextEditingController _noteController;
   bool _isFutureEvent = false;
+  bool _saving = false;
   VratHistory? _existingRecord;
 
   @override
@@ -91,14 +92,7 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
 
   void _onStatusChanged(ObservanceStatus newStatus) {
     if (_isFutureEvent && newStatus != ObservanceStatus.unrecorded) {
-      final lang = Provider.of<LanguageService>(context, listen: false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(lang.translate('journey_record_after_parana')),
-          backgroundColor: Colors.orange.shade800,
-          duration: const Duration(seconds: 2),
-        ),
-      );
+      _toast('journey_record_after_parana');
       return;
     }
     setState(() {
@@ -106,15 +100,12 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
     });
   }
 
+  void _toast(String key) =>
+      showToast(context, context.read<LanguageService>().translate(key));
+
   Future<void> _save() async {
     if (_isFutureEvent) {
-      final lang = Provider.of<LanguageService>(context, listen: false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(lang.translate('journey_record_after_parana')),
-          backgroundColor: Colors.orange.shade800,
-        ),
-      );
+      _toast('journey_record_after_parana');
       return;
     }
 
@@ -125,17 +116,18 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
           widget.ekadashi.occurrenceUid,
           premium: premium?.isPremium == true,
         )) {
-      final lang = context.read<LanguageService>();
-      final messenger = ScaffoldMessenger.of(context);
-      await openPremium(context, currentTimezone: widget.currentTimezone);
+      await openPremium(
+        context,
+        currentTimezone: widget.currentTimezone,
+        reasonKey: 'vrat_free_limit_reached',
+      );
       if (!mounted) return;
       if (premium?.isPremium != true) {
-        messenger.showSnackBar(
-          SnackBar(content: Text(lang.translate('vrat_free_limit_reached'))),
-        );
+        _toast('vrat_free_limit_reached');
         return;
       }
     }
+    setState(() => _saving = true);
     final dateStr = DateFormat('yyyy-MM-dd').format(widget.ekadashi.date);
 
     try {
@@ -156,6 +148,8 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
         note: _noteController.text.trim().isNotEmpty
             ? _noteController.text.trim()
             : null,
+        // Home's tradition at the time of the fast (VratStore.save on iOS).
+        tradition: context.read<EkadashiSettings?>()?.tradition.name,
         timezone: widget.currentTimezone,
         occurrences: widget.allOccurrences,
       );
@@ -165,15 +159,8 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              context.read<LanguageService>().translate(
-                'tracker_storage_failed',
-              ),
-            ),
-          ),
-        );
+        setState(() => _saving = false);
+        _toast('tracker_storage_failed');
       }
     }
   }
@@ -192,7 +179,7 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(foregroundColor: IosColors.red(ctx)),
             child: Text(lang.translate('delete_record')),
           ),
         ],
@@ -211,11 +198,7 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
           Navigator.of(context).pop(<Achievement>[]);
         }
       } catch (_) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(lang.translate('tracker_storage_failed'))),
-          );
-        }
+        if (mounted) _toast('tracker_storage_failed');
       }
     }
   }
@@ -223,333 +206,226 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
   @override
   Widget build(BuildContext context) {
     final lang = Provider.of<LanguageService>(context);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final formattedDate = AppStrings.fullDate(
       widget.ekadashi.date,
       lang.currentLocale.languageCode,
     );
+    final orange = IosColors.orange(context);
+    final fasting =
+        _status == ObservanceStatus.observed ||
+        _status == ObservanceStatus.partial;
+    final fieldBorder = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: BorderSide(color: IosColors.separator(context)),
+    );
+    InputDecoration field(String hintKey) => InputDecoration(
+      hintText: lang.translate(hintKey),
+      isDense: true,
+      filled: true,
+      fillColor: IosColors.groupedCard(context),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      border: fieldBorder,
+      enabledBorder: fieldBorder,
+      focusedBorder: fieldBorder.copyWith(
+        borderSide: const BorderSide(color: IosColors.teal),
+      ),
+    );
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      padding: EdgeInsets.only(
-        top: 20,
-        left: 20,
-        right: 20,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-      ),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Handle bar
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  color: Colors.grey.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
+    return Material(
+      type: MaterialType.transparency,
+      child: Column(
+        children: [
+          SheetBar(
+            title: '',
+            leading: BarTextButton(
+              key: const Key('vrat_record_cancel'),
+              label: lang.translate('cancel'),
+              onPressed: () => Navigator.of(context).pop(),
             ),
-
-            // Header: Name & Date
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
+            trailing: _existingRecord == null
+                ? null
+                : IconButton(
+                    key: const Key('vrat_record_delete'),
+                    tooltip: lang.translate('delete_record'),
+                    onPressed: _delete,
+                    icon: Icon(AppIcons.delete, color: IosColors.red(context)),
+                  ),
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.fromLTRB(
+                20,
+                20,
+                20,
+                MediaQuery.of(context).viewInsets.bottom + 20,
+              ),
+              child: Column(
+                key: const Key('vrat_record_form'),
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                spacing: 20,
+                children: [
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    spacing: 4,
                     children: [
                       Text(
                         widget.ekadashi.name,
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
+                        style: TextStyle(
+                          fontSize: IosText.title3,
+                          fontWeight: FontWeight.w700,
+                          color: IosColors.primary(context),
                         ),
                       ),
-                      const SizedBox(height: 4),
                       Text(
                         formattedDate,
                         style: TextStyle(
-                          fontSize: 13,
-                          color: isDark
-                              ? Colors.grey.shade400
-                              : Colors.grey.shade700,
+                          fontSize: IosText.footnote,
+                          color: IosColors.secondary(context),
                         ),
                       ),
                     ],
                   ),
-                ),
-                if (_existingRecord != null)
-                  IconButton(
-                    icon: const Icon(
-                      Icons.delete_outline,
-                      color: Colors.redAccent,
-                    ),
-                    tooltip: lang.translate('delete_record'),
-                    onPressed: _delete,
-                  ),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            // Future warning if applicable
-            if (_isFutureEvent) ...[
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.orange.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: Colors.orange.withValues(alpha: 0.3),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.info_outline,
-                      size: 16,
-                      color: Colors.orange,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        lang.translate('journey_record_after_parana'),
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.orange,
-                        ),
+                  if (_isFutureEvent)
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: orange.withValues(alpha: .1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            AppIcons.info,
+                            size: IosText.caption + 2,
+                            color: orange,
+                          ),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              lang.translate('journey_record_after_parana'),
+                              style: TextStyle(
+                                fontSize: IosText.caption,
+                                color: orange,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
+                  _label(lang.translate('status_active')),
+                  // Natural-width chips spread across the row, wrapping
+                  // only when they do not fit (large text).
+                  Wrap(
+                    key: const Key('vrat_record_status_tube'),
+                    alignment: WrapAlignment.spaceBetween,
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _buildStatusChip(
+                        ObservanceStatus.observed,
+                        lang.translate('observed'),
+                        AppIcons.statusObserved,
+                      ),
+                      _buildStatusChip(
+                        ObservanceStatus.partial,
+                        lang.translate('partial'),
+                        AppIcons.statusPartial,
+                      ),
+                      _buildStatusChip(
+                        ObservanceStatus.missed,
+                        lang.translate('missed'),
+                        AppIcons.statusMissed,
+                      ),
+                    ],
+                  ),
+                  if (fasting) ...[
+                    _label(lang.translate('fasting_method')),
+                    Wrap(
+                      key: const Key('vrat_fasting_method_tube'),
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (final (method, key) in const [
+                          (FastingMethod.fullFast, 'method_full_fast'),
+                          (FastingMethod.waterOnly, 'method_water_only'),
+                          (FastingMethod.fruitsMilk, 'method_fruits_milk'),
+                          (FastingMethod.oneMeal, 'method_one_meal'),
+                          (FastingMethod.other, 'method_other'),
+                        ])
+                          GlassChip(
+                            key: Key('vrat_method_${method.name}'),
+                            label: lang.translate(key),
+                            selected: _fastingMethod == method,
+                            onTap: () =>
+                                setState(() => _fastingMethod = method),
+                          ),
+                      ],
+                    ),
+                    if (_fastingMethod == FastingMethod.other)
+                      TextField(
+                        controller: _otherMethodController,
+                        decoration: field('method_other_hint'),
+                      ),
                   ],
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
-
-            // Status Selector Chips
-            Text(
-              lang.translate('status_active'),
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: tealColor,
-              ),
-            ),
-            const SizedBox(height: 8),
-            GlassTube(
-              key: const Key('vrat_record_status_tube'),
-              optionCount: 3,
-              child: Row(
-                children: [
-                  _buildStatusChip(
-                    ObservanceStatus.observed,
-                    lang.translate('observed'),
-                    Icons.check_circle_outline,
+                  _label(lang.translate('notes')),
+                  TextField(
+                    key: const Key('vrat_record_notes'),
+                    controller: _noteController,
+                    minLines: 3,
+                    maxLines: 5,
+                    decoration: field('notes_hint'),
                   ),
-                  const SizedBox(width: 8),
-                  _buildStatusChip(
-                    ObservanceStatus.partial,
-                    lang.translate('partial'),
-                    Icons.adjust,
-                  ),
-                  const SizedBox(width: 8),
-                  _buildStatusChip(
-                    ObservanceStatus.missed,
-                    lang.translate('missed'),
-                    Icons.highlight_off,
+                  FilledButton(
+                    key: const Key('vrat_record_save'),
+                    onPressed: _saving ? null : _save,
+                    style: IosButtons.prominent(),
+                    child: Text(
+                      _existingRecord != null
+                          ? lang.translate('edit_record')
+                          : lang.translate('record_observance'),
+                      textAlign: TextAlign.center,
+                      style: IosButtons.label,
+                    ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 20),
-
-            // Fasting Method (if Observed or Partial)
-            if (_status == ObservanceStatus.observed ||
-                _status == ObservanceStatus.partial) ...[
-              Text(
-                lang.translate('fasting_method'),
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: tealColor,
-                ),
-              ),
-              const SizedBox(height: 8),
-              GlassTube(
-                key: const Key('vrat_fasting_method_tube'),
-                optionCount: 5,
-                child: Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    _buildMethodChip(
-                      FastingMethod.fullFast,
-                      lang.translate('method_full_fast'),
-                    ),
-                    _buildMethodChip(
-                      FastingMethod.waterOnly,
-                      lang.translate('method_water_only'),
-                    ),
-                    _buildMethodChip(
-                      FastingMethod.fruitsMilk,
-                      lang.translate('method_fruits_milk'),
-                    ),
-                    _buildMethodChip(
-                      FastingMethod.oneMeal,
-                      lang.translate('method_one_meal'),
-                    ),
-                    _buildMethodChip(
-                      FastingMethod.other,
-                      lang.translate('method_other'),
-                    ),
-                  ],
-                ),
-              ),
-              if (_fastingMethod == FastingMethod.other) ...[
-                const SizedBox(height: 10),
-                TextField(
-                  controller: _otherMethodController,
-                  decoration: InputDecoration(
-                    hintText: lang.translate('method_other_hint'),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 10,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                ),
-              ],
-              const SizedBox(height: 20),
-            ],
-
-            // Personal Notes Field
-            Text(
-              lang.translate('notes'),
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: tealColor,
-              ),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _noteController,
-              maxLines: 3,
-              decoration: InputDecoration(
-                hintText: lang.translate('notes_hint'),
-                contentPadding: const EdgeInsets.all(12),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Save / Record button
-            ElevatedButton(
-              onPressed: _save,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: tealColor,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: Text(
-                _existingRecord != null
-                    ? lang.translate('edit_record')
-                    : lang.translate('record_observance'),
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
+  /// A section label: footnote, semibold, teal.
+  Widget _label(String text) => Text(
+    text,
+    style: const TextStyle(
+      fontSize: IosText.footnote,
+      fontWeight: FontWeight.w600,
+      color: IosColors.teal,
+    ),
+  );
+
+  /// A status chip in the status's colour, with its symbol inline.
   Widget _buildStatusChip(
     ObservanceStatus status,
     String label,
     IconData icon,
-  ) {
-    final isSelected = _status == status;
-    return Expanded(
-      child: InkWell(
-        onTap: () => _onStatusChanged(status),
-        borderRadius: BorderRadius.circular(10),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? GlassTubeColors.optionSelection(context)
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: isSelected ? GlassTubeColors.teal : Colors.transparent,
-              width: isSelected ? 1.8 : 1,
-            ),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                icon,
-                size: 20,
-                color: isSelected
-                    ? GlassTubeColors.teal
-                    : GlassTubeColors.foreground(context),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  color: isSelected
-                      ? GlassTubeColors.teal
-                      : GlassTubeColors.foreground(context),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMethodChip(FastingMethod method, String label) {
-    final isSelected = _fastingMethod == method;
-    return ChoiceChip(
-      label: Text(label),
-      selected: isSelected,
-      selectedColor: GlassTubeColors.optionSelection(context),
-      backgroundColor: Colors.transparent,
-      side: BorderSide.none,
-      checkmarkColor: GlassTubeColors.teal,
-      labelStyle: TextStyle(
-        fontSize: 12,
-        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-        color: isSelected ? tealColor : null,
-      ),
-      onSelected: (_) {
-        setState(() {
-          _fastingMethod = method;
-        });
-      },
-    );
-  }
+  ) => GlassChip(
+    key: Key('vrat_status_${status.name}'),
+    label: label,
+    icon: icon,
+    color: vratStatusColor(context, status),
+    selected: _status == status,
+    onTap: () => _onStatusChanged(status),
+  );
 }
+
+/// The colour of an observance status (iOS VratStatusStyle.color).
+Color vratStatusColor(BuildContext context, ObservanceStatus? status) =>
+    switch (status ?? ObservanceStatus.unrecorded) {
+      ObservanceStatus.observed => IosColors.green(context),
+      ObservanceStatus.partial => IosColors.partial,
+      ObservanceStatus.missed => IosColors.missed,
+      ObservanceStatus.unrecorded => IosColors.gray(context),
+    };

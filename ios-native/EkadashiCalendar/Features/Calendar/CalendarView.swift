@@ -18,8 +18,13 @@ struct CalendarView: View {
     @State private var syncing = false
     @State private var editing: EntryEditorRequest?
     @State private var pickingMonth = false
+    /// The direction the month grid slides in (a later month from the right).
+    @State private var forward = true
+    /// Month changes slide visibly rather than snapping.
+    static let monthSlide = Animation.easeInOut(duration: CalendarMotion.monthSlideSeconds)
 
-    private var years: [Int] { model.repository?.availableYears ?? [CivilDate.today().year] }
+    /// The enabled Ekadashi years (assets/calendar/ekadashi_years.json).
+    private var years: [Int] { model.enabledYears }
     private var firstDay: CivilDate { CivilDate(years.first ?? month.year, 1, 1) }
     private var lastDay: CivilDate { CivilDate(years.last ?? month.year, 12, 31) }
     private var isFirstMonth: Bool { month == firstDay.firstOfMonth }
@@ -52,12 +57,18 @@ struct CalendarView: View {
                     MonthGrid(month: month, selected: selected, today: CivilDate.today(), firstDay: firstDay, lastDay: lastDay,
                               markers: { markers(for: $0, loaded.list) }, select: { selected = $0 })
                         .padding(.horizontal, 12)
+                        .id(month)
+                        .transition(.push(from: forward ? .trailing : .leading))
                     selectedDay(loaded.list)
                 }
                 .contentShape(Rectangle())
-                .simultaneousGesture(DragGesture(minimumDistance: 30).onEnded { value in
-                    let dx = value.translation.width, dy = value.translation.height
-                    guard abs(dx) > 60, abs(dx) > abs(dy) else { return }
+                .clipped()
+                // A swipe moves the month exactly as the arrows do (same slide).
+                // A flick counts by where it is heading, so a quick swipe turns the
+                // month as promptly as an arrow tap.
+                .simultaneousGesture(DragGesture(minimumDistance: 20).onEnded { value in
+                    let dx = value.predictedEndTranslation.width, dy = value.translation.height
+                    guard abs(dx) > 50, abs(dx) > abs(dy) else { return }
                     move(dx < 0 ? 1 : -1)
                 })
             }
@@ -71,7 +82,7 @@ struct CalendarView: View {
                     .accessibilityIdentifier("calendar_today")
             }
             ToolbarItemGroup(placement: .topBarTrailing) {
-                Button { editing = EntryEditorRequest(day: selected, existing: nil) } label: { Image(systemName: "plus") }
+                Button { editing = EntryEditorRequest(day: selected, existing: nil) } label: { Image(systemName: AppSymbol.add) }
                     .disabled(loaded.failed)
                     .accessibilityLabel(model.t("add_entry"))
                     .accessibilityIdentifier("add_calendar_entry")
@@ -84,6 +95,8 @@ struct CalendarView: View {
                 .presentationDetents([.height(320)])
         }
         .onAppear { focusInitial() }
+        // Home's year menu and Calendar stay on the same year.
+        .onChange(of: month) { _, value in model.calendarShowsYear(value.year) }
         .onChange(of: model.calendarFocus) { _, date in
             guard let date else { return }
             focus(date)
@@ -100,15 +113,15 @@ struct CalendarView: View {
         } else {
             Menu {
                 Button { Task { await sync() } } label: {
-                    Label(model.t("sync_google"), systemImage: "arrow.triangle.2.circlepath")
+                    Label(model.t("sync_google"), systemImage: AppSymbol.googleSync)
                 }
                 .accessibilityIdentifier("import_google_year")
                 Button(role: .destructive) { Task { await disconnect() } } label: {
-                    Label(model.t("disconnect_google"), systemImage: "person.crop.circle.badge.minus")
+                    Label(model.t("disconnect_google"), systemImage: AppSymbol.googleDisconnect)
                 }
                 .accessibilityIdentifier("disconnect_google")
             } label: {
-                Image(systemName: "arrow.triangle.2.circlepath.circle")
+                Image(systemName: AppSymbol.googleMenu)
             }
             .accessibilityLabel(model.t("google_calendar"))
             .accessibilityIdentifier("calendar_google_menu")
@@ -138,20 +151,29 @@ struct CalendarView: View {
     /// The selected date opens the month and year picker; arrows step months.
     private var monthHeader: some View {
         HStack(spacing: 0) {
-            Button { pickingMonth = true } label: {
-                HStack(spacing: 6) {
-                    // The selected date in full, as on every tab.
-                    Text(model.fullDate(selected)).font(.title3.weight(.bold)).foregroundStyle(.primary)
-                    Image(systemName: "chevron.down").font(.footnote.weight(.bold)).foregroundStyle(Theme.teal)
+            VStack(alignment: .leading, spacing: 2) {
+                Button { pickingMonth = true } label: {
+                    HStack(spacing: 6) {
+                        // The selected date in full, as on every tab.
+                        Text(model.fullDate(selected)).font(.title3.weight(.bold)).foregroundStyle(.primary)
+                        Image(systemName: AppSymbol.menuDisclosure).font(.footnote.weight(.bold)).foregroundStyle(Theme.teal)
+                    }
                 }
+                .accessibilityIdentifier("calendar_year_selector")
+                // Where and how the Ekadashis are calculated (Home's menus),
+                // under the date so short screens keep the day in view.
+                Text("\(model.traditionName(model.tradition)) • \(model.ekadashiCityName)")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .accessibilityIdentifier("calendar_ekadashi_source")
             }
-            .accessibilityIdentifier("calendar_year_selector")
             Spacer()
-            Button { move(-1) } label: { Image(systemName: "chevron.left").frame(width: 44, height: 44) }
+            Button { move(-1) } label: { Image(systemName: AppSymbol.previous).frame(width: 44, height: 44) }
                 .disabled(isFirstMonth)
                 .accessibilityLabel(model.fullDate(selected.steppingMonths(-1)))
                 .accessibilityIdentifier("calendar_previous_month")
-            Button { move(1) } label: { Image(systemName: "chevron.right").frame(width: 44, height: 44) }
+            Button { move(1) } label: { Image(systemName: AppSymbol.next).frame(width: 44, height: 44) }
                 .disabled(isLastMonth)
                 .accessibilityLabel(model.fullDate(selected.steppingMonths(1)))
                 .accessibilityIdentifier("calendar_next_month")
@@ -171,7 +193,9 @@ struct CalendarView: View {
                 Text(model.t("no_ekadashi")).font(.subheadline).foregroundStyle(.secondary)
             }
             if filter != .ekadashi {
+                // An Ekadashi is the day's entry: no "No entries for this day".
                 DayEntriesList(day: selected, entries: list, filter: filter,
+                               showsEmptyText: selectedEkadashi == nil || filter != .all,
                                edit: { editing = EntryEditorRequest(day: selected, existing: $0) }, delete: delete)
             }
         }
@@ -181,15 +205,19 @@ struct CalendarView: View {
 
     // MARK: Navigation
 
+    /// Opens on the year chosen on Home: today in this year, else its January.
     private func focusInitial() {
-        if month < firstDay.firstOfMonth || month > lastDay.firstOfMonth { focus(CivilDate.today()) }
+        guard month.year != model.selectedYear else { return }
+        let today = CivilDate.today()
+        focus(today.year == model.selectedYear ? today : CivilDate(model.selectedYear, 1, 1))
     }
 
     /// Today, clamped to the data years.
     private func focus(_ date: CivilDate) {
         let target = min(max(date, firstDay), lastDay)
         selected = target
-        withAnimation(.easeInOut(duration: 0.25)) { month = target.firstOfMonth }
+        forward = target.firstOfMonth >= month
+        withAnimation(Self.monthSlide) { month = target.firstOfMonth }
     }
 
     /// A picked month selects today when it is this month, else its first day.
@@ -204,7 +232,8 @@ struct CalendarView: View {
         let target = month.adding(months: months).firstOfMonth
         guard target >= firstDay.firstOfMonth, target <= lastDay.firstOfMonth else { return }
         selected = min(max(selected.steppingMonths(months), firstDay), lastDay)
-        withAnimation(.easeInOut(duration: 0.3)) { month = target }
+        forward = months > 0
+        withAnimation(Self.monthSlide) { month = target }
     }
 
     private func markers(for day: CivilDate, _ list: [CalendarEntry]) -> [Color] {
@@ -351,13 +380,15 @@ struct DayEntriesList: View {
     let day: CivilDate
     let entries: [CalendarEntry]
     let filter: CalendarFilter
+    /// "No entries for this day" when nothing is listed; off when the day
+    /// shows its Ekadashi.
+    var showsEmptyText = true
     let edit: (CalendarEntry) -> Void
     let delete: (CalendarEntry) -> Void
 
     var body: some View {
         let zone = TimeZone.current
-        let items = entries
-            .filter { $0.occurs(on: day, in: zone) }
+        let items = CalendarEntry.withoutDuplicateGoogle(entries.filter { $0.occurs(on: day, in: zone) })
             .filter { entry in
                 switch filter {
                 case .all: return true
@@ -368,7 +399,10 @@ struct DayEntriesList: View {
             }
             .sorted { $0.interval(in: zone).0 < $1.interval(in: zone).0 }
         if items.isEmpty {
-            Text(model.t("no_entries")).font(.subheadline).foregroundStyle(.secondary).padding(24)
+            if showsEmptyText {
+                Text(model.t("no_entries")).font(.subheadline).foregroundStyle(.secondary)
+                    .padding(.horizontal, 24).padding(.vertical, 16)
+            }
         } else {
             VStack(spacing: 8) {
                 ForEach(items) { entry in row(entry) }
@@ -386,7 +420,7 @@ struct DayEntriesList: View {
                 Text(subtitle).font(.caption).foregroundStyle(.secondary).lineLimit(2)
             }
             Spacer()
-            if entry.source == .custom { Image(systemName: "pencil").font(.footnote).foregroundStyle(.secondary) }
+            if entry.source == .custom { Image(systemName: AppSymbol.edit).font(.footnote).foregroundStyle(.secondary) }
         }
         .padding(12)
         .glassPanel(cornerRadius: 14)
@@ -394,8 +428,8 @@ struct DayEntriesList: View {
         .onTapGesture { if entry.source == .custom { edit(entry) } }
         .contextMenu {
             if entry.source == .custom {
-                Button(model.t("edit_entry"), systemImage: "pencil") { edit(entry) }
-                Button(model.t("delete_record"), systemImage: "trash", role: .destructive) { delete(entry) }
+                Button(model.t("edit_entry"), systemImage: AppSymbol.edit) { edit(entry) }
+                Button(model.t("delete_record"), systemImage: AppSymbol.delete, role: .destructive) { delete(entry) }
             }
         }
     }

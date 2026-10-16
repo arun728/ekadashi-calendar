@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../widgets/settings_group.dart';
+import '../../widgets/app_icons.dart';
 
 /// The Permissions card, like iOS: App Settings (opens the system settings)
 /// and the Permissions Guide, as two separate rows.
@@ -21,7 +22,7 @@ class SettingsPermissionActions extends StatelessWidget {
     children: [
       ListTile(
         key: const Key('permission_settings_action'),
-        leading: const SettingsIcon(Icons.settings_outlined),
+        leading: const SettingsIcon(AppIcons.appSettings),
         title: Text(settingsTitle),
         subtitle: Text(settingsSubtitle),
         onTap: onSettings,
@@ -29,7 +30,7 @@ class SettingsPermissionActions extends StatelessWidget {
       const SettingsSeparator(inset: SettingsStyle.iconInset),
       ListTile(
         key: const Key('permission_guide_action'),
-        leading: const SettingsIcon(Icons.info_outline),
+        leading: const SettingsIcon(AppIcons.info),
         title: Text(guideTitle),
         onTap: onGuide,
       ),

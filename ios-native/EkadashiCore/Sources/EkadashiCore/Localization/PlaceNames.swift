@@ -2,8 +2,8 @@ import Foundation
 
 /// City and country names in the app language (Resources/panchang/
 /// place_names.json, generated from assets/ and shared with Android).
-/// Names not in the table keep the spelling the location service or
-/// GeoNames gave them.
+/// Names not in the table are written in the language's script by sound
+/// (Transliterator), so a city never shows in Latin letters outside English.
 public final class PlaceNames: @unchecked Sendable {
     public static let shared: PlaceNames = {
         (try? PlaceNames(data: CoreResources.data("panchang/place_names.json"))) ?? PlaceNames()
@@ -27,10 +27,20 @@ public final class PlaceNames: @unchecked Sendable {
         self.countries = countries
     }
 
-    /// [name] in [language], or [name] when the table has no translation.
+    /// [name] in [language]: the table's translation, else [name] written in
+    /// the language's script by sound.
     public func place(_ name: String, language: String) -> String {
         guard language != "en", !name.isEmpty else { return name }
-        return places[name]?[language] ?? places[name.trimmingCharacters(in: .whitespaces)]?[language] ?? name
+        return translation(name, language: language) ?? Transliterator.transliterate(name, language: language)
+    }
+
+    /// Whether the table has [name] in [language] (else it is transliterated).
+    public func isKnown(_ name: String, language: String) -> Bool {
+        language == "en" || translation(name, language: language) != nil
+    }
+
+    func translation(_ name: String, language: String) -> String? {
+        places[name]?[language] ?? places[name.trimmingCharacters(in: .whitespaces)]?[language]
     }
 
     /// The country with ISO code [code] in [language]; the code in English.

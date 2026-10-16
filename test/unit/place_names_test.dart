@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:ekadashi_calendar/l10n/place_names.dart';
+import 'package:ekadashi_calendar/l10n/transliterator.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Cities and countries show in the app language (assets/panchang/
@@ -14,7 +15,14 @@ void main() {
     expect(PlaceNames.place('Chennai', 'hi'), 'चेन्नई');
     expect(PlaceNames.place('New Delhi', 'bn'), 'নয়াদিল্লি');
     expect(PlaceNames.place('Chennai', 'en'), 'Chennai');
-    expect(PlaceNames.place('Nowhere', 'ta'), 'Nowhere');
+    // A place the table lacks is written by sound, never left in Latin.
+    expect(PlaceNames.place('Nowhere', 'ta'), transliterate('Nowhere', 'ta'));
+    expect(
+      RegExp('[A-Za-z]').hasMatch(PlaceNames.place('Nowhere', 'ta')),
+      isFalse,
+    );
+    expect(PlaceNames.isKnown('Nowhere', 'ta'), isFalse);
+    expect(PlaceNames.place('Nowhere', 'en'), 'Nowhere');
     expect(PlaceNames.label('London (GB)', 'gu'), 'લંડન (યુનાઇટેડ કિંગડમ)');
     expect(PlaceNames.label('London (GB)', 'en'), 'London (GB)');
     expect(PlaceNames.country('IN', 'te'), 'భారతదేశం');
@@ -30,7 +38,9 @@ void main() {
       if (row[3] != 'IN') continue;
       final label = '${row[1]} (IN)';
       for (final language in ['hi', 'ta', 'te', 'gu', 'bn']) {
-        if (latin.hasMatch(PlaceNames.label(label, language))) {
+        // Indian cities come from the written table, not transliteration.
+        if (!PlaceNames.isKnown(row[1] as String, language) ||
+            latin.hasMatch(PlaceNames.label(label, language))) {
           missing.add('$language: $label');
         }
       }

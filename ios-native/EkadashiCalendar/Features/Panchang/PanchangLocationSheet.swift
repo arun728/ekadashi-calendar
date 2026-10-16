@@ -1,27 +1,43 @@
 import SwiftUI
 import EkadashiCore
 
-/// Search the offline worldwide city list, use the current location, or
-/// enter coordinates and an IANA timezone (panchang_location_dialog.dart).
+/// The Panchang location, for every sub-tab: the same picker as Home
+/// (search, current location, recent and popular cities with their time
+/// zones), plus coordinates and an IANA timezone entered by hand.
+/// Choosing here does not move Home's Ekadashi city.
 struct PanchangLocationSheet: View {
+    @Environment(AppModel.self) private var model
+    let city: PanchangCity
+    let save: (PanchangCity) -> Void
+
+    var body: some View {
+        CityPickerSheet(
+            title: model.t("panchang_location_title"), footer: "", current: city, symbol: AppSymbol.panchangCity,
+            pick: save,
+            locate: {
+                guard await model.location.requestPermission() else { return "panchang_location_denied" }
+                guard let fix = await model.location.currentFix(store: model.store),
+                      let place = AppModel.city(from: fix) else { return "panchang_location_unavailable" }
+                RecentCities(store: model.store).add(place)
+                save(place)
+                return nil
+            }) {
+            ManualCoordinatesSection(city: city, save: save)
+        }
+    }
+}
+
+/// Coordinates and an IANA timezone typed by hand (panchang_location_dialog.dart).
+private struct ManualCoordinatesSection: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
     let city: PanchangCity
     let save: (PanchangCity) -> Void
-
-    @State private var search = ""
     @State private var name = ""
     @State private var latitude = ""
     @State private var longitude = ""
     @State private var zone = ""
-    @State private var message: String?
-    @State private var busy = false
     @State private var loaded = false
-
-    private var matches: [PanchangCity] {
-        let q = search.trimmingCharacters(in: .whitespaces)
-        return q.count < 2 ? [] : PanchangCityCatalog.shared.search(q, language: model.language, limit: 12)
-    }
 
     private var candidate: PanchangCity? {
         guard let lat = Double(latitude.trimmingCharacters(in: .whitespaces)),
@@ -32,56 +48,24 @@ struct PanchangLocationSheet: View {
     }
 
     var body: some View {
-        NavigationStack {
-            Form {
-                Section {
-                    TextField(model.t("panchang_search_cities"), text: $search)
-                        .textInputAutocapitalization(.words)
-                        .autocorrectionDisabled()
-                    ForEach(matches, id: \.self) { item in
-                        Button { select(item) } label: {
-                            VStack(alignment: .leading) {
-                                Text(PlaceNames.shared.label(item.label, language: model.language)).foregroundStyle(.primary)
-                                Text(item.timeZoneLabel(language: model.language)).font(.caption).foregroundStyle(.secondary)
-                            }
-                        }
-                    }
-                    Button {
-                        Task { await useCurrentLocation() }
-                    } label: {
-                        Label(model.t(busy ? "panchang_locating" : "panchang_use_current_location"), systemImage: "location")
-                    }
-                    .disabled(busy)
-                    if let message { Text(message).font(.caption).foregroundStyle(.secondary) }
-                }
-                Section {
-                    TextField(model.t("panchang_location_name"), text: $name).accessibilityIdentifier("location_name")
-                    TextField(model.t("panchang_latitude"), text: $latitude).keyboardType(.numbersAndPunctuation)
-                        .accessibilityIdentifier("location_latitude")
-                    TextField(model.t("panchang_longitude"), text: $longitude).keyboardType(.numbersAndPunctuation)
-                        .accessibilityIdentifier("location_longitude")
-                    TextField(model.t("panchang_timezone"), text: $zone).autocorrectionDisabled().textInputAutocapitalization(.never)
-                        .accessibilityIdentifier("location_timezone")
-                } footer: {
-                    Text(model.t("panchang_location_footer"))
-                }
+        Section {
+            TextField(model.t("panchang_location_name"), text: $name).accessibilityIdentifier("location_name")
+            TextField(model.t("panchang_latitude"), text: $latitude).keyboardType(.numbersAndPunctuation)
+                .accessibilityIdentifier("location_latitude")
+            TextField(model.t("panchang_longitude"), text: $longitude).keyboardType(.numbersAndPunctuation)
+                .accessibilityIdentifier("location_longitude")
+            TextField(model.t("panchang_timezone"), text: $zone).autocorrectionDisabled().textInputAutocapitalization(.never)
+                .accessibilityIdentifier("location_timezone")
+            Button(model.t("panchang_save_location")) {
+                guard let candidate else { return }
+                save(candidate)
+                dismiss()
             }
-            .scrollContentBackground(.hidden)
-            .navigationTitle(model.t("panchang_location_title"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button(model.t("cancel")) { dismiss() } }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(model.t("panchang_save_location")) {
-                        guard let candidate else { return }
-                        save(candidate)
-                        dismiss()
-                    }
-                    .disabled(candidate == nil || busy)
-                }
-            }
+            .disabled(candidate == nil)
+            .accessibilityIdentifier("location_save_coordinates")
+        } footer: {
+            Text(model.t("panchang_location_footer"))
         }
-        .presentationBackground(.thinMaterial)
         .onAppear {
             guard !loaded else { return }
             loaded = true
@@ -90,32 +74,5 @@ struct PanchangLocationSheet: View {
             longitude = String(city.longitude)
             zone = city.timeZoneId
         }
-    }
-
-    private func select(_ item: PanchangCity) {
-        name = item.label
-        latitude = String(item.latitude)
-        longitude = String(item.longitude)
-        zone = item.timeZoneId
-        search = ""
-    }
-
-    private func useCurrentLocation() async {
-        busy = true
-        message = nil
-        defer { busy = false }
-        guard await model.location.requestPermission() else {
-            message = model.t("panchang_location_denied")
-            return
-        }
-        guard let fix = await model.location.currentFix(store: model.store) else {
-            message = model.t("panchang_location_unavailable")
-            return
-        }
-        name = fix.city
-        latitude = String(fix.latitude)
-        longitude = String(fix.longitude)
-        zone = fix.zoneIdentifier ?? TimeZone.current.identifier
-        message = model.t("panchang_location_received")
     }
 }

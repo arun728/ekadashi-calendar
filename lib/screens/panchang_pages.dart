@@ -1,5 +1,7 @@
 import 'dart:isolate';
+import 'dart:math' as math;
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -14,16 +16,20 @@ import '../services/panchang/panchang_models.dart';
 import '../services/panchang/panchang_terms.dart';
 import '../services/premium_service.dart';
 import '../services/search/search_catalog.dart';
-import '../widgets/glass_tube.dart';
+import '../widgets/ios_style.dart';
 import 'global_search_screen.dart' show searchCategoryIcon;
 import 'premium_screen.dart';
+import '../widgets/app_icons.dart';
 
-/// Colours shared by the Panchang pages (the iOS Theme).
+/// Colours shared by the Panchang pages (the iOS Theme: teal, amber,
+/// Theme.missed; good is Theme.observed, SwiftUI .green, see [good]).
 abstract final class PanchangColors {
-  static const teal = GlassTubeColors.teal;
-  static const good = Color(0xFF22C55E);
-  static const avoid = Color(0xFFEF4444);
-  static const amber = Color(0xFFF59E0B);
+  static const teal = IosColors.teal;
+  static const avoid = IosColors.missed;
+  static const amber = IosColors.amber;
+
+  /// Theme.observed (the system green, lighter in dark mode).
+  static Color good(BuildContext context) => IosColors.green(context);
 }
 
 String _lang(BuildContext context) =>
@@ -32,7 +38,23 @@ String _lang(BuildContext context) =>
 String _t(BuildContext context, String key, [List<String> args = const []]) =>
     AppStrings.translateWithArgs(key, _lang(context), args);
 
-/// A titled card.
+/// The iOS hairline Divider.
+Widget _divider(BuildContext context) =>
+    Divider(height: 1, thickness: .5, color: IosColors.separator(context));
+
+/// SwiftUI VStack spacing: [gap] between the children.
+List<Widget> _spaced(Iterable<Widget> children, double gap) => [
+  for (final (index, child) in children.indexed) ...[
+    if (index > 0) SizedBox(height: gap),
+    child,
+  ],
+];
+
+TextStyle _secondary(BuildContext context, double size) =>
+    TextStyle(fontSize: size, color: IosColors.secondary(context));
+
+/// A titled glass card (iOS PanchangCard): radius 20, padding 16, a teal
+/// symbol and a headline title, 12 between every child.
 class PanchangCard extends StatelessWidget {
   const PanchangCard({
     super.key,
@@ -41,80 +63,74 @@ class PanchangCard extends StatelessWidget {
     this.icon,
   });
   final String title;
-  final IconData? icon;
+  final Widget? icon;
   final List<Widget> children;
 
   @override
   Widget build(BuildContext context) => PanchangPanel(
     child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: _spaced([
         Row(
           children: [
             if (icon != null) ...[
-              Icon(icon, size: 20, color: PanchangColors.teal),
+              IconTheme.merge(
+                data: const IconThemeData(size: 18, color: IosColors.teal),
+                child: icon!,
+              ),
               const SizedBox(width: 8),
             ],
             Expanded(
               child: Text(
                 title,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                style: TextStyle(
+                  fontSize: IosText.headline,
+                  fontWeight: FontWeight.w600,
+                  color: IosColors.primary(context),
+                ),
               ),
             ),
           ],
         ),
-        const SizedBox(height: 12),
         ...children,
-      ],
+      ], 12),
     ),
   );
 }
 
-/// A rounded glass surface.
+/// A full-width glass panel (Glass.swift glassPanel).
 class PanchangPanel extends StatelessWidget {
   const PanchangPanel({
     super.key,
     required this.child,
     this.tint,
+    this.radius = 20,
     this.padding = const EdgeInsets.all(16),
+    this.onTap,
   });
   final Widget child;
   final Color? tint;
+  final double radius;
   final EdgeInsetsGeometry padding;
+  final VoidCallback? onTap;
 
   @override
-  Widget build(BuildContext context) {
-    final dark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      width: double.infinity,
+  Widget build(BuildContext context) => SizedBox(
+    width: double.infinity,
+    child: GlassPanel(
+      radius: radius,
+      tint: tint,
       padding: padding,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            (tint ?? (dark ? Colors.white : Colors.white)).withValues(
-              alpha: dark
-                  ? (tint == null ? .08 : .16)
-                  : (tint == null ? .9 : .14),
-            ),
-            (tint ?? (dark ? Colors.white : const Color(0xFFF1F6F5)))
-                .withValues(alpha: dark ? .04 : (tint == null ? .8 : .06)),
-          ],
-        ),
-        border: Border.all(
-          color: GlassTubeColors.foreground(context).withValues(alpha: .12),
-        ),
-      ),
+      onTap: onTap,
       child: child,
-    );
-  }
+    ),
+  );
 }
 
-/// A label on the left and a value (with an optional detail) on the right.
+/// A label on the left and a value (with an optional detail) on the right
+/// (iOS PanchangRow): subheadline label in grey, subheadline semibold value
+/// and a caption detail. Like a SwiftUI HStack, the shorter side keeps its
+/// natural width and the longer one takes the rest.
 class PanchangValueRow extends StatelessWidget {
   const PanchangValueRow({
     super.key,
@@ -130,45 +146,85 @@ class PanchangValueRow extends StatelessWidget {
   final Color? color;
   final Widget? trailing;
 
+  static const _gap = 8.0;
+
   @override
   Widget build(BuildContext context) {
-    final muted = Theme.of(context).textTheme.bodySmall?.color;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+    final labelStyle = _secondary(context, IosText.subheadline);
+    final valueStyle = TextStyle(
+      fontSize: IosText.subheadline,
+      fontWeight: FontWeight.w600,
+      color: IosColors.primary(context),
+    );
+    final detailStyle = _secondary(context, IosText.caption);
+    final base = DefaultTextStyle.of(context).style;
+    final scaler = MediaQuery.textScalerOf(context);
+    final direction = Directionality.of(context);
+    double measure(String text, TextStyle style) {
+      final painter = TextPainter(
+        text: TextSpan(text: text, style: base.merge(style)),
+        textDirection: direction,
+        textScaler: scaler,
+        maxLines: 1,
+      )..layout();
+      final width = painter.width;
+      painter.dispose();
+      return width.ceilToDouble() + 1;
+    }
+
+    final row = LayoutBuilder(
+      builder: (context, constraints) {
+        final available = constraints.maxWidth - _gap;
+        final labelWidth = measure(label, labelStyle);
+        final valueWidth = math.max(
+          measure(value, valueStyle),
+          detail == null ? 0.0 : measure(detail!, detailStyle),
+        );
+        final half = available / 2;
+        final double valueSlot;
+        if (labelWidth + valueWidth <= available || valueWidth <= half) {
+          valueSlot = math.min(valueWidth, available);
+        } else if (labelWidth <= half) {
+          valueSlot = available - labelWidth;
+        } else {
+          valueSlot = half;
+        }
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: Text(label, style: labelStyle)),
+            const SizedBox(width: _gap),
+            SizedBox(
+              width: math.max(0, valueSlot),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(value, textAlign: TextAlign.end, style: valueStyle),
+                  if (detail != null) ...[
+                    const SizedBox(height: 2),
+                    Text(detail!, textAlign: TextAlign.end, style: detailStyle),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
+    return MergeSemantics(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (color != null)
             Padding(
-              padding: const EdgeInsets.only(top: 6, right: 8),
-              child: CircleAvatar(radius: 4, backgroundColor: color),
+              padding: const EdgeInsets.only(top: 6, right: 10),
+              child: Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+              ),
             ),
-          Expanded(
-            child: Text(label, style: TextStyle(color: muted, fontSize: 14)),
-          ),
-          const SizedBox(width: 8),
-          Flexible(
-            flex: 2,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  value,
-                  textAlign: TextAlign.end,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                if (detail != null)
-                  Text(
-                    detail!,
-                    textAlign: TextAlign.end,
-                    style: TextStyle(fontSize: 12, color: muted),
-                  ),
-              ],
-            ),
-          ),
+          Expanded(child: row),
           if (trailing != null) ...[const SizedBox(width: 8), trailing!],
         ],
       ),
@@ -176,90 +232,110 @@ class PanchangValueRow extends StatelessWidget {
   }
 }
 
-/// A small coloured capsule.
-class PanchangPill extends StatelessWidget {
-  const PanchangPill({
-    super.key,
-    required this.text,
-    required this.color,
-    this.icon,
+/// A tappable disclosure row like SwiftUI's DisclosureGroup: the label,
+/// then a teal chevron that turns down when open.
+class _Disclosure extends StatefulWidget {
+  const _Disclosure({
+    required this.label,
+    required this.children,
+    this.spacing = 10,
+    this.topPadding = 10,
   });
-  final String text;
-  final Color color;
-  final IconData? icon;
+  final Widget label;
+  final List<Widget> children;
+  final double spacing;
+  final double topPadding;
 
   @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-    decoration: BoxDecoration(
-      color: color.withValues(alpha: .16),
-      borderRadius: BorderRadius.circular(20),
-    ),
-    child: Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (icon != null) ...[
-          Icon(icon, size: 14, color: color),
-          const SizedBox(width: 4),
-        ],
-        Flexible(
-          child: Text(
-            text,
-            style: TextStyle(
-              color: color,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
+  State<_Disclosure> createState() => _DisclosureState();
+}
+
+class _DisclosureState extends State<_Disclosure> {
+  bool _open = false;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Semantics(
+        button: true,
+        expanded: _open,
+        child: InkWell(
+          onTap: () => setState(() => _open = !_open),
+          child: Row(
+            children: [
+              Expanded(child: widget.label),
+              AnimatedRotation(
+                turns: _open ? .25 : 0,
+                duration: const Duration(milliseconds: 200),
+                child: const Icon(
+                  AppIcons.rowDisclosure,
+                  size: 20,
+                  color: IosColors.teal,
+                ),
+              ),
+            ],
           ),
         ),
-      ],
-    ),
+      ),
+      if (_open)
+        Padding(
+          padding: EdgeInsets.only(top: widget.topPadding),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: _spaced(widget.children, widget.spacing),
+          ),
+        ),
+    ],
   );
 }
 
-/// The paywall card for Premium Panchang sections.
+/// The paywall card for Premium Panchang sections (iOS PanchangUpgradeCard:
+/// radius 22, padding 18, teal tint, the prominent capsule).
 class PanchangUpgradeCard extends StatelessWidget {
   const PanchangUpgradeCard({super.key});
 
   @override
   Widget build(BuildContext context) => PanchangPanel(
     tint: PanchangColors.teal,
+    radius: 22,
+    padding: const EdgeInsets.all(18),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            const Icon(Icons.lock, color: PanchangColors.amber, size: 20),
+            const Icon(AppIcons.lock, color: PanchangColors.amber, size: 18),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
                 _t(context, 'panchang_premium_title'),
                 style: const TextStyle(
                   color: PanchangColors.amber,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  fontSize: IosText.headline,
                 ),
               ),
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
         Text(
           _t(context, 'panchang_premium_body'),
-          style: TextStyle(color: Theme.of(context).textTheme.bodySmall?.color),
+          style: _secondary(context, IosText.subheadline),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 14),
         SizedBox(
           width: double.infinity,
           child: FilledButton.icon(
             key: const Key('panchang_unlock_button'),
-            style: FilledButton.styleFrom(
-              backgroundColor: PanchangColors.teal,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-            ),
+            style: IosButtons.prominent(),
             onPressed: () => openPremium(context),
-            icon: const Icon(Icons.star),
-            label: Text(_t(context, 'panchang_unlock')),
+            icon: const Icon(AppIcons.panchangUnlock, size: 18),
+            label: Text(
+              _t(context, 'panchang_unlock'),
+              style: IosButtons.label,
+            ),
           ),
         ),
       ],
@@ -354,113 +430,111 @@ class _PanchangKeyDaysViewState extends State<PanchangKeyDaysView> {
             _category,
           );
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: _spaced([
         SingleChildScrollView(
           key: const Key('panchang_key_day_filters'),
           scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(vertical: 2),
           child: Row(
             children: [
               _chip(context, null),
-              for (final type in _filters) _chip(context, type),
+              for (final type in _filters) ...[
+                const SizedBox(width: 8),
+                _chip(context, type),
+              ],
             ],
           ),
         ),
-        const SizedBox(height: 12),
-        if (!premium) ...[
-          PanchangPanel(
-            tint: PanchangColors.amber,
-            padding: const EdgeInsets.fromLTRB(14, 10, 8, 4),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Padding(
-                  padding: EdgeInsets.only(top: 2),
-                  child: Icon(
-                    Icons.lock,
-                    color: PanchangColors.amber,
-                    size: 18,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        _t(context, 'panchang_key_days_locked'),
-                        style: const TextStyle(fontSize: 13),
-                      ),
-                      Align(
-                        alignment: AlignmentDirectional.centerEnd,
-                        child: TextButton(
-                          key: const Key('panchang_key_days_unlock'),
-                          onPressed: () => openPremium(context),
-                          child: Text(_t(context, 'panchang_unlock_short')),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-        ],
+        if (!premium) _lockedBanner(context),
         if (days == null)
-          const Padding(
-            padding: EdgeInsets.all(48),
+          const SizedBox(
+            height: 160,
             child: Center(
               child: CircularProgressIndicator(color: PanchangColors.teal),
             ),
           )
         else if (days.isEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 40),
+          SizedBox(
+            height: 120,
             child: Center(
               child: Text(
                 _t(context, 'panchang_no_key_days'),
-                style: TextStyle(
-                  color: Theme.of(context).textTheme.bodySmall?.color,
-                ),
+                textAlign: TextAlign.center,
+                style: _secondary(context, IosText.subheadline),
               ),
             ),
           )
         else
           Column(
             key: const Key('panchang_key_days'),
-            children: [
-              for (final day in days)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: _row(context, day, premium, language),
-                ),
-            ],
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: _spaced([
+              for (final day in days) _row(context, day, premium, language),
+            ], 10),
           ),
-      ],
+      ], 12),
     );
   }
 
+  /// iOS: the lock, the note and the filled prominent "Unlock" beside it.
+  Widget _lockedBanner(BuildContext context) => PanchangPanel(
+    tint: PanchangColors.amber,
+    radius: 18,
+    padding: const EdgeInsets.all(14),
+    child: Row(
+      children: [
+        const Icon(AppIcons.lock, color: PanchangColors.amber, size: 18),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            _t(context, 'panchang_key_days_locked'),
+            style: TextStyle(
+              fontSize: IosText.subheadline,
+              color: IosColors.primary(context),
+            ),
+          ),
+        ),
+        const SizedBox(width: 4),
+        // Long words at large text sizes shrink rather than overflow.
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 140),
+          child: FilledButton(
+            key: const Key('panchang_key_days_unlock'),
+            style: IosButtons.prominent(vertical: 7).copyWith(
+              padding: const WidgetStatePropertyAll(
+                EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+              ),
+              minimumSize: const WidgetStatePropertyAll(Size(0, 34)),
+            ),
+            onPressed: () => openPremium(context),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                _t(context, 'panchang_unlock_short'),
+                maxLines: 1,
+                style: const TextStyle(
+                  fontSize: IosText.subheadline,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+
   Widget _chip(BuildContext context, SearchCategory? type) {
     final selected = _category == type;
-    final color = type == null ? PanchangColors.teal : Color(type.color);
-    return Padding(
-      padding: const EdgeInsets.only(right: 8),
-      child: FilterChip(
-        key: Key('panchang_key_filter_${type?.raw ?? 'all'}'),
-        avatar: type == null
-            ? null
-            : Icon(searchCategoryIcon(type), size: 16, color: color),
-        label: Text(
-          _t(context, type == null ? 'filter_all' : type.localizationKey),
-        ),
-        selected: selected,
-        showCheckmark: false,
-        selectedColor: color.withValues(alpha: .18),
-        shape: const StadiumBorder(),
-        onSelected: (_) =>
-            setState(() => _category = selected || type == null ? null : type),
-      ),
+    return GlassChip(
+      key: Key('panchang_key_filter_${type?.raw ?? 'all'}'),
+      label: _t(context, type == null ? 'filter_all' : type.localizationKey),
+      icon: type == null ? null : searchCategoryIcon(type),
+      color: type == null ? PanchangColors.teal : Color(type.color),
+      selected: selected,
+      onTap: () =>
+          setState(() => _category = selected || type == null ? null : type),
     );
   }
 
@@ -470,100 +544,96 @@ class _PanchangKeyDaysViewState extends State<PanchangKeyDaysView> {
         : day.categories.firstOrNull ?? SearchCategory.festival;
     final color = Color(type.color);
     final locked = day.requiresPremium && !premium;
-    return Material(
+    final secondary = IosColors.secondary(context);
+    return PanchangPanel(
       key: Key('panchang_key_day_${day.id}'),
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20),
-        onTap: () => locked ? openPremium(context) : widget.onOpen(day.date),
-        child: PanchangPanel(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            children: [
-              Container(
-                width: 54,
-                height: 54,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: .16),
-                  borderRadius: BorderRadius.circular(14),
+      radius: 18,
+      padding: const EdgeInsets.all(12),
+      onTap: () => locked ? openPremium(context) : widget.onOpen(day.date),
+      child: Row(
+        children: [
+          Container(
+            width: 54,
+            height: 54,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: .16),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: locked
+                ? const Icon(
+                    AppIcons.lock,
+                    color: PanchangColors.amber,
+                    size: IosText.title3,
+                  )
+                : FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          '${day.date.day}',
+                          style: TextStyle(
+                            fontSize: IosText.title2,
+                            fontWeight: FontWeight.w700,
+                            height: 1.15,
+                            color: IosColors.primary(context),
+                            fontFeatures: const [FontFeature.tabularFigures()],
+                          ),
+                        ),
+                        Text(
+                          PanchangFormat.weekday(day.date, language),
+                          style: TextStyle(
+                            fontSize: IosText.caption2,
+                            fontWeight: FontWeight.w600,
+                            color: secondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  day.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: IosText.headline,
+                    fontWeight: FontWeight.w600,
+                    color: IosColors.primary(context),
+                  ),
                 ),
-                child: locked
-                    ? const Icon(Icons.lock, color: PanchangColors.amber)
-                    : FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              '${day.date.day}',
-                              style: const TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            Text(
-                              PanchangFormat.weekday(day.date, language),
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: Theme.of(
-                                  context,
-                                ).textTheme.bodySmall?.color,
-                              ),
-                            ),
-                          ],
+                const SizedBox(height: 3),
+                Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: _t(context, type.localizationKey),
+                        style: TextStyle(
+                          color: color,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      day.title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text.rich(
-                      TextSpan(
-                        children: [
-                          TextSpan(
-                            text: _t(context, type.localizationKey),
-                            style: TextStyle(
-                              color: color,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          if (!locked)
-                            TextSpan(
-                              text: ' · ${_countdown(context, day.date)}',
-                            ),
-                        ],
-                      ),
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Theme.of(context).textTheme.bodySmall?.color,
-                      ),
-                    ),
-                  ],
+                      if (!locked)
+                        TextSpan(text: '  ·  ${_countdown(context, day.date)}'),
+                    ],
+                  ),
+                  style: TextStyle(fontSize: IosText.caption, color: secondary),
                 ),
-              ),
-              Icon(
-                locked ? Icons.lock : Icons.chevron_right,
-                size: 18,
-                color: locked
-                    ? PanchangColors.amber
-                    : Theme.of(context).textTheme.bodySmall?.color,
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
+          const SizedBox(width: 4),
+          Icon(
+            locked ? AppIcons.lock : AppIcons.rowDisclosure,
+            size: locked ? 14 : 18,
+            color: locked ? PanchangColors.amber : secondary,
+          ),
+        ],
       ),
     );
   }
@@ -598,167 +668,147 @@ class PanchangDailyView extends StatelessWidget {
         PanchangFormat.time(instant, day.city, day.date, language);
     String? until(DateTime? instant) =>
         instant == null ? null : _t(context, 'panchang_until', [time(instant)]);
-    final majors = day.observances.where((o) => o.isMajor).take(3);
     return Column(
-      children: [
-        PanchangPanel(
-          key: const Key('panchang_daily_overview'),
-          tint: PanchangColors.teal,
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                _t(
-                  context,
-                  day.sunriseUtc == null
-                      ? 'panchang_tithi_at_six'
-                      : 'panchang_tithi_at_sunrise',
-                ).toUpperCase(),
-                style: const TextStyle(
-                  color: PanchangColors.teal,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: .6,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                terms.tithi(day.tithi.paksha, day.tithi.name, language),
-                key: const Key('panchang_tithi_title'),
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              if (until(day.tithi.endsAtUtc) case final text?)
-                Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: Text(
-                    text,
-                    style: TextStyle(
-                      color: Theme.of(context).textTheme.bodySmall?.color,
-                    ),
-                  ),
-                ),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  PanchangPill(
-                    text:
-                        '${terms.month(day.amantaMonth, language)} · ${_t(context, 'panchang_amanta')}',
-                    color: PanchangColors.teal,
-                    icon: Icons.dark_mode_outlined,
-                  ),
-                  PanchangPill(
-                    text: terms.translate(
-                      day.vara,
-                      PanchangTermKind.vara,
-                      language,
-                    ),
-                    color: PanchangColors.teal,
-                    icon: Icons.calendar_today,
-                  ),
-                  for (final event in majors)
-                    PanchangPill(
-                      text: terms.observanceName(event, language),
-                      color: Color(SearchCategory.festival.color),
-                      icon: Icons.auto_awesome,
-                    ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: _spaced([
+        _hero(context, language, until),
         _sunAndMoon(context, time),
-        const SizedBox(height: 16),
         if (premium) ...[
           _limbs(context, language, until),
-          const SizedBox(height: 16),
           _timings(context, language),
-          if (day.observances.isNotEmpty) ...[
-            const SizedBox(height: 16),
-            PanchangCard(
-              title: _t(context, 'panchang_observances'),
-              icon: Icons.auto_awesome,
-              children: [
-                for (final event in day.observances)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Row(
-                      children: [
-                        Icon(
-                          event.isMajor ? Icons.star : Icons.circle,
-                          size: event.isMajor ? 16 : 8,
-                          color: PanchangColors.teal,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            terms.observanceName(event, language),
-                            style: TextStyle(
-                              fontWeight: event.isMajor
-                                  ? FontWeight.w600
-                                  : FontWeight.normal,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
-          ],
-          const SizedBox(height: 16),
+          if (day.observances.isNotEmpty) _observances(context, language),
           _details(context, language, until),
         ] else
           const PanchangUpgradeCard(),
-      ],
+      ], 16),
     );
   }
 
+  /// iOS hero: radius 24, teal tint, caption2 heading, title tithi and
+  /// status pills.
+  Widget _hero(
+    BuildContext context,
+    String language,
+    String? Function(DateTime?) until,
+  ) {
+    final majors = day.observances.where((o) => o.isMajor).take(3);
+    return GlassPanel(
+      key: const Key('panchang_daily_overview'),
+      tint: PanchangColors.teal,
+      radius: 24,
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: _spaced([
+          Text(
+            _t(
+              context,
+              day.sunriseUtc == null
+                  ? 'panchang_tithi_at_six'
+                  : 'panchang_tithi_at_sunrise',
+            ).toUpperCase(),
+            style: const TextStyle(
+              color: PanchangColors.teal,
+              fontSize: IosText.caption2,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          Text(
+            terms.tithi(day.tithi.paksha, day.tithi.name, language),
+            key: const Key('panchang_tithi_title'),
+            style: TextStyle(
+              fontSize: IosText.title,
+              fontWeight: FontWeight.w700,
+              color: IosColors.primary(context),
+            ),
+          ),
+          if (until(day.tithi.endsAtUtc) case final text?)
+            Text(text, style: _secondary(context, IosText.subheadline)),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              StatusPill(
+                text:
+                    '${terms.month(day.amantaMonth, language)} · ${_t(context, 'panchang_amanta')}',
+                color: PanchangColors.teal,
+                icon: AppIcons.panchangTithi,
+              ),
+              StatusPill(
+                text: terms.translate(
+                  day.vara,
+                  PanchangTermKind.vara,
+                  language,
+                ),
+                color: PanchangColors.teal,
+                icon: AppIcons.panchangVara,
+              ),
+              for (final event in majors)
+                StatusPill(
+                  text: terms.observanceName(event, language),
+                  color: Color(SearchCategory.festival.color),
+                  icon: AppIcons.panchangObservance,
+                ),
+            ],
+          ),
+        ], 10),
+      ),
+    );
+  }
+
+  /// Sunrise, sunset, moonrise and moonset: iOS multicolour symbols (a
+  /// yellow sun or grey moon on the horizon with a rising or setting
+  /// arrow) in glass tiles, radius 18.
   Widget _sunAndMoon(BuildContext context, String Function(DateTime?) time) {
     final tiles = [
-      (Icons.wb_sunny_outlined, 'panchang_sunrise', day.sunriseUtc),
-      (Icons.wb_twilight, 'panchang_sunset', day.sunsetUtc),
-      (Icons.nightlight_outlined, 'panchang_moonrise', day.moonriseUtc),
-      (Icons.mode_night_outlined, 'panchang_moonset', day.moonsetUtc),
+      (true, AppIcons.sunrise, 'panchang_sunrise', day.sunriseUtc),
+      (true, AppIcons.sunset, 'panchang_sunset', day.sunsetUtc),
+      (false, AppIcons.moonrise, 'panchang_moonrise', day.moonriseUtc),
+      (false, AppIcons.moonset, 'panchang_moonset', day.moonsetUtc),
     ];
-    Widget tile((IconData, String, DateTime?) data) {
-      final (icon, key, instant) = data;
+    final secondary = IosColors.secondary(context);
+    Widget tile((bool, IconData, String, DateTime?) data) {
+      final (sun, icon, key, instant) = data;
       return PanchangPanel(
-        padding: const EdgeInsets.all(12),
+        radius: 18,
+        padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(icon, size: 16, color: PanchangColors.amber),
+                Icon(
+                  icon,
+                  key: Key('${key}_icon'),
+                  size: 16,
+                  color: sun ? IosColors.yellow(context) : secondary,
+                ),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
                     _t(context, key),
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: IosText.caption,
                       fontWeight: FontWeight.w600,
-                      color: Theme.of(context).textTheme.bodySmall?.color,
+                      color: secondary,
                     ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 6),
             FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerLeft,
               child: Text(
                 time(instant),
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
+                maxLines: 1,
+                style: TextStyle(
+                  fontSize: IosText.headline,
+                  fontWeight: FontWeight.w600,
+                  color: IosColors.primary(context),
+                  fontFeatures: const [FontFeature.tabularFigures()],
                 ),
               ),
             ),
@@ -769,22 +819,19 @@ class PanchangDailyView extends StatelessWidget {
 
     return Column(
       key: const Key('panchang_sun_moon'),
-      children: [
+      children: _spaced([
         for (final pair in [tiles.sublist(0, 2), tiles.sublist(2)])
-          Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: IntrinsicHeight(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Expanded(child: tile(pair[0])),
-                  const SizedBox(width: 10),
-                  Expanded(child: tile(pair[1])),
-                ],
-              ),
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(child: tile(pair[0])),
+                const SizedBox(width: 10),
+                Expanded(child: tile(pair[1])),
+              ],
             ),
           ),
-      ],
+      ], 10),
     );
   }
 
@@ -824,13 +871,14 @@ class PanchangDailyView extends StatelessWidget {
         null,
       ),
     ];
+    // circle.hexagongrid
     return PanchangCard(
       key: const Key('panchang_limbs'),
       title: _t(context, 'panchang_five_limbs'),
-      icon: Icons.hexagon_outlined,
+      icon: const Icon(AppIcons.fiveLimbs),
       children: [
         for (final (index, row) in rows.indexed) ...[
-          if (index > 0) const Divider(height: 1),
+          if (index > 0) _divider(context),
           PanchangValueRow(
             label: _t(context, row.$1),
             value: row.$2,
@@ -854,6 +902,7 @@ class PanchangDailyView extends StatelessWidget {
       ?day.gulika,
       ...extra.where((p) => p.name != 'Amrit Kalam'),
     ]..sort((a, b) => a.startUtc.compareTo(b.startUtc));
+    final goodColor = PanchangColors.good(context);
     Widget row(PanchangPeriod p, Color color) => PanchangValueRow(
       label: terms.period(p.name, language),
       value: PanchangFormat.range(
@@ -865,30 +914,70 @@ class PanchangDailyView extends StatelessWidget {
       ),
       color: color,
     );
+    Widget heading(String key, Color color) => Text(
+      _t(context, key),
+      style: TextStyle(
+        color: color,
+        fontSize: IosText.caption,
+        fontWeight: FontWeight.w700,
+      ),
+    );
     return PanchangCard(
       key: const Key('panchang_timings'),
       title: _t(context, 'panchang_timings'),
-      icon: Icons.schedule,
+      icon: const Icon(AppIcons.timings),
       children: [
-        Text(
-          _t(context, 'panchang_good_times'),
-          style: const TextStyle(
-            color: PanchangColors.good,
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        for (final p in good) row(p, PanchangColors.good),
-        const Divider(),
-        Text(
-          _t(context, 'panchang_avoid_times'),
-          style: const TextStyle(
-            color: PanchangColors.avoid,
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
+        heading('panchang_good_times', goodColor),
+        for (final p in good) row(p, goodColor),
+        _divider(context),
+        heading('panchang_avoid_times', PanchangColors.avoid),
         for (final p in avoid) row(p, PanchangColors.avoid),
+      ],
+    );
+  }
+
+  /// iOS: a sparkle (four-point star) for major observances and a small
+  /// dot for the others, in the primary colour.
+  Widget _observances(BuildContext context, String language) {
+    final primary = IosColors.primary(context);
+    return PanchangCard(
+      key: const Key('panchang_observances'),
+      title: _t(context, 'panchang_observances'),
+      icon: const Icon(AppIcons.observances),
+      children: [
+        for (final event in day.observances)
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: 20,
+                height: 20,
+                child: Center(
+                  child: event.isMajor
+                      ? Icon(
+                          AppIcons.observanceMajor,
+                          key: const Key('panchang_sparkle'),
+                          size: 15,
+                          color: primary,
+                        )
+                      : Icon(AppIcons.observanceMinor, size: 7, color: primary),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  terms.observanceName(event, language),
+                  style: TextStyle(
+                    fontSize: IosText.subheadline,
+                    color: primary,
+                    fontWeight: event.isMajor
+                        ? FontWeight.w600
+                        : FontWeight.w400,
+                  ),
+                ),
+              ),
+            ],
+          ),
       ],
     );
   }
@@ -911,112 +1000,122 @@ class PanchangDailyView extends StatelessWidget {
     };
     return PanchangPanel(
       key: const Key('panchang_more_details'),
-      padding: EdgeInsets.zero,
-      child: Theme(
-        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-        child: ExpansionTile(
-          leading: const Icon(Icons.list_alt, color: PanchangColors.teal),
-          title: Text(
-            _t(context, 'panchang_more_details'),
-            style: const TextStyle(fontWeight: FontWeight.w700),
-          ),
-          childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      child: _Disclosure(
+        label: Row(
           children: [
-            PanchangValueRow(
-              label: _t(context, 'panchang_amanta'),
-              value: terms.month(day.amantaMonth, language),
+            const Icon(
+              AppIcons.moreDetails,
+              size: 18,
+              color: PanchangColors.teal,
             ),
-            PanchangValueRow(
-              label: _t(context, 'panchang_purnimanta'),
-              value: terms.month(day.purnimantaMonth, language),
-            ),
-            PanchangValueRow(
-              label: _t(context, 'panchang_sun_rashi'),
-              value: terms.translate(
-                day.sunRashi,
-                PanchangTermKind.rashi,
-                language,
-              ),
-            ),
-            PanchangValueRow(
-              label: _t(context, 'panchang_moon_rashi'),
-              value: terms.translate(
-                day.moonRashi,
-                PanchangTermKind.rashi,
-                language,
-              ),
-            ),
-            PanchangValueRow(
-              label: _t(context, 'panchang_nakshatra_pada'),
-              value: '${day.nakshatraPada}',
-            ),
-            PanchangValueRow(
-              label: _t(context, 'panchang_ritu'),
-              value: terms.translate(day.ritu, PanchangTermKind.ritu, language),
-            ),
-            PanchangValueRow(
-              label: _t(context, 'panchang_ayana'),
-              value: terms.translate(
-                day.ayana,
-                PanchangTermKind.ayana,
-                language,
-              ),
-            ),
-            PanchangValueRow(
-              label: _t(context, 'panchang_samvat'),
-              value: _t(context, 'panchang_samvat_value', [
-                '${day.shakaYear}',
-                '${day.vikramaYear}',
-              ]),
-            ),
-            PanchangValueRow(
-              label: _t(context, 'panchang_anandadi'),
-              value: terms.translate(
-                day.anandadiYoga,
-                PanchangTermKind.anandadi,
-                language,
-              ),
-            ),
-            PanchangValueRow(
-              label: _t(context, 'panchang_special_yogas'),
-              value: day.specialYogas.isEmpty
-                  ? _t(context, 'panchang_none')
-                  : day.specialYogas
-                        .map(
-                          (y) => terms.translate(
-                            y,
-                            PanchangTermKind.specialYoga,
-                            language,
-                          ),
-                        )
-                        .join(', '),
-            ),
-            PanchangValueRow(
-              label: _t(context, 'panchang_ayanamsa'),
-              value: '${day.ayanamsa.toStringAsFixed(4)}°',
-            ),
-            if (day.sunriseUtc == null || day.sunsetUtc == null)
-              Text(
-                _t(context, 'panchang_no_solar_day'),
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            const Divider(),
-            Align(
-              alignment: Alignment.centerLeft,
+            const SizedBox(width: 8),
+            Expanded(
               child: Text(
-                _t(context, 'panchang_transitions'),
-                style: const TextStyle(fontWeight: FontWeight.w600),
+                _t(context, 'panchang_more_details'),
+                style: TextStyle(
+                  fontSize: IosText.headline,
+                  fontWeight: FontWeight.w600,
+                  color: IosColors.primary(context),
+                ),
               ),
             ),
-            for (final entry in day.limbTimeline.entries)
-              for (final limb in entry.value)
-                PanchangValueRow(
-                  label: _t(context, 'panchang_${entry.key.toLowerCase()}'),
-                  value: limbName(entry.key, limb),
-                  detail: until(limb.endsAtUtc),
-                ),
           ],
         ),
+        children: [
+          PanchangValueRow(
+            label: _t(context, 'panchang_amanta'),
+            value: terms.month(day.amantaMonth, language),
+          ),
+          PanchangValueRow(
+            label: _t(context, 'panchang_purnimanta'),
+            value: terms.month(day.purnimantaMonth, language),
+          ),
+          PanchangValueRow(
+            label: _t(context, 'panchang_sun_rashi'),
+            value: terms.translate(
+              day.sunRashi,
+              PanchangTermKind.rashi,
+              language,
+            ),
+          ),
+          PanchangValueRow(
+            label: _t(context, 'panchang_moon_rashi'),
+            value: terms.translate(
+              day.moonRashi,
+              PanchangTermKind.rashi,
+              language,
+            ),
+          ),
+          PanchangValueRow(
+            label: _t(context, 'panchang_nakshatra_pada'),
+            value: '${day.nakshatraPada}',
+          ),
+          PanchangValueRow(
+            label: _t(context, 'panchang_ritu'),
+            value: terms.translate(day.ritu, PanchangTermKind.ritu, language),
+          ),
+          PanchangValueRow(
+            label: _t(context, 'panchang_ayana'),
+            value: terms.translate(day.ayana, PanchangTermKind.ayana, language),
+          ),
+          PanchangValueRow(
+            label: _t(context, 'panchang_samvat'),
+            value: _t(context, 'panchang_samvat_value', [
+              '${day.shakaYear}',
+              '${day.vikramaYear}',
+            ]),
+          ),
+          PanchangValueRow(
+            label: _t(context, 'panchang_anandadi'),
+            value: terms.translate(
+              day.anandadiYoga,
+              PanchangTermKind.anandadi,
+              language,
+            ),
+          ),
+          PanchangValueRow(
+            label: _t(context, 'panchang_special_yogas'),
+            value: day.specialYogas.isEmpty
+                ? _t(context, 'panchang_none')
+                : day.specialYogas
+                      .map(
+                        (y) => terms.translate(
+                          y,
+                          PanchangTermKind.specialYoga,
+                          language,
+                        ),
+                      )
+                      .join(', '),
+          ),
+          PanchangValueRow(
+            label: _t(context, 'panchang_ayanamsa'),
+            value: '${day.ayanamsa.toStringAsFixed(4)}°',
+          ),
+          if (day.sunriseUtc == null || day.sunsetUtc == null)
+            Text(
+              _t(context, 'panchang_no_solar_day'),
+              style: _secondary(context, IosText.caption),
+            ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: _divider(context),
+          ),
+          Text(
+            _t(context, 'panchang_transitions'),
+            style: TextStyle(
+              fontSize: IosText.subheadline,
+              fontWeight: FontWeight.w600,
+              color: IosColors.primary(context),
+            ),
+          ),
+          for (final entry in day.limbTimeline.entries)
+            for (final limb in entry.value)
+              PanchangValueRow(
+                label: _t(context, 'panchang_${entry.key.toLowerCase()}'),
+                value: limbName(entry.key, limb),
+                detail: until(limb.endsAtUtc),
+              ),
+        ],
       ),
     );
   }
@@ -1071,7 +1170,7 @@ class _PanchangMuhurtaViewState extends State<PanchangMuhurtaView> {
         ),
         color: color,
         trailing: current
-            ? PanchangPill(
+            ? StatusPill(
                 text: _t(context, 'panchang_now'),
                 color: PanchangColors.teal,
               )
@@ -1079,47 +1178,56 @@ class _PanchangMuhurtaViewState extends State<PanchangMuhurtaView> {
       );
     }
 
+    /// Amrit, Shubh and Labh are favourable; Chal neutral; the others not.
     Color quality(String name) {
-      if (['Amrit', 'Shubh', 'Labh'].any(name.endsWith))
-        return PanchangColors.good;
-      if (name.endsWith('Chal')) return Colors.grey;
+      if (['Amrit', 'Shubh', 'Labh'].any(name.endsWith)) {
+        return PanchangColors.good(context);
+      }
+      if (name.endsWith('Chal')) return IosColors.gray(context);
       return PanchangColors.avoid;
     }
 
     Widget unavailable() => Text(
       _t(context, 'panchang_unavailable'),
-      style: Theme.of(context).textTheme.bodySmall,
+      style: _secondary(context, IosText.subheadline),
+    );
+
+    Widget segment(String key) => Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      child: Text(
+        _t(context, key),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+          color: IosColors.primary(context),
+        ),
+      ),
     );
 
     return Column(
-      children: [
-        SizedBox(
-          width: double.infinity,
-          child: SegmentedButton<bool>(
-            key: const Key('panchang_day_night'),
-            segments: [
-              ButtonSegment(
-                value: false,
-                label: Text(_t(context, 'panchang_day')),
-              ),
-              ButtonSegment(
-                value: true,
-                label: Text(_t(context, 'panchang_night')),
-              ),
-            ],
-            selected: {_night},
-            showSelectedIcon: false,
-            onSelectionChanged: (value) => setState(() => _night = value.first),
-          ),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: _spaced([
+        // iOS Picker(.segmented).
+        CupertinoSlidingSegmentedControl<bool>(
+          key: const Key('panchang_day_night'),
+          groupValue: _night,
+          children: {
+            false: segment('panchang_day'),
+            true: segment('panchang_night'),
+          },
+          onValueChanged: (value) {
+            if (value != null) setState(() => _night = value);
+          },
         ),
-        const SizedBox(height: 16),
         PanchangCard(
           title: _t(context, 'panchang_choghadiya'),
-          icon: Icons.grid_view,
+          icon: const Icon(AppIcons.choghadiya, key: Key('panchang_dot_grid')),
           children: [
             Text(
               _t(context, 'panchang_choghadiya_hint'),
-              style: Theme.of(context).textTheme.bodySmall,
+              style: _secondary(context, IosText.caption),
             ),
             if (choghadiya.isEmpty) unavailable(),
             for (final p in choghadiya)
@@ -1131,25 +1239,23 @@ class _PanchangMuhurtaViewState extends State<PanchangMuhurtaView> {
               ),
           ],
         ),
-        const SizedBox(height: 16),
         PanchangCard(
           title: _t(context, 'panchang_hora'),
-          icon: Icons.av_timer,
+          icon: const Icon(AppIcons.hora),
           children: [
             if (hora.isEmpty) unavailable(),
             for (final p in hora) row(p.name, PanchangTermKind.hora, p),
           ],
         ),
-        const SizedBox(height: 16),
         PanchangCard(
           title: _t(context, 'panchang_lagna'),
-          icon: Icons.public,
+          icon: const Icon(AppIcons.lagna),
           children: [
             if (day.lagna.isEmpty) unavailable(),
             for (final p in day.lagna) row(p.name, PanchangTermKind.rashi, p),
           ],
         ),
-      ],
+      ], 16),
     );
   }
 }
@@ -1170,10 +1276,11 @@ class PanchangRashiView extends StatelessWidget {
             PanchangFormat.time(instant, day.city, day.date, language),
           ]);
     return Column(
-      children: [
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: _spaced([
         PanchangCard(
           title: _t(context, 'panchang_sun_rashi'),
-          icon: Icons.wb_sunny,
+          icon: const Icon(AppIcons.sunRashi),
           children: [
             PanchangValueRow(
               label: _t(context, 'panchang_rashi'),
@@ -1186,10 +1293,9 @@ class PanchangRashiView extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 16),
         PanchangCard(
           title: _t(context, 'panchang_moon_rashi'),
-          icon: Icons.nightlight,
+          icon: const Icon(AppIcons.moonRashi),
           children: [
             PanchangValueRow(
               label: _t(context, 'panchang_rashi'),
@@ -1202,10 +1308,9 @@ class PanchangRashiView extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 16),
         PanchangCard(
           title: _t(context, 'panchang_nakshatra'),
-          icon: Icons.star,
+          icon: const Icon(AppIcons.nakshatra),
           children: [
             PanchangValueRow(
               label: _t(context, 'panchang_nakshatra'),
@@ -1216,7 +1321,7 @@ class PanchangRashiView extends StatelessWidget {
               ),
               detail: until(day.nakshatra.endsAtUtc),
             ),
-            const Divider(height: 1),
+            _divider(context),
             PanchangValueRow(
               label: _t(context, 'panchang_nakshatra_pada'),
               value: '${day.nakshatraPada}',
@@ -1224,12 +1329,11 @@ class PanchangRashiView extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 12),
         Text(
           _t(context, 'panchang_rashi_note'),
-          style: Theme.of(context).textTheme.bodySmall,
+          style: _secondary(context, IosText.caption),
         ),
-      ],
+      ], 16),
     );
   }
 }
@@ -1320,56 +1424,58 @@ class _PanchangEkadashiViewState extends State<PanchangEkadashiView> {
     final language = _lang(context);
     final fasts = _fasts;
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: _spaced([
         Wrap(
           spacing: 8,
+          runSpacing: 8,
           children: [
             for (final item in EkadashiTradition.values)
-              ChoiceChip(
+              GlassChip(
                 key: Key('panchang_tradition_${item.name}'),
-                label: Text(
-                  _t(
-                    context,
-                    item == EkadashiTradition.smarta
-                        ? 'panchang_smarta'
-                        : 'panchang_gaudiya',
-                  ),
+                label: _t(
+                  context,
+                  // "Smarta" or "Vaishnava" everywhere.
+                  item == EkadashiTradition.smarta
+                      ? 'tradition_smarta'
+                      : 'tradition_vaishnava',
                 ),
                 selected: widget.tradition == item,
-                showCheckmark: false,
-                selectedColor: PanchangColors.teal.withValues(alpha: .18),
-                shape: const StadiumBorder(),
-                onSelected: (_) => widget.onTraditionChanged(item),
+                onTap: () => widget.onTraditionChanged(item),
               ),
           ],
         ),
-        const SizedBox(height: 8),
         Text(
           _t(
             context,
             widget.tradition == EkadashiTradition.smarta
                 ? 'panchang_smarta_rule'
-                : 'panchang_gaudiya_rule',
+                : 'panchang_vaishnava_rule',
           ),
-          style: Theme.of(context).textTheme.bodySmall,
+          key: const Key('panchang_tradition_rule'),
+          style: _secondary(context, IosText.subheadline),
         ),
-        const SizedBox(height: 12),
         if (_failed)
-          Center(
-            child: Column(
-              children: [
-                Text(_t(context, 'panchang_calculation_failed')),
-                TextButton(
-                  onPressed: () => _load(retry: true),
-                  child: Text(_t(context, 'retry')),
+          Column(
+            children: [
+              Text(
+                _t(context, 'panchang_calculation_failed'),
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: IosText.body,
+                  color: IosColors.primary(context),
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 8),
+              BarTextButton(
+                label: _t(context, 'retry'),
+                onPressed: () => _load(retry: true),
+              ),
+            ],
           )
         else if (fasts == null)
-          const Padding(
-            padding: EdgeInsets.all(40),
+          const SizedBox(
+            height: 120,
             child: Center(
               child: CircularProgressIndicator(color: PanchangColors.teal),
             ),
@@ -1377,19 +1483,15 @@ class _PanchangEkadashiViewState extends State<PanchangEkadashiView> {
         else if (fasts.isEmpty)
           Text(
             _t(context, 'panchang_no_calculated_fast'),
-            style: Theme.of(context).textTheme.bodySmall,
+            style: _secondary(context, IosText.subheadline),
           )
         else
-          for (final fast in fasts)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: _card(context, fast, language),
-            ),
+          for (final fast in fasts) _card(context, fast, language),
         Text(
           _t(context, 'panchang_calculated_preview'),
-          style: Theme.of(context).textTheme.bodySmall,
+          style: _secondary(context, IosText.caption),
         ),
-      ],
+      ], 12),
     );
   }
 
@@ -1404,58 +1506,74 @@ class _PanchangEkadashiViewState extends State<PanchangEkadashiView> {
             time(fast.paranaStartUtc, fast.paranaDate),
           ])
         : '${time(fast.paranaStartUtc, fast.paranaDate)} – ${time(fast.paranaEndUtc, fast.paranaDate)}';
-    return PanchangPanel(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            terms.translate(fast.name, PanchangTermKind.ekadashiName, language),
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-          ),
-          PanchangValueRow(
-            label: _t(context, 'panchang_fast_day'),
-            value: PanchangFormat.date(fast.date, language),
-            detail: _t(context, 'panchang_starts_at', [
-              time(fast.fastStartsUtc, fast.date),
-            ]),
-          ),
-          PanchangValueRow(
-            label: _t(context, 'panchang_parana'),
-            value: PanchangFormat.date(fast.paranaDate, language),
-            detail: parana,
-          ),
-          if (fast.nearBoundary)
-            Row(
-              children: [
-                const Icon(Icons.warning_amber, size: 16, color: Colors.orange),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    _t(context, 'panchang_near_boundary'),
-                    style: const TextStyle(fontSize: 12, color: Colors.orange),
-                  ),
-                ),
-              ],
+    final orange = IosColors.orange(context);
+    return KeyedSubtree(
+      key: ValueKey('fast_${fast.date}_${fast.name}'),
+      child: GlassPanel(
+        key: const Key('panchang_fast_card'),
+        radius: 18,
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: _spaced([
+            Text(
+              terms.translate(
+                fast.name,
+                PanchangTermKind.ekadashiName,
+                language,
+              ),
+              style: TextStyle(
+                fontSize: IosText.headline,
+                fontWeight: FontWeight.w600,
+                color: IosColors.primary(context),
+              ),
             ),
-          Theme(
-            data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-            child: ExpansionTile(
-              tilePadding: EdgeInsets.zero,
-              title: Text(
+            PanchangValueRow(
+              label: _t(context, 'panchang_fast_day'),
+              value: PanchangFormat.date(fast.date, language),
+              detail: _t(context, 'panchang_starts_at', [
+                time(fast.fastStartsUtc, fast.date),
+              ]),
+            ),
+            PanchangValueRow(
+              label: _t(context, 'panchang_parana'),
+              value: PanchangFormat.date(fast.paranaDate, language),
+              detail: parana,
+            ),
+            if (fast.nearBoundary)
+              Row(
+                children: [
+                  Icon(AppIcons.warning, size: 14, color: orange),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      _t(context, 'panchang_near_boundary'),
+                      style: TextStyle(
+                        fontSize: IosText.caption,
+                        color: orange,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            _Disclosure(
+              spacing: 8,
+              topPadding: 6,
+              label: Text(
                 _t(context, 'panchang_calculation_details'),
-                style: const TextStyle(fontSize: 14),
+                style: TextStyle(
+                  fontSize: IosText.subheadline,
+                  color: IosColors.primary(context),
+                ),
               ),
               children: [
                 PanchangValueRow(
                   label: _t(context, 'panchang_rule'),
                   value: terms.ekadashiNote(fast.rule, language),
                 ),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    terms.ekadashiNote(fast.paranaReason, language),
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
+                Text(
+                  terms.ekadashiNote(fast.paranaReason, language),
+                  style: _secondary(context, IosText.caption),
                 ),
                 PanchangValueRow(
                   label: _t(context, 'panchang_tithi'),
@@ -1468,8 +1586,8 @@ class _PanchangEkadashiViewState extends State<PanchangEkadashiView> {
                 ),
               ],
             ),
-          ),
-        ],
+          ], 10),
+        ),
       ),
     );
   }

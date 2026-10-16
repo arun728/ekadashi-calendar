@@ -1,5 +1,3 @@
-import 'package:provider/provider.dart';
-import '../services/language_service.dart';
 import 'package:flutter/material.dart';
 import '../main.dart';
 
@@ -52,58 +50,8 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final lang = context.watch<LanguageService>();
-    return Scaffold(
-      backgroundColor: const Color(0xFF121212),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const SizedBox(
-              height: 100,
-              width: 100,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Positioned(
-                    top: 0,
-                    child: Icon(
-                      Icons.wb_sunny_outlined,
-                      size: 40,
-                      color: Colors.orangeAccent,
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 0,
-                    child: Icon(Icons.spa, size: 80, color: Color(0xFF00A19B)),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              lang.translate('app_title'),
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              lang.translate('splash_mantra'),
-              style: const TextStyle(
-                color: Colors.white54,
-                fontSize: 14,
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-            const SizedBox(height: 40),
-            const CircularProgressIndicator(color: Color(0xFF00A19B)),
-          ],
-        ),
-      ),
-    );
-  }
+  /// Plain #121212 while the data loads, like the iOS launch screen (no
+  /// artwork or text).
+  Widget build(BuildContext context) =>
+      const Scaffold(backgroundColor: Color(0xFF121212));
 }

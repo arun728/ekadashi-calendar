@@ -49,7 +49,7 @@ public enum SearchCorpus {
 
     /// Custom entries and imported Google events, on the day they start.
     public static func entryItems(_ entries: [CalendarEntry], timeZone: TimeZone) -> [SearchItem] {
-        entries.map { entry in
+        CalendarEntry.withoutDuplicateGoogle(entries).map { entry in
             let day = entry.allDayStart ?? CivilDate.today(in: timeZone, now: entry.start)
             let source = entry.source == .google ? "google" : "custom"
             return SearchItem(id: "entry:\(entry.id)", target: .entry(id: entry.id, date: day), categories: [.myCalendar],

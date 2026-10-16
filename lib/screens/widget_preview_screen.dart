@@ -5,6 +5,7 @@ import '../services/ekadashi_service.dart';
 import '../services/language_service.dart';
 import 'details_screen.dart';
 import 'calendar_screen.dart';
+import '../widgets/app_icons.dart';
 
 /// The in-app preview of the two home screen widgets (docs/ROADMAP.md Phase 6):
 ///   1. Ekadashi: on an Ekadashi, "Today is Ekadashi", its name and the
@@ -59,11 +60,7 @@ class WidgetPreviewScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: _cyan,
-            size: 20,
-          ),
+          icon: const Icon(AppIcons.back, color: _cyan, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
         centerTitle: true,

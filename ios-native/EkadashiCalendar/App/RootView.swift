@@ -11,20 +11,20 @@ struct RootView: View {
         @Bindable var model = model
         TabView(selection: tabSelection) {
             screen(TodayView(), tab: .today)
-                .tabItem { Label(model.t("home"), systemImage: "house.fill") }
+                .tabItem { Label(model.t("home"), systemImage: AppSymbol.tabHome) }
                 .tag(AppTab.today)
             screen(CalendarView(), tab: .calendar)
-                .tabItem { Label(model.t("calendar"), systemImage: "calendar") }
+                .tabItem { Label(model.t("calendar"), systemImage: AppSymbol.tabCalendar) }
                 .tag(AppTab.calendar)
             screen(VratView(), tab: .vrat)
-                .tabItem { Label(model.t("journey_tab"), systemImage: "leaf") }
+                .tabItem { Label(model.t("journey_tab"), systemImage: AppSymbol.tabJourney) }
                 .tag(AppTab.vrat)
             // Panchang is English-only by design.
             screen(PanchangView(), tab: .panchang)
-                .tabItem { Label(model.t("search_screen_panchang"), systemImage: "sparkles") }
+                .tabItem { Label(model.t("search_screen_panchang"), systemImage: AppSymbol.tabPanchang) }
                 .tag(AppTab.panchang)
             screen(SettingsView(), tab: .settings)
-                .tabItem { Label(model.t("settings"), systemImage: "gearshape.fill") }
+                .tabItem { Label(model.t("settings"), systemImage: AppSymbol.tabSettings) }
                 .tag(AppTab.settings)
         }
         .tint(Theme.teal)
@@ -71,7 +71,7 @@ struct RootView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else if let error = model.loadError {
                     ContentUnavailableView {
-                        Label(error, systemImage: "exclamationmark.circle")
+                        Label(error, systemImage: AppSymbol.error)
                     } actions: {
                         Button(model.t("retry")) { model.reload() }.primaryActionStyle()
                     }
@@ -89,7 +89,7 @@ struct RootView: View {
                     ToolbarItem(placement: .topBarLeading) {
                         Button { model.returnToSearch() } label: {
                             HStack(spacing: 3) {
-                                Image(systemName: "chevron.backward").fontWeight(.semibold)
+                                Image(systemName: AppSymbol.back).fontWeight(.semibold)
                                 Text(model.t("search"))
                             }
                         }
@@ -100,7 +100,7 @@ struct RootView: View {
                     Button {
                         model.open(.search)
                     } label: {
-                        Image(systemName: "magnifyingglass")
+                        Image(systemName: AppSymbol.search)
                     }
                     .accessibilityLabel(model.t("search"))
                     .accessibilityIdentifier("open_global_search")

@@ -1,7 +1,9 @@
+import 'package:ekadashi_calendar/widgets/app_icons.dart';
 import 'dart:async';
 
 import 'package:ekadashi_calendar/screens/panchang_screen.dart';
 import 'package:ekadashi_calendar/services/ekadashi_service.dart';
+import 'package:ekadashi_calendar/services/ekadashi_settings.dart';
 import 'package:ekadashi_calendar/services/language_service.dart';
 import 'package:ekadashi_calendar/services/panchang/observance_calendar_service.dart';
 import 'package:ekadashi_calendar/services/panchang/panchang_city.dart';
@@ -28,6 +30,8 @@ void main() {
     tzdata.initializeTimeZones();
     await initializeDateFormatting();
     await service.initializeData();
+    // Read from disk now: assets never load on the widget tests' fake clock.
+    await PanchangLocationStore.cities();
     ObservanceCalendarService.calculateInline = true;
     ObservanceCalendarService.instance.put(
       2026,
@@ -53,6 +57,8 @@ void main() {
     required PremiumService premium,
     DateTime? date,
     String language = 'en',
+    EkadashiSettings? settings,
+    bool savedCity = false,
   }) async {
     SharedPreferences.setMockInitialValues({'language_code': language});
     final lang = LanguageService();
@@ -61,12 +67,15 @@ void main() {
         providers: [
           ChangeNotifierProvider<PremiumService>.value(value: premium),
           ChangeNotifierProvider<LanguageService>.value(value: lang),
+          ChangeNotifierProvider<EkadashiSettings>.value(
+            value: settings ?? EkadashiSettings(),
+          ),
         ],
         child: MaterialApp(
           home: Scaffold(
             body: PanchangScreen(
               initialDate: date,
-              initialCity: PanchangCity.newDelhi,
+              initialCity: savedCity ? null : PanchangCity.newDelhi,
               ekadashiList: service.getEkadashis(
                 timezone: 'IST',
                 languageCode: language,
@@ -78,6 +87,13 @@ void main() {
     );
     await tester.pumpAndSettle();
   }
+
+  Finder pickerList() => find
+      .descendant(
+        of: find.byKey(const Key('city_picker_list')),
+        matching: find.byType(Scrollable),
+      )
+      .first;
 
   Finder scrollable() => find
       .descendant(
@@ -112,22 +128,15 @@ void main() {
   ) async {
     final premium = await premiumService(false);
     addTearDown(premium.dispose);
-    await showPanchang(tester, premium: premium);
-    // Today's month; choose November 2026 with the month picker.
-    await tester.tap(find.byKey(const Key('panchang_selected_month')));
+    await showPanchang(tester, premium: premium, date: DateTime(2026, 11, 1));
+    await tester.tap(find.byKey(const Key('panchang_tab_keydays')));
     await tester.pumpAndSettle();
-    while (find.text('2026').evaluate().isEmpty) {
-      await tester.tap(find.byIcon(Icons.chevron_left).last);
-      await tester.pumpAndSettle();
-    }
-    await tester.tap(find.byKey(const Key('panchang_month_11')));
-    await tester.pumpAndSettle();
-    // A picked month opens its first day, shown in full.
+    // November 2026's Key days, under the selected date in full.
     expect(find.text('Sun, 1 Nov 2026'), findsOneWidget);
     expect(find.byKey(const Key('panchang_key_days')), findsOneWidget);
     expect(find.byKey(const Key('panchang_key_days_unlock')), findsOneWidget);
     expect(find.text('Deepavali (Lakshmi Puja)'), findsOneWidget);
-    expect(find.byIcon(Icons.lock), findsWidgets);
+    expect(find.byIcon(AppIcons.lock), findsWidgets);
     await tester.tap(find.byKey(const Key('panchang_key_filter_ekadashi')));
     await tester.pumpAndSettle();
     expect(find.text('Deepavali (Lakshmi Puja)'), findsNothing);
@@ -277,8 +286,10 @@ void main() {
     expect(find.text('Sun rashi'), findsOneWidget);
     await tester.tap(find.byKey(const Key('panchang_tab_ekadashi')));
     await tester.pumpAndSettle();
+    // "Smarta" or "Vaishnava" everywhere.
     expect(find.text('Smarta'), findsOneWidget);
-    expect(find.text('Vaishnava · Gaudiya/ISKCON'), findsOneWidget);
+    expect(find.text('Vaishnava'), findsOneWidget);
+    expect(find.textContaining('Gaudiya'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
@@ -298,22 +309,112 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('location menu and a validated custom location', (tester) async {
+  testWidgets('every sub-tab opens the full calendar to pick a date', (
+    tester,
+  ) async {
+    final premium = await premiumService(true);
+    addTearDown(premium.dispose);
+    await showPanchang(tester, premium: premium, date: DateTime(2026, 10, 8));
+    // The iOS graphical date picker in a sheet; a picked day shows at once
+    // and Done closes it (a different day on each sub-tab).
+    for (final (page, key, day, shown) in [
+      ('keydays', 'panchang_selected_month', '20', 'Tue, 20 Oct 2026'),
+      ('daily', 'panchang_selected_date', '21', 'Wed, 21 Oct 2026'),
+      ('muhurta', 'panchang_selected_date', '22', 'Thu, 22 Oct 2026'),
+      ('ekadashi', 'panchang_selected_month', '23', 'Fri, 23 Oct 2026'),
+      ('rashi', 'panchang_selected_date', '24', 'Sat, 24 Oct 2026'),
+    ]) {
+      await tester.ensureVisible(find.byKey(Key('panchang_tab_$page')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(Key('panchang_tab_$page')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(Key(key)));
+      await tester.pumpAndSettle();
+      final picker = find.byKey(const Key('panchang_day_picker'));
+      expect(picker, findsOneWidget, reason: page);
+      expect(
+        find.descendant(of: picker, matching: find.byType(CalendarDatePicker)),
+        findsOneWidget,
+        reason: page,
+      );
+      await tester.tap(
+        find.descendant(of: picker, matching: find.text(day)).first,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('panchang_day_picker_done')));
+      await tester.pumpAndSettle();
+      // The picked day on this sub-tab; the monthly ones browse its month.
+      expect(
+        find.descendant(
+          of: find.byKey(const Key('panchang_stepper')),
+          matching: find.text(shown),
+        ),
+        findsOneWidget,
+        reason: page,
+      );
+    }
+    expect(find.byKey(const Key('panchang_month_picker')), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the Home city picker with time zones and a custom location', (
+    tester,
+  ) async {
     final premium = await premiumService(false);
     addTearDown(premium.dispose);
     await showPanchang(tester, premium: premium, date: DateTime(2026, 10, 8));
-    await tester.tap(find.byKey(const Key('panchang_city_selector')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text(PanchangCity.mumbai.label).last);
-    await tester.pumpAndSettle();
-    expect(find.text(PanchangCity.mumbai.label), findsOneWidget);
+    String? text(String key) => tester.widget<Text>(find.byKey(Key(key))).data;
+    expect(text('panchang_city_name'), 'New Delhi');
+    expect(text('panchang_city_zone'), 'IST');
 
+    // Nothing typed: popular cities, every one with its time zone.
     await tester.tap(find.byKey(const Key('panchang_city_selector')));
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('Search city or use location'));
+    expect(find.byKey(const Key('ekadashi_location_search')), findsOneWidget);
+    expect(
+      find.byKey(const Key('ekadashi_location_current_button')),
+      findsOneWidget,
+    );
+    expect(find.text('Popular cities'), findsOneWidget);
+    final london = find.byKey(const Key('ekadashi_city_geonames-2643743'));
+    await tester.scrollUntilVisible(london, 300, scrollable: pickerList());
+    // London shows GMT or BST by season.
+    expect(
+      find.descendant(
+        of: london,
+        matching: find.byWidgetPredicate(
+          (w) => w is Text && (w.data == 'GMT' || w.data == 'BST'),
+        ),
+      ),
+      findsOneWidget,
+    );
+
+    // A search result moves the Panchang there.
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('ekadashi_location_search')),
+      -300,
+      scrollable: pickerList(),
+    );
+    await tester.enterText(
+      find.byKey(const Key('ekadashi_location_search')),
+      'Mumbai',
+    );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Search city or use location'));
+    await tester.tap(find.byKey(const Key('ekadashi_city_geonames-1275339')));
     await tester.pumpAndSettle();
+    expect(text('panchang_city_name'), 'Mumbai (IN)');
+    expect(text('panchang_city_zone'), 'IST');
+
+    // The pick is a recent search next time; coordinates typed by hand
+    // are validated.
+    await tester.tap(find.byKey(const Key('panchang_city_selector')));
+    await tester.pumpAndSettle();
+    expect(find.text('Recent Searches'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('location_save')),
+      400,
+      scrollable: pickerList(),
+    );
     await tester.enterText(find.byKey(const Key('location_name')), 'New York');
     await tester.enterText(find.byKey(const Key('location_latitude')), '400');
     await tester.enterText(
@@ -324,17 +425,59 @@ void main() {
       find.byKey(const Key('location_timezone')),
       'America/New_York',
     );
+    await tester.pump();
+    // As on iOS, Save stays disabled until the location is valid.
     await tester.tap(find.byKey(const Key('location_save')));
     await tester.pumpAndSettle();
-    expect(find.text('Enter a number from -90 to 90'), findsOneWidget);
+    expect(find.byKey(const Key('location_latitude')), findsOneWidget);
     await tester.enterText(
       find.byKey(const Key('location_latitude')),
       '40.7128',
     );
     await tester.tap(find.byKey(const Key('location_save')));
     await tester.pumpAndSettle();
-    expect(find.text('New York'), findsOneWidget);
-    expect(find.text('America/New_York'), findsOneWidget);
+    expect(text('panchang_city_name'), 'New York');
+    // Every city shows its time zone like IST, never the IANA name.
+    expect(text('panchang_city_zone'), anyOf('EDT', 'EST'));
+    expect(find.text('America/New_York'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a city chosen on Home moves the Panchang tab, not the reverse', (
+    tester,
+  ) async {
+    final premium = await premiumService(false);
+    addTearDown(premium.dispose);
+    final settings = EkadashiSettings();
+    await showPanchang(
+      tester,
+      premium: premium,
+      settings: settings,
+      savedCity: true,
+    );
+    final cities = await PanchangLocationStore.cities();
+    final london = cities.firstWhere((c) => c.id == 'geonames-2643743');
+    await tester.runAsync(() => settings.chooseCity(london));
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<Text>(find.byKey(const Key('panchang_city_name'))).data,
+      'London (GB)',
+    );
+    // Choosing on the Panchang tab leaves Home's city alone.
+    await tester.tap(find.byKey(const Key('panchang_city_selector')));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('ekadashi_location_search')),
+      'Mumbai',
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('ekadashi_city_geonames-1275339')));
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<Text>(find.byKey(const Key('panchang_city_name'))).data,
+      'Mumbai (IN)',
+    );
+    expect(settings.city.id, 'geonames-2643743');
     expect(tester.takeException(), isNull);
   });
 

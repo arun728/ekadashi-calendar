@@ -6,13 +6,15 @@ import EkadashiCore
 /// domain rules are covered by the EkadashiCore package tests).
 @MainActor
 final class AppModelTests: XCTestCase {
-    func testBundledScheduleLoadsInEveryLanguage() {
+    func testBundledScheduleLoadsInEveryLanguage() async {
         let model = AppModel()
         let original = model.language
         model.reload()
+        await model.waitForLoad()
         XCTAssertFalse(model.ekadashis.isEmpty, original)
         for language in Localizer.languages where language != original {
             model.setLanguage(language)
+            await model.waitForLoad()
             XCTAssertEqual(model.language, language)
             XCTAssertFalse(model.ekadashis.isEmpty, language)
             XCTAssertNil(model.loadError)
@@ -68,12 +70,66 @@ final class AppModelTests: XCTestCase {
         XCTAssertFalse(model.premium.isPremium, "premium comes only from verified StoreKit entitlements")
     }
 
-    func testWidgetSnapshotReflectsTheSchedule() {
+    func testWidgetSnapshotReflectsTheSchedule() async {
         let model = AppModel()
         model.reload()
-        let snapshot = WidgetSnapshot.build(occurrences: model.ekadashis, timezone: model.timezone.rawValue,
+        await model.waitForLoad()
+        let snapshot = WidgetSnapshot.build(occurrences: model.ekadashis, timezone: model.ekadashiCity.timeZoneId,
                                             locationName: "Test", language: "en", now: Date())
-        XCTAssertEqual(snapshot.timeZone, model.timezone.ianaIdentifier)
+        XCTAssertEqual(snapshot.timeZone, model.ekadashiCity.timeZoneId)
         XCTAssertFalse(snapshot.strings.isEmpty)
+    }
+
+    /// Home's tradition and year menus drive the Ekadashis everywhere; a city
+    /// chosen on Home also becomes the Panchang location.
+    func testHomeCityTraditionAndYearApplyAcrossTheApp() async {
+        let model = AppModel()
+        let city = model.ekadashiCity, manual = model.ekadashiCityIsManual
+        let tradition = model.tradition, year = model.selectedYear, panchang = model.panchangCity
+        defer {
+            // The tests share the app's settings; put them back.
+            model.setTradition(tradition)
+            model.setYear(year)
+            if manual { model.chooseEkadashiCity(city) }
+            model.savePanchangCity(panchang)
+        }
+        XCTAssertEqual(model.enabledYears, [2026, 2027])
+        XCTAssertEqual(AppModel.defaultCity.label, "Chennai (IN)")
+
+        model.chooseEkadashiCity(AppModel.defaultCity)
+        await model.waitForLoad()
+        XCTAssertTrue(model.ekadashiCityIsManual)
+        XCTAssertEqual(model.panchangCity, AppModel.defaultCity)
+
+        model.setTradition(.smarta)
+        await model.waitForLoad()
+        XCTAssertTrue(model.ekadashis.contains { $0.date == CivilDate(2026, 7, 10) })
+        model.setTradition(.gaudiya)
+        await model.waitForLoad()
+        XCTAssertTrue(model.ekadashis.contains { $0.date == CivilDate(2026, 7, 11) }, "Vaishnava Yogini is a day later")
+
+        // Switching tradition stays on the Ekadashi on screen, both ways.
+        model.homeIndex = min(5, model.homeEkadashis.count - 1)
+        let shown = model.homeEkadashis[model.homeIndex].occurrenceUid
+        model.setTradition(.smarta)
+        await model.waitForLoad()
+        XCTAssertEqual(model.homeEkadashis[model.homeIndex].occurrenceUid, shown)
+        model.setTradition(.gaudiya)
+        await model.waitForLoad()
+        XCTAssertEqual(model.homeEkadashis[model.homeIndex].occurrenceUid, shown)
+        XCTAssertEqual(model.traditionName(.gaudiya), "Vaishnava")
+
+        // A city chosen on Home is offered first next time and moves Panchang.
+        let revision = model.panchangCityRevision
+        model.chooseEkadashiCity(AppModel.defaultCity)
+        XCTAssertGreaterThan(model.panchangCityRevision, revision)
+        XCTAssertEqual(RecentCities(store: model.store).all().first, AppModel.defaultCity)
+        XCTAssertEqual(model.ekadashiCityName, "Chennai (IN)", "city and country code, no time zone")
+
+        model.setYear(2027)
+        XCTAssertTrue(model.homeEkadashis.allSatisfy { $0.date.year == 2027 })
+        XCTAssertEqual(model.calendarFocus?.year, 2027)
+        model.calendarShowsYear(2026)
+        XCTAssertEqual(model.selectedYear, 2026)
     }
 }

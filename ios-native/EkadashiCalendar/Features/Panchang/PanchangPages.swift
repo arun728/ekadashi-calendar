@@ -57,7 +57,7 @@ struct PanchangKeyDaysView: View {
 
     private var lockedBanner: some View {
         HStack(spacing: 12) {
-            Image(systemName: "lock.fill").foregroundStyle(Theme.amber)
+            Image(systemName: AppSymbol.lock).foregroundStyle(Theme.amber)
             Text(model.t("panchang_key_days_locked")).font(.subheadline)
             Spacer(minLength: 4)
             Button(model.t("panchang_unlock_short")) { model.openPaywall() }
@@ -78,7 +78,7 @@ struct PanchangKeyDaysView: View {
         return HStack(spacing: 14) {
             VStack(spacing: 0) {
                 if isLocked {
-                    Image(systemName: "lock.fill").font(.title3).foregroundStyle(Theme.amber)
+                    Image(systemName: AppSymbol.lock).font(.title3).foregroundStyle(Theme.amber)
                 } else {
                     Text("\(day.date.day)").font(.title2.weight(.bold)).monospacedDigit()
                     Text(PanchangFormat.weekday(day.date, language: model.language)).font(.caption2.weight(.semibold))
@@ -98,7 +98,7 @@ struct PanchangKeyDaysView: View {
                 }
             }
             Spacer(minLength: 4)
-            Image(systemName: isLocked ? "lock.fill" : "chevron.right").font(.footnote.weight(.semibold))
+            Image(systemName: isLocked ? AppSymbol.lock : AppSymbol.rowDisclosure).font(.footnote.weight(.semibold))
                 .foregroundStyle(isLocked ? Theme.amber : Color.secondary)
         }
         .padding(12)
@@ -172,10 +172,10 @@ struct PanchangDailyView: View {
             }
             FlowLayout(spacing: 8) {
                 StatusPill(text: "\(terms.month(day.amantaMonth, language: language)) · \(model.t("panchang_amanta"))",
-                           systemImage: "moon", color: Theme.teal)
-                StatusPill(text: terms.translate(day.vara, .vara, language: language), systemImage: "calendar", color: Theme.teal)
+                           systemImage: AppSymbol.panchangTithi, color: Theme.teal)
+                StatusPill(text: terms.translate(day.vara, .vara, language: language), systemImage: AppSymbol.panchangVara, color: Theme.teal)
                 ForEach(Array(majors.prefix(3))) { event in
-                    StatusPill(text: terms.observanceName(event, language: language), systemImage: "sparkles",
+                    StatusPill(text: terms.observanceName(event, language: language), systemImage: AppSymbol.panchangObservance,
                                color: Theme.hex(SearchCategory.festival.colorHex))
                 }
             }
@@ -189,10 +189,10 @@ struct PanchangDailyView: View {
 
     private var sunAndMoon: some View {
         let tiles: [(String, String, String)] = [
-            ("sunrise.fill", model.t("panchang_sunrise"), time(day.sunrise)),
-            ("sunset.fill", model.t("panchang_sunset"), time(day.sunset)),
-            ("moonrise.fill", model.t("panchang_moonrise"), time(day.moonrise)),
-            ("moonset.fill", model.t("panchang_moonset"), time(day.moonset)),
+            (AppSymbol.sunrise, model.t("panchang_sunrise"), time(day.sunrise)),
+            (AppSymbol.sunset, model.t("panchang_sunset"), time(day.sunset)),
+            (AppSymbol.moonrise, model.t("panchang_moonrise"), time(day.moonrise)),
+            (AppSymbol.moonset, model.t("panchang_moonset"), time(day.moonset)),
         ]
         return LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
             ForEach(tiles, id: \.0) { tile in
@@ -219,7 +219,7 @@ struct PanchangDailyView: View {
             (model.t("panchang_karana"), terms.translate(day.karana.name, .karana, language: language), until(day.karana.endsAt)),
             (model.t("panchang_vara"), terms.translate(day.vara, .vara, language: language), nil),
         ]
-        return PanchangCard(title: model.t("panchang_five_limbs"), symbol: "circle.hexagongrid") {
+        return PanchangCard(title: model.t("panchang_five_limbs"), symbol: AppSymbol.fiveLimbs) {
             ForEach(Array(rows.enumerated()), id: \.offset) { index, row in
                 if index > 0 { Divider() }
                 PanchangRow(label: row.0, value: row.1, detail: row.2)
@@ -234,7 +234,7 @@ struct PanchangDailyView: View {
             .sorted { $0.start < $1.start }
         let avoid = ([day.rahukala, day.yamaganda, day.gulika] + extra.filter { $0.name != "Amrit Kalam" }).compactMap { $0 }
             .sorted { $0.start < $1.start }
-        return PanchangCard(title: model.t("panchang_timings"), symbol: "clock") {
+        return PanchangCard(title: model.t("panchang_timings"), symbol: AppSymbol.timings) {
             Text(model.t("panchang_good_times")).font(.caption.weight(.bold)).foregroundStyle(Theme.observed)
             ForEach(Array(good.enumerated()), id: \.offset) { _, period in
                 PanchangRow(label: terms.period(period.name, language: language),
@@ -255,9 +255,9 @@ struct PanchangDailyView: View {
     @ViewBuilder
     private var observances: some View {
         if !day.observances.isEmpty {
-            PanchangCard(title: model.t("panchang_observances"), symbol: "sparkles") {
+            PanchangCard(title: model.t("panchang_observances"), symbol: AppSymbol.observances) {
                 ForEach(day.observances) { event in
-                    Label(terms.observanceName(event, language: language), systemImage: event.isMajor ? "sparkle" : "circle.fill")
+                    Label(terms.observanceName(event, language: language), systemImage: event.isMajor ? AppSymbol.observanceMajor : AppSymbol.observanceMinor)
                         .font(event.isMajor ? .subheadline.weight(.semibold) : .subheadline)
                         .imageScale(event.isMajor ? .medium : .small)
                 }
@@ -296,7 +296,7 @@ struct PanchangDailyView: View {
             }
             .padding(.top, 10)
         } label: {
-            Label(model.t("panchang_more_details"), systemImage: "list.bullet.rectangle").font(.headline)
+            Label(model.t("panchang_more_details"), systemImage: AppSymbol.moreDetails).font(.headline)
         }
         .tint(Theme.teal)
         .padding(16)
@@ -335,7 +335,7 @@ struct PanchangMuhurtaView: View {
             .pickerStyle(.segmented)
             .accessibilityIdentifier("panchang_day_night")
             let choghadiya = day.choghadiya.filter { $0.name.hasPrefix(night ? "Night" : "Day") }
-            PanchangCard(title: model.t("panchang_choghadiya"), symbol: "circle.grid.3x3") {
+            PanchangCard(title: model.t("panchang_choghadiya"), symbol: AppSymbol.choghadiya) {
                 Text(model.t("panchang_choghadiya_hint")).font(.caption).foregroundStyle(.secondary)
                 if choghadiya.isEmpty { Text(model.t("panchang_unavailable")).font(.subheadline).foregroundStyle(.secondary) }
                 ForEach(Array(choghadiya.enumerated()), id: \.offset) { _, period in
@@ -344,11 +344,11 @@ struct PanchangMuhurtaView: View {
                 }
             }
             let hora = Array(day.hora.enumerated().filter { night ? $0.offset >= 12 : $0.offset < 12 }.map(\.element))
-            PanchangCard(title: model.t("panchang_hora"), symbol: "clock.arrow.2.circlepath") {
+            PanchangCard(title: model.t("panchang_hora"), symbol: AppSymbol.hora) {
                 if hora.isEmpty { Text(model.t("panchang_unavailable")).font(.subheadline).foregroundStyle(.secondary) }
                 ForEach(Array(hora.enumerated()), id: \.offset) { _, period in periodRow(period.name, kind: .hora, period) }
             }
-            PanchangCard(title: model.t("panchang_lagna"), symbol: "globe.asia.australia") {
+            PanchangCard(title: model.t("panchang_lagna"), symbol: AppSymbol.lagna) {
                 if day.lagna.isEmpty { Text(model.t("panchang_unavailable")).font(.subheadline).foregroundStyle(.secondary) }
                 ForEach(Array(day.lagna.enumerated()), id: \.offset) { _, period in periodRow(period.name, kind: .rashi, period) }
             }
@@ -388,15 +388,15 @@ struct PanchangRashiView: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            PanchangCard(title: model.t("panchang_sun_rashi"), symbol: "sun.max.fill") {
+            PanchangCard(title: model.t("panchang_sun_rashi"), symbol: AppSymbol.sunRashi) {
                 PanchangRow(label: model.t("panchang_rashi"), value: terms.translate(day.sunRashi, .rashi, language: language),
                             detail: until(day.sunRashiEndsAt))
             }
-            PanchangCard(title: model.t("panchang_moon_rashi"), symbol: "moon.fill") {
+            PanchangCard(title: model.t("panchang_moon_rashi"), symbol: AppSymbol.moonRashi) {
                 PanchangRow(label: model.t("panchang_rashi"), value: terms.translate(day.moonRashi, .rashi, language: language),
                             detail: until(day.moonRashiEndsAt))
             }
-            PanchangCard(title: model.t("panchang_nakshatra"), symbol: "star.fill") {
+            PanchangCard(title: model.t("panchang_nakshatra"), symbol: AppSymbol.nakshatra) {
                 PanchangRow(label: model.t("panchang_nakshatra"), value: terms.translate(day.nakshatra.name, .nakshatra, language: language),
                             detail: until(day.nakshatra.endsAt))
                 Divider()

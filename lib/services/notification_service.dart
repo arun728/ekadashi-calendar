@@ -263,8 +263,9 @@ class NotificationService {
 
     if (Platform.isAndroid) {
       if (!await hasNotificationPermission() ||
-          !await hasExactAlarmPermission())
+          !await hasExactAlarmPermission()) {
         return;
+      }
     }
 
     final now = tz.TZDateTime.now(tz.local);

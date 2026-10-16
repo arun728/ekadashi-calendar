@@ -399,6 +399,15 @@ class MainActivity: FlutterActivity() {
                     }
                 }
 
+                "localizeChannel" -> {
+                    val name = call.argument<String>("name")
+                    val description = call.argument<String>("description")
+                    if (!name.isNullOrBlank() && description != null) {
+                        notifScheduler.localizeChannel(name, description)
+                    }
+                    result.success(true)
+                }
+
                 "cancelAllNotifications" -> {
                     notifScheduler.cancelAllNotifications()
                     result.success(true)

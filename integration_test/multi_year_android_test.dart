@@ -1,12 +1,13 @@
+import 'package:ekadashi_calendar/widgets/app_icons.dart';
 import '../test/support/premium_fixture.dart';
 import '../test/support/fake_free_sync_registry.dart';
+import 'package:ekadashi_calendar/widgets/ios_style.dart';
 import 'package:ekadashi_calendar/services/premium_service.dart';
 import 'dart:io';
 import 'package:sqflite/sqflite.dart' show deleteDatabase, getDatabasesPath;
 import 'package:table_calendar/table_calendar.dart';
 import 'package:ekadashi_calendar/screens/global_search_screen.dart';
 import 'package:ekadashi_calendar/screens/panchang_screen.dart';
-import 'package:ekadashi_calendar/widgets/glass_tube.dart';
 import 'package:ekadashi_calendar/services/widget_sync_manager.dart';
 import 'package:ekadashi_calendar/services/native_widget_service.dart';
 import 'dart:convert';
@@ -96,7 +97,10 @@ void main() {
       await NativeNotificationService().updateSettings(NotificationSettings());
       app.main();
       await tester.pump();
-      await until(tester, () => find.byIcon(Icons.home).evaluate().isNotEmpty);
+      await until(
+        tester,
+        () => find.byIcon(AppIcons.tabHome).evaluate().isNotEmpty,
+      );
       await until(
         tester,
         () => find.byType(CircularProgressIndicator).evaluate().isEmpty,
@@ -134,7 +138,7 @@ void main() {
       await binding.takeScreenshot('v2_panchang_free');
       // The sections also change with a horizontal swipe (Phase 9).
       bool chipSelected(String key) =>
-          tester.widget<GlassFilterChip>(find.byKey(Key(key))).selected;
+          tester.widget<GlassChip>(find.byKey(Key(key))).selected;
       final panchangPages = find.descendant(
         of: find.byType(PanchangScreen),
         matching: find.byType(PageView),
@@ -146,9 +150,20 @@ void main() {
       await tester.fling(panchangPages, const Offset(400, 0), 1500);
       await frames(tester);
       await until(tester, () => chipSelected('panchang_tab_daily'));
+      // The same city picker as Home; coordinates typed by hand are its
+      // last section.
       await tester.tap(find.byKey(const Key('panchang_city_selector')));
       await frames(tester);
-      await tester.tap(find.byKey(const Key('panchang_edit_location')));
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('location_save')),
+        400,
+        scrollable: find
+            .descendant(
+              of: find.byKey(const Key('city_picker_list')),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
       await frames(tester);
       for (final entry in {
         'location_name': 'New York',
@@ -171,7 +186,12 @@ void main() {
             .isNotEmpty,
       );
       expect(find.text('New York'), findsWidgets);
-      expect(find.text('America/New_York'), findsOneWidget);
+      // Every city shows its time zone like IST, never the IANA name.
+      expect(
+        tester.widget<Text>(find.byKey(const Key('panchang_city_zone'))).data,
+        anyOf('EDT', 'EST'),
+      );
+      expect(find.text('America/New_York'), findsNothing);
       expect(
         prefs.getString('panchang_location'),
         contains('America/New_York'),
@@ -210,7 +230,7 @@ void main() {
       await tester.tap(find.byKey(const Key('journey_tab_history')));
       await frames(tester);
       await binding.takeScreenshot('v2_history_2026');
-      await tester.tap(find.byIcon(Icons.calendar_month));
+      await tester.tap(find.byKey(const Key('glass_tab_1')));
       await frames(tester);
       final addButton = find.byKey(const Key('add_calendar_entry'));
       final capsule = tester.getRect(
@@ -236,13 +256,20 @@ void main() {
       await frames(tester);
       await tester.tap(find.byKey(const Key('month_picker_year_2027')));
       await frames(tester);
+      await tester.dragUntilVisible(
+        find.byKey(const Key('panchang_month_1')),
+        find.byKey(const Key('month_picker_month_wheel')),
+        const Offset(0, 40),
+      );
       await tester.tap(find.byKey(const Key('panchang_month_1')));
+      await frames(tester);
+      await tester.tap(find.byKey(const Key('month_picker_done')));
       await frames(tester);
       await binding.takeScreenshot('v2_calendar_2027');
       await lang.changeLanguage('te');
       await frames(tester);
       await binding.takeScreenshot('v2_calendar_telugu_2027');
-      await tester.tap(find.byIcon(Icons.home));
+      await tester.tap(find.byIcon(AppIcons.tabHome));
       await frames(tester);
       await binding.takeScreenshot('v2_home_telugu');
       expect(tester.takeException(), isNull);
@@ -268,11 +295,11 @@ void main() {
         await File(
           '$fixtureDirectory/widget-fixture-$code.json',
         ).writeAsString(jsonEncode(payload));
-        await tester.tap(find.byIcon(Icons.spa_outlined));
+        await tester.tap(find.byKey(const Key('glass_tab_2')));
         await frames(tester);
         await binding.takeScreenshot('v2_vrat_$code');
         expect(find.text(lang.translate('journey_tab')), findsWidgets);
-        await tester.tap(find.byIcon(Icons.search));
+        await tester.tap(find.byKey(const Key('open_global_search')));
         await frames(tester);
         expect(find.byType(GlobalSearchScreen).hitTestable(), findsOneWidget);
         await binding.takeScreenshot('v2_search_$code');
@@ -280,9 +307,9 @@ void main() {
         await frames(tester);
         await until(
           tester,
-          () => find.byIcon(Icons.settings).evaluate().isNotEmpty,
+          () => find.byIcon(AppIcons.tabSettings).evaluate().isNotEmpty,
         );
-        await tester.tap(find.byIcon(Icons.settings));
+        await tester.tap(find.byIcon(AppIcons.tabSettings));
         await frames(tester);
         await binding.takeScreenshot('glass_settings_dark_$code');
         await tester.ensureVisible(find.byType(SwitchListTile).first);
@@ -292,14 +319,14 @@ void main() {
         await binding.takeScreenshot('glass_settings_light_$code');
         await tester.tap(find.byType(SwitchListTile).first);
         await frames(tester);
-        await tester.tap(find.byIcon(Icons.home));
+        await tester.tap(find.byIcon(AppIcons.tabHome));
         await frames(tester);
         await binding.takeScreenshot('glass_home_$code');
-        await tester.tap(find.byIcon(Icons.calendar_month));
+        await tester.tap(find.byKey(const Key('glass_tab_1')));
         await frames(tester);
         await binding.takeScreenshot('glass_calendar_$code');
       }
-      await tester.tap(find.byIcon(Icons.search));
+      await tester.tap(find.byKey(const Key('open_global_search')));
       await frames(tester);
       await lang.changeLanguage('en');
       await frames(tester, count: 10);
@@ -435,20 +462,10 @@ void main() {
           ).toIso8601String().substring(0, 10),
         ),
       ];
-      final freeImport = find.byKey(const Key('import_google_year'));
-      for (
-        var attempt = 0;
-        attempt < 20 && freeImport.evaluate().isEmpty;
-        attempt++
-      ) {
-        await tester.drag(
-          find.byType(CustomScrollView).first,
-          const Offset(0, 500),
-        );
-        await tester.pump(const Duration(milliseconds: 100));
-      }
-      await tester.ensureVisible(freeImport);
-      await tester.tap(freeImport);
+      // Import lives in the Google menu of the top bar (iOS).
+      await tester.tap(find.byKey(const Key('calendar_google_menu')));
+      await frames(tester);
+      await tester.tap(find.byKey(const Key('import_google_year')));
       await frames(tester);
       expect(find.byType(PremiumScreen), findsNothing);
       await until(
@@ -476,7 +493,14 @@ void main() {
       await frames(tester);
       await tester.tap(find.byKey(const Key('month_picker_year_2027')));
       await frames(tester);
+      await tester.dragUntilVisible(
+        find.byKey(const Key('panchang_month_1')),
+        find.byKey(const Key('month_picker_month_wheel')),
+        const Offset(0, 40),
+      );
       await tester.tap(find.byKey(const Key('panchang_month_1')));
+      await frames(tester);
+      await tester.tap(find.byKey(const Key('month_picker_done')));
       await frames(tester);
       // Select January 1 so deletion is visible in screenshots before/after.
       final state = tester.state<CalendarScreenState>(
@@ -488,9 +512,9 @@ void main() {
       await frames(tester);
       // The free sync is used: the next sync opens the paywall; then simulate
       // a Play purchase.
-      final paidImport = find.byKey(const Key('import_google_year'));
-      await tester.ensureVisible(paidImport);
-      await tester.tap(paidImport);
+      await tester.tap(find.byKey(const Key('calendar_google_menu')));
+      await frames(tester);
+      await tester.tap(find.byKey(const Key('import_google_year')));
       await frames(tester);
       await until(
         tester,
@@ -519,22 +543,12 @@ void main() {
         event('December event', start: '2027-12-31', end: '2028-01-01'),
       ];
       Future<void> sync() async {
-        final importButton = find.byKey(const Key('import_google_year'));
-        // TableCalendar also handles vertical drags. Reset the outer viewport
-        // explicitly after capturing the event row, then use the real toolbar.
-        final scrollable = tester.state<ScrollableState>(
-          find
-              .descendant(
-                of: find.byType(CustomScrollView).first,
-                matching: find.byType(Scrollable),
-              )
-              .first,
-        );
-        scrollable.position.jumpTo(scrollable.position.minScrollExtent);
+        // Import lives in the Google menu of the top bar (iOS).
+        final menu = find.byKey(const Key('calendar_google_menu'));
+        await until(tester, () => menu.evaluate().isNotEmpty);
+        await tester.tap(menu);
         await frames(tester);
-        expect(importButton.hitTestable(), findsOneWidget);
-        await tester.ensureVisible(importButton);
-        await tester.tap(importButton);
+        await tester.tap(find.byKey(const Key('import_google_year')));
         await frames(tester);
         await until(
           tester,

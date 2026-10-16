@@ -1,0 +1,5 @@
+{
+ "_about": "Years whose Ekadashi dates and times the app calculates with the Panchang engine for the chosen city and tradition. To ship a new year (e.g. 2028), append it to enabled_years: the engine supplies dates and times, and the names, stories and fasting rules are reused by Ekadashi from the year packs. Published packs keep the occurrence and notification IDs of their years.",
+ "schema_version": 1,
+ "enabled_years": [2026, 2027]
+}

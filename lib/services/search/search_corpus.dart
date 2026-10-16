@@ -95,7 +95,7 @@ class SearchCorpus {
 
   /// Custom entries and imported Google events, on the day they start.
   static List<SearchItem> entryItems(List<CalendarEntry> entries) => [
-    for (final entry in entries)
+    for (final entry in CalendarEntry.withoutDuplicateGoogle(entries))
       SearchItem(
         id: 'entry:${entry.id}',
         target: SearchTarget.entry(entry.id, civil(entry.localStart)),

@@ -1,4 +1,6 @@
 import 'widgets/settings_premium_card.dart';
+import '../services/app_version.dart';
+import '../widgets/ios_style.dart';
 import 'widgets/event_reminder_rows.dart';
 import '../services/notifications/event_reminder_service.dart';
 import '../services/premium_service.dart';
@@ -11,12 +13,14 @@ import 'package:share_plus/share_plus.dart';
 import '../services/theme_service.dart';
 import '../services/language_service.dart';
 import '../services/ekadashi_service.dart';
+import '../services/ekadashi_settings.dart';
 import '../services/native_settings_service.dart';
 import '../services/native_notification_service.dart'
     show
         NativeNotificationService,
         EkadashiNotificationData,
         NotificationSettings;
+import '../widgets/app_icons.dart';
 
 /// Settings Screen - Updated to use native Kotlin services for:
 /// - Permission handling (no freeze on return from system settings)
@@ -57,12 +61,18 @@ class _SettingsScreenState extends State<SettingsScreen>
 
   static const Color tealColor = Color(0xFF00A19B);
 
+  /// The installed build's version (package_info_plus).
+  String _version = '';
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _initialize();
     EventReminderService.instance.load();
+    appVersion().then((value) {
+      if (mounted) setState(() => _version = value);
+    });
   }
 
   @override
@@ -154,16 +164,24 @@ class _SettingsScreenState extends State<SettingsScreen>
           context,
           listen: false,
         );
-        final ekadashis = await _ekadashiService.getUpcomingEkadashis(
-          languageCode: langService.currentLocale.languageCode,
-          timezone: _currentTimezone,
-        );
+        // Home's city and tradition, as Home schedules them.
+        final settings = context.read<EkadashiSettings?>();
+        final ekadashis = settings == null
+            ? const <EkadashiDate>[]
+            : await _ekadashiService.engineEkadashis(
+                city: settings.city,
+                tradition: settings.tradition,
+                languageCode: langService.currentLocale.languageCode,
+                years: settings.years,
+              );
 
         // Convert to notification data format
         final notificationData = ekadashis
             .map(
               (e) => EkadashiNotificationData(
                 id: e.id,
+                occurrenceUid: e.occurrenceUid,
+                calendarYear: e.date.year,
                 name: e.name,
                 fastingStartTime: e.fastingStartIso.isNotEmpty
                     ? e.fastingStartIso
@@ -313,25 +331,28 @@ class _SettingsScreenState extends State<SettingsScreen>
           key: const Key('settings_appearance_tube'),
           children: [
             ListTile(
-              leading: const SettingsIcon(Icons.grid_view),
+              leading: const SettingsIcon(AppIcons.widgetPreview),
               title: Text(lang.translate('widget_preview')),
               subtitle: Text(lang.translate('widget_preview_desc')),
               trailing: const SettingsChevron(),
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (_) => WidgetPreviewScreen(
-                    ekadashiList: _ekadashiService.getEkadashis(
-                      timezone: _currentTimezone,
-                      languageCode: lang.currentLocale.languageCode,
-                    ),
-                    currentTimezone: _currentTimezone,
+                    ekadashiList:
+                        context.read<EkadashiSettings?>()?.cachedEkadashis(
+                          lang.currentLocale.languageCode,
+                        ) ??
+                        const [],
+                    currentTimezone:
+                        context.read<EkadashiSettings?>()?.city.timeZoneId ??
+                        _currentTimezone,
                   ),
                 ),
               ),
             ),
             const SettingsSeparator(inset: SettingsStyle.iconInset),
             SettingsSwitchTile(
-              icon: Icons.dark_mode,
+              icon: AppIcons.darkMode,
               title: Text(lang.translate('dark_mode')),
               value: Provider.of<ThemeService>(context).isDarkMode,
               onChanged: (value) {
@@ -394,9 +415,7 @@ class _SettingsScreenState extends State<SettingsScreen>
             if (togglesEnabled) ...[
               const SettingsSeparator(),
               ListTile(
-                leading: const SettingsIcon(
-                  Icons.notifications_active_outlined,
-                ),
+                leading: const SettingsIcon(AppIcons.testNotification),
                 title: Text(lang.translate('test_notification')),
                 subtitle: Text(lang.translate('test_notification_desc')),
                 onTap: () async {
@@ -412,12 +431,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                     );
 
                     if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(lang.translate('notif_sent_msg')),
-                          duration: const Duration(seconds: 2),
-                        ),
-                      );
+                      showToast(context, lang.translate('notif_sent_msg'));
                     }
                   } catch (e) {
                     debugPrint('Error sending test notification: $e');
@@ -495,14 +509,14 @@ class _SettingsScreenState extends State<SettingsScreen>
           key: const Key('settings_about_tube'),
           children: [
             ListTile(
-              leading: const SettingsIcon(Icons.star),
+              leading: const SettingsIcon(AppIcons.rateApp),
               title: Text(lang.translate('rate_app')),
               subtitle: Text(lang.translate('rate_app_desc')),
               onTap: () => _settingsService.openStoreListing(),
             ),
             const SettingsSeparator(inset: SettingsStyle.iconInset),
             ListTile(
-              leading: const SettingsIcon(Icons.ios_share),
+              leading: const SettingsIcon(AppIcons.share),
               title: Text(lang.translate('share_app')),
               subtitle: Text(lang.translate('share_app_desc')),
               onTap: _shareApp,
@@ -510,7 +524,13 @@ class _SettingsScreenState extends State<SettingsScreen>
             const SettingsSeparator(inset: SettingsStyle.iconInset),
             ListTile(
               title: Text(lang.translate('version')),
-              trailing: const Text('1.1.1'),
+              trailing: Text(
+                _version,
+                style: TextStyle(
+                  fontSize: IosText.body,
+                  color: IosColors.secondary(context),
+                ),
+              ),
             ),
           ],
         ),

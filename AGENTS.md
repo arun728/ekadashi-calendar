@@ -1,5 +1,30 @@
 # Repository collaboration rules
 
+## Always TDD — critical (12 October 2026)
+
+Arun's standing rule for every agent and chat, for every update, feature, fix
+or any other implementation, on both platforms (Flutter, Kotlin, Swift), with
+no exceptions:
+
+1. **Write the failing tests first.** Before writing the implementation, add
+   tests that describe the new behaviour or UI (keys, widgets, text, colours,
+   sizes, navigation, stored data). Run them and see them fail for the right
+   reason. Commit them on their own ("Failing tests: …"), or, when only one
+   commit is possible, record the failing run in the commit message.
+2. **Then implement** until the new tests pass.
+3. **Run every previous test too**: `flutter analyze` (no errors or
+   warnings), the full `flutter test`, and `swift test` in
+   `ios-native/EkadashiCore`. A change is not done until the new tests and
+   all existing tests pass.
+4. **Every new piece of code has a test that exercises it.** That includes
+   shared components, helpers and bug fixes. A bug fix starts with a test
+   that reproduces the bug.
+5. Where a test cannot run here (XCUITests and the iOS app target without
+   Xcode, Kotlin tests without Gradle, emulator tests), still write it, and
+   say plainly that it was not run.
+6. Report the evidence: the new tests, their failing run before the change,
+   and the passing totals after it.
+
 These rules record Arun's explicit instructions from 3 October 2026.
 
 - Never push or merge to `dev` or `main` without Arun's explicit permission.
@@ -247,3 +272,81 @@ That includes the tests you cannot run locally: `integration_test/*.dart`,
 `ios-native/*UITests/`. Search them for each renamed or moved label, key and
 step (for example `grep -rn "'Vrat'" integration_test`). Never leave an
 out-of-date test for CI to find one round at a time.
+
+## Ekadashi dates from the Panchang engine (13 October 2026)
+
+Arun approved building this iOS first on `feature/engine-ekadashi` (draft PR to
+`dev`, no merge, no CI); Android follows after he tests iOS. Home, Calendar,
+reminders, widgets, Journey and search take Ekadashi dates and times from the
+Panchang engine for the Home city (picked, else last detected, else Chennai)
+and the Home tradition (Smarta or Vaishnava) and year (2026, 2027). Setting the
+city on Home also sets the Panchang location, not the reverse. Leave the
+Panchang tab's Ekadashi sub-tab as it is. Home and Calendar are free; Panchang
+stays Premium. New years are enabled in `assets/calendar/ekadashi_years.json`;
+texts are reused by Ekadashi. The share card from PR #20 is free (no paywall)
+and matches Sakthi's Android card in PR #20 exactly (no location on the card).
+Home's dates and times match the Panchang tab's Ekadashi sub-tab to the minute
+(times are cut to the minute, never rounded). The tradition is called "Smarta"
+or "Vaishnava" everywhere. See docs/EKADASHI_ENGINE_SCHEDULE.md.
+On 13 October 2026, after testing iOS, Arun asked for the Android port on the
+same branch and PR #22 (no CI, no merge); both platforms now share the
+behaviour, strings and tests. Home's four menus form a 2×2 grid on both:
+location over tradition (same width), language over year (same width), all
+the same height, never off screen. Every city on Home and Panchang is in the
+app language: the place-name table, else the device geocoder, else the name
+written by sound (`Transliterator` / `lib/l10n/transliterator.dart`, kept
+identical by `test/fixtures/transliteration.json`).
+On 13-14 October 2026 Arun approved merging PR #21 (`feature/ui-parity-resume`,
+which contains PR #19) into PR #22, with PR #22 winning every conflict: the
+iOS look, per-tab navigation, sheets and other PR #21 work stay, while Home's
+2×2 menus, the shared city picker (an iOS sheet, also for every Panchang
+sub-tab), the day-picker sheet on every Panchang sub-tab, the engine schedule
+and Smarta/Vaishnava naming come from PR #22. Calendar shows "Smarta • city"
+under the date title (inside the header row) on both platforms.
+
+## Store links (13 October 2026)
+
+Share texts use `AppLinks` in EkadashiCore. Each platform shares only its own
+store link: iOS the App Store link, Android the Play Store link.
+
+- Android (live v1): https://play.google.com/store/apps/details?id=com.applausestudios.ekadashi_calendar
+- iOS: https://apps.apple.com/app/ekadashi-calendar is a **placeholder**. The iOS
+  app has no App Store listing for v1; it launches with v2 at the end of 2026.
+  When it has a listing, replace the placeholder in `AppLinks.appStorePlaceholder`
+  (or set `APP_STORE_ID` in `ios-native/Config/Secrets.xcconfig`) and in the
+  Android port.
+
+## Icons, launch location and CI (14 October 2026)
+
+- Every icon on both platforms comes from `test/fixtures/app_icons.json`
+  (`AppSymbol` on iOS, `AppIcons` on Android; see docs/ICONS.md). Never use
+  an SF Symbol name, `Icons.` or `CupertinoIcons.` directly in a screen; add
+  a role to the table instead. The Journey tab is an award rosette.
+- Every launch detects the place again and Home shows it, even after a city
+  was picked on Home (as in v1); Panchang follows when it showed Home's city.
+  Back in the app without a relaunch, a picked city stays.
+- The Calendar shows "No entries for this day" only when the day has no
+  Ekadashi and no entries; identical Google events from several calendars are
+  shown, searched and reminded once. Add a reminder lists My calendar ("All
+  custom events"), then monthly observances, then festivals.
+- Months slide in 0.25 s on both platforms; Android's time pickers are the
+  iOS wheel.
+- On 14 October 2026 Arun approved the CI changes in docs/TESTING.md (backend
+  tests only when `backend/` changes, no glass preview job, every
+  `*_android_test.dart` runs, analyzer warnings fail, `dart format` and
+  generated-file checks, Android lint with a baseline, cancelled superseded
+  runs, no CI for docs-only changes) and asked for CI to run on PR #22's
+  commit that adds them. Other commits keep `[skip ci]` until he asks again.
+
+## City search keeps up with the keyboard (14 October 2026)
+
+The city search (Home and every Panchang sub-tab) froze typing and deleting
+outside English: every keystroke wrote all 34,152 city names in the app's
+script on the main thread (2-2.5 s per Tamil keystroke). Search only through
+`CitySearchIndex` (EkadashiCore and lib/services/panchang/
+city_search_index.dart): built once per language off the main thread (at
+launch, on a language change and when the sheet opens), searched in about
+5 ms, ranked by name prefix, word prefix, popular city, shorter name. Never
+compute place names for the whole catalog in a view body, `onChanged` or
+any other per-keystroke path. Keep CitySearchIndexTests and
+city_search_index_test.dart green.

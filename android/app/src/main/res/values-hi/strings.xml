@@ -4,9 +4,9 @@
     <string name="widget_a_title">एकादशी</string>
     <string name="widget_b_title">आज की एकादशी</string>
     <string name="widget_c_title">आगामी एकादशियाँ</string>
-    <string name="widget_a_description">अगली एकादशी</string>
-    <string name="widget_b_description">आज की एकादशी</string>
-    <string name="widget_c_description">आगामी एकादशियाँ</string>
+    <string name="widget_a_description">आज की एकादशी और व्रत की प्रगति, या अगली एकादशी और बचे हुए दिन।</string>
+    <string name="widget_b_description">आज की एकादशी और व्रत की प्रगति, या अगली एकादशी और बचे हुए दिन।</string>
+    <string name="widget_c_description">आने वाली एकादशियाँ एक नज़र में।</string>
     <string name="widget_title">एकादशी कैलेंडर</string>
     <string name="widget_next_ekadashi">अगली एकादशी</string>
     <string name="widget_fasting_active">व्रत चल रहा है</string>

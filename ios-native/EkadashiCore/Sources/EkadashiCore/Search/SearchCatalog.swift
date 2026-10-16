@@ -13,18 +13,18 @@ public enum SearchCategory: String, CaseIterable, Codable, Sendable {
 
     public var symbol: String {
         switch self {
-        case .ekadashi: return "leaf"
-        case .festival: return "sparkles"
-        case .amavasya: return "moon"
-        case .purnima: return "moon.fill"
-        case .shivaratri: return "moon.stars"
-        case .chaturthi: return "seal"
-        case .pradosham: return "sunset"
-        case .navaratri: return "flame"
-        case .sankranti: return "sun.max"
-        case .jayanti: return "star"
-        case .myCalendar: return "calendar"
-        case .screen: return "arrow.up.forward.app"
+        case .ekadashi: return AppSymbol.categoryEkadashi
+        case .festival: return AppSymbol.categoryFestival
+        case .amavasya: return AppSymbol.categoryAmavasya
+        case .purnima: return AppSymbol.categoryPurnima
+        case .shivaratri: return AppSymbol.categoryShivaratri
+        case .chaturthi: return AppSymbol.categoryChaturthi
+        case .pradosham: return AppSymbol.categoryPradosham
+        case .navaratri: return AppSymbol.categoryNavaratri
+        case .sankranti: return AppSymbol.categorySankranti
+        case .jayanti: return AppSymbol.categoryJayanti
+        case .myCalendar: return AppSymbol.categoryMyCalendar
+        case .screen: return AppSymbol.categoryScreen
         }
     }
 

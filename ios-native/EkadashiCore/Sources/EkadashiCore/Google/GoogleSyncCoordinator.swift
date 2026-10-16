@@ -49,6 +49,9 @@ public final class GoogleSyncCoordinator {
     let presentPaywall: (String) async -> Bool
     let pickCalendars: ([GoogleCalendarInfo], [String], String?) async -> GoogleCalendarPickerResult
     let message: (String, [String], Bool) -> Void
+    /// The app language's locale for month names in messages ("Oct 2026"),
+    /// so they follow the app language rather than the device (as on Android).
+    public var monthLocale = Locale(identifier: "en_US")
 
     public init(importer: GoogleCalendarImporter, registry: FreeSyncRegistry?, preferences: KeyValueStore,
                 calendar: Calendar = .current, premium: @escaping () -> PremiumState,
@@ -143,8 +146,9 @@ public final class GoogleSyncCoordinator {
                 preferences.set(chosen, forKey: Self.selectedCalendarsKey(account))
                 if isPremium {
                     rememberPremiumSync(account: account, calendars: chosen, start: window.start, end: window.end)
-                    message("imported_google_range", ["\(count)", Self.monthLabel(window.start, calendar),
-                                                      Self.monthLabel(calendar.date(byAdding: .month, value: -1, to: window.end)!, calendar)],
+                    message("imported_google_range", ["\(count)", Self.monthLabel(window.start, calendar, monthLocale),
+                                                      Self.monthLabel(calendar.date(byAdding: .month, value: -1, to: window.end)!, calendar,
+                                                                      monthLocale)],
                             false)
                 } else {
                     preferences.set(true, forKey: Self.freeSyncUsedKey)
@@ -209,11 +213,11 @@ public final class GoogleSyncCoordinator {
         calendar.date(from: DateComponents(year: day.year, month: day.month, day: day.day))!
     }
 
-    static func monthLabel(_ date: Date, _ calendar: Calendar) -> String {
+    static func monthLabel(_ date: Date, _ calendar: Calendar, _ locale: Locale) -> String {
         let formatter = DateFormatter()
         formatter.calendar = calendar
         formatter.timeZone = calendar.timeZone
-        formatter.locale = calendar.locale ?? Locale(identifier: "en_US")
+        formatter.locale = locale
         formatter.setLocalizedDateFormatFromTemplate("yMMM")
         return formatter.string(from: date)
     }

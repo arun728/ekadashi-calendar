@@ -49,6 +49,20 @@ public struct CalendarEntry: Codable, Identifiable, Equatable, Sendable {
         return (Self.midnight(CivilDate(utc: start), timeZone), Self.midnight(CivilDate(utc: end), timeZone))
     }
 
+    /// [entries] with each Google event once: the same event can arrive from
+    /// two picked calendars, or twice from one. Copies keep their own identity
+    /// in storage (for reconciling deletions) but are shown, searched and
+    /// reminded once, the first kept. Custom entries are never merged.
+    public static func withoutDuplicateGoogle<S: Sequence>(_ entries: S) -> [CalendarEntry] where S.Element == CalendarEntry {
+        var seen = Set<String>()
+        return entries.filter { entry in
+            guard entry.source == .google else { return true }
+            let key = "\(entry.title.trimmingCharacters(in: .whitespaces))|\(entry.isAllDay)|"
+                + "\(entry.start.timeIntervalSince1970)|\(entry.end.timeIntervalSince1970)"
+            return seen.insert(key).inserted
+        }
+    }
+
     public func occurs(on day: CivilDate, in timeZone: TimeZone) -> Bool {
         if let first = allDayStart, let last = allDayEnd { return first <= day && day < last }
         let from = Self.midnight(day, timeZone), to = Self.midnight(day.adding(days: 1), timeZone)

@@ -2,9 +2,12 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart' show rootBundle;
 
+import 'transliterator.dart';
+
 /// City and country names in the app language (assets/panchang/
-/// place_names.json, shared with iOS). Names not in the table keep the
-/// spelling the location service or GeoNames gave them.
+/// place_names.json, shared with iOS). Names not in the table are written in
+/// the language's script by sound ([transliterate]), so a city never shows
+/// in Latin letters outside English.
 class PlaceNames {
   const PlaceNames._();
 
@@ -29,6 +32,12 @@ class PlaceNames {
     }
   }
 
+  /// The loaded table, to install in a background isolate with [use].
+  static Map<String, dynamic> snapshot() => {
+    'places': _places,
+    'countries': _countries,
+  };
+
   /// Installs a decoded table (tests and the loader).
   static void use(Map<String, dynamic> data) {
     Map<String, Map<String, String>> table(String key) => {
@@ -39,11 +48,19 @@ class PlaceNames {
     _countries = table('countries');
   }
 
-  /// [name] in [language], or [name] when the table has no translation.
+  /// [name] in [language]: the table's translation, else [name] written in
+  /// the language's script by sound.
   static String place(String name, String language) {
     if (language == 'en' || name.isEmpty) return name;
-    return _places[name]?[language] ?? _places[name.trim()]?[language] ?? name;
+    return _translation(name, language) ?? transliterate(name, language);
   }
+
+  /// Whether the table has [name] in [language] (else it is transliterated).
+  static bool isKnown(String name, String language) =>
+      language == 'en' || _translation(name, language) != null;
+
+  static String? _translation(String name, String language) =>
+      _places[name]?[language] ?? _places[name.trim()]?[language];
 
   /// The country with ISO code [code] in [language]; the code in English.
   static String country(String code, String language) =>

@@ -4,7 +4,7 @@ public enum EkadashiTradition: String, CaseIterable, Sendable, Codable {
     case smarta
     case gaudiya
 
-    public var label: String { self == .smarta ? "Smarta" : "Vaishnava · Gaudiya/ISKCON" }
+    public var label: String { self == .smarta ? "Smarta" : "Vaishnava" }
 }
 
 /// Rule inputs, separated from astronomy to test rare tithi configurations.
@@ -106,7 +106,42 @@ public struct CalculatedEkadashi: Sendable, Identifiable {
     public let tithiStart: Date
     public let tithiEnd: Date
     public let nearBoundary: Bool
+    /// The amanta lunar month of the fast day ("Adhika Jyeshtha" in an Adhika month).
+    public var month: String = ""
+    /// The parana day's sunset, the end of an after-only Parana.
+    public var paranaDaySunset: Date?
+    public var isShukla: Bool { name == "Padmini Ekadashi" || CalculatedEkadashiEngine.shuklaNames.contains(name) }
     public static let ruleVersion = "current-location-v2"
+}
+
+/// The parts of a Panchang day the Ekadashi rules read: the same sunrise,
+/// sunset, tithi, nakshatra and month as [PanchangEngine.calculate], without
+/// the muhurtas, hora, lagna and festivals, so a year of fasts for any city
+/// is quick to calculate.
+struct EkadashiDay: Sendable {
+    let date: CivilDate
+    let sunrise: Date?
+    let sunset: Date?
+    let tithi: PanchangLimb
+    let nakshatra: PanchangLimb
+    let amantaMonth: String
+    let isAdhikaMonth: Bool
+}
+
+extension PanchangEngine {
+    func ekadashiDay(_ date: CivilDate, city: PanchangCity) -> EkadashiDay {
+        let startUtc = startFor(date, city: city)
+        let endUtc = endFor(date, city: city)
+        let sunrise = findCrossing(startUtc, endUtc, city, moon: false, rising: true)
+        var sunset = findCrossing(startUtc, endUtc, city, moon: false, rising: false)
+        if let sunrise, sunset == nil || sunset! < sunrise {
+            sunset = findCrossing(sunrise, city.midnight(date, dayOffset: 2), city, moon: false, rising: false)
+        }
+        let localSunrise = sunrise ?? city.dateAtHour(date, 6)
+        let month = monthFor(localSunrise)
+        return EkadashiDay(date: date, sunrise: sunrise, sunset: sunset, tithi: tithiAt(localSunrise),
+                           nakshatra: nakshatraAt(localSunrise), amantaMonth: month.name, isAdhikaMonth: month.adhika)
+    }
 }
 
 public struct CalculatedEkadashiEngine: Sendable {
@@ -115,12 +150,12 @@ public struct CalculatedEkadashiEngine: Sendable {
 
     public func calculate(start: CivilDate, count: Int, city: PanchangCity, tradition: EkadashiTradition) throws -> [CalculatedEkadashi] {
         guard (1...366).contains(count) else { throw CoreError.invalidArgument("Choose 1–366 civil days") }
-        var days: [PanchangDay] = []
+        var days: [EkadashiDay] = []
         var samples: [EkadashiSample] = []
         // Neighbours across month/year boundaries and the next full/new moon are
         // necessary for repeated/skipped tithi and Pakshavardhini decisions.
         for offset in -2..<(count + 9) {
-            let day = engine.calculate(start.adding(days: offset), city: city)
+            let day = engine.ekadashiDay(start.adding(days: offset), city: city)
             days.append(day)
             samples.append(EkadashiSample(
                 date: day.date, sunrise: day.sunrise, sunset: day.sunset, tithi: day.tithi.index,
@@ -158,11 +193,14 @@ public struct CalculatedEkadashiEngine: Sendable {
             } || [sunrise, arunodaya, nextSunrise].contains { instant in
                 [tithiStart, tithiEnd, dwadashiEnd].contains { near(instant, $0) }
             }
-            result.append(CalculatedEkadashi(
+            var fast = CalculatedEkadashi(
                 date: day.date, name: name(day, bright: ekadashi.paksha == "Shukla"), tradition: tradition, rule: rule,
                 city: city, fastStarts: sunrise, paranaDate: next.date, paranaStart: parana.start, paranaEnd: parana.end,
                 paranaReason: parana.reason, hariVasaraEnd: hariVasara, tithiStart: tithiStart, tithiEnd: tithiEnd,
-                nearBoundary: nearBoundary))
+                nearBoundary: nearBoundary)
+            fast.month = day.amantaMonth
+            fast.paranaDaySunset = next.sunset
+            result.append(fast)
         }
         return result
     }
@@ -171,7 +209,7 @@ public struct CalculatedEkadashiEngine: Sendable {
     /// quarter of Dwadashi), preferably in Pratahkala (the first fifth of the
     /// day); if Hari Vasara outlasts Pratahkala, after Madhyahna until the end
     /// of Aparahna. Always before Dwadashi ends, unless it ended before sunrise.
-    func smartaParana(_ next: PanchangDay, _ ekadashiEnd: Date, _ dwadashiEnd: Date) -> (start: Date?, end: Date?, reason: String) {
+    func smartaParana(_ next: EkadashiDay, _ ekadashiEnd: Date, _ dwadashiEnd: Date) -> (start: Date?, end: Date?, reason: String) {
         guard let sunrise = next.sunrise, let sunset = next.sunset, sunset > sunrise else {
             return (nil, nil, "Solar day unavailable")
         }
@@ -197,7 +235,7 @@ public struct CalculatedEkadashiEngine: Sendable {
         return (begin, end, reason)
     }
 
-    func gaudiyaParana(_ fast: PanchangDay, _ next: PanchangDay, _ rule: String, _ hariVasara: Date)
+    func gaudiyaParana(_ fast: EkadashiDay, _ next: EkadashiDay, _ rule: String, _ hariVasara: Date)
         -> (start: Date?, end: Date?, reason: String) {
         guard let sunrise = next.sunrise, let sunset = next.sunset, sunset > sunrise else {
             return (nil, nil, "Solar day unavailable")
@@ -234,13 +272,14 @@ public struct CalculatedEkadashiEngine: Sendable {
         return (begin, end, end == nil ? "\(reason). No bounded morning window; shown as after-only." : reason)
     }
 
-    func name(_ day: PanchangDay, bright: Bool) -> String {
+    static let shuklaNames = ["Kamada", "Mohini", "Nirjala", "Devshayani", "Shravana Putrada", "Parivartini", "Papankusha",
+                              "Devutthana", "Mokshada", "Pausha Putrada", "Jaya", "Amalaki"].map { "\($0) Ekadashi" }
+    static let krishnaNames = ["Varuthini", "Apara", "Yogini", "Kamika", "Aja", "Indira", "Rama", "Utpanna", "Saphala",
+                               "Shattila", "Vijaya", "Papamochani"].map { "\($0) Ekadashi" }
+
+    func name(_ day: EkadashiDay, bright: Bool) -> String {
         if day.isAdhikaMonth { return bright ? "Padmini Ekadashi" : "Parama Ekadashi" }
-        let shukla = ["Kamada", "Mohini", "Nirjala", "Devshayani", "Shravana Putrada", "Parivartini", "Papankusha",
-                      "Devutthana", "Mokshada", "Pausha Putrada", "Jaya", "Amalaki"]
-        let krishna = ["Varuthini", "Apara", "Yogini", "Kamika", "Aja", "Indira", "Rama", "Utpanna", "Saphala",
-                       "Shattila", "Vijaya", "Papamochani"]
         guard let index = PanchangEngine.lunarMonths.firstIndex(of: day.amantaMonth) else { return "Ekadashi" }
-        return "\((bright ? shukla : krishna)[index]) Ekadashi"
+        return (bright ? Self.shuklaNames : Self.krishnaNames)[index]
     }
 }

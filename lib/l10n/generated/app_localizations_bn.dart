@@ -1619,4 +1619,70 @@ class AppLocalizationsBn extends AppLocalizations {
   String utc_offset(String value0) {
     return 'ইউটিসি $value0';
   }
+
+  @override
+  String get calculating_ekadashis => 'এই স্থানের জন্য একাদশী গণনা করা হচ্ছে…';
+
+  @override
+  String get home_location_hint =>
+      'শহর খুঁজুন অথবা আপনার বর্তমান অবস্থান ব্যবহার করুন';
+
+  @override
+  String get home_location_title => 'একাদশীর স্থান';
+
+  @override
+  String get home_location_footer =>
+      'একাদশীর তারিখ ও সময় এই স্থানের জন্য গণনা করা হয়। এখানে শহর বেছে নিলে পঞ্চাঙ্গের স্থানও বদলে যায়।';
+
+  @override
+  String get home_tradition => 'পরম্পরা';
+
+  @override
+  String get share_card => 'কার্ড শেয়ার করুন';
+
+  @override
+  String get share_card_title => 'একাদশী কার্ড শেয়ার করুন';
+
+  @override
+  String get share_card_observance => 'একাদশী ব্রত দিবস';
+
+  @override
+  String get share_card_fasting_begins => 'ব্রত শুরু';
+
+  @override
+  String get share_card_parana_window => 'পারণের সময়';
+
+  @override
+  String get share_card_preparing => 'কার্ড তৈরি হচ্ছে…';
+
+  @override
+  String get share_card_save_failed => 'কার্ড সংরক্ষণ করা যায়নি।';
+
+  @override
+  String share_card_message(String value0, String value1) {
+    return '$value0 — $value1। একাদশী ক্যালেন্ডার অ্যাপ থেকে ব্রত ও পারণের সময় এই কার্ডে আছে।';
+  }
+
+  @override
+  String get tradition_smarta => 'স্মার্ত';
+
+  @override
+  String get tradition_vaishnava => 'বৈষ্ণব';
+
+  @override
+  String get panchang_vaishnava_rule =>
+      'বৈষ্ণব: সূর্যোদয়ের 96 মিনিট আগে (অরুণোদয়ে) একাদশী থাকতে হবে, মহাদ্বাদশীর নিয়মসহ।';
+
+  @override
+  String get home_popular_cities => 'জনপ্রিয় শহর';
+
+  @override
+  String get share_card_save => 'গ্যালারিতে সংরক্ষণ করুন';
+
+  @override
+  String get share_card_saved => 'কার্ড গ্যালারিতে সংরক্ষিত হয়েছে।';
+
+  @override
+  String get share_card_photos_denied =>
+      'ফটোর অনুমতি বন্ধ আছে। কার্ড সংরক্ষণ করতে সেটিংসে অনুমতি দিন।';
 }

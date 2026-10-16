@@ -1,14 +1,16 @@
 import 'dart:io';
 import 'services/premium_service.dart';
 import 'services/play_billing_service.dart';
-import 'widgets/glass_tube.dart';
 import 'package:flutter/foundation.dart';
 import 'widgets/glass_navigation_bar.dart';
 import 'data/calendar_entry_repository.dart';
 import 'widgets/app_background.dart';
+import 'widgets/ios_style.dart';
+import 'widgets/tab_shell.dart';
 import 'data/sqflite_calendar_entry_repository.dart';
 import 'models/calendar_entry.dart';
 import 'services/notifications/event_reminder_service.dart';
+import 'services/panchang/calculated_ekadashi.dart';
 import 'services/panchang/panchang_city.dart';
 import 'services/panchang/panchang_location_store.dart';
 import 'services/native_widget_service.dart';
@@ -19,11 +21,17 @@ import 'screens/panchang_screen.dart';
 import 'l10n/generated/app_localizations.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 import 'services/ekadashi_service.dart';
+import 'services/ekadashi_settings.dart';
+import 'services/place_name_resolver.dart';
+import 'screens/share_card_screen.dart';
+import 'screens/widgets/city_picker_sheet.dart';
+import 'screens/widgets/home_controls.dart';
 import 'services/notification_service.dart';
 import 'services/native_location_service.dart';
 import 'services/native_notification_service.dart';
@@ -43,6 +51,7 @@ import 'screens/vrat_tracker/record_vrat_dialog.dart';
 import 'screens/vrat_tracker/achievement_unlock_dialog.dart';
 import 'models/vrat_tracker_models.dart';
 import 'package:timezone/timezone.dart' as tz;
+import 'widgets/app_icons.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -69,6 +78,8 @@ class MyApp extends StatelessWidget {
         Provider<CalendarEntryRepository?>(create: (_) => calendarRepository),
         ChangeNotifierProvider(create: (_) => ThemeService()..loadTheme()),
         ChangeNotifierProvider(create: (_) => LanguageService()),
+        // Home's city, tradition and year for every Ekadashi in the app.
+        ChangeNotifierProvider(create: (_) => EkadashiSettings()),
         ChangeNotifierProvider(
           create: (_) => PremiumService(entitlements: PlayStoreEntitlements()),
         ),
@@ -148,9 +159,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       // Festival and Panchang reminders start or stop with Premium.
       EventReminderService.instance.changed();
       if (_achievementTracker?.isInitialized == true &&
-          _ekadashiList.isNotEmpty) {
+          _allEkadashis.isNotEmpty) {
         _achievementTracker!
-            .refreshAchievements(_ekadashiList)
+            .refreshAchievements(_allEkadashis)
             .then((unlocked) async {
               for (final achievement in unlocked) {
                 if (!mounted) return;
@@ -162,16 +173,28 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     }
   }
 
+  /// Every enabled year's Ekadashis at Home's city for its tradition
+  /// (Calendar, Journey, Panchang, reminders, widgets and search).
+  List<EkadashiDate> _allEkadashis = [];
+
+  /// Home's cards: the year chosen on Home.
   List<EkadashiDate> _ekadashiList = [];
   bool _isLoading = true;
-  String _errorMessage = '';
-  String _locationText = '';
-  (double, double)? _locationCoords;
 
-  /// Place names from the phone's geocoder, by "language|English name".
-  final _nativeCityNames = <String, String?>{};
-  String _currentTimezone = 'IST';
-  bool _locationDenied = false;
+  /// True while a city or tradition is being calculated.
+  bool _isCalculating = false;
+  int _loadGeneration = 0;
+  String _errorMessage = '';
+  EkadashiSettings? _settings;
+  Future<void>? _settingsLoad;
+
+  /// What the latest load calculates, so a settings change reloads only
+  /// when the place or tradition really changed.
+  String? _requestedPlace;
+  EkadashiTradition? _requestedTradition;
+
+  /// The Ekadashi city's IANA zone: dates, countdowns and Parana.
+  String _currentTimezone = EkadashiSettings.defaultCity.timeZoneId;
   bool _isRequestingLocation = false;
   int _currentPage = 0;
   bool _isResuming = false;
@@ -192,6 +215,41 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   final GlobalKey<PanchangScreenState> _panchangKey = GlobalKey();
   bool _panchangOpened = false;
 
+  /// One navigation stack per tab (iOS NavigationStack per tab): pages a
+  /// tab pushes keep the tab bar; the shell's top bar gives way to theirs.
+  final _tabNavigators = List.generate(5, (_) => GlobalKey<NavigatorState>());
+  late final _tabObservers = List.generate(
+    5,
+    (_) => TabNavigatorObserver(_tabStackChanged),
+  );
+
+  /// Toolbar items of the Calendar and Panchang tabs.
+  final _calendarBar = TabBarSlots();
+  final _panchangBar = TabBarSlots();
+
+  NavigatorState? get _currentTabNavigator =>
+      _tabNavigators[_currentIndex].currentState;
+
+  bool get _tabPushed => _tabObservers[_currentIndex].hasPushedPage;
+
+  /// Rebuilds the shell in the same frame as the tab's new menu, sheet or
+  /// page, so its Back handling is never a frame behind: Android 13+ closed
+  /// the app on a Back in that frame. A push while building waits a frame.
+  void _tabStackChanged() {
+    if (SchedulerBinding.instance.schedulerPhase !=
+        SchedulerPhase.persistentCallbacks) {
+      if (mounted) setState(() {});
+      return;
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  /// Back to a tab's first page (re-tapping the tab, or a deep link).
+  void _popTabToRoot(int index) =>
+      _tabNavigators[index].currentState?.popUntil((route) => route.isFirst);
+
   @override
   void initState() {
     super.initState();
@@ -202,6 +260,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     PlaceNames.load().then((_) {
       if (mounted) setState(() {});
     });
+    PlaceNameResolver.instance.addListener(_namesChanged);
+    PlaceNameResolver.instance.load();
     // Defer initialization to prevent freeze on process restoration
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeApp();
@@ -225,6 +285,11 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       }
     }
     _achievementTracker ??= context.read<VratTrackerService?>();
+    if (_settings == null) {
+      final settings = context.read<EkadashiSettings?>() ?? EkadashiSettings();
+      _settings = settings..addListener(_settingsChanged);
+      _settingsLoad = settings.loaded ? Future.value() : settings.load();
+    }
     final langService = Provider.of<LanguageService>(context);
     if (_currentLangCode != langService.currentLocale.languageCode) {
       _currentLangCode = langService.currentLocale.languageCode;
@@ -237,6 +302,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
     NativeWidgetService().clearDeepLinkListener();
     _premium?.removeListener(_refreshPremiumFeatures);
+    _settings?.removeListener(_settingsChanged);
+    PlaceNameResolver.instance.removeListener(_namesChanged);
     _premiumRecheck?.cancel();
     _pageController.dispose();
     super.dispose();
@@ -283,12 +350,18 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
   /// Initialize app - check settings and load data
   Future<void> _initializeApp() async {
+    // The city search for the app language is built in the background, so
+    // the city sheet answers the first keystroke at once (also after a
+    // language change).
+    final language = context.read<LanguageService>();
+    void prepareCitySearch() => PanchangLocationStore.searchIndex(
+      language.currentLocale.languageCode,
+    ).ignore();
+    prepareCitySearch();
+    language.addListener(prepareCitySearch);
     final prefs = await SharedPreferences.getInstance();
     final hasLaunched = prefs.getBool('has_launched') ?? false;
     final appVersion = prefs.getString('app_version') ?? '1.0';
-
-    // Load saved timezone
-    _currentTimezone = await _locationService.getCurrentTimezone();
 
     // Initialize date formatting for all locales
     await initializeDateFormatting();
@@ -311,7 +384,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           debugPrint('  ✅ Enabled Break Fasting Reminder by default');
         }
       }
-      _handleLocation();
+      _handleLocation(atLaunch: true);
       // Ensure permissions are requested if missing (handles reinstall case)
       _ensurePermissionsOnResume();
     }
@@ -354,13 +427,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
   Future<void> _requestPermissionsOnFirstLaunch() async {
     // Show "Detecting location..." immediately
-    if (mounted) {
-      setState(() {
-        _isRequestingLocation = true;
-        _locationDenied = false;
-        _locationText = '';
-      });
-    }
+    if (mounted) setState(() => _isRequestingLocation = true);
 
     // Request notification permission first
     final notifGranted = await NotificationService()
@@ -380,328 +447,245 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     final locationGranted = await _locationService.requestLocationPermission();
     debugPrint('📍 Location permission result: $locationGranted');
 
-    if (mounted) {
-      setState(() => _isRequestingLocation = false);
-    }
-
     // Now handle location after permission is requested
-    await _handleLocation();
+    await _handleLocation(atLaunch: true);
   }
 
-  /// Handle location detection using native service
-  Future<void> _handleLocation() async {
+  /// A detected place becomes the Ekadashi city unless the user chose one
+  /// since the app opened ([atLaunch]: the place found at launch wins, as in
+  /// v1); without a fix the last known (or chosen) city stays, else Chennai
+  /// (AppModel.handleLocation). The settings listener recalculates when the
+  /// city changes.
+  Future<void> _handleLocation({bool atLaunch = false}) async {
     if (!mounted) return;
-
-    setState(() {
-      _locationText = '';
-      _locationDenied = false;
-      _isRequestingLocation = true; // Show spinner while getting location
-    });
-
+    setState(() => _isRequestingLocation = true);
+    LocationData? fix;
     try {
-      // Try to get current location using native service
-      final location = await _locationService.getCurrentLocation();
-
-      if (location != null && mounted) {
-        setState(() {
-          _locationText = location.city;
-          _locationCoords = (location.latitude, location.longitude);
-          _currentTimezone = location.timezone;
-          _locationDenied = false;
-          _isRequestingLocation = false;
-        });
-
-        // Save timezone
-        await _locationService.setTimezone(location.timezone);
-      } else {
-        // Location is null - could be timeout OR permission issue
-        // Check permissions to distinguish between the two
-        final hasPermission = await _locationService.hasLocationPermission();
-        debugPrint('📍 Location null - hasPermission: $hasPermission');
-
-        // Priority: Check permission FIRST before cache
-        if (!hasPermission) {
-          // Permission denied - show Location Denied immediately, ignore cache
-          // BUT use smart timezone fallback based on device's system timezone
-          debugPrint('📍 Permission denied - detecting device timezone');
-          final deviceTimezone = await _ekadashiService.getDeviceAppTimezone();
-          debugPrint('📍 Using device timezone: $deviceTimezone');
-          if (mounted) {
-            setState(() {
-              _currentTimezone = deviceTimezone;
-            });
-          }
-          _setLocationDenied();
-        } else {
-          // Permission granted but location is null (timeout/GPS issue)
-          // Try cached location as fallback
-          final cached = await _locationService.getCachedLocation();
-          if (cached != null && mounted) {
-            setState(() {
-              _locationText = cached.city;
-              _locationCoords = (cached.latitude, cached.longitude);
-              _currentTimezone = cached.timezone;
-              _locationDenied = false;
-              _isRequestingLocation = false;
-            });
-          } else {
-            // No cache available - use device timezone fallback
-            debugPrint(
-              '📍 Location unavailable (timeout) - using device timezone fallback',
-            );
-            final deviceTimezone = await _ekadashiService
-                .getDeviceAppTimezone();
-
-            if (mounted) {
-              setState(() {
-                _locationText = ''; // No city name, just timezone logic applies
-                _currentTimezone = deviceTimezone;
-                _locationDenied = false; // It's not denied, just timed out
-                _isRequestingLocation = false;
-              });
-            }
-          }
+      fix = await _locationService.getCurrentLocation();
+      if (fix == null) {
+        if (await _locationService.hasLocationPermission()) {
+          // A timeout or GPS issue: the last fix, if any.
+          fix = await _locationService.getCachedLocation();
         }
       }
     } catch (e) {
       debugPrint('Location error: $e');
-      // On error, check if it's permission-related
-      final hasPermission = await _locationService.hasLocationPermission();
-      if (!hasPermission) {
-        _setLocationDenied();
-      } else {
-        // Error but have permission - use device timezone fallback
-        debugPrint(
-          '📍 Location error with permission - using device timezone fallback',
-        );
-        final deviceTimezone = await _ekadashiService.getDeviceAppTimezone();
-
-        if (mounted) {
-          setState(() {
-            _locationText = '';
-            _currentTimezone = deviceTimezone;
-            _locationDenied = false;
-            _isRequestingLocation = false;
-          });
-        }
-      }
     }
-
-    // Load data regardless of location result
-    // If we updated location successfully (or fallback), we should probably ensure we show the correct Ekadashi for that location
-    await _loadData(shouldScrollToNext: true);
+    await _settingsLoad;
+    if (fix != null) await _settings?.useDetected(fix, atLaunch: atLaunch);
+    if (mounted) setState(() => _isRequestingLocation = false);
   }
 
-  void _setLocationDenied() {
-    if (mounted) {
-      setState(() {
-        _locationDenied = true;
-        _locationText = '';
-        _isRequestingLocation = false;
-      });
-    }
-  }
-
-  /// Request location permission again when user taps on "Location Denied"
+  /// Requests the location permission again (a reinstall); a grant detects
+  /// the place.
   Future<void> _requestLocationAgain() async {
     if (_isRequestingLocation) return;
-
-    // 1. Always try to request permission first
-    setState(() {
-      _isRequestingLocation = true;
-      _locationDenied = false;
-    });
-
     try {
-      // This will either show the dialog (if allowed) or auto-deny (if permanently denied previously but we didn't track it yet)
-      final granted = await _locationService.requestLocationPermission();
-
-      if (granted) {
-        // Success
-        if (mounted) {
-          setState(() {
-            _isPermanentDenial = false;
-            _isRequestingLocation = false;
-          });
-        }
-        await _refreshLocationIfNeeded();
-      } else {
-        // Denied
-        final shouldShowRationale = await _locationService
-            .shouldShowRequestRationale();
-        debugPrint(
-          '📍 Permission denied. shouldShowRationale: $shouldShowRationale',
-        );
-
-        if (mounted) {
-          setState(() {
-            _isRequestingLocation = false;
-            _locationDenied = true;
-            _locationText = '';
-          });
-
-          // 2. Smart Redirect Logic:
-          // If we failed to get permission AND the system refused to show a rationale (dialog blocked),
-          // AND we have already flagged this state previously, THEN open settings.
-          if (!shouldShowRationale) {
-            if (_isPermanentDenial) {
-              // User clicked AGAIN after we already knew it was blocked.
-              // Now we open settings.
-              final settings = NativeSettingsService();
-              await settings.openAppSettings();
-            } else {
-              // First time discovering it's blocked. Just flag it. Do NOT redirect.
-              setState(() => _isPermanentDenial = true);
-            }
-          }
-        }
+      if (await _locationService.requestLocationPermission()) {
+        _isPermanentDenial = false;
+        await _handleLocation();
       }
     } catch (e) {
       debugPrint('Location request error: $e');
-      if (mounted) {
-        setState(() => _isRequestingLocation = false);
-      }
-      _setLocationDenied();
     }
   }
 
-  /// Refresh location in background when app resumes
+  /// "Use current location" in Home's city picker: detection decides again
+  /// and the Panchang tab moves to the detected place too. Null when done,
+  /// else the message key to show. A second refusal after Android stopped
+  /// asking opens the app's settings.
+  Future<String?> _useCurrentLocation() async {
+    final settings = _settings!;
+    var granted = await _locationService.hasLocationPermission();
+    if (!granted) granted = await _locationService.requestLocationPermission();
+    if (!granted) {
+      if (!await _locationService.shouldShowRequestRationale()) {
+        if (_isPermanentDenial) {
+          await NativeSettingsService().openAppSettings();
+        } else {
+          _isPermanentDenial = true;
+        }
+      }
+      return 'panchang_location_denied';
+    }
+    if (mounted) setState(() => _isRequestingLocation = true);
+    LocationData? fix;
+    try {
+      fix =
+          await _locationService.getCurrentLocation() ??
+          await _locationService.getCachedLocation();
+    } catch (_) {}
+    if (mounted) setState(() => _isRequestingLocation = false);
+    final city = fix == null ? null : await EkadashiSettings.cityFromFix(fix);
+    if (fix == null || city == null) return 'panchang_location_unavailable';
+    await settings.clearManual();
+    await settings.useDetected(fix);
+    await settings.savePanchangCity(settings.city);
+    return null;
+  }
+
+  /// Home's location: the city search, current location, recent and popular
+  /// cities (EkadashiLocationSheet on iOS).
+  void _openLocationPicker() {
+    final settings = _settings!;
+    final language = context.read<LanguageService>().currentLocale.languageCode;
+    showCityPicker(
+      context,
+      title: AppStrings.translate('home_location_title', language),
+      footer: AppStrings.translate('home_location_footer', language),
+      current: settings.city,
+      icon: settings.isManual
+          ? AppIcons.locationPicked
+          : AppIcons.locationDetected,
+      onPick: settings.chooseCity,
+      onLocate: _useCurrentLocation,
+    );
+  }
+
+  /// Back in the app: a new place detected while away moves the Ekadashis.
   Future<void> _refreshLocationIfNeeded() async {
     // Guard against concurrent calls
     if (_isRequestingLocation || _isLoading) {
       debugPrint('⏭️ Skipping location refresh - already in progress');
       return;
     }
-
     try {
-      // STEP A: Immediately check current permission status
-      final hasPermission = await _locationService.hasLocationPermission();
-
-      // STEP B: If permission denied, instantly update UI synchronously
-      if (!hasPermission) {
-        debugPrint('⚠️ Permission denied - updating UI synchronously');
-        if (mounted) {
-          setState(() {
-            _locationDenied = true;
-            _locationText = '';
-          });
-        }
-        return;
-      }
-
-      // Permission granted - if was previously denied, try to get location
-      if (_locationDenied) {
-        final location = await _locationService.getCurrentLocation();
-        if (location != null && mounted) {
-          setState(() {
-            _locationText = location.city;
-            _locationCoords = (location.latitude, location.longitude);
-            _currentTimezone = location.timezone;
-            _locationDenied = false;
-          });
-          await _loadData();
-        }
-        return;
-      }
-
-      // Have permission and not denied - try to get location
-      final location = await _locationService.getCurrentLocation();
-      if (location != null && mounted) {
-        if (location.timezone != _currentTimezone) {
-          // Timezone changed - reload data
-          setState(() {
-            _locationText = location.city;
-            _locationCoords = (location.latitude, location.longitude);
-            _currentTimezone = location.timezone;
-          });
-          await _loadData(shouldScrollToNext: true);
-        } else if (location.city != _locationText) {
-          // Just city name changed
-          setState(() {
-            _locationText = location.city;
-            _locationCoords = (location.latitude, location.longitude);
-          });
-        }
-      }
+      if (!await _locationService.hasLocationPermission()) return;
+      final fix = await _locationService.getCurrentLocation();
+      if (fix != null && mounted) await _settings?.useDetected(fix);
     } catch (e) {
       debugPrint('⚠️ _refreshLocationIfNeeded error: $e');
-      // Don't crash - just skip the refresh
     }
   }
 
-  /// Load Ekadashi data for current timezone and language
-  /// [shouldScrollToNext] - if true, ignores previous scroll position and forces scroll to "Next/Active" Ekadashi.
-  /// Useful when timezone/location changes significantly.
+  static String _placeKey(PanchangCity city) =>
+      '${city.latitude}|${city.longitude}|${city.timeZoneId}';
+
+  /// Home's menus changed: another place or tradition is calculated (a
+  /// tradition switch stays on the Ekadashi on screen); another year shows
+  /// that year's cards from its next Ekadashi.
+  void _settingsChanged() {
+    final settings = _settings;
+    if (settings == null || !settings.loaded || !mounted) return;
+    final place = _placeKey(settings.city);
+    if (_requestedPlace != null &&
+        (place != _requestedPlace ||
+            settings.tradition != _requestedTradition)) {
+      _loadData(shouldScrollToNext: place != _requestedPlace);
+      return;
+    }
+    final year = _homeYearList();
+    if (!_sameIds(year, _ekadashiList)) {
+      setState(() {
+        _ekadashiList = year;
+        _currentPage = 0;
+      });
+      if (_pageController.hasClients) _pageController.jumpToPage(0);
+      _scrollToNextEkadashi(animate: false, includeParana: true);
+    } else {
+      setState(() {});
+    }
+  }
+
+  void _namesChanged() {
+    if (mounted) setState(() {});
+  }
+
+  List<EkadashiDate> _homeYearList() {
+    final year = _settings?.year;
+    return year == null
+        ? _allEkadashis
+        : _allEkadashis.where((e) => e.date.year == year).toList();
+  }
+
+  static bool _sameIds(List<EkadashiDate> a, List<EkadashiDate> b) =>
+      a.length == b.length &&
+      Iterable<int>.generate(
+        a.length,
+      ).every((i) => a[i].occurrenceUid == b[i].occurrenceUid);
+
+  /// Loads the Ekadashis of every enabled year at Home's city for its
+  /// tradition in the app language, keeping the card on screen unless
+  /// [shouldScrollToNext]. A place or tradition not calculated yet is
+  /// calculated off the UI thread (then cached on the phone) while the
+  /// cards dim (AppModel.reload).
   Future<void> _loadData({bool shouldScrollToNext = false}) async {
     if (!mounted) return;
-
-    // Save the ID of the currently viewing Ekadashi before reloading
-    // ONLY if we are not forced to scroll away
-    int? currentEkadashiId;
-    if (!shouldScrollToNext &&
-        _ekadashiList.isNotEmpty &&
-        _currentPage < _ekadashiList.length) {
-      currentEkadashiId = _ekadashiList[_currentPage].id;
-    }
+    await _settingsLoad;
+    final settings = _settings;
+    if (!mounted || settings == null) return;
+    final generation = ++_loadGeneration;
+    final city = settings.city, tradition = settings.tradition;
+    final years = settings.years;
+    _requestedPlace = _placeKey(city);
+    _requestedTradition = tradition;
 
     setState(() {
-      _isLoading = true;
+      _isCalculating = !_ekadashiService.isScheduleCached(
+        city,
+        tradition,
+        years,
+      );
       _errorMessage = '';
     });
 
     try {
       final lang = _currentLangCode.isEmpty ? 'en' : _currentLangCode;
-      final ekadashis = _ekadashiService.getEkadashis(
-        timezone: _currentTimezone,
+      final ekadashis = await _ekadashiService.engineEkadashis(
+        city: city,
+        tradition: tradition,
         languageCode: lang,
+        years: years,
       );
+      if (!mounted || generation != _loadGeneration) return;
 
-      if (mounted) {
-        setState(() {
-          _ekadashiList = ekadashis;
-          _isLoading = false;
-        });
+      // The Ekadashi on screen, to stay on it.
+      final shown = _ekadashiList;
+      final currentUid = !shouldScrollToNext && _currentPage < shown.length
+          ? shown[_currentPage].occurrenceUid
+          : null;
 
-        // Initialize Vrat Tracker with loaded occurrences
-        Provider.of<VratTrackerService>(
-          context,
-          listen: false,
-        ).init(occurrences: ekadashis);
+      setState(() {
+        _allEkadashis = ekadashis;
+        _ekadashiList = _homeYearList();
+        _currentTimezone = city.timeZoneId;
+        _isLoading = false;
+        _isCalculating = false;
+      });
 
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          bool restored = false;
-          // Try to restore the view to the previously selected Ekadashi
-          if (currentEkadashiId != null) {
-            final index = _ekadashiList.indexWhere(
-              (e) => e.id == currentEkadashiId,
-            );
-            if (index != -1) {
-              _pageController.jumpToPage(index);
-              setState(() => _currentPage = index);
-              restored = true;
+      // Initialize Vrat Tracker with loaded occurrences
+      Provider.of<VratTrackerService>(
+        context,
+        listen: false,
+      ).init(occurrences: ekadashis);
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final index = currentUid == null
+            ? -1
+            : _ekadashiList.indexWhere((e) => e.occurrenceUid == currentUid);
+        if (index != -1) {
+          if (_pageController.hasClients) _pageController.jumpToPage(index);
+          setState(() => _currentPage = index);
+        } else {
+          // Use a slight delay to ensure PageView is built with new data
+          Future.delayed(const Duration(milliseconds: 100), () {
+            if (mounted) {
+              _scrollToNextEkadashi(animate: false, includeParana: true);
             }
-          }
+          });
+        }
+      });
 
-          // If restoration failed OR we forced a scroll, go to next upcoming
-          if (!restored) {
-            // Use a slight delay to ensure PageView is built with new data
-            Future.delayed(const Duration(milliseconds: 100), () {
-              if (mounted) {
-                _scrollToNextEkadashi(animate: false, includeParana: true);
-              }
-            });
-          }
-        });
-
-        // Schedule notifications
-        _scheduleNotifications();
-        _syncSearchAndWidgets();
-      }
+      // Schedule notifications
+      _scheduleNotifications();
+      _syncSearchAndWidgets();
     } catch (e) {
       debugPrint('Error loading data: $e');
-      if (mounted) {
+      if (mounted && generation == _loadGeneration) {
         setState(() {
           _isLoading = false;
+          _isCalculating = false;
           _errorMessage = context.read<LanguageService>().translate(
             'failed_load',
           );
@@ -848,9 +832,11 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     if (tab == null) return;
     // A deep link is not a search result.
     _searchReturn.clear();
-    if (_searchOpen && Navigator.of(context).canPop()) {
-      Navigator.of(context).pop();
-    }
+    // Sheets, the paywall and the search close first, and the target tab
+    // shows its first page, so the link never lands under another page.
+    Navigator.of(context).popUntil((route) => route.isFirst);
+    _popTabToRoot(tab);
+    _popTabToRoot(_currentIndex);
     setState(() => _currentIndex = tab);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -868,35 +854,33 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     if (restore == null) setState(_searchReturn.clear);
     _searchOpen = true;
     try {
-      await Navigator.of(context).push<void>(
-        MaterialPageRoute<void>(
-          builder: (_) => GlobalSearchScreen(
-            ekadashiList: _ekadashiList,
-            ekadashisFor: (code) => _ekadashiService.getEkadashis(
-              timezone: _currentTimezone,
-              languageCode: code,
-            ),
-            currentTimezone: _currentTimezone,
-            availableYears: _ekadashiService.availableYears,
-            initialSession: restore,
-            onOpenTab: (tab, session) {
-              if (!mounted) return;
-              setState(() {
-                _currentIndex = tab;
-                _searchReturn.opened(tab, session);
-              });
-            },
-            onOpenCalendar: (day, session) {
-              if (!mounted) return;
-              setState(() {
-                _currentIndex = 1;
-                _searchReturn.opened(1, session);
-              });
-              WidgetsBinding.instance.addPostFrameCallback(
-                (_) => _calendarKey.currentState?.selectDate(day),
-              );
-            },
-          ),
+      // A sheet with its own navigation, as on iOS: results open inside it.
+      await showAppSheet<void>(
+        context,
+        nested: true,
+        builder: (_) => GlobalSearchScreen(
+          ekadashiList: _allEkadashis,
+          ekadashisFor: (code) => _settings!.cachedEkadashis(code),
+          currentTimezone: _currentTimezone,
+          availableYears: _settings!.years,
+          initialSession: restore,
+          onOpenTab: (tab, session) {
+            if (!mounted) return;
+            setState(() {
+              _currentIndex = tab;
+              _searchReturn.opened(tab, session);
+            });
+          },
+          onOpenCalendar: (day, session) {
+            if (!mounted) return;
+            setState(() {
+              _currentIndex = 1;
+              _searchReturn.opened(1, session);
+            });
+            WidgetsBinding.instance.addPostFrameCallback(
+              (_) => _calendarKey.currentState?.selectDate(day),
+            );
+          },
         ),
       );
     } finally {
@@ -905,40 +889,22 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   }
 
   Future<void> _syncSearchAndWidgets() async {
-    if (!mounted || _ekadashiList.isEmpty) return;
+    if (!mounted || _allEkadashis.isEmpty) return;
     final lang = context.read<LanguageService>();
+    final settings = _settings!;
     await WidgetSyncManager().syncWidgetData(
-      ekadashiList: _ekadashiList,
+      ekadashiList: _allEkadashis,
       timezone: _currentTimezone,
-      locationName: _cityLabel(lang.currentLocale.languageCode),
+      locationName: PlaceNameResolver.instance.city(
+        settings.city,
+        lang.currentLocale.languageCode,
+      ),
       languageService: lang,
+      tradition: settings.tradition.name,
     );
     final pending = _pendingDeepLink;
     _pendingDeepLink = null;
     if (pending != null && mounted) handleDeepLink(pending);
-  }
-
-  /// The detected place in [language]: the shared table first, then the
-  /// phone's geocoder, then the English name.
-  String _cityLabel(String language) {
-    final table = AppStrings.placeName(_locationText, language);
-    if (language == 'en' || table != _locationText) return table;
-    final key = '$language|$_locationText';
-    final known = _nativeCityNames[key];
-    if (known != null) return known;
-    final coords = _locationCoords;
-    if (coords != null && !_nativeCityNames.containsKey(key)) {
-      _nativeCityNames[key] = null;
-      _locationService.localizedCityName(coords.$1, coords.$2, language).then((
-        name,
-      ) {
-        // Only a name in the language's own script replaces English.
-        if (mounted && name != null && !RegExp('[A-Za-z]').hasMatch(name)) {
-          setState(() => _nativeCityNames[key] = name);
-        }
-      });
-    }
-    return _locationText;
   }
 
   /// Back from a screen a search result opened: the same search again.
@@ -953,6 +919,11 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     // Another tab forgets the way back to a search.
     _searchReturn.selected(index);
     if (index == _currentIndex) {
+      // Re-tapping a tab first returns to its first page, as on iOS.
+      if (_tabPushed) {
+        _popTabToRoot(index);
+        return;
+      }
       // Already on this tab - special actions
       if (index == 0) {
         // User explicitly tapped Home - strictly go to next upcoming (skip Parana)
@@ -961,15 +932,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         _calendarKey.currentState?.resetToToday();
       }
     } else {
-      // Switching tabs
+      // Switching tabs keeps each tab where it was (Home keeps its card),
+      // as on iOS.
       setState(() => _currentIndex = index);
-
-      // When switching TO Home tab, scroll to upcoming Ekadashi
-      if (index == 0) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _scrollToNextEkadashi(animate: false, includeParana: true);
-        });
-      }
     }
   }
 
@@ -1014,7 +979,11 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   /// Schedule notifications for all Ekadashis
   Future<void> _scheduleNotifications() async {
     _scheduleEventReminders();
-    if (_ekadashiList.isEmpty) return;
+    // The channel follows the app language, even while reminders are off.
+    NativeNotificationService().localizeChannel(
+      context.read<LanguageService>().localizedStrings,
+    );
+    if (_allEkadashis.isEmpty) return;
 
     final settingsService = NativeSettingsService();
     final notificationSettings = await settingsService
@@ -1046,7 +1015,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     // Use native notification service
     try {
       final nativeNotifService = NativeNotificationService();
-      final ekadashiData = _ekadashiList
+      final ekadashiData = _allEkadashis
           .map(
             (e) => EkadashiNotificationData(
               id: e.id,
@@ -1071,7 +1040,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       final remindOnDay = notificationSettings.remindOnStart;
 
       await NotificationService().scheduleAllNotifications(
-        _ekadashiList,
+        _allEkadashis,
         remind1Day,
         remind2Days,
         remindOnDay,
@@ -1089,64 +1058,66 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     final keyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
     final items = [
       BottomNavigationBarItem(
-        icon: const Icon(Icons.home),
+        icon: const Icon(AppIcons.tabHome),
         label: lang.translate('home'),
       ),
+      // The iOS tab symbols (AppIcons): calendar, rosette and sparkles.
       BottomNavigationBarItem(
-        icon: const Icon(Icons.calendar_month),
+        icon: const Icon(AppIcons.tabCalendar),
         label: lang.translate('calendar'),
       ),
       BottomNavigationBarItem(
-        icon: const Icon(Icons.spa_outlined),
-        activeIcon: const Icon(Icons.spa),
+        icon: const Icon(AppIcons.tabJourney),
         label: lang.translate('journey_tab'),
       ),
       BottomNavigationBarItem(
-        icon: const Icon(Icons.auto_awesome_outlined),
-        activeIcon: const Icon(Icons.auto_awesome),
+        icon: const Icon(AppIcons.tabPanchang),
         label: lang.translate('search_screen_panchang'),
       ),
       BottomNavigationBarItem(
-        icon: const Icon(Icons.settings),
+        icon: const Icon(AppIcons.tabSettings),
         label: lang.translate('settings'),
       ),
     ];
-    // A search result opened this tab: the top bar's back arrow and the
-    // system back reopen its results (docs/ROADMAP.md Phase 9).
+    // A search result opened this tab: the top bar's "Search" back button
+    // and the system back reopen its results (docs/ROADMAP.md Phase 9).
     final searchBack = _searchReturn.showsBack(_currentIndex);
+    // A page pushed inside the tab brings its own top bar, as on iOS.
+    final tabPushed = !_isLoading && _errorMessage.isEmpty && _tabPushed;
+    // System Back also closes popup overlays in the active tab navigator.
+    final tabCanPop = _currentTabNavigator?.canPop() ?? false;
+    final slots = switch (_currentIndex) {
+      1 => _calendarBar,
+      3 => _panchangBar,
+      _ => null,
+    };
     // The iOS gradient behind every tab (docs/ROADMAP.md Phase 8).
     return PopScope(
-      canPop: !searchBack,
+      canPop: !searchBack && !tabCanPop,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop && searchBack) _returnToSearch();
+        if (didPop) return;
+        if (tabCanPop) {
+          _currentTabNavigator?.maybePop();
+        } else if (searchBack) {
+          _returnToSearch();
+        }
       },
       child: AppBackground(
         child: Scaffold(
           backgroundColor: Colors.transparent,
           extendBody: glass,
-          appBar: AppBar(
-            backgroundColor: Colors.transparent,
-            surfaceTintColor: Colors.transparent,
-            leading: searchBack
-                ? IconButton(
-                    key: const Key('search_return'),
-                    tooltip: lang.translate('search'),
-                    icon: const BackButtonIcon(),
-                    onPressed: _returnToSearch,
-                  )
-                : null,
-            title: Text(lang.translate('app_title')),
-            centerTitle: true,
-            actions: [
-              IconButton(
-                key: const Key('open_global_search'),
-                tooltip: lang.translate('search'),
-                icon: const Icon(Icons.search),
-                onPressed: _openSearch,
-              ),
-              const SizedBox(width: 4),
-            ],
-          ),
+          appBar: tabPushed
+              ? null
+              : PreferredSize(
+                  preferredSize: const Size.fromHeight(
+                    kToolbarHeight + ShellTopBar.topGap,
+                  ),
+                  child: ListenableBuilder(
+                    listenable: slots ?? const AlwaysStoppedAnimation(0),
+                    builder: (context, _) =>
+                        _topBar(context, lang, searchBack, slots),
+                  ),
+                ),
           body: _buildBody(lang, tealColor),
           bottomNavigationBar: glass
               ? (keyboardOpen
@@ -1168,7 +1139,50 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     );
   }
 
+  /// The iOS inline navigation bar: "‹ Search" when a search result opened
+  /// the tab, the tab's leading items (Today), the centred title, the
+  /// tab's actions and the search button.
+  PreferredSizeWidget _topBar(
+    BuildContext context,
+    LanguageService lang,
+    bool searchBack,
+    TabBarSlots? slots,
+  ) {
+    final tabLeading = slots?.leading(context);
+    final leading = [
+      if (searchBack)
+        TextButton.icon(
+          key: const Key('search_return'),
+          onPressed: _returnToSearch,
+          style: TextButton.styleFrom(
+            foregroundColor: IosColors.teal,
+            padding: const EdgeInsets.only(left: 4, right: 8),
+            minimumSize: const Size(44, 44),
+          ),
+          icon: const Icon(AppIcons.back, size: 20),
+          label: Text(
+            lang.translate('search'),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: IosText.body),
+          ),
+        ),
+      ?tabLeading,
+    ];
+    // The iPhone top bar: Today and "‹ Search" in a glass capsule on the
+    // left, search and the tab's actions in one on the right.
+    return ShellTopBar(
+      title: lang.translate('app_title'),
+      searchTooltip: lang.translate('search'),
+      onSearch: _openSearch,
+      leading: leading,
+      actions: slots?.actions(context) ?? const [],
+    );
+  }
+
   Widget _buildBody(LanguageService lang, Color tealColor) {
+    // Loading and error states as iOS RootView: a spinner with
+    // "Locating...", or the unavailable view with a prominent Try again.
     if (_isLoading) {
       return Center(
         child: Column(
@@ -1178,7 +1192,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             const SizedBox(height: 16),
             Text(
               lang.translate('locating'),
-              style: TextStyle(color: Colors.grey.shade500),
+              style: TextStyle(
+                fontSize: IosText.body,
+                color: IosColors.secondary(context),
+              ),
             ),
           ],
         ),
@@ -1186,60 +1203,107 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     }
 
     if (_errorMessage.isNotEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.error_outline, size: 48, color: Colors.grey.shade400),
-            const SizedBox(height: 16),
-            Text(_errorMessage, style: TextStyle(color: Colors.grey.shade500)),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => _loadData(),
-              style: ElevatedButton.styleFrom(backgroundColor: tealColor),
-              child: Text(lang.translate('retry')),
-            ),
-          ],
+      return UnavailableView(
+        icon: AppIcons.error,
+        title: _errorMessage,
+        action: FilledButton(
+          onPressed: () => _loadData(),
+          style: IosButtons.prominent(),
+          child: Text(lang.translate('retry'), style: IosButtons.label),
         ),
       );
     }
 
     if (_currentIndex == 3) _panchangOpened = true;
-    return IndexedStack(
-      index: _currentIndex,
-      children: [
-        SafeArea(top: false, child: _buildHomeContent(lang, tealColor)),
-        CalendarScreen(
-          key: _calendarKey,
-          repository: context.read<CalendarEntryRepository?>(),
-          ekadashiList: _ekadashiList,
+    // Each tab is a navigation stack whose first page is built here.
+    Widget tabRoot(int index) => switch (index) {
+      0 => SafeArea(top: false, child: _buildHomeContent(lang, tealColor)),
+      1 => CalendarScreen(
+        key: _calendarKey,
+        repository: context.read<CalendarEntryRepository?>(),
+        ekadashiList: _allEkadashis,
+        currentTimezone: _currentTimezone,
+        barSlots: _calendarBar,
+      ),
+      2 => SafeArea(
+        top: false,
+        child: VratTrackerScreen(
+          ekadashiList: _allEkadashis,
           currentTimezone: _currentTimezone,
         ),
-        SafeArea(
-          top: false,
-          child: VratTrackerScreen(
-            ekadashiList: _ekadashiList,
-            currentTimezone: _currentTimezone,
-          ),
-        ),
-        // Built when first opened: the Panchang calculates a year of
-        // festivals, which the other tabs never need.
-        if (_currentIndex == 3 || _panchangOpened)
-          PanchangScreen(key: _panchangKey, ekadashiList: _ekadashiList)
-        else
-          const SizedBox.shrink(),
-        SettingsScreen(currentTimezone: _currentTimezone),
-      ],
+      ),
+      // Built when first opened: the Panchang calculates a year of
+      // festivals, which the other tabs never need.
+      3 =>
+        _currentIndex == 3 || _panchangOpened
+            ? PanchangScreen(
+                key: _panchangKey,
+                ekadashiList: _allEkadashis,
+                barSlots: _panchangBar,
+              )
+            : const SizedBox.shrink(),
+      _ => SettingsScreen(currentTimezone: _currentTimezone),
+    };
+    return TabContentScope(
+      build: tabRoot,
+      child: IndexedStack(
+        index: _currentIndex,
+        children: [
+          for (var i = 0; i < 5; i++)
+            TabNavigator(
+              index: i,
+              navigatorKey: _tabNavigators[i],
+              observer: _tabObservers[i],
+            ),
+        ],
+      ),
     );
   }
 
+  /// The Home header as iOS HomeHeader: location and language in one glass
+  /// tube, side by side when they fit, stacked otherwise (ViewThatFits).
+  /// Home's four menus in a 2×2 grid (HomeControls in TodayView.swift).
+  Widget _buildHomeHeader(LanguageService lang, Color tealColor) => Padding(
+    padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+    child: HomeControls(
+      locating: _isRequestingLocation,
+      onLocation: _openLocationPicker,
+    ),
+  );
+
   Widget _buildHomeContent(LanguageService lang, Color tealColor) {
     if (_ekadashiList.isEmpty) {
-      return Center(
-        child: Text(
-          lang.translate('no_ekadashi'),
-          style: TextStyle(color: Colors.grey.shade500),
-        ),
+      // iOS keeps the header above ContentUnavailableView, or the progress
+      // view while another city or tradition is calculated.
+      return Column(
+        children: [
+          _buildHomeHeader(lang, tealColor),
+          Expanded(
+            child: _isCalculating
+                ? Center(
+                    child: Column(
+                      key: const Key('home_calculating'),
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const CircularProgressIndicator(color: IosColors.teal),
+                        const SizedBox(height: 12),
+                        Text(
+                          lang.translate('calculating_ekadashis'),
+                          style: TextStyle(
+                            fontSize: IosText.subheadline,
+                            color: IosColors.secondary(context),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : UnavailableView(
+                    key: const Key('home_empty'),
+                    icon: AppIcons.noEkadashi,
+                    title: lang.translate('no_ekadashi'),
+                  ),
+          ),
+        ],
       );
     }
 
@@ -1248,112 +1312,76 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
     return Column(
       children: [
-        // Header with location and language inline (v1.0 style)
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
-          child: GlassTube(
-            key: const Key('home_options_tube'),
-            optionCount: 2,
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                if (constraints.maxWidth < 400 &&
-                    MediaQuery.textScalerOf(context).scale(14) > 20) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _buildLocationWidget(lang, tealColor),
-                      const SizedBox(height: 8),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: _buildLanguageSelector(lang, tealColor),
-                      ),
-                    ],
-                  );
-                }
-                return Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(child: _buildLocationWidget(lang, tealColor)),
-                    const SizedBox(width: 20),
-                    _buildLanguageSelector(lang, tealColor),
-                  ],
-                );
-              },
-            ),
-          ),
-        ),
+        _buildHomeHeader(lang, tealColor),
 
         // Page indicator
         Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: Text(
             '${_currentPage + 1} / ${_ekadashiList.length}',
-            style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+            key: const Key('home_page_indicator'),
+            style: TextStyle(
+              fontSize: IosText.footnote,
+              color: IosColors.secondary(context),
+            ),
           ),
         ),
 
-        // Card with navigation arrows
+        // Card with navigation arrows; dimmed while another city or
+        // tradition is calculated.
         Expanded(
           child: Padding(
-            padding: const EdgeInsets.only(
-              left: 4,
-              right: 4,
-              top: 8,
-              bottom: 8,
-            ),
-            child: Row(
+            padding: const EdgeInsets.only(left: 4, right: 4, bottom: 8),
+            child: Stack(
+              alignment: Alignment.center,
               children: [
-                // Left arrow
-                SizedBox(
-                  width: 44,
-                  child: IconButton(
-                    onPressed: isFirstPage
-                        ? null
-                        : () {
-                            _pageController.previousPage(
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            );
+                Opacity(
+                  opacity: _isCalculating ? 0.5 : 1,
+                  child: Row(
+                    children: [
+                      _homeArrow(
+                        key: const Key('home_previous'),
+                        icon: AppIcons.previous,
+                        target: _currentPage - 1,
+                        enabled: !isFirstPage,
+                        onPressed: () => _pageController.previousPage(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                        ),
+                      ),
+                      Expanded(
+                        child: PageView.builder(
+                          controller: _pageController,
+                          itemCount: _ekadashiList.length,
+                          onPageChanged: (index) {
+                            if (mounted) {
+                              setState(() => _currentPage = index);
+                            }
                           },
-                    icon: const Icon(Icons.chevron_left, size: 36),
-                    color: isFirstPage ? Colors.grey.shade600 : tealColor,
-                    padding: EdgeInsets.zero,
+                          itemBuilder: (context, index) => Padding(
+                            padding: const EdgeInsets.all(4),
+                            child: _buildEkadashiCard(_ekadashiList[index]),
+                          ),
+                        ),
+                      ),
+                      _homeArrow(
+                        key: const Key('home_next'),
+                        icon: AppIcons.next,
+                        target: _currentPage + 1,
+                        enabled: !isLastPage,
+                        onPressed: () => _pageController.nextPage(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-
-                // Card with PageView
-                Expanded(
-                  child: PageView.builder(
-                    controller: _pageController,
-                    itemCount: _ekadashiList.length,
-                    onPageChanged: (index) {
-                      if (mounted) {
-                        setState(() => _currentPage = index);
-                      }
-                    },
-                    itemBuilder: (context, index) {
-                      return _buildEkadashiCard(_ekadashiList[index]);
-                    },
+                if (_isCalculating)
+                  const CircularProgressIndicator(
+                    key: Key('home_recalculating'),
+                    color: IosColors.teal,
                   ),
-                ),
-
-                // Right arrow
-                SizedBox(
-                  width: 44,
-                  child: IconButton(
-                    onPressed: isLastPage
-                        ? null
-                        : () {
-                            _pageController.nextPage(
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            );
-                          },
-                    icon: const Icon(Icons.chevron_right, size: 36),
-                    color: isLastPage ? Colors.grey.shade600 : tealColor,
-                    padding: EdgeInsets.zero,
-                  ),
-                ),
               ],
             ),
           ),
@@ -1362,135 +1390,37 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     );
   }
 
-  Widget _buildLocationWidget(LanguageService lang, Color tealColor) {
-    // Show spinner while detecting location
-    if (_isRequestingLocation) {
-      return Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(
-            width: 14,
-            height: 14,
-            child: CircularProgressIndicator(strokeWidth: 2, color: tealColor),
-          ),
-          const SizedBox(width: 8),
-          Flexible(
-            child: Text(
-              lang.translate('detecting_location'),
-              style: TextStyle(fontSize: 14, color: Colors.grey.shade400),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      );
-    }
-
-    // Show "Location Denied" with tap to retry
-    if (_locationDenied) {
-      return GestureDetector(
-        onTap: _requestLocationAgain,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.location_off, size: 18, color: Colors.orange.shade400),
-            const SizedBox(width: 6),
-            Flexible(
-              child: Text(
-                lang.translate('location_denied'),
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.orange.shade400,
-                  decoration: TextDecoration.underline,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    // Show "Locating..." while loading
-    if (_locationText.isEmpty) {
-      return Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.location_on, size: 18, color: tealColor),
-          const SizedBox(width: 6),
-          Text(
-            lang.translate('locating'),
-            style: const TextStyle(fontSize: 14),
-          ),
-        ],
-      );
-    }
-
-    // Show city name and timezone
-    // Show city name and timezone (Clickable to retry)
-    return InkWell(
-      onTap: _handleLocation,
-      borderRadius: BorderRadius.circular(16),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.location_on, size: 18, color: tealColor),
-            const SizedBox(width: 6),
-            Flexible(
-              child: Text(
-                '${_cityLabel(lang.currentLocale.languageCode)} • ${AppStrings.timeZoneName(_currentTimezone, lang.currentLocale.languageCode)}',
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            const SizedBox(width: 4),
-            Icon(Icons.refresh, size: 14, color: Colors.grey.shade400),
-          ],
+  /// An arrow to the card at [target] (iOS: 28 pt semibold chevron in a
+  /// 40 x 60 frame), read out as that Ekadashi's name.
+  Widget _homeArrow({
+    required Key key,
+    required IconData icon,
+    required int target,
+    required bool enabled,
+    required VoidCallback onPressed,
+  }) {
+    final name = enabled ? _ekadashiList[target].name : '';
+    return SizedBox(
+      width: 40,
+      height: 60,
+      child: IconButton(
+        key: key,
+        onPressed: enabled ? onPressed : null,
+        padding: EdgeInsets.zero,
+        icon: Icon(
+          icon,
+          size: 26,
+          weight: 600,
+          semanticLabel: name,
+          color: enabled ? IosColors.teal : IosColors.gray(context),
         ),
       ),
     );
   }
 
-  /// The app's only language menu (docs/ROADMAP.md Phase 2), in the
-  /// registry's order: English, Hindi, Tamil, Telugu, Gujarati, Bengali.
-  Widget _buildLanguageSelector(LanguageService lang, Color tealColor) {
-    final current = AppLanguage.named(lang.currentLocale.languageCode);
-    return PopupMenuButton<String>(
-      key: const Key('language_menu'),
-      onSelected: (String newValue) => lang.changeLanguage(newValue),
-      color: Theme.of(context).cardColor,
-      itemBuilder: (context) => [
-        for (final language in AppLanguage.all)
-          PopupMenuItem(
-            value: language.code,
-            child: Row(
-              children: [
-                Expanded(child: Text(language.nativeName)),
-                if (language.code == current.code)
-                  Icon(Icons.check, size: 18, color: tealColor),
-              ],
-            ),
-          ),
-      ],
-      offset: const Offset(0, 40),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            current.nativeName,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-          ),
-          const SizedBox(width: 6),
-          Icon(Icons.language, color: tealColor, size: 20),
-        ],
-      ),
-    );
-  }
-
+  /// One Ekadashi as the iOS EkadashiCard: a glass panel (radius 24) with
+  /// the countdown, dates, fast and Parana times, the description, View
+  /// Details (prominent) and the Vrat record button (glass).
   Widget _buildEkadashiCard(EkadashiDate ekadashi) {
     // Use timezone-aware "today" calculation
     DateTime today;
@@ -1512,13 +1442,13 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     );
     final daysUntil = ekadashiDate.difference(today).inDays;
 
-    const tealColor = Color(0xFF00A19B);
+    const tealColor = IosColors.teal;
     final lang = Provider.of<LanguageService>(context);
+    final code = lang.currentLocale.languageCode;
 
-    String breakTime = ekadashi.fastBreakTime;
-    breakTime = AppStrings.localizeClock(
-      breakTime.replaceAll(RegExp(r'^[a-zA-Z]{3} \d{1,2}, '), ''),
-      lang.currentLocale.languageCode,
+    final breakTime = AppStrings.localizeClock(
+      ekadashi.fastBreakTime.replaceAll(RegExp(r'^[a-zA-Z]{3} \d{1,2}, '), ''),
+      code,
     );
 
     String daysText;
@@ -1532,301 +1462,256 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       daysText = lang.translateWithArgs('in_days', [daysUntil.toString()]);
     }
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 10,
-            spreadRadius: 1,
+    Widget timing(String title, DateTime date, String time) => SizedBox(
+      width: double.infinity,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              color: tealColor,
+              fontWeight: FontWeight.bold,
+              fontSize: IosText.callout,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            AppStrings.fullDate(date, code),
+            style: TextStyle(
+              fontSize: IosText.subheadline,
+              color: IosColors.secondary(context),
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            time,
+            style: TextStyle(
+              fontSize: IosText.title3,
+              fontWeight: FontWeight.w600,
+              color: IosColors.primary(context),
+            ),
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    // Days badge
-                    Align(
-                      alignment: Alignment.topRight,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: daysUntil < 0 ? Colors.grey : tealColor,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Text(
-                          daysText,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
+    );
 
-                    // Date: weekday, date, month and year, as on every tab.
-                    Text(
-                      AppStrings.fullDate(
-                        ekadashi.date,
-                        lang.currentLocale.languageCode,
-                      ),
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w300,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Ekadashi name
-                    Text(
-                      ekadashi.name,
-                      style: const TextStyle(
-                        color: tealColor,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Start Fasting
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        lang.translate('start_fasting'),
-                        style: const TextStyle(
-                          color: tealColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        AppStrings.fullDate(
-                          ekadashi.date,
-                          lang.currentLocale.languageCode,
-                        ),
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: Colors.grey.shade500,
-                        ),
-                      ),
-                    ),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        AppStrings.localizeClock(
-                          ekadashi.fastStartTime,
-                          lang.currentLocale.languageCode,
-                        ),
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Break Fasting
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        lang.translate('break_fasting'),
-                        style: const TextStyle(
-                          color: tealColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        AppStrings.fullDate(
-                          ekadashi.date.add(const Duration(days: 1)),
-                          lang.currentLocale.languageCode,
-                        ),
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: Colors.grey.shade500,
-                        ),
-                      ),
-                    ),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        breakTime,
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    Divider(color: Colors.grey.shade400, height: 1),
-                    const SizedBox(height: 16),
-
-                    // Description
-                    Text(
-                      ekadashi.description,
-                      style: TextStyle(
-                        fontStyle: FontStyle.italic,
-                        fontSize: 15,
-                        color: Theme.of(
-                          context,
-                        ).textTheme.bodyMedium?.color?.withValues(alpha: 0.8),
-                        height: 1.4,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Action buttons: View Details and Record Vrat
-            GlassOptionGroup(
-              key: const Key('home_card_actions_tube'),
-              optionCount: context.watch<VratTrackerService>().trackerEnabled
-                  ? 2
-                  : 1,
-              child: Row(
+    final tracker = context.watch<VratTrackerService>();
+    return GlassPanel(
+      key: const Key('home_ekadashi_card'),
+      radius: 24,
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+      child: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
                 children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => DetailsScreen(
-                              ekadashi: ekadashi,
-                              timezone: _currentTimezone,
-                            ),
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            context.watch<VratTrackerService>().trackerEnabled
-                            ? Colors.transparent
+                  // Days badge
+                  Align(
+                    alignment: AlignmentDirectional.centerEnd,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 6,
+                      ),
+                      decoration: ShapeDecoration(
+                        color: daysUntil < 0
+                            ? IosColors.gray(context)
                             : tealColor,
-                        foregroundColor:
-                            context.watch<VratTrackerService>().trackerEnabled
-                            ? GlassTubeColors.teal
-                            : Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 0,
+                        shape: const StadiumBorder(),
                       ),
                       child: Text(
-                        lang.translate('view_details'),
+                        daysText,
                         style: const TextStyle(
+                          color: Colors.white,
                           fontWeight: FontWeight.bold,
-                          fontSize: 15,
+                          fontSize: IosText.footnote,
                         ),
                       ),
                     ),
                   ),
-                  Consumer<VratTrackerService>(
-                    builder: (ctx, trackerService, _) {
-                      if (!trackerService.trackerEnabled) {
-                        return const SizedBox.shrink();
-                      }
-                      final record = trackerService.getRecord(ekadashi.id);
-                      final isObserved =
-                          record?.status == ObservanceStatus.observed;
-                      final isPartial =
-                          record?.status == ObservanceStatus.partial;
-                      final isMissed =
-                          record?.status == ObservanceStatus.missed;
-                      const iconColor = GlassTubeColors.teal;
-
-                      return Padding(
-                        padding: const EdgeInsets.only(left: 8),
-                        child: Tooltip(
-                          message: lang.translate(
-                            record == null ? 'record_vrat' : 'edit_record',
-                          ),
-                          child: OutlinedButton(
-                            key: const Key('home_record_vrat'),
-                            // Open once the fast is over: after Parana begins.
-                            onPressed:
-                                !VratRecording.isOpen(
-                                  ekadashi,
-                                  now: DateTime.now(),
-                                  timezone: _currentTimezone,
-                                )
-                                ? null
-                                : () async {
-                                    final unlocks = await RecordVratDialog.show(
-                                      context,
-                                      ekadashi: ekadashi,
-                                      allOccurrences: _ekadashiList,
-                                      currentTimezone: _currentTimezone,
-                                    );
-                                    if (unlocks != null &&
-                                        unlocks.isNotEmpty &&
-                                        mounted) {
-                                      for (final u in unlocks) {
-                                        await AchievementUnlockDialog.show(
-                                          context,
-                                          u,
-                                        );
-                                      }
-                                    }
-                                  },
-                            style: OutlinedButton.styleFrom(
-                              side: BorderSide.none,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                                vertical: 14,
-                              ),
-                            ),
-                            child: Icon(
-                              isObserved
-                                  ? Icons.check_circle
-                                  : (isPartial
-                                        ? Icons.adjust
-                                        : (isMissed
-                                              ? Icons.highlight_off
-                                              : Icons.edit_calendar_outlined)),
-                              color: iconColor,
-                              size: 20,
-                            ),
-                          ),
-                        ),
-                      );
-                    },
+                  const SizedBox(height: 16),
+                  // Date: weekday, date, month and year, as on every tab.
+                  Text(
+                    AppStrings.fullDate(ekadashi.date, code),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: IosText.title2,
+                      fontWeight: FontWeight.w300,
+                      color: IosColors.primary(context),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    ekadashi.name,
+                    style: const TextStyle(
+                      color: tealColor,
+                      fontSize: IosText.title,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  timing(
+                    lang.translate('start_fasting'),
+                    ekadashi.date,
+                    AppStrings.localizeClock(ekadashi.fastStartTime, code),
+                  ),
+                  const SizedBox(height: 16),
+                  timing(
+                    lang.translate('break_fasting'),
+                    ekadashi.date.add(const Duration(days: 1)),
+                    breakTime,
+                  ),
+                  Divider(height: 33, color: IosColors.separator(context)),
+                  Text(
+                    ekadashi.description,
+                    style: TextStyle(
+                      fontStyle: FontStyle.italic,
+                      fontSize: IosText.callout,
+                      color: IosColors.primary(context).withValues(alpha: 0.8),
+                      height: 1.45,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
                 ],
               ),
             ),
-          ],
+          ),
+          const SizedBox(height: 16),
+          // View Details (prominent teal capsule) and the Vrat record button
+          // (glass capsule), as the iOS GlassGroup.
+          Row(
+            children: [
+              Expanded(
+                child: FilledButton(
+                  key: const Key('view_details'),
+                  onPressed: () => _openDetails(ekadashi),
+                  style: IosButtons.prominent(vertical: 12).copyWith(
+                    minimumSize: const WidgetStatePropertyAll(Size(0, 48)),
+                    fixedSize: const WidgetStatePropertyAll(
+                      Size.fromHeight(48),
+                    ),
+                  ),
+                  child: Text(
+                    lang.translate('view_details'),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: IosText.callout,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              _homeShareButton(ekadashi, lang),
+              if (tracker.trackerEnabled) ...[
+                const SizedBox(width: 8),
+                _homeRecordButton(ekadashi, tracker, lang),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// The free share card (no paywall), a round glass button like Record.
+  Widget _homeShareButton(EkadashiDate ekadashi, LanguageService lang) =>
+      Tooltip(
+        message: lang.translate('share_card'),
+        child: OutlinedButton(
+          key: const Key('home_share_card'),
+          onPressed: () => openShareCard(context, ekadashi),
+          style: IosButtons.glass(context).copyWith(
+            shape: const WidgetStatePropertyAll(CircleBorder()),
+            padding: const WidgetStatePropertyAll(EdgeInsets.zero),
+            fixedSize: const WidgetStatePropertyAll(Size.square(48)),
+            minimumSize: const WidgetStatePropertyAll(Size.square(48)),
+            backgroundColor: WidgetStatePropertyAll(
+              IosColors.teal.withValues(alpha: .10),
+            ),
+            side: const WidgetStatePropertyAll(BorderSide.none),
+          ),
+          child: const Icon(AppIcons.share, color: IosColors.teal),
         ),
+      );
+
+  /// Ekadashi details are pushed inside the Home tab, so the tab bar stays.
+  void _openDetails(EkadashiDate ekadashi) {
+    _tabNavigators[0].currentState?.push(
+      MaterialPageRoute<void>(
+        builder: (_) =>
+            DetailsScreen(ekadashi: ekadashi, timezone: _currentTimezone),
+      ),
+    );
+  }
+
+  /// The card's Vrat button (iOS VratStatusStyle.cardSymbol), dimmed until
+  /// Parana begins.
+  Widget _homeRecordButton(
+    EkadashiDate ekadashi,
+    VratTrackerService tracker,
+    LanguageService lang,
+  ) {
+    final record = tracker.getRecordByUid(ekadashi.occurrenceUid);
+    final open = VratRecording.isOpen(
+      ekadashi,
+      now: DateTime.now(),
+      timezone: _currentTimezone,
+    );
+    final color = open ? IosColors.teal : IosColors.tertiary(context);
+    final Widget icon = switch (record?.status) {
+      ObservanceStatus.observed => Icon(AppIcons.cardObserved, color: color),
+      ObservanceStatus.partial => Icon(AppIcons.statusPartial, color: color),
+      ObservanceStatus.missed => Icon(AppIcons.statusMissed, color: color),
+      _ => Icon(AppIcons.cardUnrecorded, color: color),
+    };
+    return OutlinedButton(
+      key: const Key('home_record_vrat'),
+      onPressed: open
+          ? () async {
+              final unlocks = await RecordVratDialog.show(
+                context,
+                ekadashi: ekadashi,
+                allOccurrences: _allEkadashis,
+                currentTimezone: _currentTimezone,
+              );
+              if (unlocks != null && unlocks.isNotEmpty && mounted) {
+                for (final u in unlocks) {
+                  await AchievementUnlockDialog.show(context, u);
+                }
+              }
+            }
+          : null,
+      // A round glass button, neutral grey while recording is closed.
+      style: IosButtons.glass(context).copyWith(
+        shape: const WidgetStatePropertyAll(CircleBorder()),
+        padding: const WidgetStatePropertyAll(EdgeInsets.zero),
+        fixedSize: const WidgetStatePropertyAll(Size.square(48)),
+        minimumSize: const WidgetStatePropertyAll(Size.square(48)),
+        backgroundColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.disabled)
+              ? IosColors.gray(context).withValues(alpha: .18)
+              : IosColors.teal.withValues(alpha: .10),
+        ),
+        side: WidgetStateProperty.resolveWith(
+          (states) => BorderSide(
+            color:
+                (states.contains(WidgetState.disabled)
+                        ? IosColors.gray(context)
+                        : IosColors.teal)
+                    .withValues(alpha: .28),
+            width: .7,
+          ),
+        ),
+      ),
+      child: Semantics(
+        label: lang.translate(record == null ? 'record_vrat' : 'edit_record'),
+        hint: open ? null : lang.translate('journey_record_after_parana'),
+        child: SizedBox(height: 24, child: Center(child: icon)),
       ),
     );
   }

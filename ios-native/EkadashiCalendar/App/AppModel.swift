@@ -26,6 +26,11 @@ final class AppModel {
 
     @ObservationIgnored let store: KeyValueStore
     @ObservationIgnored let repository: CalendarRepository?
+    /// Ekadashi dates and times from the Panchang engine for the chosen city
+    /// and tradition (docs/EKADASHI_ENGINE_SCHEDULE.md).
+    @ObservationIgnored let schedule: EkadashiSchedule?
+    @ObservationIgnored private var loadGeneration = 0
+    @ObservationIgnored private var loadTask: Task<Void, Never>?
     /// UI tests cannot answer the system permission alert, so they run as if allowed.
     @ObservationIgnored let notifications = NotificationService(
         assumeAuthorized: ProcessInfo.processInfo.arguments.contains("-ui-testing"))
@@ -47,9 +52,21 @@ final class AppModel {
 
     private(set) var language: String
     private(set) var isDarkMode: Bool
-    private(set) var timezone: AppTimezone
     private(set) var locationState: LocationState = .unknown
+    /// Where Home and Calendar calculate Ekadashis: the place the user set,
+    /// else the last detected one, else Chennai.
+    private(set) var ekadashiCity: PanchangCity
+    /// True once the user picked a city; detection no longer replaces it.
+    private(set) var ekadashiCityIsManual: Bool
+    private(set) var tradition: EkadashiTradition
+    /// The year Home lists and Calendar opens on.
+    private(set) var selectedYear: Int
+    let enabledYears = EkadashiYears.enabled()
+    /// Every enabled year's Ekadashis at [ekadashiCity] for [tradition]:
+    /// reminders, widgets, Vrat, search and the Calendar markers use these.
     private(set) var ekadashis: [EkadashiOccurrence] = []
+    /// True while a city, tradition or year is being calculated.
+    private(set) var isCalculating = false
     private(set) var loadError: String?
     private(set) var isLoading = true
     private(set) var reminderSettings: ReminderSettings
@@ -69,6 +86,8 @@ final class AppModel {
     var paywall: PaywallRequest?
     var googlePicker: GooglePickerRequest?
     var unlockQueue: [Achievement] = []
+    /// Bumped when Home sets the Panchang location.
+    private(set) var panchangCityRevision = 0
 
     init() {
         let group = Bundle.main.object(forInfoDictionaryKey: "EkadashiAppGroup") as? String ?? ""
@@ -81,10 +100,17 @@ final class AppModel {
         self.store = store
         self.premium = premium
         repository = try? CalendarRepository.bundled()
+        let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("ekadashi_schedule", isDirectory: true)
+        schedule = repository.map { EkadashiSchedule(repository: $0, cacheDirectory: caches) }
         language = store.string(forKey: "language_code").flatMap { Localizer.languages.contains($0) ? $0 : nil } ?? Self.systemLanguage
         isDarkMode = store.bool(forKey: "is_dark_mode") ?? true
-        timezone = store.string(forKey: "app_timezone").flatMap(AppTimezone.init(rawValue:))
-            ?? AppTimezone.matching(deviceIdentifier: TimeZone.current.identifier)
+        ekadashiCity = Self.loadCity(store) ?? Self.defaultCity
+        ekadashiCityIsManual = store.bool(forKey: Self.manualCityKey) ?? false
+        tradition = store.string(forKey: Self.traditionKey).flatMap(EkadashiTradition.init(rawValue:)) ?? .smarta
+        let years = EkadashiYears.enabled()
+        selectedYear = store.string(forKey: Self.yearKey).flatMap(Int.init).flatMap { years.contains($0) ? $0 : nil }
+            ?? EkadashiYears.defaultYear(today: CivilDate.today(), enabled: years)
         reminderSettings = ReminderSettings.load(from: store)
         eventReminders = EventReminderSettings.load(from: store)
         recents = RecentSearches(store: store)
@@ -132,37 +158,75 @@ final class AppModel {
         return formatter.string(from: date.utcMidnight)
     }
 
-    var scheduleZone: TzLocation { timezone.location }
+    var scheduleZone: TzLocation { ekadashiCity.zone }
     var today: CivilDate { scheduleZone.wallClock(Date()).date }
     var locationName: String { if case .located(let city) = locationState { return city }; return "" }
 
-    /// The detected place in the app language: the shared table first, then
-    /// Apple's geocoder in that language, then the English name.
+    /// Place names Apple's geocoder gave in the app language (see [placeName]).
     private(set) var geocodedCityNames: [String: String] = [:]
     @ObservationIgnored private var cityLookups: Set<String> = []
     @ObservationIgnored private var lastCoordinate: (Double, Double)?
 
     func cityLabel(_ city: String) -> String {
-        let table = PlaceNames.shared.place(city, language: language)
-        guard language != "en", table == city else { return table }
-        let key = "\(language)|\(city)"
-        if let known = geocodedCityNames[key] { return known }
-        if let coordinate = lastCoordinate, !cityLookups.contains(key) {
-            cityLookups.insert(key)
-            let language = self.language
-            Task { [weak self] in
-                // Only a name in the language's own script replaces English.
-                guard let name = await self?.location.localizedName(latitude: coordinate.0, longitude: coordinate.1,
-                                                                    language: language),
-                      name.range(of: "[A-Za-z]", options: .regularExpression) == nil else { return }
-                self?.geocodedCityNames[key] = name
-            }
-        }
-        return city
+        guard let coordinate = lastCoordinate else { return PlaceNames.shared.place(city, language: language) }
+        return placeName(city, latitude: coordinate.0, longitude: coordinate.1)
     }
 
-    /// The app time zone in the app language ("भारतीय समय" for IST).
-    var timeZoneLabel: String { Localizer.shared.timeZoneName(timezone.rawValue, language: language) }
+    /// A place in the app language, never in Latin letters outside English:
+    /// the shared table first, then Apple's geocoder in that language at the
+    /// place's coordinates (cached on the phone; one lookup at a time, as the
+    /// geocoder throttles), and meanwhile the name written by sound.
+    func placeName(_ name: String, latitude: Double, longitude: Double) -> String {
+        let table = PlaceNames.shared.place(name, language: language)
+        guard !PlaceNames.shared.isKnown(name, language: language) else { return table }
+        let key = "\(language)|\(name)|\(String(format: "%.2f,%.2f", latitude, longitude))"
+        if let known = geocodedCityNames[key] { return known }
+        if let saved = savedPlaceNames[key] { return saved }
+        guard !cityLookups.contains(key) else { return table }
+        cityLookups.insert(key)
+        let language = self.language, previous = geocodeQueue
+        geocodeQueue = Task { [weak self] in
+            await previous?.value
+            // Only a name in the language's own script replaces English.
+            guard let found = await self?.location.localizedName(latitude: latitude, longitude: longitude, language: language),
+                  found.range(of: "[A-Za-z]", options: .regularExpression) == nil else { return }
+            self?.rememberPlaceName(found, for: key)
+        }
+        return table
+    }
+
+    @ObservationIgnored private var geocodeQueue: Task<Void, Never>?
+    static let placeNamesKey = "geocoded_place_names"
+
+    private var savedPlaceNames: [String: String] {
+        store.string(forKey: Self.placeNamesKey).flatMap { try? JSONDecoder().decode([String: String].self, from: Data($0.utf8)) } ?? [:]
+    }
+
+    private func rememberPlaceName(_ name: String, for key: String) {
+        geocodedCityNames[key] = name
+        var saved = savedPlaceNames
+        saved[key] = name
+        if let data = try? JSONEncoder().encode(saved) { store.set(String(decoding: data, as: UTF8.self), forKey: Self.placeNamesKey) }
+    }
+
+    /// The Ekadashi city's time zone in the app language ("भारतीय समय" for
+    /// IST, the UTC offset in the language's script elsewhere).
+    var timeZoneLabel: String { ekadashiCity.timeZoneLabel(language: language) }
+
+    /// The Ekadashi city and its country code in the app language
+    /// ("Chennai (IN)", "சென்னை (இந்தியா)"); no time zone.
+    var ekadashiCityName: String { cityDisplayName(ekadashiCity) }
+
+    /// "Chennai (IN)" → ("Chennai", "IN").
+    static func splitCountry(_ label: String) -> (String, String?) {
+        guard let range = label.range(of: #" \(([A-Z]{2})\)$"#, options: .regularExpression) else { return (label, nil) }
+        return (String(label[..<range.lowerBound]), String(label[range].dropFirst(2).dropLast()))
+    }
+
+    /// Home lists the selected year's Ekadashis.
+    var homeEkadashis: [EkadashiOccurrence] { ekadashis.filter { $0.date.year == selectedYear } }
+
+    func traditionName(_ value: EkadashiTradition) -> String { t(value == .smarta ? "tradition_smarta" : "tradition_vaishnava") }
 
     // MARK: Launch
 
@@ -173,6 +237,7 @@ final class AppModel {
     func start() async {
         guard !started, !Self.isHostingUnitTests else { return }
         started = true
+        prepareCitySearch()
         reload(scrollToNext: true)
         await premium.start()
         premium.startRecheck()
@@ -180,7 +245,7 @@ final class AppModel {
             store.set(true, forKey: "has_launched")
             await requestPermissionsOnFirstLaunch()
         } else {
-            await handleLocation()
+            await handleLocation(atLaunch: true)
         }
         removeLapsedPremiumImports()
         scheduleBackgroundRefresh()
@@ -194,33 +259,154 @@ final class AppModel {
             updateReminders(settings)
         }
         _ = await location.requestPermission()
-        await handleLocation()
+        await handleLocation(atLaunch: true)
     }
 
-    /// Location chooses the schedule; without it the device time zone does.
-    func handleLocation() async {
+    /// A detected place becomes the Ekadashi city unless the user chose one
+    /// since the app opened ([atLaunch]: the place found at launch wins, as
+    /// in v1); without a fix the last known (or chosen) city stays, else
+    /// Chennai.
+    func handleLocation(atLaunch: Bool = false) async {
         locationState = .detecting
-        if let fix = await location.currentFix(store: store) {
-            setTimezone(fix.timezone)
+        var fix = await location.currentFix(store: store)
+        if fix == nil, location.hasPermission { fix = location.cachedFix(store: store) }
+        if let fix {
             lastCoordinate = (fix.latitude, fix.longitude)
             locationState = .located(fix.city)
-        } else if location.isDenied {
-            setTimezone(AppTimezone.matching(deviceIdentifier: TimeZone.current.identifier))
-            locationState = .denied
-        } else if !location.hasPermission {
-            // Not asked yet (or restricted to ask later): use the device
-            // time zone; tapping the location asks for permission.
-            setTimezone(AppTimezone.matching(deviceIdentifier: TimeZone.current.identifier))
-            locationState = .unknown
-        } else if let cached = location.cachedFix(store: store) {
-            setTimezone(cached.timezone)
-            lastCoordinate = (cached.latitude, cached.longitude)
-            locationState = .located(cached.city)
+            if DetectedCityPolicy.replaces(manual: ekadashiCityIsManual, atLaunch: atLaunch) {
+                useDetected(fix, atLaunch: atLaunch)
+            }
         } else {
-            setTimezone(AppTimezone.matching(deviceIdentifier: TimeZone.current.identifier))
-            locationState = .unknown
+            locationState = location.isDenied ? .denied : .unknown
         }
         reload(scrollToNext: true)
+    }
+
+    private func useDetected(_ fix: LocationService.Fix, atLaunch: Bool = false) {
+        guard let city = Self.city(from: fix) else { return }
+        let previous = ekadashiCity
+        saveCity(city, manual: false)
+        // The Panchang tab starts from the detected place until one is set
+        // there, and at a launch moves with Home when it showed Home's city.
+        if DetectedCityPolicy.panchangFollows(panchang: PanchangLocationStore(store: store).load(), previousHome: previous,
+                                              detected: city, atLaunch: atLaunch) {
+            savePanchangCity(city)
+        }
+    }
+
+    /// A location fix as a city: the geocoded name with the nearest catalog
+    /// city's country code ("Chennai (IN)") and its IANA zone.
+    static func city(from fix: LocationService.Fix) -> PanchangCity? {
+        let nearest = PanchangCityCatalog.shared.nearest(latitude: fix.latitude, longitude: fix.longitude)
+        let zone = fix.zoneIdentifier ?? nearest?.timeZoneId ?? TimeZone.current.identifier
+        // Rounded to about a kilometre (sunrise moves by well under a second),
+        // so small GPS drift reuses the cached schedule.
+        func rounded(_ value: Double) -> Double { (value * 100).rounded() / 100 }
+        let code = nearest.flatMap { splitCountry($0.label).1 }
+        let name = fix.city.isEmpty ? (nearest.map { splitCountry($0.label).0 } ?? "—") : fix.city
+        let city = PanchangCity(id: detectedCityId, label: code.map { "\(name) (\($0))" } ?? name,
+                                latitude: rounded(fix.latitude), longitude: rounded(fix.longitude), timeZoneId: zone)
+        return (try? city.validate()) == nil ? nil : city
+    }
+
+    /// Any city in the app language with its country code ("சென்னை
+    /// (இந்தியா)"): the place-name table, else the geocoder (see [placeName]).
+    func cityDisplayName(_ city: PanchangCity) -> String {
+        let (name, code) = Self.splitCountry(city.label)
+        let local = placeName(name, latitude: city.latitude, longitude: city.longitude)
+        guard let code else { return local }
+        return "\(local) (\(PlaceNames.shared.country(code, language: language)))"
+    }
+
+    /// The user picked a city on Home: Ekadashis follow it, detection no
+    /// longer replaces it, and the Panchang tab moves there too (not the
+    /// other way round).
+    func chooseEkadashiCity(_ city: PanchangCity) {
+        guard (try? city.validate()) != nil else { return }
+        saveCity(city, manual: true)
+        RecentCities(store: store).add(city)
+        savePanchangCity(city)
+        reload(scrollToNext: true)
+    }
+
+    /// "Use current location" on Home: detection decides again.
+    func useCurrentLocationForEkadashis() async {
+        ekadashiCityIsManual = false
+        store.set(false, forKey: Self.manualCityKey)
+        _ = await location.requestPermission()
+        await handleLocation()
+        // Setting the location on Home also sets it on the Panchang tab.
+        if ekadashiCity.id == Self.detectedCityId { savePanchangCity(ekadashiCity) }
+    }
+
+    private func saveCity(_ city: PanchangCity, manual: Bool) {
+        ekadashiCity = city
+        ekadashiCityIsManual = manual
+        if let data = try? JSONEncoder().encode(city) { store.set(String(decoding: data, as: UTF8.self), forKey: Self.cityKey) }
+        store.set(manual, forKey: Self.manualCityKey)
+    }
+
+    func setTradition(_ value: EkadashiTradition) {
+        guard value != tradition else { return }
+        tradition = value
+        store.set(value.rawValue, forKey: Self.traditionKey)
+        // Stay on the Ekadashi on screen: both traditions share its identity.
+        reload(scrollToNext: false)
+    }
+
+    /// Home's year menu; Calendar opens on the chosen year.
+    func setYear(_ year: Int) {
+        guard enabledYears.contains(year), year != selectedYear else { return }
+        selectedYear = year
+        store.set(String(year), forKey: Self.yearKey)
+        homeIndex = HomeSelection.index(of: homeEkadashis, now: Date(), zone: scheduleZone, includeParana: true)
+        calendarFocus = year == today.year ? today : CivilDate(year, 1, 1)
+    }
+
+    /// Calendar moved into another year: Home follows.
+    func calendarShowsYear(_ year: Int) {
+        guard enabledYears.contains(year), year != selectedYear else { return }
+        selectedYear = year
+        store.set(String(year), forKey: Self.yearKey)
+        homeIndex = HomeSelection.index(of: homeEkadashis, now: Date(), zone: scheduleZone, includeParana: true)
+    }
+
+    static let cityKey = "ekadashi_city"
+    static let manualCityKey = "ekadashi_city_manual"
+    static let traditionKey = "ekadashi_tradition"
+    static let yearKey = "ekadashi_year"
+    static let detectedCityId = "detected"
+    static let defaultCity = PanchangCity(id: "geonames-1264527", label: "Chennai (IN)", latitude: 13.08784,
+                                          longitude: 80.27847, timeZoneId: "Asia/Kolkata")
+
+    static func loadCity(_ store: KeyValueStore) -> PanchangCity? {
+        guard let raw = store.string(forKey: cityKey),
+              let city = try? JSONDecoder().decode(PanchangCity.self, from: Data(raw.utf8)),
+              (try? city.validate()) != nil else { return nil }
+        return city
+    }
+
+    @ObservationIgnored private var refreshingLocation = false
+
+    /// Back in the foreground: re-check permission and the place quietly, as
+    /// Android does, so a trip or a permission change shows without a restart.
+    /// A newly detected place becomes the Ekadashi city unless the user picked
+    /// one on Home; the schedule recalculates only when the place moved.
+    func refreshLocationOnResume() async {
+        guard started, !refreshingLocation, locationState != .detecting else { return }
+        refreshingLocation = true
+        defer { refreshingLocation = false }
+        if location.isDenied {
+            if locationState != .denied { locationState = .denied }
+            return
+        }
+        guard location.hasPermission, let fix = await location.currentFix(store: store) else { return }
+        lastCoordinate = (fix.latitude, fix.longitude)
+        if locationState != .located(fix.city) { locationState = .located(fix.city) }
+        guard !ekadashiCityIsManual, let detected = Self.city(from: fix) else { return }
+        let moved = !detected.isSamePlace(as: ekadashiCity)
+        useDetected(fix)
+        if moved { reload(scrollToNext: true) }
     }
 
     /// Tapping "Location Denied": iOS asks only once, so after a denial the
@@ -234,30 +420,55 @@ final class AppModel {
         await handleLocation()
     }
 
-    private func setTimezone(_ zone: AppTimezone) {
-        timezone = zone
-        store.set(zone.rawValue, forKey: "app_timezone")
-    }
-
     // MARK: Data
 
-    /// Loads the schedule for the language and time zone, keeping the card
-    /// on screen unless [scrollToNext].
+    /// Loads the Ekadashis for the city, tradition and language, keeping the
+    /// card on screen unless [scrollToNext]. A city or tradition not yet
+    /// calculated is calculated off the main thread (then cached on disk).
     func reload(scrollToNext: Bool = false) {
-        guard let repository else {
+        guard let schedule else {
             loadError = t("failed_load")
             isLoading = false
             return
         }
-        let current = ekadashis.indices.contains(homeIndex) ? ekadashis[homeIndex].id : nil
-        ekadashis = repository.ekadashis(timezone: timezone.rawValue, language: language)
+        loadGeneration += 1
+        let generation = loadGeneration
+        let city = ekadashiCity, tradition = self.tradition, language = self.language, years = enabledYears
+        let cached = years.allSatisfy { schedule.isCached(EkadashiScheduleKey(city: city, tradition: tradition, year: $0)) }
+        if cached, let list = try? schedule.ekadashis(city: city, tradition: tradition, language: language, years: years) {
+            apply(list, scrollToNext: scrollToNext)
+            return
+        }
+        isCalculating = true
+        loadTask = Task {
+            let list = await Task.detached(priority: .userInitiated) {
+                try? schedule.ekadashis(city: city, tradition: tradition, language: language, years: years)
+            }.value
+            guard generation == loadGeneration else { return }
+            isCalculating = false
+            if let list { apply(list, scrollToNext: scrollToNext) } else {
+                loadError = t("failed_load")
+                isLoading = false
+            }
+        }
+    }
+
+    /// Waits for a calculation started by [reload] (tests, background refresh).
+    func waitForLoad() async { await loadTask?.value }
+
+    private func apply(_ list: [EkadashiOccurrence], scrollToNext: Bool) {
+        let shown = homeEkadashis
+        let current = shown.indices.contains(homeIndex) ? shown[homeIndex].occurrenceUid : nil
+        ekadashis = list
         loadError = nil
         isLoading = false
+        isCalculating = false
         if !vrat.isEnabled { vrat.load(ekadashis) } else { announce(vrat.refreshAchievements(ekadashis)) }
-        if !scrollToNext, let current, let index = ekadashis.firstIndex(where: { $0.id == current }) {
+        let home = homeEkadashis
+        if !scrollToNext, let current, let index = home.firstIndex(where: { $0.occurrenceUid == current }) {
             homeIndex = index
         } else {
-            homeIndex = HomeSelection.index(of: ekadashis, now: Date(), zone: scheduleZone, includeParana: true)
+            homeIndex = HomeSelection.index(of: home, now: Date(), zone: scheduleZone, includeParana: true)
         }
         syncWidgets()
         Task { await scheduleReminders() }
@@ -267,10 +478,18 @@ final class AppModel {
         }
     }
 
+    /// Builds the city search for the app language in the background, so the
+    /// city sheet answers the first keystroke at once.
+    func prepareCitySearch() {
+        let language = self.language
+        Task.detached(priority: .utility) { _ = PanchangCityCatalog.shared.searchIndex(language: language) }
+    }
+
     func setLanguage(_ code: String) {
         guard Localizer.languages.contains(code), code != language else { return }
         language = code
         store.set(code, forKey: "language_code")
+        prepareCitySearch()
         reload()
     }
 
@@ -336,8 +555,9 @@ final class AppModel {
 
     func syncWidgets() {
         guard !ekadashis.isEmpty else { return }
-        WidgetBridge.publish(WidgetSnapshot.build(occurrences: ekadashis, timezone: timezone.rawValue,
-                                                  locationName: locationName, language: language, now: Date()))
+        WidgetBridge.publish(WidgetSnapshot.build(occurrences: ekadashis, timezone: ekadashiCity.timeZoneId,
+                                                  locationName: ekadashiCityName, language: language, now: Date(),
+                                                  tradition: tradition.rawValue))
     }
 
     func scheduleBackgroundRefresh() {
@@ -349,6 +569,7 @@ final class AppModel {
     /// Background App Refresh: keep reminders and widgets current.
     func backgroundRefresh() async {
         reload()
+        await waitForLoad()
         await premium.refresh()
         removeLapsedPremiumImports()
         await scheduleReminders()
@@ -362,6 +583,7 @@ final class AppModel {
                 await premium.refresh()
                 removeLapsedPremiumImports()
             }
+            Task { await refreshLocationOnResume() }
             premium.startRecheck()
             syncWidgets()
         case .background:
@@ -392,7 +614,7 @@ final class AppModel {
         case .tab(let tab):
             showSearch = false
             selectedTab = tab
-            if tab == .today { homeIndex = HomeSelection.index(of: ekadashis, now: Date(), zone: scheduleZone, includeParana: true) }
+            if tab == .today { homeIndex = HomeSelection.index(of: homeEkadashis, now: Date(), zone: scheduleZone, includeParana: true) }
         case .calendar(let date):
             showSearch = false
             selectedTab = .calendar
@@ -428,7 +650,7 @@ final class AppModel {
     /// Ekadashi; Calendar returns to today.
     func reselect(_ tab: AppTab) {
         if tab == .today {
-            homeIndex = HomeSelection.index(of: ekadashis, now: Date(), zone: scheduleZone, includeParana: false)
+            homeIndex = HomeSelection.index(of: homeEkadashis, now: Date(), zone: scheduleZone, includeParana: false)
         } else if tab == .calendar {
             calendarFocus = today
         }
@@ -479,7 +701,10 @@ final class AppModel {
     // MARK: Google Calendar
 
     var coordinator: GoogleSyncCoordinator {
-        if let coordinatorStorage { return coordinatorStorage }
+        if let coordinatorStorage {
+            coordinatorStorage.monthLocale = locale
+            return coordinatorStorage
+        }
         let made = GoogleSyncCoordinator(
             importer: GoogleCalendarImporter(auth: google, store: entries), registry: registry, preferences: store,
             premium: { [snapshot = premium.snapshot] in snapshot.state },
@@ -495,6 +720,7 @@ final class AppModel {
             message: { [weak self] key, args, upsell in
                 Task { @MainActor in self?.show(key, args: args, upsell: upsell) }
             })
+        made.monthLocale = locale
         coordinatorStorage = made
         return made
     }
@@ -538,12 +764,26 @@ final class AppModel {
     /// The saved Panchang location; festival dates in search follow it.
     var panchangCity: PanchangCity { PanchangLocationStore(store: store).load() ?? .newDelhi }
 
+    /// Saves the Panchang tab's own location (it does not move the Ekadashi
+    /// city); an open Panchang tab follows [panchangCityRevision].
+    func savePanchangCity(_ city: PanchangCity) {
+        try? PanchangLocationStore(store: store).save(city)
+        panchangCityRevision += 1
+    }
+
     /// Search over Ekadashis, entries and screens, plus [observances].
     func searchIndex(observances: [DatedObservance] = []) -> UnifiedSearch {
-        let repository = repository
-        let zone = timezone.rawValue
+        let schedule = schedule
+        let city = ekadashiCity, tradition = self.tradition, years = enabledYears
         let items = SearchCorpus.build(
-            ekadashis: { repository?.ekadashis(timezone: zone, language: $0) ?? [] }, observances: observances,
+            ekadashis: { language in
+                // Only what is already calculated: search never calculates on the main thread.
+                guard let schedule, years.allSatisfy({
+                    schedule.isCached(EkadashiScheduleKey(city: city, tradition: tradition, year: $0))
+                }) else { return [] }
+                return (try? schedule.ekadashis(city: city, tradition: tradition, language: language, years: years)) ?? []
+            },
+            observances: observances,
             entries: (try? entries.all()) ?? [], timeZone: .current, language: language)
         return UnifiedSearch(items: items)
     }
@@ -552,7 +792,7 @@ final class AppModel {
     func searchObservances() async -> [DatedObservance] {
         let city = panchangCity
         var result: [DatedObservance] = []
-        for year in repository?.availableYears ?? [] { result += await panchangObservances(year: year, city: city) }
+        for year in enabledYears { result += await panchangObservances(year: year, city: city) }
         return result
     }
 
@@ -569,7 +809,7 @@ final class AppModel {
     }
 
     var calendarYears: ClosedRange<Int>? {
-        guard let first = repository?.availableYears.first, let last = repository?.availableYears.last else { return nil }
+        guard let first = enabledYears.first, let last = enabledYears.last else { return nil }
         return first...last
     }
 }

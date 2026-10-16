@@ -1499,7 +1499,7 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get event_reminder_all_custom => 'मेरी सभी प्रविष्टियाँ';
+  String get event_reminder_all_custom => 'सभी निजी इवेंट';
 
   @override
   String get event_reminder_all_google => 'गूगल कैलेंडर के सभी इवेंट';
@@ -1608,4 +1608,71 @@ class AppLocalizationsHi extends AppLocalizations {
   String utc_offset(String value0) {
     return 'यूटीसी $value0';
   }
+
+  @override
+  String get calculating_ekadashis =>
+      'इस स्थान के लिए एकादशी की गणना हो रही है…';
+
+  @override
+  String get home_location_hint =>
+      'शहर खोजें या अपने वर्तमान स्थान का उपयोग करें';
+
+  @override
+  String get home_location_title => 'एकादशी स्थान';
+
+  @override
+  String get home_location_footer =>
+      'एकादशी की तिथियाँ और समय इसी स्थान के लिए गणना किए जाते हैं। यहाँ शहर चुनने से पंचांग का स्थान भी बदल जाता है।';
+
+  @override
+  String get home_tradition => 'परंपरा';
+
+  @override
+  String get share_card => 'कार्ड साझा करें';
+
+  @override
+  String get share_card_title => 'एकादशी कार्ड साझा करें';
+
+  @override
+  String get share_card_observance => 'एकादशी व्रत दिवस';
+
+  @override
+  String get share_card_fasting_begins => 'व्रत प्रारंभ';
+
+  @override
+  String get share_card_parana_window => 'पारण समय';
+
+  @override
+  String get share_card_preparing => 'कार्ड तैयार हो रहा है…';
+
+  @override
+  String get share_card_save_failed => 'कार्ड सहेजा नहीं जा सका।';
+
+  @override
+  String share_card_message(String value0, String value1) {
+    return '$value0 $value1 को है। एकादशी कैलेंडर ऐप से व्रत और पारण का समय इस कार्ड पर है।';
+  }
+
+  @override
+  String get tradition_smarta => 'स्मार्त';
+
+  @override
+  String get tradition_vaishnava => 'वैष्णव';
+
+  @override
+  String get panchang_vaishnava_rule =>
+      'वैष्णव: सूर्योदय से 96 मिनट पहले (अरुणोदय) एकादशी होनी चाहिए, महाद्वादशी नियमों सहित।';
+
+  @override
+  String get home_popular_cities => 'लोकप्रिय शहर';
+
+  @override
+  String get share_card_save => 'गैलरी में सहेजें';
+
+  @override
+  String get share_card_saved => 'कार्ड गैलरी में सहेज लिया गया।';
+
+  @override
+  String get share_card_photos_denied =>
+      'फ़ोटो की अनुमति बंद है। कार्ड सहेजने के लिए सेटिंग्स में अनुमति दें।';
 }

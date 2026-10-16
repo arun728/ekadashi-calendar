@@ -9,6 +9,7 @@ import '../../services/premium_service.dart';
 import '../../widgets/glass_tube.dart';
 import '../../widgets/settings_group.dart';
 import '../premium_screen.dart';
+import '../../widgets/app_icons.dart';
 
 /// Premium at the top of Settings (docs/ROADMAP.md Phase 5), like the iOS
 /// SettingsPremiumCard: what it unlocks and the Google Play prices, or the
@@ -75,7 +76,11 @@ class SettingsPremiumCard extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 alignment: Alignment.center,
-                child: const _Crown(size: 26, top: _amber, bottom: _orange),
+                child: const _PremiumMark(
+                  size: 26,
+                  top: _amber,
+                  bottom: _orange,
+                ),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -126,17 +131,29 @@ class SettingsPremiumCard extends StatelessWidget {
       children: [
         _benefit(
           context,
-          const _CalendarClock(),
+          const Icon(
+            AppIcons.premiumCalendar,
+            size: 24,
+            color: GlassTubeColors.teal,
+          ),
           lang.translate('premium_feature_calendar'),
         ),
         _benefit(
           context,
-          const Icon(Icons.eco, size: 24, color: GlassTubeColors.teal),
+          const Icon(
+            AppIcons.premiumVrat,
+            size: 24,
+            color: GlassTubeColors.teal,
+          ),
           lang.translate('premium_feature_vrat'),
         ),
         _benefit(
           context,
-          const Icon(Icons.auto_awesome, size: 24, color: GlassTubeColors.teal),
+          const Icon(
+            AppIcons.premiumPanchang,
+            size: 24,
+            color: GlassTubeColors.teal,
+          ),
           lang.translate('premium_feature_panchang_v2'),
         ),
         if (monthly != null && lifetime != null)
@@ -287,90 +304,25 @@ class SettingsPremiumCard extends StatelessWidget {
   );
 }
 
-/// SF Symbols' calendar.badge.clock: a calendar with a small clock badge.
-class _CalendarClock extends StatelessWidget {
-  const _CalendarClock();
-
-  @override
-  Widget build(BuildContext context) => const SizedBox(
-    width: 28,
-    height: 26,
-    child: Stack(
-      children: [
-        Icon(
-          Icons.calendar_month_outlined,
-          size: 24,
-          color: GlassTubeColors.teal,
-        ),
-        Positioned(
-          right: 0,
-          bottom: 0,
-          child: Icon(
-            Icons.access_time_filled,
-            size: 13,
-            color: GlassTubeColors.teal,
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-/// SF Symbols' crown.fill with a top-to-bottom amber to orange gradient.
-class _Crown extends StatelessWidget {
-  const _Crown({required this.size, required this.top, required this.bottom});
+/// The Premium symbol (AppIcons.premium, as on iOS) with a top-to-bottom
+/// amber to orange gradient.
+class _PremiumMark extends StatelessWidget {
+  const _PremiumMark({
+    required this.size,
+    required this.top,
+    required this.bottom,
+  });
   final double size;
   final Color top, bottom;
 
   @override
-  Widget build(BuildContext context) => CustomPaint(
-    size: Size(size, size * .8),
-    painter: _CrownPainter(top, bottom),
+  Widget build(BuildContext context) => ShaderMask(
+    blendMode: BlendMode.srcIn,
+    shaderCallback: (bounds) => LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [top, bottom],
+    ).createShader(bounds),
+    child: Icon(AppIcons.premium, size: size, color: top),
   );
-}
-
-class _CrownPainter extends CustomPainter {
-  _CrownPainter(this.top, this.bottom);
-  final Color top, bottom;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final w = size.width, h = size.height;
-    final paint = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [top, bottom],
-      ).createShader(Offset.zero & size);
-    // Three points over the band, a ball on each point.
-    final crown = Path()
-      ..moveTo(w * .08, h * .3)
-      ..lineTo(w * .3, h * .55)
-      ..lineTo(w * .5, h * .18)
-      ..lineTo(w * .7, h * .55)
-      ..lineTo(w * .92, h * .3)
-      ..lineTo(w * .84, h * .76)
-      ..lineTo(w * .16, h * .76)
-      ..close();
-    canvas.drawPath(crown, paint);
-    final r = w * .075;
-    for (final p in [
-      Offset(w * .08, h * .3),
-      Offset(w * .5, h * .14),
-      Offset(w * .92, h * .3),
-    ]) {
-      canvas.drawCircle(p, r, paint);
-    }
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromLTRB(w * .16, h * .84, w * .84, h),
-        Radius.circular(h * .06),
-      ),
-      paint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(_CrownPainter old) =>
-      old.top != top || old.bottom != bottom;
 }

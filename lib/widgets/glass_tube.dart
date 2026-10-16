@@ -25,6 +25,16 @@ class GlassTube extends StatelessWidget {
     this.shadow = false,
     this.surfaceKey,
   }) : assert(optionCount >= 2);
+
+  /// One control in its own glass capsule (Home's menus, as on iOS).
+  const GlassTube.single({
+    super.key,
+    required this.child,
+    this.padding = const EdgeInsets.symmetric(horizontal: 14),
+    this.radius = 22,
+    this.shadow = false,
+    this.surfaceKey,
+  }) : optionCount = 1;
   final int optionCount;
   final Widget child;
   final EdgeInsetsGeometry padding;

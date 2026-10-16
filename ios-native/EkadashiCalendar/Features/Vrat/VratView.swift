@@ -28,7 +28,7 @@ struct VratView: View {
         VStack(spacing: 0) {
             if let error = model.vrat.storageError {
                 ContentUnavailableView {
-                    Label(model.t("tracker_storage_failed"), systemImage: "externaldrive.badge.exclamationmark")
+                    Label(model.t("tracker_storage_failed"), systemImage: AppSymbol.journeyStorageFailed)
                 } description: {
                     Text(error)
                 } actions: {
@@ -71,24 +71,24 @@ struct VratView: View {
                 Grid(horizontalSpacing: 12, verticalSpacing: 12) {
                     GridRow {
                         MetricCard(title: model.t("current_streak"), value: "\(model.vrat.currentStreak(events))",
-                                   subtitle: model.t("ekadashis_unit"), symbol: "flame", color: .orange)
+                                   subtitle: model.t("ekadashis_unit"), symbol: AppSymbol.journeyStreak, color: .orange)
                             .accessibilityIdentifier("journey_overview_streaks")
                         MetricCard(title: model.t("longest_streak"), value: "\(longest)", subtitle: model.t("ekadashis_unit"),
-                                   symbol: "medal", color: Theme.amber)
+                                   symbol: AppSymbol.journeyBest, color: Theme.amber)
                     }
                     GridRow {
                         MetricCard(title: "\(year) \(model.t("annual_completion"))",
                                    value: "\(Int(stats.completionPercentage.rounded()))%",
                                    subtitle: "\(stats.observedCount) / \(stats.totalOccurrences)",
-                                   symbol: "chart.pie", color: Theme.teal)
+                                   symbol: AppSymbol.journeyRate, color: Theme.teal)
                         MetricCard(title: model.t("total_observed"), value: "\(totalObserved)", subtitle: model.t("ekadashis_unit"),
-                                   symbol: "checkmark.circle", color: Theme.observed)
+                                   symbol: AppSymbol.journeyObserved, color: Theme.observed)
                     }
                 }
                 if let milestone {
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
-                            Label(model.t("next_milestone"), systemImage: "flag")
+                            Label(model.t("next_milestone"), systemImage: AppSymbol.journeyMilestone)
                             Spacer()
                             Text("\(milestone.currentProgress) / \(milestone.target)")
                         }
@@ -139,7 +139,7 @@ struct VratView: View {
             .accessibilityIdentifier("vrat_history_filters_tube")
             Text(model.t("tap_to_record_instruction")).font(.caption).foregroundStyle(.secondary)
             if filtered.isEmpty {
-                ContentUnavailableView(model.t("no_ekadashi"), systemImage: "leaf")
+                ContentUnavailableView(model.t("no_ekadashi"), systemImage: AppSymbol.journeyEmpty)
             } else {
                 ScrollView {
                     LazyVStack(spacing: 12) { ForEach(filtered) { row($0) } }.padding(16)
@@ -154,7 +154,7 @@ struct VratView: View {
                 Button(String(value)) { selectedYear = value }
             }
         } label: {
-            Label(String(year), systemImage: "calendar").font(.subheadline.weight(.semibold))
+            Label(String(year), systemImage: AppSymbol.journeyYear).font(.subheadline.weight(.semibold))
                 .padding(.horizontal, 14).padding(.vertical, 8)
                 .glassCapsule(tint: Theme.teal)
         }
@@ -189,7 +189,7 @@ struct VratView: View {
                 }
                 Spacer(minLength: 8)
                 StatusPill(text: model.t(style.listKey), color: style.color)
-                Image(systemName: open ? "chevron.right" : "clock").font(.caption).foregroundStyle(.tertiary)
+                Image(systemName: open ? AppSymbol.rowDisclosure : AppSymbol.journeyPending).font(.caption).foregroundStyle(.tertiary)
             }
             .opacity(open ? 1 : 0.55)
             .padding(.horizontal, 14)
@@ -277,7 +277,7 @@ struct VratView: View {
                         let unlocked = users[achievement.id]?.isUnlocked ?? false
                         let paidLocked = !premium && !unlocked && freeUsed >= VratTracker.freeAchievementLimit
                         VStack(spacing: 8) {
-                            Image(systemName: unlocked ? achievement.symbol : "lock")
+                            Image(systemName: unlocked ? achievement.symbol : AppSymbol.achievementLocked)
                                 .font(.title2)
                                 .foregroundStyle(unlocked ? Theme.teal : .gray)
                                 .frame(width: 52, height: 52)

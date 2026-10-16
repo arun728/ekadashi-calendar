@@ -62,7 +62,7 @@ struct PremiumView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
-                Button { dismiss() } label: { Image(systemName: "xmark") }
+                Button { dismiss() } label: { Image(systemName: AppSymbol.close) }
                     .accessibilityLabel(model.t("premium_continue_free"))
                     .accessibilityIdentifier("premium_close")
             }
@@ -88,13 +88,13 @@ struct PremiumView: View {
                 Label {
                     Text(model.t(reason)).fontWeight(.semibold)
                 } icon: {
-                    Image(systemName: "info.circle").foregroundStyle(Theme.teal)
+                    Image(systemName: AppSymbol.info).foregroundStyle(Theme.teal)
                 }
                 .accessibilityIdentifier("premium_reason")
             }
-            feature("arrow.triangle.2.circlepath", "premium_feature_calendar")
-            feature("figure.mind.and.body", "premium_feature_vrat")
-            feature("sunrise", "premium_feature_panchang_v2")
+            feature(AppSymbol.premiumCalendar, "premium_feature_calendar")
+            feature(AppSymbol.premiumVrat, "premium_feature_vrat")
+            feature(AppSymbol.premiumPanchang, "premium_feature_panchang_v2")
                 .padding(.bottom, 8)
         }
     }

@@ -95,3 +95,29 @@ Samsung M52 and Z Flip 5 checks remain for OEM launcher rendering, Doze/battery
 restrictions, long background refresh, GPS/travel/folding and a release-signed
 upgrade from Play Store v1. Linguistic quality requires native-speaker review.
 No iOS build/widget result is claimed. Main needs separate release approval.
+
+## What CI runs (October 2026)
+
+`.github/workflows/android-tests.yml` runs on pull requests to `dev` and
+`main` (not for changes to `docs/` or Markdown only); a newer push to the same
+PR cancels the older run.
+
+- **flutter-tests** (Ubuntu): the Python tool tests (`test/tool`, including
+  `test_ci_workflow.py`, which checks this list), `tool/check-generated.sh`
+  (regenerates the l10n lookup, gen-l10n output and the iOS `strings.json` and
+  fails on any difference), `flutter analyze --no-fatal-infos` (errors and
+  warnings fail), `dart format --set-exit-if-changed`, and the full
+  `flutter test` with coverage. The Dart half of the cross-platform parity
+  fixtures (schedule, Panchang, transliteration, icons) runs here.
+- **android-tests** (five emulators: API 24, 33, 35 granted; API 35 denied;
+  API 35 GPS off): debug APK, native JVM tests, Android lint (API 35 granted
+  only; `android/app/lint-baseline.xml` lists issues that predate it, new
+  ones fail), `integration_test/android_app_test.dart` in every mode and, in
+  granted mode, every other `integration_test/*_android_test.dart` (found
+  automatically; `--list` prints them) plus the launcher widget tests.
+- **ios-tests** (macOS 15, Xcode 26): `swift test` for EkadashiCore (the
+  Swift half of the parity fixtures), then the app, widgets, unit and UI
+  screenshot tests on a simulator.
+
+`.github/workflows/backend-tests.yml` runs the dormant billing backend's tests
+only when `backend/` changes.

@@ -1507,7 +1507,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get event_reminder_all_custom => 'All my entries';
+  String get event_reminder_all_custom => 'All custom events';
 
   @override
   String get event_reminder_all_google => 'All Google Calendar events';
@@ -1617,4 +1617,69 @@ class AppLocalizationsEn extends AppLocalizations {
   String utc_offset(String value0) {
     return 'UTC$value0';
   }
+
+  @override
+  String get calculating_ekadashis => 'Calculating Ekadashis for this place…';
+
+  @override
+  String get home_location_hint => 'Search a city or use your current location';
+
+  @override
+  String get home_location_title => 'Ekadashi location';
+
+  @override
+  String get home_location_footer =>
+      'Ekadashi dates and times are calculated for this place. Choosing a city here also sets the Panchang location.';
+
+  @override
+  String get home_tradition => 'Tradition';
+
+  @override
+  String get share_card => 'Share card';
+
+  @override
+  String get share_card_title => 'Share Ekadashi card';
+
+  @override
+  String get share_card_observance => 'Ekadashi observance';
+
+  @override
+  String get share_card_fasting_begins => 'Fasting begins';
+
+  @override
+  String get share_card_parana_window => 'Parana window';
+
+  @override
+  String get share_card_preparing => 'Preparing card…';
+
+  @override
+  String get share_card_save_failed => 'Could not save the card.';
+
+  @override
+  String share_card_message(String value0, String value1) {
+    return '$value0 is on $value1. Fasting and Parana times from the Ekadashi Calendar app are on this card.';
+  }
+
+  @override
+  String get tradition_smarta => 'Smarta';
+
+  @override
+  String get tradition_vaishnava => 'Vaishnava';
+
+  @override
+  String get panchang_vaishnava_rule =>
+      'Vaishnava: Ekadashi must hold 96 minutes before sunrise (Arunodaya), with Mahadvadashi rules.';
+
+  @override
+  String get home_popular_cities => 'Popular cities';
+
+  @override
+  String get share_card_save => 'Save to Gallery';
+
+  @override
+  String get share_card_saved => 'Card saved to Gallery.';
+
+  @override
+  String get share_card_photos_denied =>
+      'Photo access is off. Allow it in Settings to save cards.';
 }

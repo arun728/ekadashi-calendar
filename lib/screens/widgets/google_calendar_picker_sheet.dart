@@ -2,25 +2,25 @@ import 'package:provider/provider.dart';
 import '../../services/language_service.dart';
 import 'package:flutter/material.dart';
 import '../../services/google_calendar_service.dart';
+import '../../widgets/ios_style.dart';
+import '../../widgets/settings_group.dart';
+import '../../widgets/app_icons.dart';
 
 /// Returned by the picker when the user wants another Google account.
 const switchGoogleAccountResult = ['__switch_google_account__'];
 
-/// Multi-select which Google calendars to import from [accountEmail].
+/// Which Google calendars to import from [accountEmail]
+/// (GoogleCalendarPickerView.swift): an iOS sheet with Cancel, a switch per
+/// calendar and Import selected. Null when cancelled.
 Future<List<String>?> showGoogleCalendarPickerSheet({
   required BuildContext context,
   required List<GoogleCalendarInfo> calendars,
   required List<String> initiallySelected,
   String? accountEmail,
 }) {
-  return showModalBottomSheet<List<String>>(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: Theme.of(context).cardColor,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-    ),
-    builder: (ctx) => _GoogleCalendarPickerBody(
+  return showAppSheet<List<String>>(
+    context,
+    builder: (_) => _GoogleCalendarPickerBody(
       calendars: calendars,
       initiallySelected: initiallySelected,
       accountEmail: accountEmail,
@@ -50,107 +50,180 @@ class _GoogleCalendarPickerBodyState extends State<_GoogleCalendarPickerBody> {
   @override
   void initState() {
     super.initState();
-    _selected = widget.initiallySelected
-        .where((id) => widget.calendars.any((c) => c.id == id))
-        .toSet();
+    // The saved calendars ("primary" stands for the account's primary
+    // calendar); the primary calendar when nothing is saved.
+    final saved = widget.initiallySelected.toSet();
+    _selected = {
+      for (final c in widget.calendars)
+        if (saved.contains(c.id) || (c.primary && saved.contains('primary')))
+          c.id,
+    };
     if (_selected.isEmpty) {
-      for (final c in widget.calendars) {
-        if (c.primary) _selected.add(c.id);
-      }
-      if (_selected.isEmpty && widget.calendars.isNotEmpty) {
-        _selected.add(widget.calendars.first.id);
-      }
+      _selected.addAll(
+        widget.calendars.where((c) => c.primary).map((c) => c.id),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final lang = context.watch<LanguageService>();
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Center(
-              child: Container(
-                width: 36,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 12),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade600,
-                  borderRadius: BorderRadius.circular(2),
+    final secondary = IosColors.secondary(context);
+    return Column(
+      children: [
+        SheetBar(
+          title: lang.translate('choose_calendars'),
+          leading: BarTextButton(
+            key: const Key('google_picker_cancel'),
+            label: lang.translate('cancel'),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+            children: [
+              SettingsCard(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+                    child: Text(
+                      lang.translate('choose_calendars_help'),
+                      style: TextStyle(
+                        fontSize: IosText.footnote,
+                        color: secondary,
+                      ),
+                    ),
+                  ),
+                  if (widget.accountEmail != null) ...[
+                    const SettingsSeparator(),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 20, right: 8),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            AppIcons.googleAccount,
+                            size: 20,
+                            color: IosColors.teal,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              widget.accountEmail!,
+                              key: const Key('google_picker_account'),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: IosText.subheadline,
+                                color: IosColors.primary(context),
+                              ),
+                            ),
+                          ),
+                          TextButton(
+                            key: const Key('google_switch_account'),
+                            onPressed: () => Navigator.pop(
+                              context,
+                              switchGoogleAccountResult,
+                            ),
+                            style: TextButton.styleFrom(
+                              foregroundColor: IosColors.teal,
+                            ),
+                            child: Text(
+                              lang.translate('switch_google_account'),
+                              style: const TextStyle(
+                                fontSize: IosText.subheadline,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              const SizedBox(height: 24),
+              SettingsCard(
+                children: [
+                  for (final (index, c) in widget.calendars.indexed) ...[
+                    if (index > 0) const SettingsSeparator(),
+                    _calendarRow(c, lang),
+                  ],
+                ],
+              ),
+            ],
+          ),
+        ),
+        SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                key: const Key('import_selected'),
+                onPressed: _selected.isEmpty
+                    ? null
+                    : () => Navigator.pop(context, [
+                        for (final c in widget.calendars)
+                          if (_selected.contains(c.id)) c.id,
+                      ]),
+                style: IosButtons.prominent(vertical: 15),
+                child: Text(
+                  lang.translate('import_selected'),
+                  style: IosButtons.label,
                 ),
               ),
             ),
-            Text(
-              lang.translate('choose_calendars'),
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              lang.translate('choose_calendars_help'),
-              style: TextStyle(fontSize: 13, color: Colors.grey.shade400),
-            ),
-            if (widget.accountEmail != null)
-              Row(
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _calendarRow(GoogleCalendarInfo c, LanguageService lang) {
+    void toggle(bool on) => setState(() {
+      if (on) {
+        _selected.add(c.id);
+      } else {
+        _selected.remove(c.id);
+      }
+    });
+    return InkWell(
+      onTap: () => toggle(!_selected.contains(c.id)),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 8, 16, 8),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.account_circle_outlined, size: 18),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      widget.accountEmail!,
-                      key: const Key('google_picker_account'),
-                      overflow: TextOverflow.ellipsis,
+                  Text(
+                    c.summary,
+                    style: TextStyle(
+                      fontSize: IosText.body,
+                      color: IosColors.primary(context),
                     ),
                   ),
-                  TextButton(
-                    key: const Key('google_switch_account'),
-                    onPressed: () =>
-                        Navigator.pop(context, switchGoogleAccountResult),
-                    child: Text(lang.translate('switch_google_account')),
-                  ),
+                  if (c.primary)
+                    Text(
+                      lang.translate('primary_calendar'),
+                      style: TextStyle(
+                        fontSize: IosText.caption,
+                        color: IosColors.secondary(context),
+                      ),
+                    ),
                 ],
               ),
-            const SizedBox(height: 12),
-            Flexible(
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: widget.calendars.length,
-                itemBuilder: (context, i) {
-                  final c = widget.calendars[i];
-                  final checked = _selected.contains(c.id);
-                  return CheckboxListTile(
-                    value: checked,
-                    onChanged: (v) {
-                      setState(() {
-                        if (v == true) {
-                          _selected.add(c.id);
-                        } else {
-                          _selected.remove(c.id);
-                        }
-                      });
-                    },
-                    title: Text(c.summary),
-                    subtitle: c.primary
-                        ? Text(lang.translate('primary_calendar'))
-                        : null,
-                    controlAffinity: ListTileControlAffinity.leading,
-                    activeColor: const Color(0xFF4285F4),
-                  );
-                },
-              ),
             ),
-            const SizedBox(height: 8),
-            FilledButton(
-              onPressed: _selected.isEmpty
-                  ? null
-                  : () => Navigator.pop(context, _selected.toList()),
-              style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFF4285F4),
+            Theme(
+              data: Theme.of(context).copyWith(platform: TargetPlatform.iOS),
+              child: Switch.adaptive(
+                key: Key('google_calendar_${c.id}'),
+                value: _selected.contains(c.id),
+                activeTrackColor: IosColors.googleBlue,
+                onChanged: toggle,
               ),
-              child: Text(lang.translate('import_selected')),
             ),
           ],
         ),
