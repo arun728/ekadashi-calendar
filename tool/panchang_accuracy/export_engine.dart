@@ -65,6 +65,7 @@ void main(List<String> args) {
         'sunRashi': day.sunRashi,
         'moonRashi': day.moonRashi,
         'rahukala': _iso(day.rahukala?.startUtc),
+        'anandadi': day.anandadiYoga,
         'observances': [
           for (final event in day.observances)
             {'id': event.id, 'name': event.name},

@@ -1,0 +1,11 @@
+00:00 +0: loading /workspace/ekadashi-calendar/test/unit/panchang_precision_test.dart
+00:00 +0: Tuesday Ashlesha begins with Ananda
+00:00 +1: Lagna uses a consistent apparent equinox and independent Swiss boundaries
+00:00 +2: Grazing rise and set are found between five-minute samples
+00:00 +3: Stored schedule retains inward-rounded millisecond boundaries
+00:01 +4: After-only Parana has no invented end in Home
+00:01 +5: Narrow and subsecond windows are displayed inside the allowed interval
+00:01 +6: After-only widgets retain the event without fabricating a deadline
+00:01 +7: Every schedule year uses the calculated Amanta month
+00:02 +8: Cache separates exact positions and versions the timezone rules
+00:02 +9: All tests passed!

@@ -41,7 +41,7 @@ class WidgetRefreshWorker(
 
             val now = Instant.now()
             val candidates = (listOfNotNull(result.payload.nextEkadashi) + result.payload.upcomingEkadashis)
-                .flatMap { listOfNotNull(it.fastingStartInstant, it.paranaStartInstant, it.paranaEndInstant) }
+                .flatMap { listOfNotNull(it.fastingStartInstant, it.paranaStartInstant, it.activeUntilInstant) }
             val nextTransition = candidates.filter { it.isAfter(now) }.minOrNull()
             if (nextTransition != null) {
                 val delayMs = Duration.between(now, nextTransition).toMillis().coerceAtLeast(1000)

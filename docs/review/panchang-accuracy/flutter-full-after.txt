@@ -1,0 +1,1739 @@
+00:00 +0: loading /workspace/ekadashi-calendar/test/unit/services_test.dart
+00:00 +0: /workspace/ekadashi-calendar/test/unit/services_test.dart: LanguageService Tests Initial locale should be English by default
+00:00 +1: /workspace/ekadashi-calendar/test/unit/services_test.dart: LanguageService Tests Should load saved language from SharedPreferences
+00:00 +2: /workspace/ekadashi-calendar/test/unit/services_test.dart: LanguageService Tests Translation logic works for English
+00:00 +3: /workspace/ekadashi-calendar/test/unit/services_test.dart: LanguageService Tests Translation logic works for Tamil
+00:00 +4: /workspace/ekadashi-calendar/test/unit/services_test.dart: LanguageService Tests Fallback to English if key missing in target language
+00:00 +5: /workspace/ekadashi-calendar/test/unit/services_test.dart: LanguageService Tests String substitution works
+00:00 +6: /workspace/ekadashi-calendar/test/unit/services_test.dart: EkadashiService Logic Tests Device timezone fallback logic
+📍 Device system timezone: America/New_York
+📍 Matched timezone: America/New_York → EST
+00:00 +7: /workspace/ekadashi-calendar/test/unit/services_test.dart: EkadashiService Logic Tests Device timezone fallback for India
+📍 Device system timezone: Asia/Kolkata
+📍 Matched timezone: Asia/Kolkata → IST
+00:00 +8: /workspace/ekadashi-calendar/test/unit/services_test.dart: EkadashiService Logic Tests Device timezone fallback for Unknown/Default
+📍 Device system timezone: Antarctica/Troll
+📍 No match found, defaulting to IST
+00:01 +9: /workspace/ekadashi-calendar/test/unit/panchang_engine_test.dart: Panchang astronomy Meeus lunar longitude example is reproduced
+00:01 +10: /workspace/ekadashi-calendar/test/unit/panchang_engine_test.dart: Panchang astronomy Panchang day uses IST sunrise and city coordinates
+00:01 +11: /workspace/ekadashi-calendar/test/unit/ekadashi_settings_test.dart: a detected place without the catalog still becomes a city, and the catalog is read again later
+00:01 +12: /workspace/ekadashi-calendar/test/unit/ekadashi_settings_test.dart: a detected place without the catalog still becomes a city, and the catalog is read again later
+00:01 +13: /workspace/ekadashi-calendar/test/unit/ekadashi_settings_test.dart: a detected place without the catalog still becomes a city, and the catalog is read again later
+00:01 +14: /workspace/ekadashi-calendar/test/unit/panchang_engine_test.dart: Panchang astronomy solar ingress is included on the IST civil date
+00:01 +15: /workspace/ekadashi-calendar/test/unit/ekadashi_settings_test.dart: Chennai until something is picked or detected; saved settings come back after a restart
+00:01 +16: /workspace/ekadashi-calendar/test/unit/panchang_engine_test.dart: Panchang astronomy annual observances use their sunrise, midday, night and sunset rules
+00:01 +17: /workspace/ekadashi-calendar/test/unit/panchang_engine_test.dart: Panchang astronomy annual observances use their sunrise, midday, night and sunset rules
+00:01 +18: /workspace/ekadashi-calendar/test/unit/panchang_engine_test.dart: Panchang astronomy annual observances use their sunrise, midday, night and sunset rules
+00:01 +19: /workspace/ekadashi-calendar/test/unit/panchang_engine_test.dart: Panchang astronomy annual observances use their sunrise, midday, night and sunset rules
+00:01 +20: /workspace/ekadashi-calendar/test/unit/panchang_engine_test.dart: Panchang astronomy annual observances use their sunrise, midday, night and sunset rules
+00:01 +21: /workspace/ekadashi-calendar/test/unit/panchang_engine_test.dart: Panchang astronomy annual observances use their sunrise, midday, night and sunset rules
+00:02 +22: /workspace/ekadashi-calendar/test/unit/panchang_engine_test.dart: Panchang astronomy full-moon limb boundary agrees with the USNO phase fixture
+00:03 +23: /workspace/ekadashi-calendar/test/unit/place_names_test.dart: (setUpAll)
+00:03 +23: /workspace/ekadashi-calendar/test/unit/event_reminders_test.dart: (setUpAll)
+00:03 +24: /workspace/ekadashi-calendar/test/unit/event_reminders_test.dart: (setUpAll)
+00:04 +25: /workspace/ekadashi-calendar/test/unit/event_reminders_test.dart: (setUpAll)
+00:06 +26: /workspace/ekadashi-calendar/test/unit/event_reminders_test.dart: (setUpAll)
+00:06 +27: /workspace/ekadashi-calendar/test/unit/event_reminders_test.dart: (setUpAll)
+00:08 +28: /workspace/ekadashi-calendar/test/unit/event_reminders_test.dart: (setUpAll)
+00:08 +29: /workspace/ekadashi-calendar/test/unit/event_reminders_test.dart: (setUpAll)
+00:10 +29: /workspace/ekadashi-calendar/test/unit/tracker_storage_failure_test.dart: Free availability cannot overwrite a corrupt history store
+Error initializing VratTrackerService: FormatException: Unexpected character (at character 1)
+broken
+^
+
+00:10 +30: /workspace/ekadashi-calendar/test/unit/event_reminders_test.dart: (setUpAll)
+00:11 +30: /workspace/ekadashi-calendar/test/unit/event_reminders_test.dart: settings round-trip as the iOS JSON, with defaults
+00:11 +31: /workspace/ekadashi-calendar/test/unit/event_reminders_test.dart: Amavasya one day before at 7:30
+00:11 +32: /workspace/ekadashi-calendar/test/unit/event_reminders_test.dart: several lead times and the day itself
+00:11 +33: /workspace/ekadashi-calendar/test/unit/event_reminders_test.dart: calendar entries by source are free
+00:11 +34: /workspace/ekadashi-calendar/test/unit/event_reminders_test.dart: Panchang reminders need Premium and the master switch
+00:11 +35: /workspace/ekadashi-calendar/test/unit/event_reminders_test.dart: past times are skipped and the limit keeps the soonest
+00:11 +36: /workspace/ekadashi-calendar/test/unit/event_reminders_test.dart: choices list festivals, monthly days and calendars
+00:11 +37: /workspace/ekadashi-calendar/test/unit/event_reminders_test.dart: Add a reminder lists my calendar first, then monthly observances, then festivals; custom entries are "All custom events"
+00:11 +38: /workspace/ekadashi-calendar/test/unit/event_reminders_test.dart: the same Google event from two calendars is reminded once
+00:11 +39: /workspace/ekadashi-calendar/test/unit/event_reminders_test.dart: stored reminders survive bad data and replace by event
+00:11 +40: /workspace/ekadashi-calendar/test/unit/event_reminders_test.dart: (tearDownAll)
+00:11 +40: /workspace/ekadashi-calendar/test/unit/app_icons_parity_test.dart: every role shows the twin of its iOS symbol
+00:11 +41: /workspace/ekadashi-calendar/test/unit/app_icons_parity_test.dart: the tab bar: house, calendar, rosette, sparkles, gear
+00:11 +42: /workspace/ekadashi-calendar/test/unit/app_icons_parity_test.dart: screens take every icon from AppIcons
+00:13 +43: /workspace/ekadashi-calendar/test/unit/calculated_ekadashi_test.dart: Smarta sunrise vs Gaudiya Dashami contamination differ intentionally
+00:13 +44: /workspace/ekadashi-calendar/test/unit/calculated_ekadashi_test.dart: repeated Ekadashi with extended Dwadashi is the second day
+00:13 +45: /workspace/ekadashi-calendar/test/unit/calculated_ekadashi_test.dart: repeated Ekadashi without extended Dwadashi is the first day
+00:13 +46: /workspace/ekadashi-calendar/test/unit/calculated_ekadashi_test.dart: Smarta skipped Ekadashi or Dwadashi fasts on the Dashami day
+00:13 +47: /workspace/ekadashi-calendar/test/unit/calculated_ekadashi_test.dart: Dwadashi kshaya selects Trisprisha; extended Dwadashi Vyanjuli
+00:13 +48: /workspace/ekadashi-calendar/test/unit/calculated_ekadashi_test.dart: nakshatra Mahadvadashi is explicit and only in bright fortnight
+00:13 +49: /workspace/ekadashi-calendar/test/unit/calculated_ekadashi_test.dart: missing sunrise never produces a fasting recommendation
+00:13 +50: /workspace/ekadashi-calendar/test/unit/calculated_ekadashi_test.dart: Pakshavardhini is not bypassed when no nakshatra Mahadvadashi matches
+00:14 +51: /workspace/ekadashi-calendar/test/unit/play_billing_test.dart: (setUpAll)
+00:14 +51: /workspace/ekadashi-calendar/test/unit/play_billing_test.dart: pending, canceled and failed purchases never grant or acknowledge
+Google Play purchase update: ekadashi_premium_lifetime pending   
+Google Play purchase update: ekadashi_premium_lifetime canceled   
+Google Play purchase update: ekadashi_premium_lifetime error   
+Google Play purchase error: null null null
+00:14 +52: /workspace/ekadashi-calendar/test/unit/play_billing_test.dart: a completed Google Play purchase unlocks and is acknowledged
+Google Play purchase update: ekadashi_premium_lifetime purchased   
+00:14 +53: /workspace/ekadashi-calendar/test/unit/play_billing_test.dart: purchases of other products are ignored
+Google Play purchase update: other_product purchased   
+00:14 +54: /workspace/ekadashi-calendar/test/unit/play_billing_test.dart: checkout needs no Google sign-in; lifetime cannot be bought twice
+00:14 +55: /workspace/ekadashi-calendar/test/unit/play_billing_test.dart: restore re-reads what Google Play owns
+00:14 +56: /workspace/ekadashi-calendar/test/unit/play_billing_test.dart: monthly/yearly select base-plan offer tokens and omit introductory offers
+00:14 +57: /workspace/ekadashi-calendar/test/unit/widget_timeline_test.dart: (setUpAll)
+00:14 +58: /workspace/ekadashi-calendar/test/unit/widget_timeline_test.dart: (setUpAll)
+00:14 +59: /workspace/ekadashi-calendar/test/unit/widget_timeline_test.dart: (setUpAll)
+00:14 +60: /workspace/ekadashi-calendar/test/unit/widget_timeline_test.dart: (setUpAll)
+00:14 +60: /workspace/ekadashi-calendar/test/unit/play_billing_test.dart: owned purchases from Google Play a pending Play purchase reported as restored does not unlock
+Google Play purchase update: ekadashi_premium restored   
+00:14 +61: /workspace/ekadashi-calendar/test/unit/widget_timeline_test.dart: (setUpAll)
+00:14 +61: /workspace/ekadashi-calendar/test/unit/widget_timeline_test.dart: unsorted multi-year archive skips all expired rows and selects 2027
+00:14 +62: /workspace/ekadashi-calendar/test/unit/widget_timeline_test.dart: exhausted calendar clears widget data instead of showing first archived event
+00:14 +63: /workspace/ekadashi-calendar/test/unit/widget_timeline_test.dart: fasting/parana countdown targets change at exact transitions
+00:14 +64: /workspace/ekadashi-calendar/test/unit/widget_timeline_test.dart: today uses selected location across midnight
+00:14 +65: /workspace/ekadashi-calendar/test/unit/widget_timeline_test.dart: en provides every widget label without leaking raw keys
+00:14 +66: /workspace/ekadashi-calendar/test/unit/widget_timeline_test.dart: ta provides every widget label without leaking raw keys
+00:14 +67: /workspace/ekadashi-calendar/test/unit/widget_timeline_test.dart: hi provides every widget label without leaking raw keys
+00:14 +68: /workspace/ekadashi-calendar/test/unit/widget_timeline_test.dart: te provides every widget label without leaking raw keys
+00:14 +69: /workspace/ekadashi-calendar/test/unit/widget_timeline_test.dart: gu provides every widget label without leaking raw keys
+00:14 +70: /workspace/ekadashi-calendar/test/unit/widget_timeline_test.dart: bn provides every widget label without leaking raw keys
+00:14 +71: /workspace/ekadashi-calendar/test/unit/widget_timeline_test.dart: (tearDownAll)
+00:16 +71: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: Sun, Moon and Lahiri agree with Swiss Ephemeris to an arcsecond
+00:16 +72: /workspace/ekadashi-calendar/test/unit/city_search_index_test.dart: (setUpAll)
+00:16 +72: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: Sun and Moon rise/set agree with Swiss Ephemeris within seconds
+00:18 +73: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: Sun and Moon rise/set agree with Swiss Ephemeris within seconds
+00:19 +74: /workspace/ekadashi-calendar/test/unit/city_search_index_test.dart: every keystroke is fast once the index is built
+00:22 +75: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: polar, date-line, odd-offset and DST locations match Swiss Ephemeris
+00:22 +76: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: polar, date-line, odd-offset and DST locations match Swiss Ephemeris
+00:22 +77: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: polar, date-line, odd-offset and DST locations match Swiss Ephemeris
+00:24 +78: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: polar, date-line, odd-offset and DST locations match Swiss Ephemeris
+00:24 +79: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: polar, date-line, odd-offset and DST locations match Swiss Ephemeris
+00:24 +80: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: polar, date-line, odd-offset and DST locations match Swiss Ephemeris
+00:24 +81: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: polar, date-line, odd-offset and DST locations match Swiss Ephemeris
+00:24 +82: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: polar, date-line, odd-offset and DST locations match Swiss Ephemeris
+00:24 +83: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: polar, date-line, odd-offset and DST locations match Swiss Ephemeris
+00:25 +84: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: Delhi 2027 Smarta fasts and Parana match published Drik data
+00:26 +84: /workspace/ekadashi-calendar/test/unit/multi_year_migration_test.dart: (setUpAll)
+Calendar years loaded: [2026, 2027]
+00:26 +84: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: Delhi 2027 Smarta fasts and Parana match published Drik data
+00:26 +85: /workspace/ekadashi-calendar/test/unit/multi_year_migration_test.dart: Both years retain their own ID 1, data and cache
+00:26 +86: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: Smarta skipped and repeated Ekadashi follow Drik (Chennai 2026)
+00:26 +87: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: Smarta skipped and repeated Ekadashi follow Drik (Chennai 2026)
+00:26 +88: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: Smarta skipped and repeated Ekadashi follow Drik (Chennai 2026)
+00:26 +88: /workspace/ekadashi-calendar/test/unit/multi_year_migration_test.dart: Corrupt current storage disables recording and leaves original value intact
+Error initializing VratTrackerService: FormatException: Unexpected character (at character 2)
+{bad-json
+ ^
+
+00:26 +89: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: Smarta skipped and repeated Ekadashi follow Drik (Chennai 2026)
+00:26 +90: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: Smarta skipped and repeated Ekadashi follow Drik (Chennai 2026)
+00:26 +91: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: Smarta skipped and repeated Ekadashi follow Drik (Chennai 2026)
+00:27 +92: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: Gaudiya fasts match the ISKCON Bangalore published calendar
+00:28 +93: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: festival dates match public Indian lists (New Delhi 2026-2027)
+00:28 +94: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: festival dates match public Indian lists (New Delhi 2026-2027)
+00:28 +95: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: festival dates match public Indian lists (New Delhi 2026-2027)
+00:31 +95: /workspace/ekadashi-calendar/test/unit/calendar_data_test.dart: (setUpAll)
+Calendar years loaded: [2026, 2027]
+00:31 +95: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: festival dates match public Indian lists (New Delhi 2026-2027)
+00:31 +96: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: festival dates match public Indian lists (New Delhi 2026-2027)
+00:31 +97: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: festival dates match public Indian lists (New Delhi 2026-2027)
+00:31 +98: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: festival dates match public Indian lists (New Delhi 2026-2027)
+00:31 +99: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: festival dates match public Indian lists (New Delhi 2026-2027)
+00:31 +100: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: festival dates match public Indian lists (New Delhi 2026-2027)
+00:31 +101: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: festival dates match public Indian lists (New Delhi 2026-2027)
+00:31 +102: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: festival dates match public Indian lists (New Delhi 2026-2027)
+00:31 +103: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: festival dates match public Indian lists (New Delhi 2026-2027)
+00:31 +104: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: festival dates match public Indian lists (New Delhi 2026-2027)
+00:31 +105: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: festival dates match public Indian lists (New Delhi 2026-2027)
+00:31 +106: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: festival dates match public Indian lists (New Delhi 2026-2027)
+00:31 +107: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: festival dates match public Indian lists (New Delhi 2026-2027)
+00:31 +108: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: festival dates match public Indian lists (New Delhi 2026-2027)
+00:31 +109: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: festival dates match public Indian lists (New Delhi 2026-2027)
+00:31 +110: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: festival dates match public Indian lists (New Delhi 2026-2027)
+00:31 +111: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: festival dates match public Indian lists (New Delhi 2026-2027)
+00:31 +112: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: festival dates match public Indian lists (New Delhi 2026-2027)
+00:31 +113: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: festival dates match public Indian lists (New Delhi 2026-2027)
+00:31 +114: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: festival dates match public Indian lists (New Delhi 2026-2027)
+00:31 +115: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: festival dates match public Indian lists (New Delhi 2026-2027)
+00:31 +116: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: festival dates match public Indian lists (New Delhi 2026-2027)
+00:31 +117: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: festival dates match public Indian lists (New Delhi 2026-2027)
+00:31 +118: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: festival dates match public Indian lists (New Delhi 2026-2027)
+00:31 +119: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: festival dates match public Indian lists (New Delhi 2026-2027)
+00:31 +120: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: festival dates match public Indian lists (New Delhi 2026-2027)
+00:31 +121: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: festival dates match public Indian lists (New Delhi 2026-2027)
+00:31 +122: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: festival dates match public Indian lists (New Delhi 2026-2027)
+00:31 +123: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: festival dates match public Indian lists (New Delhi 2026-2027)
+00:31 +124: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: festival dates match public Indian lists (New Delhi 2026-2027)
+00:31 +125: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: festival dates match public Indian lists (New Delhi 2026-2027)
+00:31 +126: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: festival dates match public Indian lists (New Delhi 2026-2027)
+00:31 +127: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: festival dates match public Indian lists (New Delhi 2026-2027)
+00:31 +128: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: festival dates match public Indian lists (New Delhi 2026-2027)
+00:31 +129: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: festival dates match public Indian lists (New Delhi 2026-2027)
+00:31 +130: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: festival dates match public Indian lists (New Delhi 2026-2027)
+00:31 +131: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: festival dates match public Indian lists (New Delhi 2026-2027)
+00:31 +132: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: festival dates match public Indian lists (New Delhi 2026-2027)
+00:31 +133: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: festival dates match public Indian lists (New Delhi 2026-2027)
+00:31 +134: /workspace/ekadashi-calendar/test/unit/panchang_accuracy_test.dart: festival dates match public Indian lists (New Delhi 2026-2027)
+00:35 +135: /workspace/ekadashi-calendar/test/unit/festival_rules_test.dart: new festivals fall on the published dates
+00:35 +136: /workspace/ekadashi-calendar/test/unit/festival_rules_test.dart: new festivals fall on the published dates
+00:35 +137: /workspace/ekadashi-calendar/test/unit/festival_rules_test.dart: new festivals fall on the published dates
+00:35 +138: /workspace/ekadashi-calendar/test/unit/festival_rules_test.dart: new festivals fall on the published dates
+00:35 +139: /workspace/ekadashi-calendar/test/unit/festival_rules_test.dart: new festivals fall on the published dates
+00:35 +140: /workspace/ekadashi-calendar/test/unit/festival_rules_test.dart: new festivals fall on the published dates
+00:37 +141: /workspace/ekadashi-calendar/test/unit/festival_rules_test.dart: new festivals fall on the published dates
+00:37 +142: /workspace/ekadashi-calendar/test/unit/festival_rules_test.dart: new festivals fall on the published dates
+00:37 +143: /workspace/ekadashi-calendar/test/unit/festival_rules_test.dart: new festivals fall on the published dates
+00:37 +144: /workspace/ekadashi-calendar/test/unit/festival_rules_test.dart: new festivals fall on the published dates
+00:37 +145: /workspace/ekadashi-calendar/test/unit/festival_rules_test.dart: new festivals fall on the published dates
+00:37 +146: /workspace/ekadashi-calendar/test/unit/festival_rules_test.dart: new festivals fall on the published dates
+00:37 +147: /workspace/ekadashi-calendar/test/unit/festival_rules_test.dart: new festivals fall on the published dates
+00:37 +148: /workspace/ekadashi-calendar/test/unit/festival_rules_test.dart: new festivals fall on the published dates
+00:37 +149: /workspace/ekadashi-calendar/test/unit/festival_rules_test.dart: new festivals fall on the published dates
+00:37 +150: /workspace/ekadashi-calendar/test/unit/festival_rules_test.dart: new festivals fall on the published dates
+00:37 +151: /workspace/ekadashi-calendar/test/unit/festival_rules_test.dart: new festivals fall on the published dates
+00:37 +152: /workspace/ekadashi-calendar/test/unit/festival_rules_test.dart: new festivals fall on the published dates
+00:37 +153: /workspace/ekadashi-calendar/test/unit/festival_rules_test.dart: new festivals fall on the published dates
+00:39 +154: /workspace/ekadashi-calendar/test/unit/festival_rules_test.dart: new festivals fall on the published dates
+00:39 +155: /workspace/ekadashi-calendar/test/unit/festival_rules_test.dart: new festivals fall on the published dates
+00:39 +156: /workspace/ekadashi-calendar/test/unit/festival_rules_test.dart: new festivals fall on the published dates
+00:39 +157: /workspace/ekadashi-calendar/test/unit/festival_rules_test.dart: new festivals fall on the published dates
+00:41 +158: /workspace/ekadashi-calendar/test/unit/festival_rules_test.dart: new festivals fall on the published dates
+00:42 +159: /workspace/ekadashi-calendar/test/unit/festival_rules_test.dart: new festivals fall on the published dates
+00:42 +160: /workspace/ekadashi-calendar/test/unit/festival_rules_test.dart: new festivals fall on the published dates
+00:42 +161: /workspace/ekadashi-calendar/test/unit/festival_rules_test.dart: new festivals fall on the published dates
+00:44 +162: /workspace/ekadashi-calendar/test/unit/festival_rules_test.dart: new festivals fall on the published dates
+00:44 +163: /workspace/ekadashi-calendar/test/unit/festival_rules_test.dart: new festivals fall on the published dates
+00:44 +164: /workspace/ekadashi-calendar/test/unit/festival_rules_test.dart: new festivals fall on the published dates
+00:45 +165: /workspace/ekadashi-calendar/test/unit/festival_rules_test.dart: each new festival happens once a year and is major
+00:45 +166: /workspace/ekadashi-calendar/test/unit/festival_rules_test.dart: observancesOn matches calculate() on sample days
+00:46 +167: /workspace/ekadashi-calendar/test/unit/festival_rules_test.dart: observancesOn matches calculate() on sample days
+00:46 +168: /workspace/ekadashi-calendar/test/unit/festival_rules_test.dart: observancesOn matches calculate() on sample days
+00:46 +169: /workspace/ekadashi-calendar/test/unit/festival_rules_test.dart: observancesOn matches calculate() on sample days
+00:46 +170: /workspace/ekadashi-calendar/test/unit/festival_rules_test.dart: observancesOn matches calculate() on sample days
+00:47 +170: /workspace/ekadashi-calendar/test/unit/panchang_language_test.dart: (setUpAll)
+Calendar years loaded: [2026, 2027]
+00:47 +171: /workspace/ekadashi-calendar/test/unit/panchang_language_test.dart: (setUpAll)
+00:49 +172: /workspace/ekadashi-calendar/test/unit/panchang_language_test.dart: (setUpAll)
+00:50 +173: /workspace/ekadashi-calendar/test/unit/panchang_language_test.dart: (setUpAll)
+00:50 +174: /workspace/ekadashi-calendar/test/unit/panchang_language_test.dart: (setUpAll)
+00:52 +175: /workspace/ekadashi-calendar/test/unit/panchang_language_test.dart: (setUpAll)
+00:52 +176: /workspace/ekadashi-calendar/test/unit/panchang_language_test.dart: (setUpAll)
+00:52 +177: /workspace/ekadashi-calendar/test/unit/panchang_language_test.dart: (setUpAll)
+00:52 +178: /workspace/ekadashi-calendar/test/unit/panchang_language_test.dart: (setUpAll)
+00:52 +179: /workspace/ekadashi-calendar/test/unit/panchang_language_test.dart: (setUpAll)
+00:54 +180: /workspace/ekadashi-calendar/test/unit/panchang_language_test.dart: (setUpAll)
+00:54 +181: /workspace/ekadashi-calendar/test/unit/panchang_language_test.dart: (setUpAll)
+00:54 +182: /workspace/ekadashi-calendar/test/unit/panchang_language_test.dart: (setUpAll)
+00:54 +182: /workspace/ekadashi-calendar/test/unit/panchang_language_test.dart: languages keep their order and new ones are appended
+00:54 +183: /workspace/ekadashi-calendar/test/unit/panchang_language_test.dart: no string is accidentally left in English
+00:54 +184: /workspace/ekadashi-calendar/test/unit/panchang_language_test.dart: every Panchang term the engine shows is translated
+00:56 +185: /workspace/ekadashi-calendar/test/unit/panchang_language_test.dart: every Panchang term the engine shows is translated
+00:56 +186: /workspace/ekadashi-calendar/test/unit/panchang_language_test.dart: every Panchang term the engine shows is translated
+00:56 +186: /workspace/ekadashi-calendar/test/unit/native_bridge_test.dart: Unavailable or malformed location does not crash: {success: false, errorCode: PERMISSION_DENIED}
+Location error: PERMISSION_DENIED - null
+00:56 +187: /workspace/ekadashi-calendar/test/unit/panchang_language_test.dart: every Panchang term the engine shows is translated
+00:56 +187: /workspace/ekadashi-calendar/test/unit/native_bridge_test.dart: Unavailable or malformed location does not crash: {success: true, latitude: invalid, longitude: 0}
+NativeLocationService.getCurrentLocation error: type 'String' is not a subtype of type 'num' in type cast
+NativeLocationService.getCachedLocation error: type 'String' is not a subtype of type 'num' in type cast
+00:56 +188: /workspace/ekadashi-calendar/test/unit/panchang_language_test.dart: every Panchang term the engine shows is translated
+00:56 +188: /workspace/ekadashi-calendar/test/unit/native_bridge_test.dart: Location platform failure fails closed for permissions
+NativeLocationService.getCurrentLocation error: PlatformException(SERVICE_NOT_READY, null, null, null)
+hasLocationPermission error: PlatformException(SERVICE_NOT_READY, null, null, null)
+requestLocationPermission error: PlatformException(SERVICE_NOT_READY, null, null, null)
+isLocationEnabled error: PlatformException(SERVICE_NOT_READY, null, null, null)
+shouldShowRequestRationale error: PlatformException(SERVICE_NOT_READY, null, null, null)
+00:56 +189: /workspace/ekadashi-calendar/test/unit/panchang_language_test.dart: every Panchang term the engine shows is translated
+00:56 +189: /workspace/ekadashi-calendar/test/unit/native_bridge_test.dart: Location permission timeout finishes rather than blocking the UI
+hasLocationPermission timeout
+00:56 +190: /workspace/ekadashi-calendar/test/unit/panchang_language_test.dart: every Panchang term the engine shows is translated
+00:56 +191: /workspace/ekadashi-calendar/test/unit/panchang_language_test.dart: every Panchang term the engine shows is translated
+00:56 +192: /workspace/ekadashi-calendar/test/unit/panchang_language_test.dart: every Panchang term the engine shows is translated
+00:56 +193: /workspace/ekadashi-calendar/test/unit/panchang_language_test.dart: every Panchang term the engine shows is translated
+00:56 +193: /workspace/ekadashi-calendar/test/unit/native_bridge_test.dart: Missing settings bridge provides safe defaults and reports failed writes
+NativeSettingsService.checkAllPermissions error: PlatformException(unavailable, null, null, null)
+NativeSettingsService.updateNotificationSettings error: PlatformException(unavailable, null, null, null)
+NativeSettingsService.setLanguageCode error: PlatformException(unavailable, null, null, null)
+NativeSettingsService.getLocationSettings error: PlatformException(unavailable, null, null, null)
+00:56 +194: /workspace/ekadashi-calendar/test/unit/panchang_language_test.dart: every Panchang term the engine shows is translated
+00:56 +194: /workspace/ekadashi-calendar/test/unit/native_bridge_test.dart: Notification batch carries UTC/offset timestamps and localized notification text
+✅ Scheduled 4 notifications
+00:56 +195: /workspace/ekadashi-calendar/test/unit/panchang_language_test.dart: every Panchang term the engine shows is translated
+00:56 +195: /workspace/ekadashi-calendar/test/unit/native_bridge_test.dart: Single notification and cancellation preserve occurrence identity
+🗑️ All notifications cancelled
+00:56 +196: /workspace/ekadashi-calendar/test/unit/panchang_language_test.dart: every Panchang term the engine shows is translated
+00:56 +196: /workspace/ekadashi-calendar/test/unit/native_bridge_test.dart: Scheduler bridge failure returns zero instead of a false success count
+scheduleAllNotifications error: PlatformException(SERVICE_NOT_READY, null, null, null)
+getPendingNotificationCount error: PlatformException(SERVICE_NOT_READY, null, null, null)
+00:56 +197: /workspace/ekadashi-calendar/test/unit/panchang_language_test.dart: every Panchang term the engine shows is translated
+00:56 +198: /workspace/ekadashi-calendar/test/unit/panchang_language_test.dart: every Panchang term the engine shows is translated
+00:58 +198: /workspace/ekadashi-calendar/test/unit/unified_search_golden_test.dart: (setUpAll)
+Calendar years loaded: [2026, 2027]
+01:04 +199: /workspace/ekadashi-calendar/test/unit/unified_search_golden_test.dart: (setUpAll)
+01:04 +200: /workspace/ekadashi-calendar/test/unit/unified_search_golden_test.dart: (setUpAll)
+01:04 +201: /workspace/ekadashi-calendar/test/unit/unified_search_golden_test.dart: (setUpAll)
+01:05 +202: /workspace/ekadashi-calendar/test/unit/unified_search_golden_test.dart: (setUpAll)
+01:05 +203: /workspace/ekadashi-calendar/test/unit/unified_search_golden_test.dart: (setUpAll)
+01:05 +204: /workspace/ekadashi-calendar/test/unit/unified_search_golden_test.dart: (setUpAll)
+01:06 +205: /workspace/ekadashi-calendar/test/unit/unified_search_golden_test.dart: (setUpAll)
+01:06 +206: /workspace/ekadashi-calendar/test/unit/unified_search_golden_test.dart: (setUpAll)
+01:07 +207: /workspace/ekadashi-calendar/test/unit/unified_search_golden_test.dart: (setUpAll)
+01:09 +208: /workspace/ekadashi-calendar/test/unit/unified_search_golden_test.dart: (setUpAll)
+01:10 +209: /workspace/ekadashi-calendar/test/unit/unified_search_golden_test.dart: (setUpAll)
+01:11 +210: /workspace/ekadashi-calendar/test/unit/unified_search_golden_test.dart: (setUpAll)
+01:12 +211: /workspace/ekadashi-calendar/test/unit/unified_search_golden_test.dart: (setUpAll)
+01:13 +212: /workspace/ekadashi-calendar/test/unit/unified_search_golden_test.dart: (setUpAll)
+01:13 +213: /workspace/ekadashi-calendar/test/unit/unified_search_golden_test.dart: (setUpAll)
+01:13 +214: /workspace/ekadashi-calendar/test/unit/unified_search_golden_test.dart: (setUpAll)
+01:13 +215: /workspace/ekadashi-calendar/test/unit/unified_search_golden_test.dart: (setUpAll)
+01:13 +216: /workspace/ekadashi-calendar/test/unit/unified_search_golden_test.dart: (setUpAll)
+01:13 +217: /workspace/ekadashi-calendar/test/unit/unified_search_golden_test.dart: (setUpAll)
+01:13 +218: /workspace/ekadashi-calendar/test/unit/unified_search_golden_test.dart: (setUpAll)
+01:14 +218: /workspace/ekadashi-calendar/test/unit/unified_search_golden_test.dart: golden cases match the iOS search
+01:15 +219: /workspace/ekadashi-calendar/test/unit/calendar_translation_test.dart: (setUpAll)
+01:15 +220: /workspace/ekadashi-calendar/test/unit/calendar_translation_test.dart: (setUpAll)
+01:15 +221: /workspace/ekadashi-calendar/test/unit/calendar_translation_test.dart: (setUpAll)
+01:15 +222: /workspace/ekadashi-calendar/test/unit/calendar_translation_test.dart: (setUpAll)
+01:15 +223: /workspace/ekadashi-calendar/test/unit/calendar_translation_test.dart: (setUpAll)
+Calendar years loaded: [2026, 2027]
+01:16 +223: /workspace/ekadashi-calendar/test/unit/calendar_translation_test.dart: ta has translated names, stories, rules, benefits, months and paksha in both years
+01:16 +224: /workspace/ekadashi-calendar/test/unit/calendar_translation_test.dart: hi has translated names, stories, rules, benefits, months and paksha in both years
+01:16 +225: /workspace/ekadashi-calendar/test/unit/calendar_translation_test.dart: te has translated names, stories, rules, benefits, months and paksha in both years
+01:16 +226: /workspace/ekadashi-calendar/test/unit/calendar_translation_test.dart: gu has translated names, stories, rules, benefits, months and paksha in both years
+01:16 +227: /workspace/ekadashi-calendar/test/unit/calendar_translation_test.dart: bn has translated names, stories, rules, benefits, months and paksha in both years
+01:16 +228: /workspace/ekadashi-calendar/test/unit/calendar_translation_test.dart: (tearDownAll)
+01:17 +228: /workspace/ekadashi-calendar/test/unit/google_event_mapper_test.dart: a zero-length Google event (end equals start) is imported
+01:17 +229: /workspace/ekadashi-calendar/test/unit/google_event_mapper_test.dart: an event ending before it starts becomes an instant at its start
+01:17 +230: /workspace/ekadashi-calendar/test/unit/google_event_mapper_test.dart: an all-day event without a later end covers its start day
+01:17 +231: /workspace/ekadashi-calendar/test/unit/google_event_mapper_test.dart: an event without a start is rejected
+01:17 +232: /workspace/ekadashi-calendar/test/unit/panchang_location_test.dart: civil boundaries follow selected timezone including DST
+01:18 +233: /workspace/ekadashi-calendar/test/unit/panchang_location_test.dart: New York rise and set agree with independent USNO fixture
+01:18 +234: /workspace/ekadashi-calendar/test/unit/panchang_location_test.dart: invalid coordinates and timezone rejected
+01:18 +235: /workspace/ekadashi-calendar/test/unit/panchang_location_test.dart: Monday Rahu is second eighth and Sunday is eighth
+01:18 +236: /workspace/ekadashi-calendar/test/unit/panchang_location_test.dart: details include moonset, rashis, contiguous Choghadiya and transitions
+01:18 +237: /workspace/ekadashi-calendar/test/unit/panchang_location_test.dart: polar day has no fabricated sunrise periods or observances
+01:18 +238: /workspace/ekadashi-calendar/test/unit/panchang_location_test.dart: summer sunset after midnight belongs to the sunrise solar day
+01:18 +239: /workspace/ekadashi-calendar/test/unit/panchang_location_test.dart: date-line and fractional DST zones retain the selected civil date
+01:19 +240: /workspace/ekadashi-calendar/test/unit/vrat_tracker_test.dart: Module 04: Vrat Tracker Opt-in & Data Preservation Tracker is available free by default
+01:19 +241: /workspace/ekadashi-calendar/test/unit/vrat_tracker_test.dart: Module 04: Vrat Tracker Opt-in & Data Preservation Initialization sets trackingEnabledAt timestamp
+01:19 +242: /workspace/ekadashi-calendar/test/unit/vrat_tracker_test.dart: Module 04: Vrat Tracker Opt-in & Data Preservation Legacy opt-out keeps free tracking, history and earned achievements intact
+01:19 +243: /workspace/ekadashi-calendar/test/unit/vrat_tracker_test.dart: Module 04: Observance CRUD & Duplicate Record Protection Records an observance with fasting method and optional note
+01:19 +244: /workspace/ekadashi-calendar/test/unit/vrat_tracker_test.dart: Module 04: Observance CRUD & Duplicate Record Protection Duplicate protection: updating same occurrence edits record without creating duplicates
+01:19 +245: /workspace/ekadashi-calendar/test/unit/vrat_tracker_test.dart: Module 04: Observance CRUD & Duplicate Record Protection Delete record removes from history without modifying occurrences
+01:19 +246: /workspace/ekadashi-calendar/test/unit/vrat_tracker_test.dart: Module 04: Observance CRUD & Duplicate Record Protection Backdating: past Ekadashis can be recorded historically
+01:19 +247: /workspace/ekadashi-calendar/test/unit/vrat_tracker_test.dart: Module 04: VratStatisticsService & Streak Logic Calculates current streak and longest streak accurately
+01:19 +248: /workspace/ekadashi-calendar/test/unit/vrat_tracker_test.dart: Module 04: VratStatisticsService & Streak Logic Missed observance breaks streak
+01:19 +249: /workspace/ekadashi-calendar/test/unit/vrat_tracker_test.dart: Module 04: VratStatisticsService & Streak Logic Annual completion percentage uses dynamic denominator from Module 10
+01:19 +250: /workspace/ekadashi-calendar/test/unit/vrat_tracker_test.dart: Module 04: AchievementEvaluator & Milestones Evaluates all 6 milestones accurately
+01:19 +251: /workspace/ekadashi-calendar/test/unit/vrat_tracker_test.dart: Module 04: AchievementEvaluator & Milestones Retroactive evaluation unlocks newly satisfied milestones on backfilling
+01:20 +252: /workspace/ekadashi-calendar/test/unit/time_zone_data_test.dart: (setUpAll)
+01:20 +252: /workspace/ekadashi-calendar/test/unit/time_zone_data_test.dart: bundled database is IANA 2026b and keeps names the app relies on
+01:20 +253: /workspace/ekadashi-calendar/test/unit/time_zone_data_test.dart: British Columbia stays on UTC-7 after 1 November 2026
+01:20 +254: /workspace/ekadashi-calendar/test/unit/time_zone_data_test.dart: (tearDownAll)
+01:20 +254: /workspace/ekadashi-calendar/test/unit/google_reconciliation_test.dart: Reimport removes events deleted on Google, including an empty year
+01:21 +255: /workspace/ekadashi-calendar/test/unit/google_reconciliation_test.dart: Repeated imports update one event without duplicates
+01:21 +256: /workspace/ekadashi-calendar/test/unit/google_reconciliation_test.dart: Failed fetch preserves previous cache and custom notes
+01:21 +257: /workspace/ekadashi-calendar/test/unit/google_reconciliation_test.dart: Account, calendar and year isolation survives deletion reconciliation
+01:21 +258: /workspace/ekadashi-calendar/test/unit/google_reconciliation_test.dart: Cancelled event removes cached occurrence; signout removes only that account
+01:21 +259: /workspace/ekadashi-calendar/test/unit/google_reconciliation_test.dart: Malformed Google event aborts reconciliation without deleting valid cache
+01:21 +260: /workspace/ekadashi-calendar/test/unit/google_reconciliation_test.dart: Google exclusive end excludes the next day and exact midnight
+01:22 +261: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: enabled years come from the shared config
+01:22 +262: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: Chennai Smarta 2026 is the published 2026 schedule
+01:23 +263: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: Chennai Smarta 2026 is the published 2026 schedule
+01:23 +264: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: Chennai Smarta 2026 is the published 2026 schedule
+01:23 +265: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: Chennai Smarta 2026 is the published 2026 schedule
+01:24 +266: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: Chennai Smarta 2026 is the published 2026 schedule
+01:25 +267: /workspace/ekadashi-calendar/test/unit/panchang_precision_test.dart: After-only Parana has no invented end in Home
+01:25 +268: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: New Delhi 2027 keeps identities and adds the 23 Dec Saphala
+01:25 +269: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: New Delhi 2027 keeps identities and adds the 23 Dec Saphala
+01:25 +270: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: New Delhi 2027 keeps identities and adds the 23 Dec Saphala
+01:26 +271: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: New Delhi 2027 keeps identities and adds the 23 Dec Saphala
+01:26 +272: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: New Delhi 2027 keeps identities and adds the 23 Dec Saphala
+01:27 +273: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: a Vaishnava fast a day later keeps the published identity
+01:28 +274: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: a Vaishnava fast a day later keeps the published identity
+01:28 +275: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: a Vaishnava fast a day later keeps the published identity
+01:28 +276: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: a Vaishnava fast a day later keeps the published identity
+01:28 +276: /workspace/ekadashi-calendar/test/unit/native_widget_service_test.dart: NativeWidgetService Tests getInitialDeepLink retrieves and parses cold-start deep link
+🚀 NativeWidgetService initial cold-start deep link: ekadashi://dashboard?action=parana
+01:28 +277: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: a Vaishnava fast a day later keeps the published identity
+01:28 +277: /workspace/ekadashi-calendar/test/unit/native_widget_service_test.dart: NativeWidgetService Tests initializeDeepLinkListener receives onDeepLink platform invocation
+📲 NativeWidgetService received deep link from native: ekadashi://calendar?date=2026-10-15
+01:28 +278: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: a Vaishnava fast a day later keeps the published identity
+01:28 +279: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: a Vaishnava fast a day later keeps the published identity
+01:30 +280: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: Home matches the Panchang Ekadashi sub-tab to the minute worldwide
+01:30 +281: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: Home matches the Panchang Ekadashi sub-tab to the minute worldwide
+01:30 +282: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: Home matches the Panchang Ekadashi sub-tab to the minute worldwide
+01:32 +283: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: Home matches the Panchang Ekadashi sub-tab to the minute worldwide
+01:32 +284: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: Home matches the Panchang Ekadashi sub-tab to the minute worldwide
+01:34 +285: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: Home matches the Panchang Ekadashi sub-tab to the minute worldwide
+01:35 +286: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: Home matches the Panchang Ekadashi sub-tab to the minute worldwide
+01:35 +287: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: Home matches the Panchang Ekadashi sub-tab to the minute worldwide
+01:35 +288: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: Home matches the Panchang Ekadashi sub-tab to the minute worldwide
+01:36 +288: /workspace/ekadashi-calendar/test/unit/vrat_recording_window_test.dart: the bundled schedule opens only past fasts
+Calendar years loaded: [2026, 2027]
+01:36 +289: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: Home matches the Panchang Ekadashi sub-tab to the minute worldwide
+01:37 +290: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: Home matches the Panchang Ekadashi sub-tab to the minute worldwide
+01:37 +291: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: Home matches the Panchang Ekadashi sub-tab to the minute worldwide
+01:37 +292: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: Home matches the Panchang Ekadashi sub-tab to the minute worldwide
+01:37 +293: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: Home matches the Panchang Ekadashi sub-tab to the minute worldwide
+01:40 +294: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: Home matches the Panchang Ekadashi sub-tab to the minute worldwide
+01:40 +295: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: Home matches the Panchang Ekadashi sub-tab to the minute worldwide
+01:41 +295: /workspace/ekadashi-calendar/test/unit/notification_channel_language_test.dart: the app names the channel in its language (notifications on)
+Calendar years loaded: [2026, 2027]
+Splash blocking init took: 172ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 209ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+01:55 +296: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: Home matches the Panchang Ekadashi sub-tab to the minute worldwide
+01:55 +296: /workspace/ekadashi-calendar/test/unit/notification_channel_language_test.dart: the app names the channel in its language (notifications off)
+Splash blocking init took: 22ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 36ms total
+🗑️ All notifications cancelled
+🗑️ All notifications cancelled
+🗑️ All notifications cancelled
+🗑️ All notifications cancelled
+01:56 +297: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: Home matches the Panchang Ekadashi sub-tab to the minute worldwide
+01:58 +298: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: screens asking at once share one calculation, which finishes
+01:58 +299: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: screens asking at once share one calculation, which finishes
+01:59 +300: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: screens asking at once share one calculation, which finishes
+02:00 +301: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: a future year needs no new data
+02:01 +302: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: a future year needs no new data
+02:01 +303: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: a future year needs no new data
+02:01 +304: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: a future year needs no new data
+02:01 +305: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: a future year needs no new data
+02:03 +306: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: a future year needs no new data
+02:03 +307: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: a future year needs no new data
+02:03 +308: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: a future year needs no new data
+02:03 +309: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: a future year needs no new data
+02:03 +310: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: a future year needs no new data
+02:03 +311: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: a future year needs no new data
+02:03 +312: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: a future year needs no new data
+02:03 +313: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: a future year needs no new data
+02:03 +313: /workspace/ekadashi-calendar/test/unit/widget_deep_link_test.dart: EC2-FR-058 & EC2-FR-059: State Machine & Cache Validation Validates canonical payload schema v2 format and metadata
+ℹ️ NativeWidgetService: Widget platform channel not yet attached (normal during tests).
+02:03 +314: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: a future year needs no new data
+02:03 +315: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: a future year needs no new data
+02:05 +316: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: a future year needs no new data
+02:05 +317: /workspace/ekadashi-calendar/test/unit/ekadashi_schedule_test.dart: a future year needs no new data
+02:09 +318: /workspace/ekadashi-calendar/test/unit/event_reminder_service_test.dart: Premium adds Panchang reminders at the Panchang location
+02:09 +319: /workspace/ekadashi-calendar/test/unit/event_reminder_service_test.dart: Premium adds Panchang reminders at the Panchang location
+02:09 +320: /workspace/ekadashi-calendar/test/unit/event_reminder_service_test.dart: Premium adds Panchang reminders at the Panchang location
+02:10 +321: /workspace/ekadashi-calendar/test/unit/event_reminder_service_test.dart: Premium adds Panchang reminders at the Panchang location
+02:12 +322: /workspace/ekadashi-calendar/test/unit/event_reminder_service_test.dart: Premium adds Panchang reminders at the Panchang location
+02:12 +323: /workspace/ekadashi-calendar/test/unit/event_reminder_service_test.dart: Premium adds Panchang reminders at the Panchang location
+02:12 +324: /workspace/ekadashi-calendar/test/unit/event_reminder_service_test.dart: Premium adds Panchang reminders at the Panchang location
+02:12 +325: /workspace/ekadashi-calendar/test/unit/event_reminder_service_test.dart: Premium adds Panchang reminders at the Panchang location
+02:12 +326: /workspace/ekadashi-calendar/test/unit/event_reminder_service_test.dart: Premium adds Panchang reminders at the Panchang location
+02:12 +327: /workspace/ekadashi-calendar/test/unit/event_reminder_service_test.dart: Premium adds Panchang reminders at the Panchang location
+02:14 +328: /workspace/ekadashi-calendar/test/unit/event_reminder_service_test.dart: Premium adds Panchang reminders at the Panchang location
+02:14 +329: /workspace/ekadashi-calendar/test/unit/event_reminder_service_test.dart: Premium adds Panchang reminders at the Panchang location
+02:14 +330: /workspace/ekadashi-calendar/test/unit/event_reminder_service_test.dart: Premium adds Panchang reminders at the Panchang location
+02:14 +331: /workspace/ekadashi-calendar/test/unit/event_reminder_service_test.dart: Premium adds Panchang reminders at the Panchang location
+02:14 +332: /workspace/ekadashi-calendar/test/unit/event_reminder_service_test.dart: Premium adds Panchang reminders at the Panchang location
+02:14 +333: /workspace/ekadashi-calendar/test/unit/event_reminder_service_test.dart: Premium adds Panchang reminders at the Panchang location
+02:14 +334: /workspace/ekadashi-calendar/test/unit/event_reminder_service_test.dart: Premium adds Panchang reminders at the Panchang location
+02:14 +335: /workspace/ekadashi-calendar/test/unit/event_reminder_service_test.dart: Premium adds Panchang reminders at the Panchang location
+02:14 +336: /workspace/ekadashi-calendar/test/unit/event_reminder_service_test.dart: Premium adds Panchang reminders at the Panchang location
+02:14 +337: /workspace/ekadashi-calendar/test/unit/event_reminder_service_test.dart: Premium adds Panchang reminders at the Panchang location
+02:14 +338: /workspace/ekadashi-calendar/test/unit/event_reminder_service_test.dart: Premium adds Panchang reminders at the Panchang location
+02:14 +339: /workspace/ekadashi-calendar/test/unit/event_reminder_service_test.dart: Premium adds Panchang reminders at the Panchang location
+02:14 +340: /workspace/ekadashi-calendar/test/unit/event_reminder_service_test.dart: Premium adds Panchang reminders at the Panchang location
+02:14 +341: /workspace/ekadashi-calendar/test/unit/event_reminder_service_test.dart: Premium adds Panchang reminders at the Panchang location
+02:16 +342: /workspace/ekadashi-calendar/test/unit/event_reminder_service_test.dart: Premium adds Panchang reminders at the Panchang location
+02:16 +343: /workspace/ekadashi-calendar/test/unit/event_reminder_service_test.dart: Premium adds Panchang reminders at the Panchang location
+02:16 +344: /workspace/ekadashi-calendar/test/unit/event_reminder_service_test.dart: Premium adds Panchang reminders at the Panchang location
+02:18 +345: /workspace/ekadashi-calendar/test/unit/event_reminder_service_test.dart: Premium adds Panchang reminders at the Panchang location
+02:19 +346: /workspace/ekadashi-calendar/test/unit/event_reminder_service_test.dart: Premium adds Panchang reminders at the Panchang location
+02:19 +347: /workspace/ekadashi-calendar/test/unit/event_reminder_service_test.dart: Premium adds Panchang reminders at the Panchang location
+02:20 +348: /workspace/ekadashi-calendar/test/unit/event_reminder_service_test.dart: (tearDownAll)
+02:21 +348: /workspace/ekadashi-calendar/test/acceptance/notification_opt_out_test.dart: Changing language cannot reschedule after reminders are disabled
+Calendar years loaded: [2026, 2027]
+Splash blocking init took: 258ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 325ms total
+✅ Scheduled 4 notifications
+02:31 +349: /workspace/ekadashi-calendar/test/acceptance/notification_opt_out_test.dart: Changing language cannot reschedule after reminders are disabled
+✅ Scheduled 4 notifications
+02:34 +350: /workspace/ekadashi-calendar/test/acceptance/notification_opt_out_test.dart: Changing language cannot reschedule after reminders are disabled
+🗑️ All notifications cancelled
+🗑️ All notifications cancelled
+🗑️ All notifications cancelled
+02:38 +351: /workspace/ekadashi-calendar/test/ui/panchang_screenshots_test.dart: Panchang sheets and free Key days render screenshots
+02:40 +351: /workspace/ekadashi-calendar/test/ui/no_english_ui_test.dart: hi: the whole app is in hi
+Calendar years loaded: [2026, 2027]
+Splash blocking init took: 146ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 217ms total
+✅ Scheduled 4 notifications
+02:44 +352: /workspace/ekadashi-calendar/test/ui/no_english_ui_test.dart: hi: the whole app is in hi
+✅ Scheduled 4 notifications
+02:47 +352: /workspace/ekadashi-calendar/test/ui/settings_ios_parity_test.dart: en dark Settings matches the iOS layout
+Calendar years loaded: [2026, 2027]
+Splash blocking init took: 408ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 451ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+📢 Test notification sent
+03:06 +353: /workspace/ekadashi-calendar/test/ui/no_english_ui_test.dart: hi: the whole app is in hi
+03:06 +353: /workspace/ekadashi-calendar/test/ui/settings_ios_parity_test.dart: en light Settings matches the iOS layout
+Splash blocking init took: 23ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 38ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+📢 Test notification sent
+03:12 +354: /workspace/ekadashi-calendar/test/ui/no_english_ui_test.dart: hi: the whole app is in hi
+03:12 +354: /workspace/ekadashi-calendar/test/ui/settings_ios_parity_test.dart: hi dark Settings matches the iOS layout
+Splash blocking init took: 58ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 69ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+📢 Test notification sent
+03:17 +355: /workspace/ekadashi-calendar/test/ui/settings_ios_parity_test.dart: hi dark Settings matches the iOS layout
+03:18 +356: /workspace/ekadashi-calendar/test/ui/no_english_ui_test.dart: hi: Premium Panchang and the paywall
+03:18 +356: /workspace/ekadashi-calendar/test/ui/settings_ios_parity_test.dart: hi light Settings matches the iOS layout
+Splash blocking init took: 11ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 18ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+📢 Test notification sent
+03:21 +357: /workspace/ekadashi-calendar/test/ui/no_english_ui_test.dart: hi: Premium Panchang and the paywall
+03:24 +357: /workspace/ekadashi-calendar/test/ui/screenshots_test.dart: en Home, Calendar, Settings and Details render and navigate
+Calendar years loaded: [2026, 2027]
+Splash blocking init took: 299ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 378ms total
+03:26 +358: /workspace/ekadashi-calendar/test/ui/screenshots_test.dart: en Home, Calendar, Settings and Details render and navigate
+03:26 +358: /workspace/ekadashi-calendar/test/ui/no_english_ui_test.dart: ta: the whole app is in ta
+Splash blocking init took: 12ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 59ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+03:31 +358: /workspace/ekadashi-calendar/test/ui/screenshots_test.dart: en Home, Calendar, Settings and Details render and navigate
+✅ Scheduled 4 notifications
+03:34 +359: /workspace/ekadashi-calendar/test/ui/screenshots_test.dart: en Home, Calendar, Settings and Details render and navigate
+✅ Scheduled 4 notifications
+03:42 +360: /workspace/ekadashi-calendar/test/ui/screenshots_test.dart: en Home, Calendar, Settings and Details render and navigate
+03:42 +360: /workspace/ekadashi-calendar/test/ui/no_english_ui_test.dart: te: the whole app is in te
+Splash blocking init took: 5ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 69ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+03:47 +361: /workspace/ekadashi-calendar/test/ui/screenshots_test.dart: en Home, Calendar, Settings and Details render and navigate
+03:55 +362: /workspace/ekadashi-calendar/test/ui/screenshots_test.dart: en Home, Calendar, Settings and Details render and navigate
+03:55 +362: /workspace/ekadashi-calendar/test/ui/no_english_ui_test.dart: gu: the whole app is in gu
+Splash blocking init took: 4ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 9ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+04:02 +363: /workspace/ekadashi-calendar/test/ui/screenshots_test.dart: en Home, Calendar, Settings and Details render and navigate
+04:04 +364: /workspace/ekadashi-calendar/test/ui/no_english_ui_test.dart: gu: Premium Panchang and the paywall
+04:04 +364: /workspace/ekadashi-calendar/test/ui/screenshots_test.dart: ta Home, Calendar, Settings and Details render and navigate
+Splash blocking init took: 11ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 57ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+04:12 +365: /workspace/ekadashi-calendar/test/ui/screenshots_test.dart: ta Home, Calendar, Settings and Details render and navigate
+04:12 +365: /workspace/ekadashi-calendar/test/ui/no_english_ui_test.dart: bn: the whole app is in bn
+Splash blocking init took: 4ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 12ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+04:16 +366: /workspace/ekadashi-calendar/test/ui/no_english_ui_test.dart: bn: the whole app is in bn
+04:16 +366: /workspace/ekadashi-calendar/test/ui/screenshots_test.dart: hi Home, Calendar, Settings and Details render and navigate
+Splash blocking init took: 8ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 14ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+04:18 +367: /workspace/ekadashi-calendar/test/ui/screenshots_test.dart: hi Home, Calendar, Settings and Details render and navigate
+04:26 +368: /workspace/ekadashi-calendar/test/ui/screenshots_test.dart: hi Home, Calendar, Settings and Details render and navigate
+04:27 +369: /workspace/ekadashi-calendar/test/tool/export_accuracy_audit_test.dart: accuracy export includes independently auditable Anandadi labels
+04:27 +369: /workspace/ekadashi-calendar/test/ui/screenshots_test.dart: te Home, Calendar, Settings and Details render and navigate
+Splash blocking init took: 11ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 19ms total
+Shell: exported chennai
+04:27 +370: /workspace/ekadashi-calendar/test/ui/screenshots_test.dart: te Home, Calendar, Settings and Details render and navigate
+04:27 +370 ~1: /workspace/ekadashi-calendar/test/ui/screenshots_test.dart: te Home, Calendar, Settings and Details render and navigate
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+04:35 +371 ~1: /workspace/ekadashi-calendar/test/ui/screenshots_test.dart: te Home, Calendar, Settings and Details render and navigate
+04:37 +372 ~1: /workspace/ekadashi-calendar/test/tool/dump_ekadashi_schedule_parity_test.dart: iOS Ekadashi schedule parity fixture matches the Dart schedule
+04:37 +372 ~1: /workspace/ekadashi-calendar/test/ui/screenshots_test.dart: gu Home, Calendar, Settings and Details render and navigate
+Splash blocking init took: 12ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 20ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+04:48 +373 ~1: /workspace/ekadashi-calendar/test/tool/dump_ekadashi_schedule_parity_test.dart: iOS Ekadashi schedule parity fixture matches the Dart schedule
+04:48 +373 ~1: /workspace/ekadashi-calendar/test/ui/screenshots_test.dart: bn Home, Calendar, Settings and Details render and navigate
+Splash blocking init took: 6ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 10ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+04:55 +374 ~1: /workspace/ekadashi-calendar/test/tool/dump_ekadashi_schedule_parity_test.dart: iOS Ekadashi schedule parity fixture matches the Dart schedule
+04:57 +374 ~1: /workspace/ekadashi-calendar/test/widget/app_background_test.dart: the gradient matches the iOS AppBackground
+Calendar years loaded: [2026, 2027]
+04:57 +375 ~1: /workspace/ekadashi-calendar/test/tool/dump_ekadashi_schedule_parity_test.dart: iOS Ekadashi schedule parity fixture matches the Dart schedule
+04:58 +375 ~1: /workspace/ekadashi-calendar/test/widget/app_background_test.dart: every tab shows the gradient through transparent pages
+Splash blocking init took: 97ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 116ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+05:11 +376 ~1: /workspace/ekadashi-calendar/test/tool/dump_ekadashi_schedule_parity_test.dart: iOS Ekadashi schedule parity fixture matches the Dart schedule
+05:14 +377 ~1: /workspace/ekadashi-calendar/test/tool/dump_ekadashi_schedule_parity_test.dart: iOS Ekadashi schedule parity fixture matches the Dart schedule
+05:14 +378 ~1: /workspace/ekadashi-calendar/test/tool/dump_ekadashi_schedule_parity_test.dart: iOS Ekadashi schedule parity fixture matches the Dart schedule
+05:15 +379 ~1: /workspace/ekadashi-calendar/test/tool/dump_ekadashi_schedule_parity_test.dart: iOS Ekadashi schedule parity fixture matches the Dart schedule
+05:15 +380 ~1: /workspace/ekadashi-calendar/test/tool/dump_ekadashi_schedule_parity_test.dart: iOS Ekadashi schedule parity fixture matches the Dart schedule
+05:15 +381 ~1: /workspace/ekadashi-calendar/test/tool/dump_ekadashi_schedule_parity_test.dart: iOS Ekadashi schedule parity fixture matches the Dart schedule
+05:15 +382 ~1: /workspace/ekadashi-calendar/test/tool/dump_ekadashi_schedule_parity_test.dart: iOS Ekadashi schedule parity fixture matches the Dart schedule
+05:16 +383 ~1: /workspace/ekadashi-calendar/test/tool/dump_ekadashi_schedule_parity_test.dart: iOS Ekadashi schedule parity fixture matches the Dart schedule
+05:16 +384 ~1: /workspace/ekadashi-calendar/test/tool/dump_ekadashi_schedule_parity_test.dart: iOS Ekadashi schedule parity fixture matches the Dart schedule
+05:17 +385 ~1: /workspace/ekadashi-calendar/test/tool/dump_ekadashi_schedule_parity_test.dart: iOS Ekadashi schedule parity fixture matches the Dart schedule
+05:18 +386 ~1: /workspace/ekadashi-calendar/test/tool/dump_ekadashi_schedule_parity_test.dart: iOS Ekadashi schedule parity fixture matches the Dart schedule
+05:18 +387 ~1: /workspace/ekadashi-calendar/test/tool/dump_ekadashi_schedule_parity_test.dart: iOS Ekadashi schedule parity fixture matches the Dart schedule
+05:18 +388 ~1: /workspace/ekadashi-calendar/test/tool/dump_ekadashi_schedule_parity_test.dart: iOS Ekadashi schedule parity fixture matches the Dart schedule
+05:18 +389 ~1: /workspace/ekadashi-calendar/test/tool/dump_ekadashi_schedule_parity_test.dart: iOS Ekadashi schedule parity fixture matches the Dart schedule
+05:18 +390 ~1: /workspace/ekadashi-calendar/test/tool/dump_ekadashi_schedule_parity_test.dart: iOS Ekadashi schedule parity fixture matches the Dart schedule
+05:18 +391 ~1: /workspace/ekadashi-calendar/test/tool/dump_ekadashi_schedule_parity_test.dart: iOS Ekadashi schedule parity fixture matches the Dart schedule
+05:18 +392 ~1: /workspace/ekadashi-calendar/test/tool/dump_ekadashi_schedule_parity_test.dart: iOS Ekadashi schedule parity fixture matches the Dart schedule
+05:20 +393 ~1: /workspace/ekadashi-calendar/test/tool/dump_ekadashi_schedule_parity_test.dart: iOS Ekadashi schedule parity fixture matches the Dart schedule
+05:20 +394 ~1: /workspace/ekadashi-calendar/test/tool/dump_ekadashi_schedule_parity_test.dart: iOS Ekadashi schedule parity fixture matches the Dart schedule
+05:21 +395 ~1: /workspace/ekadashi-calendar/test/tool/dump_ekadashi_schedule_parity_test.dart: iOS Ekadashi schedule parity fixture matches the Dart schedule
+05:21 +396 ~1: /workspace/ekadashi-calendar/test/tool/dump_ekadashi_schedule_parity_test.dart: iOS Ekadashi schedule parity fixture matches the Dart schedule
+05:21 +397 ~1: /workspace/ekadashi-calendar/test/tool/dump_ekadashi_schedule_parity_test.dart: iOS Ekadashi schedule parity fixture matches the Dart schedule
+05:21 +398 ~1: /workspace/ekadashi-calendar/test/tool/dump_ekadashi_schedule_parity_test.dart: iOS Ekadashi schedule parity fixture matches the Dart schedule
+05:22 +399 ~1: /workspace/ekadashi-calendar/test/tool/dump_ekadashi_schedule_parity_test.dart: iOS Ekadashi schedule parity fixture matches the Dart schedule
+05:22 +399 ~1: /workspace/ekadashi-calendar/test/widget/ui_parity_shell_test.dart: the launch screen is a plain dark page (no artwork)
+Calendar years loaded: [2026, 2027]
+Splash blocking init took: 76ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 103ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+05:29 +400 ~1: /workspace/ekadashi-calendar/test/tool/dump_ekadashi_schedule_parity_test.dart: iOS Ekadashi schedule parity fixture matches the Dart schedule
+05:29 +400 ~1: /workspace/ekadashi-calendar/test/widget/ui_parity_shell_test.dart: shell tab bar uses the iOS symbols: calendar, leaf, sparkles
+Splash blocking init took: 8ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 17ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+05:30 +401 ~1: /workspace/ekadashi-calendar/test/tool/dump_ekadashi_schedule_parity_test.dart: iOS Ekadashi schedule parity fixture matches the Dart schedule
+05:30 +401 ~1: /workspace/ekadashi-calendar/test/widget/ui_parity_shell_test.dart: shell the top bar title is the iOS inline title
+Splash blocking init took: 8ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 12ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+05:31 +402 ~1: /workspace/ekadashi-calendar/test/tool/dump_ekadashi_schedule_parity_test.dart: iOS Ekadashi schedule parity fixture matches the Dart schedule
+05:31 +402 ~1: /workspace/ekadashi-calendar/test/widget/ui_parity_shell_test.dart: shell Details opens inside the Home tab: the tab bar stays, re-tapping Home goes back
+Splash blocking init took: 18ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 25ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+05:33 +403 ~1: /workspace/ekadashi-calendar/test/tool/dump_ekadashi_schedule_parity_test.dart: iOS Ekadashi schedule parity fixture matches the Dart schedule
+05:33 +403 ~1: /workspace/ekadashi-calendar/test/widget/ui_parity_shell_test.dart: shell Home keeps its card when you come back from another tab
+Splash blocking init took: 8ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 13ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+05:34 +404 ~1: /workspace/ekadashi-calendar/test/tool/dump_ekadashi_schedule_parity_test.dart: iOS Ekadashi schedule parity fixture matches the Dart schedule
+05:34 +404 ~1: /workspace/ekadashi-calendar/test/widget/ui_parity_shell_test.dart: shell Search opens as a sheet over the app
+Splash blocking init took: 5ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 15ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+05:36 +405 ~1: /workspace/ekadashi-calendar/test/widget/ui_parity_shell_test.dart: shell Search opens as a sheet over the app
+05:37 +405 ~1: /workspace/ekadashi-calendar/test/widget/unified_search_screen_test.dart: (setUpAll)
+Calendar years loaded: [2026, 2027]
+05:46 +406 ~1: /workspace/ekadashi-calendar/test/widget/unified_search_screen_test.dart: (setUpAll)
+05:46 +406 ~1: /workspace/ekadashi-calendar/test/widget/ui_parity_shell_test.dart: shell the paywall opens as a sheet over the app
+Splash blocking init took: 54ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 74ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+05:47 +407 ~1: /workspace/ekadashi-calendar/test/widget/unified_search_screen_test.dart: (setUpAll)
+05:47 +407 ~1: /workspace/ekadashi-calendar/test/widget/ui_parity_shell_test.dart: shell a deep link closes the search sheet and pushed pages, then shows its tab
+Splash blocking init took: 9ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 14ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+05:48 +408 ~1: /workspace/ekadashi-calendar/test/widget/unified_search_screen_test.dart: Ekadashis, locked festivals and type words are found
+05:48 +408 ~1: /workspace/ekadashi-calendar/test/widget/ui_parity_shell_test.dart: shell "‹ Search" back button shows its label after a result
+Splash blocking init took: 10ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 15ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+05:50 +409 ~1: /workspace/ekadashi-calendar/test/widget/unified_search_screen_test.dart: Ekadashis, locked festivals and type words are found
+05:51 +410 ~1: /workspace/ekadashi-calendar/test/widget/unified_search_screen_test.dart: a type chip alone lists that type
+05:52 +410 ~1: /workspace/ekadashi-calendar/test/widget/home_date_localization_test.dart: en Home localizes fasting and fast-breaking dates
+Calendar years loaded: [2026, 2027]
+05:52 +411 ~1: /workspace/ekadashi-calendar/test/widget/home_date_localization_test.dart: en Home localizes fasting and fast-breaking dates
+Splash blocking init took: 156ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 210ms total
+✅ Scheduled 4 notifications
+05:56 +412 ~1: /workspace/ekadashi-calendar/test/widget/home_date_localization_test.dart: en Home localizes fasting and fast-breaking dates
+05:56 +413 ~1: /workspace/ekadashi-calendar/test/widget/home_date_localization_test.dart: en Home localizes fasting and fast-breaking dates
+05:57 +414 ~1: /workspace/ekadashi-calendar/test/widget/home_date_localization_test.dart: en Home localizes fasting and fast-breaking dates
+✅ Scheduled 4 notifications
+05:59 +415 ~1: /workspace/ekadashi-calendar/test/widget/home_date_localization_test.dart: en Home localizes fasting and fast-breaking dates
+05:59 +416 ~1: /workspace/ekadashi-calendar/test/widget/home_date_localization_test.dart: en Home localizes fasting and fast-breaking dates
+05:59 +417 ~1: /workspace/ekadashi-calendar/test/widget/home_date_localization_test.dart: en Home localizes fasting and fast-breaking dates
+05:59 +418 ~1: /workspace/ekadashi-calendar/test/widget/premium_ios_parity_test.dart: busy shows a teal spinner; restore answers with a toast
+05:59 +418 ~1: /workspace/ekadashi-calendar/test/widget/home_date_localization_test.dart: ta Home localizes fasting and fast-breaking dates
+Splash blocking init took: 9ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 14ms total
+06:00 +419 ~1: /workspace/ekadashi-calendar/test/widget/home_date_localization_test.dart: ta Home localizes fasting and fast-breaking dates
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+06:00 +420 ~1: /workspace/ekadashi-calendar/test/widget/home_date_localization_test.dart: ta Home localizes fasting and fast-breaking dates
+06:01 +421 ~1: /workspace/ekadashi-calendar/test/widget/home_date_localization_test.dart: hi Home localizes fasting and fast-breaking dates
+Splash blocking init took: 14ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 21ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+06:03 +422 ~1: /workspace/ekadashi-calendar/test/widget/ios_style_test.dart: IosColors system colours follow light and dark like SwiftUI
+06:03 +422 ~1: /workspace/ekadashi-calendar/test/widget/home_date_localization_test.dart: te Home localizes fasting and fast-breaking dates
+Splash blocking init took: 7ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 18ms total
+06:03 +423 ~1: /workspace/ekadashi-calendar/test/widget/home_date_localization_test.dart: te Home localizes fasting and fast-breaking dates
+06:03 +424 ~1: /workspace/ekadashi-calendar/test/widget/home_date_localization_test.dart: te Home localizes fasting and fast-breaking dates
+06:03 +425 ~1: /workspace/ekadashi-calendar/test/widget/home_date_localization_test.dart: te Home localizes fasting and fast-breaking dates
+06:03 +426 ~1: /workspace/ekadashi-calendar/test/widget/home_date_localization_test.dart: te Home localizes fasting and fast-breaking dates
+06:03 +427 ~1: /workspace/ekadashi-calendar/test/widget/home_date_localization_test.dart: te Home localizes fasting and fast-breaking dates
+06:03 +428 ~1: /workspace/ekadashi-calendar/test/widget/home_date_localization_test.dart: te Home localizes fasting and fast-breaking dates
+06:03 +429 ~1: /workspace/ekadashi-calendar/test/widget/home_date_localization_test.dart: te Home localizes fasting and fast-breaking dates
+06:03 +430 ~1: /workspace/ekadashi-calendar/test/widget/home_date_localization_test.dart: te Home localizes fasting and fast-breaking dates
+06:03 +431 ~1: /workspace/ekadashi-calendar/test/widget/home_date_localization_test.dart: te Home localizes fasting and fast-breaking dates
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+06:03 +432 ~1: /workspace/ekadashi-calendar/test/widget/home_date_localization_test.dart: te Home localizes fasting and fast-breaking dates
+06:03 +433 ~1: /workspace/ekadashi-calendar/test/widget/home_date_localization_test.dart: te Home localizes fasting and fast-breaking dates
+06:04 +434 ~1: /workspace/ekadashi-calendar/test/widget/home_date_localization_test.dart: te Home localizes fasting and fast-breaking dates
+06:04 +435 ~1: /workspace/ekadashi-calendar/test/widget/home_date_localization_test.dart: te Home localizes fasting and fast-breaking dates
+06:04 +436 ~1: /workspace/ekadashi-calendar/test/widget/home_date_localization_test.dart: te Home localizes fasting and fast-breaking dates
+06:04 +437 ~1: /workspace/ekadashi-calendar/test/widget/home_date_localization_test.dart: te Home localizes fasting and fast-breaking dates
+06:04 +438 ~1: /workspace/ekadashi-calendar/test/widget/home_date_localization_test.dart: te Home localizes fasting and fast-breaking dates
+06:04 +439 ~1: /workspace/ekadashi-calendar/test/widget/home_date_localization_test.dart: gu Home localizes fasting and fast-breaking dates
+Splash blocking init took: 42ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 47ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+06:05 +439 ~1: /workspace/ekadashi-calendar/test/widget/panchang_screen_test.dart: (setUpAll)
+Calendar years loaded: [2026, 2027]
+06:05 +440 ~1: /workspace/ekadashi-calendar/test/widget/panchang_screen_test.dart: (setUpAll)
+06:05 +440 ~1: /workspace/ekadashi-calendar/test/widget/home_date_localization_test.dart: bn Home localizes fasting and fast-breaking dates
+Splash blocking init took: 7ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 12ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+06:07 +441 ~1: /workspace/ekadashi-calendar/test/widget/panchang_screen_test.dart: (setUpAll)
+06:08 +441 ~1: /workspace/ekadashi-calendar/test/widget/panchang_ios_parity_test.dart: (setUpAll)
+Calendar years loaded: [2026, 2027]
+06:12 +442 ~1: /workspace/ekadashi-calendar/test/widget/panchang_ios_parity_test.dart: (setUpAll)
+06:13 +443 ~1: /workspace/ekadashi-calendar/test/widget/panchang_ios_parity_test.dart: (setUpAll)
+06:13 +443 ~1: /workspace/ekadashi-calendar/test/widget/panchang_screen_test.dart: the Ekadashi sub-tab calculates in a background isolate
+06:14 +444 ~1: /workspace/ekadashi-calendar/test/widget/panchang_ios_parity_test.dart: Today and the calculation notes live in the top bar
+06:15 +445 ~1: /workspace/ekadashi-calendar/test/widget/panchang_screen_test.dart: a reminder opens its day even while the saved city loads
+06:15 +446 ~1: /workspace/ekadashi-calendar/test/widget/panchang_screen_test.dart: a reminder opens its day even while the saved city loads
+06:16 +447 ~1: /workspace/ekadashi-calendar/test/widget/panchang_screen_test.dart: a reminder opens its day even while the saved city loads
+06:16 +448 ~1: /workspace/ekadashi-calendar/test/widget/panchang_screen_test.dart: a reminder opens its day even while the saved city loads
+06:17 +449 ~1: /workspace/ekadashi-calendar/test/widget/panchang_screen_test.dart: a reminder opens its day even while the saved city loads
+06:18 +450 ~1: /workspace/ekadashi-calendar/test/widget/panchang_screen_test.dart: a reminder opens its day even while the saved city loads
+06:19 +451 ~1: /workspace/ekadashi-calendar/test/widget/panchang_screen_test.dart: a reminder opens its day even while the saved city loads
+06:19 +452 ~1: /workspace/ekadashi-calendar/test/widget/panchang_ios_parity_test.dart: Key days: glass chips in category colours, banner Unlock beside the text, glass rows
+06:20 +453 ~1: /workspace/ekadashi-calendar/test/widget/panchang_screen_test.dart: every sub-tab shows the weekday, date, month and year
+06:20 +454 ~1: /workspace/ekadashi-calendar/test/widget/panchang_screen_test.dart: every sub-tab shows the weekday, date, month and year
+06:20 +455 ~1: /workspace/ekadashi-calendar/test/widget/panchang_screen_test.dart: every sub-tab shows the weekday, date, month and year
+06:20 +456 ~1: /workspace/ekadashi-calendar/test/widget/panchang_screen_test.dart: every sub-tab shows the weekday, date, month and year
+06:21 +457 ~1: /workspace/ekadashi-calendar/test/widget/panchang_screen_test.dart: every sub-tab shows the weekday, date, month and year
+06:22 +458 ~1: /workspace/ekadashi-calendar/test/widget/panchang_screen_test.dart: every sub-tab shows the weekday, date, month and year
+06:24 +459 ~1: /workspace/ekadashi-calendar/test/widget/panchang_screen_test.dart: every sub-tab shows the weekday, date, month and year
+06:25 +459 ~1: /workspace/ekadashi-calendar/test/widget/multi_year_calendar_test.dart: (setUpAll)
+Calendar years loaded: [2026, 2027]
+06:25 +459 ~1: /workspace/ekadashi-calendar/test/widget/panchang_screen_test.dart: every sub-tab shows the weekday, date, month and year
+06:25 +460 ~1: /workspace/ekadashi-calendar/test/widget/multi_year_calendar_test.dart: Free calendar opens premium after the free sync and keeps custom entry free
+06:26 +461 ~1: /workspace/ekadashi-calendar/test/widget/multi_year_calendar_test.dart: Free calendar opens premium after the free sync and keeps custom entry free
+06:26 +462 ~1: /workspace/ekadashi-calendar/test/widget/multi_year_calendar_test.dart: Free calendar opens premium after the free sync and keeps custom entry free
+06:28 +463 ~1: /workspace/ekadashi-calendar/test/widget/panchang_screen_test.dart: every sub-tab opens the full calendar to pick a date
+06:30 +464 ~1: /workspace/ekadashi-calendar/test/widget/multi_year_calendar_test.dart: The calendar runs across every data year, with the selector following
+06:31 +465 ~1: /workspace/ekadashi-calendar/test/widget/panchang_screen_test.dart: the Home city picker with time zones and a custom location
+06:33 +466 ~1: /workspace/ekadashi-calendar/test/widget/panchang_screen_test.dart: the Home city picker with time zones and a custom location
+06:33 +467 ~1: /workspace/ekadashi-calendar/test/widget/multi_year_calendar_test.dart: Choosing a year opens its January; the current year, today
+06:34 +468 ~1: /workspace/ekadashi-calendar/test/widget/panchang_screen_test.dart: a city chosen on Home moves the Panchang tab, not the reverse
+06:35 +469 ~1: /workspace/ekadashi-calendar/test/widget/panchang_screen_test.dart: a city chosen on Home moves the Panchang tab, not the reverse
+06:36 +470 ~1: /workspace/ekadashi-calendar/test/widget/panchang_screen_test.dart: a city chosen on Home moves the Panchang tab, not the reverse
+06:37 +471 ~1: /workspace/ekadashi-calendar/test/widget/panchang_screen_test.dart: a city chosen on Home moves the Panchang tab, not the reverse
+06:37 +472 ~1: /workspace/ekadashi-calendar/test/widget/panchang_screen_test.dart: a city chosen on Home moves the Panchang tab, not the reverse
+06:39 +473 ~1: /workspace/ekadashi-calendar/test/widget/panchang_screen_test.dart: a city chosen on Home moves the Panchang tab, not the reverse
+06:39 +474 ~1: /workspace/ekadashi-calendar/test/widget/panchang_screen_test.dart: a city chosen on Home moves the Panchang tab, not the reverse
+06:40 +475 ~1: /workspace/ekadashi-calendar/test/widget/panchang_screen_test.dart: a city chosen on Home moves the Panchang tab, not the reverse
+06:40 +476 ~1: /workspace/ekadashi-calendar/test/widget/panchang_screen_test.dart: a city chosen on Home moves the Panchang tab, not the reverse
+06:40 +477 ~1: /workspace/ekadashi-calendar/test/widget/panchang_screen_test.dart: a city chosen on Home moves the Panchang tab, not the reverse
+06:40 +478 ~1: /workspace/ekadashi-calendar/test/widget/panchang_screen_test.dart: a city chosen on Home moves the Panchang tab, not the reverse
+06:41 +478 ~1: /workspace/ekadashi-calendar/test/widget/system_back_menus_test.dart: Back closes the Journey year menu and the Panchang city sheet after switching to en
+Calendar years loaded: [2026, 2027]
+Splash blocking init took: 109ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 127ms total
+06:44 +479 ~1: /workspace/ekadashi-calendar/test/widget/system_back_menus_test.dart: Back closes the Journey year menu and the Panchang city sheet after switching to en
+06:45 +479 ~1: /workspace/ekadashi-calendar/test/widget/panchang_screen_test.dart: narrow screen with large text has no overflow
+
+Warning: A call to tap() with finder "Found 1 widget with key [<'panchang_tab_muhurta'>]: [
+  GlassChip-[<'panchang_tab_muhurta'>](dependencies: [InheritedCupertinoTheme, _InheritedTheme, _LocalizationsScope-[GlobalKey#dd0ac]]),
+]" derived an Offset (Offset(377.5, 37.5)) that would not hit test on the specified widget.
+Maybe the widget is actually off-screen, or another widget is obscuring it, or the widget cannot receive pointer events.
+Indeed, Offset(377.5, 37.5) is outside the bounds of the root of the render tree, Size(320.0, 844.0).
+The finder corresponds to this RenderBox: RenderSemanticsAnnotations#afa98 relayoutBoundary=up15
+The hit test result at that offset is: HitTestResult(HitTestEntry<HitTestTarget>#8ee33(_ReusableRenderView#f64fe), HitTestEntry<HitTestTarget>#ca90e(<AutomatedTestWidgetsFlutterBinding>))
+#0      WidgetController._getElementPoint (package:flutter_test/src/controller.dart:2081:25)
+#1      WidgetController.getCenter (package:flutter_test/src/controller.dart:1865:12)
+#2      WidgetController.tap (package:flutter_test/src/controller.dart:1045:7)
+#3      main.<anonymous closure> (file:///workspace/ekadashi-calendar/test/widget/panchang_screen_test.dart:494:20)
+<asynchronous suspension>
+#4      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#5      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1059:5)
+<asynchronous suspension>
+#6      StackZoneSpecification._registerCallback.<anonymous closure> (package:stack_trace/src/stack_zone_specification.dart:114:42)
+<asynchronous suspension>
+To silence this warning, pass "warnIfMissed: false" to "tap()".
+To make this warning fatal, set WidgetController.hitTestWarningShouldBeFatal to true.
+
+
+Warning: A call to tap() with finder "Found 1 widget with key [<'panchang_tab_rashi'>]: [
+  GlassChip-[<'panchang_tab_rashi'>](dependencies: [InheritedCupertinoTheme, _InheritedTheme, _LocalizationsScope-[GlobalKey#dd0ac]]),
+]" derived an Offset (Offset(873.0, 37.5)) that would not hit test on the specified widget.
+Maybe the widget is actually off-screen, or another widget is obscuring it, or the widget cannot receive pointer events.
+Indeed, Offset(873.0, 37.5) is outside the bounds of the root of the render tree, Size(320.0, 844.0).
+The finder corresponds to this RenderBox: RenderSemanticsAnnotations#d73a2 relayoutBoundary=up15
+The hit test result at that offset is: HitTestResult(HitTestEntry<HitTestTarget>#d926e(_ReusableRenderView#f64fe), HitTestEntry<HitTestTarget>#9a0ce(<AutomatedTestWidgetsFlutterBinding>))
+#0      WidgetController._getElementPoint (package:flutter_test/src/controller.dart:2081:25)
+#1      WidgetController.getCenter (package:flutter_test/src/controller.dart:1865:12)
+#2      WidgetController.tap (package:flutter_test/src/controller.dart:1045:7)
+#3      main.<anonymous closure> (file:///workspace/ekadashi-calendar/test/widget/panchang_screen_test.dart:494:20)
+<asynchronous suspension>
+#4      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#5      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1059:5)
+<asynchronous suspension>
+#6      StackZoneSpecification._registerCallback.<anonymous closure> (package:stack_trace/src/stack_zone_specification.dart:114:42)
+<asynchronous suspension>
+To silence this warning, pass "warnIfMissed: false" to "tap()".
+To make this warning fatal, set WidgetController.hitTestWarningShouldBeFatal to true.
+
+
+Warning: A call to tap() with finder "Found 1 widget with key [<'panchang_tab_keydays'>]: [
+  GlassChip-[<'panchang_tab_keydays'>](dependencies: [InheritedCupertinoTheme, _InheritedTheme, _LocalizationsScope-[GlobalKey#dd0ac]]),
+]" derived an Offset (Offset(-72.6, 37.5)) that would not hit test on the specified widget.
+Maybe the widget is actually off-screen, or another widget is obscuring it, or the widget cannot receive pointer events.
+Indeed, Offset(-72.6, 37.5) is outside the bounds of the root of the render tree, Size(320.0, 844.0).
+The finder corresponds to this RenderBox: RenderSemanticsAnnotations#d2a3a relayoutBoundary=up15
+The hit test result at that offset is: HitTestResult(HitTestEntry<HitTestTarget>#db99b(_ReusableRenderView#f64fe), HitTestEntry<HitTestTarget>#505bf(<AutomatedTestWidgetsFlutterBinding>))
+#0      WidgetController._getElementPoint (package:flutter_test/src/controller.dart:2081:25)
+#1      WidgetController.getCenter (package:flutter_test/src/controller.dart:1865:12)
+#2      WidgetController.tap (package:flutter_test/src/controller.dart:1045:7)
+#3      main.<anonymous closure> (file:///workspace/ekadashi-calendar/test/widget/panchang_screen_test.dart:494:20)
+<asynchronous suspension>
+#4      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#5      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1059:5)
+<asynchronous suspension>
+#6      StackZoneSpecification._registerCallback.<anonymous closure> (package:stack_trace/src/stack_zone_specification.dart:114:42)
+<asynchronous suspension>
+To silence this warning, pass "warnIfMissed: false" to "tap()".
+To make this warning fatal, set WidgetController.hitTestWarningShouldBeFatal to true.
+
+06:45 +480 ~1: /workspace/ekadashi-calendar/test/widget/system_back_menus_test.dart: Back closes the Journey year menu and the Panchang city sheet after switching to en
+✅ Scheduled 4 notifications
+06:46 +481 ~1: /workspace/ekadashi-calendar/test/widget/system_back_menus_test.dart: Back closes the Journey year menu and the Panchang city sheet after switching to en
+06:47 +482 ~1: /workspace/ekadashi-calendar/test/widget/system_back_menus_test.dart: Back closes the Journey year menu and the Panchang city sheet after switching to en
+✅ Scheduled 4 notifications
+06:49 +482 ~1: /workspace/ekadashi-calendar/test/widget/panchang_pushed_page_test.dart: (setUpAll)
+Calendar years loaded: [2026, 2027]
+06:57 +483 ~1: /workspace/ekadashi-calendar/test/widget/panchang_pushed_page_test.dart: (setUpAll)
+06:57 +483 ~1: /workspace/ekadashi-calendar/test/widget/system_back_menus_test.dart: Back closes the Journey year menu and the Panchang city sheet after switching to ta
+Splash blocking init took: 48ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 54ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+07:00 +484 ~1: /workspace/ekadashi-calendar/test/widget/system_back_menus_test.dart: Back closes the Journey year menu and the Panchang city sheet after switching to ta
+07:01 +485 ~1: /workspace/ekadashi-calendar/test/widget/panchang_pushed_page_test.dart: a festival result in Search opens the pushed Panchang
+07:01 +485 ~1: /workspace/ekadashi-calendar/test/widget/system_back_menus_test.dart: Back closes the Journey year menu and the Panchang city sheet after switching to hi
+Splash blocking init took: 5ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 9ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+07:02 +486 ~1: /workspace/ekadashi-calendar/test/widget/system_back_menus_test.dart: Back closes the Journey year menu and the Panchang city sheet after switching to hi
+✅ Scheduled 4 notifications
+07:04 +487 ~1: /workspace/ekadashi-calendar/test/widget/system_back_menus_test.dart: Back closes the Journey year menu and the Panchang city sheet after switching to hi
+07:04 +488 ~1: /workspace/ekadashi-calendar/test/widget/system_back_menus_test.dart: Back closes the Journey year menu and the Panchang city sheet after switching to hi
+07:05 +489 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_test.dart: Brightness.dark 3 options preserve activation at large text
+07:05 +489 ~1: /workspace/ekadashi-calendar/test/widget/system_back_menus_test.dart: Back in the first frame of a menu or sheet closes it, not the app
+Splash blocking init took: 38ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 47ms total
+07:05 +490 ~1: /workspace/ekadashi-calendar/test/widget/system_back_menus_test.dart: Back in the first frame of a menu or sheet closes it, not the app
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+07:05 +491 ~1: /workspace/ekadashi-calendar/test/widget/system_back_menus_test.dart: Back in the first frame of a menu or sheet closes it, not the app
+07:05 +492 ~1: /workspace/ekadashi-calendar/test/widget/system_back_menus_test.dart: Back in the first frame of a menu or sheet closes it, not the app
+07:05 +493 ~1: /workspace/ekadashi-calendar/test/widget/system_back_menus_test.dart: Back in the first frame of a menu or sheet closes it, not the app
+07:05 +494 ~1: /workspace/ekadashi-calendar/test/widget/system_back_menus_test.dart: Back in the first frame of a menu or sheet closes it, not the app
+07:05 +495 ~1: /workspace/ekadashi-calendar/test/widget/system_back_menus_test.dart: Back in the first frame of a menu or sheet closes it, not the app
+07:06 +496 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+Calendar years loaded: [2026, 2027]
+Splash blocking init took: 136ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 186ms total
+07:09 +497 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:09 +498 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:09 +499 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:09 +500 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:09 +501 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:09 +502 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:09 +503 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:09 +504 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:10 +505 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:10 +506 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:10 +507 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:10 +508 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:10 +509 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:10 +510 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:10 +511 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:10 +512 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:10 +513 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:10 +514 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:10 +515 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:10 +516 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:10 +517 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:10 +518 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+✅ Scheduled 4 notifications
+07:11 +519 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:11 +520 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:11 +521 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:11 +522 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:11 +523 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:11 +524 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:11 +525 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:11 +526 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:11 +527 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:11 +528 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:11 +529 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:11 +530 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:11 +531 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:11 +532 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:11 +533 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:11 +534 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:12 +535 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:12 +536 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:12 +537 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:12 +538 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:12 +539 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+✅ Scheduled 4 notifications
+07:14 +539 ~1: /workspace/ekadashi-calendar/test/widget/search_ios_parity_test.dart: (setUpAll)
+Calendar years loaded: [2026, 2027]
+07:23 +539 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:25 +540 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:26 +541 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:26 +542 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:27 +543 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:27 +544 ~1: /workspace/ekadashi-calendar/test/widget/search_ios_parity_test.dart: results are glass rows with the iOS sizes and amber lock
+07:27 +544 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=false width=393.0 scale=1.0
+Splash blocking init took: 9ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 23ms total
+07:28 +545 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=false width=393.0 scale=1.0
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+07:29 +546 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=false width=393.0 scale=1.0
+07:31 +547 ~1: /workspace/ekadashi-calendar/test/widget/vrat_tracker_flow_test.dart: Free Vrat Tracker navigation and tab switching
+07:31 +547 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=320.0 scale=2.0
+Splash blocking init took: 29ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 83ms total
+07:31 +547 ~1: /workspace/ekadashi-calendar/test/widget/vrat_tracker_flow_test.dart: Free Vrat Tracker navigation and tab switching
+Calendar years loaded: [2026]
+07:31 +547 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=320.0 scale=2.0
+✅ Scheduled 4 notifications
+07:31 +547 ~1: /workspace/ekadashi-calendar/test/widget/vrat_tracker_flow_test.dart: Free Vrat Tracker navigation and tab switching
+Splash blocking init took: 232ms
+07:31 +547 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: en grouped tubes across five tabs, dark=true width=320.0 scale=2.0
+✅ Scheduled 4 notifications
+07:32 +547 ~1: /workspace/ekadashi-calendar/test/widget/vrat_tracker_flow_test.dart: Free Vrat Tracker navigation and tab switching
+⚠️ Notification service initialization skipped or failed: LateInitializationError: Field '_instance@1177271368' has not been initialized.
+NotificationService init completed (deferred) in 397ms total
+07:34 +548 ~1: /workspace/ekadashi-calendar/test/widget/vrat_tracker_flow_test.dart: Free Vrat Tracker navigation and tab switching
+07:34 +548 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: ta grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+Splash blocking init took: 5ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 11ms total
+07:34 +548 ~1: /workspace/ekadashi-calendar/test/widget/vrat_tracker_flow_test.dart: Free Vrat Tracker navigation and tab switching
+Search catalogue unavailable: Unable to load asset: "assets/search/search_catalog.json".
+The asset does not exist or has empty data.
+✅ Scheduled 0 notifications
+07:35 +548 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: ta grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+07:37 +548 ~1: /workspace/ekadashi-calendar/test/widget/vrat_tracker_flow_test.dart: Free Vrat Tracker navigation and tab switching
+✅ Scheduled 0 notifications
+07:38 +549 ~1: /workspace/ekadashi-calendar/test/widget/vrat_tracker_flow_test.dart: Free Vrat Tracker navigation and tab switching
+07:38 +549 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: ta grouped tubes across five tabs, dark=false width=393.0 scale=1.0
+Splash blocking init took: 6ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 8ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+07:40 +550 ~1: /workspace/ekadashi-calendar/test/widget/vrat_tracker_flow_test.dart: Free Vrat Tracker navigation and tab switching
+07:40 +550 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: ta grouped tubes across five tabs, dark=true width=320.0 scale=2.0
+Splash blocking init took: 6ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 13ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+07:41 +551 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: ta grouped tubes across five tabs, dark=true width=320.0 scale=2.0
+07:42 +551 ~1: /workspace/ekadashi-calendar/test/widget/ios_toolbar_icons_test.dart: large iOS search glyph on every tab at 320.0
+Calendar years loaded: [2026, 2027]
+07:42 +552 ~1: /workspace/ekadashi-calendar/test/widget/ios_toolbar_icons_test.dart: large iOS search glyph on every tab at 320.0
+07:43 +552 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: hi grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+Splash blocking init took: 4ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 45ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+07:43 +552 ~1: /workspace/ekadashi-calendar/test/widget/ios_toolbar_icons_test.dart: large iOS search glyph on every tab at 320.0
+Splash blocking init took: 99ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 153ms total
+07:45 +553 ~1: /workspace/ekadashi-calendar/test/widget/ios_toolbar_icons_test.dart: large iOS search glyph on every tab at 320.0
+07:45 +553 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: hi grouped tubes across five tabs, dark=false width=393.0 scale=1.0
+Splash blocking init took: 4ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 7ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+07:46 +553 ~1: /workspace/ekadashi-calendar/test/widget/ios_toolbar_icons_test.dart: large iOS search glyph on every tab at 320.0
+✅ Scheduled 4 notifications
+07:48 +554 ~1: /workspace/ekadashi-calendar/test/widget/ios_toolbar_icons_test.dart: large iOS search glyph on every tab at 320.0
+07:48 +554 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: hi grouped tubes across five tabs, dark=true width=320.0 scale=2.0
+Splash blocking init took: 9ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 12ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+07:48 +554 ~1: /workspace/ekadashi-calendar/test/widget/ios_toolbar_icons_test.dart: large iOS search glyph on every tab at 320.0
+✅ Scheduled 4 notifications
+07:49 +555 ~1: /workspace/ekadashi-calendar/test/widget/ios_toolbar_icons_test.dart: large iOS search glyph on every tab at 320.0
+07:50 +555 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: te grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+Splash blocking init took: 6ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 44ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+07:52 +556 ~1: /workspace/ekadashi-calendar/test/widget/ios_toolbar_icons_test.dart: large iOS search glyph on every tab at 320.0
+07:52 +556 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: te grouped tubes across five tabs, dark=false width=393.0 scale=1.0
+Splash blocking init took: 4ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 8ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+07:54 +557 ~1: /workspace/ekadashi-calendar/test/widget/ios_toolbar_icons_test.dart: large iOS search glyph on every tab at 320.0
+07:54 +557 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: te grouped tubes across five tabs, dark=true width=320.0 scale=2.0
+Splash blocking init took: 5ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 15ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+07:55 +558 ~1: /workspace/ekadashi-calendar/test/widget/ios_toolbar_icons_test.dart: large iOS search glyph on every tab at 320.0
+07:55 +558 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: gu grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+Splash blocking init took: 3ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 6ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+07:56 +559 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: gu grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+07:56 +559 ~1: /workspace/ekadashi-calendar/test/widget/ios_toolbar_icons_test.dart: large iOS search glyph on every tab at 393.0
+Splash blocking init took: 5ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 30ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+07:57 +560 ~1: /workspace/ekadashi-calendar/test/widget/ios_toolbar_icons_test.dart: large iOS search glyph on every tab at 393.0
+07:57 +560 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: gu grouped tubes across five tabs, dark=false width=393.0 scale=1.0
+Splash blocking init took: 7ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 11ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+07:57 +561 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: gu grouped tubes across five tabs, dark=false width=393.0 scale=1.0
+07:58 +561 ~1: /workspace/ekadashi-calendar/test/widget/ios_toolbar_icons_test.dart: Google uses circular sync and person-minus iOS glyphs
+Splash blocking init took: 16ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 27ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+07:58 +562 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: gu grouped tubes across five tabs, dark=false width=393.0 scale=1.0
+07:58 +562 ~1: /workspace/ekadashi-calendar/test/widget/ios_toolbar_icons_test.dart: selected tab keeps the dark iPhone pill
+Splash blocking init took: 4ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 23ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+07:58 +563 ~1: /workspace/ekadashi-calendar/test/widget/ios_toolbar_icons_test.dart: selected tab keeps the dark iPhone pill
+07:58 +563 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: gu grouped tubes across five tabs, dark=true width=320.0 scale=2.0
+Splash blocking init took: 3ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 6ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+07:59 +564 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: gu grouped tubes across five tabs, dark=true width=320.0 scale=2.0
+08:00 +564 ~1: /workspace/ekadashi-calendar/test/widget/app_icons_ui_test.dart: tab bar: house, calendar, rosette, sparkles, gear
+Calendar years loaded: [2026, 2027]
+08:00 +565 ~1: /workspace/ekadashi-calendar/test/widget/app_icons_ui_test.dart: tab bar: house, calendar, rosette, sparkles, gear
+08:00 +565 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: bn grouped tubes across five tabs, dark=true width=393.0 scale=1.0
+Splash blocking init took: 5ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 9ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+08:01 +565 ~1: /workspace/ekadashi-calendar/test/widget/app_icons_ui_test.dart: tab bar: house, calendar, rosette, sparkles, gear
+Splash blocking init took: 124ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 174ms total
+08:02 +566 ~1: /workspace/ekadashi-calendar/test/widget/app_icons_ui_test.dart: tab bar: house, calendar, rosette, sparkles, gear
+08:02 +566 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: bn grouped tubes across five tabs, dark=false width=393.0 scale=1.0
+Splash blocking init took: 3ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 6ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+08:03 +566 ~1: /workspace/ekadashi-calendar/test/widget/app_icons_ui_test.dart: tab bar: house, calendar, rosette, sparkles, gear
+✅ Scheduled 4 notifications
+08:03 +567 ~1: /workspace/ekadashi-calendar/test/widget/app_icons_ui_test.dart: tab bar: house, calendar, rosette, sparkles, gear
+08:03 +567 ~1: /workspace/ekadashi-calendar/test/widget/glass_tube_groups_test.dart: bn grouped tubes across five tabs, dark=true width=320.0 scale=2.0
+Splash blocking init took: 4ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 10ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+08:04 +568 ~1: /workspace/ekadashi-calendar/test/widget/app_icons_ui_test.dart: tab bar: house, calendar, rosette, sparkles, gear
+✅ Scheduled 4 notifications
+08:05 +569 ~1: /workspace/ekadashi-calendar/test/widget/event_reminder_settings_test.dart: adds a free reminder for my own entries
+08:05 +569 ~1: /workspace/ekadashi-calendar/test/widget/app_icons_ui_test.dart: Home menus: location, tradition, language and year
+Splash blocking init took: 5ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 9ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+08:06 +570 ~1: /workspace/ekadashi-calendar/test/widget/event_reminder_settings_test.dart: adds a free reminder for my own entries
+08:06 +571 ~1: /workspace/ekadashi-calendar/test/widget/event_reminder_settings_test.dart: the editor is an iOS sheet without a locked section
+08:06 +572 ~1: /workspace/ekadashi-calendar/test/widget/event_reminder_settings_test.dart: the picker is a grouped list with a teal search field
+08:07 +573 ~1: /workspace/ekadashi-calendar/test/widget/event_reminder_settings_test.dart: a locked event opens the paywall and is not chosen
+08:07 +573 ~1: /workspace/ekadashi-calendar/test/widget/home_details_ios_parity_test.dart: Home header 2×2 glass menus: location.fill and the city in subheadline medium; tapping it opens the city search
+Calendar years loaded: [2026, 2027]
+08:07 +574 ~1: /workspace/ekadashi-calendar/test/widget/home_details_ios_parity_test.dart: Home header 2×2 glass menus: location.fill and the city in subheadline medium; tapping it opens the city search
+08:07 +575 ~1: /workspace/ekadashi-calendar/test/widget/home_details_ios_parity_test.dart: Home header 2×2 glass menus: location.fill and the city in subheadline medium; tapping it opens the city search
+Splash blocking init took: 104ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 123ms total
+08:08 +576 ~1: /workspace/ekadashi-calendar/test/widget/home_details_ios_parity_test.dart: Home header 2×2 glass menus: location.fill and the city in subheadline medium; tapping it opens the city search
+08:08 +577 ~1: /workspace/ekadashi-calendar/test/widget/home_details_ios_parity_test.dart: Home header 2×2 glass menus: location.fill and the city in subheadline medium; tapping it opens the city search
+08:08 +578 ~1: /workspace/ekadashi-calendar/test/widget/home_details_ios_parity_test.dart: Home header 2×2 glass menus: location.fill and the city in subheadline medium; tapping it opens the city search
+08:08 +579 ~1: /workspace/ekadashi-calendar/test/widget/home_details_ios_parity_test.dart: Home header 2×2 glass menus: location.fill and the city in subheadline medium; tapping it opens the city search
+✅ Scheduled 4 notifications
+08:10 +580 ~1: /workspace/ekadashi-calendar/test/widget/home_details_ios_parity_test.dart: Home header 2×2 glass menus: location.fill and the city in subheadline medium; tapping it opens the city search
+08:11 +580 ~1: /workspace/ekadashi-calendar/test/widget/subsection_swipe_test.dart: (setUpAll)
+Calendar years loaded: [2026, 2027]
+08:11 +580 ~1: /workspace/ekadashi-calendar/test/widget/home_details_ios_parity_test.dart: Home header 2×2 glass menus: location.fill and the city in subheadline medium; tapping it opens the city search
+✅ Scheduled 4 notifications
+08:12 +581 ~1: /workspace/ekadashi-calendar/test/widget/subsection_swipe_test.dart: (setUpAll)
+08:13 +581 ~1: /workspace/ekadashi-calendar/test/widget/home_details_ios_parity_test.dart: Home header no location: Chennai, never "Location Denied"
+Splash blocking init took: 8ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 12ms total
+📍 Location permission denied previously (Rationale needed). Not asking automatically.
+✅ Scheduled 4 notifications
+08:13 +582 ~1: /workspace/ekadashi-calendar/test/widget/subsection_swipe_test.dart: (setUpAll)
+08:13 +582 ~1: /workspace/ekadashi-calendar/test/widget/home_details_ios_parity_test.dart: Home header a picked city shows mappin.and.ellipse
+Splash blocking init took: 30ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 33ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+08:15 +583 ~1: /workspace/ekadashi-calendar/test/widget/subsection_swipe_test.dart: (setUpAll)
+08:15 +583 ~1: /workspace/ekadashi-calendar/test/widget/home_details_ios_parity_test.dart: Home header menus: teal symbols, checkmark leading in the menu
+Splash blocking init took: 5ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 8ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+08:16 +584 ~1: /workspace/ekadashi-calendar/test/widget/subsection_swipe_test.dart: (setUpAll)
+08:16 +584 ~1: /workspace/ekadashi-calendar/test/widget/home_details_ios_parity_test.dart: Home card glass card radius 24, iOS text sizes, labelled arrows
+Splash blocking init took: 24ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 28ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+08:17 +585 ~1: /workspace/ekadashi-calendar/test/widget/subsection_swipe_test.dart: (setUpAll)
+08:17 +585 ~1: /workspace/ekadashi-calendar/test/widget/home_details_ios_parity_test.dart: Home card View Details is the prominent teal capsule, white text
+Splash blocking init took: 8ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 13ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+08:17 +586 ~1: /workspace/ekadashi-calendar/test/widget/subsection_swipe_test.dart: (setUpAll)
+08:17 +586 ~1: /workspace/ekadashi-calendar/test/widget/home_details_ios_parity_test.dart: Home card Record: round glass button, calendar.badge.plus, grey when closed, teal when open
+Splash blocking init took: 8ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 27ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+08:18 +587 ~1: /workspace/ekadashi-calendar/test/widget/subsection_swipe_test.dart: (setUpAll)
+08:18 +587 ~1: /workspace/ekadashi-calendar/test/widget/home_details_ios_parity_test.dart: Home card another city: the menus stay, the cards dim and a progress view shows while it is calculated
+Splash blocking init took: 4ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 12ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+08:19 +588 ~1: /workspace/ekadashi-calendar/test/widget/subsection_swipe_test.dart: Panchang sections change with a swipe
+08:19 +588 ~1: /workspace/ekadashi-calendar/test/widget/home_details_ios_parity_test.dart: Details pushed inside the Home tab: background, bar, tab bar
+Splash blocking init took: 5ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 14ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+08:20 +589 ~1: /workspace/ekadashi-calendar/test/widget/subsection_swipe_test.dart: Panchang sections change with a swipe
+08:20 +589 ~1: /workspace/ekadashi-calendar/test/widget/home_details_ios_parity_test.dart: Details iOS sizes, time-zone pill, glass timings box
+Splash blocking init took: 8ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 15ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+08:21 +590 ~1: /workspace/ekadashi-calendar/test/widget/subsection_swipe_test.dart: Panchang sections change with a swipe
+08:21 +590 ~1: /workspace/ekadashi-calendar/test/widget/home_details_ios_parity_test.dart: Details closed: dimmed button reads "once Parana begins"
+Splash blocking init took: 4ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 7ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+08:21 +591 ~1: /workspace/ekadashi-calendar/test/widget/subsection_swipe_test.dart: Panchang sections change with a swipe
+08:21 +591 ~1: /workspace/ekadashi-calendar/test/widget/home_details_ios_parity_test.dart: Details open: grey questionmark Record Vrat; observed: green check
+Splash blocking init took: 4ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 8ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+08:22 +592 ~1: /workspace/ekadashi-calendar/test/widget/home_details_ios_parity_test.dart: Details open: grey questionmark Record Vrat; observed: green check
+08:22 +593 ~1: /workspace/ekadashi-calendar/test/widget/subsection_swipe_test.dart: Journey uses glass chips like Panchang and swipes
+08:22 +594 ~1: /workspace/ekadashi-calendar/test/widget/subsection_swipe_test.dart: Search type pages change with a swipe
+08:24 +595 ~1: /workspace/ekadashi-calendar/test/widget/subsection_swipe_test.dart: Search type pages change with a swipe
+08:24 +596 ~1: /workspace/ekadashi-calendar/test/widget/free_vrat_ui_test.dart: ta Vrat has all free tabs and no enable/disable controls
+08:24 +597 ~1: /workspace/ekadashi-calendar/test/widget/subsection_swipe_test.dart: Search reopens with the text, type and year it had
+08:24 +598 ~1: /workspace/ekadashi-calendar/test/widget/subsection_swipe_test.dart: Search reopens with the text, type and year it had
+08:24 +599 ~1: /workspace/ekadashi-calendar/test/widget/free_vrat_ui_test.dart: te Vrat has all free tabs and no enable/disable controls
+08:24 +600 ~1: /workspace/ekadashi-calendar/test/widget/free_vrat_ui_test.dart: gu Vrat has all free tabs and no enable/disable controls
+08:24 +601 ~1: /workspace/ekadashi-calendar/test/widget/free_vrat_ui_test.dart: bn Vrat has all free tabs and no enable/disable controls
+08:25 +602 ~1: /workspace/ekadashi-calendar/test/widget/screen_scroll_test.dart: Calendar scrolls when dragged on the month grid
+Calendar years loaded: [2026, 2027]
+Splash blocking init took: 148ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 167ms total
+08:27 +603 ~1: /workspace/ekadashi-calendar/test/widget/screen_scroll_test.dart: Calendar scrolls when dragged on the month grid
+08:27 +604 ~1: /workspace/ekadashi-calendar/test/widget/screen_scroll_test.dart: Calendar scrolls when dragged on the month grid
+08:27 +605 ~1: /workspace/ekadashi-calendar/test/widget/screen_scroll_test.dart: Calendar scrolls when dragged on the month grid
+✅ Scheduled 4 notifications
+08:28 +606 ~1: /workspace/ekadashi-calendar/test/widget/screen_scroll_test.dart: Calendar scrolls when dragged on the month grid
+08:28 +607 ~1: /workspace/ekadashi-calendar/test/widget/screen_scroll_test.dart: Calendar scrolls when dragged on the month grid
+08:29 +608 ~1: /workspace/ekadashi-calendar/test/widget/screen_scroll_test.dart: Calendar scrolls when dragged on the month grid
+08:29 +609 ~1: /workspace/ekadashi-calendar/test/widget/screen_scroll_test.dart: Calendar scrolls when dragged on the month grid
+✅ Scheduled 4 notifications
+08:29 +610 ~1: /workspace/ekadashi-calendar/test/widget/screen_scroll_test.dart: Calendar scrolls when dragged on the month grid
+08:30 +611 ~1: /workspace/ekadashi-calendar/test/widget/screen_scroll_test.dart: Calendar scrolls when dragged on the month grid
+08:30 +612 ~1: /workspace/ekadashi-calendar/test/widget/premium_ui_test.dart: hi dark transparent plans, free exit and narrow 2.0x layout
+08:30 +613 ~1: /workspace/ekadashi-calendar/test/widget/screen_scroll_test.dart: Panchang scrolls when dragged from the top half
+Splash blocking init took: 18ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 23ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+08:31 +614 ~1: /workspace/ekadashi-calendar/test/widget/screen_scroll_test.dart: Panchang scrolls when dragged from the top half
+08:31 +615 ~1: /workspace/ekadashi-calendar/test/widget/screen_scroll_test.dart: Panchang scrolls when dragged from the top half
+08:32 +616 ~1: /workspace/ekadashi-calendar/test/widget/screen_scroll_test.dart: Panchang scrolls when dragged from the top half
+08:32 +617 ~1: /workspace/ekadashi-calendar/test/widget/screen_scroll_test.dart: Panchang scrolls when dragged from the top half
+08:33 +618 ~1: /workspace/ekadashi-calendar/test/widget/screen_scroll_test.dart: Panchang scrolls when dragged from the top half
+08:33 +619 ~1: /workspace/ekadashi-calendar/test/widget/screen_scroll_test.dart: Panchang scrolls when dragged from the top half
+08:33 +620 ~1: /workspace/ekadashi-calendar/test/widget/screen_scroll_test.dart: Panchang scrolls when dragged from the top half
+08:34 +621 ~1: /workspace/ekadashi-calendar/test/widget/screen_scroll_test.dart: Panchang scrolls when dragged from the top half
+08:34 +622 ~1: /workspace/ekadashi-calendar/test/widget/screen_scroll_test.dart: Panchang scrolls when dragged from the top half
+08:34 +623 ~1: /workspace/ekadashi-calendar/test/widget/screen_scroll_test.dart: Panchang scrolls when dragged from the top half
+08:34 +624 ~1: /workspace/ekadashi-calendar/test/widget/premium_ui_test.dart: bn dark transparent plans, free exit and narrow 1.0x layout
+08:35 +624 ~1: /workspace/ekadashi-calendar/test/widget/screen_scroll_test.dart: Settings scrolls when dragged from the top half
+Splash blocking init took: 5ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 7ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+08:35 +625 ~1: /workspace/ekadashi-calendar/test/widget/screen_scroll_test.dart: Settings scrolls when dragged from the top half
+08:35 +626 ~1: /workspace/ekadashi-calendar/test/widget/screen_scroll_test.dart: Settings scrolls when dragged from the top half
+08:35 +627 ~1: /workspace/ekadashi-calendar/test/widget/premium_ui_test.dart: bn light transparent plans, free exit and narrow 1.0x layout
+08:35 +627 ~1: /workspace/ekadashi-calendar/test/widget/screen_scroll_test.dart: Journey scrolls when dragged from the top half
+Splash blocking init took: 10ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 17ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+08:36 +628 ~1: /workspace/ekadashi-calendar/test/widget/screen_scroll_test.dart: Journey scrolls when dragged from the top half
+08:36 +629 ~1: /workspace/ekadashi-calendar/test/widget/premium_ui_test.dart: bn light transparent plans, free exit and narrow 2.0x layout
+08:36 +630 ~1: /workspace/ekadashi-calendar/test/widget/premium_ui_test.dart: (tearDownAll)
+08:37 +630 ~1: /workspace/ekadashi-calendar/test/widget/home_engine_test.dart: the four Home menus line up in every language, width=393.0 scale=1.0
+Calendar years loaded: [2026, 2027]
+08:37 +630 ~1: /workspace/ekadashi-calendar/test/widget/glass_navigation_app_test.dart: Calendar Add button stays above glass at 320.0dp, scale 1.0
+Calendar years loaded: [2026, 2027]
+08:38 +630 ~1: /workspace/ekadashi-calendar/test/widget/home_engine_test.dart: the four Home menus line up in every language, width=393.0 scale=1.0
+Splash blocking init took: 88ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 106ms total
+08:38 +630 ~1: /workspace/ekadashi-calendar/test/widget/glass_navigation_app_test.dart: Calendar Add button stays above glass at 320.0dp, scale 1.0
+Splash blocking init took: 76ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 90ms total
+08:39 +630 ~1: /workspace/ekadashi-calendar/test/widget/home_engine_test.dart: the four Home menus line up in every language, width=393.0 scale=1.0
+✅ Scheduled 4 notifications
+08:40 +630 ~1: /workspace/ekadashi-calendar/test/widget/glass_navigation_app_test.dart: Calendar Add button stays above glass at 320.0dp, scale 1.0
+✅ Scheduled 4 notifications
+08:41 +630 ~1: /workspace/ekadashi-calendar/test/widget/home_engine_test.dart: the four Home menus line up in every language, width=393.0 scale=1.0
+✅ Scheduled 4 notifications
+08:41 +630 ~1: /workspace/ekadashi-calendar/test/widget/glass_navigation_app_test.dart: Calendar Add button stays above glass at 320.0dp, scale 1.0
+✅ Scheduled 4 notifications
+08:43 +630 ~1: /workspace/ekadashi-calendar/test/widget/home_engine_test.dart: the four Home menus line up in every language, width=393.0 scale=1.0
+✅ Scheduled 4 notifications
+08:43 +631 ~1: /workspace/ekadashi-calendar/test/widget/home_engine_test.dart: the four Home menus line up in every language, width=393.0 scale=1.0
+08:43 +631 ~1: /workspace/ekadashi-calendar/test/widget/glass_navigation_app_test.dart: Calendar Add button stays above glass at 320.0dp, scale 2.0
+Splash blocking init took: 6ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 13ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+08:44 +631 ~1: /workspace/ekadashi-calendar/test/widget/home_engine_test.dart: the four Home menus line up in every language, width=393.0 scale=1.0
+✅ Scheduled 4 notifications
+08:44 +632 ~1: /workspace/ekadashi-calendar/test/widget/home_engine_test.dart: the four Home menus line up in every language, width=393.0 scale=1.0
+08:44 +632 ~1: /workspace/ekadashi-calendar/test/widget/glass_navigation_app_test.dart: Calendar Add button stays above glass at 393.0dp, scale 1.0
+Splash blocking init took: 6ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 10ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+08:44 +632 ~1: /workspace/ekadashi-calendar/test/widget/home_engine_test.dart: the four Home menus line up in every language, width=393.0 scale=1.0
+✅ Scheduled 4 notifications
+08:45 +633 ~1: /workspace/ekadashi-calendar/test/widget/home_engine_test.dart: the four Home menus line up in every language, width=393.0 scale=1.0
+08:45 +633 ~1: /workspace/ekadashi-calendar/test/widget/glass_navigation_app_test.dart: Calendar Add button stays above glass at 393.0dp, scale 2.0
+Splash blocking init took: 4ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 8ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+08:45 +633 ~1: /workspace/ekadashi-calendar/test/widget/home_engine_test.dart: the four Home menus line up in every language, width=393.0 scale=1.0
+✅ Scheduled 4 notifications
+08:45 +634 ~1: /workspace/ekadashi-calendar/test/widget/home_engine_test.dart: the four Home menus line up in every language, width=393.0 scale=1.0
+08:45 +634 ~1: /workspace/ekadashi-calendar/test/widget/glass_navigation_app_test.dart: Calendar empty day is readable above glass on a short 720.0dp screen, month 8
+Splash blocking init took: 5ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 9ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+08:46 +634 ~1: /workspace/ekadashi-calendar/test/widget/home_engine_test.dart: the four Home menus line up in every language, width=393.0 scale=1.0
+✅ Scheduled 4 notifications
+08:46 +635 ~1: /workspace/ekadashi-calendar/test/widget/glass_navigation_app_test.dart: Calendar empty day is readable above glass on a short 720.0dp screen, month 8
+08:46 +635 ~1: /workspace/ekadashi-calendar/test/widget/home_engine_test.dart: the four Home menus line up in every language, width=320.0 scale=1.0
+Splash blocking init took: 8ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 13ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+08:46 +636 ~1: /workspace/ekadashi-calendar/test/widget/home_engine_test.dart: the four Home menus line up in every language, width=320.0 scale=1.0
+08:46 +636 ~1: /workspace/ekadashi-calendar/test/widget/glass_navigation_app_test.dart: Calendar empty day is readable above glass on a short 732.0dp screen, month 8
+Splash blocking init took: 10ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 13ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+08:47 +636 ~1: /workspace/ekadashi-calendar/test/widget/home_engine_test.dart: the four Home menus line up in every language, width=320.0 scale=1.0
+✅ Scheduled 4 notifications
+08:47 +637 ~1: /workspace/ekadashi-calendar/test/widget/home_engine_test.dart: the four Home menus line up in every language, width=320.0 scale=1.0
+08:47 +637 ~1: /workspace/ekadashi-calendar/test/widget/glass_navigation_app_test.dart: Calendar empty day is readable above glass on a short 720.0dp screen, month 10
+Splash blocking init took: 5ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 8ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+08:47 +637 ~1: /workspace/ekadashi-calendar/test/widget/home_engine_test.dart: the four Home menus line up in every language, width=320.0 scale=1.0
+✅ Scheduled 4 notifications
+08:48 +638 ~1: /workspace/ekadashi-calendar/test/widget/home_engine_test.dart: the four Home menus line up in every language, width=320.0 scale=1.0
+08:48 +638 ~1: /workspace/ekadashi-calendar/test/widget/glass_navigation_app_test.dart: Calendar empty day is readable above glass on a short 732.0dp screen, month 10
+Splash blocking init took: 4ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 7ms total
+08:48 +638 ~1: /workspace/ekadashi-calendar/test/widget/home_engine_test.dart: the four Home menus line up in every language, width=320.0 scale=1.0
+✅ Scheduled 4 notifications
+08:48 +638 ~1: /workspace/ekadashi-calendar/test/widget/glass_navigation_app_test.dart: Calendar empty day is readable above glass on a short 732.0dp screen, month 10
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+08:48 +638 ~1: /workspace/ekadashi-calendar/test/widget/home_engine_test.dart: the four Home menus line up in every language, width=320.0 scale=1.0
+✅ Scheduled 4 notifications
+08:48 +639 ~1: /workspace/ekadashi-calendar/test/widget/home_engine_test.dart: the four Home menus line up in every language, width=320.0 scale=1.0
+08:48 +639 ~1: /workspace/ekadashi-calendar/test/widget/glass_navigation_app_test.dart: iOS retains its existing navigation
+Splash blocking init took: 5ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 8ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+08:48 +639 ~1: /workspace/ekadashi-calendar/test/widget/home_engine_test.dart: the four Home menus line up in every language, width=320.0 scale=1.0
+✅ Scheduled 4 notifications
+08:49 +640 ~1: /workspace/ekadashi-calendar/test/widget/glass_navigation_app_test.dart: iOS retains its existing navigation
+08:49 +640 ~1: /workspace/ekadashi-calendar/test/widget/home_engine_test.dart: the four Home menus line up in every language, width=320.0 scale=2.0
+Splash blocking init took: 4ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 11ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+08:49 +641 ~1: /workspace/ekadashi-calendar/test/widget/home_engine_test.dart: the four Home menus line up in every language, width=320.0 scale=2.0
+08:49 +641 ~1: /workspace/ekadashi-calendar/test/widget/glass_navigation_app_test.dart: Floating glass capsule keeps five tabs and their app state
+Splash blocking init took: 10ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 14ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+08:49 +641 ~1: /workspace/ekadashi-calendar/test/widget/home_engine_test.dart: the four Home menus line up in every language, width=320.0 scale=2.0
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+08:50 +642 ~1: /workspace/ekadashi-calendar/test/widget/glass_navigation_app_test.dart: Floating glass capsule keeps five tabs and their app state
+08:50 +642 ~1: /workspace/ekadashi-calendar/test/widget/home_engine_test.dart: switching the tradition stays on the Ekadashi on screen
+Splash blocking init took: 4ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 7ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+08:52 +643 ~1: /workspace/ekadashi-calendar/test/widget/glass_navigation_app_test.dart: Floating glass capsule keeps five tabs and their app state
+08:52 +643 ~1: /workspace/ekadashi-calendar/test/widget/home_engine_test.dart: the year menu and Calendar stay on the same year
+Splash blocking init took: 5ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 9ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+08:53 +644 ~1: /workspace/ekadashi-calendar/test/widget/glass_navigation_app_test.dart: Floating glass capsule keeps five tabs and their app state
+08:53 +644 ~1: /workspace/ekadashi-calendar/test/widget/home_engine_test.dart: reopening the app shows the place detected now, even after a city was picked
+Splash blocking init took: 4ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 17ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+08:55 +645 ~1: /workspace/ekadashi-calendar/test/widget/glass_navigation_app_test.dart: Floating glass capsule keeps five tabs and their app state
+08:55 +645 ~1: /workspace/ekadashi-calendar/test/widget/home_engine_test.dart: the city search finds cities typed in the app language
+Splash blocking init took: 11ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 20ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+08:56 +646 ~1: /workspace/ekadashi-calendar/test/widget/glass_navigation_app_test.dart: Floating glass capsule keeps five tabs and their app state
+08:56 +646 ~1: /workspace/ekadashi-calendar/test/widget/home_engine_test.dart: the city search sets the city; the share card is free
+Splash blocking init took: 15ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 19ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+08:59 +647 ~1: /workspace/ekadashi-calendar/test/widget/glass_navigation_app_test.dart: Floating glass capsule keeps five tabs and their app state
+08:59 +648 ~1: /workspace/ekadashi-calendar/test/widget/glass_navigation_app_test.dart: Keyboard editing hides the capsule and restores it after dismissal
+Splash blocking init took: 4ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 7ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+09:00 +649 ~1: /workspace/ekadashi-calendar/test/widget/calendar_ios_parity_test.dart: (setUpAll)
+Calendar years loaded: [2026, 2027]
+09:00 +649 ~1: /workspace/ekadashi-calendar/test/widget/calendar_ios_parity_test.dart: an Ekadashi day never says "No entries for this day", in any year or language
+09:01 +650 ~1: /workspace/ekadashi-calendar/test/widget/calendar_ios_parity_test.dart: an Ekadashi day never says "No entries for this day", in any year or language
+09:01 +651 ~1: /workspace/ekadashi-calendar/test/widget/calendar_ios_parity_test.dart: an Ekadashi day never says "No entries for this day", in any year or language
+09:02 +651 ~1: /workspace/ekadashi-calendar/test/widget/app_flow_test.dart: GPS unavailable keeps Chennai, not the device time zone, and retains navigation
+Calendar years loaded: [2026, 2027]
+Splash blocking init took: 81ms
+✅ Notification service initialized (TZ: America/New_York)
+NotificationService init completed (deferred) in 102ms total
+✅ Scheduled 4 notifications
+09:07 +652 ~1: /workspace/ekadashi-calendar/test/widget/calendar_ios_parity_test.dart: an Ekadashi day never says "No entries for this day", in any year or language
+09:07 +652 ~1: /workspace/ekadashi-calendar/test/widget/app_flow_test.dart: Denied notifications disable reminder controls without losing Settings
+Splash blocking init took: 5ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 13ms total
+🔔 Re-requesting notification permission on resume...
+⏭️ Skipping scheduling - System notifications disabled
+🗑️ All notifications cancelled
+🗑️ All notifications cancelled
+⏭️ Skipping scheduling - System notifications disabled
+🗑️ All notifications cancelled
+🗑️ All notifications cancelled
+09:09 +653 ~1: /workspace/ekadashi-calendar/test/widget/calendar_ios_parity_test.dart: an Ekadashi day never says "No entries for this day", in any year or language
+09:10 +653 ~1: /workspace/ekadashi-calendar/test/widget/app_flow_test.dart: Master reminder disable persists and sends native cancellation
+Splash blocking init took: 5ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 36ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+🗑️ All notifications cancelled
+09:10 +654 ~1: /workspace/ekadashi-calendar/test/widget/calendar_ios_parity_test.dart: an Ekadashi day never says "No entries for this day", in any year or language
+09:10 +654 ~1: /workspace/ekadashi-calendar/test/widget/app_flow_test.dart: App loads Home with resolved city and schedules ISO timings
+Splash blocking init took: 9ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 13ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+09:11 +655 ~1: /workspace/ekadashi-calendar/test/widget/calendar_ios_parity_test.dart: an Ekadashi day never says "No entries for this day", in any year or language
+09:11 +655 ~1: /workspace/ekadashi-calendar/test/widget/app_flow_test.dart: Location denial still leaves calendar and settings usable
+Splash blocking init took: 10ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 14ms total
+📍 Location permission denied previously (Rationale needed). Not asking automatically.
+✅ Scheduled 4 notifications
+09:12 +656 ~1: /workspace/ekadashi-calendar/test/widget/calendar_ios_parity_test.dart: an Ekadashi day never says "No entries for this day", in any year or language
+09:12 +656 ~1: /workspace/ekadashi-calendar/test/widget/app_flow_test.dart: Bottom navigation preserves Home after Calendar and Settings
+Splash blocking init took: 23ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 27ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+09:13 +657 ~1: /workspace/ekadashi-calendar/test/widget/calendar_ios_parity_test.dart: an Ekadashi day never says "No entries for this day", in any year or language
+09:14 +657 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Previously opened tabs keep dates and sections after all language switches
+Calendar years loaded: [2026, 2027]
+Splash blocking init took: 84ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 164ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+09:21 +658 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Previously opened tabs keep dates and sections after all language switches
+09:22 +659 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Previously opened tabs keep dates and sections after all language switches
+09:22 +660 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Previously opened tabs keep dates and sections after all language switches
+09:22 +660 ~1: /workspace/ekadashi-calendar/test/widget/calendar_ios_parity_test.dart: Toolbar the shell shows them in its top bar
+Splash blocking init took: 9ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 21ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+09:26 +661 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Previously opened tabs keep dates and sections after all language switches
+09:26 +662 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Previously opened tabs keep dates and sections after all language switches
+09:26 +663 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Previously opened tabs keep dates and sections after all language switches
+09:26 +664 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Previously opened tabs keep dates and sections after all language switches
+09:27 +665 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Previously opened tabs keep dates and sections after all language switches
+09:27 +666 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Previously opened tabs keep dates and sections after all language switches
+09:27 +667 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Previously opened tabs keep dates and sections after all language switches
+09:28 +668 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Previously opened tabs keep dates and sections after all language switches
+09:29 +669 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Previously opened tabs keep dates and sections after all language switches
+✅ Scheduled 4 notifications
+09:29 +670 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Previously opened tabs keep dates and sections after all language switches
+09:29 +671 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Previously opened tabs keep dates and sections after all language switches
+09:30 +672 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Previously opened tabs keep dates and sections after all language switches
+✅ Scheduled 4 notifications
+09:31 +673 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Previously opened tabs keep dates and sections after all language switches
+09:31 +674 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Previously opened tabs keep dates and sections after all language switches
+09:31 +675 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Previously opened tabs keep dates and sections after all language switches
+09:32 +676 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Previously opened tabs keep dates and sections after all language switches
+09:32 +677 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Previously opened tabs keep dates and sections after all language switches
+09:32 +678 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Previously opened tabs keep dates and sections after all language switches
+✅ Scheduled 4 notifications
+09:33 +678 ~1: /workspace/ekadashi-calendar/test/widget/play_premium_flow_test.dart: (setUpAll)
+Calendar years loaded: [2026, 2027]
+09:33 +678 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Previously opened tabs keep dates and sections after all language switches
+✅ Scheduled 4 notifications
+09:34 +679 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Previously opened tabs keep dates and sections after all language switches
+09:34 +680 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Previously opened tabs keep dates and sections after all language switches
+09:34 +681 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Previously opened tabs keep dates and sections after all language switches
+09:35 +682 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Previously opened tabs keep dates and sections after all language switches
+09:35 +683 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Previously opened tabs keep dates and sections after all language switches
+09:35 +684 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Previously opened tabs keep dates and sections after all language switches
+✅ Scheduled 4 notifications
+09:35 +685 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Previously opened tabs keep dates and sections after all language switches
+09:35 +686 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Previously opened tabs keep dates and sections after all language switches
+09:35 +687 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Previously opened tabs keep dates and sections after all language switches
+✅ Scheduled 4 notifications
+09:36 +688 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Previously opened tabs keep dates and sections after all language switches
+09:37 +689 ~1: /workspace/ekadashi-calendar/test/widget/play_premium_flow_test.dart: After a reinstall the Google account still has no free sync
+09:37 +689 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Opening the language menu keeps the tab toolbar and layout
+Splash blocking init took: 4ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 8ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+09:37 +690 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Opening the language menu keeps the tab toolbar and layout
+09:37 +691 ~1: /workspace/ekadashi-calendar/test/widget/play_premium_flow_test.dart: The free sync imports whichever month is being viewed
+09:37 +691 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Opening the Google menu keeps the tab toolbar and layout
+Splash blocking init took: 7ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 12ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+09:37 +692 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Opening the Google menu keeps the tab toolbar and layout
+09:38 +693 ~1: /workspace/ekadashi-calendar/test/widget/play_premium_flow_test.dart: Closing the picker or the Calendar and retrying keeps the free sync
+09:38 +693 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Home language switches preserve the selected fast at 393.0px and 1.0x text
+Splash blocking init took: 4ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 7ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+09:38 +694 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Home language switches preserve the selected fast at 393.0px and 1.0x text
+✅ Scheduled 4 notifications
+09:38 +694 ~1: /workspace/ekadashi-calendar/test/widget/play_premium_flow_test.dart: A failed free import keeps the free sync
+Google Calendar sync failed at import: Bad state: Page two failed
+09:39 +695 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Home language switches preserve the selected fast at 393.0px and 1.0x text
+09:39 +695 ~1: /workspace/ekadashi-calendar/test/widget/play_premium_flow_test.dart: If the free-sync record cannot be checked, nothing is handed out, Premium is offered and the free sync stays available
+Free sync check failed: Bad state: Free sync registry unreachable
+09:39 +696 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Home language switches preserve the selected fast at 393.0px and 1.0x text
+✅ Scheduled 4 notifications
+09:40 +697 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Home language switches preserve the selected fast at 393.0px and 1.0x text
+09:40 +698 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Home language switches preserve the selected fast at 393.0px and 1.0x text
+✅ Scheduled 4 notifications
+09:41 +699 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Home language switches preserve the selected fast at 393.0px and 1.0x text
+✅ Scheduled 4 notifications
+09:41 +700 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Home language switches preserve the selected fast at 393.0px and 1.0x text
+09:42 +701 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Home language switches preserve the selected fast at 393.0px and 1.0x text
+✅ Scheduled 4 notifications
+09:42 +702 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Home language switches preserve the selected fast at 393.0px and 1.0x text
+09:42 +703 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Home language switches preserve the selected fast at 393.0px and 1.0x text
+✅ Scheduled 4 notifications
+09:43 +704 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Home language switches preserve the selected fast at 393.0px and 1.0x text
+09:43 +705 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Home language switches preserve the selected fast at 393.0px and 1.0x text
+09:43 +706 ~1: /workspace/ekadashi-calendar/test/widget/play_premium_flow_test.dart: Vrat: editing an existing entry stays free
+09:43 +706 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Home language switches preserve the selected fast at 320.0px and 1.0x text
+Splash blocking init took: 6ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 11ms total
+09:43 +707 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Home language switches preserve the selected fast at 320.0px and 1.0x text
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+09:44 +708 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Home language switches preserve the selected fast at 320.0px and 1.0x text
+✅ Scheduled 4 notifications
+09:44 +709 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Home language switches preserve the selected fast at 320.0px and 1.0x text
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+09:47 +710 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Home language switches preserve the selected fast at 320.0px and 1.0x text
+✅ Scheduled 4 notifications
+09:47 +711 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Home language switches preserve the selected fast at 320.0px and 1.0x text
+09:47 +712 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Home language switches preserve the selected fast at 320.0px and 1.0x text
+09:47 +713 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Home language switches preserve the selected fast at 320.0px and 1.0x text
+09:47 +714 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Home language switches preserve the selected fast at 320.0px and 1.0x text
+✅ Scheduled 4 notifications
+09:47 +715 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Home language switches preserve the selected fast at 320.0px and 1.0x text
+09:48 +716 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Home language switches preserve the selected fast at 320.0px and 1.0x text
+09:48 +717 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Home language switches preserve the selected fast at 320.0px and 2.0x text
+Splash blocking init took: 4ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 7ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+09:49 +717 ~1: /workspace/ekadashi-calendar/test/widget/tab_overlay_regression_test.dart: Replacing and removing a pushed page updates the shell toolbar
+Calendar years loaded: [2026, 2027]
+09:49 +717 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Home language switches preserve the selected fast at 320.0px and 2.0x text
+✅ Scheduled 4 notifications
+09:49 +717 ~1: /workspace/ekadashi-calendar/test/widget/tab_overlay_regression_test.dart: Replacing and removing a pushed page updates the shell toolbar
+Splash blocking init took: 104ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 123ms total
+09:49 +717 ~1: /workspace/ekadashi-calendar/test/widget/language_switch_regression_test.dart: Home language switches preserve the selected fast at 320.0px and 2.0x text
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+09:51 +717 ~1: /workspace/ekadashi-calendar/test/widget/tab_overlay_regression_test.dart: Replacing and removing a pushed page updates the shell toolbar
+✅ Scheduled 4 notifications
+09:51 +718 ~1: /workspace/ekadashi-calendar/test/widget/tab_overlay_regression_test.dart: Replacing and removing a pushed page updates the shell toolbar
+09:52 +718 ~1: /workspace/ekadashi-calendar/test/widget/search_vrat_navigation_test.dart: Search, Vrat and Settings all remain reachable; widget date opens correct archive year
+Calendar years loaded: [2026, 2027]
+09:53 +718 ~1: /workspace/ekadashi-calendar/test/widget/tab_overlay_regression_test.dart: Replacing and removing a pushed page updates the shell toolbar
+✅ Scheduled 4 notifications
+09:53 +718 ~1: /workspace/ekadashi-calendar/test/widget/search_vrat_navigation_test.dart: Search, Vrat and Settings all remain reachable; widget date opens correct archive year
+Splash blocking init took: 63ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 92ms total
+09:55 +719 ~1: /workspace/ekadashi-calendar/test/widget/search_vrat_navigation_test.dart: Search, Vrat and Settings all remain reachable; widget date opens correct archive year
+09:55 +719 ~1: /workspace/ekadashi-calendar/test/widget/tab_overlay_regression_test.dart: Tab 2 keeps toolbar and layout while its local menu is open
+Splash blocking init took: 6ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 10ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+09:56 +719 ~1: /workspace/ekadashi-calendar/test/widget/search_vrat_navigation_test.dart: Search, Vrat and Settings all remain reachable; widget date opens correct archive year
+✅ Scheduled 4 notifications
+09:56 +720 ~1: /workspace/ekadashi-calendar/test/widget/search_vrat_navigation_test.dart: Search, Vrat and Settings all remain reachable; widget date opens correct archive year
+09:56 +720 ~1: /workspace/ekadashi-calendar/test/widget/tab_overlay_regression_test.dart: Tab 3 keeps toolbar and layout while its local menu is open
+Splash blocking init took: 36ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 40ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+09:58 +720 ~1: /workspace/ekadashi-calendar/test/widget/search_vrat_navigation_test.dart: Search, Vrat and Settings all remain reachable; widget date opens correct archive year
+✅ Scheduled 4 notifications
+10:01 +721 ~1: /workspace/ekadashi-calendar/test/widget/search_vrat_navigation_test.dart: Search, Vrat and Settings all remain reachable; widget date opens correct archive year
+10:01 +721 ~1: /workspace/ekadashi-calendar/test/widget/tab_overlay_regression_test.dart: An overlay over Details preserves its pushed-page toolbar
+Splash blocking init took: 7ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 11ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+10:02 +722 ~1: /workspace/ekadashi-calendar/test/widget/search_vrat_navigation_test.dart: Search, Vrat and Settings all remain reachable; widget date opens correct archive year
+10:04 +723 ~1: /workspace/ekadashi-calendar/test/widget/search_vrat_navigation_test.dart: Search, Vrat and Settings all remain reachable; widget date opens correct archive year
+10:04 +724 ~1: /workspace/ekadashi-calendar/test/widget/search_vrat_navigation_test.dart: Search, Vrat and Settings all remain reachable; widget date opens correct archive year
+10:04 +725 ~1: /workspace/ekadashi-calendar/test/widget/search_vrat_navigation_test.dart: Search, Vrat and Settings all remain reachable; widget date opens correct archive year
+10:04 +726 ~1: /workspace/ekadashi-calendar/test/widget/search_vrat_navigation_test.dart: Search, Vrat and Settings all remain reachable; widget date opens correct archive year
+10:05 +727 ~1: /workspace/ekadashi-calendar/test/widget/search_vrat_navigation_test.dart: Search, Vrat and Settings all remain reachable; widget date opens correct archive year
+10:05 +728 ~1: /workspace/ekadashi-calendar/test/widget/search_vrat_navigation_test.dart: Search, Vrat and Settings all remain reachable; widget date opens correct archive year
+10:05 +729 ~1: /workspace/ekadashi-calendar/test/widget/search_vrat_navigation_test.dart: Search, Vrat and Settings all remain reachable; widget date opens correct archive year
+10:06 +730 ~1: /workspace/ekadashi-calendar/test/widget/search_vrat_navigation_test.dart: Search, Vrat and Settings all remain reachable; widget date opens correct archive year
+10:08 +731 ~1: /workspace/ekadashi-calendar/test/widget/share_card_screen_test.dart: Save to Gallery saves the card as a PNG
+10:08 +731 ~1: /workspace/ekadashi-calendar/test/widget/search_vrat_navigation_test.dart: closing focused Search restores the app navigation
+Splash blocking init took: 7ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 13ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+10:08 +732 ~1: /workspace/ekadashi-calendar/test/widget/search_vrat_navigation_test.dart: closing focused Search restores the app navigation
+10:09 +733 ~1: /workspace/ekadashi-calendar/test/widget/share_card_screen_test.dart: a refused gallery permission says how to allow it
+10:09 +733 ~1: /workspace/ekadashi-calendar/test/widget/search_vrat_navigation_test.dart: a result that opens a tab goes back to the same search
+Splash blocking init took: 5ms
+✅ Notification service initialized (TZ: Asia/Kolkata)
+NotificationService init completed (deferred) in 9ms total
+✅ Scheduled 4 notifications
+✅ Scheduled 4 notifications
+10:11 +734 ~1: /workspace/ekadashi-calendar/test/widget/search_vrat_navigation_test.dart: a result that opens a tab goes back to the same search
+10:11 +735 ~1: /workspace/ekadashi-calendar/test/widget/share_card_screen_test.dart: Share sends the image with the message and Play link
+10:13 +736 ~1: /workspace/ekadashi-calendar/test/widget/share_card_screen_test.dart: (tearDownAll)
+10:13 +736 ~1: All tests passed!

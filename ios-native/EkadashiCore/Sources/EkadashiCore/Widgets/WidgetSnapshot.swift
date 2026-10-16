@@ -20,19 +20,24 @@ public struct WidgetItem: Codable, Equatable, Sendable, Identifiable {
     public let month: String
     public let fastingStart: Date
     public let paranaStart: Date
-    public let paranaEnd: Date
+    public let paranaEnd: Date?
     public let countdownTarget: Date
     public let description: String
+    /// An open-ended result leaves the daily widget at this time; this is
+    /// not presented as a Parana deadline or used as a countdown target.
+    public var contextExpiresAt: Date? = nil
+
+    public var activeUntil: Date { paranaEnd ?? contextExpiresAt ?? paranaStart }
 
     public func state(at now: Date) -> WidgetState {
         if now < fastingStart { return .beforeEkadashi }
         if now < paranaStart { return .fastingActive }
-        if now < paranaEnd { return .paranaAvailable }
-        return .paranaCompleted
+        if now < activeUntil { return .paranaAvailable }
+        return paranaEnd == nil ? .fallback : .paranaCompleted
     }
 
     /// The instant the countdown points at in [state].
-    public func target(for state: WidgetState) -> Date {
+    public func target(for state: WidgetState) -> Date? {
         switch state {
         case .fastingActive: return paranaStart
         case .paranaAvailable: return paranaEnd
@@ -82,11 +87,11 @@ public struct WidgetSnapshot: Codable, Equatable, Sendable {
     ]
 
     public static func state(of event: EkadashiOccurrence, at now: Date) -> WidgetState {
-        guard let start = event.fastingStart, let parana = event.paranaStart, let end = event.paranaEnd else { return .fallback }
+        guard let start = event.fastingStart, let parana = event.paranaStart, let end = event.activeUntil else { return .fallback }
         if now < start { return .beforeEkadashi }
         if now < parana { return .fastingActive }
         if now < end { return .paranaAvailable }
-        return .paranaCompleted
+        return event.paranaEnd == nil ? .fallback : .paranaCompleted
     }
 
     public static func build(occurrences: [EkadashiOccurrence], timezone: String, locationName: String, language: String,
@@ -95,20 +100,22 @@ public struct WidgetSnapshot: Codable, Equatable, Sendable {
         let zone = TzDatabase.shared.location(zoneId) ?? AppTimezone.ist.location
         let localToday = zone.wallClock(now).date
         let events = occurrences.sorted { $0.date < $1.date }
-        let future = events.filter { $0.paranaEnd.map { now < $0 } ?? false }
+        let future = events.filter {
+            $0.fastingStart != nil && $0.paranaStart != nil && ($0.activeUntil.map { now < $0 } ?? false)
+        }
         let todayEvent = events.first { $0.date == localToday }
         let formatter = DateFormatter()
         formatter.locale = Localizer.locale(language)
         formatter.timeZone = TimeZone(identifier: "UTC")
         formatter.dateFormat = "d MMM yyyy"
         func item(_ e: EkadashiOccurrence) -> WidgetItem {
-            let start = e.fastingStart!, parana = e.paranaStart!, end = e.paranaEnd!
+            let start = e.fastingStart!, parana = e.paranaStart!, end = e.paranaEnd
             let state = Self.state(of: e, at: now)
-            let target = state == .fastingActive ? parana : state == .paranaAvailable ? end : start
+            let target = state == .fastingActive ? parana : state == .paranaAvailable ? (end ?? parana) : start
             return WidgetItem(id: e.id, occurrenceUid: e.occurrenceUid, year: e.date.year, name: e.name, date: e.date.iso,
                               localizedDate: formatter.string(from: e.date.utcMidnight), paksha: e.paksha, month: e.month,
                               fastingStart: start, paranaStart: parana, paranaEnd: end, countdownTarget: target,
-                              description: e.description)
+                              description: e.description, contextExpiresAt: end == nil ? e.activeUntil : nil)
         }
         var strings: [String: String] = [:]
         for (key, value) in stringKeys { strings["widget.\(key)"] = localizer.translate(value, language: language) }
@@ -127,23 +134,32 @@ public struct WidgetSnapshot: Codable, Equatable, Sendable {
     /// The Ekadashi a widget shows now: the next one whose Parana has not
     /// ended, re-evaluated at render time (the app may not have run since).
     public func activeItem(at now: Date) -> WidgetItem? {
-        ([nextEkadashi].compactMap { $0 } + upcoming).first { now < $0.paranaEnd }
+        ([nextEkadashi].compactMap { $0 } + upcoming).first { now < $0.activeUntil }
     }
 
     public func upcoming(after now: Date) -> [WidgetItem] {
         let all = [nextEkadashi].compactMap { $0 } + upcoming
-        return Array(all.filter { now < $0.paranaEnd }.dropFirst())
+        return Array(all.filter { now < $0.activeUntil }.dropFirst())
     }
 
     /// When the widget timeline must refresh: every state change ahead.
     public func refreshDates(after now: Date) -> [Date] {
         ([nextEkadashi].compactMap { $0 } + upcoming)
-            .flatMap { [$0.fastingStart, $0.paranaStart, $0.paranaEnd] }
+            .flatMap { [$0.fastingStart, $0.paranaStart, $0.paranaEnd, $0.contextExpiresAt].compactMap { $0 } }
             .filter { $0 > now }
             .sorted()
     }
 
     public func string(_ key: String, _ fallback: String) -> String { strings["widget.\(key)"] ?? fallback }
+
+    /// Widgets share Home's precise inward-rounded display and after-only text.
+    public func paranaWindow(_ item: WidgetItem) -> String {
+        let zone = TzDatabase.shared.location(timeZone) ?? AppTimezone.ist.location
+        let value = EkadashiTimeFormat.window(EkadashiSchedule.iso(item.paranaStart, zone),
+                                              item.paranaEnd.map { EkadashiSchedule.iso($0, zone, roundUp: false) } ?? "",
+                                              language: locale)
+        return Localizer.shared.localizeClock(value, language: locale)
+    }
 
     /// "2 d 3 h", "3 h 2 min", "0 min" or "Now", as the Android widgets.
     public static func remaining(until target: Date?, now: Date, strings: [String: String]) -> String {

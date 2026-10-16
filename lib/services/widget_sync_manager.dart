@@ -54,8 +54,11 @@ class WidgetSyncManager {
     final events = List<EkadashiDate>.of(ekadashiList)
       ..sort((a, b) => a.date.compareTo(b.date));
     final future = events.where((e) {
-      final end = DateTime.tryParse(e.paranaEndIso);
-      return end != null && clock.isBefore(end);
+      final end = DateTime.tryParse(e.activeUntilIso);
+      return DateTime.tryParse(e.fastingStartIso) != null &&
+          DateTime.tryParse(e.paranaStartIso) != null &&
+          end != null &&
+          clock.isBefore(end);
     }).toList();
     final next = future.isEmpty ? null : future.first;
     final today = events
@@ -74,7 +77,7 @@ class WidgetSyncManager {
       final target = state == 'FASTING_ACTIVE'
           ? ps
           : state == 'PARANA_AVAILABLE'
-          ? pe
+          ? (pe.isEmpty ? ps : pe)
           : fs;
       return {
         'id': e.id,
@@ -91,6 +94,8 @@ class WidgetSyncManager {
         'fastingEndUTC': ps,
         'paranaStartUTC': ps,
         'paranaEndUTC': pe,
+        'contextExpiresAtUTC': toUtcIsoString(e.contextExpiresAtIso),
+        'paranaWindowText': AppStrings.localizeClock(e.fastBreakTime, locale),
         'targetTimestampUTC': target,
         'countdownTarget': target,
         'description': e.description,
@@ -174,11 +179,11 @@ class WidgetSyncManager {
   String _state(EkadashiDate e, DateTime now) {
     final fs = DateTime.tryParse(e.fastingStartIso),
         ps = DateTime.tryParse(e.paranaStartIso),
-        pe = DateTime.tryParse(e.paranaEndIso);
+        pe = DateTime.tryParse(e.activeUntilIso);
     if (fs == null || ps == null || pe == null) return 'FALLBACK';
     if (now.isBefore(fs)) return 'BEFORE_EKADASHI';
     if (now.isBefore(ps)) return 'FASTING_ACTIVE';
     if (now.isBefore(pe)) return 'PARANA_AVAILABLE';
-    return 'PARANA_COMPLETED';
+    return e.paranaEndIso.isEmpty ? 'FALLBACK' : 'PARANA_COMPLETED';
   }
 }

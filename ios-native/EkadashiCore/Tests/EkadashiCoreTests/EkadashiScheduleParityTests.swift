@@ -38,15 +38,28 @@ final class EkadashiScheduleParityTests: XCTestCase {
                     ("contentId", fast.contentId, row["contentId"]),
                     ("publishedUid", fast.publishedUid, row["publishedUid"] is NSNull ? nil : row["publishedUid"]),
                     ("date", fast.date, row["date"]),
-                    ("fastingStart", fast.fastingStart, row["fastingStart"]),
-                    ("paranaStart", fast.paranaStart, row["paranaStart"]),
-                    ("paranaEnd", fast.paranaEnd, row["paranaEnd"]),
                     ("paksha", fast.paksha, row["paksha"]),
                     ("month", fast.month, row["month"]),
                     ("rule", fast.rule, row["rule"]),
                 ]
                 for (name, mine, theirs) in fields where "\(mine ?? "nil")" != "\(theirs ?? "nil")" {
                     failures.append("\(label) \(fast.date) \(name): \(mine ?? "nil") vs \(theirs ?? "nil")")
+                }
+                // Independent floating-point roots may straddle a millisecond.
+                // Compare instants within 2 ms, preserving offset and null-end semantics.
+                for (name, mine) in [("fastingStart", Optional(fast.fastingStart)),
+                                     ("paranaStart", Optional(fast.paranaStart)),
+                                     ("paranaEnd", Optional(fast.paranaEnd)),
+                                     ("contextExpiresAt", fast.contextExpiresAt)] {
+                    let theirs = row[name] as? String
+                    if let mine, let theirs, !mine.isEmpty, !theirs.isEmpty,
+                       let a = ISO8601.instant(mine), let b = ISO8601.instant(theirs) {
+                        if abs(a.timeIntervalSince(b)) > 0.0021 || mine.suffix(6) != theirs.suffix(6) {
+                            failures.append("\(label) \(fast.date) \(name): \(mine) vs \(theirs)")
+                        }
+                    } else if (mine ?? "") != (theirs ?? "") {
+                        failures.append("\(label) \(fast.date) \(name): missing boundary")
+                    }
                 }
                 compared += 1
             }

@@ -7,6 +7,8 @@ import 'package:provider/provider.dart';
 
 import '../l10n/app_language.dart';
 import '../services/ekadashi_service.dart';
+import '../services/ekadashi_schedule.dart';
+import '../services/ekadashi_time_format.dart';
 import '../services/language_service.dart';
 import '../services/panchang/calculated_ekadashi.dart';
 import '../services/panchang/observance_calendar_service.dart';
@@ -1501,11 +1503,20 @@ class _PanchangEkadashiViewState extends State<PanchangEkadashiView> {
         PanchangFormat.time(instant, widget.city, date, language);
     final parana = fast.paranaStartUtc == null
         ? _t(context, 'panchang_unavailable')
-        : fast.paranaEndUtc == null
-        ? _t(context, 'panchang_after', [
-            time(fast.paranaStartUtc, fast.paranaDate),
-          ])
-        : '${time(fast.paranaStartUtc, fast.paranaDate)} – ${time(fast.paranaEndUtc, fast.paranaDate)}';
+        : AppStrings.localizeClock(
+            EkadashiTimeFormat.window(
+              EkadashiSchedule.iso(fast.paranaStartUtc!, widget.city),
+              fast.paranaEndUtc == null
+                  ? ''
+                  : EkadashiSchedule.iso(
+                      fast.paranaEndUtc!,
+                      widget.city,
+                      roundUp: false,
+                    ),
+              language: language,
+            ),
+            language,
+          );
     final orange = IosColors.orange(context);
     return KeyedSubtree(
       key: ValueKey('fast_${fast.date}_${fast.name}'),

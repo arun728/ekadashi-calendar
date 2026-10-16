@@ -4,6 +4,16 @@ import Foundation
 /// Times are the location's wall clock; the time zone is shown once per
 /// screen rather than after every time.
 public enum PanchangFormat {
+    /// The same inward-rounded Parana window used by Home, notifications,
+    /// share cards and widgets. An absent end stays explicitly after-only.
+    public static func parana(_ start: Date?, _ end: Date?, city: PanchangCity, language: String) -> String {
+        guard let start else { return Localizer.shared.translate("panchang_unavailable", language: language) }
+        let text = EkadashiTimeFormat.window(EkadashiSchedule.iso(start, city.zone),
+                                            end.map { EkadashiSchedule.iso($0, city.zone, roundUp: false) } ?? "",
+                                            language: language)
+        return Localizer.shared.localizeClock(text, language: language)
+    }
+
     /// "6:24 PM", "6:24 PM (next day)", "—" when unavailable.
     public static func time(_ instant: Date?, city: PanchangCity, date: CivilDate, language: String) -> String {
         guard let instant else { return "—" }

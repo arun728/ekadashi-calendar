@@ -101,6 +101,8 @@ void main() {
     );
   });
 
+  // Raw boundaries retain seconds; use the existing independent two-minute
+  // published-source tolerance (minute truncation previously hid up to 1.21 min).
   test('New Delhi 2027 keeps identities and adds the 23 Dec Saphala', () {
     final rows = pack(2027);
     final fasts = schedule(newDelhi, EkadashiTradition.smarta, 2027);
@@ -110,15 +112,15 @@ void main() {
       expect(fasts[i].date, ist(rows[i], 'date'));
       expect(
         minutesApart(fasts[i].fastingStart, ist(rows[i], 'fasting_start')),
-        lessThanOrEqualTo(1),
+        lessThanOrEqualTo(2),
       );
       expect(
         minutesApart(fasts[i].paranaStart, ist(rows[i], 'parana_start')),
-        lessThanOrEqualTo(1),
+        lessThanOrEqualTo(2),
       );
       expect(
         minutesApart(fasts[i].paranaEnd, ist(rows[i], 'parana_end')),
-        lessThanOrEqualTo(1),
+        lessThanOrEqualTo(2),
       );
     }
     final saphala = fasts.last;

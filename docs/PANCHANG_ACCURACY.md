@@ -1,5 +1,10 @@
 # Panchang accuracy
 
+For the October 15, 2026 audit of `feature/engine-ekadashi`, measured before/after
+results, newly fixed defects and remaining coverage limits, see
+[Panchang accuracy review](PANCHANG_ACCURACY_REVIEW.md). The historical scores
+below describe their original benchmark scope, not full-product certification.
+
 Branch `feature/panchang-accuracy` (from PR #14). The engine was measured
 against independent references, corrected, and measured again. No new
 features were added; existing calculations were made more accurate.

@@ -182,6 +182,6 @@ final class CalculatedEkadashiEngineTests: XCTestCase {
         let fasts = try engine.calculate(start: CivilDate(2026, 5, 1), count: 60, city: .newDelhi, tradition: .smarta)
         let names = fasts.map(\.name)
         XCTAssertTrue(names.contains("Padmini Ekadashi") || names.contains("Parama Ekadashi"), "\(names)")
-        XCTAssertEqual(CalculatedEkadashi.ruleVersion, "current-location-v2")
+        XCTAssertEqual(CalculatedEkadashi.ruleVersion, "current-location-v3")
     }
 }

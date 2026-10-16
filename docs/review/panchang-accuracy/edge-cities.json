@@ -1,0 +1,177 @@
+[
+  {
+    "id": "x-longyearbyen",
+    "label": "Longyearbyen",
+    "lat": 78.2232,
+    "lon": 15.6267,
+    "tz": "Arctic/Longyearbyen"
+  },
+  {
+    "id": "x-tromso",
+    "label": "Tromso",
+    "lat": 69.6496,
+    "lon": 18.956,
+    "tz": "Europe/Oslo"
+  },
+  {
+    "id": "x-utqiagvik",
+    "label": "Utqiagvik",
+    "lat": 71.2906,
+    "lon": -156.7886,
+    "tz": "America/Anchorage"
+  },
+  {
+    "id": "x-murmansk",
+    "label": "Murmansk",
+    "lat": 68.9585,
+    "lon": 33.0827,
+    "tz": "Europe/Moscow"
+  },
+  {
+    "id": "x-reykjavik",
+    "label": "Reykjavik",
+    "lat": 64.1466,
+    "lon": -21.9426,
+    "tz": "Atlantic/Reykjavik"
+  },
+  {
+    "id": "x-fairbanks",
+    "label": "Fairbanks",
+    "lat": 64.8378,
+    "lon": -147.7164,
+    "tz": "America/Anchorage"
+  },
+  {
+    "id": "x-ushuaia",
+    "label": "Ushuaia",
+    "lat": -54.8019,
+    "lon": -68.303,
+    "tz": "America/Argentina/Ushuaia"
+  },
+  {
+    "id": "x-mcmurdo",
+    "label": "McMurdo Station",
+    "lat": -77.846,
+    "lon": 166.676,
+    "tz": "Antarctica/McMurdo"
+  },
+  {
+    "id": "x-kiritimati",
+    "label": "Kiritimati",
+    "lat": 1.8721,
+    "lon": -157.4278,
+    "tz": "Pacific/Kiritimati"
+  },
+  {
+    "id": "x-apia",
+    "label": "Apia",
+    "lat": -13.8333,
+    "lon": -171.7667,
+    "tz": "Pacific/Apia"
+  },
+  {
+    "id": "x-pago-pago",
+    "label": "Pago Pago",
+    "lat": -14.2756,
+    "lon": -170.702,
+    "tz": "Pacific/Pago_Pago"
+  },
+  {
+    "id": "x-chatham",
+    "label": "Waitangi, Chatham Islands",
+    "lat": -43.9535,
+    "lon": -176.5597,
+    "tz": "Pacific/Chatham"
+  },
+  {
+    "id": "x-lord-howe",
+    "label": "Lord Howe Island",
+    "lat": -31.5553,
+    "lon": 159.0821,
+    "tz": "Australia/Lord_Howe"
+  },
+  {
+    "id": "x-eucla",
+    "label": "Eucla",
+    "lat": -31.677,
+    "lon": 128.883,
+    "tz": "Australia/Eucla"
+  },
+  {
+    "id": "x-marquesas",
+    "label": "Taiohae, Marquesas",
+    "lat": -8.9109,
+    "lon": -140.0997,
+    "tz": "Pacific/Marquesas"
+  },
+  {
+    "id": "x-st-johns",
+    "label": "St. John's",
+    "lat": 47.5615,
+    "lon": -52.7126,
+    "tz": "America/St_Johns"
+  },
+  {
+    "id": "x-tehran",
+    "label": "Tehran",
+    "lat": 35.6892,
+    "lon": 51.389,
+    "tz": "Asia/Tehran"
+  },
+  {
+    "id": "x-kabul",
+    "label": "Kabul",
+    "lat": 34.5553,
+    "lon": 69.2075,
+    "tz": "Asia/Kabul"
+  },
+  {
+    "id": "x-yangon",
+    "label": "Yangon",
+    "lat": 16.8409,
+    "lon": 96.1735,
+    "tz": "Asia/Yangon"
+  },
+  {
+    "id": "x-adelaide",
+    "label": "Adelaide",
+    "lat": -34.9285,
+    "lon": 138.6007,
+    "tz": "Australia/Adelaide"
+  },
+  {
+    "id": "x-honolulu",
+    "label": "Honolulu",
+    "lat": 21.3069,
+    "lon": -157.8583,
+    "tz": "Pacific/Honolulu"
+  },
+  {
+    "id": "x-suva",
+    "label": "Suva",
+    "lat": -18.1248,
+    "lon": 178.4501,
+    "tz": "Pacific/Fiji"
+  },
+  {
+    "id": "x-tarawa",
+    "label": "Tarawa",
+    "lat": 1.4518,
+    "lon": 173.0333,
+    "tz": "Pacific/Tarawa"
+  },
+  {
+    "id": "x-mayapur",
+    "label": "Mayapur",
+    "lat": 23.4231,
+    "lon": 88.3884,
+    "tz": "Asia/Kolkata"
+  },
+  {
+    "id": "z-pacific-pitcairn",
+    "label": "Adamstown (Pacific/Pitcairn)",
+    "lat": -25.06597,
+    "lon": -130.10147,
+    "tz": "Pacific/Pitcairn"
+  }
+]

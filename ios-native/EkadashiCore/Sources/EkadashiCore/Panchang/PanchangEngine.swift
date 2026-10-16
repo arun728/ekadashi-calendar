@@ -263,31 +263,54 @@ public struct PanchangEngine: Sendable {
     // MARK: Rise and set
 
     func findCrossing(_ start: Date, _ end: Date, _ city: PanchangCity, moon: Bool, rising: Bool) -> Date? {
+        guard start < end else { return nil }
         let step = 300.0
         // Apparent upper limb on a sea-level horizon.
         func difference(_ instant: Date) -> Double {
             AstronomyCalculator.altitudeDegrees(instant: instant, latitude: city.latitude, longitude: city.longitude, moon: moon)
                 + AstronomyCalculator.horizonRefraction + AstronomyCalculator.semidiameterDegrees(instant, moon: moon)
         }
-        var low = start
-        var lowValue = difference(low)
-        var high = start.adding(step)
-        while high <= end {
-            let highValue = difference(high)
-            let crossed = rising ? lowValue <= 0 && highValue > 0 : lowValue >= 0 && highValue < 0
-            if crossed {
-                var left = low
-                var right = high
-                for _ in 0..<20 {
-                    let middle = left.adding(truncatedMicroseconds(right.timeIntervalSince(left), dividedBy: 2))
-                    let value = difference(middle)
-                    if rising ? value > 0 : value < 0 { right = middle } else { left = middle }
-                }
-                return right
+        func root(_ a: Date, _ b: Date, _ av: Double, _ bv: Double) -> Date? {
+            let crossed = rising ? av <= 0 && bv > 0 : av >= 0 && bv < 0
+            guard crossed else { return nil }
+            var left = a, right = b
+            for _ in 0..<20 {
+                let middle = left.adding(truncatedMicroseconds(right.timeIntervalSince(left), dividedBy: 2))
+                let value = difference(middle)
+                if rising ? value > 0 : value < 0 { right = middle } else { left = middle }
             }
+            return right >= start && right < end ? right : nil
+        }
+        var previous = start.adding(-step), previousValue = difference(previous)
+        var low = start, lowValue = difference(start)
+        var high = min(start.adding(step), end)
+        while true {
+            let highValue = difference(high)
+            if let crossing = root(low, high, lowValue, highValue) { return crossing }
+            let maximum = lowValue > previousValue && lowValue >= highValue
+            let minimum = lowValue < previousValue && lowValue <= highValue
+            if maximum || minimum {
+                // Near the polar circle, a rise and set can both lie between
+                // samples. Refine each extremum and bracket its two sides.
+                var a = previous, b = high
+                for _ in 0..<36 {
+                    let third = b.timeIntervalSince(a) / 3
+                    let p = a.adding(third), q = b.adding(-third)
+                    if (difference(p) < difference(q)) == maximum { a = p } else { b = q }
+                }
+                let extremum = a.adding(b.timeIntervalSince(a) / 2)
+                let value = difference(extremum)
+                if let crossing = root(previous, extremum, previousValue, value) { return crossing }
+                if let crossing = root(extremum, high, value, highValue) { return crossing }
+            }
+            // Look ahead once to resolve extrema in the final partial step;
+            // roots outside the requested half-open interval are rejected.
+            if low >= end { break }
+            previous = low
+            previousValue = lowValue
             low = high
             lowValue = highValue
-            high = high.adding(step)
+            high = low < end ? min(low.adding(step), end) : end.adding(step)
         }
         return nil
     }
@@ -416,7 +439,7 @@ public struct PanchangEngine: Sendable {
         let nak = Int(floor(longitude / (360.0 / 27)))
         // The 28-star cycle includes Abhijit (276°40′ to 280°53′20″).
         let extended = longitude >= 276 + 2.0 / 3 && longitude < 280 + 8.0 / 9 ? 21 : (nak >= 21 ? nak + 1 : nak)
-        let starts = [4, 7, 12, 16, 20, 24, 0]
+        let starts = [4, 8, 12, 16, 20, 24, 0]
         return names[(extended - starts[weekday - 1] + 28) % 28]
     }
 
@@ -424,7 +447,7 @@ public struct PanchangEngine: Sendable {
         func angle(_ instant: Date) -> Double {
             AstronomyCalculator.normalize(AstronomyCalculator.ascendantLongitude(instant, latitude: city.latitude,
                                                                                  longitude: city.longitude)
-                - AstronomyCalculator.lahiriAyanamsa(instant))
+                - AstronomyCalculator.apparentLahiriAyanamsa(instant))
         }
         var result: [PanchangPeriod] = []
         var cursor = start

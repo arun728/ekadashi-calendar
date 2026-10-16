@@ -111,7 +111,7 @@ public struct CalculatedEkadashi: Sendable, Identifiable {
     /// The parana day's sunset, the end of an after-only Parana.
     public var paranaDaySunset: Date?
     public var isShukla: Bool { name == "Padmini Ekadashi" || CalculatedEkadashiEngine.shuklaNames.contains(name) }
-    public static let ruleVersion = "current-location-v2"
+    public static let ruleVersion = "current-location-v3"
 }
 
 /// The parts of a Panchang day the Ekadashi rules read: the same sunrise,

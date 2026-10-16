@@ -1,0 +1,75 @@
+Another instance of SwiftPM is already running using '/workspace/ekadashi-calendar/ios-native/EkadashiCore/.build', waiting until that process has finished execution...warning: 'ekadashicore': found 2 file(s) which are unhandled; explicitly declare them as resources or exclude from the target
+    /workspace/ekadashi-calendar/ios-native/EkadashiCore/Tests/EkadashiCoreTests/Fixtures/panchang_parity.json
+    /workspace/ekadashi-calendar/ios-native/EkadashiCore/Tests/EkadashiCoreTests/Fixtures/ekadashi_schedule_parity.json
+Building for production...
+[0/11] Write sources
+[1/11] Copying Resources
+[2/11] Copying Info.plist
+[3/11] Write sources
+[4/11] Write swift-version-63F30219E57E058.txt
+[6/12] Compiling EkadashiCore AppTimezone.swift
+[7/13] Compiling EkadashiCoreTests AppLinksTests.swift
+/workspace/ekadashi-calendar/ios-native/EkadashiCore/Tests/EkadashiCoreTests/EventReminderTests.swift:107:41: warning: string interpolation produces a debug description for an optional value; did you mean to make this explicit?
+105 |         let start = CivilDate(2026, 10, 20).utcMidnight
+106 |         let copies = ["holidays", "primary"].map {
+107 |             CalendarEntry(id: "google_\($0)", title: "Dussehra", start: start, end: CivilDate(2026, 10, 21).utcMidnight,
+    |                                         |- warning: string interpolation produces a debug description for an optional value; did you mean to make this explicit?
+    |                                         |- note: use 'String(describing:)' to silence this warning
+    |                                         `- note: provide a default value to avoid this warning
+108 |                           isAllDay: true, source: .google, calendarId: $0, updatedAt: start)
+109 |         }
+
+/workspace/ekadashi-calendar/ios-native/EkadashiCore/Tests/EkadashiCoreTests/GoogleSyncTests.swift:468:39: warning: capture 'self' was never used
+466 |             calendar: calendar, premium: { [unowned self] in self.premium }, refreshPremium: { [unowned self] in self.premium },
+467 |             presentPaywall: { _ in false },
+468 |             pickCalendars: { [unowned self] _, _, _ in
+    |                                       `- warning: capture 'self' was never used
+469 |                 calls += 1
+470 |                 return calls == 1 ? .switchAccount : .chosen(["primary"])
+[7/13] /workspace/ekadashi-calendar/ios-native/EkadashiCore/.build/x86_64-unknown-linux-gnu/release/EkadashiCorePackageDiscoveredTests.derived/all-discovered-tests.swift
+[8/13] Write sources
+[10/14] Compiling EkadashiCorePackageDiscoveredTests EkadashiCoreTests.swift
+[10/14] /workspace/ekadashi-calendar/ios-native/EkadashiCore/.build/x86_64-unknown-linux-gnu/release/EkadashiCorePackageTests.derived/runner.swift
+[11/14] Write sources
+[13/15] Compiling EkadashiCorePackageTests runner.swift
+[13/15] Write Objects.LinkFileList
+[14/15] Linking EkadashiCorePackageTests.xctest
+Build complete! (53.94s)
+Test Suite 'Selected tests' started at 2026-10-15 21:27:19.153
+Test Suite 'PanchangPrecisionTests' started at 2026-10-15 21:27:19.155
+Test Case 'PanchangPrecisionTests.testAnAfterOnlyParanaDoesNotAcquireAnInventedEnd' started at 2026-10-15 21:27:19.155
+/workspace/ekadashi-calendar/ios-native/EkadashiCore/Tests/EkadashiCoreTests/PanchangPrecisionTests.swift:67: error: PanchangPrecisionTests.testAnAfterOnlyParanaDoesNotAcquireAnInventedEnd : XCTAssertEqual failed: ("2026-12-20T16:31:00-05:00") is not equal to ("") - 
+/workspace/ekadashi-calendar/ios-native/EkadashiCore/Tests/EkadashiCoreTests/PanchangPrecisionTests.swift:70: error: PanchangPrecisionTests.testAnAfterOnlyParanaDoesNotAcquireAnInventedEnd : XCTAssertNil failed: "2026-12-20 21:31:00 +0000" - 
+/workspace/ekadashi-calendar/ios-native/EkadashiCore/Tests/EkadashiCoreTests/PanchangPrecisionTests.swift:71: error: PanchangPrecisionTests.testAnAfterOnlyParanaDoesNotAcquireAnInventedEnd : XCTAssertTrue failed - 
+Test Case 'PanchangPrecisionTests.testAnAfterOnlyParanaDoesNotAcquireAnInventedEnd' failed (0.516 seconds)
+Test Case 'PanchangPrecisionTests.testApparentLagnaMatchesIndependentSwissGeometry' started at 2026-10-15 21:27:19.671
+/workspace/ekadashi-calendar/ios-native/EkadashiCore/Tests/EkadashiCoreTests/PanchangPrecisionTests.swift:26: error: PanchangPrecisionTests.testApparentLagnaMatchesIndependentSwissGeometry : XCTAssertLessThan failed: ("42.051716670357564") is not less than ("0.2") - Consistent true equinox and obliquity: ["siderealLongitude": 284.7782309272885, "utc": "2035-10-23T05:50:23.267924Z", "firstLagnaEndsUtc": "2035-10-23T06:10:15.208773Z", "lon": 137.57661411773438, "lat": 60.57610734739394]
+/workspace/ekadashi-calendar/ios-native/EkadashiCore/Tests/EkadashiCoreTests/PanchangPrecisionTests.swift:28: error: PanchangPrecisionTests.testApparentLagnaMatchesIndependentSwissGeometry : XCTAssertLessThan failed: ("0.8832740783691406") is not less than ("0.2") - The Panchang caller must use the same apparent ayanamsa
+/workspace/ekadashi-calendar/ios-native/EkadashiCore/Tests/EkadashiCoreTests/PanchangPrecisionTests.swift:26: error: PanchangPrecisionTests.testApparentLagnaMatchesIndependentSwissGeometry : XCTAssertLessThan failed: ("3.1441870648450276") is not less than ("0.2") - Consistent true equinox and obliquity: ["utc": "2027-01-01T00:00:00Z", "lat": 28.6139, "lon": 77.209, "firstLagnaEndsUtc": "2027-01-01T00:38:38.177046Z", "siderealLongitude": 231.45277823971207]
+/workspace/ekadashi-calendar/ios-native/EkadashiCore/Tests/EkadashiCoreTests/PanchangPrecisionTests.swift:28: error: PanchangPrecisionTests.testApparentLagnaMatchesIndependentSwissGeometry : XCTAssertLessThan failed: ("1.0640310049057007") is not less than ("0.2") - The Panchang caller must use the same apparent ayanamsa
+/workspace/ekadashi-calendar/ios-native/EkadashiCore/Tests/EkadashiCoreTests/PanchangPrecisionTests.swift:28: error: PanchangPrecisionTests.testApparentLagnaMatchesIndependentSwissGeometry : XCTAssertLessThan failed: ("0.9217591285705566") is not less than ("0.2") - The Panchang caller must use the same apparent ayanamsa
+/workspace/ekadashi-calendar/ios-native/EkadashiCore/Tests/EkadashiCoreTests/PanchangPrecisionTests.swift:26: error: PanchangPrecisionTests.testApparentLagnaMatchesIndependentSwissGeometry : XCTAssertLessThan failed: ("0.5869939925105427") is not less than ("0.2") - Consistent true equinox and obliquity: ["lat": -33.8688, "utc": "2026-12-21T00:00:00Z", "firstLagnaEndsUtc": "2026-12-21T01:29:16.536144Z", "siderealLongitude": 311.2030412067043, "lon": 151.2093]
+/workspace/ekadashi-calendar/ios-native/EkadashiCore/Tests/EkadashiCoreTests/PanchangPrecisionTests.swift:28: error: PanchangPrecisionTests.testApparentLagnaMatchesIndependentSwissGeometry : XCTAssertLessThan failed: ("0.7521120309829712") is not less than ("0.2") - The Panchang caller must use the same apparent ayanamsa
+/workspace/ekadashi-calendar/ios-native/EkadashiCore/Tests/EkadashiCoreTests/PanchangPrecisionTests.swift:26: error: PanchangPrecisionTests.testApparentLagnaMatchesIndependentSwissGeometry : XCTAssertLessThan failed: ("10.233380523004598") is not less than ("0.2") - Consistent true equinox and obliquity: ["utc": "2026-10-15T00:00:00Z", "lat": 40.7128, "siderealLongitude": 35.91777358610982, "lon": -74.006, "firstLagnaEndsUtc": "2026-10-15T01:29:24.906769Z"]
+Test Case 'PanchangPrecisionTests.testApparentLagnaMatchesIndependentSwissGeometry' failed (0.003 seconds)
+Test Case 'PanchangPrecisionTests.testGrazingSunriseAndSunsetAreNotLostBetweenFiveMinuteSamples' started at 2026-10-15 21:27:19.674
+/workspace/ekadashi-calendar/ios-native/EkadashiCore/Tests/EkadashiCoreTests/PanchangPrecisionTests.swift:39: error: PanchangPrecisionTests.testGrazingSunriseAndSunsetAreNotLostBetweenFiveMinuteSamples : XCTUnwrap failed: expected non-nil value of type "Date" - 
+Test Case 'PanchangPrecisionTests.testGrazingSunriseAndSunsetAreNotLostBetweenFiveMinuteSamples' failed (0.006 seconds)
+Test Case 'PanchangPrecisionTests.testNarrowParanaDisplayStaysWithinItsCalculatedWindow' started at 2026-10-15 21:27:19.680
+/workspace/ekadashi-calendar/ios-native/EkadashiCore/Tests/EkadashiCoreTests/PanchangPrecisionTests.swift:75: error: PanchangPrecisionTests.testNarrowParanaDisplayStaysWithinItsCalculatedWindow : XCTAssertEqual failed: ("06:04 AM - 06:05 AM") is not equal to ("06:04:57 AM - 06:05:09 AM") - 
+/workspace/ekadashi-calendar/ios-native/EkadashiCore/Tests/EkadashiCoreTests/PanchangPrecisionTests.swift:77: error: PanchangPrecisionTests.testNarrowParanaDisplayStaysWithinItsCalculatedWindow : XCTAssertEqual failed: ("") is not equal to ("After 03:05:33 PM") - 
+Test Case 'PanchangPrecisionTests.testNarrowParanaDisplayStaysWithinItsCalculatedWindow' failed (0.0 seconds)
+Test Case 'PanchangPrecisionTests.testStoredStartsNeverPrecedeTheCalculatedBoundary' started at 2026-10-15 21:27:19.680
+/workspace/ekadashi-calendar/ios-native/EkadashiCore/Tests/EkadashiCoreTests/PanchangPrecisionTests.swift:56: error: PanchangPrecisionTests.testStoredStartsNeverPrecedeTheCalculatedBoundary : XCTAssertGreaterThanOrEqual failed: ("2026-01-15 01:05:00 +0000") is less than ("2026-01-15 01:05:07 +0000") - 
+/workspace/ekadashi-calendar/ios-native/EkadashiCore/Tests/EkadashiCoreTests/PanchangPrecisionTests.swift:59: error: PanchangPrecisionTests.testStoredStartsNeverPrecedeTheCalculatedBoundary : XCTAssertGreaterThanOrEqual failed: ("2026-01-14 01:04:00 +0000") is less than ("2026-01-14 01:04:57 +0000") - 
+Test Case 'PanchangPrecisionTests.testStoredStartsNeverPrecedeTheCalculatedBoundary' failed (0.556 seconds)
+Test Case 'PanchangPrecisionTests.testTuesdayAshleshaBeginsWithAnanda' started at 2026-10-15 21:27:20.236
+/workspace/ekadashi-calendar/ios-native/EkadashiCore/Tests/EkadashiCoreTests/PanchangPrecisionTests.swift:13: error: PanchangPrecisionTests.testTuesdayAshleshaBeginsWithAnanda : XCTAssertEqual failed: ("Kaladanda") is not equal to ("Ananda") - Tuesday counts from Ashlesha, not Pushya
+Test Case 'PanchangPrecisionTests.testTuesdayAshleshaBeginsWithAnanda' failed (0.013 seconds)
+Test Suite 'PanchangPrecisionTests' failed at 2026-10-15 21:27:20.249
+	 Executed 6 tests, with 17 failures (0 unexpected) in 1.094 (1.094) seconds
+Test Suite 'Selected tests' failed at 2026-10-15 21:27:20.249
+	 Executed 6 tests, with 17 failures (0 unexpected) in 1.094 (1.094) seconds
+◇ Test run started.
+↳ Testing Library Version: 6.0.3 (18c42c19cac3faf)
+✔ Test run with 0 tests passed after 0.001 seconds.

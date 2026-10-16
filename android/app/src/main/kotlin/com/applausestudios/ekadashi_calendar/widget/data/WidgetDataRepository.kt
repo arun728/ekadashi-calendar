@@ -106,7 +106,7 @@ class WidgetDataRepository private constructor(private val context: Context) {
 
                 val fStart = next.fastingStartInstant
                 val pStart = next.paranaStartInstant
-                val pEnd = next.paranaEndInstant
+                val pEnd = next.activeUntilInstant
 
                 if (fStart == null || pStart == null || pEnd == null) {
                     Log.w(TAG, "Unparseable timestamps in nextEkadashi (${next.fastingStartUTC})")
