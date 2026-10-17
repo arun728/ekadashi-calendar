@@ -42,6 +42,9 @@ struct TodayView: View {
                         }
                     }
                     .tabViewStyle(.page(indexDisplayMode: .never))
+                    // Years have different page counts. Recreate the pager so
+                    // a linked final page is not reset against the previous year.
+                    .id(model.selectedYear)
                     arrow(AppSymbol.next, target: model.homeIndex + 1) { model.homeIndex += 1 }
                 }
                 .padding(.horizontal, 4)

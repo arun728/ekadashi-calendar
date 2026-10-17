@@ -11,10 +11,15 @@ public enum AppRoute: Equatable, Sendable {
     /// A day in Panchang (event reminders).
     case panchang(CivilDate)
     case search
+    case ekadashi(String)
 
     public init?(url: URL) {
         guard url.scheme == "ekadashi", let host = url.host else { return nil }
         switch host {
+        case "ekadashi":
+            guard let uid = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?
+                .first(where: { $0.name == "uid" })?.value, !uid.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return nil }
+            self = .ekadashi(uid)
         case "search": self = .search
         case "dashboard", "today", "parana": self = .tab(.today)
         case "calendar":
@@ -35,6 +40,13 @@ public enum AppRoute: Equatable, Sendable {
     public static let dashboardURL = URL(string: "ekadashi://dashboard")!
     public static let paranaURL = URL(string: "ekadashi://dashboard?action=parana")!
     public static let todayURL = URL(string: "ekadashi://today")!
+    public static func ekadashiURL(_ uid: String) -> URL {
+        var url = URLComponents()
+        url.scheme = "ekadashi"
+        url.host = "ekadashi"
+        url.queryItems = [URLQueryItem(name: "uid", value: uid)]
+        return url.url!
+    }
     public static func calendarURL(_ date: CivilDate) -> URL { URL(string: "ekadashi://calendar?date=\(date.iso)")! }
     public static func panchangURL(_ date: CivilDate) -> URL { URL(string: "ekadashi://panchang?date=\(date.iso)")! }
 }

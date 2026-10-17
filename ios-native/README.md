@@ -9,7 +9,7 @@ A native Swift/SwiftUI version of the Android app with the same features:
 
 On iOS 26 the app uses Apple's Liquid Glass (`glassEffect`, glass button styles and the system's glass tab bar and toolbars). On iOS 17–25 it falls back to system materials.
 
-> Status: the shared `EkadashiCore` package is built and tested on Linux (236 tests, 0 failures). The app, the widgets and their Xcode tests were written in a Linux container without Xcode or macOS. They have **not** been compiled, run on a simulator or device, or tested against StoreKit or Google. See [Verification](#verification).
+> Status: the native app and widget extension now build with Xcode 26.6 (iOS 26.5 SDK). The full core suite passes on macOS (268 tests), with native multilingual widget rendering and navigation validation on iPhone 17 Pro. See [widget behavior and current verification](../docs/IOS_WIDGET_REDESIGN.md). Production StoreKit, Google sign-in, physical-device widget delivery and older supported iOS versions still require release validation.
 
 ## Layout
 
@@ -17,7 +17,7 @@ On iOS 26 the app uses Apple's Liquid Glass (`glassEffect`, glass button styles 
 | --- | --- |
 | `EkadashiCore/` | Swift package with all domain logic and data, shared by the app and the widgets. It ports the Flutter services: published schedule, localization, Vrat tracker, premium rules, Google import and free-sync registry, search, reminders, widget snapshot, deep links, the Panchang engine and calculated Ekadashi. It bundles the same calendar packs, city list, ARB strings and IANA 2026b timezone data as Android. |
 | `EkadashiCalendar/` | SwiftUI app. `App/` holds the launch flow and state, `Features/` one folder per screen, `Services/` StoreKit, notifications, location, Google Sign-In and widgets, and `DesignSystem/` the glass styles. |
-| `EkadashiWidgets/` | WidgetKit extension with small "Next Ekadashi", medium "Ekadashi Today" and large "Upcoming Ekadashis" widgets. |
+| `EkadashiWidgets/` | WidgetKit extension with an automatic today/next widget (Home and Lock Screen) and a separate five-upcoming widget (medium and large). |
 | `Shared/` | Widget views compiled into both the app (widget preview screen) and the extension. |
 | `EkadashiCalendarTests/`, `EkadashiCalendarUITests/` | App unit tests, and UI tests that walk every tab, search and the paywall and attach screenshots. |
 | `project.yml` | XcodeGen spec. The `.xcodeproj` is generated, not committed. |
@@ -122,7 +122,7 @@ These follow the Play-only rules in `AGENTS.md`, adapted to StoreKit 2 with no b
 | One search for the whole app (iOS first, Phase 1 of `docs/ROADMAP.md`; Android port pending): Ekadashis, Panchang festivals and observances (Premium), custom and Google entries, and screens; year filter first, then type chips; aliases and names in all four languages; suggestions and recents (explicit submissions only) | `GlobalSearchView`, `UnifiedSearch`, `SearchCorpus`, `SearchCatalog` | Core tests and the shared golden cases; UI test searches an Ekadashi, a festival and a type word |
 | Reminders: 2 days and 1 day before, fasting start, Parana; test notification | `ReminderPlanner`, `NotificationService` (respects iOS's 64-pending limit) | Core tests for the plan; delivery not run |
 | Festival, Panchang and calendar reminders, chosen days before at a chosen time (iOS first, docs/ROADMAP.md Phase 7) | `EventReminderPlanner`, `PendingNotification.merge`, `EventRemindersView` | Core tests; UI test adds one; delivery not run |
-| Three widgets (next, today, upcoming) with deep links | `EkadashiWidgets`, `WidgetSnapshot` in the App Group | Core tests for snapshot and state; widgets not run |
+| Two widgets (automatic today/next, next five upcoming) with occurrence-specific Home links | `EkadashiWidgets`, `WidgetSnapshot` in the App Group | Core selection/timeline tests; native six-language rendering/bounds tests; preview and Home navigation UI tests |
 | `ekadashi://` links (dashboard, today, parana, calendar?date=, vrat, panchang, panchang?date=, more, settings, search) | `AppRoute`, `onOpenURL` and notification taps | Core tests |
 | en/ta/hi/te | `Localizer` reads the Android ARB strings, plus an iOS override table for 17 strings that name Google Play or Android settings | Core tests: every key used by the app exists in all four languages |
 | Background refresh (WorkManager) | `BGAppRefreshTask` keeps reminders, widgets and premium current | Not run |
@@ -143,16 +143,16 @@ These follow the Play-only rules in `AGENTS.md`, adapted to StoreKit 2 with no b
 
 ## Verification
 
-Done:
-- `swift test -c release` in `EkadashiCore` on Linux (Swift 6.1.2): **236 tests, 0 failures**. This includes:
-  - parity with the Flutter Panchang engine and calculated fasts;
-  - published-date accuracy gates;
-  - a check that the bundled data matches Android exactly;
-  - a test that fails when the app uses a translation key missing in any language.
+Current widget follow-up results are in [IOS_WIDGET_REDESIGN.md](../docs/IOS_WIDGET_REDESIGN.md):
 
-Not done (no Xcode or macOS here), and needed before a release:
-1. Run `xcodegen generate` and build with Xcode 26, fixing any compile errors.
-2. Run the app unit tests and the screenshot UI tests on iOS 26 and iOS 17 simulators.
-3. Test StoreKit purchase, restore, Ask to Buy, cancellation and expiry with the local configuration, then in the sandbox.
-4. Test Google sign-in, calendar import and the free-sync registry with the production OAuth client.
-5. On a device, check notifications, widgets, Background App Refresh and location.
+- Full core suite on macOS: **269 tests, zero failures**, including shared data and engine parity.
+- Native app and widget extension build with Xcode 26.6, using the iOS 26.5 SDK.
+- Native rendering tests cover all six languages, both appearances, all supported widget families and normal/larger text. UI tests cover previews and occurrence-specific Home navigation.
+- Flutter regression suite: **726 tests passed**; analyzer: **no issues**.
+
+Still needed before a release:
+
+1. Validate supported older iOS versions and physical-device widget/background delivery.
+2. Test StoreKit purchase, restore, Ask to Buy, cancellation and expiry in the App Store sandbox.
+3. Test Google sign-in, calendar import and the free-sync registry with production OAuth configuration.
+4. On a device, check notifications, widgets, Background App Refresh and location.

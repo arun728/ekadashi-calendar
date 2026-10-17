@@ -11,6 +11,7 @@ struct RootView: View {
         @Bindable var model = model
         TabView(selection: tabSelection) {
             screen(TodayView(), tab: .today)
+                .id(model.homeNavigationRevision)
                 .tabItem { Label(model.t("home"), systemImage: AppSymbol.tabHome) }
                 .tag(AppTab.today)
             screen(CalendarView(), tab: .calendar)

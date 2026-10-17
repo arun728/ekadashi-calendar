@@ -38,6 +38,7 @@ struct EkadashiDetailsView: View {
             .padding(20)
         }
         .background(AppBackground())
+        .accessibilityIdentifier("ekadashi_details")
         .navigationTitle(model.t("app_title"))
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $recording) { RecordVratSheet(event: event) }

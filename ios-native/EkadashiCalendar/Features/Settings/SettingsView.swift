@@ -31,8 +31,9 @@ struct SettingsView: View {
                 NavigationLink {
                     WidgetPreviewView()
                 } label: {
-                    row(AppSymbol.widgetPreview, model.t("widget_preview"), model.t("widget_preview_desc"))
+                    row(AppSymbol.widgetPreview, model.t("widget_preview"), model.t("ios_widget_preview_desc"))
                 }
+                .accessibilityIdentifier("settings_widget_preview")
                 Toggle(isOn: Binding(get: { model.isDarkMode }, set: { model.setDarkMode($0) })) {
                     Label(model.t("dark_mode"), systemImage: AppSymbol.darkMode)
                 }
@@ -309,67 +310,5 @@ struct SettingsPremiumCard: View {
         } icon: {
             Image(systemName: symbol).foregroundStyle(Theme.teal)
         }
-    }
-}
-
-/// Live previews of the two widgets, now and during the next Ekadashi
-/// (widget_preview_screen.dart).
-struct WidgetPreviewView: View {
-    @Environment(AppModel.self) private var model
-
-    var body: some View {
-        let snapshot = WidgetSnapshot.build(occurrences: model.ekadashis, timezone: model.ekadashiCity.timeZoneId,
-                                            locationName: model.ekadashiCityName, language: model.language, now: Date(),
-                                            tradition: model.tradition.rawValue)
-        TimelineView(.periodic(from: .now, by: 60)) { context in
-            let during = snapshot.nextEkadashi.map {
-                $0.fastingStart.addingTimeInterval($0.paranaStart.timeIntervalSince($0.fastingStart) * 0.6)
-            }
-            ScrollView {
-                VStack(spacing: 16) {
-                    caption("widget_name_ekadashi")
-                    HStack(spacing: 16) {
-                        preview(width: 170, height: 170) { EkadashiWidgetView(snapshot: snapshot, now: context.date, family: .systemSmall) }
-                            .accessibilityIdentifier("card_next_ekadashi")
-                        if let during {
-                            preview(width: 170, height: 170) { EkadashiWidgetView(snapshot: snapshot, now: during, family: .systemSmall) }
-                                .accessibilityIdentifier("card_today_ekadashi")
-                        }
-                    }
-                    if during != nil {
-                        Text(model.t("widget_preview_during")).font(.caption).foregroundStyle(.secondary)
-                            .frame(maxWidth: .infinity, alignment: .trailing)
-                    }
-                    preview(width: 360, height: 170) { EkadashiWidgetView(snapshot: snapshot, now: context.date, family: .systemMedium) }
-                    caption("upcoming_ekadashis")
-                    preview(width: 360, height: 170) {
-                        UpcomingEkadashiWidgetView(snapshot: snapshot, now: context.date, family: .systemMedium)
-                    }
-                    preview(width: 360, height: 380) {
-                        UpcomingEkadashiWidgetView(snapshot: snapshot, now: context.date, family: .systemLarge)
-                    }
-                    .accessibilityIdentifier("card_upcoming_ekadashi")
-                }
-                .padding(16)
-                .frame(maxWidth: .infinity)
-            }
-        }
-        .background(Color.black.ignoresSafeArea())
-        .navigationTitle(model.t("widget_preview"))
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbarColorScheme(.dark, for: .navigationBar)
-    }
-
-    private func caption(_ key: String) -> some View {
-        Text(model.t(key)).font(.footnote.weight(.semibold)).foregroundStyle(WidgetStyle.cyan).frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private func preview(width: CGFloat, height: CGFloat, @ViewBuilder content: () -> some View) -> some View {
-        content()
-            .padding(16)
-            .frame(maxWidth: width, minHeight: height, maxHeight: height)
-            .background(WidgetCardBackground())
-            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-            .environment(\.colorScheme, .dark)
     }
 }

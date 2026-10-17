@@ -22,6 +22,129 @@ final class ScreenshotTests: XCTestCase {
         add(attachment)
     }
 
+    func testRealWidgetPreviewOpensItsDisplayedHomeCard() {
+        openWidgetPreviews()
+        XCTAssertFalse(app.staticTexts["No Ekadashi on this day"].exists)
+        let preview = app.buttons["widget_preview_open"].firstMatch
+        XCTAssertTrue(preview.waitForExistence(timeout: 10))
+        let displayed = preview.label.components(separatedBy: "\n")
+        preview.tap()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 10))
+        XCTAssertFalse(app.descendants(matching: .any)["ekadashi_details"].exists)
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label IN %@", displayed)).count > 0)
+    }
+
+    func testUpcomingPreviewShowsFiveIndividuallyTappableEkadashis() {
+        openWidgetPreviews()
+        app.segmentedControls["widget_preview_kind"].buttons["Upcoming Ekadashis"].tap()
+        let rows = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'widget_upcoming_open_'"))
+        XCTAssertEqual(rows.count, 5)
+        snap("widgets-upcoming-five-medium")
+        app.segmentedControls["widget_preview_size"].buttons["Large"].tap()
+        XCTAssertEqual(rows.count, 5)
+        snap("widgets-upcoming-five-large")
+        let displayed = rows.element(boundBy: 4).label.components(separatedBy: "\n")
+        rows.element(boundBy: 4).tap()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label IN %@", displayed)).count > 0)
+        XCTAssertFalse(app.descendants(matching: .any)["ekadashi_details"].exists)
+    }
+
+    func testSizeOptionsMatchEachWidgetAndResetUnsupportedSelection() {
+        openWidgetPreviews()
+        let kinds = app.segmentedControls["widget_preview_kind"]
+        let sizes = app.segmentedControls["widget_preview_size"]
+        XCTAssertEqual(sizes.buttons.allElementsBoundByIndex.map(\.label), ["Small", "Medium", "Lock Screen"])
+        snap("widget-ekadashi-supported-sizes")
+        kinds.buttons["Upcoming Ekadashis"].tap()
+        XCTAssertEqual(sizes.buttons.allElementsBoundByIndex.map(\.label), ["Medium", "Large"])
+        sizes.buttons["Large"].tap()
+        XCTAssertTrue(sizes.buttons["Large"].isSelected)
+        kinds.buttons["Ekadashi"].tap()
+        XCTAssertFalse(sizes.buttons["Large"].exists)
+        XCTAssertTrue(sizes.buttons["Medium"].isSelected)
+        sizes.buttons["Lock Screen"].tap()
+        XCTAssertTrue(app.images["widget_brand_icon"].firstMatch.exists)
+        snap("widget-enlarged-circular-lock")
+    }
+
+    func testLockPreviewIdentifiesEkadashiAndUsesAppArtwork() {
+        openWidgetPreviews()
+        app.segmentedControls["widget_preview_size"].buttons["Lock Screen"].tap()
+        XCTAssertTrue(app.images["widget_brand_icon"].firstMatch.waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["widget_preview_open"].firstMatch.label.contains("Ekadashi"))
+        snap("widgets-branded-lock-preview")
+    }
+
+    func testInstalledWidgetURLReturnsFromDetailsToTheExactHomeCard() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        app.buttons["view_details"].firstMatch.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["ekadashi_details"].waitForExistence(timeout: 10))
+        app.open(URL(string: "ekadashi://ekadashi?uid=ekadashi%3A2027%3A25")!)
+        XCTAssertTrue(app.buttons["home_year_menu"].waitForExistence(timeout: 10))
+        snap("widget-url-home")
+        XCTAssertEqual(app.buttons["home_year_menu"].label.filter(\.isNumber), "2027")
+        XCTAssertEqual(app.staticTexts["home_page_indicator"].label, "25 / 25")
+        XCTAssertFalse(app.descendants(matching: .any)["ekadashi_details"].exists)
+    }
+
+    func testPreviewReturnsToHomeEvenWhenHomePreviouslyShowedDetails() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        app.buttons["view_details"].firstMatch.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["ekadashi_details"].waitForExistence(timeout: 10))
+        tab(4)
+        app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Widget Preview")).firstMatch.tap()
+        app.buttons["widget_preview_open"].firstMatch.tap()
+        XCTAssertTrue(app.buttons["home_year_menu"].waitForExistence(timeout: 10))
+        XCTAssertFalse(app.descendants(matching: .any)["ekadashi_details"].exists)
+    }
+
+    func testWidgetPreviewsFitInEverySupportedLanguage() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        for language in ["English", "हिंदी", "தமிழ்", "తెలుగు", "ગુજરાતી", "বাংলা"] {
+            tab(0)
+            // English is already selected at launch; selecting it again would
+            // match both the menu item and the underlying Home button.
+            if language != "English" {
+                element("language_menu").tap()
+                XCTAssertTrue(app.buttons[language].waitForExistence(timeout: 5))
+                app.buttons[language].tap()
+            }
+            tab(4)
+            app.buttons["settings_appearance_tube"].firstMatch.tap()
+            let kinds = app.segmentedControls["widget_preview_kind"]
+            XCTAssertTrue(kinds.waitForExistence(timeout: 10))
+            let window = app.windows.firstMatch.frame
+            let preview = app.buttons["widget_preview_open"].firstMatch
+            XCTAssertTrue(preview.waitForExistence(timeout: 10))
+            XCTAssertGreaterThanOrEqual(preview.frame.minX, window.minX)
+            XCTAssertLessThanOrEqual(preview.frame.maxX, window.maxX)
+            snap("widget-single-\(language)")
+            app.segmentedControls["widget_preview_size"].buttons.element(boundBy: 2).tap()
+            snap("widget-lock-\(language)")
+            kinds.buttons.element(boundBy: 1).tap()
+            let rows = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'widget_upcoming_open_'"))
+            XCTAssertEqual(rows.count, 5, language)
+            for index in 0..<rows.count {
+                let frame = rows.element(boundBy: index).frame
+                XCTAssertGreaterThanOrEqual(frame.minX, window.minX, language)
+                XCTAssertLessThanOrEqual(frame.maxX, window.maxX, language)
+                XCTAssertGreaterThan(frame.height, 10, language)
+            }
+            snap("widget-upcoming-\(language)")
+            app.navigationBars.buttons.element(boundBy: 0).tap()
+        }
+    }
+
+    private func openWidgetPreviews() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        tab(4)
+        let entry = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Widget Preview")).firstMatch
+        XCTAssertTrue(entry.waitForExistence(timeout: 10))
+        entry.tap()
+        XCTAssertTrue(app.segmentedControls["widget_preview_kind"].waitForExistence(timeout: 10))
+    }
+
     /// Selects a tab and waits until it is selected; a tap that lands while a
     /// navigation transition is still running can be dropped, so retry once.
     private func tab(_ index: Int) {
@@ -442,9 +565,15 @@ final class ScreenshotTests: XCTestCase {
                 .press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.4)))
         }
         XCTAssertTrue(master.waitForExistence(timeout: 5))
-        let reminder = element("notify_toggle_notify_2day")
-        XCTAssertTrue(reminder.waitForExistence(timeout: 5))
         if (master.value as? String) == "1" { master.switches.firstMatch.exists ? master.switches.firstMatch.tap() : master.tap() }
+        let reminder = element("notify_toggle_notify_2day")
+        // The native List creates the next section lazily. Expose the actual
+        // reminder row before asserting its disabled state on short screens.
+        for _ in 0..<6 where !(reminder.exists && reminder.isHittable) {
+            app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7))
+                .press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)))
+        }
+        XCTAssertTrue(reminder.waitForExistence(timeout: 5))
         let off = expectation(for: NSPredicate(format: "value == '0' AND isEnabled == false"), evaluatedWith: reminder)
         XCTAssertEqual(XCTWaiter.wait(for: [off], timeout: 10), .completed, "off and greyed out")
         snap("18-reminders-off")

@@ -80,6 +80,60 @@ final class AppModelTests: XCTestCase {
         XCTAssertFalse(snapshot.strings.isEmpty)
     }
 
+    func testWidgetDeepLinkSelectsExactHomeCardAcrossYearsWithoutDetailsSheet() async throws {
+        let model = AppModel()
+        model.reload()
+        await model.waitForLoad()
+        let originalYear = model.selectedYear
+        defer { model.setYear(originalYear) }
+        for year in model.enabledYears {
+            let events = model.ekadashis.filter { $0.date.year == year }
+            for event in [try XCTUnwrap(events.first), try XCTUnwrap(events.last)] {
+                model.selectedTab = .settings
+                model.open(AppRoute.ekadashiURL(event.occurrenceUid))
+                XCTAssertEqual(model.selectedTab, .today)
+                XCTAssertEqual(model.selectedYear, year)
+                XCTAssertEqual(model.homeEkadashis[model.homeIndex].occurrenceUid, event.occurrenceUid)
+            }
+        }
+        let index = model.homeIndex
+        model.open(AppRoute.ekadashiURL("missing-occurrence"))
+        XCTAssertEqual(model.homeIndex, index)
+    }
+
+    func testColdWidgetLinkWaitsForTheRealSchedule() async throws {
+        let model = AppModel()
+        model.reload()
+        await model.waitForLoad()
+        let event = try XCTUnwrap(model.ekadashis.last)
+        let cold = AppModel()
+        let originalYear = cold.selectedYear
+        defer { cold.setYear(originalYear) }
+        cold.open(AppRoute.ekadashiURL(event.occurrenceUid))
+        cold.reload()
+        await cold.waitForLoad()
+        XCTAssertEqual(cold.selectedTab, .today)
+        XCTAssertEqual(cold.selectedYear, event.date.year)
+        XCTAssertEqual(cold.homeEkadashis[cold.homeIndex].occurrenceUid, event.occurrenceUid)
+    }
+
+    func testLaunchLocationRefreshPreservesTheWidgetOccurrence() async throws {
+        let model = AppModel()
+        let originalYear = model.selectedYear
+        defer { model.setYear(originalYear) }
+        model.reload()
+        await model.waitForLoad()
+        let event = try XCTUnwrap(model.ekadashis.last)
+        model.open(AppRoute.ekadashiURL(event.occurrenceUid))
+        await model.handleLocation(atLaunch: true)
+        await model.waitForLoad()
+        XCTAssertEqual(model.selectedYear, event.date.year)
+        XCTAssertEqual(model.homeEkadashis[model.homeIndex].occurrenceUid, event.occurrenceUid)
+        model.open(.tab(.today))
+        XCTAssertNotEqual(model.homeEkadashis[model.homeIndex].occurrenceUid, event.occurrenceUid,
+                          "An explicit Home action can still select the current/next fast")
+    }
+
     /// Home's tradition and year menus drive the Ekadashis everywhere; a city
     /// chosen on Home also becomes the Panchang location.
     func testHomeCityTraditionAndYearApplyAcrossTheApp() async {
@@ -126,6 +180,7 @@ final class AppModelTests: XCTestCase {
         XCTAssertEqual(RecentCities(store: model.store).all().first, AppModel.defaultCity)
         XCTAssertEqual(model.ekadashiCityName, "Chennai (IN)", "city and country code, no time zone")
 
+        model.setYear(2026)
         model.setYear(2027)
         XCTAssertTrue(model.homeEkadashis.allSatisfy { $0.date.year == 2027 })
         XCTAssertEqual(model.calendarFocus?.year, 2027)

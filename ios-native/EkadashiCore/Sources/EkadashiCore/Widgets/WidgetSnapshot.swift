@@ -50,7 +50,7 @@ public struct WidgetToday: Codable, Equatable, Sendable {
     public let paranaEnd: Date?
 }
 
-/// The one payload all three widgets read from the App Group
+/// The payload both iOS widgets read from the App Group
 /// (widget_sync_manager.dart, schema 2).
 public struct WidgetSnapshot: Codable, Equatable, Sendable {
     public var schemaVersion = 2
@@ -66,6 +66,8 @@ public struct WidgetSnapshot: Codable, Equatable, Sendable {
     public let today: WidgetToday
     public let upcoming: [WidgetItem]
     public let strings: [String: String]
+    /// Optional for compatibility with snapshots written before the redesign.
+    public var todayEkadashi: WidgetItem? = nil
 
     public static let appGroupKey = "widget_snapshot_v2"
 
@@ -79,6 +81,7 @@ public struct WidgetSnapshot: Codable, Equatable, Sendable {
         "day_unit": "widget_day_unit", "hour_unit": "widget_hour_unit", "minute_unit": "widget_minute_unit",
         "no_ekadashi": "no_ekadashi", "today_is_ekadashi": "widget_today_is_ekadashi", "days_to_go": "widget_days_to_go",
         "fast_done": "widget_fast_done", "am": "panchang_am", "pm": "panchang_pm",
+        "remaining": "widget_remaining",
     ]
 
     public static func state(of event: EkadashiOccurrence, at now: Date) -> WidgetState {
@@ -95,12 +98,13 @@ public struct WidgetSnapshot: Codable, Equatable, Sendable {
         let zone = TzDatabase.shared.location(zoneId) ?? AppTimezone.ist.location
         let localToday = zone.wallClock(now).date
         let events = occurrences.sorted { $0.date < $1.date }
-        let future = events.filter { $0.paranaEnd.map { now < $0 } ?? false }
-        let todayEvent = events.first { $0.date == localToday }
+        let timed = events.filter { $0.fastingStart != nil && $0.paranaStart != nil && $0.paranaEnd != nil }
+        let future = timed.filter { $0.paranaEnd.map { now < $0 } ?? false }
+        let todayEvent = timed.first { $0.date == localToday }
         let formatter = DateFormatter()
         formatter.locale = Localizer.locale(language)
         formatter.timeZone = TimeZone(identifier: "UTC")
-        formatter.dateFormat = "d MMM yyyy"
+        formatter.dateFormat = "EEE, d MMM yyyy"
         func item(_ e: EkadashiOccurrence) -> WidgetItem {
             let start = e.fastingStart!, parana = e.paranaStart!, end = e.paranaEnd!
             let state = Self.state(of: e, at: now)
@@ -113,7 +117,7 @@ public struct WidgetSnapshot: Codable, Equatable, Sendable {
         var strings: [String: String] = [:]
         for (key, value) in stringKeys { strings["widget.\(key)"] = localizer.translate(value, language: language) }
         let next = future.first
-        return WidgetSnapshot(
+        var snapshot = WidgetSnapshot(
             generatedAt: now, locale: language, timeZone: zoneId, locationName: locationName, tradition: tradition,
             calculationVersion: "bundled-v2", currentState: next.map { state(of: $0, at: now) } ?? .fallback,
             nextEkadashi: next.map(item),
@@ -122,6 +126,8 @@ public struct WidgetSnapshot: Codable, Equatable, Sendable {
                                fastingStart: todayEvent?.fastingStart, paranaStart: todayEvent?.paranaStart,
                                paranaEnd: todayEvent?.paranaEnd),
             upcoming: future.dropFirst().map(item), strings: strings)
+        snapshot.todayEkadashi = todayEvent.map(item)
+        return snapshot
     }
 
     /// The Ekadashi a widget shows now: the next one whose Parana has not
@@ -130,17 +136,34 @@ public struct WidgetSnapshot: Codable, Equatable, Sendable {
         ([nextEkadashi].compactMap { $0 } + upcoming).first { now < $0.paranaEnd }
     }
 
+    /// The exclusive upcoming widget: the first five strictly future civil
+    /// dates, including the nearest one. Reevaluate cached data at render time.
     public func upcoming(after now: Date) -> [WidgetItem] {
-        let all = [nextEkadashi].compactMap { $0 } + upcoming
-        return Array(all.filter { now < $0.paranaEnd }.dropFirst())
+        let today = TzDatabase.shared.location(timeZone)?.wallClock(now).date ?? CivilDate(utc: now)
+        var seen = Set<String>()
+        let items = ([todayEkadashi, nextEkadashi].compactMap { $0 } + upcoming)
+            .sorted { $0.date < $1.date }
+            .filter { item in
+                guard let date = CivilDate(iso: item.date), date > today else { return false }
+                return seen.insert(item.occurrenceUid).inserted
+            }
+        return Array(items.prefix(5))
     }
 
     /// When the widget timeline must refresh: every state change ahead.
     public func refreshDates(after now: Date) -> [Date] {
-        ([nextEkadashi].compactMap { $0 } + upcoming)
-            .flatMap { [$0.fastingStart, $0.paranaStart, $0.paranaEnd] }
-            .filter { $0 > now }
-            .sorted()
+        let items = [todayEkadashi, nextEkadashi].compactMap { $0 } + upcoming
+        var dates = items.flatMap { [$0.fastingStart, $0.paranaStart, $0.paranaEnd] }
+        // Text and arc change together at each percentage boundary.
+        for item in items where item.paranaStart > item.fastingStart {
+            let interval = item.paranaStart.timeIntervalSince(item.fastingStart)
+            dates += (1...100).map { item.fastingStart.addingTimeInterval(interval * Double($0) / 100) }
+        }
+        // Civil-date selection also changes at midnight in the schedule's zone.
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: timeZone) ?? TimeZone(secondsFromGMT: 0)!
+        if let midnight = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: now)) { dates.append(midnight) }
+        return Set(dates.filter { $0 > now }).sorted()
     }
 
     public func string(_ key: String, _ fallback: String) -> String { strings["widget.\(key)"] ?? fallback }
@@ -162,13 +185,21 @@ public struct WidgetSnapshot: Codable, Equatable, Sendable {
 
 /// What the Ekadashi widget leads with (docs/ROADMAP.md Phase 6).
 public enum WidgetHeadline: Equatable, Sendable {
-    /// Today is an Ekadashi (fasting or Parana): the fast's progress, 0...1.
+    /// Today's civil-date Ekadashi: fraction of scheduled fasting time REMAINING.
     case today(WidgetItem, progress: Double)
     /// The next Ekadashi and the calendar days until it.
     case next(WidgetItem, days: Int)
 }
 
 extension WidgetItem {
+    public var detailsURL: URL { AppRoute.ekadashiURL(occurrenceUid) }
+
+    public func remainingFraction(at now: Date) -> Double { 1 - fastProgress(at: now) }
+
+    public func remainingPercent(at now: Date) -> Int {
+        // Keep 1% until the actual boundary; floating-point noise must not add 1%.
+        Int(ceil(max(0, min(100, remainingFraction(at: now) * 100)) - 0.000000001))
+    }
     /// How much of the fast (fasting start to Parana start) has passed.
     public func fastProgress(at now: Date) -> Double {
         let total = paranaStart.timeIntervalSince(fastingStart)
@@ -178,16 +209,16 @@ extension WidgetItem {
 }
 
 extension WidgetSnapshot {
-    public func headline(at now: Date) -> WidgetHeadline? {
-        guard let item = activeItem(at: now) else { return nil }
-        switch item.state(at: now) {
-        case .fastingActive, .paranaAvailable:
-            return .today(item, progress: item.fastProgress(at: now))
-        default:
-            let today = TzDatabase.shared.location(timeZone)?.wallClock(now).date ?? CivilDate(utc: now)
-            let days = CivilDate(iso: item.date).map { today.days(until: $0) } ?? 0
-            return .next(item, days: max(0, days))
+    public func headline(at now: Date, selection: WidgetSelection = .automatic) -> WidgetHeadline? {
+        let today = TzDatabase.shared.location(timeZone)?.wallClock(now).date ?? CivilDate(utc: now)
+        let items = ([todayEkadashi, nextEkadashi].compactMap { $0 } + upcoming).sorted { $0.date < $1.date }
+        if selection != .next, let item = items.first(where: { CivilDate(iso: $0.date) == today }) {
+            return .today(item, progress: item.remainingFraction(at: now))
         }
+        guard selection != .today,
+              let item = items.first(where: { CivilDate(iso: $0.date).map { $0 > today } ?? false }),
+              let day = CivilDate(iso: item.date) else { return nil }
+        return .next(item, days: today.days(until: day))
     }
 
     /// "Today", "Tomorrow" or "14 days to go".
@@ -195,5 +226,17 @@ extension WidgetSnapshot {
         if days <= 0 { return string("today", "Today") }
         if days == 1 { return string("tomorrow", "Tomorrow") }
         return string("days_to_go", "{value0} days to go").replacingOccurrences(of: "{value0}", with: "\(days)")
+    }
+}
+
+public extension WidgetHeadline {
+    var item: WidgetItem {
+        switch self {
+        case .today(let item, _), .next(let item, _): return item
+        }
+    }
+    var isToday: Bool {
+        if case .today = self { return true }
+        return false
     }
 }
