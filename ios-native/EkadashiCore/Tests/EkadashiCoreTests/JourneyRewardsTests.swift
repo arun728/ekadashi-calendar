@@ -190,12 +190,14 @@ final class JourneyRewardsTests: XCTestCase {
     }
 
     func testCorruptBadgeEnvelopeDoesNotBlockJournal() throws {
-        let store = InMemoryKeyValueStore()
-        _ = store.set("invalid", forKey: "journey_badges_v1")
-        let tracker = VratTracker(store: store, now: { self.now })
-        try tracker.load(occurrences: events(2026))
-        XCTAssertTrue(tracker.isEnabled)
-        XCTAssertTrue(tracker.rewardsStorageError)
+        for key in ["journey_badges_v1", "vrat_tracker_user_achievements"] {
+            let store = InMemoryKeyValueStore()
+            _ = store.set("invalid", forKey: key)
+            let tracker = VratTracker(store: store, now: { self.now })
+            try tracker.load(occurrences: events(2026))
+            XCTAssertTrue(tracker.isEnabled)
+            XCTAssertTrue(tracker.rewardsStorageError)
+        }
     }
 
     func testTrackerAwardsUseTheHomeZoneWhenParanaIsUnavailable() throws {
@@ -226,6 +228,23 @@ final class JourneyRewardsTests: XCTestCase {
                                               now: ISO8601.instant("2026-03-19T12:00:00Z")!, zone: zone)
         XCTAssertEqual(JourneyBadgeCatalog.nextMilestone(summary: broken, earned: state)?.id, "vrat_10")
         XCTAssertEqual(JourneyBadgeCatalog.definition("streak_6")?.goalProgress(in: broken), 0)
+    }
+
+    func testValidBadgeEnvelopeTakesPrecedenceOverCorruptLegacyBadges() throws {
+        let store = InMemoryKeyValueStore(), list = events(2026)
+        let first = VratTracker(store: store, now: { self.now })
+        try first.load(occurrences: list)
+        let e = list[0]
+        let awards = try first.record(occurrenceId: e.id, occurrenceUid: e.occurrenceUid, date: e.date.iso,
+                                      name: e.name, status: .observed, occurrences: list)
+        first.markAnnouncementsPresented(awards.map(\.id))
+        _ = store.set("invalid", forKey: "vrat_tracker_user_achievements")
+        let restored = VratTracker(store: store, now: { self.now })
+        try restored.load(occurrences: list)
+        XCTAssertTrue(restored.isEnabled)
+        XCTAssertFalse(restored.rewardsStorageError)
+        XCTAssertEqual(restored.userAchievements["first_vrat"]?.isUnlocked, true)
+        XCTAssertTrue(try restored.refreshAchievements(list).isEmpty)
     }
 
     func testBadgeVocabularyExistsInEveryAppLanguage() {
