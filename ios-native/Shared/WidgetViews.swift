@@ -193,19 +193,17 @@ struct EkadashiWidgetView: View {
     private func circular(_ snapshot: WidgetSnapshot, _ headline: WidgetHeadline) -> some View {
         GeometryReader { geometry in
             let side = min(geometry.size.width, geometry.size.height)
-            VStack(spacing: 0) {
+            VStack(spacing: side * 0.03) {
                 ZStack {
                     if headline.isToday {
                         Circle().inset(by: 2).stroke(.primary.opacity(0.2), lineWidth: 3)
                         Circle().inset(by: 2).trim(from: 0, to: headline.item.remainingFraction(at: now))
                             .stroke(.primary, style: StrokeStyle(lineWidth: 3, lineCap: .round)).rotationEffect(.degrees(-90))
                     }
-                    // Trim the source icon's empty border so the lotus itself
-                    // uses the available artwork area, rather than its canvas.
-                    WidgetBrandIcon().scaleEffect(1.3).clipped()
-                        .padding(headline.isToday ? 5 : 0)
+                    WidgetBrandIcon()
+                        .padding(headline.isToday ? side * 0.055 : 0)
                 }
-                .frame(width: side * 0.69, height: side * 0.69)
+                .frame(width: side * 0.43, height: side * 0.43)
                 Group {
                     if headline.isToday {
                         Text("\(headline.item.remainingPercent(at: now))%")
@@ -213,11 +211,14 @@ struct EkadashiWidgetView: View {
                         Text("\(days) \(snapshot.string("day_unit", ""))")
                     }
                 }
-                .font(.system(size: side * 0.25, weight: .bold)).monospacedDigit()
-                .frame(height: side * 0.3)
+                .font(.system(size: side * 0.22, weight: .bold)).monospacedDigit()
+                .lineLimit(1).minimumScaleFactor(0.65)
+                .frame(width: side * 0.64, height: side * 0.24)
             }
             .frame(width: geometry.size.width, height: geometry.size.height)
+            .foregroundStyle(.white)
             .background(AccessoryWidgetBackground())
+            .clipShape(Circle())
         }
         .lineLimit(1).minimumScaleFactor(0.8)
         .accessibilityElement(children: .contain)
@@ -242,11 +243,12 @@ struct EkadashiWidgetView: View {
     }
 }
 
-/// The real app icon is also bundled into the widget extension.
+/// The app's Panchang symbol stays crisp and white in both Lock Screen families.
 struct WidgetBrandIcon: View {
     var body: some View {
-        Image("widget_brand_icon").resizable().scaledToFit()
-            .accessibilityIdentifier("widget_brand_icon")
+        Image(systemName: AppSymbol.tabPanchang).resizable().scaledToFit()
+            .symbolRenderingMode(.monochrome).foregroundStyle(.white)
+            .accessibilityIdentifier("widget_lock_icon")
             .accessibilityLabel(Text(verbatim: ""))
     }
 }

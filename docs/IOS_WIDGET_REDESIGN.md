@@ -31,10 +31,7 @@ Installed widget taps and preview taps select the displayed occurrence's
 and preserve the occurrence selection through cold launch and year changes.
 The stable occurrence URL format remains compatible with installed widgets.
 
-The circular Lock Screen widget scales the app artwork and count to the host
-slot (tested at 48, 62 and 76 points), with a one-line day countdown, or the
-remaining percentage and a progress ring today. The rectangular accessory shows the icon, Ekadashi name, countdown/remaining
-percentage and date. Both respect WidgetKit's system rendering mode.
+Both Lock Screen accessories use the app's Panchang symbol in bright monochrome white, without the app icon's opaque square. The circular accessory reserves a centered inset for the symbol, countdown or remaining percentage, and today's progress ring. It is constrained to the actual circle, tested at 48, 62 and 76 points. The rectangular accessory uses the same symbol alongside the Ekadashi name, status and date. WidgetKit still controls system vibrancy and Always-On dimming.
 
 English, Hindi, Tamil, Telugu, Gujarati and Bengali are covered, including
 gallery names/descriptions, preview controls, dates, timing labels and units.
@@ -93,3 +90,27 @@ physical-device WidgetKit placement, delivery and refresh scheduling remain
 release checks.
 
 All commits use `[skip ci]`. No CI requested, no merge to dev or main.
+
+## Circle containment follow-up (18 October 2026)
+
+A physical-device photo exposed square artwork extending outside the circular
+slot. Failing tests in `2744207` reproduced 72 circle-boundary assertions across
+six languages, three slot sizes and normal/larger text, plus two failures for
+white pixels and the opaque square. The previous rectangle-only bounds check
+could not catch this. Native comparison renders showed the original app image,
+its white template (an opaque white square), and the existing Panchang symbol;
+the crisp white Panchang symbol is used in both accessories.
+
+The corrected circular composition reserves inset room for its entire symbol
+and day count/percentage instead of enlarging square artwork to the slot edge.
+It has a circular safety clip, and Settings uses the same renderer.
+
+- Native app/rendering suite: **17 passed**, including circle containment and
+  bright-white/no-square checks.
+- Targeted Settings UI tests: **2 passed**, verifying the same symbol in both
+  Lock Screen previews and supported size choices.
+- Full Flutter suite after Android parity changes: **746 passed**.
+
+The original full iOS UI run above remains historical evidence; the two affected
+UI tests were rerun after this follow-up. Actual WidgetKit placement and
+Always-On/vibrancy remain physical-device release checks.
