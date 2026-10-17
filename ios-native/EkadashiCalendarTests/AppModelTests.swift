@@ -80,19 +80,26 @@ final class AppModelTests: XCTestCase {
         XCTAssertFalse(snapshot.strings.isEmpty)
     }
 
-    func testWidgetDeepLinkOpensTheExactOccurrenceInsteadOfTodaysHomeCard() async throws {
+    func testWidgetDeepLinkSelectsExactHomeCardAcrossYearsWithoutDetailsSheet() async throws {
         let model = AppModel()
         model.reload()
         await model.waitForLoad()
-        let event = try XCTUnwrap(model.ekadashis.first)
-        model.open(AppRoute.ekadashiURL(event.occurrenceUid))
-        XCTAssertEqual(model.selectedTab, .today)
-        XCTAssertEqual(model.widgetEvent?.occurrenceUid, event.occurrenceUid)
-        XCTAssertEqual(model.widgetEvent?.date, event.date)
-        XCTAssertEqual(model.widgetEvent?.fastingStart, event.fastingStart)
-        model.widgetEvent = nil
+        let originalYear = model.selectedYear
+        defer { model.setYear(originalYear) }
+        for year in model.enabledYears {
+            let events = model.ekadashis.filter { $0.date.year == year }
+            for event in [try XCTUnwrap(events.first), try XCTUnwrap(events.last)] {
+                model.selectedTab = .settings
+                model.open(AppRoute.ekadashiURL(event.occurrenceUid))
+                XCTAssertEqual(model.selectedTab, .today)
+                XCTAssertEqual(model.selectedYear, year)
+                XCTAssertEqual(model.homeEkadashis[model.homeIndex].occurrenceUid, event.occurrenceUid)
+                XCTAssertNil(model.widgetEvent, "Widget links must not present the details sheet")
+            }
+        }
+        let index = model.homeIndex
         model.open(AppRoute.ekadashiURL("missing-occurrence"))
-        XCTAssertNil(model.widgetEvent)
+        XCTAssertEqual(model.homeIndex, index)
     }
 
     func testColdWidgetLinkWaitsForTheRealSchedule() async throws {
@@ -104,7 +111,10 @@ final class AppModelTests: XCTestCase {
         cold.open(AppRoute.ekadashiURL(event.occurrenceUid))
         cold.reload()
         await cold.waitForLoad()
-        XCTAssertEqual(cold.widgetEvent?.occurrenceUid, event.occurrenceUid)
+        XCTAssertEqual(cold.selectedTab, .today)
+        XCTAssertEqual(cold.selectedYear, event.date.year)
+        XCTAssertEqual(cold.homeEkadashis[cold.homeIndex].occurrenceUid, event.occurrenceUid)
+        XCTAssertNil(cold.widgetEvent)
     }
 
     /// Home's tradition and year menus drive the Ekadashis everywhere; a city

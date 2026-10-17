@@ -22,30 +22,47 @@ final class ScreenshotTests: XCTestCase {
         add(attachment)
     }
 
-    func testRealWidgetPreviewOpensItsDisplayedOccurrenceAndReturns() {
-        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
-        tab(4)
-        let entry = app.buttons["settings_widget_preview"]
-        XCTAssertTrue(entry.waitForExistence(timeout: 10))
-        entry.tap()
-        let next = app.segmentedControls["widget_preview_state"].buttons["Next Ekadashi"]
-        XCTAssertTrue(next.waitForExistence(timeout: 10))
-        next.tap()
+    func testRealWidgetPreviewOpensItsDisplayedHomeCard() {
+        openWidgetPreviews()
+        XCTAssertFalse(app.staticTexts["No Ekadashi on this day"].exists)
         let preview = app.buttons["widget_preview_open"].firstMatch
         XCTAssertTrue(preview.waitForExistence(timeout: 10))
-        // The link exposes the real occurrence's name and full schedule date.
-        let displayed = preview.label
-        XCTAssertFalse(displayed.isEmpty)
+        let displayed = preview.label.components(separatedBy: "\n")
         preview.tap()
-        let detail = app.descendants(matching: .any)["ekadashi_details"]
-        XCTAssertTrue(detail.waitForExistence(timeout: 10))
-        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label IN %@", displayed.components(separatedBy: "\n"))).count > 0)
-        app.navigationBars.buttons.element(boundBy: 0).tap()
-        XCTAssertTrue(app.buttons["widget_preview_open"].firstMatch.waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 10))
+        XCTAssertFalse(app.descendants(matching: .any)["ekadashi_details"].exists)
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label IN %@", displayed)).count > 0)
+    }
+
+    func testUpcomingPreviewShowsFiveIndividuallyTappableEkadashis() {
+        openWidgetPreviews()
+        app.segmentedControls["widget_preview_kind"].buttons["Upcoming Ekadashis"].tap()
+        let rows = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'widget_upcoming_open_'"))
+        XCTAssertEqual(rows.count, 5)
+        snap("widgets-upcoming-five-medium")
         app.segmentedControls["widget_preview_size"].buttons["Large"].tap()
-        snap("widgets-real-large-preview")
+        XCTAssertEqual(rows.count, 5)
+        snap("widgets-upcoming-five-large")
+        let displayed = rows.element(boundBy: 4).label.components(separatedBy: "\n")
+        rows.element(boundBy: 4).tap()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label IN %@", displayed)).count > 0)
+        XCTAssertFalse(app.descendants(matching: .any)["ekadashi_details"].exists)
+    }
+
+    func testLockPreviewIdentifiesEkadashiAndUsesAppArtwork() {
+        openWidgetPreviews()
         app.segmentedControls["widget_preview_size"].buttons["Lock Screen"].tap()
-        snap("widgets-real-lock-preview")
+        XCTAssertTrue(app.images["widget_brand_icon"].firstMatch.waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["widget_preview_open"].firstMatch.label.contains("Ekadashi"))
+        snap("widgets-branded-lock-preview")
+    }
+
+    private func openWidgetPreviews() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        tab(4)
+        app.buttons["settings_widget_preview"].tap()
+        XCTAssertTrue(app.segmentedControls["widget_preview_kind"].waitForExistence(timeout: 10))
     }
 
     /// Selects a tab and waits until it is selected; a tap that lands while a
