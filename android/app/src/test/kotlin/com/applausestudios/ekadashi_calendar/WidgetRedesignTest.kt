@@ -32,7 +32,7 @@ class WidgetRedesignTest {
   "widget.upcoming_ekadashis" to "Upcoming Ekadashis","widget.fast_done" to "{value0}% of the fast done")
  /** An Ekadashi whose fast starts [startOffset] seconds from now and lasts a day. */
  private fun event(id:Int,startOffset:Long):EkadashiItem {
-  val start=now.plusSeconds(startOffset);val parana=start.plusSeconds(86400)
+  val start=if(startOffset < 0) now.atZone(zone).toLocalDate().atStartOfDay(zone).toInstant() else now.plusSeconds(startOffset);val parana=start.plusSeconds(86400)
   return EkadashiItem(id,"Event $id","Event $id",start.atZone(zone).toLocalDate().toString(),"","Shukla","",
    start.toString(),parana.toString(),parana.toString(),parana.plusSeconds(10800).toString())
  }
@@ -48,9 +48,10 @@ class WidgetRedesignTest {
  private fun text(view:View,id:Int)=view.findViewById<TextView>(id).text.toString()
 
  @Test fun headlineShowsTodayWithFastProgressDuringTheFast() {
-  val headline=WidgetHeadline.of(payload(event(1,-21600)),now)
+  val e=event(1,-21600)
+  val headline=WidgetHeadline.of(payload(e),now)
   assertTrue(headline is WidgetHeadline.Today)
-  assertEquals(0.25,(headline as WidgetHeadline.Today).progress,0.01)
+  assertEquals(1-e.fastProgress(now),(headline as WidgetHeadline.Today).progress,0.01)
  }
  @Test fun headlineShowsNextWithCalendarDaysToGo() {
   val e=event(1,14*86400L)
@@ -63,10 +64,10 @@ class WidgetRedesignTest {
   val view=render(NextEkadashiWidgetReceiver(),payload(event(1,-21600)))
   assertEquals("Today is Ekadashi",text(view,R.id.widget_small_badge))
   assertEquals("Event 1",text(view,R.id.widget_small_name))
-  assertEquals("Parana in",text(view,R.id.widget_small_countdown_label))
+  assertEquals("remaining",text(view,R.id.widget_small_countdown_label))
   val progress=view.findViewById<ProgressBar>(R.id.widget_small_progress)
   assertEquals(View.VISIBLE,progress.visibility)
-  assertEquals(25.0,progress.progress.toDouble(),2.0)
+  assertEquals((1-event(1,-21600).fastProgress(now))*100,progress.progress.toDouble(),2.0)
  }
  @Test fun ekadashiWidgetShowsNextEkadashiAndDaysToGo() {
   val e=event(1,14*86400L)

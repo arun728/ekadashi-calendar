@@ -21,6 +21,7 @@ import '../services/native_notification_service.dart'
         EkadashiNotificationData,
         NotificationSettings;
 import '../widgets/app_icons.dart';
+import '../services/place_name_resolver.dart';
 
 /// Settings Screen - Updated to use native Kotlin services for:
 /// - Permission handling (no freeze on return from system settings)
@@ -338,6 +339,15 @@ class _SettingsScreenState extends State<SettingsScreen>
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (_) => WidgetPreviewScreen(
+                    locationName: context.read<EkadashiSettings?>() == null
+                        ? ''
+                        : PlaceNameResolver.instance.city(
+                            context.read<EkadashiSettings>().city,
+                            lang.currentLocale.languageCode,
+                          ),
+                    tradition:
+                        context.read<EkadashiSettings?>()?.tradition.name ??
+                        'smarta',
                     ekadashiList:
                         context.read<EkadashiSettings?>()?.cachedEkadashis(
                           lang.currentLocale.languageCode,

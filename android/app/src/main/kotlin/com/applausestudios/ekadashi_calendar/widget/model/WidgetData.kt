@@ -78,6 +78,12 @@ data class WidgetMetadata(
     }
 }
 
+private fun legacyOccurrenceUid(date: String, id: Int): String {
+    val year = date.take(4).toIntOrNull() ?: 0
+    val number = if (id in (year * 1000)..<(year * 1000 + 1000)) id % 1000 else id
+    return "ekadashi:$year:${number.toString().padStart(2, '0')}"
+}
+
 data class EkadashiItem(
     val id: Int,
     val name: String,
@@ -92,11 +98,13 @@ data class EkadashiItem(
     val paranaEndUTC: String,
     val targetTimestampUTC: String = fastingStartUTC,
     val countdownTarget: String = fastingStartUTC,
-    val description: String? = null
+    val description: String? = null,
+    val occurrenceUid: String = legacyOccurrenceUid(date, id)
 ) {
     fun toJsonObject(): JSONObject {
         return JSONObject().apply {
             put("id", id)
+            put("occurrenceUid", occurrenceUid)
             put("name", name)
             put("localizedName", localizedName)
             put("date", date)
@@ -185,7 +193,8 @@ data class EkadashiItem(
                 paranaEndUTC = json.optString("paranaEndUTC", ""),
                 targetTimestampUTC = target,
                 countdownTarget = countTarget,
-                description = if (json.has("description")) json.optString("description") else null
+                description = if (json.has("description")) json.optString("description") else null,
+                occurrenceUid = json.optString("occurrenceUid").ifEmpty { legacyOccurrenceUid(json.optString("date", json.optString("dateISO")), json.optInt("id")) }
             )
         }
     }
@@ -245,7 +254,8 @@ data class WidgetPayload(
     val nextEkadashi: EkadashiItem?,
     val today: TodayStatus? = null,
     val upcomingEkadashis: List<EkadashiItem>,
-    val localizedStrings: Map<String, String>
+    val localizedStrings: Map<String, String>,
+    val schedule: List<EkadashiItem> = emptyList()
 ) {
     fun localized(key: String, default: String = ""): String {
         return localizedStrings[key] ?: default
@@ -267,6 +277,7 @@ data class WidgetPayload(
 
             val upcomingArray = JSONArray()
             upcomingEkadashis.forEach { upcomingArray.put(it.toJsonObject()) }
+            put("schedule", JSONArray().apply { schedule.forEach { put(it.toJsonObject()) } })
             put("upcomingEkadashis", upcomingArray)
             put("upcoming", upcomingArray)
 
@@ -318,7 +329,8 @@ data class WidgetPayload(
                 nextEkadashi = nextEkadashi,
                 today = today,
                 upcomingEkadashis = upcomingList,
-                localizedStrings = stringsMap
+                localizedStrings = stringsMap,
+                schedule = json.optJSONArray("schedule")?.let { rows -> (0 until rows.length()).map { EkadashiItem.fromJsonObject(rows.getJSONObject(it)) } } ?: emptyList()
             )
         }
 

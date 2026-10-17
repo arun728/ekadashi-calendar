@@ -61,20 +61,40 @@ void main() {
       );
       expect(find.byType(DetailsScreen), findsNothing);
     },
-  );  testWidgets('an occurrence opens Home from Details and manual paging then stays put on language changes', (tester) async {
-    await tester.pumpWidget(harness.app()); await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('view_details'))); await tester.pumpAndSettle();
-    expect(find.byType(DetailsScreen), findsOneWidget);
-    final dynamic state = tester.state(find.byType(MainScreen));
-    state.handleDeepLink(Uri.parse('ekadashi://ekadashi?uid=ekadashi%3A2027%3A25'));
-    await tester.pumpAndSettle();
-    expect(find.byType(DetailsScreen), findsNothing);
-    expect(tester.widget<Text>(find.byKey(const Key('home_page_indicator'))).data, '25 / 25');
-    await tester.drag(find.byType(PageView).first, const Offset(700, 0)); await tester.pumpAndSettle();
-    expect(tester.widget<Text>(find.byKey(const Key('home_page_indicator'))).data, '24 / 25');
-    await tester.element(find.byType(MainScreen)).read<LanguageService>().changeLanguage('ta');
-    await tester.pumpAndSettle();
-    expect(tester.widget<Text>(find.byKey(const Key('home_page_indicator'))).data, '24 / 25');
-  });
-
+  );
+  testWidgets(
+    'an occurrence opens Home from Details and manual paging then stays put on language changes',
+    (tester) async {
+      await tester.pumpWidget(harness.app());
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('view_details')));
+      await tester.pumpAndSettle();
+      expect(find.byType(DetailsScreen), findsOneWidget);
+      final dynamic state = tester.state(find.byType(MainScreen));
+      state.handleDeepLink(
+        Uri.parse('ekadashi://ekadashi?uid=ekadashi%3A2027%3A25'),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(DetailsScreen), findsNothing);
+      expect(
+        tester.widget<Text>(find.byKey(const Key('home_page_indicator'))).data,
+        '25 / 25',
+      );
+      await tester.drag(find.byType(PageView).first, const Offset(700, 0));
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<Text>(find.byKey(const Key('home_page_indicator'))).data,
+        '24 / 25',
+      );
+      await tester
+          .element(find.byType(MainScreen))
+          .read<LanguageService>()
+          .changeLanguage('ta');
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<Text>(find.byKey(const Key('home_page_indicator'))).data,
+        '24 / 25',
+      );
+    },
+  );
 }

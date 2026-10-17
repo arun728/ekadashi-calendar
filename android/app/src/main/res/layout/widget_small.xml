@@ -9,12 +9,16 @@
 
     <!-- Header Row -->
     <LinearLayout
+        android:id="@+id/widget_small_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:orientation="horizontal">
 
         <TextView
+            android:id="@+id/widget_small_decoration_0"
+            android:maxLines="1"
+            android:ellipsize="end"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="📅"
@@ -63,9 +67,12 @@
             android:textStyle="bold" />
 
         <TextView
+            android:maxLines="1"
+            android:ellipsize="end"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp"
+            android:id="@+id/widget_small_chevron"
             android:text="→"
             android:textColor="@color/widget_gold"
             android:textSize="@dimen/widget_text_chevron"
@@ -104,6 +111,8 @@
 
     <!-- Countdown / Status label -->
     <TextView
+            android:maxLines="1"
+            android:ellipsize="end"
         android:id="@+id/widget_small_countdown_label"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -114,6 +123,8 @@
 
     <!-- Countdown Value -->
     <TextView
+            android:maxLines="1"
+            android:ellipsize="end"
         android:id="@+id/widget_small_countdown_value"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

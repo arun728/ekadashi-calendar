@@ -6,20 +6,13 @@ import android.content.SharedPreferences
 import android.util.Log
 import com.applausestudios.ekadashi_calendar.widget.model.EkadashiItem
 import com.applausestudios.ekadashi_calendar.widget.model.TodayStatus
-import com.applausestudios.ekadashi_calendar.widget.model.WidgetMetadata
 import com.applausestudios.ekadashi_calendar.widget.model.WidgetPayload
-import com.applausestudios.ekadashi_calendar.widget.model.WidgetState
 import com.applausestudios.ekadashi_calendar.widget.storage.CacheStatus
 import com.applausestudios.ekadashi_calendar.widget.storage.LoadResult
-import org.json.JSONObject
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import java.time.Instant
-import java.time.format.DateTimeFormatter
 
 /**
  * Single controlled repository for widget snapshot persistence and retrieval.
- * Implements strict cache validation and automatic initial-seed loading on first install.
+ * Validates the cached Home engine schedule; missing data shows a localized refresh prompt.
  */
 class WidgetDataRepository private constructor(private val context: Context) {
 
@@ -38,8 +31,9 @@ class WidgetDataRepository private constructor(private val context: Context) {
         private var instance: WidgetDataRepository? = null
 
         fun getInstance(context: Context): WidgetDataRepository {
-            return instance ?: synchronized(this) {
-                instance ?: WidgetDataRepository(context.applicationContext).also { instance = it }
+            val application = context.applicationContext
+            return instance?.takeIf { it.context === application } ?: synchronized(this) {
+                instance?.takeIf { it.context === application } ?: WidgetDataRepository(application).also { instance = it }
             }
         }
     }
@@ -67,18 +61,9 @@ class WidgetDataRepository private constructor(private val context: Context) {
 
     @Synchronized
     fun getWidgetSnapshot(): LoadResult {
-        var rawJson = prefs.getString(KEY_PAYLOAD, null)
+        val rawJson = prefs.getString(KEY_PAYLOAD, null)
 
-        // Cold-start self initialization: if SharedPreferences is empty, attempt to seed from bundled asset
-        if (rawJson == null) {
-            Log.i(TAG, "No cached snapshot found in SharedPreferences. Attempting asset seed...")
-            val seededPayload = seedFromBundledAssets()
-            if (seededPayload != null) {
-                saveWidgetSnapshot(seededPayload)
-                return LoadResult(seededPayload, CacheStatus.VALID)
-            }
-            return LoadResult(localizedFallback(), CacheStatus.UNAVAILABLE)
-        }
+        if (rawJson == null) return LoadResult(localizedFallback(), CacheStatus.UNAVAILABLE)
 
         return try {
             val payload = WidgetPayload.fromJsonString(rawJson)
@@ -127,11 +112,6 @@ class WidgetDataRepository private constructor(private val context: Context) {
             LoadResult(payload, CacheStatus.VALID)
         } catch (e: Exception) {
             Log.e(TAG, "Error decoding widget snapshot: ${e.message}", e)
-            val seededPayload = seedFromBundledAssets()
-            if (seededPayload != null) {
-                saveWidgetSnapshot(seededPayload)
-                return LoadResult(seededPayload, CacheStatus.VALID)
-            }
             LoadResult(localizedFallback(), CacheStatus.CORRUPTED)
         }
     }
@@ -151,118 +131,7 @@ class WidgetDataRepository private constructor(private val context: Context) {
     }
 
     private fun localizedFallback(): WidgetPayload = WidgetPayload.fallback().copy(
-        metadata = WidgetPayload.fallback().metadata.copy(locale=WidgetLocalization.locale(context)),
+        metadata = WidgetPayload.fallback().metadata.copy(locale=WidgetLocalization.locale(context), locationName=""),
         localizedStrings = WidgetLocalization.strings(context))
 
-    /**
-     * Seeds canonical Ekadashi data from bundled Flutter asset 'flutter_assets/assets/ekadashi_data.json'.
-     * Guarantees that when a widget is added on first install, real data is displayed immediately.
-     */
-    private fun seedFromBundledAssets(): WidgetPayload? {
-        val assetPaths = listOf(
-            "flutter_assets/assets/calendar/manifest.json"
-        )
-
-        for (path in assetPaths) {
-            try {
-                context.assets.open(path).use { inputStream ->
-                    val reader = BufferedReader(InputStreamReader(inputStream))
-                    val content = reader.readText()
-                    val root = JSONObject(content)
-                    val ekadashisArray = org.json.JSONArray()
-                    val packs = root.getJSONArray("packs")
-                    for (packIndex in 0 until packs.length()) {
-                        val pack = packs.getJSONObject(packIndex)
-                        val packRoot = JSONObject(context.assets.open("flutter_assets/" + pack.getString("asset")).bufferedReader().use { it.readText() })
-                        val rows = packRoot.getJSONArray("ekadashis")
-                        for (rowIndex in 0 until rows.length()) ekadashisArray.put(rows.getJSONObject(rowIndex))
-                    }
-
-                    val now = Instant.now()
-                    val targetTz = context.getSharedPreferences("location_cache",Context.MODE_PRIVATE).getString("cached_timezone","IST") ?: "IST"
-                    val locale = WidgetLocalization.locale(context)
-
-                    var nextEkadashi: EkadashiItem? = null
-                    val upcoming = mutableListOf<EkadashiItem>()
-
-                    for (i in 0 until ekadashisArray.length()) {
-                        val ekObj = ekadashisArray.getJSONObject(i)
-                        val id = ekObj.optInt("id", i + 1)
-                        val nameObj = ekObj.optJSONObject("name")
-                        val name = nameObj?.optString(locale)?.takeIf { it.isNotBlank() } ?: nameObj?.optString("en") ?: "Ekadashi"
-                        val paksha = WidgetLocalization.term(context,locale,"paksha_"+ekObj.optString("paksha"),ekObj.optString("paksha"))
-                        val month = WidgetLocalization.term(context,locale,"lunar_month_"+ekObj.optString("month"),ekObj.optString("month"))
-
-                        val timingObj = ekObj.optJSONObject("timing")?.optJSONObject(targetTz)
-                            ?: ekObj.optJSONObject("timing")?.optJSONObject("IST")
-                            ?: continue
-
-                        val date = timingObj.optString("date", "")
-                        val fStart = timingObj.optString("fasting_start", "")
-                        val pStart = timingObj.optString("parana_start", "")
-                        val pEnd = timingObj.optString("parana_end", "")
-
-                        val item = EkadashiItem(
-                            id = id,
-                            name = name,
-                            localizedName = name,
-                            date = date,
-                            localizedDate = java.time.LocalDate.parse(date).format(java.time.format.DateTimeFormatter.ofPattern("d MMM yyyy",java.util.Locale.forLanguageTag(locale))),
-                            paksha = paksha,
-                            month = month,
-                            fastingStartUTC = fStart,
-                            fastingEndUTC = pStart,
-                            paranaStartUTC = pStart,
-                            paranaEndUTC = pEnd,
-                            targetTimestampUTC = fStart,
-                            countdownTarget = fStart
-                        )
-
-                        val pEndInstant = item.paranaEndInstant
-                        if (pEndInstant != null && now.isBefore(pEndInstant)) {
-                            if (nextEkadashi == null) {
-                                nextEkadashi = item
-                            } else if (upcoming.size < 10) {
-                                upcoming.add(item)
-                            }
-                        }
-                    }
-
-                    if (nextEkadashi != null) {
-                        Log.i(TAG, "Successfully seeded initial widget payload from asset: $path (next: ${nextEkadashi.name})")
-                        return WidgetPayload(
-                            metadata = WidgetMetadata(
-                                schemaVersion = 2,
-                                generatedAtUTC = now.toString(),
-                                lastUpdatedAtUTC = now.toString(),
-                                locale = locale,
-                                timezone = targetTz,
-                                locationName = run {
-                                    val config = android.content.res.Configuration(context.resources.configuration)
-                                    config.setLocale(java.util.Locale.forLanguageTag(locale))
-                                    context.createConfigurationContext(config).getString(com.applausestudios.ekadashi_calendar.R.string.widget_seed_location)
-                                }
-                            ),
-                            currentState = nextEkadashi.stateAt(now),
-                            nextEkadashi = nextEkadashi,
-                            today = TodayStatus(
-                                isEkadashi = false,
-                                name = nextEkadashi.name,
-                                fastingStatus = "Upcoming",
-                                fastingStartUTC = nextEkadashi.fastingStartUTC,
-                                paranaStartUTC = nextEkadashi.paranaStartUTC,
-                                paranaEndUTC = nextEkadashi.paranaEndUTC,
-                                state = "BEFORE_EKADASHI"
-                            ),
-                            upcomingEkadashis = upcoming,
-                            localizedStrings = WidgetLocalization.strings(context,locale)
-                        )
-                    }
-                }
-            } catch (e: Exception) {
-                Log.d(TAG, "Asset seed failed for $path: ${e.message}")
-            }
-        }
-        return null
-    }
 }

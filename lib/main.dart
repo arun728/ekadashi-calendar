@@ -143,6 +143,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   Uri? _pendingDeepLink;
+  String? _widgetOccurrenceUid;
   int _currentIndex = 0;
   final EkadashiService _ekadashiService = EkadashiService();
   final NativeLocationService _locationService = NativeLocationService();
@@ -571,7 +572,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     if (_requestedPlace != null &&
         (place != _requestedPlace ||
             settings.tradition != _requestedTradition)) {
-      _loadData(shouldScrollToNext: place != _requestedPlace);
+      _loadData(
+        shouldScrollToNext:
+            place != _requestedPlace && _widgetOccurrenceUid == null,
+      );
       return;
     }
     final year = _homeYearList();
@@ -581,7 +585,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         _currentPage = 0;
       });
       if (_pageController.hasClients) _pageController.jumpToPage(0);
-      _scrollToNextEkadashi(animate: false, includeParana: true);
+      if (!_selectWidgetOccurrence()) {
+        _widgetOccurrenceUid = null;
+        _scrollToNextEkadashi(animate: false, includeParana: true);
+      }
     } else {
       setState(() {});
     }
@@ -661,6 +668,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
+        if (_selectWidgetOccurrence()) return;
         final index = currentUid == null
             ? -1
             : _ekadashiList.indexWhere((e) => e.occurrenceUid == currentUid);
@@ -670,7 +678,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         } else {
           // Use a slight delay to ensure PageView is built with new data
           Future.delayed(const Duration(milliseconds: 100), () {
-            if (mounted) {
+            if (mounted && !_selectWidgetOccurrence()) {
               _scrollToNextEkadashi(animate: false, includeParana: true);
             }
           });
@@ -810,8 +818,29 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
   void handleDeepLink(Uri uri) {
     if (!mounted || uri.scheme != 'ekadashi') return;
-    if (_isLoading) {
+    if (_isLoading || _isCalculating) {
       _pendingDeepLink = uri;
+      return;
+    }
+    if (uri.host == 'ekadashi') {
+      final uid = uri.queryParameters['uid'];
+      final occurrence = _allEkadashis
+          .where((e) => e.occurrenceUid == uid)
+          .firstOrNull;
+      if (occurrence == null) return;
+      _widgetOccurrenceUid = uid;
+      _searchReturn.clear();
+      Navigator.of(context).popUntil((route) => route.isFirst);
+      _popTabToRoot(_currentIndex);
+      _popTabToRoot(0);
+      _settings?.setYear(occurrence.date.year);
+      setState(() {
+        _currentIndex = 0;
+        _ekadashiList = _homeYearList();
+      });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _selectWidgetOccurrence();
+      });
       return;
     }
     if (uri.host == 'search') {
@@ -846,6 +875,16 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       // Event reminders open their day in Panchang.
       if (tab == 3 && date != null) _panchangKey.currentState?.showDate(date);
     });
+  }
+
+  bool _selectWidgetOccurrence() {
+    final uid = _widgetOccurrenceUid;
+    if (uid == null) return false;
+    final index = _ekadashiList.indexWhere((e) => e.occurrenceUid == uid);
+    if (index < 0) return false;
+    if (_pageController.hasClients) _pageController.jumpToPage(index);
+    setState(() => _currentPage = index);
+    return true;
   }
 
   /// Opens the search; [restore] reopens the one a result left.
@@ -916,6 +955,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
   /// Handle bottom navigation taps
   void _onBottomNavTapped(int index) {
+    if (index == 0) _widgetOccurrenceUid = null;
     // Another tab forgets the way back to a search.
     _searchReturn.selected(index);
     if (index == _currentIndex) {
@@ -1355,6 +1395,11 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                           itemCount: _ekadashiList.length,
                           onPageChanged: (index) {
                             if (mounted) {
+                              if (_widgetOccurrenceUid != null &&
+                                  _ekadashiList[index].occurrenceUid !=
+                                      _widgetOccurrenceUid) {
+                                _widgetOccurrenceUid = null;
+                              }
                               setState(() => _currentPage = index);
                             }
                           },

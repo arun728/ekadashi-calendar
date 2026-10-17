@@ -564,8 +564,8 @@
     }
   },
   "widget_name_ekadashi": "Ekadashi",
-  "widget_desc_ekadashi": "Today's Ekadashi with your fast's progress, or the next Ekadashi and the days to go.",
-  "widget_desc_upcoming": "The next Ekadashis at a glance.",
+  "widget_desc_ekadashi": "Today’s Ekadashi with the percentage remaining, or the next Ekadashi and its timings.",
+  "widget_desc_upcoming": "The next five upcoming Ekadashis. Tap an Ekadashi to open its Home card.",
   "widget_preview_during": "Left: now · Right: during the next Ekadashi",
   "event_reminder_today": "{value0} is today ({value1})",
   "@event_reminder_today": {
@@ -696,5 +696,13 @@
   "home_popular_cities": "Popular cities",
   "share_card_save": "Save to Gallery",
   "share_card_saved": "Card saved to Gallery.",
-  "share_card_photos_denied": "Photo access is off. Allow it in Settings to save cards."
+  "share_card_photos_denied": "Photo access is off. Allow it in Settings to save cards.",
+  "widget_remaining": "remaining",
+  "widget_size_small": "Small",
+  "widget_size_medium": "Medium",
+  "widget_size_large": "Large",
+  "widget_size_lock": "Lock Screen",
+  "widget_preview_tap": "Tap to view this Ekadashi",
+  "widget_no_next": "No upcoming Ekadashi in the available schedule",
+  "widget_lock_support": "Lock Screen widgets are available on supported devices. Sizes and placement depend on your device."
 }

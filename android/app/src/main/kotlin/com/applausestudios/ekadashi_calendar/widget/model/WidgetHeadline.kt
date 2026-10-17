@@ -9,7 +9,7 @@ import java.time.temporal.ChronoUnit
 sealed class WidgetHeadline {
     abstract val item: EkadashiItem
 
-    /** Today is an Ekadashi (fasting or Parana): the fast's progress, 0..1. */
+    /** Today's civil date: fraction of the fast remaining, 0..1. */
     data class Today(override val item: EkadashiItem, val progress: Double) : WidgetHeadline()
 
     /** The next Ekadashi and the calendar days until it. */
@@ -18,14 +18,9 @@ sealed class WidgetHeadline {
     companion object {
         fun of(payload: WidgetPayload, now: Instant = Instant.now()): WidgetHeadline? {
             val item = WidgetTimeline.remaining(payload, now).firstOrNull() ?: return null
-            return when (item.stateAt(now)) {
-                WidgetState.FASTING_ACTIVE, WidgetState.PARANA_AVAILABLE -> Today(item, item.fastProgress(now))
-                else -> {
-                    val today = now.atZone(payload.zoneId()).toLocalDate()
-                    val days = runCatching { ChronoUnit.DAYS.between(today, LocalDate.parse(item.date)) }.getOrDefault(0L)
-                    Next(item, maxOf(0L, days))
-                }
-            }
+            val today = now.atZone(payload.zoneId()).toLocalDate()
+            return if (LocalDate.parse(item.date) == today) Today(item, 1 - item.fastProgress(now))
+                else Next(item, ChronoUnit.DAYS.between(today, LocalDate.parse(item.date)))
         }
     }
 }

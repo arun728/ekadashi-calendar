@@ -19,7 +19,7 @@ import java.io.File
 import java.util.regex.Pattern
 
 /** Real stock-launcher binding/rendering/taps, using production providers and views.
- * Run after the Flutter integration run creates four locale fixtures in the durable databases directory.
+ * Run after the Flutter integration run creates six locale fixtures in the durable databases directory.
  * This clears the dedicated emulator's Launcher3 data; never run on a user's phone.
  */
 @RunWith(AndroidJUnit4::class)
@@ -150,7 +150,7 @@ class LauncherWidgetTest {
   return ids.last()
  }
  private fun verify(label:String,receiver:String,rootId:String,route:String) {
-  val payloads=listOf("en","ta","hi","te").associateWith { code ->
+  val payloads=listOf("en","hi","ta","te","gu","bn").associateWith { code ->
     val file=context.getDatabasePath("widget-fixture-$code.json")
     assertTrue("Locale fixture $code exists",file.exists())
     WidgetPayload.fromJsonString(file.readText())
@@ -173,6 +173,11 @@ class LauncherWidgetTest {
   assertNotNull("Widget tap opens the app",activity)
   assertEquals("ekadashi",requireNotNull(activity).intent.data?.scheme)
   assertEquals(route,activity.intent.data?.host)
+  val payload = payloads.values.last()
+  val selected = if (receiver == "UpcomingEkadashisWidgetReceiver")
+   com.applausestudios.ekadashi_calendar.widget.model.WidgetTimeline.upcoming(payload).first()
+   else com.applausestudios.ekadashi_calendar.widget.model.WidgetHeadline.of(payload)!!.item
+  assertEquals(selected.occurrenceUid, activity.intent.data?.getQueryParameter("uid"))
   instrumentation.removeMonitor(monitor)
   // Activity creation precedes Flutter's first frame. Verify the destination
   // actually renders before closing it; a splash screenshot is insufficient.
@@ -183,14 +188,14 @@ class LauncherWidgetTest {
    Thread.sleep(500)
   }
   assertTrue("Widget destination must draw Flutter UI",flutterVisible)
-  val searchLabel=Pattern.compile("(?s).*(Search|தேடல்|खोज|శోధన).*")
+  val searchLabel=Pattern.compile("(?s).*(Search|தேடல்|खोज|శోధన|શોધ|অনুসন্ধান).*")
   assertTrue("Widget destination must expose app navigation",device.wait(Until.hasObject(By.pkg(packageName).desc(searchLabel)),30000))
   device.waitForIdle(1000);capture("${receiver}_tap")
   instrumentation.runOnMainSync { activity.finish() }
   home()
-  File(output,"${receiver}_bound.txt").writeText("AppWidgetId=$id; provider=$receiver; stock launcher; four locales; route=$route\n")
+  File(output,"${receiver}_bound.txt").writeText("AppWidgetId=$id; provider=$receiver; stock launcher; six locales; route=$route\n")
  }
  // The retired "Ekadashi Today" widget is hidden from the picker; WidgetRedesignTest covers it.
- @Test fun ekadashiWidget()=verify("Ekadashi","NextEkadashiWidgetReceiver","widget_small_root","dashboard")
- @Test fun upcomingWidget()=verify("Upcoming Ekadashis","UpcomingEkadashisWidgetReceiver","widget_large_upcoming_header","today")
+ @Test fun ekadashiWidget()=verify("Ekadashi","NextEkadashiWidgetReceiver","widget_small_root","ekadashi")
+ @Test fun upcomingWidget()=verify("Upcoming Ekadashis","UpcomingEkadashisWidgetReceiver","widget_large_upcoming_header","ekadashi")
 }

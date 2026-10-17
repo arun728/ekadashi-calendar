@@ -1485,10 +1485,11 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get widget_desc_ekadashi =>
-      'ఈరోజు ఏకాదశి, మీ ఉపవాసం పురోగతి, లేదా తదుపరి ఏకాదశి, మిగిలిన రోజులు.';
+      'నేటి ఏకాదశి మిగిలిన శాతం లేదా తదుపరి ఏకాదశి మరియు సమయాలు.';
 
   @override
-  String get widget_desc_upcoming => 'రాబోయే ఏకాదశులు ఒక్క చూపులో.';
+  String get widget_desc_upcoming =>
+      'రాబోయే ఐదు ఏకాదశులు. ఏకాదశిని తాకి దాని హోమ్ కార్డును తెరవండి.';
 
   @override
   String get widget_preview_during =>
@@ -1686,4 +1687,29 @@ class AppLocalizationsTe extends AppLocalizations {
   @override
   String get share_card_photos_denied =>
       'ఫోటో అనుమతి ఆపివేయబడింది. కార్డ్‌లను భద్రపరచడానికి సెట్టింగ్స్‌లో అనుమతించండి.';
+
+  @override
+  String get widget_remaining => 'మిగిలింది';
+
+  @override
+  String get widget_size_small => 'చిన్నది';
+
+  @override
+  String get widget_size_medium => 'మధ్యస్థం';
+
+  @override
+  String get widget_size_large => 'పెద్దది';
+
+  @override
+  String get widget_size_lock => 'లాక్ స్క్రీన్';
+
+  @override
+  String get widget_preview_tap => 'ఈ ఏకాదశిని చూడటానికి నొక్కండి';
+
+  @override
+  String get widget_no_next => 'అందుబాటులో ఉన్న పట్టికలో తదుపరి ఏకాదశి లేదు';
+
+  @override
+  String get widget_lock_support =>
+      'మద్దతు ఉన్న పరికరాల్లో లాక్ స్క్రీన్ విడ్జెట్‌లు అందుబాటులో ఉంటాయి. పరిమాణం, స్థానం మీ పరికరంపై ఆధారపడతాయి.';
 }

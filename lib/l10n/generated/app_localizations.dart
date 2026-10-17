@@ -2833,13 +2833,13 @@ abstract class AppLocalizations {
   /// No description provided for @widget_desc_ekadashi.
   ///
   /// In en, this message translates to:
-  /// **'Today\'s Ekadashi with your fast\'s progress, or the next Ekadashi and the days to go.'**
+  /// **'Today’s Ekadashi with the percentage remaining, or the next Ekadashi and its timings.'**
   String get widget_desc_ekadashi;
 
   /// No description provided for @widget_desc_upcoming.
   ///
   /// In en, this message translates to:
-  /// **'The next Ekadashis at a glance.'**
+  /// **'The next five upcoming Ekadashis. Tap an Ekadashi to open its Home card.'**
   String get widget_desc_upcoming;
 
   /// No description provided for @widget_preview_during.
@@ -3183,6 +3183,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Photo access is off. Allow it in Settings to save cards.'**
   String get share_card_photos_denied;
+
+  /// No description provided for @widget_remaining.
+  ///
+  /// In en, this message translates to:
+  /// **'remaining'**
+  String get widget_remaining;
+
+  /// No description provided for @widget_size_small.
+  ///
+  /// In en, this message translates to:
+  /// **'Small'**
+  String get widget_size_small;
+
+  /// No description provided for @widget_size_medium.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get widget_size_medium;
+
+  /// No description provided for @widget_size_large.
+  ///
+  /// In en, this message translates to:
+  /// **'Large'**
+  String get widget_size_large;
+
+  /// No description provided for @widget_size_lock.
+  ///
+  /// In en, this message translates to:
+  /// **'Lock Screen'**
+  String get widget_size_lock;
+
+  /// No description provided for @widget_preview_tap.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to view this Ekadashi'**
+  String get widget_preview_tap;
+
+  /// No description provided for @widget_no_next.
+  ///
+  /// In en, this message translates to:
+  /// **'No upcoming Ekadashi in the available schedule'**
+  String get widget_no_next;
+
+  /// No description provided for @widget_lock_support.
+  ///
+  /// In en, this message translates to:
+  /// **'Lock Screen widgets are available on supported devices. Sizes and placement depend on your device.'**
+  String get widget_lock_support;
 }
 
 class _AppLocalizationsDelegate

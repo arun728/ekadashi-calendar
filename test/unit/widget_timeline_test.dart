@@ -82,9 +82,22 @@ void main() {
   );
 
   test('duplicate occurrences do not consume the five future slots', () async {
-    final rows = List.generate(7, (i) => event(2027, i + 1, DateTime.utc(2027, 1, 1).add(Duration(days: i * 15))));
+    final rows = List.generate(
+      7,
+      (i) => event(
+        2027,
+        i + 1,
+        DateTime.utc(2027, 1, 1).add(Duration(days: i * 15)),
+      ),
+    );
     final p = await payload([rows.first, ...rows], DateTime.utc(2026, 12, 1));
-    expect((p['upcomingEkadashis'] as List).map((e) => e['occurrenceUid']).toSet().length, 5);
+    expect(
+      (p['upcomingEkadashis'] as List)
+          .map((e) => e['occurrenceUid'])
+          .toSet()
+          .length,
+      5,
+    );
     expect((p['schedule'] as List).length, 7);
   });
 

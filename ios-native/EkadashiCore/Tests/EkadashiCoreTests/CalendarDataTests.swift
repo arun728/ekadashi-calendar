@@ -165,7 +165,8 @@ final class LocalizationTests: XCTestCase {
         // "X of Y Ekadashis", the five time zone names and the UTC offset,
         // and the 20 Ekadashi-engine, city picker and share card strings
         // (docs/EKADASHI_ENGINE_SCHEDULE.md).
-        XCTAssertEqual(english.count, 513)
+        // Eight shared widget-preview/localization keys were ported from iOS overrides to ARB.
+        XCTAssertEqual(english.count, 521)
         var problems: [String] = []
         for language in ["ta", "hi", "te", "gu", "bn"] {
             for key in english {
