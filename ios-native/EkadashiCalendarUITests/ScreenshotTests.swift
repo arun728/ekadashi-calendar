@@ -64,16 +64,18 @@ final class ScreenshotTests: XCTestCase {
         XCTAssertFalse(sizes.buttons["Large"].exists)
         XCTAssertTrue(sizes.buttons["Medium"].isSelected)
         sizes.buttons["Lock Screen"].tap()
-        XCTAssertTrue(app.images["widget_brand_icon"].firstMatch.exists)
+        XCTAssertTrue(app.images["widget_lock_icon"].firstMatch.exists)
         snap("widget-enlarged-circular-lock")
     }
 
-    func testLockPreviewIdentifiesEkadashiAndUsesAppArtwork() {
+    func testLockPreviewIdentifiesEkadashiAndUsesTheSameWhitePanchangSymbol() {
         openWidgetPreviews()
         app.segmentedControls["widget_preview_size"].buttons["Lock Screen"].tap()
-        XCTAssertTrue(app.images["widget_brand_icon"].firstMatch.waitForExistence(timeout: 10))
+        XCTAssertTrue(app.images["widget_lock_icon"].firstMatch.waitForExistence(timeout: 10))
         XCTAssertTrue(app.buttons["widget_preview_open"].firstMatch.label.contains("Ekadashi"))
-        snap("widgets-branded-lock-preview")
+        XCTAssertEqual(app.images.matching(identifier: "widget_lock_icon").count, 2)
+        XCTAssertFalse(app.images["widget_brand_icon"].exists)
+        snap("widgets-white-panchang-lock-preview")
     }
 
     func testInstalledWidgetURLReturnsFromDetailsToTheExactHomeCard() {

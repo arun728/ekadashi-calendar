@@ -80,31 +80,72 @@ final class WidgetRenderingTests: XCTestCase {
         }
     }
 
-    func testCircularArtworkFillsTheAvailableSlotAtEveryHostSize() throws {
-        let events = try CalendarRepository.bundled().ekadashis(timezone: "IST", language: "en")
-        let now = ISO8601.instant("2026-10-17T12:00:00Z")!
-        let snapshot = WidgetSnapshot.build(occurrences: events, timezone: "IST", locationName: "", language: "en", now: now)
-        for side in [CGFloat(48), 62, 76] {
-            let renderer = ImageRenderer(content: EkadashiWidgetView(snapshot: snapshot, now: now, family: .accessoryCircular)
-                .frame(width: side, height: side).environment(\.colorScheme, .dark))
-            renderer.scale = 1
-            let image = try XCTUnwrap(renderer.uiImage?.cgImage)
-            let pixels = try rgba(image)
-            var columns = Set<Int>()
-            for y in 0..<image.height {
-                for x in 0..<image.width {
-                    let i = (y * image.width + x) * 4
-                    let r = Double(pixels[i]), g = Double(pixels[i + 1]), b = Double(pixels[i + 2])
-                    if g > 60 && g > r * 1.4 && b > r * 1.4 { columns.insert(x) }
+    func testLockIconIsBrightWhiteWithoutTheAppIconsOpaqueSquare() throws {
+        let renderer = ImageRenderer(content: WidgetBrandIcon().frame(width: 32, height: 32).environment(\.colorScheme, .dark))
+        renderer.scale = 2
+        let image = try XCTUnwrap(renderer.uiImage?.cgImage)
+        let pixels = try rgba(image)
+        var opaque = 0, white = 0
+        for i in stride(from: 0, to: pixels.count, by: 4) where pixels[i + 3] > 240 {
+            opaque += 1
+            if pixels[i] > 240 && pixels[i + 1] > 240 && pixels[i + 2] > 240 { white += 1 }
+        }
+        XCTAssertGreaterThan(opaque, 60, "The symbol must be visible")
+        XCTAssertGreaterThan(Double(white) / Double(max(opaque, 1)), 0.98, "Use bright monochrome white in both Lock Screen accessories")
+        XCTAssertLessThan(opaque, image.width * image.height / 2, "No opaque square app-icon background")
+    }
+
+    func testCircularInkStaysInsideTheCircleInEveryLanguageStateAndHostSize() throws {
+        let margin: CGFloat = 12
+        for language in Localizer.languages {
+            let events = try CalendarRepository.bundled().ekadashis(timezone: "IST", language: language)
+            let event = try XCTUnwrap(events.first { $0.fastingStart != nil && $0.paranaStart != nil })
+            let start = try XCTUnwrap(event.fastingStart)
+            for now in [start.addingTimeInterval(-4 * 86400), start.addingTimeInterval(60), start.addingTimeInterval(3600)] {
+                let snapshot = WidgetSnapshot.build(occurrences: events, timezone: "IST", locationName: "", language: language, now: now)
+                for side in [CGFloat(48), 62, 76] {
+                    for textSize in [DynamicTypeSize.large, .xxxLarge] {
+                        let renderer = ImageRenderer(content: EkadashiWidgetView(snapshot: snapshot, now: now, family: .accessoryCircular)
+                            .frame(width: side, height: side).padding(margin)
+                            .environment(\.colorScheme, .dark).environment(\.dynamicTypeSize, textSize))
+                        renderer.scale = 2
+                        let image = try XCTUnwrap(renderer.uiImage?.cgImage)
+                        let pixels = try rgba(image)
+                        let center = Double((margin + side / 2) * 2)
+                        let radius = Double(side) + 1
+                        var escaped = 0, visible = 0
+                        for y in 0..<image.height { for x in 0..<image.width {
+                            let i = (y * image.width + x) * 4
+                            if pixels[i + 3] > 32 {
+                                visible += 1
+                                if hypot(Double(x) + 0.5 - center, Double(y) + 0.5 - center) > radius { escaped += 1 }
+                            }
+                        } }
+                        XCTAssertGreaterThan(visible, 60)
+                        XCTAssertEqual(escaped, 0, "Ink escapes circular slot: \(language) \(side) \(textSize) \(now)")
+                        if language == "en" && textSize == .large {
+                            let attachment = XCTAttachment(image: try XCTUnwrap(renderer.uiImage))
+                            attachment.name = "circle-contained-\(Int(side))-\(now.timeIntervalSince1970)"
+                            attachment.lifetime = .keepAlways
+                            add(attachment)
+                        }
+                    }
                 }
             }
-            let artworkWidth = (columns.max() ?? 0) - (columns.min() ?? 0) + 1
-            XCTAssertGreaterThanOrEqual(CGFloat(artworkWidth), side * 0.52, "Artwork is too small at \(side) points")
-            let attachment = XCTAttachment(image: try XCTUnwrap(renderer.uiImage))
-            attachment.name = "circular-lock-\(Int(side))"
-            attachment.lifetime = .keepAlways
-            add(attachment)
         }
+    }
+
+    func testCompareLockSymbolOptions() throws {
+        let options = HStack(spacing: 16) {
+            Image("widget_brand_icon").resizable().scaledToFit().frame(width: 30, height: 30)
+            Image("widget_brand_icon").resizable().renderingMode(.template).scaledToFit().foregroundStyle(.white).frame(width: 30, height: 30)
+            Image(systemName: AppSymbol.tabPanchang).resizable().scaledToFit().foregroundStyle(.white).frame(width: 30, height: 30)
+        }.padding(18).background(.black)
+        let renderer = ImageRenderer(content: options); renderer.scale = 3
+        let attachment = XCTAttachment(image: try XCTUnwrap(renderer.uiImage))
+        attachment.name = "lock-icon-options-original-template-panchang"
+        attachment.lifetime = .keepAlways
+        add(attachment)
     }
 
     private func assertFits<V: View>(_ content: V, width: CGFloat, height: CGFloat, inset: CGFloat, label: String) throws {
