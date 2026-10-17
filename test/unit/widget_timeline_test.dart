@@ -45,28 +45,65 @@ void main() {
     );
   }
 
-  test('payload starts the five future dates with the nearest and preserves the archive', () async {
-    final rows = List.generate(8, (i) => event(i < 4 ? 2026 : 2027, i + 1,
-      DateTime.utc(2026, 12, 1).add(Duration(days: i * 15))));
-    final p = await payload(rows, DateTime.utc(2026, 11, 30));
-    expect((p['upcomingEkadashis'] as List).length, 5);
-    expect(p['upcomingEkadashis'].first['occurrenceUid'], rows.first.occurrenceUid);
-    expect((p['schedule'] as List).length, rows.length);
-  });
+  test(
+    'payload starts the five future dates with the nearest and preserves the archive',
+    () async {
+      final rows = List.generate(
+        8,
+        (i) => event(
+          DateTime.utc(2026, 12, 1).add(Duration(days: i * 15)).year,
+          i + 1,
+          DateTime.utc(2026, 12, 1).add(Duration(days: i * 15)),
+        ),
+      );
+      final p = await payload(rows, DateTime.utc(2026, 11, 30));
+      expect((p['upcomingEkadashis'] as List).length, 5);
+      expect(
+        p['upcomingEkadashis'].first['occurrenceUid'],
+        rows.first.occurrenceUid,
+      );
+      expect((p['schedule'] as List).length, rows.length);
+    },
+  );
 
-  test('yesterday Parana cannot remain the headline in a new civil day', () async {
-    final p = await payload([event(2027, 1, DateTime.utc(2027, 1, 5)),
-      event(2027, 2, DateTime.utc(2027, 1, 20))], DateTime.utc(2027, 1, 6), zone: 'UTC');
-    expect(p['nextEkadashi']['occurrenceUid'], 'ekadashi:2027:2');
+  test(
+    'yesterday Parana cannot remain the headline in a new civil day',
+    () async {
+      final p = await payload(
+        [
+          event(2027, 1, DateTime.utc(2027, 1, 5)),
+          event(2027, 2, DateTime.utc(2027, 1, 20)),
+        ],
+        DateTime.utc(2027, 1, 6),
+        zone: 'UTC',
+      );
+      expect(p['nextEkadashi']['occurrenceUid'], 'ekadashi:2027:2');
+    },
+  );
+
+  test('duplicate occurrences do not consume the five future slots', () async {
+    final rows = List.generate(7, (i) => event(2027, i + 1, DateTime.utc(2027, 1, 1).add(Duration(days: i * 15))));
+    final p = await payload([rows.first, ...rows], DateTime.utc(2026, 12, 1));
+    expect((p['upcomingEkadashis'] as List).map((e) => e['occurrenceUid']).toSet().length, 5);
+    expect((p['schedule'] as List).length, 7);
   });
 
   for (final language in AppLanguage.codes) {
-    test('$language widget dates have weekday and remaining progress is localized', () async {
-      final p = await payload([event(2027, 1, DateTime.utc(2027, 1, 5))],
-        DateTime.utc(2027), language: language);
-      expect(p['nextEkadashi']['localizedDate'], AppStrings.fullDate(DateTime(2027, 1, 5), language));
-      expect(p['localizedStrings']['widget.remaining'], isNotNull);
-    });
+    test(
+      '$language widget dates have weekday and remaining progress is localized',
+      () async {
+        final p = await payload(
+          [event(2027, 1, DateTime.utc(2027, 1, 5))],
+          DateTime.utc(2027),
+          language: language,
+        );
+        expect(
+          p['nextEkadashi']['localizedDate'],
+          AppStrings.fullDate(DateTime(2027, 1, 5), language),
+        );
+        expect(p['localizedStrings']['widget.remaining'], isNotNull);
+      },
+    );
   }
 
   test(
@@ -77,7 +114,7 @@ void main() {
           c = event(2027, 1, DateTime.utc(2027, 1, 5));
       final p = await payload([c, a, b], DateTime.utc(2027, 1, 1));
       expect(p['nextEkadashi']['year'], 2027);
-      expect(p['upcomingEkadashis'], isEmpty);
+      expect(p['upcomingEkadashis'].length, 1);
     },
   );
   test(
@@ -91,7 +128,7 @@ void main() {
     },
   );
   test(
-    'fasting/parana countdown targets change at exact transitions',
+    'snapshot countdown follows today while yesterday Parana remains in the archive',
     () async {
       final start = DateTime.utc(2027, 1, 5), e = event(2027, 1, start);
       for (final tuple in [
@@ -101,15 +138,16 @@ void main() {
           e.fastingStartIso,
         ),
         (start, 'FASTING_ACTIVE', e.paranaStartIso),
-        (
-          start.add(const Duration(days: 1)),
-          'PARANA_AVAILABLE',
-          e.paranaEndIso,
-        ),
+        (start.add(const Duration(days: 1)), 'FALLBACK', ''),
       ]) {
         final p = await payload([e], tuple.$1);
         expect(p['currentState'], tuple.$2);
-        expect(p['nextEkadashi']['countdownTarget'], tuple.$3);
+        if (tuple.$2 == 'FALLBACK') {
+          expect(p['nextEkadashi'], isNull);
+          expect(p['schedule'], isNotEmpty);
+        } else {
+          expect(p['nextEkadashi']['countdownTarget'], tuple.$3);
+        }
       }
     },
   );
@@ -130,7 +168,7 @@ void main() {
           language: language,
         );
         final strings = p['localizedStrings'] as Map;
-        expect(strings, hasLength(26));
+        expect(strings, hasLength(28));
         // Phase 6 headline strings keep their {value0} placeholder.
         expect(strings['widget.days_to_go'], contains('{value0}'));
         expect(strings['widget.fast_done'], contains('{value0}'));

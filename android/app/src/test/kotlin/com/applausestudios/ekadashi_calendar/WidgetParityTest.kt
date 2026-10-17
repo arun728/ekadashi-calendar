@@ -64,6 +64,11 @@ class WidgetParityTest {
             }
         }
     }
+    @Test fun legacyEngineCacheRecoversTheYearScopedOccurrenceIdentity() {
+        val old = event(2027001, LocalDate.parse("2027-01-07")).toJsonObject()
+        old.remove("occurrenceUid")
+        assertEquals("ekadashi:2027:01", EkadashiItem.fromJsonObject(old).occurrenceUid)
+    }
     @Test fun occurrenceIdentitySurvivesNativeCacheRoundTrip() {
         val original = event(1, LocalDate.parse("2027-01-07")).toJsonObject().put("occurrenceUid", "ekadashi:2027:25")
         assertEquals("ekadashi:2027:25", EkadashiItem.fromJsonObject(original).toJsonObject().optString("occurrenceUid"))
