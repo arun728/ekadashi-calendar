@@ -22,6 +22,32 @@ final class ScreenshotTests: XCTestCase {
         add(attachment)
     }
 
+    func testRealWidgetPreviewOpensItsDisplayedOccurrenceAndReturns() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        tab(4)
+        let entry = app.buttons["settings_widget_preview"]
+        XCTAssertTrue(entry.waitForExistence(timeout: 10))
+        entry.tap()
+        let next = app.buttons["widget_preview_next"]
+        XCTAssertTrue(next.waitForExistence(timeout: 10))
+        next.tap()
+        let preview = app.buttons["widget_preview_open"].firstMatch
+        XCTAssertTrue(preview.waitForExistence(timeout: 10))
+        // The link exposes the real occurrence's name and full schedule date.
+        let displayed = preview.label
+        XCTAssertFalse(displayed.isEmpty)
+        preview.tap()
+        let detail = app.otherElements["ekadashi_details"]
+        XCTAssertTrue(detail.waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label IN %@", displayed.components(separatedBy: "\n"))).count > 0)
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        XCTAssertTrue(app.buttons["widget_preview_open"].firstMatch.waitForExistence(timeout: 10))
+        app.buttons["widget_preview_size_large"].tap()
+        snap("widgets-real-large-preview")
+        app.buttons["widget_preview_size_lock"].tap()
+        snap("widgets-real-lock-preview")
+    }
+
     /// Selects a tab and waits until it is selected; a tap that lands while a
     /// navigation transition is still running can be dropped, so retry once.
     private func tab(_ index: Int) {

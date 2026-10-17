@@ -80,6 +80,32 @@ final class AppModelTests: XCTestCase {
         XCTAssertFalse(snapshot.strings.isEmpty)
     }
 
+    func testWidgetDeepLinkOpensTheExactOccurrenceInsteadOfTodaysHomeCard() async throws {
+        let model = AppModel()
+        model.reload()
+        await model.waitForLoad()
+        let event = try XCTUnwrap(model.ekadashis.first)
+        model.open(AppRoute.ekadashiURL(event.occurrenceUid))
+        XCTAssertEqual(model.widgetEvent?.occurrenceUid, event.occurrenceUid)
+        XCTAssertEqual(model.widgetEvent?.date, event.date)
+        XCTAssertEqual(model.widgetEvent?.fastingStart, event.fastingStart)
+        model.widgetEvent = nil
+        model.open(AppRoute.ekadashiURL("missing-occurrence"))
+        XCTAssertNil(model.widgetEvent)
+    }
+
+    func testColdWidgetLinkWaitsForTheRealSchedule() async throws {
+        let model = AppModel()
+        model.reload()
+        await model.waitForLoad()
+        let event = try XCTUnwrap(model.ekadashis.last)
+        let cold = AppModel()
+        cold.open(AppRoute.ekadashiURL(event.occurrenceUid))
+        cold.reload()
+        await cold.waitForLoad()
+        XCTAssertEqual(cold.widgetEvent?.occurrenceUid, event.occurrenceUid)
+    }
+
     /// Home's tradition and year menus drive the Ekadashis everywhere; a city
     /// chosen on Home also becomes the Panchang location.
     func testHomeCityTraditionAndYearApplyAcrossTheApp() async {
