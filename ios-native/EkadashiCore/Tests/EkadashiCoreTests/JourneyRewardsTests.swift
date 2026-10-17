@@ -151,11 +151,27 @@ final class JourneyRewardsTests: XCTestCase {
         let unlocked = try tracker.record(occurrenceId: e.id, occurrenceUid: e.occurrenceUid, date: e.date.iso, name: e.name,
                                          status: .observed, occurrences: list)
         XCTAssertEqual(unlocked.map(\.id), ["first_vrat"])
+        tracker.markAnnouncementsPresented(unlocked.map(\.id))
         XCTAssertTrue(try tracker.record(occurrenceId: e.id, occurrenceUid: e.occurrenceUid, date: e.date.iso, name: e.name,
                                         status: .observed, occurrences: list).isEmpty)
         let restored = VratTracker(store: store, premiumAchievements: { true }, now: { self.now })
         try restored.load(occurrences: list)
         XCTAssertTrue(try restored.refreshAchievements(list).isEmpty)
+    }
+
+    func testUnpresentedAwardsSurviveReloadAndPresentedOnesDoNotRepeat() throws {
+        let store = InMemoryKeyValueStore(), list = events(2026)
+        let make = { VratTracker(store: store, premiumAchievements: { true }, now: { self.now }) }
+        let first = make(); try first.load(occurrences: list)
+        let e = list[0]
+        _ = try first.record(occurrenceId: e.id, occurrenceUid: e.occurrenceUid, date: e.date.iso, name: e.name,
+                             status: .observed, occurrences: list)
+        let next = make(); try next.load(occurrences: list)
+        let pending = try next.refreshAchievements(list)
+        XCTAssertEqual(pending.map(\.id), ["first_vrat"])
+        next.markAnnouncementsPresented(pending.map(\.id))
+        let final = make(); try final.load(occurrences: list)
+        XCTAssertTrue(try final.refreshAchievements(list).isEmpty)
     }
 
     func testBadgeVocabularyExistsInEveryAppLanguage() {
