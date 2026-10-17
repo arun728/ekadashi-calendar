@@ -66,7 +66,7 @@ class WidgetParityTest {
         assertEquals(0, factory.count)
         val row = factory.getViewAt(4)
         assertNotNull("Android 16 parcels late collection rows without checking null", row)
-        val view = row!!.apply(context, android.widget.FrameLayout(context))
+        val view = row.apply(context, android.widget.FrameLayout(context))
         assertEquals("", view.findViewById<android.widget.TextView>(R.id.widget_upcoming_item_name).text.toString())
         assertEquals("", view.findViewById<android.widget.TextView>(R.id.widget_upcoming_item_date).text.toString())
         assertFalse(view.performClick())

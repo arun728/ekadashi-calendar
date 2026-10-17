@@ -49,6 +49,8 @@ object WidgetRenderer {
         if (width < 250 && height < 100) {
             // Keep the same compact card's essential name and countdown in very short host placements.
             for (id in listOf(R.id.widget_small_header, R.id.widget_small_chevron, R.id.widget_small_date, R.id.widget_small_progress, R.id.widget_small_countdown_label)) views.setViewVisibility(id, View.GONE)
+            val padding = (8 * context.resources.displayMetrics.density).toInt()
+            views.setViewPadding(R.id.widget_small_root, padding, padding, padding, padding)
             views.setInt(R.id.widget_small_name, "setMaxLines", 1)
             views.setTextViewTextSize(R.id.widget_small_name, android.util.TypedValue.COMPLEX_UNIT_SP, 10f)
             views.setTextViewTextSize(R.id.widget_small_countdown_value, android.util.TypedValue.COMPLEX_UNIT_SP, 10f)
@@ -60,20 +62,21 @@ object WidgetRenderer {
     /** Preserve the existing typography whenever it fits; shrink constrained text before the host clips it. */
     private fun fit(context: Context, views: RemoteViews, width: Int, height: Int) {
         val density = context.resources.displayMetrics.density
-        repeat(10) {
+        repeat(16) {
             val root = views.apply(context, android.widget.FrameLayout(context))
             root.measure(View.MeasureSpec.makeMeasureSpec((width * density).toInt(), View.MeasureSpec.EXACTLY),
                 View.MeasureSpec.makeMeasureSpec((height * density).toInt(), View.MeasureSpec.EXACTLY))
             root.layout(0, 0, root.measuredWidth, root.measuredHeight)
             val texts = mutableListOf<android.widget.TextView>()
+            val ellipsized = mutableListOf<android.widget.TextView>()
             var overflow = false
             fun visit(view: View, x: Int, y: Int) {
                 if (view.visibility != View.VISIBLE) return
                 if (view is android.widget.TextView && view.text.isNotEmpty()) {
                     texts.add(view)
                     val layout = view.layout
-                    if (layout != null && view.id in listOf(R.id.widget_medium_fasting_time, R.id.widget_medium_parana_time) &&
-                        (0 until minOf(layout.lineCount, view.maxLines)).any { layout.getEllipsisCount(it) > 0 }) overflow = true
+                    if (layout != null && view.id in listOf(R.id.widget_medium_fasting_time, R.id.widget_medium_parana_time, R.id.widget_small_countdown_value) &&
+                        (0 until minOf(layout.lineCount, view.maxLines)).any { layout.getEllipsisCount(it) > 0 }) ellipsized.add(view)
                     if (x + view.width > root.width || y + view.height > root.height ||
                         (layout != null && layout.lineCount > 0 && layout.getLineBottom(minOf(layout.lineCount, view.maxLines) - 1) > view.height - view.compoundPaddingTop - view.compoundPaddingBottom + 1)) overflow = true
                 }
@@ -82,9 +85,15 @@ object WidgetRenderer {
                 }
             }
             visit(root, 0, 0)
-            if (!overflow) return
-            for (text in texts) if (text.id != View.NO_ID) views.setTextViewTextSize(text.id,
-                android.util.TypedValue.COMPLEX_UNIT_PX, (text.textSize * 0.88f).coerceAtLeast(8 * density))
+            if (!overflow && ellipsized.isEmpty()) return
+            // Fit essential countdown/time wording on its own when the card already fits.
+            for (text in if (overflow) texts else ellipsized) if (text.id != View.NO_ID) {
+                if (height >= 100 && text.id == R.id.widget_small_countdown_value && text.textSize <= 8 * density + 0.1f && text in ellipsized) {
+                    views.setInt(text.id, "setMaxLines", 2)
+                }
+                views.setTextViewTextSize(text.id,
+                    android.util.TypedValue.COMPLEX_UNIT_PX, (text.textSize * 0.88f).coerceAtLeast(8 * density))
+            }
         }
     }
 
@@ -242,11 +251,20 @@ object WidgetRenderer {
 
         // Set up Scrollable ListView Collection via EkadashiListWidgetService
         if (appWidgetId != null) {
-            val serviceIntent = Intent(context, EkadashiListWidgetService::class.java).apply {
-                putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
-                data = Uri.parse(toUri(Intent.URI_INTENT_SCHEME))
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                val items = RemoteViews.RemoteCollectionItems.Builder().setHasStableIds(true).setViewTypeCount(1)
+                for (item in WidgetTimeline.upcoming(payload, now)) {
+                    items.addItem(item.id.toLong(), upcomingRow(context, payload, item))
+                }
+                // Five small rows fit in the same snapshot as their heading and locale.
+                views.setRemoteAdapter(R.id.widget_large_list, items.build())
+            } else {
+                val serviceIntent = Intent(context, EkadashiListWidgetService::class.java).apply {
+                    putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
+                    data = Uri.parse(toUri(Intent.URI_INTENT_SCHEME))
+                }
+                views.setRemoteAdapter(R.id.widget_large_list, serviceIntent)
             }
-            views.setRemoteAdapter(R.id.widget_large_list, serviceIntent)
             views.setEmptyView(R.id.widget_large_list, R.id.widget_large_empty)
 
             // Each row fills in its exact occurrence UID on the explicit app intent.

@@ -44,7 +44,7 @@ class WidgetPresentationTest {
         val english = payload("en")
         val views = WidgetRenderer.upcoming(context, english, appWidgetId = 42, now = now)
         com.applausestudios.ekadashi_calendar.widget.storage.WidgetStorage.getInstance(context).savePayload(payload("bn"))
-        val root = views.apply(context, android.widget.FrameLayout(context))
+        val root = views.apply(context, android.appwidget.AppWidgetHostView(context))
         val list = root.findViewById<ListView>(R.id.widget_large_list)
         assertNotNull("Embed five snapshot rows with the header instead of asynchronously loading another locale", list.adapter)
         assertEquals(5, list.adapter.count)

@@ -22,7 +22,10 @@ and crosses enabled years. At the end of the enabled schedule it shows fewer
 entries and then a translated no-upcoming message.
 
 Both native providers and Settings use `WidgetRenderer` and the same XML
-layouts. Settings embeds them through a native Android platform view, including
+layouts. Android 12+ publishes the Upcoming heading and all five native rows
+together as one immutable `RemoteCollectionItems` snapshot. Older Android keeps
+the existing service-backed list, with an atomic snapshot and safe blank rows
+for late framework requests; no intermediate cleared list is exposed. Settings embeds them through a native Android platform view, including
 the scrollable Upcoming list. Previews use the real Home schedule, location,
 tradition, language and clock. They do not bind a real widget or ask for widget
 permissions. All card and row taps carry the occurrence UID and open that exact
@@ -30,8 +33,9 @@ Home card and year, clearing previous Details navigation.
 
 English, Hindi, Tamil, Telugu, Gujarati and Bengali cover widget labels,
 descriptions, preview controls, fallback messages, dates, AM/PM and units. Long
-text is bounded; constrained cards adjust typography, and the medium card keeps
-both Parana time endpoints. Existing native widget appearance is preserved.
+text is bounded; constrained cards adjust typography, the small card keeps its
+complete day count/remaining wording, and the medium card keeps both Parana time
+endpoints. Existing native widget appearance is preserved.
 
 ## Lock Screen and refresh limits
 
@@ -62,13 +66,39 @@ Local passing gates:
 
 - Flutter analyzer: no issues.
 - Full Flutter suite: 746 tests.
-- Full Android JVM suite: 82 tests, including native text metrics on API 28
+- Full Android JVM suite: 86 tests, including native text metrics on API 28
   and 35, six languages, font scales 1.0/1.3, compact sizes and native tap intents.
 - Full Swift core suite: 269 tests after shared localization generation.
-- iOS app/rendering regression suite: 15 tests; no iOS design changes in this port.
+- iOS app/rendering regression suite: 17 tests, plus two affected Settings UI tests
+  after the separately requested white Panchang Lock Screen fix.
 
 `integration_test/android_widget_parity_test.dart` exercises native Settings
 previews in all six languages and a real platform-view tap to Home, and writes
 fixtures for `LauncherWidgetTest` and `KeyguardWidgetHostTest`. The latter uses
 the real Android framework KEYGUARD host category; it does not claim to test a
 manufacturer's System UI. Emulator results are recorded below when available.
+
+## Emulator verification and additional regressions
+
+The six-language native Settings integration run passed and captured 30 widget
+previews plus an exact-Home destination screenshot. Native fixture audits found
+five distinct upcoming UIDs in every language and no Latin letters in the
+five non-English display payloads (template placeholders excluded).
+
+Screenshot review caught Tamil's countdown ellipsis despite passing rectangular
+bounds checks. The failing regression `55249d8` now checks the complete countdown
+for normal/larger text at 158×158, 110×110 and 110×60, including today, tomorrow,
+four days and 30 days away. Fitting preserves the existing typography elsewhere.
+
+The real Android 16 keyguard host caught a null-row race during collection refresh;
+`8aabff0` reproduces late requests after an empty refresh or destruction. An
+immutable snapshot and inert empty row prevent the framework parceling crash.
+The stock launcher then caught a Gujarati heading above Bengali rows;
+`e3922d3` requires the heading and rows to come from one locale snapshot. Modern
+Android embeds the five rows in the same RemoteViews update, avoiding competing
+asynchronous service updates.
+
+Both providers passed the native KEYGUARD host check in all six languages on the
+final APK. This is Android framework host validation, not a claim of successful
+placement in a manufacturer's System UI. The installed emulator's system Lock
+Screen picker is unavailable; actual OEM placement remains a device check.
