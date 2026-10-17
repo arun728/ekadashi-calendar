@@ -23,7 +23,7 @@ struct WidgetPreviewView: View {
         }
     }
 
-    private var sizes: [PreviewSize] { kind == .single ? PreviewSize.allCases : [.medium, .large] }
+    private var sizes: [PreviewSize] { kind == .single ? [.small, .medium, .lock] : [.medium, .large] }
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 60)) { context in
@@ -103,7 +103,7 @@ struct WidgetPreviewView: View {
                 } else {
                     EkadashiWidgetView(snapshot: snapshot, now: now, family: size.family)
                         .padding(16).frame(maxWidth: size == .small ? 170 : 360)
-                        .frame(height: size == .large ? 368 : 170)
+                        .frame(height: 170)
                         .background(WidgetCardBackground()).environment(\.colorScheme, appearance)
                 }
             }

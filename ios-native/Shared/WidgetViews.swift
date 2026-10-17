@@ -96,7 +96,6 @@ struct EkadashiWidgetView: View {
                 case .accessoryCircular: circular(snapshot, headline)
                 case .accessoryRectangular: rectangular(snapshot, headline)
                 case .systemMedium: medium(snapshot, headline)
-                case .systemLarge: large(snapshot, headline)
                 default: small(snapshot, headline)
                 }
             } else {
@@ -191,55 +190,34 @@ struct EkadashiWidgetView: View {
         .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
     }
 
-    private func large(_ snapshot: WidgetSnapshot, _ headline: WidgetHeadline) -> some View {
-        let item = headline.item
-        let text = WidgetText(snapshot: snapshot)
-        return VStack(alignment: .leading, spacing: 8) {
-            header(snapshot, headline)
-            name(item, font: .system(size: 20, weight: .bold))
-            Text(item.localizedDate).font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(1).minimumScaleFactor(0.75)
-            Spacer(minLength: 0)
-            if headline.isToday {
-                RemainingRing(item: item, snapshot: snapshot, now: now, prominent: true)
-                    .frame(width: 104, height: 104).frame(maxWidth: .infinity)
-            } else {
-                timingSection(snapshot.string("fasting_starts", ""), date: text.date(item.fastingStart), value: text.time(item.fastingStart))
-            }
-            Spacer(minLength: 0)
-            Divider()
-            timingSection(snapshot.string("parana_window", ""), date: text.date(item.paranaStart), value: text.window(item.paranaStart, item.paranaEnd))
-            Spacer(minLength: 0)
-            location(snapshot)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-    }
-
-    private func timingSection(_ label: String, date: String, value: String) -> some View {
-        VStack(alignment: .leading, spacing: 3) {
-            Text(label).font(.system(size: 11, weight: .bold)).lineLimit(1).minimumScaleFactor(0.75).foregroundStyle(accent).widgetAccentable()
-            Text(date).font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(1).minimumScaleFactor(0.75)
-            Text(value).font(.system(size: 15, weight: .bold)).lineLimit(2).minimumScaleFactor(0.75)
-        }
-    }
-
     private func circular(_ snapshot: WidgetSnapshot, _ headline: WidgetHeadline) -> some View {
-        VStack(spacing: 1) {
-            ZStack {
-                if headline.isToday {
-                    Circle().inset(by: 2).stroke(.primary.opacity(0.2), lineWidth: 3)
-                    Circle().inset(by: 2).trim(from: 0, to: headline.item.remainingFraction(at: now))
-                        .stroke(.primary, style: StrokeStyle(lineWidth: 3, lineCap: .round)).rotationEffect(.degrees(-90))
+        GeometryReader { geometry in
+            let side = min(geometry.size.width, geometry.size.height)
+            VStack(spacing: 0) {
+                ZStack {
+                    if headline.isToday {
+                        Circle().inset(by: 2).stroke(.primary.opacity(0.2), lineWidth: 3)
+                        Circle().inset(by: 2).trim(from: 0, to: headline.item.remainingFraction(at: now))
+                            .stroke(.primary, style: StrokeStyle(lineWidth: 3, lineCap: .round)).rotationEffect(.degrees(-90))
+                    }
+                    // Trim the source icon's empty border so the lotus itself
+                    // uses the available artwork area, rather than its canvas.
+                    WidgetBrandIcon().scaleEffect(1.3).clipped()
+                        .padding(headline.isToday ? 5 : 0)
                 }
-                WidgetBrandIcon().padding(headline.isToday ? 5 : 0)
+                .frame(width: side * 0.69, height: side * 0.69)
+                Group {
+                    if headline.isToday {
+                        Text("\(headline.item.remainingPercent(at: now))%")
+                    } else if case .next(_, let days) = headline {
+                        Text("\(days) \(snapshot.string("day_unit", ""))")
+                    }
+                }
+                .font(.system(size: side * 0.25, weight: .bold)).monospacedDigit()
+                .frame(height: side * 0.3)
             }
-            .frame(width: 32, height: 32)
-            if headline.isToday {
-                Text("\(headline.item.remainingPercent(at: now))%")
-                    .font(.system(size: 12, weight: .bold)).monospacedDigit()
-            } else if case .next(_, let days) = headline {
-                Text("\(days) \(snapshot.string("day_unit", ""))")
-                    .font(.system(size: 12, weight: .bold)).monospacedDigit()
-            }
+            .frame(width: geometry.size.width, height: geometry.size.height)
+            .background(AccessoryWidgetBackground())
         }
         .lineLimit(1).minimumScaleFactor(0.8)
         .accessibilityElement(children: .contain)

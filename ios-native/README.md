@@ -145,7 +145,7 @@ These follow the Play-only rules in `AGENTS.md`, adapted to StoreKit 2 with no b
 
 Current widget follow-up results are in [IOS_WIDGET_REDESIGN.md](../docs/IOS_WIDGET_REDESIGN.md):
 
-- Full core suite on macOS: **268 tests, zero failures**, including shared data and engine parity.
+- Full core suite on macOS: **269 tests, zero failures**, including shared data and engine parity.
 - Native app and widget extension build with Xcode 26.6, using the iOS 26.5 SDK.
 - Native rendering tests cover all six languages, both appearances, all supported widget families and normal/larger text. UI tests cover previews and occurrence-specific Home navigation.
 - Flutter regression suite: **726 tests passed**; analyzer: **no issues**.

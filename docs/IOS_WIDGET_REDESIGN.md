@@ -5,7 +5,7 @@ widget kind identifiers remain stable, with two distinct products:
 
 | Widget | Content | Sizes |
 | --- | --- | --- |
-| Ekadashi (`NextEkadashiWidget`) | Today's Ekadashi with percentage remaining; otherwise the single next Ekadashi | Small, medium, large, circular and rectangular Lock Screen |
+| Ekadashi (`NextEkadashiWidget`) | Today's Ekadashi with percentage remaining; otherwise the single next Ekadashi | Small, medium, circular and rectangular Lock Screen |
 | Upcoming Ekadashis (`UpcomingEkadashiWidget`) | The next five strictly future Ekadashi dates, each linked individually | Medium and large |
 
 Today is evaluated in the Home schedule's time zone. Before sunrise on an
@@ -19,9 +19,10 @@ Timeline updates include percentage boundaries, fasting/Parana boundaries and
 local midnight; iOS controls delivery.
 
 Settings has a widget-type selector, not separate Today and Next states. The
-first preview follows the same automatic today/next behavior as the installed
-widget and shows both Home Screen appearances. The second preview shows five
-individually tappable rows and only its supported medium/large sizes. All
+first preview offers Small, Medium and Lock Screen, follows the same automatic
+today/next behavior as the installed widget, and shows both Home Screen appearances.
+Switching from Upcoming Large resets the single-widget selection to Medium.
+The second preview shows five individually tappable rows and only its supported medium/large sizes. All
 previews use the real Home city, tradition, language, engine schedule and clock.
 No fake dates or simulated fasts are used in Settings.
 
@@ -30,16 +31,16 @@ Installed widget taps and preview taps select the displayed occurrence's
 and preserve the occurrence selection through cold launch and year changes.
 The stable occurrence URL format remains compatible with installed widgets.
 
-The circular Lock Screen widget shows the actual app icon with a one-line day
-countdown, or the remaining percentage and a progress ring today. The
-rectangular accessory shows the icon, Ekadashi name, countdown/remaining
+The circular Lock Screen widget scales the app artwork and count to the host
+slot (tested at 48, 62 and 76 points), with a one-line day countdown, or the
+remaining percentage and a progress ring today. The rectangular accessory shows the icon, Ekadashi name, countdown/remaining
 percentage and date. Both respect WidgetKit's system rendering mode.
 
 English, Hindi, Tamil, Telugu, Gujarati and Bengali are covered, including
 gallery names/descriptions, preview controls, dates, timing labels and units.
 Medium widgets use balanced timing columns. Compact text has bounded lines and
-scaling, large widgets reserve room for longer translations, and ring strokes
-stay within their allocated bounds. Colors remain app teal `#00A19B`, charcoal
+scaling, large Upcoming widgets reserve room for longer translations, and ring
+strokes stay within their allocated bounds. Colors remain app teal `#00A19B`, charcoal
 `#121212` and ivory `#FAF5E8`.
 
 ## TDD evidence
@@ -61,6 +62,12 @@ tests were committed in `3f9543b`, `0c2f4e8` and `6f92829` before their fixes:
   widgets used English in the five other supported locales. The fix uses the
   preview/WidgetKit locale, including a saved language if snapshot decoding fails.
 
+The size/Lock Screen follow-up began with failing tests in `7b38a83`:
+registration and UI checks found the unwanted single-widget Large option, while
+rendered artwork measured only 22 pixels wide in 48-, 62- and 76-point slots.
+The implementation removes that family and preview, retains Upcoming Medium
+and Large, and sizes the circular artwork/count against the host geometry.
+
 Native tests render every supported family in all six languages, before and
 during a fast, at normal and larger text sizes. They render into a transparent
 safety margin and assert no content escapes the widget rectangle. Native image
@@ -69,16 +76,14 @@ Home navigation, branded accessories and translated previews.
 
 ## Local verification (17 October 2026)
 
-- Full Swift core release suite on macOS: **268 passed**, zero failures.
+- Full Swift core release suite on macOS: **269 passed**, zero failures.
 - Full Flutter regression suite: **726 passed**, zero failures.
 - `flutter analyze --no-fatal-infos`: **no issues**.
 - Native app and widget extension: built with Xcode 26.6 (iOS 26.5 SDK) for iPhone 17 Pro.
-- Native app/rendering suite: **14 passed**, zero failures in its final run.
-- Native UI suite: **20 distinct tests passed**, including the six-language
-  preview sweep, five-row taps, cold URL launch and prior-details navigation.
-  The full run initially exposed a late launch-location selection reset and
-  two brittle test steps (lazy List scrolling and duplicate English menu
-  matches). Targeted reruns passed all failures after those fixes.
+- Native app/rendering suite: **15 passed**, zero failures in its final run.
+- Full native UI suite: **21 passed**, zero failures, including the six-language
+  preview sweep, supported-size/reset checks, five-row taps, cold URL launch
+  and prior-details navigation.
 - `git diff --check`: passed.
 
 Native screenshots were reviewed for translated labels and column separation.

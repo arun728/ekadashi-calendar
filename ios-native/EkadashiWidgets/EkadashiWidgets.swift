@@ -92,7 +92,7 @@ struct EkadashiWidget: Widget {
         }
         .configurationDisplayName(Localizer.shared.translate("widget_name_ekadashi", language: WidgetLanguage.current))
         .description(Localizer.shared.translate("ios_widget_desc_ekadashi", language: WidgetLanguage.current))
-        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge, .accessoryCircular, .accessoryRectangular])
+        .supportedFamilies([.systemSmall, .systemMedium, .accessoryCircular, .accessoryRectangular])
     }
 }
 

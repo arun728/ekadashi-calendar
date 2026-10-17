@@ -68,8 +68,8 @@ final class WidgetRenderingTests: XCTestCase {
                     (.systemLarge, 338, 354), (.accessoryCircular, 62, 62), (.accessoryRectangular, 150, 62)]
                 for (family, width, height) in families {
                     if family != .systemLarge {
-                    try assertFits(EkadashiWidgetView(snapshot: snapshot, now: now, family: family), width: width, height: height,
-                                   inset: family == .accessoryCircular || family == .accessoryRectangular ? 0 : 16, label: "\(language) \(family) \(now)")
+                        try assertFits(EkadashiWidgetView(snapshot: snapshot, now: now, family: family), width: width, height: height,
+                                       inset: family == .accessoryCircular || family == .accessoryRectangular ? 0 : 16, label: "\(language) \(family) \(now)")
                     }
                     if family == .systemMedium || family == .systemLarge {
                         try assertFits(UpcomingEkadashiWidgetView(snapshot: snapshot, now: now, family: family), width: width, height: height,
