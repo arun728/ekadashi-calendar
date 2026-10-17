@@ -40,6 +40,19 @@ class WidgetPresentationTest {
         return WidgetPayload(WidgetMetadata(generatedAtUTC = now.toString(), lastUpdatedAtUTC = now.toString(), locale = language, timezone = "UTC", locationName = name),
             WidgetState.FASTING_ACTIVE, items.first(), upcomingEkadashis = items.drop(1), localizedStrings = WidgetLocalization.strings(context, language), schedule = items)
     }
+    @Test @Config(sdk = [35]) fun installedUpcomingRowsAndHeadingShareOneImmutableLanguageSnapshot() {
+        val english = payload("en")
+        val views = WidgetRenderer.upcoming(context, english, appWidgetId = 42, now = now)
+        com.applausestudios.ekadashi_calendar.widget.storage.WidgetStorage.getInstance(context).savePayload(payload("bn"))
+        val root = views.apply(context, android.widget.FrameLayout(context))
+        val list = root.findViewById<ListView>(R.id.widget_large_list)
+        assertNotNull("Embed five snapshot rows with the header instead of asynchronously loading another locale", list.adapter)
+        assertEquals(5, list.adapter.count)
+        val row = list.adapter.getView(0, null, list)
+        assertEquals(WidgetTimeline.upcoming(english, now).first().localizedName,
+            row.findViewById<TextView>(R.id.widget_upcoming_item_name).text.toString())
+        assertEquals(english.localized("widget.upcoming_ekadashis"), root.findViewById<TextView>(R.id.widget_large_upcoming_header).text.toString())
+    }
     @Test fun refreshIncludesMidnightBoundariesAndProgressTicksInTheScheduleZone() {
         val p = payload()
         assertEquals(Instant.parse("2026-10-22T12:15:00Z"), WidgetTimeline.nextRefresh(p, now))

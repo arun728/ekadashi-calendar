@@ -197,5 +197,5 @@ class LauncherWidgetTest {
  }
  // The retired "Ekadashi Today" widget is hidden from the picker; WidgetRedesignTest covers it.
  @Test fun ekadashiWidget()=verify("Ekadashi","NextEkadashiWidgetReceiver","widget_small_root","ekadashi")
- @Test fun upcomingWidget()=verify("Upcoming Ekadashis","UpcomingEkadashisWidgetReceiver","widget_large_upcoming_header","ekadashi")
+ @Test fun upcomingWidget()=verify("Upcoming Ekadashis","UpcomingEkadashisWidgetReceiver","widget_upcoming_item_root","ekadashi")
 }
