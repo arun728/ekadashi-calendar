@@ -212,6 +212,22 @@ final class JourneyRewardsTests: XCTestCase {
         XCTAssertEqual(try tracker.refreshAchievements([event]).map(\.id), ["first_vrat"])
     }
 
+    func testNextMilestoneNeverEncouragesMissingOrPartialFasts() {
+        let list = events(2026)
+        let full = summary(list, list.map { record($0) })
+        let earned = JourneyBadgeEvaluator.evaluate(summary: full, current: [:], newUnlockLimit: nil, now: now).updated
+        XCTAssertNil(JourneyBadgeCatalog.nextMilestone(summary: full, earned: earned))
+        let rows = list.prefix(5).map { record($0) }
+        let five = JourneyRewards.calculate(occurrences: list, history: rows, completeYears: [2026],
+                                            now: ISO8601.instant("2026-03-17T12:00:00Z")!, zone: zone)
+        let state = JourneyBadgeEvaluator.evaluate(summary: five, current: [:], newUnlockLimit: nil, now: now).updated
+        XCTAssertEqual(JourneyBadgeCatalog.nextMilestone(summary: five, earned: state)?.id, "streak_6")
+        let broken = JourneyRewards.calculate(occurrences: list, history: rows + [record(list[5], .missed)], completeYears: [2026],
+                                              now: ISO8601.instant("2026-03-19T12:00:00Z")!, zone: zone)
+        XCTAssertEqual(JourneyBadgeCatalog.nextMilestone(summary: broken, earned: state)?.id, "vrat_10")
+        XCTAssertEqual(JourneyBadgeCatalog.definition("streak_6")?.goalProgress(in: broken), 0)
+    }
+
     func testBadgeVocabularyExistsInEveryAppLanguage() {
         for badge in JourneyBadgeCatalog.all(years: [2026, 2027]) {
             for language in Localizer.languages {
