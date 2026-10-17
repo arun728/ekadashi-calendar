@@ -61,7 +61,7 @@ final class WidgetRenderingTests: XCTestCase {
     func testLongTranslationsStayInsideEveryWidgetFamilyInBothStates() throws {
         for language in Localizer.languages {
             let events = try CalendarRepository.bundled().ekadashis(timezone: "IST", language: language)
-            let event = try XCTUnwrap(events.first { $0.fastingStart != nil })
+            let event = try XCTUnwrap(events.max { $0.name.count < $1.name.count })
             for now in [event.fastingStart!.addingTimeInterval(-86400), event.fastingStart!.addingTimeInterval(3600)] {
                 let snapshot = WidgetSnapshot.build(occurrences: events, timezone: "IST", locationName: String(repeating: "நகரம் ", count: 4), language: language, now: now)
                 let families: [(WidgetFamily, CGFloat, CGFloat)] = [(.systemSmall, 158, 158), (.systemMedium, 338, 158),
@@ -80,8 +80,9 @@ final class WidgetRenderingTests: XCTestCase {
 
     private func assertFits<V: View>(_ content: V, width: CGFloat, height: CGFloat, inset: CGFloat, label: String) throws {
         let margin = 24
+        for textSize in [DynamicTypeSize.large, .xxxLarge] {
         let view = content.padding(inset).frame(width: width, height: height).padding(CGFloat(margin))
-            .environment(\.colorScheme, .dark).environment(\.dynamicTypeSize, .large)
+            .environment(\.colorScheme, .dark).environment(\.dynamicTypeSize, textSize)
         let renderer = ImageRenderer(content: view)
         renderer.scale = 1
         let image = try XCTUnwrap(renderer.uiImage?.cgImage)
@@ -92,7 +93,46 @@ final class WidgetRenderingTests: XCTestCase {
                 if pixels[(y * image.width + x) * 4 + 3] > 20 { escaped += 1 }
             }
         }
-        XCTAssertEqual(escaped, 0, "Content escapes widget bounds: \(label)")
+        XCTAssertEqual(escaped, 0, "Content escapes widget bounds: \(label) \(textSize)")
+        }
+    }
+
+    func testMultilingualVisualEvidence() throws {
+        for language in Localizer.languages {
+            let events = try CalendarRepository.bundled().ekadashis(timezone: "IST", language: language)
+            let event = try XCTUnwrap(events.max { $0.name.count < $1.name.count })
+            let during = event.fastingStart!.addingTimeInterval(3600)
+            let before = during.addingTimeInterval(-86400)
+            for scheme in [ColorScheme.dark, .light] {
+                let view = VStack(spacing: 16) {
+                    ForEach([before, during], id: \.self) { now in
+                        let snapshot = WidgetSnapshot.build(occurrences: events, timezone: "IST", locationName: "", language: language, now: now)
+                        HStack(spacing: 12) {
+                            EkadashiWidgetView(snapshot: snapshot, now: now, family: .systemSmall)
+                                .padding(16).frame(width: 158, height: 158).background(WidgetCardBackground())
+                            EkadashiWidgetView(snapshot: snapshot, now: now, family: .systemMedium)
+                                .padding(16).frame(width: 338, height: 158).background(WidgetCardBackground())
+                        }
+                        HStack(spacing: 12) {
+                            UpcomingEkadashiWidgetView(snapshot: snapshot, now: now, family: .systemMedium)
+                                .padding(16).frame(width: 338, height: 158).background(WidgetCardBackground())
+                            EkadashiWidgetView(snapshot: snapshot, now: now, family: .accessoryCircular)
+                                .frame(width: 62, height: 62)
+                            EkadashiWidgetView(snapshot: snapshot, now: now, family: .accessoryRectangular)
+                                .frame(width: 150, height: 62)
+                        }
+                    }
+                }
+                .padding(20).background(scheme == .dark ? Color.black : Color.white)
+                .environment(\.colorScheme, scheme)
+                let renderer = ImageRenderer(content: view)
+                renderer.scale = 2
+                let attachment = XCTAttachment(image: try XCTUnwrap(renderer.uiImage))
+                attachment.name = "widgets-\(language)-\(scheme)"
+                attachment.lifetime = .keepAlways
+                add(attachment)
+            }
+        }
     }
 
     private func rgba(_ image: CGImage) throws -> [UInt8] {

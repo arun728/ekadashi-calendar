@@ -58,10 +58,68 @@ final class ScreenshotTests: XCTestCase {
         snap("widgets-branded-lock-preview")
     }
 
+    func testInstalledWidgetURLReturnsFromDetailsToTheExactHomeCard() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        app.buttons["view_details"].firstMatch.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["ekadashi_details"].waitForExistence(timeout: 10))
+        app.open(URL(string: "ekadashi://ekadashi?uid=ekadashi%3A2027%3A25")!)
+        XCTAssertTrue(app.buttons["home_year_menu"].waitForExistence(timeout: 10))
+        snap("widget-url-home")
+        XCTAssertEqual(app.buttons["home_year_menu"].label.filter(\.isNumber), "2027")
+        XCTAssertEqual(app.staticTexts["home_page_indicator"].label, "25 / 25")
+        XCTAssertFalse(app.descendants(matching: .any)["ekadashi_details"].exists)
+    }
+
+    func testPreviewReturnsToHomeEvenWhenHomePreviouslyShowedDetails() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        app.buttons["view_details"].firstMatch.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["ekadashi_details"].waitForExistence(timeout: 10))
+        tab(4)
+        app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Widget Preview")).firstMatch.tap()
+        app.buttons["widget_preview_open"].firstMatch.tap()
+        XCTAssertTrue(app.buttons["home_year_menu"].waitForExistence(timeout: 10))
+        XCTAssertFalse(app.descendants(matching: .any)["ekadashi_details"].exists)
+    }
+
+    func testWidgetPreviewsFitInEverySupportedLanguage() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        for language in ["English", "हिंदी", "தமிழ்", "తెలుగు", "ગુજરાતી", "বাংলা"] {
+            tab(0)
+            element("language_menu").tap()
+            XCTAssertTrue(app.buttons[language].waitForExistence(timeout: 5))
+            app.buttons[language].tap()
+            tab(4)
+            app.buttons["settings_appearance_tube"].firstMatch.tap()
+            let kinds = app.segmentedControls["widget_preview_kind"]
+            XCTAssertTrue(kinds.waitForExistence(timeout: 10))
+            let window = app.windows.firstMatch.frame
+            let preview = app.buttons["widget_preview_open"].firstMatch
+            XCTAssertTrue(preview.waitForExistence(timeout: 10))
+            XCTAssertGreaterThanOrEqual(preview.frame.minX, window.minX)
+            XCTAssertLessThanOrEqual(preview.frame.maxX, window.maxX)
+            snap("widget-single-\(language)")
+            app.segmentedControls["widget_preview_size"].buttons.element(boundBy: 3).tap()
+            snap("widget-lock-\(language)")
+            kinds.buttons.element(boundBy: 1).tap()
+            let rows = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'widget_upcoming_open_'"))
+            XCTAssertEqual(rows.count, 5, language)
+            for index in 0..<rows.count {
+                let frame = rows.element(boundBy: index).frame
+                XCTAssertGreaterThanOrEqual(frame.minX, window.minX, language)
+                XCTAssertLessThanOrEqual(frame.maxX, window.maxX, language)
+                XCTAssertGreaterThan(frame.height, 10, language)
+            }
+            snap("widget-upcoming-\(language)")
+            app.navigationBars.buttons.element(boundBy: 0).tap()
+        }
+    }
+
     private func openWidgetPreviews() {
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
         tab(4)
-        app.buttons["settings_widget_preview"].tap()
+        let entry = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Widget Preview")).firstMatch
+        XCTAssertTrue(entry.waitForExistence(timeout: 10))
+        entry.tap()
         XCTAssertTrue(app.segmentedControls["widget_preview_kind"].waitForExistence(timeout: 10))
     }
 

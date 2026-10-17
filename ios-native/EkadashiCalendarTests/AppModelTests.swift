@@ -94,7 +94,6 @@ final class AppModelTests: XCTestCase {
                 XCTAssertEqual(model.selectedTab, .today)
                 XCTAssertEqual(model.selectedYear, year)
                 XCTAssertEqual(model.homeEkadashis[model.homeIndex].occurrenceUid, event.occurrenceUid)
-                XCTAssertNil(model.widgetEvent, "Widget links must not present the details sheet")
             }
         }
         let index = model.homeIndex
@@ -108,13 +107,14 @@ final class AppModelTests: XCTestCase {
         await model.waitForLoad()
         let event = try XCTUnwrap(model.ekadashis.last)
         let cold = AppModel()
+        let originalYear = cold.selectedYear
+        defer { cold.setYear(originalYear) }
         cold.open(AppRoute.ekadashiURL(event.occurrenceUid))
         cold.reload()
         await cold.waitForLoad()
         XCTAssertEqual(cold.selectedTab, .today)
         XCTAssertEqual(cold.selectedYear, event.date.year)
         XCTAssertEqual(cold.homeEkadashis[cold.homeIndex].occurrenceUid, event.occurrenceUid)
-        XCTAssertNil(cold.widgetEvent)
     }
 
     /// Home's tradition and year menus drive the Ekadashis everywhere; a city
@@ -163,6 +163,7 @@ final class AppModelTests: XCTestCase {
         XCTAssertEqual(RecentCities(store: model.store).all().first, AppModel.defaultCity)
         XCTAssertEqual(model.ekadashiCityName, "Chennai (IN)", "city and country code, no time zone")
 
+        model.setYear(2026)
         model.setYear(2027)
         XCTAssertTrue(model.homeEkadashis.allSatisfy { $0.date.year == 2027 })
         XCTAssertEqual(model.calendarFocus?.year, 2027)
