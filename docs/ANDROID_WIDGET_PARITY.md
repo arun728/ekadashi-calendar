@@ -102,3 +102,16 @@ Both providers passed the native KEYGUARD host check in all six languages on the
 final APK. This is Android framework host validation, not a claim of successful
 placement in a manufacturer's System UI. The installed emulator's system Lock
 Screen picker is unavailable; actual OEM placement remains a device check.
+
+Final stock-launcher rerun: **2 tests passed together**, each updating all six
+languages. The Upcoming check taps a real collection row and validates its exact
+occurrence URI; the single widget checks the same destination behavior. An
+earlier run missed the launcher's drag placement; the unchanged binding test
+passed in the clean rerun.
+
+Final shared gates: Flutter **746 passed**, analyzer **no issues**, Swift core
+release **269 passed**, and generated resources **up to date**.
+
+The final native Settings integration rerun after all fitting/collection fixes
+also passed: six languages × five preview configurations, **31 screenshots**
+including the exact Home destination.
