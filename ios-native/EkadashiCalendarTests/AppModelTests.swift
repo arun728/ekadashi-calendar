@@ -117,6 +117,23 @@ final class AppModelTests: XCTestCase {
         XCTAssertEqual(cold.homeEkadashis[cold.homeIndex].occurrenceUid, event.occurrenceUid)
     }
 
+    func testLaunchLocationRefreshPreservesTheWidgetOccurrence() async throws {
+        let model = AppModel()
+        let originalYear = model.selectedYear
+        defer { model.setYear(originalYear) }
+        model.reload()
+        await model.waitForLoad()
+        let event = try XCTUnwrap(model.ekadashis.last)
+        model.open(AppRoute.ekadashiURL(event.occurrenceUid))
+        await model.handleLocation(atLaunch: true)
+        await model.waitForLoad()
+        XCTAssertEqual(model.selectedYear, event.date.year)
+        XCTAssertEqual(model.homeEkadashis[model.homeIndex].occurrenceUid, event.occurrenceUid)
+        model.open(.tab(.today))
+        XCTAssertNotEqual(model.homeEkadashis[model.homeIndex].occurrenceUid, event.occurrenceUid,
+                          "An explicit Home action can still select the current/next fast")
+    }
+
     /// Home's tradition and year menus drive the Ekadashis everywhere; a city
     /// chosen on Home also becomes the Panchang location.
     func testHomeCityTraditionAndYearApplyAcrossTheApp() async {

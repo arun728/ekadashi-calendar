@@ -81,19 +81,22 @@ final class WidgetRenderingTests: XCTestCase {
     private func assertFits<V: View>(_ content: V, width: CGFloat, height: CGFloat, inset: CGFloat, label: String) throws {
         let margin = 24
         for textSize in [DynamicTypeSize.large, .xxxLarge] {
-        let view = content.padding(inset).frame(width: width, height: height).padding(CGFloat(margin))
-            .environment(\.colorScheme, .dark).environment(\.dynamicTypeSize, textSize)
-        let renderer = ImageRenderer(content: view)
-        renderer.scale = 1
-        let image = try XCTUnwrap(renderer.uiImage?.cgImage)
-        let pixels = try rgba(image)
-        var escaped = 0
-        for y in 0..<image.height {
-            for x in 0..<image.width where x < margin - 1 || y < margin - 1 || x >= margin + Int(width) + 1 || y >= margin + Int(height) + 1 {
-                if pixels[(y * image.width + x) * 4 + 3] > 20 { escaped += 1 }
+            let view = content.padding(inset).frame(width: width, height: height).padding(CGFloat(margin))
+                .environment(\.colorScheme, .dark).environment(\.dynamicTypeSize, textSize)
+            let renderer = ImageRenderer(content: view)
+            renderer.scale = 1
+            let image = try XCTUnwrap(renderer.uiImage?.cgImage)
+            let pixels = try rgba(image)
+            var escaped = 0
+            var ink = 0
+            for offset in stride(from: 3, to: pixels.count, by: 4) where pixels[offset] > 20 { ink += 1 }
+            XCTAssertGreaterThan(ink, 20, "A blank render must not pass the bounds check: \(label)")
+            for y in 0..<image.height {
+                for x in 0..<image.width where x < margin - 1 || y < margin - 1 || x >= margin + Int(width) + 1 || y >= margin + Int(height) + 1 {
+                    if pixels[(y * image.width + x) * 4 + 3] > 20 { escaped += 1 }
+                }
             }
-        }
-        XCTAssertEqual(escaped, 0, "Content escapes widget bounds: \(label) \(textSize)")
+            XCTAssertEqual(escaped, 0, "Content escapes widget bounds: \(label) \(textSize)")
         }
     }
 
@@ -133,6 +136,24 @@ final class WidgetRenderingTests: XCTestCase {
                 add(attachment)
             }
         }
+    }
+
+    func testRefreshFallbackUsesThePreviewLanguageWithoutASnapshot() throws {
+        for language in Localizer.languages {
+            let expected = Localizer.shared.translate("open_app_to_refresh", language: language)
+            let reference = Text(expected).font(.caption).multilineTextAlignment(.leading)
+                .foregroundStyle(.primary).frame(maxWidth: .infinity, maxHeight: .infinity)
+            let expectedImage = try renderedPNG(reference, language: language)
+            XCTAssertEqual(try renderedPNG(EkadashiWidgetView(snapshot: nil, now: Date()), language: language), expectedImage, language)
+            XCTAssertEqual(try renderedPNG(UpcomingEkadashiWidgetView(snapshot: nil, now: Date()), language: language), expectedImage, language)
+        }
+    }
+
+    private func renderedPNG<V: View>(_ view: V, language: String) throws -> Data {
+        let renderer = ImageRenderer(content: view.frame(width: 160, height: 100)
+            .environment(\.locale, Localizer.locale(language)).environment(\.colorScheme, .dark))
+        renderer.scale = 1
+        return try XCTUnwrap(renderer.uiImage?.pngData())
     }
 
     private func rgba(_ image: CGImage) throws -> [UInt8] {

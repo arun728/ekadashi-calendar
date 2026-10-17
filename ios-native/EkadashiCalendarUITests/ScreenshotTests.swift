@@ -85,9 +85,13 @@ final class ScreenshotTests: XCTestCase {
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
         for language in ["English", "हिंदी", "தமிழ்", "తెలుగు", "ગુજરાતી", "বাংলা"] {
             tab(0)
-            element("language_menu").tap()
-            XCTAssertTrue(app.buttons[language].waitForExistence(timeout: 5))
-            app.buttons[language].tap()
+            // English is already selected at launch; selecting it again would
+            // match both the menu item and the underlying Home button.
+            if language != "English" {
+                element("language_menu").tap()
+                XCTAssertTrue(app.buttons[language].waitForExistence(timeout: 5))
+                app.buttons[language].tap()
+            }
             tab(4)
             app.buttons["settings_appearance_tube"].firstMatch.tap()
             let kinds = app.segmentedControls["widget_preview_kind"]
@@ -543,9 +547,15 @@ final class ScreenshotTests: XCTestCase {
                 .press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.4)))
         }
         XCTAssertTrue(master.waitForExistence(timeout: 5))
-        let reminder = element("notify_toggle_notify_2day")
-        XCTAssertTrue(reminder.waitForExistence(timeout: 5))
         if (master.value as? String) == "1" { master.switches.firstMatch.exists ? master.switches.firstMatch.tap() : master.tap() }
+        let reminder = element("notify_toggle_notify_2day")
+        // The native List creates the next section lazily. Expose the actual
+        // reminder row before asserting its disabled state on short screens.
+        for _ in 0..<6 where !(reminder.exists && reminder.isHittable) {
+            app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7))
+                .press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)))
+        }
+        XCTAssertTrue(reminder.waitForExistence(timeout: 5))
         let off = expectation(for: NSPredicate(format: "value == '0' AND isEnabled == false"), evaluatedWith: reminder)
         XCTAssertEqual(XCTWaiter.wait(for: [off], timeout: 10), .completed, "off and greyed out")
         snap("18-reminders-off")
