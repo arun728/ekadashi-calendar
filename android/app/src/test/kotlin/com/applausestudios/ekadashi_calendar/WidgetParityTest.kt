@@ -54,6 +54,25 @@ class WidgetParityTest {
         assertEquals(5, factory.count)
         assertEquals(items[1].id.toLong(), factory.getItemId(0))
     }
+    @Test fun staleFrameworkRowRequestsNeverReturnNullAfterAnEmptyRefreshOrDestroy() {
+        val day = LocalDate.now(ZoneOffset.UTC)
+        val storage = WidgetStorage.getInstance(context)
+        storage.savePayload(payload((1..6).map { event(it, day.plusDays(it * 15L)) }))
+        val factory = EkadashiListRemoteViewsFactory(context, Intent())
+        factory.onCreate()
+        assertEquals(5, factory.count)
+        storage.savePayload(payload(emptyList()))
+        factory.onDataSetChanged()
+        assertEquals(0, factory.count)
+        val row = factory.getViewAt(4)
+        assertNotNull("Android 16 parcels late collection rows without checking null", row)
+        val view = row!!.apply(context, android.widget.FrameLayout(context))
+        assertEquals("", view.findViewById<android.widget.TextView>(R.id.widget_upcoming_item_name).text.toString())
+        assertEquals("", view.findViewById<android.widget.TextView>(R.id.widget_upcoming_item_date).text.toString())
+        assertFalse(view.performClick())
+        factory.onDestroy()
+        assertNotNull(factory.getViewAt(0))
+    }
     @Test fun nativeFallbacksHaveAllCountdownAndProgressTranslations() {
         for (language in listOf("en", "hi", "ta", "te", "gu", "bn")) {
             val strings = WidgetLocalization.strings(context, language)
