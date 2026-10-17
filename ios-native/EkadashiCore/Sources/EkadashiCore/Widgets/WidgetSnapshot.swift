@@ -50,7 +50,7 @@ public struct WidgetToday: Codable, Equatable, Sendable {
     public let paranaEnd: Date?
 }
 
-/// The one payload all three widgets read from the App Group
+/// The payload both iOS widgets read from the App Group
 /// (widget_sync_manager.dart, schema 2).
 public struct WidgetSnapshot: Codable, Equatable, Sendable {
     public var schemaVersion = 2
@@ -136,9 +136,18 @@ public struct WidgetSnapshot: Codable, Equatable, Sendable {
         ([nextEkadashi].compactMap { $0 } + upcoming).first { now < $0.paranaEnd }
     }
 
+    /// The exclusive upcoming widget: the first five strictly future civil
+    /// dates, including the nearest one. Reevaluate cached data at render time.
     public func upcoming(after now: Date) -> [WidgetItem] {
-        let all = [nextEkadashi].compactMap { $0 } + upcoming
-        return Array(all.filter { now < $0.paranaEnd }.dropFirst())
+        let today = TzDatabase.shared.location(timeZone)?.wallClock(now).date ?? CivilDate(utc: now)
+        var seen = Set<String>()
+        let items = ([todayEkadashi, nextEkadashi].compactMap { $0 } + upcoming)
+            .sorted { $0.date < $1.date }
+            .filter { item in
+                guard let date = CivilDate(iso: item.date), date > today else { return false }
+                return seen.insert(item.occurrenceUid).inserted
+            }
+        return Array(items.prefix(5))
     }
 
     /// When the widget timeline must refresh: every state change ahead.

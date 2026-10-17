@@ -44,6 +44,7 @@ final class AppModel {
     @ObservationIgnored private var pickerContinuation: CheckedContinuation<GoogleCalendarPickerResult, Never>?
     @ObservationIgnored private var started = false
     @ObservationIgnored private var pendingRoute: AppRoute?
+    @ObservationIgnored private var hasOpenedHomeOccurrence = false
     @ObservationIgnored private var observanceCache: [String: [DatedObservance]] = [:]
     @ObservationIgnored private var schedulingTask: Task<Void, Never>?
 
@@ -74,13 +75,13 @@ final class AppModel {
     private(set) var entriesRevision = 0
     var selectedTab: AppTab = .today
     var showSearch = false
-    /// An occurrence-specific widget link, including links received at launch.
-    var widgetEvent: EkadashiOccurrence?
     /// The way back to a search whose result opened a tab or calendar day.
     private(set) var searchReturn = SearchReturn()
     /// The search to show again when it reopens from that way back.
     var restoredSearch: SearchSession?
     var homeIndex = 0
+    /// Rebuild Home navigation when an occurrence link must return to its root.
+    private(set) var homeNavigationRevision = 0
     var calendarFocus: CivilDate?
     /// A day to open in Panchang (from an event reminder).
     var panchangFocus: CivilDate?
@@ -240,7 +241,7 @@ final class AppModel {
         guard !started, !Self.isHostingUnitTests else { return }
         started = true
         prepareCitySearch()
-        reload(scrollToNext: true)
+        reload(scrollToNext: !hasOpenedHomeOccurrence)
         await premium.start()
         premium.startRecheck()
         if store.bool(forKey: "has_launched") != true {
@@ -281,7 +282,9 @@ final class AppModel {
         } else {
             locationState = location.isDenied ? .denied : .unknown
         }
-        reload(scrollToNext: true)
+        // Launch location arrives after the first schedule and URL delivery.
+        // Keep a widget-selected occurrence through that second calculation.
+        reload(scrollToNext: !atLaunch || !hasOpenedHomeOccurrence)
     }
 
     private func useDetected(_ fix: LocationService.Fix, atLaunch: Bool = false) {
@@ -612,9 +615,12 @@ final class AppModel {
         switch route {
         case .ekadashi(let uid):
             guard let event = ekadashis.first(where: { $0.occurrenceUid == uid }) else { return }
+            hasOpenedHomeOccurrence = true
             showSearch = false
             selectedTab = .today
-            widgetEvent = event
+            setYear(event.date.year)
+            if let index = homeEkadashis.firstIndex(where: { $0.occurrenceUid == uid }) { homeIndex = index }
+            homeNavigationRevision += 1
         case .search:
             restoredSearch = nil
             showSearch = true

@@ -11,6 +11,7 @@ struct RootView: View {
         @Bindable var model = model
         TabView(selection: tabSelection) {
             screen(TodayView(), tab: .today)
+                .id(model.homeNavigationRevision)
                 .tabItem { Label(model.t("home"), systemImage: AppSymbol.tabHome) }
                 .tag(AppTab.today)
             screen(CalendarView(), tab: .calendar)
@@ -31,16 +32,6 @@ struct RootView: View {
         .modifier(TabBarMinimize())
         .sheet(isPresented: $model.showSearch) {
             NavigationStack { GlobalSearchView() }
-        }
-        .sheet(item: $model.widgetEvent) { event in
-            NavigationStack {
-                EkadashiDetailsView(event: event)
-                    .toolbar {
-                        ToolbarItem(placement: .cancellationAction) {
-                            Button(model.t("cancel")) { model.widgetEvent = nil }
-                        }
-                    }
-            }
         }
         .sheet(item: $model.paywall, onDismiss: { model.paywallClosed() }) { request in
             NavigationStack { PremiumView(reason: request.reason) }

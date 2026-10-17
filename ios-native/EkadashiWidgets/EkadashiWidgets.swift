@@ -2,7 +2,7 @@ import WidgetKit
 import SwiftUI
 import EkadashiCore
 
-/// Keeps both installed widget kinds, each showing one real occurrence.
+/// Two distinct widget kinds: today/next, and the next five future dates.
 @main
 struct EkadashiWidgetBundle: WidgetBundle {
     var body: some Widget {
@@ -53,6 +53,7 @@ private struct WidgetShell<Content: View>: View {
 
     var body: some View {
         content()
+            .environment(\.locale, Localizer.locale(WidgetLanguage.current))
             .containerBackground(for: .widget) {
                 if family == .accessoryCircular || family == .accessoryRectangular { Color.clear }
                 else { WidgetCardBackground() }
@@ -77,7 +78,7 @@ private struct UpcomingWidgetEntryView: View {
     let entry: SnapshotEntry
 
     var body: some View {
-        WidgetShell(url: entry.snapshot?.headline(at: entry.date)?.item.detailsURL ?? AppRoute.dashboardURL) {
+        WidgetShell(url: entry.snapshot?.upcoming(after: entry.date).first?.detailsURL ?? AppRoute.dashboardURL) {
             UpcomingEkadashiWidgetView(snapshot: entry.snapshot, now: entry.date, family: family)
         }
     }
@@ -100,7 +101,7 @@ struct UpcomingEkadashiWidget: Widget {
         StaticConfiguration(kind: "UpcomingEkadashiWidget", provider: SnapshotProvider()) { entry in
             UpcomingWidgetEntryView(entry: entry)
         }
-        .configurationDisplayName(Localizer.shared.translate("next_ekadashi", language: WidgetLanguage.current))
+        .configurationDisplayName(Localizer.shared.translate("upcoming_ekadashis", language: WidgetLanguage.current))
         .description(Localizer.shared.translate("ios_widget_desc_next", language: WidgetLanguage.current))
         .supportedFamilies([.systemMedium, .systemLarge])
     }
@@ -108,5 +109,10 @@ struct UpcomingEkadashiWidget: Widget {
 
 /// The app's language for the widget gallery names (from the last snapshot).
 enum WidgetLanguage {
-    static var current: String { SnapshotProvider.load()?.locale ?? "en" }
+    static var current: String {
+        let language = SnapshotProvider.load()?.locale
+            ?? UserDefaults(suiteName: SnapshotProvider.appGroup)?.string(forKey: "language_code")
+            ?? Locale.current.language.languageCode?.identifier ?? "en"
+        return Localizer.languages.contains(language) ? language : "en"
+    }
 }

@@ -2,15 +2,14 @@ import SwiftUI
 import WidgetKit
 import EkadashiCore
 
-/// Live schedule previews, never a simulated clock or a fabricated occurrence.
-/// The same renderer is used by the extension; navigation keeps this screen's
-/// Back path instead of jumping to an unrelated Home card.
+/// Real schedule and clock, using the same two renderers as WidgetKit.
 struct WidgetPreviewView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.colorScheme) private var scheme
-    @State private var selection: WidgetSelection?
+    @State private var kind = PreviewKind.single
     @State private var size = PreviewSize.medium
 
+    private enum PreviewKind: String { case single, upcoming }
     private enum PreviewSize: String, CaseIterable {
         case small, medium, large, lock
         var key: String { "widget_size_\(rawValue)" }
@@ -24,95 +23,92 @@ struct WidgetPreviewView: View {
         }
     }
 
+    private var sizes: [PreviewSize] { kind == .single ? PreviewSize.allCases : [.medium, .large] }
+
     var body: some View {
         TimelineView(.periodic(from: .now, by: 60)) { context in
             let now = context.date
             let snapshot = WidgetSnapshot.build(occurrences: model.ekadashis, timezone: model.ekadashiCity.timeZoneId,
                 locationName: model.ekadashiCityName, language: model.language, now: now, tradition: model.tradition.rawValue)
-            let chosen = selection ?? (snapshot.headline(at: now)?.isToday == true ? .today : .next)
             ScrollView {
                 VStack(spacing: 20) {
-                    Picker(model.t("widget_preview"), selection: Binding(get: { chosen }, set: { selection = $0 })) {
-                        Text(model.t("today")).tag(WidgetSelection.today).accessibilityIdentifier("widget_preview_today")
-                        Text(model.t("next_ekadashi")).tag(WidgetSelection.next).accessibilityIdentifier("widget_preview_next")
+                    Picker(model.t("widget_preview"), selection: $kind) {
+                        Text(model.t("widget_name_ekadashi")).tag(PreviewKind.single)
+                        Text(model.t("upcoming_ekadashis")).tag(PreviewKind.upcoming)
                     }
                     .pickerStyle(.segmented)
-                    .accessibilityIdentifier("widget_preview_state")
+                    .accessibilityIdentifier("widget_preview_kind")
+                    Text(model.t(kind == .single ? "ios_widget_desc_ekadashi" : "ios_widget_desc_next"))
+                        .font(.footnote).foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     Picker(model.t("widget_preview"), selection: $size) {
-                        ForEach(PreviewSize.allCases, id: \.self) { value in
-                            Text(model.t(value.key)).tag(value).accessibilityIdentifier("widget_preview_size_\(value.rawValue)")
+                        ForEach(sizes, id: \.self) { value in
+                            Text(model.t(value.key)).tag(value)
                         }
                     }
                     .pickerStyle(.segmented)
                     .accessibilityIdentifier("widget_preview_size")
                     if model.isCalculating {
                         ProgressView().tint(Theme.teal)
-                    } else if let headline = snapshot.headline(at: now, selection: chosen),
-                       let event = model.ekadashis.first(where: { $0.occurrenceUid == headline.item.occurrenceUid }) {
-                        GeometryReader { geometry in
-                            let width = min(360, geometry.size.width)
-                            VStack(spacing: 20) {
-                                preview(snapshot, headline: headline, event: event, now: now, chosen: chosen, width: width, appearance: scheme)
-                                if size != .lock {
-                                    preview(snapshot, headline: headline, event: event, now: now, chosen: chosen, width: width,
-                                            appearance: scheme == .dark ? .light : .dark)
-                                }
-                            }
-                            .frame(maxWidth: .infinity)
-                        }
-                        .frame(height: previewStackHeight)
-                        Text(model.t("widget_preview_tap")).font(.footnote).foregroundStyle(.secondary)
                     } else {
-                        ContentUnavailableView {
-                            Label(model.t(chosen == .today ? "no_ekadashi" : "widget_no_next"), systemImage: AppSymbol.widgetPreview)
-                        }
+                        preview(snapshot, now: now)
+                        Text(model.t("widget_preview_tap")).font(.footnote).foregroundStyle(.secondary)
                     }
                 }
                 .padding(16)
             }
+        }
+        .onChange(of: kind) { _, _ in
+            if !sizes.contains(size) { size = .medium }
         }
         .background(AppBackground())
         .navigationTitle(model.t("widget_preview"))
         .navigationBarTitleDisplayMode(.inline)
     }
 
-    private var previewStackHeight: CGFloat {
-        switch size {
-        case .small: return 360
-        case .medium: return 360
-        case .large: return 780
-        case .lock: return 130
+    private func open(_ item: WidgetItem) { model.open(.ekadashi(item.occurrenceUid)) }
+
+    @ViewBuilder
+    private func preview(_ snapshot: WidgetSnapshot, now: Date) -> some View {
+        if kind == .upcoming {
+            UpcomingEkadashiWidgetView(snapshot: snapshot, now: now, family: size.family, onSelect: open)
+                .padding(16).frame(maxWidth: 360).frame(height: size == .large ? 368 : 170)
+                .background(WidgetCardBackground())
+                .clipShape(.rect(cornerRadius: 24))
+        } else if let headline = snapshot.headline(at: now) {
+            VStack(spacing: 20) {
+                single(snapshot, headline: headline, now: now, appearance: scheme)
+                if size != .lock {
+                    single(snapshot, headline: headline, now: now, appearance: scheme == .dark ? .light : .dark)
+                }
+            }
+        } else {
+            ContentUnavailableView(model.t("widget_no_next"), systemImage: AppSymbol.widgetPreview)
         }
     }
 
-    private func preview(_ snapshot: WidgetSnapshot, headline: WidgetHeadline, event: EkadashiOccurrence,
-                         now: Date, chosen: WidgetSelection, width: CGFloat, appearance: ColorScheme) -> some View {
-        NavigationLink {
-            EkadashiDetailsView(event: event)
-        } label: {
+    private func single(_ snapshot: WidgetSnapshot, headline: WidgetHeadline, now: Date, appearance: ColorScheme) -> some View {
+        Button { open(headline.item) } label: {
             Group {
                 if size == .lock {
-                    HStack(spacing: 20) {
-                        EkadashiWidgetView(snapshot: snapshot, now: now, family: .accessoryCircular, selection: chosen)
-                            .frame(width: 64, height: 64)
-                        EkadashiWidgetView(snapshot: snapshot, now: now, family: .accessoryRectangular, selection: chosen)
-                            .frame(maxWidth: .infinity).frame(height: 64)
+                    HStack(spacing: 16) {
+                        EkadashiWidgetView(snapshot: snapshot, now: now, family: .accessoryCircular)
+                            .frame(width: 62, height: 62)
+                        EkadashiWidgetView(snapshot: snapshot, now: now, family: .accessoryRectangular)
+                            .frame(maxWidth: .infinity).frame(height: 62)
                     }
-                    .padding(16).frame(width: width, height: 100)
+                    .padding(16).frame(maxWidth: 360).frame(height: 100)
                     .background(WidgetStyle.color(WidgetPalette.charcoal))
-                    .environment(\.colorScheme, .dark)
-                    .tint(.white)
-                    .foregroundStyle(.white)
+                    .environment(\.colorScheme, .dark).tint(.white).foregroundStyle(.white)
                 } else {
-                    EkadashiWidgetView(snapshot: snapshot, now: now, family: size.family, selection: chosen)
-                        .padding(16)
-                        .frame(width: size == .small ? 170 : width, height: size == .large ? 368 : 170)
-                        .background(WidgetCardBackground())
-                        .environment(\.colorScheme, appearance)
+                    EkadashiWidgetView(snapshot: snapshot, now: now, family: size.family)
+                        .padding(16).frame(maxWidth: size == .small ? 170 : 360)
+                        .frame(height: size == .large ? 368 : 170)
+                        .background(WidgetCardBackground()).environment(\.colorScheme, appearance)
                 }
             }
-            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-            .contentShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+            .clipShape(.rect(cornerRadius: 24))
+            .contentShape(.rect(cornerRadius: 24))
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("widget_preview_open")
