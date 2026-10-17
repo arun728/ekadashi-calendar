@@ -191,11 +191,25 @@ final class JourneyRewardsTests: XCTestCase {
 
     func testCorruptBadgeEnvelopeDoesNotBlockJournal() throws {
         let store = InMemoryKeyValueStore()
-        store.set("invalid", forKey: "journey_badges_v1")
+        _ = store.set("invalid", forKey: "journey_badges_v1")
         let tracker = VratTracker(store: store, now: { self.now })
         try tracker.load(occurrences: events(2026))
         XCTAssertTrue(tracker.isEnabled)
         XCTAssertTrue(tracker.rewardsStorageError)
+    }
+
+    func testTrackerAwardsUseTheHomeZoneWhenParanaIsUnavailable() throws {
+        let now = ISO8601.instant("2026-01-04T01:00:00Z")!
+        let event = EkadashiOccurrence(id: 1, name: "E", date: CivilDate(2026, 1, 3))
+        let tracker = VratTracker(store: InMemoryKeyValueStore(), premiumAchievements: { true }, now: { now })
+        tracker.journeyZone = AppTimezone.pst.location
+        try tracker.load(occurrences: [event])
+        _ = try tracker.record(occurrenceId: event.id, occurrenceUid: event.occurrenceUid, date: event.date.iso,
+                               name: event.name, status: .observed, occurrences: [event])
+        XCTAssertEqual(tracker.journey([event], completeYears: []).lifetimePoints, 0)
+        XCTAssertNotEqual(tracker.userAchievements["first_vrat"]?.isUnlocked, true)
+        tracker.journeyZone = AppTimezone.ist.location
+        XCTAssertEqual(try tracker.refreshAchievements([event]).map(\.id), ["first_vrat"])
     }
 
     func testBadgeVocabularyExistsInEveryAppLanguage() {
