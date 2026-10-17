@@ -174,6 +174,30 @@ final class JourneyRewardsTests: XCTestCase {
         XCTAssertTrue(try final.refreshAchievements(list).isEmpty)
     }
 
+    func testAwardWriteFailureDoesNotLoseHistoryAndCanRetry() throws {
+        let store = JourneyAwardFailureStore(), list = events(2026)
+        let tracker = VratTracker(store: store, premiumAchievements: { true }, now: { self.now })
+        try tracker.load(occurrences: list)
+        store.refuseAwards = true
+        let e = list[0]
+        XCTAssertTrue(try tracker.record(occurrenceId: e.id, occurrenceUid: e.occurrenceUid, date: e.date.iso, name: e.name,
+                                        status: .observed, occurrences: list).isEmpty)
+        XCTAssertEqual(tracker.record(forUid: e.occurrenceUid)?.status, .observed)
+        XCTAssertTrue(tracker.rewardsStorageError)
+        store.refuseAwards = false
+        XCTAssertEqual(try tracker.refreshAchievements(list).map(\.id), ["first_vrat"])
+        XCTAssertFalse(tracker.rewardsStorageError)
+    }
+
+    func testCorruptBadgeEnvelopeDoesNotBlockJournal() throws {
+        let store = InMemoryKeyValueStore()
+        store.set("invalid", forKey: "journey_badges_v1")
+        let tracker = VratTracker(store: store, now: { self.now })
+        try tracker.load(occurrences: events(2026))
+        XCTAssertTrue(tracker.isEnabled)
+        XCTAssertTrue(tracker.rewardsStorageError)
+    }
+
     func testBadgeVocabularyExistsInEveryAppLanguage() {
         for badge in JourneyBadgeCatalog.all(years: [2026, 2027]) {
             for language in Localizer.languages {
@@ -182,4 +206,20 @@ final class JourneyRewardsTests: XCTestCase {
             }
         }
     }
+}
+
+private final class JourneyAwardFailureStore: KeyValueStore {
+    let backing = InMemoryKeyValueStore()
+    var refuseAwards = false
+    func string(forKey key: String) -> String? { backing.string(forKey: key) }
+    func bool(forKey key: String) -> Bool? { backing.bool(forKey: key) }
+    func stringArray(forKey key: String) -> [String]? { backing.stringArray(forKey: key) }
+    func set(_ value: String, forKey key: String) -> Bool {
+        if refuseAwards && key == "journey_badges_v1" { return false }
+        return backing.set(value, forKey: key)
+    }
+    func set(_ value: Bool, forKey key: String) -> Bool { backing.set(value, forKey: key) }
+    func set(_ value: [String], forKey key: String) -> Bool { backing.set(value, forKey: key) }
+    func remove(_ key: String) { backing.remove(key) }
+    func keys() -> [String] { backing.keys() }
 }
