@@ -74,6 +74,26 @@ class WidgetPresentationTest {
             }
         }
     }
+    @Test fun smallCountdownKeepsItsFullLocalizedDaysAndRemainingText() {
+        for (language in listOf("en", "hi", "ta", "te", "gu", "bn")) for (fontScale in listOf(1f, 1.3f)) {
+            val config = Configuration(context.resources.configuration).apply { this.fontScale = fontScale }
+            val localized = context.createConfigurationContext(config)
+            for ((width, height) in listOf(158 to 158, 110 to 110, 110 to 60)) {
+                for (daysBefore in listOf(0L, 1L, 4L, 30L)) {
+                    val host = WidgetPreviewHost(localized) {}
+                    host.update(payload(language), false, width, height, now.minusSeconds(daysBefore * 86400))
+                    layout(host, width, height)
+                    val countdown = host.findViewById<TextView>(R.id.widget_small_countdown_value)
+                    assertTrue("$language countdown has content", countdown.text.isNotBlank())
+                    for (line in 0 until minOf(countdown.layout.lineCount, countdown.maxLines)) {
+                        assertEquals("$language $width/$height scale=$fontScale complete countdown: ${countdown.text}",
+                            0, countdown.layout.getEllipsisCount(line))
+                    }
+                    assertTextBounds(host, "full countdown $language $width/$height scale=$fontScale")
+                }
+            }
+        }
+    }
     @Test fun smallestUpcomingPlacementStillHasRoomForOneWholeScrollableRow() {
         for (language in listOf("en", "hi", "ta", "te", "gu", "bn")) {
             val host = WidgetPreviewHost(context) {}
