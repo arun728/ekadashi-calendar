@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ekadashi_calendar/l10n/app_language.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:timezone/data/latest.dart' as tz;
@@ -42,6 +43,30 @@ void main() {
       languageService: lang,
       now: now,
     );
+  }
+
+  test('payload starts the five future dates with the nearest and preserves the archive', () async {
+    final rows = List.generate(8, (i) => event(i < 4 ? 2026 : 2027, i + 1,
+      DateTime.utc(2026, 12, 1).add(Duration(days: i * 15))));
+    final p = await payload(rows, DateTime.utc(2026, 11, 30));
+    expect((p['upcomingEkadashis'] as List).length, 5);
+    expect(p['upcomingEkadashis'].first['occurrenceUid'], rows.first.occurrenceUid);
+    expect((p['schedule'] as List).length, rows.length);
+  });
+
+  test('yesterday Parana cannot remain the headline in a new civil day', () async {
+    final p = await payload([event(2027, 1, DateTime.utc(2027, 1, 5)),
+      event(2027, 2, DateTime.utc(2027, 1, 20))], DateTime.utc(2027, 1, 6), zone: 'UTC');
+    expect(p['nextEkadashi']['occurrenceUid'], 'ekadashi:2027:2');
+  });
+
+  for (final language in AppLanguage.codes) {
+    test('$language widget dates have weekday and remaining progress is localized', () async {
+      final p = await payload([event(2027, 1, DateTime.utc(2027, 1, 5))],
+        DateTime.utc(2027), language: language);
+      expect(p['nextEkadashi']['localizedDate'], AppStrings.fullDate(DateTime(2027, 1, 5), language));
+      expect(p['localizedStrings']['widget.remaining'], isNotNull);
+    });
   }
 
   test(

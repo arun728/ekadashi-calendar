@@ -69,6 +69,19 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  testWidgets('preview has widget tabs and only supported sizes', (tester) async {
+    await pump(tester, upcoming);
+    expect(find.byKey(const Key('widget_preview_kind')), findsOneWidget);
+    expect(find.text('Small'), findsOneWidget);
+    expect(find.text('Medium'), findsOneWidget);
+    expect(find.text('Large'), findsNothing);
+    expect(find.text('Lock Screen'), findsOneWidget);
+    await tester.tap(find.text('Upcoming Ekadashis').first);
+    await tester.pumpAndSettle();
+    expect(find.text('Small'), findsNothing);
+    expect(find.text('Large'), findsOneWidget);
+  });
+
   testWidgets('shows the two widgets: Ekadashi and Upcoming', (tester) async {
     await pump(tester, upcoming);
     expect(find.byKey(const Key('card_ekadashi')), findsOneWidget);
