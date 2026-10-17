@@ -50,6 +50,24 @@ final class ScreenshotTests: XCTestCase {
         XCTAssertFalse(app.descendants(matching: .any)["ekadashi_details"].exists)
     }
 
+    func testSizeOptionsMatchEachWidgetAndResetUnsupportedSelection() {
+        openWidgetPreviews()
+        let kinds = app.segmentedControls["widget_preview_kind"]
+        let sizes = app.segmentedControls["widget_preview_size"]
+        XCTAssertEqual(sizes.buttons.allElementsBoundByIndex.map(\.label), ["Small", "Medium", "Lock Screen"])
+        snap("widget-ekadashi-supported-sizes")
+        kinds.buttons["Upcoming Ekadashis"].tap()
+        XCTAssertEqual(sizes.buttons.allElementsBoundByIndex.map(\.label), ["Medium", "Large"])
+        sizes.buttons["Large"].tap()
+        XCTAssertTrue(sizes.buttons["Large"].isSelected)
+        kinds.buttons["Ekadashi"].tap()
+        XCTAssertFalse(sizes.buttons["Large"].exists)
+        XCTAssertTrue(sizes.buttons["Medium"].isSelected)
+        sizes.buttons["Lock Screen"].tap()
+        XCTAssertTrue(app.images["widget_brand_icon"].firstMatch.exists)
+        snap("widget-enlarged-circular-lock")
+    }
+
     func testLockPreviewIdentifiesEkadashiAndUsesAppArtwork() {
         openWidgetPreviews()
         app.segmentedControls["widget_preview_size"].buttons["Lock Screen"].tap()
@@ -102,7 +120,7 @@ final class ScreenshotTests: XCTestCase {
             XCTAssertGreaterThanOrEqual(preview.frame.minX, window.minX)
             XCTAssertLessThanOrEqual(preview.frame.maxX, window.maxX)
             snap("widget-single-\(language)")
-            app.segmentedControls["widget_preview_size"].buttons.element(boundBy: 3).tap()
+            app.segmentedControls["widget_preview_size"].buttons.element(boundBy: 2).tap()
             snap("widget-lock-\(language)")
             kinds.buttons.element(boundBy: 1).tap()
             let rows = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'widget_upcoming_open_'"))

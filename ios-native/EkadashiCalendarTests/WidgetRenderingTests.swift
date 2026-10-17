@@ -19,7 +19,7 @@ final class WidgetRenderingTests: XCTestCase {
         for now in [before, during] {
             let snapshot = WidgetSnapshot.build(occurrences: events, timezone: "IST", locationName: "Chennai",
                                                 language: "en", now: now, tradition: "smarta")
-            let families: [(WidgetFamily, CGFloat, CGFloat)] = [(.systemSmall, 170, 170), (.systemMedium, 350, 165), (.systemLarge, 350, 368)]
+            let families: [(WidgetFamily, CGFloat, CGFloat)] = [(.systemSmall, 170, 170), (.systemMedium, 350, 165)]
             for (family, width, height) in families {
                 for scheme in [ColorScheme.dark, .light] {
                     let view = EkadashiWidgetView(snapshot: snapshot, now: now, family: family)
@@ -67,14 +67,43 @@ final class WidgetRenderingTests: XCTestCase {
                 let families: [(WidgetFamily, CGFloat, CGFloat)] = [(.systemSmall, 158, 158), (.systemMedium, 338, 158),
                     (.systemLarge, 338, 354), (.accessoryCircular, 62, 62), (.accessoryRectangular, 150, 62)]
                 for (family, width, height) in families {
+                    if family != .systemLarge {
                     try assertFits(EkadashiWidgetView(snapshot: snapshot, now: now, family: family), width: width, height: height,
                                    inset: family == .accessoryCircular || family == .accessoryRectangular ? 0 : 16, label: "\(language) \(family) \(now)")
+                    }
                     if family == .systemMedium || family == .systemLarge {
                         try assertFits(UpcomingEkadashiWidgetView(snapshot: snapshot, now: now, family: family), width: width, height: height,
                                        inset: 16, label: "upcoming \(language) \(family)")
                     }
                 }
             }
+        }
+    }
+
+    func testCircularArtworkFillsTheAvailableSlotAtEveryHostSize() throws {
+        let events = try CalendarRepository.bundled().ekadashis(timezone: "IST", language: "en")
+        let now = ISO8601.instant("2026-10-17T12:00:00Z")!
+        let snapshot = WidgetSnapshot.build(occurrences: events, timezone: "IST", locationName: "", language: "en", now: now)
+        for side in [CGFloat(48), 62, 76] {
+            let renderer = ImageRenderer(content: EkadashiWidgetView(snapshot: snapshot, now: now, family: .accessoryCircular)
+                .frame(width: side, height: side).environment(\.colorScheme, .dark))
+            renderer.scale = 1
+            let image = try XCTUnwrap(renderer.uiImage?.cgImage)
+            let pixels = try rgba(image)
+            var columns = Set<Int>()
+            for y in 0..<image.height {
+                for x in 0..<image.width {
+                    let i = (y * image.width + x) * 4
+                    let r = Double(pixels[i]), g = Double(pixels[i + 1]), b = Double(pixels[i + 2])
+                    if g > 60 && g > r * 1.4 && b > r * 1.4 { columns.insert(x) }
+                }
+            }
+            let artworkWidth = (columns.max() ?? 0) - (columns.min() ?? 0) + 1
+            XCTAssertGreaterThanOrEqual(CGFloat(artworkWidth), side * 0.52, "Artwork is too small at \(side) points")
+            let attachment = XCTAttachment(image: try XCTUnwrap(renderer.uiImage))
+            attachment.name = "circular-lock-\(Int(side))"
+            attachment.lifetime = .keepAlways
+            add(attachment)
         }
     }
 
