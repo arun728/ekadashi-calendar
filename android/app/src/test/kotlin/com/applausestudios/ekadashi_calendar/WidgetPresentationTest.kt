@@ -74,6 +74,17 @@ class WidgetPresentationTest {
             }
         }
     }
+    @Test fun smallestUpcomingPlacementStillHasRoomForOneWholeScrollableRow() {
+        for (language in listOf("en", "hi", "ta", "te", "gu", "bn")) {
+            val host = WidgetPreviewHost(context) {}
+            host.update(payload(language), true, 180, 80, now)
+            layout(host, 180, 80)
+            val list = host.findViewById<ListView>(R.id.widget_large_list)
+            val row = list.adapter.getView(0, null, list)
+            layout(row, 154, 0)
+            assertTrue("$language must have a readable upcoming row at minimum size", list.height >= row.measuredHeight)
+        }
+    }
     @Test fun sixLanguagesFitNativeHomeAndLockHostSizesAndLargerFonts() {
         for (language in listOf("en", "hi", "ta", "te", "gu", "bn")) for (fontScale in listOf(1f, 1.3f)) {
             val configuration = Configuration(context.resources.configuration).apply { this.fontScale = fontScale }

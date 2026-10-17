@@ -43,6 +43,16 @@ class WidgetLinkContractTest {
         view.findViewById<android.view.View>(R.id.widget_large_upcoming_header).performClick()
         assertEquals("ekadashi:2027:25",Shadows.shadowOf(context as Application).nextStartedActivity.data!!.getQueryParameter("uid"))
     }
+    @Test fun exhaustedCalendarShowsTheLocalizedNoUpcomingMessage() {
+        val p = payload()
+        val view = WidgetRenderer.single(context,p,320,170,Instant.parse("2028-01-01T00:00:00Z")).apply(context,FrameLayout(context))
+        assertEquals(WidgetLocalization.strings(context,"en")["widget.no_next"], view.findViewById<android.widget.TextView>(R.id.widget_medium_date).text.toString())
+    }
+    @Test fun tappingUpcomingCardBackgroundOpensItsFirstDisplayedOccurrence() {
+        val view = WidgetRenderer.upcoming(context,payload(),now=now).apply(context,FrameLayout(context))
+        assertTrue(view.performClick())
+        assertEquals("ekadashi:2027:25",Shadows.shadowOf(context as Application).nextStartedActivity.data!!.getQueryParameter("uid"))
+    }
     @Test fun missingAndCorruptedCacheUseOnlyLocalizedRefreshFallbacks() {
         for (language in listOf("hi","ta","te","gu","bn")) {
             context.getSharedPreferences("FlutterSharedPreferences",Context.MODE_PRIVATE).edit().putString("flutter.language_code",language).commit()
