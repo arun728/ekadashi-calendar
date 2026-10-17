@@ -28,7 +28,7 @@ final class ScreenshotTests: XCTestCase {
         let entry = app.buttons["settings_widget_preview"]
         XCTAssertTrue(entry.waitForExistence(timeout: 10))
         entry.tap()
-        let next = app.buttons["widget_preview_next"]
+        let next = app.segmentedControls["widget_preview_state"].buttons["Next Ekadashi"]
         XCTAssertTrue(next.waitForExistence(timeout: 10))
         next.tap()
         let preview = app.buttons["widget_preview_open"].firstMatch
@@ -37,14 +37,14 @@ final class ScreenshotTests: XCTestCase {
         let displayed = preview.label
         XCTAssertFalse(displayed.isEmpty)
         preview.tap()
-        let detail = app.otherElements["ekadashi_details"]
+        let detail = app.descendants(matching: .any)["ekadashi_details"]
         XCTAssertTrue(detail.waitForExistence(timeout: 10))
         XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label IN %@", displayed.components(separatedBy: "\n"))).count > 0)
         app.navigationBars.buttons.element(boundBy: 0).tap()
         XCTAssertTrue(app.buttons["widget_preview_open"].firstMatch.waitForExistence(timeout: 10))
-        app.buttons["widget_preview_size_large"].tap()
+        app.segmentedControls["widget_preview_size"].buttons["Large"].tap()
         snap("widgets-real-large-preview")
-        app.buttons["widget_preview_size_lock"].tap()
+        app.segmentedControls["widget_preview_size"].buttons["Lock Screen"].tap()
         snap("widgets-real-lock-preview")
     }
 

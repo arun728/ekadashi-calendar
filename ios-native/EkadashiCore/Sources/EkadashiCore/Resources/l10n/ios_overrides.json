@@ -17,7 +17,17 @@
   "ios_share_message": "🙏 Ekadashi Calendar - Never miss an Ekadashi!\n\nGet reminders for fasting times, read stories & significance of each Ekadashi.\n\nDownload now: {value0}",
   "ios_share_card_save": "Save to Photos",
   "ios_share_card_saved": "Card saved to Photos.",
-  "ios_share_card_photos_denied": "Photo access is off. Allow adding photos in Settings to save cards."
+  "ios_share_card_photos_denied": "Photo access is off. Allow adding photos in Settings to save cards.",
+  "widget_remaining": "remaining",
+  "widget_size_small": "Small",
+  "widget_size_medium": "Medium",
+  "widget_size_large": "Large",
+  "widget_size_lock": "Lock Screen",
+  "widget_preview_tap": "Tap to view this Ekadashi",
+  "widget_no_next": "No upcoming Ekadashi in the available schedule",
+  "ios_widget_preview_desc": "Preview Home Screen and Lock Screen widgets",
+  "ios_widget_desc_ekadashi": "Today’s Ekadashi with the percentage remaining, or the next Ekadashi and its timings.",
+  "ios_widget_desc_next": "The next Ekadashi with its full fasting and break-fast timings."
  },
  "ta": {
   "rate_app_desc": "ஆப் ஸ்டோரில் எங்களை மதிப்பிடவும்",
@@ -36,7 +46,17 @@
   "ios_share_message": "🙏 ஏகாதசி நாட்காட்டி - எந்த ஏகாதசியையும் தவறவிடாதீர்கள்!\n\nவிரத நேரங்களுக்கான நினைவூட்டல்களைப் பெறுங்கள், ஒவ்வொரு ஏகாதசியின் கதைகளையும் முக்கியத்துவத்தையும் படியுங்கள்.\n\nஇப்போதே பதிவிறக்குங்கள்: {value0}",
   "ios_share_card_save": "புகைப்படங்களில் சேமி",
   "ios_share_card_saved": "அட்டை புகைப்படங்களில் சேமிக்கப்பட்டது.",
-  "ios_share_card_photos_denied": "புகைப்பட அனுமதி முடக்கப்பட்டுள்ளது. அட்டைகளைச் சேமிக்க அமைப்புகளில் புகைப்படங்களைச் சேர்க்க அனுமதியுங்கள்."
+  "ios_share_card_photos_denied": "புகைப்பட அனுமதி முடக்கப்பட்டுள்ளது. அட்டைகளைச் சேமிக்க அமைப்புகளில் புகைப்படங்களைச் சேர்க்க அனுமதியுங்கள்.",
+  "widget_remaining": "மீதமுள்ளது",
+  "widget_size_small": "சிறியது",
+  "widget_size_medium": "நடுத்தரம்",
+  "widget_size_large": "பெரியது",
+  "widget_size_lock": "பூட்டுத் திரை",
+  "widget_preview_tap": "இந்த ஏகாதசியைப் பார்க்கத் தட்டவும்",
+  "widget_no_next": "கிடைக்கும் அட்டவணையில் அடுத்த ஏகாதசி இல்லை",
+  "ios_widget_preview_desc": "முகப்புத்திரை மற்றும் பூட்டுத்திரை விட்ஜெட்டுகளைப் பார்க்கவும்",
+  "ios_widget_desc_ekadashi": "இன்றைய ஏகாதசியின் மீதமுள்ள சதவீதம் அல்லது அடுத்த ஏகாதசியும் அதன் நேரங்களும்.",
+  "ios_widget_desc_next": "அடுத்த ஏகாதசியின் விரதம் மற்றும் பாரணைக்கான முழு நேரங்கள்."
  },
  "hi": {
   "rate_app_desc": "ऐप स्टोर पर हमें रेट करें",
@@ -55,7 +75,17 @@
   "ios_share_message": "🙏 एकादशी कैलेंडर - कोई भी एकादशी न चूकें!\n\nव्रत के समय के लिए रिमाइंडर पाएं, हर एकादशी की कथा और महत्व पढ़ें।\n\nअभी डाउनलोड करें: {value0}",
   "ios_share_card_save": "फ़ोटो में सहेजें",
   "ios_share_card_saved": "कार्ड फ़ोटो में सहेज लिया गया।",
-  "ios_share_card_photos_denied": "फ़ोटो की अनुमति बंद है। कार्ड सहेजने के लिए सेटिंग्स में फ़ोटो जोड़ने की अनुमति दें।"
+  "ios_share_card_photos_denied": "फ़ोटो की अनुमति बंद है। कार्ड सहेजने के लिए सेटिंग्स में फ़ोटो जोड़ने की अनुमति दें।",
+  "widget_remaining": "शेष",
+  "widget_size_small": "छोटा",
+  "widget_size_medium": "मध्यम",
+  "widget_size_large": "बड़ा",
+  "widget_size_lock": "लॉक स्क्रीन",
+  "widget_preview_tap": "इस एकादशी को देखने के लिए टैप करें",
+  "widget_no_next": "उपलब्ध पंचांग में अगली एकादशी नहीं है",
+  "ios_widget_preview_desc": "होम स्क्रीन और लॉक स्क्रीन विजेट देखें",
+  "ios_widget_desc_ekadashi": "आज की एकादशी का शेष प्रतिशत, या अगली एकादशी और उसके समय।",
+  "ios_widget_desc_next": "अगली एकादशी के उपवास और पारण के पूरे समय।"
  },
  "te": {
   "rate_app_desc": "యాప్ స్టోర్‌లో రేట్ చేయండి",
@@ -74,7 +104,17 @@
   "ios_share_message": "🙏 ఏకాదశి క్యాలెండర్ - ఏ ఏకాదశినీ మిస్ అవ్వకండి!\n\nఉపవాస సమయాల రిమైండర్లు పొందండి, ప్రతి ఏకాదశి కథలు మరియు ప్రాముఖ్యత చదవండి.\n\nఇప్పుడే డౌన్‌లోడ్ చేయండి: {value0}",
   "ios_share_card_save": "ఫోటోలలో భద్రపరచండి",
   "ios_share_card_saved": "కార్డ్ ఫోటోలలో భద్రపరచబడింది.",
-  "ios_share_card_photos_denied": "ఫోటో అనుమతి ఆపివేయబడింది. కార్డ్‌లను భద్రపరచడానికి సెట్టింగ్స్‌లో ఫోటోలను జోడించడానికి అనుమతించండి."
+  "ios_share_card_photos_denied": "ఫోటో అనుమతి ఆపివేయబడింది. కార్డ్‌లను భద్రపరచడానికి సెట్టింగ్స్‌లో ఫోటోలను జోడించడానికి అనుమతించండి.",
+  "widget_remaining": "మిగిలింది",
+  "widget_size_small": "చిన్నది",
+  "widget_size_medium": "మధ్యస్థం",
+  "widget_size_large": "పెద్దది",
+  "widget_size_lock": "లాక్ స్క్రీన్",
+  "widget_preview_tap": "ఈ ఏకాదశిని చూడటానికి నొక్కండి",
+  "widget_no_next": "అందుబాటులో ఉన్న పట్టికలో తదుపరి ఏకాదశి లేదు",
+  "ios_widget_preview_desc": "హోమ్ స్క్రీన్ మరియు లాక్ స్క్రీన్ విడ్జెట్‌లను చూడండి",
+  "ios_widget_desc_ekadashi": "నేటి ఏకాదశి మిగిలిన శాతం లేదా తదుపరి ఏకాదశి మరియు సమయాలు.",
+  "ios_widget_desc_next": "తదుపరి ఏకాదశి ఉపవాసం మరియు పారణ పూర్తి సమయాలు."
  },
  "gu": {
   "rate_app_desc": "એપ સ્ટોર પર અમને રેટ કરો",
@@ -93,7 +133,17 @@
   "ios_share_message": "🙏 એકાદશી કેલેન્ડર - કોઈ એકાદશી ચૂકશો નહીં!\n\nઉપવાસના સમયના રિમાઇન્ડર મેળવો, દરેક એકાદશીની કથા અને મહત્વ વાંચો.\n\nહમણાં ડાઉનલોડ કરો: {value0}",
   "ios_share_card_save": "ફોટામાં સાચવો",
   "ios_share_card_saved": "કાર્ડ ફોટામાં સાચવ્યું.",
-  "ios_share_card_photos_denied": "ફોટાની પરવાનગી બંધ છે. કાર્ડ સાચવવા માટે સેટિંગ્સમાં ફોટા ઉમેરવાની પરવાનગી આપો."
+  "ios_share_card_photos_denied": "ફોટાની પરવાનગી બંધ છે. કાર્ડ સાચવવા માટે સેટિંગ્સમાં ફોટા ઉમેરવાની પરવાનગી આપો.",
+  "widget_remaining": "બાકી",
+  "widget_size_small": "નાનું",
+  "widget_size_medium": "મધ્યમ",
+  "widget_size_large": "મોટું",
+  "widget_size_lock": "લૉક સ્ક્રીન",
+  "widget_preview_tap": "આ એકાદશી જોવા ટૅપ કરો",
+  "widget_no_next": "ઉપલબ્ધ સમયપત્રકમાં આગામી એકાદશી નથી",
+  "ios_widget_preview_desc": "હોમ સ્ક્રીન અને લૉક સ્ક્રીન વિજેટ જુઓ",
+  "ios_widget_desc_ekadashi": "આજની એકાદશીની બાકી ટકાવારી અથવા આગામી એકાદશી અને તેના સમય.",
+  "ios_widget_desc_next": "આગામી એકાદશીના ઉપવાસ અને પારણાના સંપૂર્ણ સમય."
  },
  "bn": {
   "rate_app_desc": "অ্যাপ স্টোর-এ আমাদের রেট দিন",
@@ -112,6 +162,16 @@
   "ios_share_message": "🙏 একাদশী ক্যালেন্ডার - কোনো একাদশী আর বাদ যাবে না!\n\nউপবাসের সময়ের রিমাইন্ডার পান, প্রতিটি একাদশীর কথা ও মাহাত্ম্য পড়ুন।\n\nএখনই ডাউনলোড করুন: {value0}",
   "ios_share_card_save": "ফটোতে সংরক্ষণ করুন",
   "ios_share_card_saved": "কার্ড ফটোতে সংরক্ষিত হয়েছে।",
-  "ios_share_card_photos_denied": "ফটোর অনুমতি বন্ধ আছে। কার্ড সংরক্ষণ করতে সেটিংসে ফটো যোগ করার অনুমতি দিন।"
+  "ios_share_card_photos_denied": "ফটোর অনুমতি বন্ধ আছে। কার্ড সংরক্ষণ করতে সেটিংসে ফটো যোগ করার অনুমতি দিন।",
+  "widget_remaining": "বাকি",
+  "widget_size_small": "ছোট",
+  "widget_size_medium": "মাঝারি",
+  "widget_size_large": "বড়",
+  "widget_size_lock": "লক স্ক্রিন",
+  "widget_preview_tap": "এই একাদশী দেখতে ট্যাপ করুন",
+  "widget_no_next": "উপলব্ধ সময়সূচিতে পরবর্তী একাদশী নেই",
+  "ios_widget_preview_desc": "হোম স্ক্রিন ও লক স্ক্রিন উইজেট দেখুন",
+  "ios_widget_desc_ekadashi": "আজকের একাদশীর বাকি শতাংশ অথবা পরবর্তী একাদশী ও তার সময়।",
+  "ios_widget_desc_next": "পরবর্তী একাদশীর উপবাস ও পারণের সম্পূর্ণ সময়।"
  }
 }

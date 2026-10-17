@@ -74,6 +74,8 @@ final class AppModel {
     private(set) var entriesRevision = 0
     var selectedTab: AppTab = .today
     var showSearch = false
+    /// An occurrence-specific widget link, including links received at launch.
+    var widgetEvent: EkadashiOccurrence?
     /// The way back to a search whose result opened a tab or calendar day.
     private(set) var searchReturn = SearchReturn()
     /// The search to show again when it reopens from that way back.
@@ -608,6 +610,11 @@ final class AppModel {
         }
         searchReturn.clear()
         switch route {
+        case .ekadashi(let uid):
+            guard let event = ekadashis.first(where: { $0.occurrenceUid == uid }) else { return }
+            showSearch = false
+            selectedTab = .today
+            widgetEvent = event
         case .search:
             restoredSearch = nil
             showSearch = true

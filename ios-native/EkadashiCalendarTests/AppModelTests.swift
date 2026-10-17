@@ -86,6 +86,7 @@ final class AppModelTests: XCTestCase {
         await model.waitForLoad()
         let event = try XCTUnwrap(model.ekadashis.first)
         model.open(AppRoute.ekadashiURL(event.occurrenceUid))
+        XCTAssertEqual(model.selectedTab, .today)
         XCTAssertEqual(model.widgetEvent?.occurrenceUid, event.occurrenceUid)
         XCTAssertEqual(model.widgetEvent?.date, event.date)
         XCTAssertEqual(model.widgetEvent?.fastingStart, event.fastingStart)

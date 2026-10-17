@@ -32,6 +32,16 @@ struct RootView: View {
         .sheet(isPresented: $model.showSearch) {
             NavigationStack { GlobalSearchView() }
         }
+        .sheet(item: $model.widgetEvent) { event in
+            NavigationStack {
+                EkadashiDetailsView(event: event)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button(model.t("cancel")) { model.widgetEvent = nil }
+                        }
+                    }
+            }
+        }
         .sheet(item: $model.paywall, onDismiss: { model.paywallClosed() }) { request in
             NavigationStack { PremiumView(reason: request.reason) }
         }

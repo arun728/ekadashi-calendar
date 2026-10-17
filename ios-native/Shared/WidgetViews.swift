@@ -2,297 +2,240 @@ import SwiftUI
 import WidgetKit
 import EkadashiCore
 
-/// The two home-screen widgets (docs/ROADMAP.md Phase 6), shared by the
-/// widget extension and the in-app preview:
-/// - Ekadashi: on an Ekadashi, "Today is Ekadashi", the fast's progress and
-///   the time to Parana; otherwise the next Ekadashi and the days to go.
-///   Small, medium and the lock screen.
-/// - Upcoming: the next Ekadashis as date tiles. Medium and large.
-/// Everything comes from the App Group snapshot and is re-evaluated at
-/// render time, so states change on time even if the app has not run.
-/// Text stays legible when iOS tints or clears the widget (accented and
-/// vibrant rendering): key elements are accentable and the background is a
-/// container background the system can remove.
+/// Shared by the extension and Settings: the same real occurrence, palette,
+/// local dates, complete timings and remaining-only ring on both surfaces.
 enum WidgetStyle {
-    static let cyan = Color(red: 0, green: 0xE5 / 255, blue: 1)
-    static let mist = Color(red: 0xE0 / 255, green: 0xF7 / 255, blue: 0xFA / 255)
-    static let tile = Color(red: 0x02 / 255, green: 0x1B / 255, blue: 0x24 / 255)
-    static let tileBorder = Color(red: 0, green: 0x8F / 255, blue: 0xA0 / 255)
+    static let teal = color(WidgetPalette.teal)
+    static func color(_ hex: UInt32) -> Color {
+        Color(red: Double(hex >> 16 & 255) / 255, green: Double(hex >> 8 & 255) / 255, blue: Double(hex & 255) / 255)
+    }
 }
 
-/// Deep teal gradient with a faint lotus (the Android widget background).
 struct WidgetCardBackground: View {
+    @Environment(\.colorScheme) private var scheme
     var body: some View {
-        ZStack {
-            LinearGradient(colors: [Color(red: 0x05 / 255, green: 0x33 / 255, blue: 0x3D / 255),
-                                    Color(red: 0x02 / 255, green: 0x1C / 255, blue: 0x24 / 255),
-                                    Color(red: 0, green: 0x0E / 255, blue: 0x14 / 255)],
-                           startPoint: .topLeading, endPoint: .bottomTrailing)
-            Image("widget_bg_lotus_watermark").resizable().scaledToFill().opacity(0.14)
-        }
+        WidgetStyle.color(scheme == .dark ? WidgetPalette.charcoal : WidgetPalette.ivory)
     }
 }
 
-struct WidgetTimes {
+private struct RemainingRing: View {
+    let item: WidgetItem
     let snapshot: WidgetSnapshot
+    let now: Date
+    var prominent = false
+    @Environment(\.widgetRenderingMode) private var rendering
 
-    private func formatter(_ pattern: String) -> DateFormatter {
-        let formatter = DateFormatter()
-        formatter.locale = Localizer.locale(snapshot.locale)
-        formatter.timeZone = TimeZone(identifier: snapshot.timeZone) ?? .current
-        formatter.dateFormat = pattern
-        return formatter
-    }
-
-    /// "6:24 PM" with the app language's own AM/PM words.
-    func time(_ date: Date?) -> String {
-        guard let date else { return "--" }
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(identifier: snapshot.timeZone) ?? .current
-        let hour = calendar.component(.hour, from: date), minute = calendar.component(.minute, from: date)
-        let marker = hour < 12 ? snapshot.string("am", "AM") : snapshot.string("pm", "PM")
-        return "\(hour % 12 == 0 ? 12 : hour % 12):\(minute < 10 ? "0" : "")\(minute) \(marker)"
-    }
-    func month(_ item: WidgetItem) -> String { formatter("MMM").string(from: item.fastingStart).uppercased() }
-    func day(_ item: WidgetItem) -> String { CivilDate(iso: item.date).map { String($0.day) } ?? "" }
-}
-
-/// Status line of an item: "Starts in 2 d 3 h", "Parana in 3 h", "Parana ends in 40 min".
-func widgetStatus(_ item: WidgetItem, _ snapshot: WidgetSnapshot, now: Date) -> String {
-    let state = item.state(at: now)
-    let remaining = snapshot.remaining(until: item.target(for: state), now: now)
-    switch state {
-    case .fastingActive: return "\(snapshot.string("parana_in", "Parana in")) \(remaining)"
-    case .paranaAvailable: return "\(snapshot.string("parana_ends", "Parana ends in")) \(remaining)"
-    default: return "\(snapshot.string("starts_in", "Starts in")) \(remaining)"
-    }
-}
-
-private struct OpenAppHint: View {
-    let snapshot: WidgetSnapshot?
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Image(systemName: "leaf.fill").foregroundStyle(WidgetStyle.cyan).widgetAccentable()
-            Text(snapshot?.string("open_app_to_refresh", "Open the app to refresh") ?? "Open the app to refresh")
-                .font(.caption).foregroundStyle(WidgetStyle.mist)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-    }
-}
-
-/// The fast's progress as a ring with the percentage inside.
-private struct FastRing: View {
-    let progress: Double
-    var lineWidth: CGFloat = 6
+    private var accent: Color { rendering == .fullColor ? WidgetStyle.teal : .primary }
 
     var body: some View {
         ZStack {
-            Circle().stroke(WidgetStyle.cyan.opacity(0.22), lineWidth: lineWidth)
+            Circle().stroke(Color.primary.opacity(0.15), lineWidth: 9)
             Circle()
-                .trim(from: 0, to: max(0.02, progress))
-                .stroke(WidgetStyle.cyan, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                .trim(from: 0, to: item.remainingFraction(at: now))
+                .stroke(accent, style: StrokeStyle(lineWidth: 9, lineCap: .round))
                 .rotationEffect(.degrees(-90))
                 .widgetAccentable()
-            Text("\(Int((progress * 100).rounded()))%")
-                .font(.system(.caption, design: .rounded).weight(.bold)).foregroundStyle(.white)
-                .minimumScaleFactor(0.6)
+            VStack(spacing: 0) {
+                Text("\(item.remainingPercent(at: now))%")
+                    .font(prominent ? .largeTitle.bold() : .title2.bold())
+                    .monospacedDigit()
+                Text(WidgetText(snapshot: snapshot).remainingLabel)
+                    .font(.caption2).lineLimit(1).minimumScaleFactor(0.8)
+            }
         }
+        .padding(6)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(item.remainingPercent(at: now))% \(WidgetText(snapshot: snapshot).remainingLabel)")
     }
 }
-
-// MARK: - Ekadashi widget
 
 struct EkadashiWidgetView: View {
     let snapshot: WidgetSnapshot?
     let now: Date
     var family: WidgetFamily = .systemSmall
+    var selection: WidgetSelection = .automatic
+    @Environment(\.widgetRenderingMode) private var rendering
+
+    private var accent: Color { rendering == .fullColor ? WidgetStyle.teal : .primary }
 
     var body: some View {
-        if let snapshot, let headline = snapshot.headline(at: now) {
-            switch family {
-            case .accessoryCircular: circular(snapshot, headline)
-            case .accessoryRectangular: rectangular(snapshot, headline)
-            case .systemMedium: medium(snapshot, headline)
-            default: small(snapshot, headline)
+        Group {
+            if let snapshot, let headline = snapshot.headline(at: now, selection: selection) {
+                switch family {
+                case .accessoryCircular: circular(snapshot, headline)
+                case .accessoryRectangular: rectangular(snapshot, headline)
+                case .systemMedium: medium(snapshot, headline)
+                case .systemLarge: large(snapshot, headline)
+                default: small(snapshot, headline)
+                }
+            } else {
+                Text(emptyLabel).font(.caption).multilineTextAlignment(.leading)
             }
-        } else {
-            OpenAppHint(snapshot: snapshot)
+        }
+        .foregroundStyle(.primary)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private var emptyLabel: String {
+        guard let snapshot else { return Localizer.shared.translate("open_app_to_refresh", language: "en") }
+        return Localizer.shared.translate(selection == .today ? "no_ekadashi" : "widget_no_next", language: snapshot.locale)
+    }
+
+    private func header(_ snapshot: WidgetSnapshot, _ headline: WidgetHeadline) -> some View {
+        HStack(alignment: .firstTextBaseline) {
+            Text(snapshot.string(headline.isToday ? "today_title" : "next_ekadashi", ""))
+                .font(.caption2.bold()).foregroundStyle(accent).lineLimit(1).widgetAccentable()
+            Spacer(minLength: 4)
+            if case .next(_, let days) = headline, family != .systemSmall {
+                Text(snapshot.daysToGo(days)).font(.caption2.weight(.semibold)).foregroundStyle(accent)
+            }
         }
     }
 
-    private func label(_ snapshot: WidgetSnapshot, _ headline: WidgetHeadline) -> String {
-        if case .today = headline { return snapshot.string("today_is_ekadashi", "Today is Ekadashi") }
-        return snapshot.string("next_ekadashi", "Next Ekadashi")
+    private func name(_ item: WidgetItem, font: Font) -> some View {
+        Text(item.name).font(font).lineLimit(2).minimumScaleFactor(0.8)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func location(_ snapshot: WidgetSnapshot) -> some View {
+        Text([snapshot.locationName, WidgetText(snapshot: snapshot).tradition].filter { !$0.isEmpty }.joined(separator: " · "))
+            .font(.caption2).foregroundStyle(.secondary).lineLimit(1)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private func small(_ snapshot: WidgetSnapshot, _ headline: WidgetHeadline) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(label(snapshot, headline).uppercased())
-                .font(.caption2.weight(.bold)).foregroundStyle(WidgetStyle.cyan).lineLimit(1).minimumScaleFactor(0.7)
-                .widgetAccentable()
-            switch headline {
-            case .today(let item, let progress):
-                Text(item.name).font(.headline).foregroundStyle(.white).lineLimit(2).minimumScaleFactor(0.7)
-                Spacer(minLength: 2)
-                HStack(spacing: 8) {
-                    FastRing(progress: progress, lineWidth: 5).frame(width: 44, height: 44)
-                    Text(widgetStatus(item, snapshot, now: now))
-                        .font(.caption.weight(.semibold)).foregroundStyle(WidgetStyle.mist).lineLimit(3).minimumScaleFactor(0.7)
-                }
-            case .next(let item, let days):
-                Text(item.name).font(.headline).foregroundStyle(.white).lineLimit(2).minimumScaleFactor(0.7)
-                Spacer(minLength: 2)
-                Text(snapshot.daysToGo(days))
-                    .font(.system(.title3, design: .rounded).weight(.bold)).foregroundStyle(.white)
-                    .lineLimit(2).minimumScaleFactor(0.6)
-                    .widgetAccentable()
-                Text(item.localizedDate).font(.caption2).foregroundStyle(WidgetStyle.mist).lineLimit(1)
+        VStack(alignment: .leading, spacing: 5) {
+            header(snapshot, headline)
+            if headline.isToday {
+                RemainingRing(item: headline.item, snapshot: snapshot, now: now)
+                    .frame(width: 76, height: 76).frame(maxWidth: .infinity)
+                name(headline.item, font: .subheadline.bold())
+            } else if case .next(let item, let days) = headline {
+                Spacer(minLength: 0)
+                Text(snapshot.daysToGo(days)).font(.title2.bold()).foregroundStyle(accent).widgetAccentable()
+                    .lineLimit(2).minimumScaleFactor(0.8)
+                name(item, font: .headline)
+                Spacer(minLength: 0)
+                Text(item.localizedDate).font(.caption2).foregroundStyle(.secondary).lineLimit(2)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 
     private func medium(_ snapshot: WidgetSnapshot, _ headline: WidgetHeadline) -> some View {
-        let times = WidgetTimes(snapshot: snapshot)
-        let item: WidgetItem
-        switch headline {
-        case .today(let current, _): item = current
-        case .next(let next, _): item = next
-        }
-        return HStack(spacing: 16) {
-            Group {
-                switch headline {
-                case .today(_, let progress):
-                    FastRing(progress: progress, lineWidth: 8)
-                case .next(_, let days):
-                    VStack(spacing: 0) {
-                        Text(days <= 1 ? times.day(item) : "\(days)")
-                            .font(.system(size: 34, weight: .bold, design: .rounded)).foregroundStyle(.white)
-                            .minimumScaleFactor(0.5).widgetAccentable()
-                        Text(days <= 1 ? times.month(item) : snapshot.string("day_unit", "d"))
-                            .font(.caption.weight(.bold)).foregroundStyle(WidgetStyle.cyan)
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(WidgetStyle.tile.opacity(0.6), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-                    .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).strokeBorder(WidgetStyle.tileBorder.opacity(0.7)))
-                }
-            }
-            .frame(width: 84, height: 84)
-            VStack(alignment: .leading, spacing: 4) {
-                Text(label(snapshot, headline).uppercased())
-                    .font(.caption2.weight(.bold)).foregroundStyle(WidgetStyle.cyan).widgetAccentable()
-                Text(item.name).font(.title3.weight(.bold)).foregroundStyle(.white).lineLimit(1).minimumScaleFactor(0.7)
-                if case .next(_, let days) = headline {
-                    Text("\(item.localizedDate) · \(snapshot.daysToGo(days))")
-                        .font(.caption).foregroundStyle(WidgetStyle.mist).lineLimit(1).minimumScaleFactor(0.7)
-                } else {
-                    Text(widgetStatus(item, snapshot, now: now)).font(.caption.weight(.semibold)).foregroundStyle(WidgetStyle.mist)
-                        .lineLimit(1)
-                }
+        let item = headline.item
+        let text = WidgetText(snapshot: snapshot)
+        return VStack(alignment: .leading, spacing: 5) {
+            header(snapshot, headline)
+            if headline.isToday {
                 HStack(spacing: 14) {
-                    detail(snapshot.string("fasting_starts", "Start"), times.time(item.fastingStart))
-                    detail(snapshot.string("parana_window", "Parana"), "\(times.time(item.paranaStart)) – \(times.time(item.paranaEnd))")
+                    RemainingRing(item: item, snapshot: snapshot, now: now).frame(width: 86, height: 86)
+                    VStack(alignment: .leading, spacing: 3) {
+                        name(item, font: .headline)
+                        Text(item.localizedDate).font(.caption2).foregroundStyle(.secondary)
+                        Text(snapshot.string("parana_window", "")).font(.caption2).foregroundStyle(accent)
+                        Text("\(text.date(item.paranaStart))\n\(text.window(item.paranaStart, item.paranaEnd))")
+                            .font(.caption2.weight(.semibold)).fixedSize(horizontal: false, vertical: true)
+                    }
                 }
-                .padding(.top, 2)
+                Spacer(minLength: 0)
+            } else {
+                name(item, font: .headline)
+                Text(item.localizedDate).font(.caption2).foregroundStyle(.secondary)
+                Divider()
+                timingRow(snapshot.string("fasting_starts", ""), "\(text.date(item.fastingStart)) · \(text.time(item.fastingStart))")
+                timingRow(snapshot.string("parana_window", ""), "\(text.date(item.paranaStart)) · \(text.window(item.paranaStart, item.paranaEnd))")
+                Spacer(minLength: 0)
             }
-            Spacer(minLength: 0)
+            location(snapshot)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 
-    private func detail(_ title: String, _ value: String) -> some View {
-        VStack(alignment: .leading, spacing: 1) {
-            Text(title).font(.caption2).foregroundStyle(WidgetStyle.mist.opacity(0.8)).lineLimit(1)
-            Text(value).font(.caption.weight(.semibold)).foregroundStyle(.white).lineLimit(1).minimumScaleFactor(0.7)
+    private func timingRow(_ title: String, _ value: String) -> some View {
+        HStack(alignment: .top, spacing: 10) {
+            Text(title).font(.caption2).foregroundStyle(.secondary)
+            Spacer(minLength: 0)
+            Text(value).font(.caption2.weight(.semibold)).multilineTextAlignment(.trailing)
+                .fixedSize(horizontal: false, vertical: true).layoutPriority(1)
+        }
+    }
+
+    private func large(_ snapshot: WidgetSnapshot, _ headline: WidgetHeadline) -> some View {
+        let item = headline.item
+        let text = WidgetText(snapshot: snapshot)
+        return VStack(alignment: .leading, spacing: 8) {
+            header(snapshot, headline)
+            name(item, font: .title2.bold())
+            Text(item.localizedDate).font(.caption).foregroundStyle(.secondary)
+            Spacer(minLength: 0)
+            if headline.isToday {
+                RemainingRing(item: item, snapshot: snapshot, now: now, prominent: true)
+                    .frame(width: 140, height: 140).frame(maxWidth: .infinity)
+            } else {
+                timingSection(snapshot.string("fasting_starts", ""), date: text.date(item.fastingStart), value: text.time(item.fastingStart))
+            }
+            Spacer(minLength: 0)
+            Divider()
+            timingSection(snapshot.string("parana_window", ""), date: text.date(item.paranaStart), value: text.window(item.paranaStart, item.paranaEnd))
+            Spacer(minLength: 0)
+            location(snapshot)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    }
+
+    private func timingSection(_ label: String, date: String, value: String) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(label).font(.caption.bold()).foregroundStyle(accent).widgetAccentable()
+            Text(date).font(.caption).foregroundStyle(.secondary)
+            Text(value).font(.title3.bold()).fixedSize(horizontal: false, vertical: true)
         }
     }
 
     @ViewBuilder
     private func circular(_ snapshot: WidgetSnapshot, _ headline: WidgetHeadline) -> some View {
-        switch headline {
-        case .today(_, let progress):
-            Gauge(value: progress) {
-                Image(systemName: "leaf.fill")
+        if headline.isToday {
+            Gauge(value: headline.item.remainingFraction(at: now)) {
+                Text(WidgetText(snapshot: snapshot).remainingLabel)
             } currentValueLabel: {
-                Text("\(Int((progress * 100).rounded()))")
+                Text("\(headline.item.remainingPercent(at: now))%")
             }
             .gaugeStyle(.accessoryCircularCapacity)
-        case .next(_, let days):
+            .accessibilityLabel("\(headline.item.name), \(headline.item.remainingPercent(at: now))% \(WidgetText(snapshot: snapshot).remainingLabel)")
+        } else if case .next(_, let days) = headline {
             ZStack {
                 AccessoryWidgetBackground()
-                VStack(spacing: -2) {
-                    Text("\(days)").font(.system(.title2, design: .rounded).weight(.bold)).widgetAccentable()
-                    Text(snapshot.string("day_unit", "d")).font(.caption2)
+                VStack(spacing: 0) {
+                    Text("\(days)").font(.title2.bold())
+                    Text(snapshot.string("day_unit", "")).font(.caption2)
                 }
             }
         }
     }
 
     private func rectangular(_ snapshot: WidgetSnapshot, _ headline: WidgetHeadline) -> some View {
-        VStack(alignment: .leading, spacing: 1) {
-            Text(label(snapshot, headline)).font(.caption.weight(.semibold)).widgetAccentable()
-            switch headline {
-            case .today(let item, _):
-                Text(item.name).font(.headline).lineLimit(1)
-                Text(widgetStatus(item, snapshot, now: now)).font(.caption).lineLimit(1)
-            case .next(let item, let days):
-                Text(item.name).font(.headline).lineLimit(1)
-                Text(snapshot.daysToGo(days)).font(.caption).lineLimit(1)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-}
-
-// MARK: - Upcoming widget
-
-/// The next Ekadashis as date tiles: three in medium, five in large.
-struct UpcomingEkadashiWidgetView: View {
-    let snapshot: WidgetSnapshot?
-    let now: Date
-    var family: WidgetFamily = .systemLarge
-
-    private var rows: Int { family == .systemMedium ? 3 : 5 }
-
-    var body: some View {
-        if let snapshot, let next = snapshot.activeItem(at: now) {
-            let times = WidgetTimes(snapshot: snapshot)
-            let items = [next] + snapshot.upcoming(after: now).prefix(rows - 1)
-            VStack(alignment: .leading, spacing: family == .systemMedium ? 6 : 10) {
-                Text(snapshot.string("upcoming_ekadashis", "Upcoming Ekadashis").uppercased())
-                    .font(.caption.weight(.bold)).foregroundStyle(WidgetStyle.cyan).widgetAccentable()
-                ForEach(items) { item in
-                    Link(destination: AppRoute.calendarURL(CivilDate(iso: item.date) ?? CivilDate(2026, 1, 1))) {
-                        row(item, isNext: item.id == next.id, snapshot: snapshot, times: times)
-                    }
-                }
-                Spacer(minLength: 0)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        } else {
-            OpenAppHint(snapshot: snapshot)
-        }
-    }
-
-    private func row(_ item: WidgetItem, isNext: Bool, snapshot: WidgetSnapshot, times: WidgetTimes) -> some View {
-        HStack(spacing: 10) {
-            VStack(spacing: 0) {
-                Text(times.month(item)).font(.system(size: 9, weight: .bold)).foregroundStyle(WidgetStyle.cyan)
-                Text(times.day(item)).font(.system(.headline, design: .rounded).weight(.bold)).foregroundStyle(.white)
-            }
-            .frame(width: 40, height: family == .systemMedium ? 34 : 40)
-            .background(WidgetStyle.tile.opacity(0.7), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 9, style: .continuous)
-                .strokeBorder(isNext ? WidgetStyle.cyan : WidgetStyle.tileBorder.opacity(0.6), lineWidth: isNext ? 1.5 : 1))
-            .widgetAccentable(isNext)
+        HStack(spacing: 6) {
+            if headline.isToday { circular(snapshot, headline).frame(width: 44, height: 44) }
             VStack(alignment: .leading, spacing: 1) {
-                Text(item.name).font(.subheadline.weight(.semibold)).foregroundStyle(.white).lineLimit(1)
-                Text(isNext ? widgetStatus(item, snapshot, now: now)
-                     : "\(snapshot.string("fasting_starts", "Start")) \(times.time(item.fastingStart))")
-                    .font(.caption2).foregroundStyle(isNext ? WidgetStyle.cyan : WidgetStyle.mist).lineLimit(1)
+                Text(headline.item.name).font(.headline).lineLimit(1).minimumScaleFactor(0.8)
+                if headline.isToday {
+                    Text("\(headline.item.remainingPercent(at: now))% \(WidgetText(snapshot: snapshot).remainingLabel)").font(.caption)
+                    Text(WidgetText(snapshot: snapshot).time(headline.item.paranaStart)).font(.caption2)
+                } else if case .next(let item, let days) = headline {
+                    Text(snapshot.daysToGo(days)).font(.caption)
+                    Text(item.localizedDate).font(.caption2).lineLimit(1)
+                }
             }
             Spacer(minLength: 0)
         }
     }
+}
+
+/// Existing installed Upcoming widgets keep their kind, and adopt the same
+/// single-occurrence design rather than listing several unrelated dates.
+struct UpcomingEkadashiWidgetView: View {
+    let snapshot: WidgetSnapshot?
+    let now: Date
+    var family: WidgetFamily = .systemLarge
+    var body: some View { EkadashiWidgetView(snapshot: snapshot, now: now, family: family) }
 }

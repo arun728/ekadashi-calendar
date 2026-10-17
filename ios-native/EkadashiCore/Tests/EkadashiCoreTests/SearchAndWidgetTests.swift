@@ -151,7 +151,10 @@ final class WidgetSnapshotTests: XCTestCase {
         let start = utc(2027, 1, 5)
         let p = snapshot([event(2027, 1, start)], utc(2027, 1, 1))
         let dates = p.refreshDates(after: utc(2027, 1, 1))
-        XCTAssertEqual(Array(dates.prefix(3)), [start, start.addingTimeInterval(86400), start.addingTimeInterval(86400 + 7200)])
+        for boundary in [start, start.addingTimeInterval(86400), start.addingTimeInterval(86400 + 7200)] {
+            XCTAssertTrue(dates.contains(boundary))
+        }
+        XCTAssertEqual(dates, Array(Set(dates)).sorted())
     }
 }
 

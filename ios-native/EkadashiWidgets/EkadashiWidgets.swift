@@ -2,10 +2,7 @@ import WidgetKit
 import SwiftUI
 import EkadashiCore
 
-/// Two widgets (docs/ROADMAP.md Phase 6): Ekadashi (today's fast with its
-/// progress, or the next Ekadashi with the days to go; small, medium and
-/// the lock screen) and Upcoming Ekadashis (medium and large), from the
-/// snapshot the app writes to the App Group.
+/// Keeps both installed widget kinds, each showing one real occurrence.
 @main
 struct EkadashiWidgetBundle: WidgetBundle {
     var body: some Widget {
@@ -41,7 +38,8 @@ struct SnapshotProvider: TimelineProvider {
         let snapshot = Self.load()
         var dates = Set((0...24).map { now.addingTimeInterval(Double($0) * 15 * 60) })
         if let snapshot {
-            for date in snapshot.refreshDates(after: now).prefix(12) { dates.insert(date) }
+            let horizon = now.addingTimeInterval(6 * 3600)
+            for date in snapshot.refreshDates(after: now) where date <= horizon { dates.insert(date) }
         }
         let entries = dates.sorted().map { SnapshotEntry(date: $0, snapshot: snapshot) }
         completion(Timeline(entries: entries, policy: .atEnd))
@@ -49,12 +47,16 @@ struct SnapshotProvider: TimelineProvider {
 }
 
 private struct WidgetShell<Content: View>: View {
+    @Environment(\.widgetFamily) private var family
     let url: URL
     @ViewBuilder var content: () -> Content
 
     var body: some View {
         content()
-            .containerBackground(for: .widget) { WidgetCardBackground() }
+            .containerBackground(for: .widget) {
+                if family == .accessoryCircular || family == .accessoryRectangular { Color.clear }
+                else { WidgetCardBackground() }
+            }
             .widgetURL(url)
     }
 }
@@ -64,11 +66,7 @@ private struct EkadashiWidgetEntryView: View {
     let entry: SnapshotEntry
 
     var body: some View {
-        let today: Bool = {
-            if case .today? = entry.snapshot?.headline(at: entry.date) { return true }
-            return false
-        }()
-        WidgetShell(url: today ? AppRoute.paranaURL : AppRoute.dashboardURL) {
+        WidgetShell(url: entry.snapshot?.headline(at: entry.date)?.item.detailsURL ?? AppRoute.dashboardURL) {
             EkadashiWidgetView(snapshot: entry.snapshot, now: entry.date, family: family)
         }
     }
@@ -79,7 +77,7 @@ private struct UpcomingWidgetEntryView: View {
     let entry: SnapshotEntry
 
     var body: some View {
-        WidgetShell(url: AppRoute.dashboardURL) {
+        WidgetShell(url: entry.snapshot?.headline(at: entry.date)?.item.detailsURL ?? AppRoute.dashboardURL) {
             UpcomingEkadashiWidgetView(snapshot: entry.snapshot, now: entry.date, family: family)
         }
     }
@@ -92,8 +90,8 @@ struct EkadashiWidget: Widget {
             EkadashiWidgetEntryView(entry: entry)
         }
         .configurationDisplayName(Localizer.shared.translate("widget_name_ekadashi", language: WidgetLanguage.current))
-        .description(Localizer.shared.translate("widget_desc_ekadashi", language: WidgetLanguage.current))
-        .supportedFamilies([.systemSmall, .systemMedium, .accessoryCircular, .accessoryRectangular])
+        .description(Localizer.shared.translate("ios_widget_desc_ekadashi", language: WidgetLanguage.current))
+        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge, .accessoryCircular, .accessoryRectangular])
     }
 }
 
@@ -102,8 +100,8 @@ struct UpcomingEkadashiWidget: Widget {
         StaticConfiguration(kind: "UpcomingEkadashiWidget", provider: SnapshotProvider()) { entry in
             UpcomingWidgetEntryView(entry: entry)
         }
-        .configurationDisplayName(Localizer.shared.translate("upcoming_ekadashis", language: WidgetLanguage.current))
-        .description(Localizer.shared.translate("widget_desc_upcoming", language: WidgetLanguage.current))
+        .configurationDisplayName(Localizer.shared.translate("next_ekadashi", language: WidgetLanguage.current))
+        .description(Localizer.shared.translate("ios_widget_desc_next", language: WidgetLanguage.current))
         .supportedFamilies([.systemMedium, .systemLarge])
     }
 }
