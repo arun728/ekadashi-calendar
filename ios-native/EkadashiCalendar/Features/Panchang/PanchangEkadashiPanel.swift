@@ -68,11 +68,7 @@ struct PanchangEkadashiPanel: View {
     }
 
     private func card(_ fast: CalculatedEkadashi) -> some View {
-        let parana: String = {
-            guard let start = fast.paranaStart else { return model.t("panchang_unavailable") }
-            guard let end = fast.paranaEnd else { return model.t("panchang_after", time(start, fast.paranaDate)) }
-            return "\(time(start, fast.paranaDate)) – \(time(end, fast.paranaDate))"
-        }()
+        let parana = PanchangFormat.parana(fast.paranaStart, fast.paranaEnd, city: city, language: language)
         return VStack(alignment: .leading, spacing: 10) {
             Text(terms.translate(fast.name, .ekadashiName, language: language)).font(.headline)
             PanchangRow(label: model.t("panchang_fast_day"), value: PanchangFormat.date(fast.date, language: language),

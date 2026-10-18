@@ -361,7 +361,7 @@ final class WidgetRedesignTests: XCTestCase {
         XCTAssertEqual(item.id, probe.id)
         XCTAssertEqual(progress, 0.5, accuracy: 0.01)
         XCTAssertEqual(item.fastProgress(at: probe.fastingStart.addingTimeInterval(-60)), 0)
-        XCTAssertEqual(item.fastProgress(at: probe.paranaEnd), 1)
+        XCTAssertEqual(item.fastProgress(at: probe.paranaEnd!), 1)
         // During Parana the widget stays on today's Ekadashi, fully fasted.
         let parana = probe.paranaStart.addingTimeInterval(60)
         guard case .today(_, let done) = snapshot.headline(at: parana) else { return XCTFail("expected parana") }

@@ -1,0 +1,312 @@
+{
+  "before": {
+    "categoryMean": 99.58098056239756,
+    "pooled": 99.41852484310054,
+    "checks": 728492,
+    "categories": {
+      "Sunrise": {
+        "passed": 29930,
+        "total": 29930
+      },
+      "Sunrise (displayed minute)": {
+        "passed": 28250,
+        "total": 28250
+      },
+      "Sunset": {
+        "passed": 29930,
+        "total": 29930
+      },
+      "Sunset (displayed minute)": {
+        "passed": 28240,
+        "total": 28240
+      },
+      "Moonrise": {
+        "passed": 29930,
+        "total": 29930
+      },
+      "Moonrise (displayed minute)": {
+        "passed": 26546,
+        "total": 26549
+      },
+      "Moonset": {
+        "passed": 29930,
+        "total": 29930
+      },
+      "Moonset (displayed minute)": {
+        "passed": 26583,
+        "total": 26589
+      },
+      "Tithi at sunrise": {
+        "passed": 29930,
+        "total": 29930
+      },
+      "Tithi end time": {
+        "passed": 29930,
+        "total": 29930
+      },
+      "Tithi end (displayed minute)": {
+        "passed": 29891,
+        "total": 29930
+      },
+      "Nakshatra at sunrise": {
+        "passed": 29929,
+        "total": 29930
+      },
+      "Nakshatra end time": {
+        "passed": 29929,
+        "total": 29929
+      },
+      "Nakshatra end (displayed minute)": {
+        "passed": 29890,
+        "total": 29929
+      },
+      "Yoga at sunrise": {
+        "passed": 29930,
+        "total": 29930
+      },
+      "Yoga end time": {
+        "passed": 29930,
+        "total": 29930
+      },
+      "Yoga end (displayed minute)": {
+        "passed": 29854,
+        "total": 29930
+      },
+      "Karana at sunrise": {
+        "passed": 29930,
+        "total": 29930
+      },
+      "Karana end time": {
+        "passed": 29930,
+        "total": 29930
+      },
+      "Karana end (displayed minute)": {
+        "passed": 29889,
+        "total": 29930
+      },
+      "Lunar month (Amanta, Adhika)": {
+        "passed": 29930,
+        "total": 29930
+      },
+      "Sun rashi": {
+        "passed": 29930,
+        "total": 29930
+      },
+      "Moon rashi": {
+        "passed": 29930,
+        "total": 29930
+      },
+      "Sankranti day": {
+        "passed": 984,
+        "total": 984
+      },
+      "Smarta Ekadashi date (all cities, Drik rules)": {
+        "passed": 1892,
+        "total": 1892
+      },
+      "Smarta Parana (all cities)": {
+        "passed": 3784,
+        "total": 3784
+      },
+      "Smarta Parana (displayed minute)": {
+        "passed": 3772,
+        "total": 3772
+      },
+      "Gaudiya Ekadashi date (GCAL)": {
+        "passed": 1518,
+        "total": 1518
+      },
+      "Gaudiya Parana (GCAL rule, JPL timing)": {
+        "passed": 3015,
+        "total": 3016
+      },
+      "Gaudiya Parana (displayed minute)": {
+        "passed": 3013,
+        "total": 3016
+      },
+      "Published Ekadashi date (Drik data)": {
+        "passed": 231,
+        "total": 232
+      },
+      "Published Ekadashi name": {
+        "passed": 231,
+        "total": 231
+      },
+      "Published Parana (Drik, Delhi 2027)": {
+        "passed": 48,
+        "total": 48
+      },
+      "Festival dates (India, public lists)": {
+        "passed": 47,
+        "total": 47
+      },
+      "Festival lunar month/tithi (all cities)": {
+        "passed": 1678,
+        "total": 1678
+      },
+      "Festival occurs once per year (all cities)": {
+        "passed": 1728,
+        "total": 1728
+      },
+      "Anandadi label at actual sunrise": {
+        "passed": 24224,
+        "total": 28250
+      }
+    }
+  },
+  "after": {
+    "categoryMean": 99.96615157411725,
+    "pooled": 99.97117332791575,
+    "checks": 728492,
+    "categories": {
+      "Sunrise": {
+        "passed": 29930,
+        "total": 29930
+      },
+      "Sunrise (displayed minute)": {
+        "passed": 28250,
+        "total": 28250
+      },
+      "Sunset": {
+        "passed": 29930,
+        "total": 29930
+      },
+      "Sunset (displayed minute)": {
+        "passed": 28240,
+        "total": 28240
+      },
+      "Moonrise": {
+        "passed": 29930,
+        "total": 29930
+      },
+      "Moonrise (displayed minute)": {
+        "passed": 26546,
+        "total": 26549
+      },
+      "Moonset": {
+        "passed": 29930,
+        "total": 29930
+      },
+      "Moonset (displayed minute)": {
+        "passed": 26583,
+        "total": 26589
+      },
+      "Tithi at sunrise": {
+        "passed": 29930,
+        "total": 29930
+      },
+      "Tithi end time": {
+        "passed": 29930,
+        "total": 29930
+      },
+      "Tithi end (displayed minute)": {
+        "passed": 29891,
+        "total": 29930
+      },
+      "Nakshatra at sunrise": {
+        "passed": 29929,
+        "total": 29930
+      },
+      "Nakshatra end time": {
+        "passed": 29929,
+        "total": 29929
+      },
+      "Nakshatra end (displayed minute)": {
+        "passed": 29890,
+        "total": 29929
+      },
+      "Yoga at sunrise": {
+        "passed": 29930,
+        "total": 29930
+      },
+      "Yoga end time": {
+        "passed": 29930,
+        "total": 29930
+      },
+      "Yoga end (displayed minute)": {
+        "passed": 29854,
+        "total": 29930
+      },
+      "Karana at sunrise": {
+        "passed": 29930,
+        "total": 29930
+      },
+      "Karana end time": {
+        "passed": 29930,
+        "total": 29930
+      },
+      "Karana end (displayed minute)": {
+        "passed": 29889,
+        "total": 29930
+      },
+      "Lunar month (Amanta, Adhika)": {
+        "passed": 29930,
+        "total": 29930
+      },
+      "Sun rashi": {
+        "passed": 29930,
+        "total": 29930
+      },
+      "Moon rashi": {
+        "passed": 29930,
+        "total": 29930
+      },
+      "Sankranti day": {
+        "passed": 984,
+        "total": 984
+      },
+      "Smarta Ekadashi date (all cities, Drik rules)": {
+        "passed": 1892,
+        "total": 1892
+      },
+      "Smarta Parana (all cities)": {
+        "passed": 3784,
+        "total": 3784
+      },
+      "Smarta Parana (displayed minute)": {
+        "passed": 3772,
+        "total": 3772
+      },
+      "Gaudiya Ekadashi date (GCAL)": {
+        "passed": 1518,
+        "total": 1518
+      },
+      "Gaudiya Parana (GCAL rule, JPL timing)": {
+        "passed": 3015,
+        "total": 3016
+      },
+      "Gaudiya Parana (displayed minute)": {
+        "passed": 3013,
+        "total": 3016
+      },
+      "Published Ekadashi date (Drik data)": {
+        "passed": 231,
+        "total": 232
+      },
+      "Published Ekadashi name": {
+        "passed": 231,
+        "total": 231
+      },
+      "Published Parana (Drik, Delhi 2027)": {
+        "passed": 48,
+        "total": 48
+      },
+      "Festival dates (India, public lists)": {
+        "passed": 47,
+        "total": 47
+      },
+      "Festival lunar month/tithi (all cities)": {
+        "passed": 1678,
+        "total": 1678
+      },
+      "Festival occurs once per year (all cities)": {
+        "passed": 1728,
+        "total": 1728
+      },
+      "Anandadi label at actual sunrise": {
+        "passed": 28250,
+        "total": 28250
+      }
+    }
+  }
+}

@@ -532,7 +532,7 @@ class PanchangEngine {
         : nak >= 21
         ? nak + 1
         : nak;
-    const starts = [4, 7, 12, 16, 20, 24, 0];
+    const starts = [4, 8, 12, 16, 20, 24, 0];
     return names[(extended - starts[weekday - 1] + 28) % 28];
   }
 
@@ -543,7 +543,7 @@ class PanchangEngine {
             city.latitude,
             city.longitude,
           ) -
-          AstronomyCalculator.lahiriAyanamsa(instant),
+          AstronomyCalculator.apparentLahiriAyanamsa(instant),
     );
     final result = <PanchangPeriod>[];
     var cursor = start;
@@ -972,6 +972,7 @@ class PanchangEngine {
     required bool moon,
     required bool rising,
   }) {
+    if (!start.isBefore(end)) return null;
     const step = Duration(minutes: 5);
     // Apparent upper limb on a sea-level horizon: geometric altitude of the
     // centre equals -(horizon refraction + actual semidiameter).
@@ -985,34 +986,63 @@ class PanchangEngine {
         AstronomyCalculator.horizonRefraction +
         AstronomyCalculator.semidiameterDegrees(instant, moon: moon);
 
-    var low = start;
-    var lowValue = difference(low);
-    for (
-      var high = start.add(step);
-      !high.isAfter(end);
-      high = high.add(step)
-    ) {
+    DateTime? root(DateTime a, DateTime b, double av, double bv) {
+      final crossed = rising ? av <= 0 && bv > 0 : av >= 0 && bv < 0;
+      if (!crossed) return null;
+      var left = a, right = b;
+      for (var i = 0; i < 20; i++) {
+        final middle = left.add(right.difference(left) ~/ 2);
+        final midValue = difference(middle);
+        final isAfterCrossing = rising ? midValue > 0 : midValue < 0;
+        if (isAfterCrossing) {
+          right = middle;
+        } else {
+          left = middle;
+        }
+      }
+      return !right.isBefore(start) && right.isBefore(end) ? right : null;
+    }
+
+    var previous = start.subtract(step),
+        previousValue = difference(start.subtract(step));
+    var low = start, lowValue = difference(start);
+    var high = start.add(step).isBefore(end) ? start.add(step) : end;
+    while (true) {
       final highValue = difference(high);
-      final crossed = rising
-          ? lowValue <= 0 && highValue > 0
-          : lowValue >= 0 && highValue < 0;
-      if (crossed) {
-        var left = low;
-        var right = high;
-        for (var i = 0; i < 20; i++) {
-          final middle = left.add(right.difference(left) ~/ 2);
-          final midValue = difference(middle);
-          final isAfterCrossing = rising ? midValue > 0 : midValue < 0;
-          if (isAfterCrossing) {
-            right = middle;
+      final crossing = root(low, high, lowValue, highValue);
+      if (crossing != null) return crossing;
+      final maximum = lowValue > previousValue && lowValue >= highValue;
+      final minimum = lowValue < previousValue && lowValue <= highValue;
+      if (maximum || minimum) {
+        // A brief rise and set near the polar circle can lie entirely between
+        // samples. Refine the altitude extremum and bracket both sides.
+        var a = previous, b = high;
+        for (var i = 0; i < 36; i++) {
+          final third = b.difference(a) ~/ 3;
+          final p = a.add(third), q = b.subtract(third);
+          if ((difference(p) < difference(q)) == maximum) {
+            a = p;
           } else {
-            left = middle;
+            b = q;
           }
         }
-        return right;
+        final extremum = a.add(b.difference(a) ~/ 2);
+        final value = difference(extremum);
+        final first = root(previous, extremum, previousValue, value);
+        if (first != null) return first;
+        final second = root(extremum, high, value, highValue);
+        if (second != null) return second;
       }
+      // One look-ahead sample covers the final partial step. root() rejects
+      // events outside the requested half-open civil interval.
+      if (!low.isBefore(end)) break;
+      previous = low;
+      previousValue = lowValue;
       low = high;
       lowValue = highValue;
+      high = low.isBefore(end)
+          ? (low.add(step).isBefore(end) ? low.add(step) : end)
+          : end.add(step);
     }
     return null;
   }

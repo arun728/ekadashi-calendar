@@ -1,0 +1,180 @@
+warning: 'ekadashicore': found 2 file(s) which are unhandled; explicitly declare them as resources or exclude from the target
+    /workspace/ekadashi-calendar/ios-native/EkadashiCore/Tests/EkadashiCoreTests/Fixtures/panchang_parity.json
+    /workspace/ekadashi-calendar/ios-native/EkadashiCore/Tests/EkadashiCoreTests/Fixtures/ekadashi_schedule_parity.json
+[0/1] Planning build
+Building for production...
+[0/3] Write sources
+[1/3] Write swift-version-63F30219E57E058.txt
+[3/4] Compiling EkadashiCoreTests AppLinksTests.swift
+/workspace/ekadashi-calendar/ios-native/EkadashiCore/Tests/EkadashiCoreTests/EventReminderTests.swift:107:41: warning: string interpolation produces a debug description for an optional value; did you mean to make this explicit?
+105 |         let start = CivilDate(2026, 10, 20).utcMidnight
+106 |         let copies = ["holidays", "primary"].map {
+107 |             CalendarEntry(id: "google_\($0)", title: "Dussehra", start: start, end: CivilDate(2026, 10, 21).utcMidnight,
+    |                                         |- warning: string interpolation produces a debug description for an optional value; did you mean to make this explicit?
+    |                                         |- note: use 'String(describing:)' to silence this warning
+    |                                         `- note: provide a default value to avoid this warning
+108 |                           isAllDay: true, source: .google, calendarId: $0, updatedAt: start)
+109 |         }
+
+/workspace/ekadashi-calendar/ios-native/EkadashiCore/Tests/EkadashiCoreTests/GoogleSyncTests.swift:468:39: warning: capture 'self' was never used
+466 |             calendar: calendar, premium: { [unowned self] in self.premium }, refreshPremium: { [unowned self] in self.premium },
+467 |             presentPaywall: { _ in false },
+468 |             pickCalendars: { [unowned self] _, _, _ in
+    |                                       `- warning: capture 'self' was never used
+469 |                 calls += 1
+470 |                 return calls == 1 ? .switchAccount : .chosen(["primary"])
+[3/7] /workspace/ekadashi-calendar/ios-native/EkadashiCore/.build/x86_64-unknown-linux-gnu/release/EkadashiCorePackageDiscoveredTests.derived/all-discovered-tests.swift
+[4/8] Write sources
+[6/9] Compiling EkadashiCorePackageDiscoveredTests EkadashiCoreTests.swift
+[6/8] Write Objects.LinkFileList
+[7/8] Linking EkadashiCorePackageTests.xctest
+Build complete! (17.51s)
+Test Suite 'Selected tests' started at 2026-10-15 21:40:12.676
+Test Suite 'AstronomyTests' started at 2026-10-15 21:40:12.677
+Test Case 'AstronomyTests.testAscendantAgreesWithIndependentHouseAngles' started at 2026-10-15 21:40:12.677
+Test Case 'AstronomyTests.testAscendantAgreesWithIndependentHouseAngles' passed (0.001 seconds)
+Test Case 'AstronomyTests.testDartStyleModuloIsNeverNegative' started at 2026-10-15 21:40:12.678
+Test Case 'AstronomyTests.testDartStyleModuloIsNeverNegative' passed (0.0 seconds)
+Test Case 'AstronomyTests.testDeltaTFollowsTheTableAndItsTrend' started at 2026-10-15 21:40:12.678
+Test Case 'AstronomyTests.testDeltaTFollowsTheTableAndItsTrend' passed (0.0 seconds)
+Test Case 'AstronomyTests.testJulianDayRoundTripsToTheMillisecond' started at 2026-10-15 21:40:12.679
+Test Case 'AstronomyTests.testJulianDayRoundTripsToTheMillisecond' passed (0.0 seconds)
+Test Case 'AstronomyTests.testLongitudesAgreeWithIndependent2026And2027Fixtures' started at 2026-10-15 21:40:12.679
+Test Case 'AstronomyTests.testLongitudesAgreeWithIndependent2026And2027Fixtures' passed (0.003 seconds)
+Test Case 'AstronomyTests.testMeeusLunarLongitudeExample' started at 2026-10-15 21:40:12.681
+Test Case 'AstronomyTests.testMeeusLunarLongitudeExample' passed (0.0 seconds)
+Test Case 'AstronomyTests.testSunMoonAndLahiriAgreeWithSwissEphemerisToAnArcsecond' started at 2026-10-15 21:40:12.681
+Test Case 'AstronomyTests.testSunMoonAndLahiriAgreeWithSwissEphemerisToAnArcsecond' passed (0.005 seconds)
+Test Suite 'AstronomyTests' passed at 2026-10-15 21:40:12.687
+	 Executed 7 tests, with 0 failures (0 unexpected) in 0.01 (0.01) seconds
+Test Suite 'EkadashiScheduleTests' started at 2026-10-15 21:40:12.687
+Test Case 'EkadashiScheduleTests.testAFutureYearNeedsNoNewData' started at 2026-10-15 21:40:12.687
+Test Case 'EkadashiScheduleTests.testAFutureYearNeedsNoNewData' passed (0.691 seconds)
+Test Case 'EkadashiScheduleTests.testCalculatedYearsAreCachedOnDisk' started at 2026-10-15 21:40:13.377
+Test Case 'EkadashiScheduleTests.testCalculatedYearsAreCachedOnDisk' passed (0.575 seconds)
+Test Case 'EkadashiScheduleTests.testChennaiSmarta2026MatchesThePublishedSchedule' started at 2026-10-15 21:40:13.952
+Test Case 'EkadashiScheduleTests.testChennaiSmarta2026MatchesThePublishedSchedule' passed (0.58 seconds)
+Test Case 'EkadashiScheduleTests.testEnabledYearsComeFromTheSharedConfig' started at 2026-10-15 21:40:14.532
+Test Case 'EkadashiScheduleTests.testEnabledYearsComeFromTheSharedConfig' passed (0.001 seconds)
+Test Case 'EkadashiScheduleTests.testEngineNamesMapToPublishedContentIds' started at 2026-10-15 21:40:14.532
+Test Case 'EkadashiScheduleTests.testEngineNamesMapToPublishedContentIds' passed (0.0 seconds)
+Test Case 'EkadashiScheduleTests.testEveryEngineNameHasPublishedContent' started at 2026-10-15 21:40:14.532
+Test Case 'EkadashiScheduleTests.testEveryEngineNameHasPublishedContent' passed (3.614 seconds)
+Test Case 'EkadashiScheduleTests.testGaudiyaShiftKeepsThePublishedIdentity' started at 2026-10-15 21:40:18.146
+Test Case 'EkadashiScheduleTests.testGaudiyaShiftKeepsThePublishedIdentity' passed (0.61 seconds)
+Test Case 'EkadashiScheduleTests.testHomeTimesMatchThePanchangEkadashiSubTabWorldwide' started at 2026-10-15 21:40:18.756
+Test Case 'EkadashiScheduleTests.testHomeTimesMatchThePanchangEkadashiSubTabWorldwide' passed (50.359 seconds)
+Test Case 'EkadashiScheduleTests.testNewDelhiSmarta2027KeepsIdentitiesAndAddsTheDecemberSaphala' started at 2026-10-15 21:41:09.115
+Test Case 'EkadashiScheduleTests.testNewDelhiSmarta2027KeepsIdentitiesAndAddsTheDecemberSaphala' passed (0.003 seconds)
+Test Case 'EkadashiScheduleTests.testNewYorkUsesLocalDatesAndOffsets' started at 2026-10-15 21:41:09.118
+Test Case 'EkadashiScheduleTests.testNewYorkUsesLocalDatesAndOffsets' passed (0.001 seconds)
+Test Case 'EkadashiScheduleTests.testOneYearForOneCityIsQuick' started at 2026-10-15 21:41:09.120
+One city, one year, one tradition: 0.64 s
+Test Case 'EkadashiScheduleTests.testOneYearForOneCityIsQuick' passed (0.637 seconds)
+Test Suite 'EkadashiScheduleTests' passed at 2026-10-15 21:41:09.757
+	 Executed 11 tests, with 0 failures (0 unexpected) in 57.07 (57.07) seconds
+Test Suite 'PanchangEngineTests' started at 2026-10-15 21:41:09.757
+Test Case 'PanchangEngineTests.testAdhikaMonthKeepsTheSameNameInBothConventions' started at 2026-10-15 21:41:09.757
+Test Case 'PanchangEngineTests.testAdhikaMonthKeepsTheSameNameInBothConventions' passed (0.019 seconds)
+Test Case 'PanchangEngineTests.testAnnualObservancesUseTheirKalaRules' started at 2026-10-15 21:41:09.776
+Test Case 'PanchangEngineTests.testAnnualObservancesUseTheirKalaRules' passed (0.158 seconds)
+Test Case 'PanchangEngineTests.testFestivalDatesMatchPublicIndianLists' started at 2026-10-15 21:41:09.934
+Test Case 'PanchangEngineTests.testFestivalDatesMatchPublicIndianLists' passed (3.848 seconds)
+Test Case 'PanchangEngineTests.testFormatsTimesWithZoneAndDayMarker' started at 2026-10-15 21:41:13.782
+Test Case 'PanchangEngineTests.testFormatsTimesWithZoneAndDayMarker' passed (0.012 seconds)
+Test Case 'PanchangEngineTests.testFullMoonBoundaryAgreesWithUsnoPhase' started at 2026-10-15 21:41:13.795
+Test Case 'PanchangEngineTests.testFullMoonBoundaryAgreesWithUsnoPhase' passed (0.018 seconds)
+Test Case 'PanchangEngineTests.testHoraFollowsWeekdayRulerAndIsContiguous' started at 2026-10-15 21:41:13.813
+Test Case 'PanchangEngineTests.testHoraFollowsWeekdayRulerAndIsContiguous' passed (0.011 seconds)
+Test Case 'PanchangEngineTests.testIntercalaryJyeshtha2026IsIdentified' started at 2026-10-15 21:41:13.824
+Test Case 'PanchangEngineTests.testIntercalaryJyeshtha2026IsIdentified' passed (0.02 seconds)
+Test Case 'PanchangEngineTests.testInvalidCoordinatesAndZonesAreRejected' started at 2026-10-15 21:41:13.844
+Test Case 'PanchangEngineTests.testInvalidCoordinatesAndZonesAreRejected' passed (0.0 seconds)
+Test Case 'PanchangEngineTests.testLimbTimelineKeepsTheFourLimbsInOrder' started at 2026-10-15 21:41:13.844
+Test Case 'PanchangEngineTests.testLimbTimelineKeepsTheFourLimbsInOrder' passed (0.011 seconds)
+Test Case 'PanchangEngineTests.testLimbsAreSampledAtSunriseAndExposeTheirNextTransition' started at 2026-10-15 21:41:13.856
+Test Case 'PanchangEngineTests.testLimbsAreSampledAtSunriseAndExposeTheirNextTransition' passed (0.011 seconds)
+Test Case 'PanchangEngineTests.testMakarSankrantiAfterSunsetIsObservedTheNextDay' started at 2026-10-15 21:41:13.867
+Test Case 'PanchangEngineTests.testMakarSankrantiAfterSunsetIsObservedTheNextDay' passed (0.025 seconds)
+Test Case 'PanchangEngineTests.testMonthlyObservancesAreCalculatedLocally' started at 2026-10-15 21:41:13.892
+Test Case 'PanchangEngineTests.testMonthlyObservancesAreCalculatedLocally' passed (0.021 seconds)
+Test Case 'PanchangEngineTests.testNewYorkMeshaSankrantiFallsOnItsLocalCivilDate' started at 2026-10-15 21:41:13.913
+Test Case 'PanchangEngineTests.testNewYorkMeshaSankrantiFallsOnItsLocalCivilDate' passed (0.035 seconds)
+Test Case 'PanchangEngineTests.testPanchangDayUsesLocalSunriseAndCityCoordinates' started at 2026-10-15 21:41:13.948
+Test Case 'PanchangEngineTests.testPanchangDayUsesLocalSunriseAndCityCoordinates' passed (0.02 seconds)
+Test Case 'PanchangEngineTests.testPolarDateLineOddOffsetAndDstLocationsMatchSwissEphemeris' started at 2026-10-15 21:41:13.969
+Test Case 'PanchangEngineTests.testPolarDateLineOddOffsetAndDstLocationsMatchSwissEphemeris' passed (2.608 seconds)
+Test Case 'PanchangEngineTests.testSankrantiIsShownOnPolarDaysWithoutSunriseOrSunset' started at 2026-10-15 21:41:16.577
+Test Case 'PanchangEngineTests.testSankrantiIsShownOnPolarDaysWithoutSunriseOrSunset' passed (0.013 seconds)
+Test Case 'PanchangEngineTests.testSolarIngressIsIncludedOnTheIstCivilDate' started at 2026-10-15 21:41:16.590
+Test Case 'PanchangEngineTests.testSolarIngressIsIncludedOnTheIstCivilDate' passed (0.022 seconds)
+Test Case 'PanchangEngineTests.testSunAndMoonRiseSetAgreeWithSwissEphemerisWithinASecond' started at 2026-10-15 21:41:16.612
+Test Case 'PanchangEngineTests.testSunAndMoonRiseSetAgreeWithSwissEphemerisWithinASecond' passed (1.321 seconds)
+Test Case 'PanchangEngineTests.testSundayNightFollowsItsOwnChoghadiyaOrder' started at 2026-10-15 21:41:17.933
+Test Case 'PanchangEngineTests.testSundayNightFollowsItsOwnChoghadiyaOrder' passed (0.019 seconds)
+Test Case 'PanchangEngineTests.testSunsetJustAfterLocalMidnightBelongsToTheSolarDay' started at 2026-10-15 21:41:17.953
+Test Case 'PanchangEngineTests.testSunsetJustAfterLocalMidnightBelongsToTheSolarDay' passed (0.02 seconds)
+Test Case 'PanchangEngineTests.testVancouverSunriseUsesTheUtcMinusSevenCivilDay' started at 2026-10-15 21:41:17.973
+Test Case 'PanchangEngineTests.testVancouverSunriseUsesTheUtcMinusSevenCivilDay' passed (0.016 seconds)
+Test Case 'PanchangEngineTests.testWednesdayExcludesAbhijitAndIncludesEighthDurMuhurta' started at 2026-10-15 21:41:17.989
+Test Case 'PanchangEngineTests.testWednesdayExcludesAbhijitAndIncludesEighthDurMuhurta' passed (0.121 seconds)
+Test Case 'PanchangEngineTests.testWorldwideCatalogLoadsAndSearches' started at 2026-10-15 21:41:18.110
+Test Case 'PanchangEngineTests.testWorldwideCatalogLoadsAndSearches' passed (0.07 seconds)
+Test Suite 'PanchangEngineTests' passed at 2026-10-15 21:41:18.180
+	 Executed 23 tests, with 0 failures (0 unexpected) in 8.422 (8.422) seconds
+Test Suite 'PanchangPrecisionTests' started at 2026-10-15 21:41:18.180
+Test Case 'PanchangPrecisionTests.testAfterOnlyWidgetsStayAvailableWithoutAdvertisingAnEnd' started at 2026-10-15 21:41:18.180
+Test Case 'PanchangPrecisionTests.testAfterOnlyWidgetsStayAvailableWithoutAdvertisingAnEnd' passed (0.001 seconds)
+Test Case 'PanchangPrecisionTests.testAnAfterOnlyParanaDoesNotAcquireAnInventedEnd' started at 2026-10-15 21:41:18.181
+Test Case 'PanchangPrecisionTests.testAnAfterOnlyParanaDoesNotAcquireAnInventedEnd' passed (0.641 seconds)
+Test Case 'PanchangPrecisionTests.testApparentLagnaMatchesIndependentSwissGeometry' started at 2026-10-15 21:41:18.822
+Test Case 'PanchangPrecisionTests.testApparentLagnaMatchesIndependentSwissGeometry' passed (0.003 seconds)
+Test Case 'PanchangPrecisionTests.testGrazingSunriseAndSunsetAreNotLostBetweenFiveMinuteSamples' started at 2026-10-15 21:41:18.825
+Test Case 'PanchangPrecisionTests.testGrazingSunriseAndSunsetAreNotLostBetweenFiveMinuteSamples' passed (0.021 seconds)
+Test Case 'PanchangPrecisionTests.testNarrowParanaDisplayStaysWithinItsCalculatedWindow' started at 2026-10-15 21:41:18.847
+Test Case 'PanchangPrecisionTests.testNarrowParanaDisplayStaysWithinItsCalculatedWindow' passed (0.0 seconds)
+Test Case 'PanchangPrecisionTests.testScheduleCacheIncludesExactCoordinatesAndTimezoneRelease' started at 2026-10-15 21:41:18.847
+Test Case 'PanchangPrecisionTests.testScheduleCacheIncludesExactCoordinatesAndTimezoneRelease' passed (0.0 seconds)
+Test Case 'PanchangPrecisionTests.testScheduleMonthUsesTheCalculatedAmantaConventionInEveryYear' started at 2026-10-15 21:41:18.847
+Test Case 'PanchangPrecisionTests.testScheduleMonthUsesTheCalculatedAmantaConventionInEveryYear' passed (0.632 seconds)
+Test Case 'PanchangPrecisionTests.testSerializationAndSubsecondDisplayAcrossMidnight' started at 2026-10-15 21:41:19.479
+Test Case 'PanchangPrecisionTests.testSerializationAndSubsecondDisplayAcrossMidnight' passed (0.0 seconds)
+Test Case 'PanchangPrecisionTests.testStoredStartsNeverPrecedeTheCalculatedBoundary' started at 2026-10-15 21:41:19.479
+Test Case 'PanchangPrecisionTests.testStoredStartsNeverPrecedeTheCalculatedBoundary' passed (0.649 seconds)
+Test Case 'PanchangPrecisionTests.testTuesdayAshleshaBeginsWithAnanda' started at 2026-10-15 21:41:20.129
+Test Case 'PanchangPrecisionTests.testTuesdayAshleshaBeginsWithAnanda' passed (0.016 seconds)
+Test Suite 'PanchangPrecisionTests' passed at 2026-10-15 21:41:20.144
+	 Executed 10 tests, with 0 failures (0 unexpected) in 1.965 (1.965) seconds
+Test Suite 'WidgetRedesignTests' started at 2026-10-15 21:41:20.145
+Test Case 'WidgetRedesignTests.testBeforeAnEkadashiTheWidgetShowsTheNextOneAndDaysToGo' started at 2026-10-15 21:41:20.145
+Test Case 'WidgetRedesignTests.testBeforeAnEkadashiTheWidgetShowsTheNextOneAndDaysToGo' passed (0.011 seconds)
+Test Case 'WidgetRedesignTests.testEveryLanguageHasTheNewWidgetStrings' started at 2026-10-15 21:41:20.156
+Test Case 'WidgetRedesignTests.testEveryLanguageHasTheNewWidgetStrings' passed (0.0 seconds)
+Test Case 'WidgetRedesignTests.testOnTheEkadashiTheWidgetShowsProgressUntilParana' started at 2026-10-15 21:41:20.156
+Test Case 'WidgetRedesignTests.testOnTheEkadashiTheWidgetShowsProgressUntilParana' passed (0.019 seconds)
+Test Suite 'WidgetRedesignTests' passed at 2026-10-15 21:41:20.175
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.031 (0.031) seconds
+Test Suite 'WidgetSnapshotTests' started at 2026-10-15 21:41:20.175
+Test Case 'WidgetSnapshotTests.testCountdownTargetsChangeAtExactTransitions' started at 2026-10-15 21:41:20.175
+Test Case 'WidgetSnapshotTests.testCountdownTargetsChangeAtExactTransitions' passed (0.001 seconds)
+Test Case 'WidgetSnapshotTests.testEveryLanguageProvidesAllWidgetLabels' started at 2026-10-15 21:41:20.176
+Test Case 'WidgetSnapshotTests.testEveryLanguageProvidesAllWidgetLabels' passed (0.002 seconds)
+Test Case 'WidgetSnapshotTests.testExhaustedCalendarFallsBack' started at 2026-10-15 21:41:20.178
+Test Case 'WidgetSnapshotTests.testExhaustedCalendarFallsBack' passed (0.0 seconds)
+Test Case 'WidgetSnapshotTests.testRemainingTimeTextMatchesTheAndroidWidget' started at 2026-10-15 21:41:20.178
+Test Case 'WidgetSnapshotTests.testRemainingTimeTextMatchesTheAndroidWidget' passed (0.0 seconds)
+Test Case 'WidgetSnapshotTests.testSnapshotRoundTripsThroughTheAppGroupJson' started at 2026-10-15 21:41:20.178
+Test Case 'WidgetSnapshotTests.testSnapshotRoundTripsThroughTheAppGroupJson' passed (0.001 seconds)
+Test Case 'WidgetSnapshotTests.testTimelineRefreshesAtEveryStateChange' started at 2026-10-15 21:41:20.180
+Test Case 'WidgetSnapshotTests.testTimelineRefreshesAtEveryStateChange' passed (0.0 seconds)
+Test Case 'WidgetSnapshotTests.testTodayUsesTheSelectedLocationAcrossMidnight' started at 2026-10-15 21:41:20.180
+Test Case 'WidgetSnapshotTests.testTodayUsesTheSelectedLocationAcrossMidnight' passed (0.0 seconds)
+Test Case 'WidgetSnapshotTests.testUnsortedArchiveSkipsExpiredRowsAndSelects2027' started at 2026-10-15 21:41:20.181
+Test Case 'WidgetSnapshotTests.testUnsortedArchiveSkipsExpiredRowsAndSelects2027' passed (0.0 seconds)
+Test Suite 'WidgetSnapshotTests' passed at 2026-10-15 21:41:20.181
+	 Executed 8 tests, with 0 failures (0 unexpected) in 0.005 (0.005) seconds
+Test Suite 'Selected tests' passed at 2026-10-15 21:41:20.181
+	 Executed 62 tests, with 0 failures (0 unexpected) in 67.503 (67.503) seconds
+◇ Test run started.
+↳ Testing Library Version: 6.0.3 (18c42c19cac3faf)
+✔ Test run with 0 tests passed after 0.001 seconds.

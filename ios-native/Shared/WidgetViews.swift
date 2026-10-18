@@ -47,9 +47,9 @@ struct WidgetTimes {
     /// "6:24 PM" with the app language's own AM/PM words.
     func time(_ date: Date?) -> String {
         guard let date else { return "--" }
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(identifier: snapshot.timeZone) ?? .current
-        let hour = calendar.component(.hour, from: date), minute = calendar.component(.minute, from: date)
+        let zone = TzDatabase.shared.location(snapshot.timeZone) ?? AppTimezone.ist.location
+        let wall = zone.wallClock(date)
+        let hour = wall.hour, minute = wall.minute
         let marker = hour < 12 ? snapshot.string("am", "AM") : snapshot.string("pm", "PM")
         return "\(hour % 12 == 0 ? 12 : hour % 12):\(minute < 10 ? "0" : "")\(minute) \(marker)"
     }
@@ -63,7 +63,9 @@ func widgetStatus(_ item: WidgetItem, _ snapshot: WidgetSnapshot, now: Date) -> 
     let remaining = snapshot.remaining(until: item.target(for: state), now: now)
     switch state {
     case .fastingActive: return "\(snapshot.string("parana_in", "Parana in")) \(remaining)"
-    case .paranaAvailable: return "\(snapshot.string("parana_ends", "Parana ends in")) \(remaining)"
+    case .paranaAvailable:
+        return item.paranaEnd == nil ? snapshot.string("parana_available", "Parana available")
+            : "\(snapshot.string("parana_ends", "Parana ends in")) \(remaining)"
     default: return "\(snapshot.string("starts_in", "Starts in")) \(remaining)"
     }
 }
@@ -192,7 +194,7 @@ struct EkadashiWidgetView: View {
                 }
                 HStack(spacing: 14) {
                     detail(snapshot.string("fasting_starts", "Start"), times.time(item.fastingStart))
-                    detail(snapshot.string("parana_window", "Parana"), "\(times.time(item.paranaStart)) – \(times.time(item.paranaEnd))")
+                    detail(snapshot.string("parana_window", "Parana"), snapshot.paranaWindow(item))
                 }
                 .padding(.top, 2)
             }

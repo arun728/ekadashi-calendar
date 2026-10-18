@@ -1,0 +1,134 @@
+{
+  "16": {
+    "before": 10016,
+    "after": 11680,
+    "total": 11680,
+    "excludedNoSunrise": 0,
+    "mismatches": [
+      [
+        "before",
+        "new-delhi",
+        "2026-01-06",
+        "Kaladanda",
+        "Ananda"
+      ],
+      [
+        "before",
+        "new-delhi",
+        "2026-01-13",
+        "Vajra",
+        "Srivatsa"
+      ],
+      [
+        "before",
+        "new-delhi",
+        "2026-01-20",
+        "Utpata",
+        "Lumbaka"
+      ],
+      [
+        "before",
+        "new-delhi",
+        "2026-01-27",
+        "Gada",
+        "Musala"
+      ],
+      [
+        "before",
+        "new-delhi",
+        "2026-02-03",
+        "Dhumra",
+        "Kaladanda"
+      ],
+      [
+        "before",
+        "new-delhi",
+        "2026-02-10",
+        "Vajra",
+        "Srivatsa"
+      ],
+      [
+        "before",
+        "new-delhi",
+        "2026-02-17",
+        "Mrityu",
+        "Utpata"
+      ],
+      [
+        "before",
+        "new-delhi",
+        "2026-02-24",
+        "Matanga",
+        "Gada"
+      ]
+    ],
+    "beforeAccuracy": 85.75342465753425,
+    "afterAccuracy": 100.0
+  },
+  "edges": {
+    "before": 14208,
+    "after": 16570,
+    "total": 16570,
+    "excludedNoSunrise": 1680,
+    "mismatches": [
+      [
+        "before",
+        "x-longyearbyen",
+        "2026-02-17",
+        "Mrityu",
+        "Utpata"
+      ],
+      [
+        "before",
+        "x-longyearbyen",
+        "2026-02-24",
+        "Matanga",
+        "Gada"
+      ],
+      [
+        "before",
+        "x-longyearbyen",
+        "2026-03-03",
+        "Prajapati",
+        "Dhumra"
+      ],
+      [
+        "before",
+        "x-longyearbyen",
+        "2026-03-10",
+        "Mudgara",
+        "Vajra"
+      ],
+      [
+        "before",
+        "x-longyearbyen",
+        "2026-03-17",
+        "Kana",
+        "Mrityu"
+      ],
+      [
+        "before",
+        "x-longyearbyen",
+        "2026-03-24",
+        "Rakshasa",
+        "Matanga"
+      ],
+      [
+        "before",
+        "x-longyearbyen",
+        "2026-03-31",
+        "Prajapati",
+        "Dhumra"
+      ],
+      [
+        "before",
+        "x-longyearbyen",
+        "2026-04-07",
+        "Chhatra",
+        "Mudgara"
+      ]
+    ],
+    "beforeAccuracy": 85.74532287266143,
+    "afterAccuracy": 100.0
+  }
+}

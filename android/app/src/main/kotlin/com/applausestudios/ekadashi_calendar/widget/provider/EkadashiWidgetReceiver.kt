@@ -118,7 +118,11 @@ open class EkadashiWidgetReceiver : AppWidgetProvider() {
     /** The countdown row: Parana in / Parana ends on an Ekadashi, else the days to go. */
     private fun countdown(payload: WidgetPayload, headline: WidgetHeadline): Pair<String, String> = when (headline) {
         is WidgetHeadline.Today -> if (headline.item.stateAt(Instant.now()) == WidgetState.PARANA_AVAILABLE) {
-            payload.localized("widget.parana_ends", "Parana ends") to formatRemaining(payload, headline.item.paranaEndInstant)
+            if (headline.item.paranaEndInstant == null) {
+                payload.localized("widget.parana_available", "Break Fasting (Parana)") to ""
+            } else {
+                payload.localized("widget.parana_ends", "Parana ends") to formatRemaining(payload, headline.item.paranaEndInstant)
+            }
         } else {
             payload.localized("widget.parana_in", "Parana in") to formatRemaining(payload, headline.item.paranaStartInstant)
         }
@@ -189,7 +193,10 @@ open class EkadashiWidgetReceiver : AppWidgetProvider() {
             views.setTextViewText(R.id.widget_medium_date, "${item.localizedDate} • ${item.paksha}")
             views.setTextViewText(R.id.widget_medium_location, "📍 ${payload.metadata.locationName}")
             views.setTextViewText(R.id.widget_medium_fasting_time, formatDisplayTime(context, payload, item.fastingStartInstant))
-            views.setTextViewText(R.id.widget_medium_parana_time, "${formatDisplayTime(context, payload, item.paranaStartInstant)} - ${formatDisplayTime(context, payload, item.paranaEndInstant)}")
+            views.setTextViewText(R.id.widget_medium_parana_time, item.paranaWindowText.ifEmpty {
+                if (item.paranaEndInstant == null) formatDisplayTime(context, payload, item.paranaStartInstant)
+                else "${formatDisplayTime(context, payload, item.paranaStartInstant)} - ${formatDisplayTime(context, payload, item.paranaEndInstant)}"
+            })
             when (item.stateAt(Instant.now())) {
                 WidgetState.FASTING_ACTIVE -> {
                     views.setTextColor(R.id.widget_medium_badge, context.getColor(R.color.widget_amber))

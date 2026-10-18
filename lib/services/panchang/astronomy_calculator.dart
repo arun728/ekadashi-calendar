@@ -279,15 +279,14 @@ class AstronomyCalculator {
   }
 
   /// Tropical ecliptic longitude of the eastern horizon intersection.
-  /// Uses local sidereal time and mean obliquity (Meeus coordinate geometry).
+  /// Uses apparent sidereal time and true obliquity in the same equinox.
   static double ascendantLongitude(
     DateTime instant,
     double latitude,
     double longitude,
   ) {
     final theta = (siderealDegrees(instant) + longitude) * _rad;
-    final t = (terrestrialJulianDay(instant) - _j2000) / 36525;
-    final epsilon = _meanObliquity(t) * _rad;
+    final epsilon = _trueObliquity(terrestrialJulianDay(instant)) * _rad;
     return normalize(
       math.atan2(
                 -math.cos(theta),

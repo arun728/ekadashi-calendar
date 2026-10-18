@@ -1,0 +1,57 @@
+{
+  "source": "Swiss Ephemeris 2.10.03, sepl_18/semo_18; SIDM_LAHIRI, houses_ex FLG_SIDEREAL, P (ascendant is independent of house system). Generated before production fixes. Rise/set independently solved on topocentric Swiss positions, standard upper limb, refraction 0.5599 degrees.",
+  "ascendants": [
+    {
+      "utc": "2035-10-23T05:50:23.267924Z",
+      "lat": 60.57610734739394,
+      "lon": 137.57661411773438,
+      "siderealLongitude": 284.7782309272885,
+      "firstLagnaEndsUtc": "2035-10-23T06:10:15.208773Z"
+    },
+    {
+      "utc": "2027-01-01T00:00:00Z",
+      "lat": 28.6139,
+      "lon": 77.209,
+      "siderealLongitude": 231.45277823971207,
+      "firstLagnaEndsUtc": "2027-01-01T00:38:38.177046Z"
+    },
+    {
+      "utc": "2026-06-21T12:00:00Z",
+      "lat": 51.5074,
+      "lon": -0.1278,
+      "siderealLongitude": 155.47016294556477,
+      "firstLagnaEndsUtc": "2026-06-21T14:19:06.068792Z"
+    },
+    {
+      "utc": "2026-12-21T00:00:00Z",
+      "lat": -33.8688,
+      "lon": 151.2093,
+      "siderealLongitude": 311.2030412067043,
+      "firstLagnaEndsUtc": "2026-12-21T01:29:16.536144Z"
+    },
+    {
+      "utc": "2026-10-15T00:00:00Z",
+      "lat": 40.7128,
+      "lon": -74.006,
+      "siderealLongitude": 35.91777358610982,
+      "firstLagnaEndsUtc": "2026-10-15T01:29:24.906769Z"
+    }
+  ],
+  "grazing": {
+    "date": "2026-12-21",
+    "lat": 67.39139224084514,
+    "lon": -1.15,
+    "peak": "2026-12-21T12:02:39.621999Z",
+    "peakAltitude": 0.00010000000001236797,
+    "firstPositive": "2026-12-21T12:01:57.000Z",
+    "lastPositive": "2026-12-21T12:03:22.000Z",
+    "positiveSeconds": 86,
+    "sunriseUtc": "2026-12-21T12:01:55.648779+00:00",
+    "sunsetUtc": "2026-12-21T12:03:23.594792+00:00",
+    "altitudes": [
+      -0.0012574677805413659,
+      8.108980264831533e-05,
+      -0.0009491542656331342
+    ]
+  }
+}

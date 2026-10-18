@@ -103,7 +103,10 @@ final class EkadashiScheduleTests: XCTestCase {
             XCTAssertEqual(fast.date, ist(row, "date"))
             for (mine, theirs) in [("fastingStart", "fasting_start"), ("paranaStart", "parana_start"), ("paranaEnd", "parana_end")] {
                 let value = [ "fastingStart": fast.fastingStart, "paranaStart": fast.paranaStart, "paranaEnd": fast.paranaEnd][mine]!
-                XCTAssertLessThanOrEqual(minutesApart(value, ist(row, theirs)), 1, "\(fast.contentId) \(mine)")
+                // Stored instants now retain seconds. Use the existing raw-reference
+                // 2-minute gate (CalculatedEkadashiTests), rather than hiding
+                // the published pack's 1.21-minute maximum behind truncation.
+                XCTAssertLessThanOrEqual(minutesApart(value, ist(row, theirs)), 2, "\(fast.contentId) \(mine)")
             }
         }
         let saphala = fasts.last!

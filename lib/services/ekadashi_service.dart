@@ -3,6 +3,7 @@ import '../l10n/localized_lookup.dart';
 import 'package:flutter/widgets.dart';
 import '../data/calendar_repository.dart';
 import 'ekadashi_schedule.dart';
+import 'ekadashi_time_format.dart';
 import 'panchang/calculated_ekadashi.dart';
 import 'panchang/panchang_city.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
@@ -30,6 +31,12 @@ class EkadashiDate {
   final String paranaStartIso;
   final String paranaEndIso;
 
+  /// Daily widget expiry, never an inferred religious Parana deadline.
+  final String contextExpiresAtIso;
+
+  String get activeUntilIso =>
+      paranaEndIso.isEmpty ? contextExpiresAtIso : paranaEndIso;
+
   EkadashiDate({
     required this.id,
     String? occurrenceUid,
@@ -49,6 +56,7 @@ class EkadashiDate {
     this.fastingStartIso = '',
     this.paranaStartIso = '',
     this.paranaEndIso = '',
+    this.contextExpiresAtIso = '',
   }) : legacyId = legacyId ?? id,
        occurrenceUid =
            occurrenceUid ??
@@ -393,7 +401,11 @@ class EkadashiService {
       name: names.isEmpty ? english : text(names),
       date: DateTime.parse(fast.date),
       fastStartTime: _formatTimeFromIso(fast.fastingStart),
-      fastBreakTime: _formatParanaWindow(fast.paranaStart, fast.paranaEnd),
+      fastBreakTime: EkadashiTimeFormat.window(
+        fast.paranaStart,
+        fast.paranaEnd,
+        language: languageCode,
+      ),
       description: text(descriptions),
       story: text(stories, 'Story coming soon...'),
       fastingRules: text(rules, 'Standard Ekadashi fasting rules apply.'),
@@ -403,6 +415,7 @@ class EkadashiService {
       fastingStartIso: fast.fastingStart,
       paranaStartIso: fast.paranaStart,
       paranaEndIso: fast.paranaEnd,
+      contextExpiresAtIso: fast.contextExpiresAt ?? '',
     );
   }
 

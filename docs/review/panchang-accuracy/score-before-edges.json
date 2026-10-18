@@ -1,0 +1,931 @@
+{
+ "label": "before-edge-cases",
+ "categories": {
+  "Sunrise": {
+   "passed": 18250,
+   "total": 18250,
+   "accuracy": 100.0,
+   "mean_error_min": 0.0,
+   "p95_error_min": 0.0,
+   "max_error_min": 0.005,
+   "examples": []
+  },
+  "Sunset": {
+   "passed": 18250,
+   "total": 18250,
+   "accuracy": 100.0,
+   "mean_error_min": 0.0,
+   "p95_error_min": 0.0,
+   "max_error_min": 0.005,
+   "examples": []
+  },
+  "Moonrise": {
+   "passed": 18250,
+   "total": 18250,
+   "accuracy": 100.0,
+   "mean_error_min": 0.0,
+   "p95_error_min": 0.001,
+   "max_error_min": 0.033,
+   "examples": []
+  },
+  "Moonset": {
+   "passed": 18250,
+   "total": 18250,
+   "accuracy": 100.0,
+   "mean_error_min": 0.0,
+   "p95_error_min": 0.001,
+   "max_error_min": 0.033,
+   "examples": []
+  },
+  "Tithi at sunrise": {
+   "passed": 18250,
+   "total": 18250,
+   "accuracy": 100.0,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": []
+  },
+  "Tithi end time": {
+   "passed": 18250,
+   "total": 18250,
+   "accuracy": 100.0,
+   "mean_error_min": 0.003,
+   "p95_error_min": 0.008,
+   "max_error_min": 0.016,
+   "examples": []
+  },
+  "Tithi end (displayed minute)": {
+   "passed": 18226,
+   "total": 18250,
+   "accuracy": 99.87,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": [
+    [
+     "x-longyearbyen",
+     "2027-05-15",
+     "2027-05-15T12:48:00.178069Z",
+     "2027-05-15T12:47:59.956859Z"
+    ],
+    [
+     "x-tromso",
+     "2027-05-15",
+     "2027-05-15T12:48:00.178066Z",
+     "2027-05-15T12:47:59.956859Z"
+    ],
+    [
+     "x-murmansk",
+     "2027-05-15",
+     "2027-05-15T12:48:00.178067Z",
+     "2027-05-15T12:47:59.956859Z"
+    ],
+    [
+     "x-reykjavik",
+     "2027-05-15",
+     "2027-05-15T12:48:00.178066Z",
+     "2027-05-15T12:47:59.956859Z"
+    ],
+    [
+     "x-fairbanks",
+     "2027-05-15",
+     "2027-05-15T12:48:00.178068Z",
+     "2027-05-15T12:47:59.956859Z"
+    ],
+    [
+     "x-ushuaia",
+     "2027-05-15",
+     "2027-05-15T12:48:00.178067Z",
+     "2027-05-15T12:47:59.956859Z"
+    ],
+    [
+     "x-mcmurdo",
+     "2027-05-15",
+     "2027-05-15T12:48:00.178069Z",
+     "2027-05-15T12:47:59.956859Z"
+    ],
+    [
+     "x-kiritimati",
+     "2027-05-15",
+     "2027-05-15T12:48:00.178066Z",
+     "2027-05-15T12:47:59.956859Z"
+    ],
+    [
+     "x-apia",
+     "2027-05-15",
+     "2027-05-15T12:48:00.178066Z",
+     "2027-05-15T12:47:59.956859Z"
+    ],
+    [
+     "x-pago-pago",
+     "2027-05-14",
+     "2027-05-15T12:48:00.178067Z",
+     "2027-05-15T12:47:59.956859Z"
+    ],
+    [
+     "x-chatham",
+     "2027-05-15",
+     "2027-05-15T12:48:00.178068Z",
+     "2027-05-15T12:47:59.956859Z"
+    ],
+    [
+     "x-lord-howe",
+     "2027-05-15",
+     "2027-05-15T12:48:00.178067Z",
+     "2027-05-15T12:47:59.956859Z"
+    ]
+   ]
+  },
+  "Nakshatra at sunrise": {
+   "passed": 18249,
+   "total": 18250,
+   "accuracy": 99.99,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": [
+    [
+     "x-longyearbyen",
+     "2027-10-31",
+     17,
+     16
+    ]
+   ]
+  },
+  "Nakshatra end time": {
+   "passed": 18249,
+   "total": 18249,
+   "accuracy": 100.0,
+   "mean_error_min": 0.003,
+   "p95_error_min": 0.008,
+   "max_error_min": 0.017,
+   "examples": []
+  },
+  "Nakshatra end (displayed minute)": {
+   "passed": 18226,
+   "total": 18249,
+   "accuracy": 99.87,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": [
+    [
+     "x-utqiagvik",
+     "2026-06-19",
+     "2026-06-20T03:55:59.779070Z",
+     "2026-06-20T03:56:00.193402Z"
+    ],
+    [
+     "x-murmansk",
+     "2026-06-20",
+     "2026-06-20T03:55:59.779070Z",
+     "2026-06-20T03:56:00.193402Z"
+    ],
+    [
+     "x-reykjavik",
+     "2026-06-20",
+     "2026-06-20T03:55:59.779068Z",
+     "2026-06-20T03:56:00.193402Z"
+    ],
+    [
+     "x-fairbanks",
+     "2026-06-19",
+     "2026-06-20T03:55:59.779069Z",
+     "2026-06-20T03:56:00.193402Z"
+    ],
+    [
+     "x-ushuaia",
+     "2026-06-19",
+     "2026-06-20T03:55:59.779069Z",
+     "2026-06-20T03:56:00.193402Z"
+    ],
+    [
+     "x-mcmurdo",
+     "2026-06-20",
+     "2026-06-20T03:55:59.779070Z",
+     "2026-06-20T03:56:00.193402Z"
+    ],
+    [
+     "x-kiritimati",
+     "2026-06-20",
+     "2026-06-20T03:55:59.779068Z",
+     "2026-06-20T03:56:00.193402Z"
+    ],
+    [
+     "x-apia",
+     "2026-06-20",
+     "2026-06-20T03:55:59.779069Z",
+     "2026-06-20T03:56:00.193402Z"
+    ],
+    [
+     "x-pago-pago",
+     "2026-06-19",
+     "2026-06-20T03:55:59.779069Z",
+     "2026-06-20T03:56:00.193402Z"
+    ],
+    [
+     "x-chatham",
+     "2026-06-20",
+     "2026-06-20T03:55:59.779070Z",
+     "2026-06-20T03:56:00.193402Z"
+    ],
+    [
+     "x-lord-howe",
+     "2026-06-20",
+     "2026-06-20T03:55:59.779068Z",
+     "2026-06-20T03:56:00.193402Z"
+    ],
+    [
+     "x-eucla",
+     "2026-06-20",
+     "2026-06-20T03:55:59.779068Z",
+     "2026-06-20T03:56:00.193402Z"
+    ]
+   ]
+  },
+  "Yoga at sunrise": {
+   "passed": 18250,
+   "total": 18250,
+   "accuracy": 100.0,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": []
+  },
+  "Yoga end time": {
+   "passed": 18250,
+   "total": 18250,
+   "accuracy": 100.0,
+   "mean_error_min": 0.004,
+   "p95_error_min": 0.009,
+   "max_error_min": 0.018,
+   "examples": []
+  },
+  "Yoga end (displayed minute)": {
+   "passed": 18204,
+   "total": 18250,
+   "accuracy": 99.75,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": [
+    [
+     "x-longyearbyen",
+     "2026-08-30",
+     "2026-08-30T22:15:59.760044Z",
+     "2026-08-30T22:16:00.284619Z"
+    ],
+    [
+     "x-longyearbyen",
+     "2027-09-22",
+     "2027-09-22T20:29:59.934049Z",
+     "2027-09-22T20:30:00.186870Z"
+    ],
+    [
+     "x-tromso",
+     "2026-08-30",
+     "2026-08-30T22:15:59.760044Z",
+     "2026-08-30T22:16:00.284619Z"
+    ],
+    [
+     "x-tromso",
+     "2027-09-22",
+     "2027-09-22T20:29:59.934050Z",
+     "2027-09-22T20:30:00.186870Z"
+    ],
+    [
+     "x-utqiagvik",
+     "2026-08-30",
+     "2026-08-30T22:15:59.760041Z",
+     "2026-08-30T22:16:00.284619Z"
+    ],
+    [
+     "x-utqiagvik",
+     "2027-09-22",
+     "2027-09-22T20:29:59.934049Z",
+     "2027-09-22T20:30:00.186870Z"
+    ],
+    [
+     "x-murmansk",
+     "2026-08-30",
+     "2026-08-30T22:15:59.760043Z",
+     "2026-08-30T22:16:00.284619Z"
+    ],
+    [
+     "x-murmansk",
+     "2027-09-22",
+     "2027-09-22T20:29:59.934050Z",
+     "2027-09-22T20:30:00.186870Z"
+    ],
+    [
+     "x-reykjavik",
+     "2026-08-30",
+     "2026-08-30T22:15:59.760043Z",
+     "2026-08-30T22:16:00.284619Z"
+    ],
+    [
+     "x-reykjavik",
+     "2027-09-22",
+     "2027-09-22T20:29:59.934049Z",
+     "2027-09-22T20:30:00.186870Z"
+    ],
+    [
+     "x-fairbanks",
+     "2026-08-30",
+     "2026-08-30T22:15:59.760042Z",
+     "2026-08-30T22:16:00.284619Z"
+    ],
+    [
+     "x-fairbanks",
+     "2027-09-22",
+     "2027-09-22T20:29:59.934049Z",
+     "2027-09-22T20:30:00.186870Z"
+    ]
+   ]
+  },
+  "Karana at sunrise": {
+   "passed": 18250,
+   "total": 18250,
+   "accuracy": 100.0,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": []
+  },
+  "Karana end time": {
+   "passed": 18250,
+   "total": 18250,
+   "accuracy": 100.0,
+   "mean_error_min": 0.003,
+   "p95_error_min": 0.008,
+   "max_error_min": 0.016,
+   "examples": []
+  },
+  "Karana end (displayed minute)": {
+   "passed": 18231,
+   "total": 18250,
+   "accuracy": 99.9,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": [
+    [
+     "x-longyearbyen",
+     "2027-03-02",
+     "2027-03-02T09:55:00.016018Z",
+     "2027-03-02T09:54:59.734466Z"
+    ],
+    [
+     "x-longyearbyen",
+     "2027-05-15",
+     "2027-05-15T12:48:00.178069Z",
+     "2027-05-15T12:47:59.956859Z"
+    ],
+    [
+     "x-tromso",
+     "2027-03-02",
+     "2027-03-02T09:55:00.016018Z",
+     "2027-03-02T09:54:59.734466Z"
+    ],
+    [
+     "x-tromso",
+     "2027-04-18",
+     "2027-04-18T13:23:59.922090Z",
+     "2027-04-18T13:24:00.115410Z"
+    ],
+    [
+     "x-murmansk",
+     "2027-03-02",
+     "2027-03-02T09:55:00.016019Z",
+     "2027-03-02T09:54:59.734466Z"
+    ],
+    [
+     "x-reykjavik",
+     "2027-03-02",
+     "2027-03-02T09:55:00.016018Z",
+     "2027-03-02T09:54:59.734466Z"
+    ],
+    [
+     "x-reykjavik",
+     "2027-04-18",
+     "2027-04-18T13:23:59.922091Z",
+     "2027-04-18T13:24:00.115410Z"
+    ],
+    [
+     "x-reykjavik",
+     "2027-05-15",
+     "2027-05-15T12:48:00.178066Z",
+     "2027-05-15T12:47:59.956859Z"
+    ],
+    [
+     "x-fairbanks",
+     "2027-05-15",
+     "2027-05-15T12:48:00.178068Z",
+     "2027-05-15T12:47:59.956859Z"
+    ],
+    [
+     "x-ushuaia",
+     "2027-04-18",
+     "2027-04-18T13:23:59.922090Z",
+     "2027-04-18T13:24:00.115410Z"
+    ],
+    [
+     "x-ushuaia",
+     "2027-05-15",
+     "2027-05-15T12:48:00.178067Z",
+     "2027-05-15T12:47:59.956859Z"
+    ],
+    [
+     "x-eucla",
+     "2027-03-02",
+     "2027-03-02T09:55:00.016019Z",
+     "2027-03-02T09:54:59.734466Z"
+    ]
+   ]
+  },
+  "Lunar month (Amanta, Adhika)": {
+   "passed": 18250,
+   "total": 18250,
+   "accuracy": 100.0,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": []
+  },
+  "Sun rashi": {
+   "passed": 18250,
+   "total": 18250,
+   "accuracy": 100.0,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": []
+  },
+  "Moon rashi": {
+   "passed": 18250,
+   "total": 18250,
+   "accuracy": 100.0,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": []
+  },
+  "Moonrise (displayed minute)": {
+   "passed": 15266,
+   "total": 15269,
+   "accuracy": 99.98,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": [
+    [
+     "x-reykjavik",
+     "2026-01-20",
+     "2026-01-20T11:31:59.990156Z",
+     "2026-01-20T11:32:00.005210Z"
+    ],
+    [
+     "x-reykjavik",
+     "2026-04-26",
+     "2026-04-26T14:31:59.962118Z",
+     "2026-04-26T14:32:00.010722Z"
+    ],
+    [
+     "x-fairbanks",
+     "2027-11-20",
+     "2027-11-21T08:58:59.995192Z",
+     "2027-11-21T08:59:00.009820Z"
+    ]
+   ]
+  },
+  "Moonset (displayed minute)": {
+   "passed": 15289,
+   "total": 15293,
+   "accuracy": 99.97,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": [
+    [
+     "x-longyearbyen",
+     "2027-01-11",
+     "2027-01-11T16:17:00.015047Z",
+     "2027-01-11T16:16:59.903688Z"
+    ],
+    [
+     "x-utqiagvik",
+     "2027-01-16",
+     "2027-01-16T16:03:00.156039Z",
+     "2027-01-16T16:02:59.872356Z"
+    ],
+    [
+     "x-suva",
+     "2027-12-17",
+     "2027-12-16T20:41:00.008238Z",
+     "2027-12-16T20:40:59.999827Z"
+    ],
+    [
+     "x-mayapur",
+     "2026-11-09",
+     "2026-11-09T11:10:59.998224Z",
+     "2026-11-09T11:11:00.003394Z"
+    ]
+   ]
+  },
+  "Sankranti day": {
+   "passed": 600,
+   "total": 600,
+   "accuracy": 100.0,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": []
+  },
+  "Sunrise (displayed minute)": {
+   "passed": 16570,
+   "total": 16570,
+   "accuracy": 100.0,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": []
+  },
+  "Sunset (displayed minute)": {
+   "passed": 16560,
+   "total": 16560,
+   "accuracy": 100.0,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": []
+  },
+  "Smarta Ekadashi date (all cities, Drik rules)": {
+   "passed": 1108,
+   "total": 1108,
+   "accuracy": 100.0,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": []
+  },
+  "Smarta Parana (all cities)": {
+   "passed": 2216,
+   "total": 2216,
+   "accuracy": 100.0,
+   "mean_error_min": 0.0,
+   "p95_error_min": 0.003,
+   "max_error_min": 0.015,
+   "examples": []
+  },
+  "Smarta Parana (displayed minute)": {
+   "passed": 2206,
+   "total": 2206,
+   "accuracy": 100.0,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": []
+  },
+  "Gaudiya Ekadashi date (GCAL)": {
+   "passed": 784,
+   "total": 784,
+   "accuracy": 100.0,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": []
+  },
+  "Gaudiya Parana (GCAL rule, JPL timing)": {
+   "passed": 1556,
+   "total": 1557,
+   "accuracy": 99.94,
+   "mean_error_min": 0.003,
+   "p95_error_min": 0.005,
+   "max_error_min": 2.419,
+   "examples": [
+    [
+     "z-pacific-pitcairn",
+     "2026-04-13",
+     "end",
+     2.4
+    ]
+   ]
+  },
+  "Gaudiya Parana (displayed minute)": {
+   "passed": 1555,
+   "total": 1557,
+   "accuracy": 99.87,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": [
+    [
+     "x-reykjavik",
+     "2027-01-03",
+     "end",
+     1.09
+    ],
+    [
+     "z-pacific-pitcairn",
+     "2026-04-13",
+     "end",
+     2.42
+    ]
+   ]
+  },
+  "Festival lunar month/tithi (all cities)": {
+   "passed": 1006,
+   "total": 1006,
+   "accuracy": 100.0,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": []
+  },
+  "Festival occurs once per year (all cities)": {
+   "passed": 960,
+   "total": 960,
+   "accuracy": 100.0,
+   "mean_error_min": null,
+   "p95_error_min": null,
+   "max_error_min": null,
+   "examples": []
+  }
+ },
+ "supplementary": {
+  "Gaudiya Parana vs raw GCAL times": {
+   "mean_error_min": 0.232,
+   "within_2_min": 98.27,
+   "n": 1557
+  }
+ },
+ "excluded_published_rows": [
+  [
+   "x-kiritimati",
+   "all",
+   "GCAL dates locations across the date line by longitude"
+  ],
+  [
+   "x-apia",
+   "all",
+   "GCAL dates locations across the date line by longitude"
+  ],
+  [
+   "x-chatham",
+   "all",
+   "GCAL dates locations across the date line by longitude"
+  ]
+ ],
+ "worst_locations": [
+  [
+   "x-reykjavik",
+   {
+    "Moonrise (displayed minute)": 2,
+    "Nakshatra end (displayed minute)": 1,
+    "Yoga end (displayed minute)": 2,
+    "Karana end (displayed minute)": 3,
+    "Tithi end (displayed minute)": 1,
+    "Gaudiya Parana (displayed minute)": 1
+   }
+  ],
+  [
+   "x-longyearbyen",
+   {
+    "Yoga end (displayed minute)": 2,
+    "Moonset (displayed minute)": 1,
+    "Karana end (displayed minute)": 2,
+    "Tithi end (displayed minute)": 1,
+    "Nakshatra at sunrise": 1
+   }
+  ],
+  [
+   "x-fairbanks",
+   {
+    "Nakshatra end (displayed minute)": 1,
+    "Yoga end (displayed minute)": 2,
+    "Tithi end (displayed minute)": 1,
+    "Karana end (displayed minute)": 1,
+    "Moonrise (displayed minute)": 1
+   }
+  ],
+  [
+   "x-ushuaia",
+   {
+    "Nakshatra end (displayed minute)": 1,
+    "Yoga end (displayed minute)": 2,
+    "Karana end (displayed minute)": 2,
+    "Tithi end (displayed minute)": 1
+   }
+  ],
+  [
+   "x-st-johns",
+   {
+    "Nakshatra end (displayed minute)": 1,
+    "Yoga end (displayed minute)": 2,
+    "Karana end (displayed minute)": 2,
+    "Tithi end (displayed minute)": 1
+   }
+  ],
+  [
+   "x-tehran",
+   {
+    "Nakshatra end (displayed minute)": 1,
+    "Yoga end (displayed minute)": 2,
+    "Karana end (displayed minute)": 2,
+    "Tithi end (displayed minute)": 1
+   }
+  ],
+  [
+   "z-pacific-pitcairn",
+   {
+    "Nakshatra end (displayed minute)": 1,
+    "Yoga end (displayed minute)": 2,
+    "Tithi end (displayed minute)": 1,
+    "Gaudiya Parana (GCAL rule, JPL timing)": 1,
+    "Gaudiya Parana (displayed minute)": 1
+   }
+  ],
+  [
+   "x-tromso",
+   {
+    "Yoga end (displayed minute)": 2,
+    "Karana end (displayed minute)": 2,
+    "Tithi end (displayed minute)": 1
+   }
+  ],
+  [
+   "x-murmansk",
+   {
+    "Nakshatra end (displayed minute)": 1,
+    "Yoga end (displayed minute)": 2,
+    "Karana end (displayed minute)": 1,
+    "Tithi end (displayed minute)": 1
+   }
+  ],
+  [
+   "x-kabul",
+   {
+    "Nakshatra end (displayed minute)": 1,
+    "Yoga end (displayed minute)": 2,
+    "Karana end (displayed minute)": 1,
+    "Tithi end (displayed minute)": 1
+   }
+  ],
+  [
+   "x-suva",
+   {
+    "Nakshatra end (displayed minute)": 1,
+    "Yoga end (displayed minute)": 2,
+    "Tithi end (displayed minute)": 1,
+    "Moonset (displayed minute)": 1
+   }
+  ],
+  [
+   "x-mayapur",
+   {
+    "Nakshatra end (displayed minute)": 1,
+    "Moonset (displayed minute)": 1,
+    "Karana end (displayed minute)": 1,
+    "Tithi end (displayed minute)": 1,
+    "Yoga end (displayed minute)": 1
+   }
+  ],
+  [
+   "x-utqiagvik",
+   {
+    "Nakshatra end (displayed minute)": 1,
+    "Yoga end (displayed minute)": 2,
+    "Moonset (displayed minute)": 1
+   }
+  ],
+  [
+   "x-mcmurdo",
+   {
+    "Nakshatra end (displayed minute)": 1,
+    "Yoga end (displayed minute)": 2,
+    "Tithi end (displayed minute)": 1
+   }
+  ],
+  [
+   "x-kiritimati",
+   {
+    "Nakshatra end (displayed minute)": 1,
+    "Yoga end (displayed minute)": 2,
+    "Tithi end (displayed minute)": 1
+   }
+  ],
+  [
+   "x-apia",
+   {
+    "Nakshatra end (displayed minute)": 1,
+    "Yoga end (displayed minute)": 2,
+    "Tithi end (displayed minute)": 1
+   }
+  ],
+  [
+   "x-pago-pago",
+   {
+    "Nakshatra end (displayed minute)": 1,
+    "Yoga end (displayed minute)": 2,
+    "Tithi end (displayed minute)": 1
+   }
+  ],
+  [
+   "x-chatham",
+   {
+    "Nakshatra end (displayed minute)": 1,
+    "Yoga end (displayed minute)": 2,
+    "Tithi end (displayed minute)": 1
+   }
+  ],
+  [
+   "x-lord-howe",
+   {
+    "Nakshatra end (displayed minute)": 1,
+    "Yoga end (displayed minute)": 2,
+    "Tithi end (displayed minute)": 1
+   }
+  ],
+  [
+   "x-eucla",
+   {
+    "Nakshatra end (displayed minute)": 1,
+    "Yoga end (displayed minute)": 1,
+    "Karana end (displayed minute)": 1,
+    "Tithi end (displayed minute)": 1
+   }
+  ],
+  [
+   "x-marquesas",
+   {
+    "Nakshatra end (displayed minute)": 1,
+    "Yoga end (displayed minute)": 2,
+    "Tithi end (displayed minute)": 1
+   }
+  ],
+  [
+   "x-yangon",
+   {
+    "Nakshatra end (displayed minute)": 1,
+    "Karana end (displayed minute)": 1,
+    "Tithi end (displayed minute)": 1,
+    "Yoga end (displayed minute)": 1
+   }
+  ],
+  [
+   "x-honolulu",
+   {
+    "Nakshatra end (displayed minute)": 1,
+    "Yoga end (displayed minute)": 2,
+    "Tithi end (displayed minute)": 1
+   }
+  ],
+  [
+   "x-tarawa",
+   {
+    "Nakshatra end (displayed minute)": 1,
+    "Yoga end (displayed minute)": 2,
+    "Tithi end (displayed minute)": 1
+   }
+  ],
+  [
+   "x-adelaide",
+   {
+    "Nakshatra end (displayed minute)": 1,
+    "Yoga end (displayed minute)": 1,
+    "Tithi end (displayed minute)": 1
+   }
+  ]
+ ],
+ "failures_by_location": {
+  "x-longyearbyen": 7,
+  "x-tromso": 5,
+  "x-utqiagvik": 4,
+  "x-murmansk": 5,
+  "x-reykjavik": 10,
+  "x-fairbanks": 6,
+  "x-ushuaia": 6,
+  "x-mcmurdo": 4,
+  "x-kiritimati": 4,
+  "x-apia": 4,
+  "x-pago-pago": 4,
+  "x-chatham": 4,
+  "x-lord-howe": 4,
+  "x-eucla": 4,
+  "x-marquesas": 4,
+  "x-st-johns": 6,
+  "x-tehran": 6,
+  "x-kabul": 5,
+  "x-yangon": 4,
+  "x-adelaide": 3,
+  "x-honolulu": 4,
+  "x-suva": 5,
+  "x-tarawa": 4,
+  "x-mayapur": 5,
+  "z-pacific-pitcairn": 6
+ },
+ "overall_category_mean": 99.97,
+ "overall_pooled": 99.97,
+ "checks": 422434
+}

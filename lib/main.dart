@@ -755,13 +755,13 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       if (includeParana &&
           daysUntil < 0 &&
           nowTz != null &&
-          ekadashi.paranaEndIso.isNotEmpty) {
+          ekadashi.activeUntilIso.isNotEmpty) {
         try {
           // Parse paranaEndIso (e.g. "2026-02-14T08:52:00+05:30")
           // We need to parse it carefully to compare with nowTz
           final paranaEnd = tz.TZDateTime.parse(
             tz.getLocation(_getIANATimezone(_currentTimezone)),
-            ekadashi.paranaEndIso,
+            ekadashi.activeUntilIso,
           );
 
           if (nowTz.isBefore(paranaEnd)) {
