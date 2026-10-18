@@ -9,17 +9,17 @@ final class BirthProfileTests: XCTestCase {
     }
     func testLocalTimeUsesHistoricalOffsetRatherThanCurrentOrDeviceZone() throws {
         let dates = try BirthCalculator.candidates(input(CivilDate(1942, 9, 2), hour: 12))
-        XCTAssertEqual(dates.map(ISO8601.string), ["1942-09-02T05:30:00Z"])
+        XCTAssertEqual(dates.map(ISO8601.string), ["1942-09-02T05:30:00.000Z"])
         let kathmandu = PanchangCity(id: "np", label: "Kathmandu", latitude: 27.7, longitude: 85.3, timeZoneId: "Asia/Kathmandu")
-        XCTAssertEqual(try BirthCalculator.candidates(input(CivilDate(1985, 1, 1), city: kathmandu)).map(ISO8601.string), ["1985-01-01T06:30:00Z"])
+        XCTAssertEqual(try BirthCalculator.candidates(input(CivilDate(1985, 1, 1), city: kathmandu)).map(ISO8601.string), ["1985-01-01T06:30:00.000Z"])
     }
     func testSpringGapAndAutumnFoldAreNeverSilentlyAdjusted() throws {
         XCTAssertTrue(try BirthCalculator.candidates(input(CivilDate(2024, 3, 10), hour: 2, minute: 30, city: ny)).isEmpty)
         let ambiguous = input(CivilDate(2024, 11, 3), hour: 1, minute: 30, city: ny)
-        XCTAssertEqual(try BirthCalculator.candidates(ambiguous).map(ISO8601.string), ["2024-11-03T05:30:00Z", "2024-11-03T06:30:00Z"])
+        XCTAssertEqual(try BirthCalculator.candidates(ambiguous).map(ISO8601.string), ["2024-11-03T05:30:00.000Z", "2024-11-03T06:30:00.000Z"])
         XCTAssertThrowsError(try BirthCalculator.calculate(ambiguous)) { XCTAssertEqual($0 as? BirthError, .ambiguousTime) }
         XCTAssertEqual(try BirthCalculator.calculate(input(CivilDate(2024, 11, 3), hour: 1, minute: 30, choice: 1, city: ny)).instant,
-                       ISO8601.instant("2024-11-03T06:30:00Z"))
+                       ISO8601.instant("2024-11-03T06:30:00.000Z"))
     }
     func testHalfHourFoldAndSkippedCivilDay() throws {
         let lordHowe = PanchangCity(id: "lh", label: "Lord Howe", latitude: -31.55, longitude: 159.08, timeZoneId: "Australia/Lord_Howe")
@@ -97,6 +97,18 @@ final class BirthProfileTests: XCTestCase {
             XCTAssertEqual(actual.pada, row.pada, row.utc)
             XCTAssertEqual(actual.tithi, row.tithi, row.utc)
             XCTAssertEqual(AstronomyCalculator.signedAngle(actual.siderealMoon - (row.moon - row.lahiri)), 0, accuracy: 0.003, row.utc)
+        }
+    }
+
+    func testBirthVocabularyUsesAllSixScriptsAndMatchingPlaceholders() {
+        let keys = ["title", "intro", "create", "edit", "delete", "delete_body", "date", "known_time", "time", "place", "timezone", "calculate", "privacy", "convention", "unknown", "stable", "changes", "timeline", "exact", "boundary", "rashi", "nakshatra", "pada", "tithi", "rashi_help", "nakshatra_help", "pada_help", "tithi_help", "earlier", "later", "fold", "range", "utc", "search", "manual", "place_name", "offset", "error_outOfRange", "error_invalidTime", "error_invalidPlace", "error_nonexistentTime", "error_ambiguousTime", "error_premiumRequired", "error_storage", "error_corruptStorage"]
+        for key in keys {
+            let full = "ios_birth_" + key
+            for language in Localizer.languages {
+                let text = Localizer.shared.translate(full, language: language)
+                XCTAssertNotEqual(text, full, "\(language) \(full)")
+                if language != "en" { XCTAssertNil(text.range(of: "[A-Za-z]", options: .regularExpression), "\(language) \(full)") }
+            }
         }
     }
 
