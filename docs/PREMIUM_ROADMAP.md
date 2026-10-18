@@ -29,7 +29,8 @@ It supersedes the dormant financial-rewards proposal for this work.
 
 ## Phase 1 — Journey points, badges and annual collection
 
-Status: implementation authorized; iOS first. Branch: `feature/premium-journey`.
+Status: iOS candidate implemented and local checks passed; ready for review.
+Branch: `feature/premium-journey`. Android awaits iOS approval.
 
 ### Scoring and annual scope
 
@@ -183,5 +184,45 @@ transferable rewards and changes making all Journey functionality free.
 
 ## Execution evidence
 
-Record implementation commits, failing-before/passing-after runs, build/UI
-evidence and any remaining limitations here as each phase is delivered.
+### Phase 1 local evidence (18 October 2026)
+
+- Plan committed first: `816e090`, before feature code, from remote `dev`
+  at `d9d4cda7f5f000750ab38e4bed3fed19a89dd3b3`.
+- Separate test-first commits cover scoring/catalogue (`f4d2b69`), annual UI
+  (`bd852dd`), pending celebrations (`aa459b6`), corrupt reward metadata
+  (`096fed6`, `272b549`), Home timezone (`1db1a0b`), vector/share rendering
+  (`fa60b86`), next-goal selection (`b64296e`) and the recording/paywall
+  flow (`3017355`). Red runs preceded the corresponding implementation.
+  The final recording-flow red run failed on the missing stable row identity;
+  its implementation adds explicit occurrence and celebration control IDs.
+- `flutter analyze`: no issues. Full `flutter test`: **726 passed**.
+- Full release `swift test` in `ios-native/EkadashiCore`: **272 passed**.
+  This includes all existing package tests and the new Journey domain,
+  persistence, migration, boundary and six-language checks.
+- Simulator: iPhone 17 Pro, iOS 26.5. The previous full native run passed
+  all 11 app tests, all three then-existing Journey UI tests and 13 of 14
+  existing screenshot/UI tests. The remaining notification test attempted
+  to inspect a row before the lazy Settings list created it. Its correction
+  scrolls that row into view and keeps the original off/disabled assertions.
+- Final focused simulator run: **11 native app tests and 5 UI tests passed**,
+  including all four Journey UI tests and the corrected notification test.
+  The end-to-end recording test observes three fasts, dismisses celebrations,
+  confirms 300 points, and verifies the fourth entry opens Premium.
+- Visually inspected exported badge-collection and annual-share screenshots,
+  plus the mixed-status 25-segment 2027 mandala. Rendering tests cover both
+  annual schedules, every badge at small/large sizes and consistent share
+  output in light/dark mode.
+- Evidence is local under ignored `outputs/premium-journey/`: analyzer and
+  Flutter logs, `core-verified.log`, `ios-recording-red.log`, `ios-final.log`,
+  `ios-verified.log` and Xcode result bundles/screenshots. CI was not run.
+
+All 63 new Journey strings are present in English, Hindi, Tamil, Telugu,
+Gujarati and Bengali. Arun explicitly authorized assistant-written
+translations after the configured Claude session could not authenticate.
+Language-key, placeholder and script checks pass; native-speaker wording
+review remains release validation.
+
+The candidate is iOS only. Android feature implementation, real-device
+accessibility/haptics and store purchase/restore testing remain follow-up
+validation. The established StoreKit entitlement flow is unchanged. No
+merge, backend, financial reward or later roadmap phase is included.

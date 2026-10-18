@@ -2,8 +2,8 @@ import SwiftUI
 import EkadashiCore
 
 /// Vrat tracker: overview, history, statistics and achievements
-/// (vrat_tracker_screen.dart). Recording, history, streaks and statistics
-/// are free; three entries and three badges are free, more need Premium.
+/// (vrat_tracker_screen.dart). History, editing, streaks and statistics stay
+/// free; three entries and three badges are free, more need Premium.
 /// The sections are glass chips, as in Panchang, and change with a swipe.
 struct VratView: View {
     @Environment(AppModel.self) private var model
@@ -12,6 +12,10 @@ struct VratView: View {
     @State private var selectedYear = CivilDate.today().year
     @State private var statusFilter: ObservanceStatus?
     @State private var recording: EkadashiOccurrence?
+
+    private var journey: JourneySummary {
+        model.vrat.journey(events, completeYears: Set(model.enabledYears), zone: model.scheduleZone)
+    }
 
     private var events: [EkadashiOccurrence] { model.ekadashis }
     private var years: [Int] { model.vrat.years(events) }
@@ -60,17 +64,18 @@ struct VratView: View {
     private var overview: some View {
         let records = model.vrat.allRecords
         let totalObserved = records.filter { $0.status == .observed }.count
-        let longest = model.vrat.longestStreak(events)
+        let longest = journey.longestStreak
         let stats = model.vrat.annualStats(year, events)
-        let milestone = AchievementEvaluator.nextMilestone(userAchievements: model.vrat.userAchievements,
-                                                           totalObserved: totalObserved, longestStreak: longest)
+        let milestone = JourneyBadgeCatalog.nextMilestone(summary: journey, earned: model.vrat.userAchievements)
         let today = CivilDate.today()
         let recent = events.sorted { $0.date < $1.date }.filter { abs(today.days(until: $0.date)) <= 30 }.prefix(4)
         return ScrollView {
             VStack(alignment: .leading, spacing: 12) {
+                HStack { Spacer(); yearMenu.accessibilityIdentifier("journey_overview_year") }
+                JourneyOverviewPanel(summary: journey, year: year)
                 Grid(horizontalSpacing: 12, verticalSpacing: 12) {
                     GridRow {
-                        MetricCard(title: model.t("current_streak"), value: "\(model.vrat.currentStreak(events))",
+                        MetricCard(title: model.t("current_streak"), value: "\(journey.currentStreak)",
                                    subtitle: model.t("ekadashis_unit"), symbol: AppSymbol.journeyStreak, color: .orange)
                             .accessibilityIdentifier("journey_overview_streaks")
                         MetricCard(title: model.t("longest_streak"), value: "\(longest)", subtitle: model.t("ekadashis_unit"),
@@ -90,12 +95,19 @@ struct VratView: View {
                         HStack {
                             Label(model.t("next_milestone"), systemImage: AppSymbol.journeyMilestone)
                             Spacer()
-                            Text("\(milestone.currentProgress) / \(milestone.target)")
+                            Text("\(milestone.goalProgress(in: journey)) / \(milestone.target)")
                         }
                         .font(.caption.bold())
                         .foregroundStyle(Theme.teal)
                         Text(model.t(milestone.achievement.titleKey)).font(.headline)
-                        ProgressView(value: Double(milestone.currentProgress), total: Double(max(milestone.target, 1)))
+                        if milestone.goalProgress(in: journey) >= milestone.target && !model.premium.isPremium {
+                            Button(model.t("premium_more_achievements")) { model.openPaywall() }
+                                .font(.caption.bold())
+                        } else {
+                            Text(model.t("ios_journey_remaining", String(max(0, milestone.target - milestone.goalProgress(in: journey)))))
+                                .font(.caption).foregroundStyle(.secondary)
+                        }
+                        ProgressView(value: Double(milestone.goalProgress(in: journey)), total: Double(max(milestone.target, 1)))
                             .tint(Theme.teal)
                     }
                     .padding(16)
@@ -201,6 +213,7 @@ struct VratView: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(event.name), \(date), \(model.t(style.listKey)). \(model.t("tap_to_record_semantics"))")
         .accessibilityAddTraits(.isButton)
+        .accessibilityIdentifier("journey_row_\(event.occurrenceUid)")
     }
 
     // MARK: Statistics
@@ -240,8 +253,8 @@ struct VratView: View {
                         countCard("unrecorded", stats.unrecordedCount, .gray)
                     }
                     GridRow {
-                        countCard("current_streak", model.vrat.currentStreak(events), .orange)
-                        countCard("longest_streak", model.vrat.longestStreak(events), Theme.amber)
+                        countCard("current_streak", journey.currentStreak, .orange)
+                        countCard("longest_streak", journey.longestStreak, Theme.amber)
                     }
                 }
             }
@@ -262,45 +275,9 @@ struct VratView: View {
     // MARK: Achievements
 
     private var achievements: some View {
-        let users = model.vrat.userAchievements
-        let premium = model.premium.isPremium
-        let freeUsed = users.values.filter(\.isUnlocked).count
-        return ScrollView {
-            VStack(spacing: 12) {
-                Text(model.t("premium_free_achievements")).font(.subheadline).frame(maxWidth: .infinity, alignment: .leading)
-                if !premium {
-                    Button(model.t("premium_more_achievements")) { model.openPaywall() }
-                        .secondaryActionStyle()
-                }
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 12)], spacing: 12) {
-                    ForEach(AchievementEvaluator.all) { achievement in
-                        let unlocked = users[achievement.id]?.isUnlocked ?? false
-                        let paidLocked = !premium && !unlocked && freeUsed >= VratTracker.freeAchievementLimit
-                        VStack(spacing: 8) {
-                            Image(systemName: unlocked ? achievement.symbol : AppSymbol.achievementLocked)
-                                .font(.title2)
-                                .foregroundStyle(unlocked ? Theme.teal : .gray)
-                                .frame(width: 52, height: 52)
-                                .background((unlocked ? Theme.teal.opacity(0.15) : Color.gray.opacity(0.08)), in: Circle())
-                            Text(model.t(achievement.titleKey)).font(.footnote.bold()).multilineTextAlignment(.center)
-                                .foregroundStyle(unlocked ? .primary : .secondary).lineLimit(2)
-                            Text(model.t(achievement.descriptionKey)).font(.caption2).multilineTextAlignment(.center)
-                                .foregroundStyle(.secondary).lineLimit(3)
-                            Spacer(minLength: 0)
-                            Text(unlocked ? "✓ \(model.t("unlocked"))" : model.t(paidLocked ? "premium_title" : "locked"))
-                                .font(.caption.bold())
-                                .foregroundStyle(unlocked ? Theme.teal : .secondary)
-                        }
-                        .frame(maxWidth: .infinity, minHeight: 190)
-                        .padding(14)
-                        .glassPanel(cornerRadius: 16, tint: unlocked ? Theme.teal : nil)
-                        .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(unlocked ? Theme.teal : .clear, lineWidth: 1.8))
-                    }
-                }
-            }
-            .padding(16)
-        }
+        JourneyBadgeCollection(summary: journey)
     }
+
 }
 
 struct MetricCard: View {

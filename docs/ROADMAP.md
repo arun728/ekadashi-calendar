@@ -3,6 +3,13 @@
 This file tracks the phased plan agreed with Arun on 8 October 2026. Update the
 status table as each phase moves forward.
 
+## Offline premium extension (18 October 2026)
+
+The new four-phase plan is in [PREMIUM_ROADMAP.md](PREMIUM_ROADMAP.md).
+Journey rewards for 2026/2027 have a locally validated iOS candidate on
+`feature/premium-journey`; Android follows iOS approval. Birth profiles,
+family birthdays and My Panchang remain planned. Daily Rasi Palan is deferred.
+
 ## Working rules
 
 - **iOS first, then Android.** Each phase is built and tested in `ios-native/`
