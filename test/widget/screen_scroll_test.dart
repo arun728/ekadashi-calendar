@@ -79,7 +79,7 @@ void main() {
     await open(tester, 2);
     await expectScrolls(
       tester,
-      find.byKey(const Key('journey_overview_streaks')),
+      find.byKey(const Key('journey_year_points')),
       const Offset(196, 300),
     );
   });

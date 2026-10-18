@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../services/theme_service.dart';
+import '../services/vrat_tracker_service.dart';
 import '../services/language_service.dart';
 import '../services/ekadashi_service.dart';
 import '../services/ekadashi_settings.dart';
@@ -531,6 +532,18 @@ class _SettingsScreenState extends State<SettingsScreen>
                   color: IosColors.secondary(context),
                 ),
               ),
+            ),
+          ],
+        ),
+        header('journey_tab'),
+        SettingsCard(
+          children: [
+            SettingsSwitchTile(
+              key: const Key('journey_badge_haptics'),
+              title: Text(lang.translate('ios_journey_haptics')),
+              value: context.watch<VratTrackerService?>()?.badgeHaptics ?? true,
+              onChanged: (value) =>
+                  context.read<VratTrackerService?>()?.setBadgeHaptics(value),
             ),
           ],
         ),

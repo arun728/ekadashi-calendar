@@ -29,8 +29,9 @@ It supersedes the dormant financial-rewards proposal for this work.
 
 ## Phase 1 — Journey points, badges and annual collection
 
-Status: iOS candidate implemented and local checks passed; ready for review.
-Branch: `feature/premium-journey`. Android awaits iOS approval.
+Status: iOS candidate and Android port implemented and locally validated.
+Branch and PR stay `feature/premium-journey`, PR #25. Arun
+authorized the Android port on 18 October after reviewing iOS screenshots.
 
 ### Scoring and annual scope
 
@@ -217,12 +218,47 @@ transferable rewards and changes making all Journey functionality free.
   `ios-verified.log` and Xcode result bundles/screenshots. CI was not run.
 
 All 63 new Journey strings are present in English, Hindi, Tamil, Telugu,
-Gujarati and Bengali. Arun explicitly authorized assistant-written
+Gujarati and Bengali. They now live in the shared ARB resources; both
+platforms must match `test/fixtures/journey_translations.json` exactly. Arun explicitly authorized assistant-written
 translations after the configured Claude session could not authenticate.
 Language-key, placeholder and script checks pass; native-speaker wording
 review remains release validation.
 
-The candidate is iOS only. Android feature implementation, real-device
-accessibility/haptics and store purchase/restore testing remain follow-up
-validation. The established StoreKit entitlement flow is unchanged. No
+The Android port is authorized and included in the same branch and PR.
+Real-device accessibility/haptics and store purchase/restore testing remain
+release validation. The established StoreKit entitlement flow is unchanged. No
 merge, backend, financial reward or later roadmap phase is included.
+
+
+### Android port evidence (18 October 2026)
+
+- Same feature branch and PR #25; no new product phase or purchase backend.
+  An isolated checkout protects this work from simultaneous birth-profile
+  development in the original checkout.
+- Test-first commits: `006d139` for scoring/persistence and annual UI,
+  `a8a96db` for vector rendering/grouped celebrations/sharing, `3cd574e` for
+  narrow localized layouts and the full emulator flow. Red logs reproduce
+  the absent features, missing grouped presentation, localized overflow and
+  the Cupertino-switch parity regression before their fixes. `3eff3a4` adds
+  the reduced-motion regression. `a797a35` demonstrates the Tamil placeholder
+  ordering bug; named argument substitution now preserves translated order.
+- Points, annual/quarter bonuses, catalogue identities and unlock ordering,
+  corrected-history progress, permanent earned badges, pending presentation
+  markers, free limits and Home timezone follow the Swift implementation.
+- Original 100-unit badge paths and 24/25-petal mandalas are reproduced with
+  Flutter Canvas. All controls use the existing AppIcons registry. The
+  celebration respects reduced motion and the persisted haptic preference.
+- Both platforms read the same approved strings. Journey overrides were
+  removed from the iOS-only table after moving them to shared ARBs; effective
+  iOS wording is unchanged. Native localization tests also verify the copy.
+- The emulator test records observed/partial/missed entries, confirms 150
+  points and the fourth-entry paywall, inspects badges and all categories,
+  checks both years, the explicit annual share preview and the haptic toggle.
+  It captures all Journey screens and the five non-English overviews.
+- Local validation: 752 Flutter tests and 273 Swift core tests pass, with a
+  clean Flutter analyzer and generated-file check. The final Pixel 9a
+  emulator flow passes (including framework teardown), with 20 screenshots
+  across both years, every Journey surface and all six languages. Logs are under ignored
+  `outputs/premium-journey/android-*`; PNGs under
+  `build/ui-screenshots/android/journey_*.png`. Store billing is unchanged;
+  emulator tests do not claim a real Google Play purchase or physical haptic.

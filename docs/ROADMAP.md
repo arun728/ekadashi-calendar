@@ -6,8 +6,9 @@ status table as each phase moves forward.
 ## Offline premium extension (18 October 2026)
 
 The new four-phase plan is in [PREMIUM_ROADMAP.md](PREMIUM_ROADMAP.md).
-Journey rewards for 2026/2027 have a locally validated iOS candidate on
-`feature/premium-journey`; Android follows iOS approval. Birth profiles,
+Journey rewards for 2026/2027 have iOS and Android candidates on
+`feature/premium-journey` (PR #25); the Android port was authorized after
+iOS review on 18 October. Birth profiles,
 family birthdays and My Panchang remain planned. Daily Rasi Palan is deferred.
 
 ## Working rules

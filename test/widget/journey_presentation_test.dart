@@ -113,7 +113,10 @@ void main() {
                   key: boundary,
                   child: SizedBox(
                     width: 360,
-                    child: JourneyAnnualShareCard(progress: p, badges: const []),
+                    child: JourneyAnnualShareCard(
+                      progress: p,
+                      badges: const [],
+                    ),
                   ),
                 ),
               ),
@@ -126,20 +129,50 @@ void main() {
                 as RenderRepaintBoundary;
         final image = (await tester.runAsync(() => render.toImage()))!;
         final bytes = await tester.runAsync(() => image.toByteData());
-      images.add(bytes!.buffer.asUint8List().toList());
+        images.add(bytes!.buffer.asUint8List().toList());
         image.dispose();
       }
       expect(images[0], images[1]);
     },
   );
-  testWidgets('reduced motion suppresses celebration haptics and custom animation',(tester)async {
-    final calls=<Object?>[];
-    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(SystemChannels.platform,(call)async { if(call.method=='HapticFeedback.vibrate')calls.add(call.arguments);return null; });
-    addTearDown(()=>tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(SystemChannels.platform,null));
-    await tester.pumpWidget(ChangeNotifierProvider(create:(_)=>LanguageService(),child:MaterialApp(home:MediaQuery(data:const MediaQueryData(disableAnimations:true),child:AchievementUnlockDialog(achievements:[JourneyBadgeCatalog.all([]).first.achievement])))));
-    await tester.pumpAndSettle();
-    final animation=tester.widget<TweenAnimationBuilder<double>>(find.byKey(const Key('journey_celebration_animation')));
-    expect(animation.duration,Duration.zero);expect(calls,isEmpty);
-  });
-
+  testWidgets(
+    'reduced motion suppresses celebration haptics and custom animation',
+    (tester) async {
+      final calls = <Object?>[];
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        (call) async {
+          if (call.method == 'HapticFeedback.vibrate') {
+            calls.add(call.arguments);
+          }
+          return null;
+        },
+      );
+      addTearDown(
+        () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+          SystemChannels.platform,
+          null,
+        ),
+      );
+      await tester.pumpWidget(
+        ChangeNotifierProvider(
+          create: (_) => LanguageService(),
+          child: MaterialApp(
+            home: MediaQuery(
+              data: const MediaQueryData(disableAnimations: true),
+              child: AchievementUnlockDialog(
+                achievements: [JourneyBadgeCatalog.all([]).first.achievement],
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final animation = tester.widget<TweenAnimationBuilder<double>>(
+        find.byKey(const Key('journey_celebration_animation')),
+      );
+      expect(animation.duration, Duration.zero);
+      expect(calls, isEmpty);
+    },
+  );
 }

@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ekadashi_calendar/main.dart' as app;
 import 'package:ekadashi_calendar/services/language_service.dart';
+import 'package:ekadashi_calendar/l10n/app_language.dart';
 import 'package:ekadashi_calendar/services/vrat_tracker_service.dart';
 import 'package:ekadashi_calendar/screens/settings_screen.dart';
 
@@ -43,6 +44,7 @@ void main() {
 
       Future<void> capture(String name) async {
         debugPrint('Journey screenshot: $name');
+        await tester.pump(const Duration(seconds: 5));
         await tester.pump(const Duration(milliseconds: 300));
         var done = false;
         final shot = binding.takeScreenshot('journey_$name');
@@ -137,6 +139,15 @@ void main() {
       for (final code in ['hi', 'ta', 'te', 'gu', 'bn']) {
         await lang.changeLanguage(code);
         await tester.pumpAndSettle();
+        expect(
+          find.text(
+            AppStrings.translateWithArgs('ios_journey_year_points', code, [
+              '0',
+              '4100',
+            ]),
+          ),
+          findsOneWidget,
+        );
         await capture('locale_$code');
       }
       await lang.changeLanguage('en');

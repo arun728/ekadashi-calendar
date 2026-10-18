@@ -152,7 +152,7 @@ void main() {
       expect(find.byKey(Key('journey_tab_$page')), findsOneWidget);
     }
     expect(selected(tester, 'journey_tab_overview'), isTrue);
-    expect(find.byKey(const Key('journey_overview_streaks')), findsOneWidget);
+    expect(find.byKey(const Key('journey_year_points')), findsOneWidget);
 
     await swipe(tester, left: true);
     expect(selected(tester, 'journey_tab_history'), isTrue);
@@ -161,7 +161,7 @@ void main() {
     expect(selected(tester, 'journey_tab_statistics'), isTrue);
     await tapChip(tester, 'journey_tab_achievements');
     expect(selected(tester, 'journey_tab_achievements'), isTrue);
-    expect(find.text('First Vrat'), findsOneWidget);
+    expect(find.text('First Step'), findsOneWidget);
     await swipe(tester, left: false);
     expect(selected(tester, 'journey_tab_statistics'), isTrue);
     expect(tester.takeException(), isNull);

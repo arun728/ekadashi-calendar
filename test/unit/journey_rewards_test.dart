@@ -310,26 +310,29 @@ void main() {
       expect((await SharedPreferences.getInstance()).getString(key), 'invalid');
     });
   }
-  test('all 63 Journey translations equal iOS, including placeholder order', () {
-    final overrides =
-        jsonDecode(
-              File(
-                'test/fixtures/journey_translations.json',
-              ).readAsStringSync(),
-            )
-            as Map;
-    for (final code in AppLanguage.codes) {
-      final strings = overrides[code] as Map;
-      expect(strings.length,63);
-      for (final key in strings.keys.where(
-        (k) => k.startsWith('ios_journey_'),
-      )) {
-        expect(
-          AppStrings.translate(key, code),
-          strings[key],
-          reason: '$code $key',
-        );
+  test(
+    'all 63 Journey translations equal iOS, including placeholder order',
+    () {
+      final overrides =
+          jsonDecode(
+                File(
+                  'test/fixtures/journey_translations.json',
+                ).readAsStringSync(),
+              )
+              as Map;
+      for (final code in AppLanguage.codes) {
+        final strings = overrides[code] as Map;
+        expect(strings.length, 63);
+        for (final key in strings.keys.where(
+          (k) => k.startsWith('ios_journey_'),
+        )) {
+          expect(
+            AppStrings.translate(key, code),
+            strings[key],
+            reason: '$code $key',
+          );
+        }
       }
-    }
-  });
+    },
+  );
 }
