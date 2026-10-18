@@ -86,6 +86,12 @@ final class AppModel {
     var paywall: PaywallRequest?
     var googlePicker: GooglePickerRequest?
     var unlockQueue: [Achievement] = []
+    private(set) var badgeHaptics = true
+
+    func setBadgeHaptics(_ enabled: Bool) {
+        badgeHaptics = enabled
+        store.set(enabled, forKey: "journey_badge_haptics")
+    }
     /// Bumped when Home sets the Panchang location.
     private(set) var panchangCityRevision = 0
 
@@ -98,6 +104,7 @@ final class AppModel {
         let premium = StoreKitPremiumService()
         let snapshot = premium.snapshot
         self.store = store
+        badgeHaptics = store.bool(forKey: "journey_badge_haptics") ?? true
         self.premium = premium
         repository = try? CalendarRepository.bundled()
         let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
@@ -463,7 +470,9 @@ final class AppModel {
         loadError = nil
         isLoading = false
         isCalculating = false
-        if !vrat.isEnabled { vrat.load(ekadashis) } else { announce(vrat.refreshAchievements(ekadashis)) }
+        vrat.tracker.journeyZone = scheduleZone
+        if !vrat.isEnabled { vrat.load(ekadashis) }
+        announce(vrat.refreshAchievements(ekadashis))
         let home = homeEkadashis
         if !scrollToNext, let current, let index = home.firstIndex(where: { $0.occurrenceUid == current }) {
             homeIndex = index
@@ -663,12 +672,12 @@ final class AppModel {
     func announce(_ achievements: [Achievement], afterDismissal: Bool = false) {
         guard !achievements.isEmpty else { return }
         guard afterDismissal else {
-            unlockQueue.append(contentsOf: achievements)
+            unlockQueue.append(contentsOf: achievements.filter { badge in !unlockQueue.contains { $0.id == badge.id } })
             return
         }
         Task {
             try? await Task.sleep(nanoseconds: 600_000_000)
-            unlockQueue.append(contentsOf: achievements)
+            unlockQueue.append(contentsOf: achievements.filter { badge in !unlockQueue.contains { $0.id == badge.id } })
         }
     }
 

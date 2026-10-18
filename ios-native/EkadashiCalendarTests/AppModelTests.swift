@@ -126,6 +126,8 @@ final class AppModelTests: XCTestCase {
         XCTAssertEqual(RecentCities(store: model.store).all().first, AppModel.defaultCity)
         XCTAssertEqual(model.ekadashiCityName, "Chennai (IN)", "city and country code, no time zone")
 
+        // Establish a transition even when a previous run persisted 2027.
+        model.setYear(2026)
         model.setYear(2027)
         XCTAssertTrue(model.homeEkadashis.allSatisfy { $0.date.year == 2027 })
         XCTAssertEqual(model.calendarFocus?.year, 2027)
