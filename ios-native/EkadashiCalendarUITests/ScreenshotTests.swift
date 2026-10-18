@@ -442,9 +442,13 @@ final class ScreenshotTests: XCTestCase {
                 .press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.4)))
         }
         XCTAssertTrue(master.waitForExistence(timeout: 5))
-        let reminder = element("notify_toggle_notify_2day")
-        XCTAssertTrue(reminder.waitForExistence(timeout: 5))
         if (master.value as? String) == "1" { master.switches.firstMatch.exists ? master.switches.firstMatch.tap() : master.tap() }
+        let reminder = element("notify_toggle_notify_2day")
+        for _ in 0..<6 where !reminder.exists {
+            app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.65))
+                .press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.45)))
+        }
+        XCTAssertTrue(reminder.waitForExistence(timeout: 5))
         let off = expectation(for: NSPredicate(format: "value == '0' AND isEnabled == false"), evaluatedWith: reminder)
         XCTAssertEqual(XCTWaiter.wait(for: [off], timeout: 10), .completed, "off and greyed out")
         snap("18-reminders-off")

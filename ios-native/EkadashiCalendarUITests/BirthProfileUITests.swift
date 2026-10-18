@@ -1,6 +1,7 @@
 import XCTest
 import StoreKitTest
 
+@MainActor
 final class BirthProfileUITests: XCTestCase {
     override func setUp() { continueAfterFailure = false }
     private func snapshot(_ app: XCUIApplication, _ name: String) {
@@ -12,8 +13,10 @@ final class BirthProfileUITests: XCTestCase {
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 40))
         app.tabBars.buttons.element(boundBy: 3).tap()
         let birth = app.buttons["panchang_tab_birth"]
-        let chips = app.scrollViews["panchang_tabs_tube"]
-        if !birth.isHittable { chips.exists ? chips.swipeLeft() : app.swipeLeft() }
+        let chips = app.descendants(matching: .any)["panchang_tabs_tube"].firstMatch
+        XCTAssertTrue(chips.waitForExistence(timeout: 10))
+        chips.swipeLeft()
+        chips.swipeLeft()
         XCTAssertTrue(birth.waitForExistence(timeout: 10))
         birth.tap()
         XCTAssertTrue(app.buttons["birth_create"].waitForExistence(timeout: 10))
@@ -32,7 +35,27 @@ final class BirthProfileUITests: XCTestCase {
         app.buttons["premium_close"].tap()
         XCTAssertTrue(app.buttons["birth_calculate"].waitForExistence(timeout: 5))
     }
+    func testOfflineBirthplaceSearchDoesNotChangeHome() {
+        let app = XCUIApplication(); open(app)
+        app.buttons["birth_place"].tap()
+        let search = app.textFields["birth_city_search"]
+        XCTAssertTrue(search.waitForExistence(timeout: 10))
+        search.tap(); search.typeText("New York")
+        let city = app.buttons["birth_city_geonames-5128581"]
+        XCTAssertTrue(city.waitForExistence(timeout: 15))
+        snapshot(app, "birth-09-offline-place-search")
+        city.tap()
+        XCTAssertTrue(app.staticTexts["America/New_York"].waitForExistence(timeout: 10))
+        snapshot(app, "birth-10-selected-birthplace")
+        app.buttons["Cancel"].firstMatch.tap()
+        app.tabBars.buttons.element(boundBy: 0).tap()
+        XCTAssertTrue(app.buttons["home_location"].label.contains("Chennai"))
+    }
     func testPremiumExactUnknownEditAndDeleteWithRealStoreKitEntitlement() async throws {
+        let os = ProcessInfo.processInfo.operatingSystemVersion
+        if os.majorVersion == 26 && os.minorVersion == 5 {
+            throw XCTSkip("Apple FB22237318 / FB23721564: StoreKitTest configuration mutations fail on the iOS 26.5 CLI runtime. Run this test on iOS 18.6 or a fixed runtime.")
+        }
         let session = try SKTestSession(configurationFileNamed: "Products")
         session.disableDialogs = true
         session.clearTransactions()

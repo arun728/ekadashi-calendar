@@ -21,7 +21,8 @@ final class BirthPresentationTests: XCTestCase {
     func testUnknownTimeResultsRenderForAllLanguagesAndLargeType() throws {
         let input = BirthInput(date: CivilDate(2000, 1, 1), hour: nil, minute: nil, city: .chennai)
         let profile = try BirthProfileStore(store: InMemoryKeyValueStore()).save(input, premium: true)
-        let model = AppModel()
+        let model = AppModel(), originalLanguage = AppModel().language
+        defer { model.setLanguage(originalLanguage) }
         for language in Localizer.languages {
             model.setLanguage(language)
             let view = BirthResultsView(profile: profile).frame(width: 360).environment(model).environment(\.dynamicTypeSize, .accessibility1)
