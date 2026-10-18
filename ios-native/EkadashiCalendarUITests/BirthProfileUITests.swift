@@ -64,6 +64,8 @@ final class BirthProfileUITests: XCTestCase {
         let zone = app.textFields["birth_manual_timezone"]
         for _ in 0..<5 where !zone.isHittable { app.swipeUp() }
         XCTAssertTrue(zone.waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["Latitude"].exists, "Filled coordinates need persistent visible labels")
+        XCTAssertTrue(app.staticTexts["Longitude"].exists)
         zone.tap()
         zone.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: "Asia/Kolkata".count) + "Invalid/Zone")
         let save = app.buttons["birth_manual_save"]
