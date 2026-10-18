@@ -67,7 +67,9 @@ final class BirthProfileUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Latitude"].exists, "Filled coordinates need persistent visible labels")
         XCTAssertTrue(app.staticTexts["Longitude"].exists)
         zone.tap()
+        zone.coordinate(withNormalizedOffset: CGVector(dx: 0.99, dy: 0.5)).tap()
         zone.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: "Asia/Kolkata".count) + "Invalid/Zone")
+        XCTAssertEqual(zone.value as? String, "Invalid/Zone")
         let save = app.buttons["birth_manual_save"]
         XCTAssertFalse(save.isEnabled)
         zone.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: "Invalid/Zone".count) + "Asia/Kathmandu")

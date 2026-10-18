@@ -47,3 +47,6 @@ app.*.map.json
 # Kotlin compiler session artifacts
 /android/.kotlin/
 tool/l10n/out/
+
+# Local Phase 2 simulator evidence and build output.
+/outputs/

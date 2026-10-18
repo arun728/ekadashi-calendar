@@ -22,31 +22,52 @@ final class BirthPresentationTests: XCTestCase {
             }
         }
     }
-    func testUnknownTimeResultsRenderForAllLanguagesAndLargeType() throws {
+    func testUnknownTimeResultsRenderForAllLanguagesAndLargeType() async throws {
         let input = BirthInput(date: CivilDate(2000, 1, 1), hour: nil, minute: nil, city: .chennai)
         let profile = try BirthProfileStore(store: InMemoryKeyValueStore()).save(input, premium: true)
         let model = AppModel(), originalLanguage = AppModel().language
         defer { model.setLanguage(originalLanguage) }
         for language in Localizer.languages {
             model.setLanguage(language)
-            let view = BirthResultsView(profile: profile).frame(width: 360).environment(model).environment(\.dynamicTypeSize, .accessibility1)
-            let image = try XCTUnwrap(ImageRenderer(content: view).uiImage)
-            XCTAssertGreaterThan(try XCTUnwrap(image.pngData()).count, 1000)
-            let shot = XCTAttachment(image: image); shot.name = "birth-results-\(language)-large-type"; shot.lifetime = .keepAlways; add(shot)
+            try await captureResults(profile, model: model, prefix: "birth-unknown-\(language)-large-type", large: true)
         }
+        model.setLanguage("en")
+        try await captureResults(profile, model: model, prefix: "birth-unknown", large: false)
     }
-    func testExactResultsRenderAllFourBirthValues() throws {
+    func testExactResultsRenderAllFourBirthValues() async throws {
         let model = AppModel(), language = AppModel().language
         model.setLanguage("en")
         defer { model.setLanguage(language) }
         let input = BirthInput(date: CivilDate(2000, 1, 1), hour: 12, minute: 0, city: .chennai)
         let profile = try BirthProfileStore(store: InMemoryKeyValueStore()).save(input, premium: true)
-        let view = BirthResultsView(profile: profile).padding(20).frame(width: 393)
-            .background(Color.black).environment(\.colorScheme, .dark).environment(model)
-        let image = try XCTUnwrap(ImageRenderer(content: view).uiImage)
-        let pixels = try XCTUnwrap(image.cgImage?.dataProvider?.data) as Data
-        XCTAssertGreaterThan(Set(pixels).count, 20)
-        let shot = XCTAttachment(image: image); shot.name = "birth-exact-four-results"; shot.lifetime = .keepAlways; add(shot)
+        try await captureResults(profile, model: model, prefix: "birth-exact", large: false)
+    }
+    private func captureResults(_ profile: SavedBirthProfile, model: AppModel, prefix: String, large: Bool) async throws {
+        // Material/vibrancy text must be captured from a real window.
+        // ImageRenderer omits primary/secondary labels inside glass panels.
+        let root = ScrollView { BirthResultsView(profile: profile).padding(16) }
+            .background(Color.black).environment(model)
+            .environment(\.colorScheme, .dark).environment(\.dynamicTypeSize, large ? .accessibility1 : .large)
+        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+        let window = UIWindow(windowScene: scene)
+        window.frame = CGRect(x: 0, y: 0, width: 393, height: 852)
+        window.overrideUserInterfaceStyle = .dark
+        window.rootViewController = UIHostingController(rootView: root); window.makeKeyAndVisible()
+        defer { window.isHidden = true }
+        try await Task.sleep(for: .milliseconds(350))
+        func scrollView(_ view: UIView) -> UIScrollView? {
+            if let scroll = view as? UIScrollView { return scroll }
+            return view.subviews.lazy.compactMap { scrollView($0) }.first
+        }
+        let scroll = try XCTUnwrap(scrollView(window))
+        for (name, fraction) in [("top", 0.0), ("middle", 0.5), ("bottom", 1.0)] {
+            scroll.setContentOffset(CGPoint(x: 0, y: max(0, scroll.contentSize.height - scroll.bounds.height) * fraction), animated: false)
+            try await Task.sleep(for: .milliseconds(150))
+            let image = UIGraphicsImageRenderer(bounds: window.bounds).image { _ in window.drawHierarchy(in: window.bounds, afterScreenUpdates: true) }
+            let pixels = try XCTUnwrap(image.cgImage?.dataProvider?.data) as Data
+            XCTAssertGreaterThan(Set(pixels).count, 20)
+            let shot = XCTAttachment(image: image); shot.name = "\(prefix)-\(name)"; shot.lifetime = .keepAlways; add(shot)
+        }
     }
     func testRepeatedTimeEditorRendersBothHistoricalChoices() async throws {
         let model = AppModel(), language = AppModel().language
