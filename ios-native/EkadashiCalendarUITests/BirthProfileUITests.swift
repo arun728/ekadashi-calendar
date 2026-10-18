@@ -7,10 +7,12 @@ final class BirthProfileUITests: XCTestCase {
     private func snapshot(_ app: XCUIApplication, _ name: String) {
         let shot = XCTAttachment(screenshot: app.screenshot()); shot.name = name; shot.lifetime = .keepAlways; add(shot)
     }
-    private func open(_ app: XCUIApplication) {
-        app.launchArguments = ["-ui-testing"]
-        app.launch()
-        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 40))
+    private func open(_ app: XCUIApplication, alreadyLaunched: Bool = false) {
+        if !alreadyLaunched {
+            app.launchArguments = ["-ui-testing"]
+            app.launch()
+            XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 40))
+        }
         app.tabBars.buttons.element(boundBy: 3).tap()
         let birth = app.buttons["panchang_tab_birth"]
         let chips = app.descendants(matching: .any)["panchang_tabs_tube"].firstMatch
@@ -56,6 +58,23 @@ final class BirthProfileUITests: XCTestCase {
         app.tabBars.buttons.element(boundBy: 0).tap()
         XCTAssertTrue(app.buttons["home_location"].label.contains("Chennai"))
     }
+    func testManualBirthplaceRejectsInvalidZoneAndSavesValidPlace() {
+        let app = XCUIApplication(); open(app)
+        app.buttons["birth_place"].tap()
+        let zone = app.textFields["birth_manual_timezone"]
+        for _ in 0..<5 where !zone.isHittable { app.swipeUp() }
+        XCTAssertTrue(zone.waitForExistence(timeout: 10))
+        zone.tap()
+        zone.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: "Asia/Kolkata".count) + "Invalid/Zone")
+        let save = app.buttons["birth_manual_save"]
+        XCTAssertFalse(save.isEnabled)
+        zone.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: "Invalid/Zone".count) + "Asia/Kathmandu")
+        XCTAssertTrue(save.isEnabled)
+        snapshot(app, "birth-11-manual-birthplace")
+        save.tap()
+        XCTAssertTrue(app.buttons["birth_calculate"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "Asia/Kathmandu")).firstMatch.exists)
+    }
     func testPremiumExactUnknownEditAndDeleteWithRealStoreKitEntitlement() async throws {
         let os = ProcessInfo.processInfo.operatingSystemVersion
         if os.majorVersion == 26 && os.minorVersion == 5 {
@@ -65,8 +84,24 @@ final class BirthProfileUITests: XCTestCase {
         session.disableDialogs = true
         session.clearTransactions()
         defer { session.clearTransactions() }
-        try await session.buyProduct(identifier: "ekadashi_premium_lifetime", options: [])
-        let app = XCUIApplication(); open(app)
+        let app = XCUIApplication()
+        app.launchArguments = ["-ui-testing"]; app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 40))
+        app.tabBars.buttons.element(boundBy: 4).tap()
+        app.buttons["settings_premium"].tap()
+        let lifetime = app.buttons["premium_plan_lifetime"]
+        XCTAssertTrue(lifetime.waitForExistence(timeout: 10))
+        lifetime.tap()
+        let buy = app.buttons["premium_buy"]
+        for _ in 0..<4 where !buy.isHittable { app.swipeUp() }
+        XCTAssertTrue(buy.waitForExistence(timeout: 10)); buy.tap()
+        guard app.descendants(matching: .any)["premium_lifetime_thanks"].firstMatch.waitForExistence(timeout: 30) else {
+            snapshot(app, "birth-purchase-verification-failure")
+            XCTFail("The app must verify the test purchase before exercising paid calculations")
+            return
+        }
+        app.buttons["premium_close"].tap()
+        open(app, alreadyLaunched: true)
         app.buttons["birth_calculate"].tap()
         XCTAssertTrue(app.descendants(matching: .any)["birth_results"].firstMatch.waitForExistence(timeout: 15))
         snapshot(app, "birth-04-exact-results")

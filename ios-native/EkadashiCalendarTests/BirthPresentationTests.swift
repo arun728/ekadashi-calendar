@@ -9,9 +9,9 @@ final class BirthPresentationTests: XCTestCase {
         let date = ISO8601.instant("1900-01-01T06:38:50Z")!
         let city = PanchangCity.chennai
         XCTAssertTrue(BirthTimeText.offset(date, city: city, language: "en").contains("21:10"))
-        let accra = PanchangCity(id: "accra", label: "Accra", latitude: 5.55, longitude: -0.2, timeZoneId: "Africa/Accra")
-        XCTAssertEqual(accra.zone.zone(at: date).offsetSeconds, -52)
-        XCTAssertTrue(BirthTimeText.offset(date, city: accra, language: "en").contains("−0:00:52"),
+        // Exercise a sub-minute signed offset directly: the bundled slim
+        // timezone database merges some pre-1970 regional histories.
+        XCTAssertTrue(BirthTimeText.offset(seconds: -52, language: "en").contains("−0:00:52"),
                       "Negative historical offsets shorter than a minute must keep their sign and seconds unit")
         let values = BirthCalculator.values(at: date)
         for language in Localizer.languages {
@@ -34,6 +34,19 @@ final class BirthPresentationTests: XCTestCase {
             XCTAssertGreaterThan(try XCTUnwrap(image.pngData()).count, 1000)
             let shot = XCTAttachment(image: image); shot.name = "birth-results-\(language)-large-type"; shot.lifetime = .keepAlways; add(shot)
         }
+    }
+    func testExactResultsRenderAllFourBirthValues() throws {
+        let model = AppModel(), language = AppModel().language
+        model.setLanguage("en")
+        defer { model.setLanguage(language) }
+        let input = BirthInput(date: CivilDate(2000, 1, 1), hour: 12, minute: 0, city: .chennai)
+        let profile = try BirthProfileStore(store: InMemoryKeyValueStore()).save(input, premium: true)
+        let view = BirthResultsView(profile: profile).padding(20).frame(width: 393)
+            .background(Color.black).environment(\.colorScheme, .dark).environment(model)
+        let image = try XCTUnwrap(ImageRenderer(content: view).uiImage)
+        let pixels = try XCTUnwrap(image.cgImage?.dataProvider?.data) as Data
+        XCTAssertGreaterThan(Set(pixels).count, 20)
+        let shot = XCTAttachment(image: image); shot.name = "birth-exact-four-results"; shot.lifetime = .keepAlways; add(shot)
     }
     func testRepeatedTimeEditorRendersBothHistoricalChoices() async throws {
         let model = AppModel(), language = AppModel().language
