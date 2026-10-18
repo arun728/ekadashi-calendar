@@ -9,6 +9,10 @@ final class BirthPresentationTests: XCTestCase {
         let date = ISO8601.instant("1900-01-01T06:38:50Z")!
         let city = PanchangCity.chennai
         XCTAssertTrue(BirthTimeText.offset(date, city: city, language: "en").contains("21:10"))
+        let accra = PanchangCity(id: "accra", label: "Accra", latitude: 5.55, longitude: -0.2, timeZoneId: "Africa/Accra")
+        XCTAssertEqual(accra.zone.zone(at: date).offsetSeconds, -52)
+        XCTAssertTrue(BirthTimeText.offset(date, city: accra, language: "en").contains("−0:00:52"),
+                      "Negative historical offsets shorter than a minute must keep their sign and seconds unit")
         let values = BirthCalculator.values(at: date)
         for language in Localizer.languages {
             for key in ["rashi", "nakshatra", "pada", "tithi"] {
@@ -32,10 +36,15 @@ final class BirthPresentationTests: XCTestCase {
         }
     }
     func testRepeatedTimeEditorRendersBothHistoricalChoices() async throws {
-        let model = AppModel()
+        let model = AppModel(), language = AppModel().language
+        model.setLanguage("en")
+        defer { model.setLanguage(language) }
         let input = BirthInput(date: CivilDate(2024, 11, 3), hour: 1, minute: 30, city: .newYork)
         let root = BirthProfileEditor(input: input, repository: BirthProfileStore(store: InMemoryKeyValueStore()), saved: { _ in }).environment(model)
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 393, height: 852))
+        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+        let window = UIWindow(windowScene: scene)
+        window.frame = CGRect(x: 0, y: 0, width: 393, height: 852)
+        window.overrideUserInterfaceStyle = .dark
         window.rootViewController = UIHostingController(rootView: root); window.makeKeyAndVisible()
         defer { window.isHidden = true }
         try await Task.sleep(for: .seconds(1))
