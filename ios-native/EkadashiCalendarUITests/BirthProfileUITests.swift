@@ -15,8 +15,12 @@ final class BirthProfileUITests: XCTestCase {
         let birth = app.buttons["panchang_tab_birth"]
         let chips = app.descendants(matching: .any)["panchang_tabs_tube"].firstMatch
         XCTAssertTrue(chips.waitForExistence(timeout: 10))
-        chips.swipeLeft()
-        chips.swipeLeft()
+        // Drag only within the visible chip strip. The accessibility frame
+        // includes offscreen content, so swipeLeft() can start off screen.
+        let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.16))
+        let end = app.coordinate(withNormalizedOffset: CGVector(dx: 0.1, dy: 0.16))
+        start.press(forDuration: 0.05, thenDragTo: end)
+        start.press(forDuration: 0.05, thenDragTo: end)
         XCTAssertTrue(birth.waitForExistence(timeout: 10))
         birth.tap()
         XCTAssertTrue(app.buttons["birth_create"].waitForExistence(timeout: 10))
@@ -45,7 +49,8 @@ final class BirthProfileUITests: XCTestCase {
         XCTAssertTrue(city.waitForExistence(timeout: 15))
         snapshot(app, "birth-09-offline-place-search")
         city.tap()
-        XCTAssertTrue(app.staticTexts["America/New_York"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["birth_place"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["birth_place"].label.contains("New York City"))
         snapshot(app, "birth-10-selected-birthplace")
         app.buttons["Cancel"].firstMatch.tap()
         app.tabBars.buttons.element(boundBy: 0).tap()
@@ -74,8 +79,11 @@ final class BirthProfileUITests: XCTestCase {
         snapshot(app, "birth-05-unknown-editor")
         app.buttons["birth_calculate"].tap()
         XCTAssertTrue(app.descendants(matching: .any)["birth_unknown_summary"].firstMatch.waitForExistence(timeout: 15))
+        app.swipeDown(velocity: .fast)
+        app.swipeDown(velocity: .fast)
         snapshot(app, "birth-06-unknown-results")
-        app.swipeUp()
+        let timeline = app.staticTexts["Possible results during this date"]
+        for _ in 0..<6 where !timeline.isHittable { app.swipeUp() }
         snapshot(app, "birth-07-transition-timeline")
         let delete = app.buttons["birth_delete"]
         for _ in 0..<5 where !delete.isHittable { app.swipeUp() }
