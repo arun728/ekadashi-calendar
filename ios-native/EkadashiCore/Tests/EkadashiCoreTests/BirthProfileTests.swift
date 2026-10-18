@@ -141,4 +141,17 @@ final class BirthProfileTests: XCTestCase {
         XCTAssertTrue(exact.nearBoundary)
     }
 
+    func testUnknownTimelineRetainsTwoChangesInsideOneSamplingWindow() throws {
+        // Swiss Ephemeris independently locates distinct category changes
+        // near 06:07 and 06:09 UTC on this date, inside the same 5-min step.
+        let reading = try BirthCalculator.calculate(input(CivilDate(2024, 1, 31), hour: nil, minute: nil))
+        for span in reading.spans {
+            var cursor = span.start.addingTimeInterval(1)
+            while cursor < span.end.addingTimeInterval(-0.5) {
+                XCTAssertEqual(span.values, BirthCalculator.values(at: cursor), ISO8601.string(cursor))
+                cursor = cursor.addingTimeInterval(30)
+            }
+        }
+    }
+
 }
