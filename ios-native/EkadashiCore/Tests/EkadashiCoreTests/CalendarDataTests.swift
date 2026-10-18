@@ -165,7 +165,8 @@ final class LocalizationTests: XCTestCase {
         // "X of Y Ekadashis", the five time zone names and the UTC offset,
         // and the 20 Ekadashi-engine, city picker and share card strings
         // (docs/EKADASHI_ENGINE_SCHEDULE.md).
-        XCTAssertEqual(english.count, 513)
+        // 63 Journey strings now shared with Android.
+        XCTAssertEqual(english.count, 576)
         var problems: [String] = []
         for language in ["ta", "hi", "te", "gu", "bn"] {
             for key in english {
@@ -183,6 +184,17 @@ final class LocalizationTests: XCTestCase {
             }
         }
         XCTAssertEqual(problems, [])
+    }
+
+    func testJourneyStringsMatchTheApprovedCrossPlatformCopy() throws {
+        let table = try Repo.json("test/fixtures/journey_translations.json") as! [String: [String: String]]
+        for language in Localizer.languages {
+            let strings = try XCTUnwrap(table[language])
+            XCTAssertEqual(strings.count, 63)
+            for (key, value) in strings {
+                XCTAssertEqual(Localizer.shared.translate(key, language: language), value, "\(language) \(key)")
+            }
+        }
     }
 
     func testTranslateWithArgumentsFillsPlaceholdersInOrder() {
