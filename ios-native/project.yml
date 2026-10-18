@@ -114,6 +114,7 @@ targets:
     platform: iOS
     sources:
       - path: EkadashiCalendarUITests
+      - path: EkadashiCalendar/Resources/Products.storekit
     dependencies:
       - target: EkadashiCalendar
     settings:

@@ -9,9 +9,9 @@ import EkadashiCore
 /// Premium: the other Key days, the five limbs, timings, Muhurta and Rashi.
 struct PanchangView: View {
     enum Page: String, CaseIterable {
-        case keyDays = "keydays", daily, muhurta, ekadashi, rashi
+        case keyDays = "keydays", daily, muhurta, ekadashi, rashi, birth
 
-        var titleKey: String { "panchang_section_\(rawValue)" }
+        var titleKey: String { self == .birth ? "ios_birth_title" : "panchang_section_\(rawValue)" }
         /// Sections that browse a month rather than a day.
         var isMonthly: Bool { self == .keyDays || self == .ekadashi }
     }
@@ -45,7 +45,7 @@ struct PanchangView: View {
                 ForEach(Page.allCases, id: \.self) { page in
                     ScrollView {
                         VStack(alignment: .leading, spacing: 16) {
-                            controls(page)
+                            if page != .birth { controls(page) }
                             content(page)
                         }
                         .padding(EdgeInsets(top: 8, leading: 16, bottom: 100, trailing: 16))
@@ -97,6 +97,7 @@ struct PanchangView: View {
     private var sectionBar: some View {
         SectionChips(Page.allCases, selection: $section, title: { model.t($0.titleKey) },
                      identifier: { "panchang_tab_\($0.rawValue)" })
+            .accessibilityIdentifier("panchang_tabs_tube")
     }
 
     /// The location, then the month or day being shown.
@@ -214,6 +215,8 @@ struct PanchangView: View {
             } else {
                 loading
             }
+        case .birth:
+            BirthProfileView()
         case .rashi:
             if !model.premium.isPremium {
                 PanchangUpgradeCard()

@@ -128,7 +128,11 @@ before starting the Android implementation.
 
 ## Phase 2 — Personal birth profile
 
-Status: planned; requires its own phase start after Phase 1 approval.
+Status: iOS candidate implemented; paid StoreKit end-to-end validation remains open.
+Authorized by Arun on 18 October 2026, on
+`feature/premium-birth-profile` from latest `dev`. See [BIRTH_PROFILE.md](BIRTH_PROFILE.md)
+for conventions, independent references and local validation. Phase 1 remains
+in its separate draft PR; this phase does not merge Journey code.
 
 - Collect birth date, local birth time and birthplace; calculate at the exact
   UTC birth instant, never reuse sunrise Panchang values as birth results.

@@ -85,9 +85,12 @@ final class AppModelTests: XCTestCase {
     func testHomeCityTraditionAndYearApplyAcrossTheApp() async {
         let model = AppModel()
         let city = model.ekadashiCity, manual = model.ekadashiCityIsManual
+        let language = model.language
+        model.setLanguage("en")
         let tradition = model.tradition, year = model.selectedYear, panchang = model.panchangCity
         defer {
             // The tests share the app's settings; put them back.
+            model.setLanguage(language)
             model.setTradition(tradition)
             model.setYear(year)
             if manual { model.chooseEkadashiCity(city) }
@@ -126,6 +129,7 @@ final class AppModelTests: XCTestCase {
         XCTAssertEqual(RecentCities(store: model.store).all().first, AppModel.defaultCity)
         XCTAssertEqual(model.ekadashiCityName, "Chennai (IN)", "city and country code, no time zone")
 
+        model.setYear(2026)
         model.setYear(2027)
         XCTAssertTrue(model.homeEkadashis.allSatisfy { $0.date.year == 2027 })
         XCTAssertEqual(model.calendarFocus?.year, 2027)
