@@ -1,6 +1,8 @@
 import XCTest
 
 final class JourneyRewardsUITests: XCTestCase {
+    override func setUp() { continueAfterFailure = false }
+
     func testAnnualPointsMandalaPremiumAndBadgeDetails() {
         let app = XCUIApplication()
         app.launchArguments = ["-ui-testing"]
@@ -17,8 +19,15 @@ final class JourneyRewardsUITests: XCTestCase {
         app.buttons["2027"].firstMatch.tap()
         XCTAssertTrue(points.label.contains("2027") || app.staticTexts["Your 2027 Journey"].exists)
         app.buttons["journey_tab_achievements"].tap()
+        let consistency = app.buttons["journey_badge_filter_consistency"]
+        XCTAssertTrue(consistency.waitForExistence(timeout: 10))
+        consistency.tap()
+        XCTAssertTrue(app.buttons["journey_badge_consistent_observance"].waitForExistence(timeout: 5))
+        app.buttons["journey_badge_filter_all"].tap()
         let first = app.buttons["journey_badge_first_vrat"]
         XCTAssertTrue(first.waitForExistence(timeout: 10))
+        let collection = XCTAttachment(screenshot: app.screenshot())
+        collection.name = "journey-badge-collection"; collection.lifetime = .keepAlways; add(collection)
         first.tap()
         XCTAssertTrue(app.descendants(matching: .any)["journey_badge_detail"].firstMatch.waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts["Fully observe your first Ekadashi."].exists)
@@ -36,4 +45,57 @@ final class JourneyRewardsUITests: XCTestCase {
         premium.tap()
         XCTAssertTrue(app.buttons["premium_close"].waitForExistence(timeout: 10))
     }
+    func testAnnualSharePreviewIsUserInitiated() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-ui-testing"]
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 40))
+        app.tabBars.buttons.element(boundBy: 2).tap()
+        let share = app.buttons["journey_share_year"]
+        for _ in 0..<4 where !share.isHittable { app.swipeUp() }
+        XCTAssertTrue(share.exists)
+        share.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["journey_share_preview"].firstMatch.waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["journey_share_confirm"].waitForExistence(timeout: 10))
+        XCTAssertFalse(app.buttons["premium_close"].exists)
+        let attachment = XCTAttachment(screenshot: app.screenshot())
+        attachment.name = "journey-annual-share-preview"; attachment.lifetime = .keepAlways; add(attachment)
+    }
+
+    func testThreeFreeRecordsAwardPointsAndFourthRequiresPremium() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-ui-testing"]
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 40))
+        app.tabBars.buttons.element(boundBy: 2).tap()
+        app.buttons["journey_tab_history"].tap()
+        for ordinal in 1...3 {
+            let uid = String(format: "journey_row_ekadashi:2026:%02d", ordinal)
+            let row = app.buttons[uid]
+            XCTAssertTrue(row.waitForExistence(timeout: 10))
+            row.tap()
+            let save = app.buttons["vrat_record_save"]
+            XCTAssertTrue(save.waitForExistence(timeout: 5))
+            save.tap()
+            if ordinal == 1 || ordinal == 3 {
+                let close = app.buttons["journey_celebration_close"]
+                XCTAssertTrue(close.waitForExistence(timeout: 10))
+                close.tap()
+                let hidden = NSPredicate(format: "exists == false")
+                XCTAssertEqual(XCTWaiter.wait(for: [expectation(for: hidden, evaluatedWith: close)], timeout: 5), .completed)
+            }
+            let closed = NSPredicate(format: "exists == false")
+            XCTAssertEqual(XCTWaiter.wait(for: [expectation(for: closed, evaluatedWith: save)], timeout: 5), .completed)
+        }
+        app.buttons["journey_row_ekadashi:2026:04"].tap()
+        app.buttons["vrat_record_save"].tap()
+        XCTAssertTrue(app.buttons["premium_close"].waitForExistence(timeout: 10))
+        app.buttons["premium_close"].tap()
+        app.buttons["Cancel"].firstMatch.tap()
+        app.buttons["journey_tab_overview"].tap()
+        let points = app.descendants(matching: .any)["journey_year_points"].firstMatch
+        XCTAssertTrue(points.waitForExistence(timeout: 5))
+        XCTAssertTrue(points.label.contains("300"), points.label)
+    }
+
 }
