@@ -40,6 +40,8 @@ final class BirthPresentationTests: XCTestCase {
         defer { window.isHidden = true }
         try await Task.sleep(for: .seconds(1))
         let image = UIGraphicsImageRenderer(bounds: window.bounds).image { _ in window.drawHierarchy(in: window.bounds, afterScreenUpdates: true) }
+        let pixels = try XCTUnwrap(image.cgImage?.dataProvider?.data) as Data
+        XCTAssertGreaterThan(Set(pixels).count, 20, "The editor screenshot must contain visible UI, not an empty window")
         let shot = XCTAttachment(image: image); shot.name = "birth-repeated-clock-time"; shot.lifetime = .keepAlways; add(shot)
         XCTAssertEqual(try BirthCalculator.candidates(input).count, 2)
     }
