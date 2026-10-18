@@ -112,4 +112,33 @@ final class BirthProfileTests: XCTestCase {
         }
     }
 
+    func testMalformedDecodedResultCannotCrashTheProfileScreen() throws {
+        let raw = InMemoryKeyValueStore(), store = BirthProfileStore(store: raw)
+        _ = try store.save(input(), premium: true)
+        let data = Data(try XCTUnwrap(raw.string(forKey: BirthProfileStore.key)).utf8)
+        var envelope = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        var profile = envelope["profile"] as! [String: Any]
+        var reading = profile["reading"] as! [String: Any]
+        var spans = reading["spans"] as! [[String: Any]]
+        var values = spans[0]["values"] as! [String: Any]
+        values["rashi"] = 999; spans[0]["values"] = values
+        reading["spans"] = spans; profile["reading"] = reading; envelope["profile"] = profile
+        let invalid = String(decoding: try JSONSerialization.data(withJSONObject: envelope), as: UTF8.self)
+        raw.set(invalid, forKey: BirthProfileStore.key)
+        XCTAssertThrowsError(try store.load())
+        XCTAssertThrowsError(try store.save(input(), premium: true))
+        XCTAssertEqual(raw.string(forKey: BirthProfileStore.key), invalid)
+    }
+    func testUnknownStabilityFlagsAndExactBoundaryWarning() throws {
+        let unknown = try BirthCalculator.calculate(input(hour: nil, minute: nil))
+        XCTAssertEqual(unknown.stableRashi, Set(unknown.spans.map(\.values.rashi)).count == 1)
+        XCTAssertEqual(unknown.stableNakshatra, Set(unknown.spans.map(\.values.nakshatra)).count == 1)
+        XCTAssertEqual(unknown.stablePada, Set(unknown.spans.map(\.values.pada)).count == 1)
+        XCTAssertEqual(unknown.stableTithi, Set(unknown.spans.map(\.values.tithi)).count == 1)
+        let transition = try XCTUnwrap(unknown.spans.dropFirst().first?.start)
+        let wall = PanchangCity.newDelhi.zone.wallClock(transition)
+        let exact = try BirthCalculator.calculate(input(wall.date, hour: wall.hour, minute: wall.minute))
+        XCTAssertTrue(exact.nearBoundary)
+    }
+
 }
