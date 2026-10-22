@@ -49,6 +49,31 @@ struct RootView: View {
         .toast($model.toast)
     }
 
+    @Environment(\.glassLookEnabled) private var glassLookEnabled
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+
+    @ToolbarContentBuilder
+    private var searchToolbarItem: some ToolbarContent {
+        #if compiler(>=6.2)
+        if #available(iOS 26.0, *) {
+            if GlassLookPolicy.isActive(preference: glassLookEnabled, reduceTransparency: reduceTransparency) {
+                searchToolbarBase.sharedBackgroundVisibility(.hidden)
+            } else { searchToolbarBase }
+        } else { searchToolbarBase }
+        #else
+        searchToolbarBase
+        #endif
+    }
+
+    private var searchToolbarBase: some ToolbarContent {
+        ToolbarItem(placement: .topBarTrailing) {
+            Button { model.open(.search) } label: { Image(systemName: AppSymbol.search) }
+                .glassToolbarButton()
+                .accessibilityLabel(model.t("search"))
+                .accessibilityIdentifier("open_global_search")
+        }
+    }
+
     /// Re-selecting a tab runs its "go to now" action.
     private var tabSelection: Binding<AppTab> {
         Binding(get: { model.selectedTab }, set: { model.select($0) })
@@ -83,6 +108,7 @@ struct RootView: View {
             .background(AppBackground())
             .navigationTitle(model.t("app_title"))
             .navigationBarTitleDisplayMode(.inline)
+            .modifier(GlassSystemBarAppearance())
             .toolbar {
                 // A search result opened this tab: go back to its results,
                 // like a back button (the result was not pushed here).
@@ -97,15 +123,7 @@ struct RootView: View {
                         .accessibilityIdentifier("search_return")
                     }
                 }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        model.open(.search)
-                    } label: {
-                        Image(systemName: AppSymbol.search)
-                    }
-                    .accessibilityLabel(model.t("search"))
-                    .accessibilityIdentifier("open_global_search")
-                }
+                searchToolbarItem
             }
         }
     }
@@ -123,5 +141,16 @@ private struct TabBarMinimize: ViewModifier {
         #else
         content
         #endif
+    }
+}
+
+private struct GlassSystemBarAppearance: ViewModifier {
+    @Environment(\.glassLookEnabled) private var enabled
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+    func body(content: Content) -> some View {
+        let active = GlassLookPolicy.isActive(preference: enabled, reduceTransparency: reduceTransparency)
+        // The bottom TabView bar is deliberately identical in both modes.
+        // Only the app-owned navigation surface changes with Glass Look.
+        content.toolbarBackground(active ? .hidden : .automatic, for: .navigationBar)
     }
 }

@@ -54,7 +54,7 @@ struct GoogleCalendarPickerView: View {
                 .accessibilityIdentifier("import_selected")
             }
         }
-        .presentationBackground(.thinMaterial)
+        .glassSheetBackground()
         .onAppear {
             guard !loaded else { return }
             loaded = true

@@ -30,23 +30,281 @@ final class ScreenshotTests: XCTestCase {
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
         let before = app.screenshot().image
         snap("glass-baseline-home-off")
-        tab(4)
+        glassTab(4)
         let toggle = app.switches["settings_glass_look"].firstMatch
         XCTAssertTrue(toggle.waitForExistence(timeout: 5), "Glass Look must be an opt-in Appearance setting")
         XCTAssertEqual(toggle.value as? String, "0", "Existing users keep the current appearance")
-        toggle.tap()
+        setSwitch(toggle, to: true)
         XCTAssertEqual(toggle.value as? String, "1")
         snap("glass-settings-enabled")
-        tab(0)
+        XCTAssertEqual(app.tabBars.count, 1, "Both appearances retain the original native tab bar")
+        glassTab(0)
         snap("glass-home-enabled")
+        assertSingleNativeTabBar()
+        assertPageBackgroundContinuesBehindGlassTabs()
+        XCTAssertLessThanOrEqual(app.buttons["view_details"].firstMatch.frame.maxY,
+            app.tabBars.buttons.element(boundBy: 0).frame.minY - 6, "The floating bar must not cover Home actions")
         let enabled = app.screenshot().image
         XCTAssertGreaterThan(pixelDifference(before, enabled), 0.01, "The enabled appearance must be visibly distinct")
-        tab(4)
-        toggle.tap()
+        glassTab(4)
+        setSwitch(toggle, to: false)
         XCTAssertEqual(toggle.value as? String, "0")
-        tab(0)
+        glassTab(0)
         snap("glass-home-restored-off")
         XCTAssertLessThan(pixelDifference(before, app.screenshot().image), 0.003, "Off restores the current Home, including its native tab bar")
+    }
+
+    func testGlassLookKeepsTheNativeTabBarPositionAndSize() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        let native = stableNativeTabFrames()
+        let nativeBar = app.tabBars.firstMatch.frame
+        snap("glass-tab-geometry-off")
+        glassTab(4)
+        setSwitch(app.switches["settings_glass_look"].firstMatch, to: true)
+        glassTab(0)
+        let enabled = stableNativeTabFrames()
+        let geometry = XCTAttachment(string: "Native bar: \(nativeBar)\nOff items: \(native)\nOn items: \(enabled)")
+        geometry.name = "glass-tab-bar-geometry"; geometry.lifetime = .keepAlways; add(geometry)
+        snap("glass-tab-geometry-on")
+        assertNativeTabFramesMatch(native)
+        glassTab(4)
+        setSwitch(app.switches["settings_glass_look"].firstMatch, to: false)
+        glassTab(0)
+        assertNativeTabFramesMatch(native)
+    }
+
+    func testGlassLookInEveryLanguageAndBothThemes() {
+        app.terminate()
+        app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = "2026-10-22T07:15:00Z"
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        let cases = [("English", "Glass Look", "Papankusha Ekadashi"),
+            ("हिंदी", "काँच जैसा रूप", "पापांकुशा एकादशी"),
+            ("தமிழ்", "கண்ணாடித் தோற்றம்", "பாபாங்குசா ஏகாதசி"),
+            ("తెలుగు", "గాజు రూపం", "పాపాంకుశ ఏకాదశి"),
+            ("ગુજરાતી", "કાચ જેવો દેખાવ", "પાપાંકુશા એકાદશી"),
+            ("বাংলা", "কাচের মতো চেহারা", "পাপাঙ্কুশা একাদশী")]
+        for (language, title, eventName) in cases {
+            if language != "English" {
+                element("language_menu").tap()
+                app.buttons[language].tap()
+            }
+            XCTAssertTrue(app.staticTexts[eventName].firstMatch.waitForExistence(timeout: 10), language)
+            let offTabFrames = stableNativeTabFrames()
+            glassTab(4)
+            let glass = app.switches["settings_glass_look"].firstMatch
+            XCTAssertTrue(glass.waitForExistence(timeout: 5))
+            XCTAssertTrue(glass.label.contains(title), language)
+            XCTAssertEqual(glass.value as? String, "0")
+            snap("glass-settings-off-\(language)")
+            setSwitch(glass, to: true)
+            snap("glass-settings-on-\(language)")
+            glassTab(0)
+            for theme in ["dark", "light"] {
+                if theme == "light" {
+                    glassTab(4)
+                    setSwitch(app.switches["settings_dark_mode"].firstMatch, to: false)
+                    glassTab(0)
+                }
+                XCTAssertTrue(app.staticTexts[eventName].firstMatch.waitForExistence(timeout: 10), language)
+                if theme == "dark" { assertNativeTabFramesMatch(offTabFrames) }
+                let ring = app.descendants(matching: .any)["home_remaining_ring"].firstMatch
+                XCTAssertTrue(ring.label.contains("72%"), language)
+                let window = app.windows.firstMatch.frame
+                for index in 0..<5 {
+                    let item = app.tabBars.buttons.element(boundBy: index)
+                    XCTAssertTrue(window.contains(item.frame), "\(language) \(theme) tab \(index)")
+                }
+                assertPageBackgroundContinuesBehindGlassTabs()
+                snap("glass-home-on-\(theme)-\(language)")
+            }
+            glassTab(4)
+            setSwitch(app.switches["settings_dark_mode"].firstMatch, to: true)
+            setSwitch(glass, to: false)
+            glassTab(0)
+        }
+    }
+
+    func testGlassLookPreservesAllTabsDetailsFeedbackAndWidgetNavigation() {
+        app.terminate()
+        app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = "2026-10-22T07:15:00Z"
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        glassTab(4)
+        setSwitch(app.switches["settings_glass_look"].firstMatch, to: true)
+        for index in 0..<5 {
+            glassTab(index)
+            snap("glass-enabled-tab-\(index)")
+        }
+        glassTab(0)
+        let record = app.buttons["home_record_vrat"].firstMatch
+        XCTAssertTrue(record.isEnabled)
+        record.tap()
+        let message = app.staticTexts["You can record this fast once Parana begins"]
+        XCTAssertTrue(message.waitForExistence(timeout: 3))
+        snap("glass-enabled-record-feedback")
+        XCTAssertTrue(XCTWaiter.wait(for: [expectation(for: NSPredicate(format: "exists == false"), evaluatedWith: message)], timeout: 6) == .completed)
+        app.buttons["view_details"].firstMatch.tap()
+        snap("glass-enabled-details")
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        glassTab(4)
+        app.buttons["settings_widget_preview"].firstMatch.tap()
+        let preview = app.buttons["widget_preview_open"].firstMatch
+        XCTAssertTrue(preview.waitForExistence(timeout: 10))
+        preview.tap()
+        XCTAssertTrue(app.staticTexts["Papankusha Ekadashi"].firstMatch.waitForExistence(timeout: 10))
+        XCTAssertTrue(app.tabBars.buttons.element(boundBy: 0).isSelected)
+        snap("glass-enabled-preview-to-home")
+    }
+
+    func testGlassLookCityPickerRemainsUsableWithoutMovingTabs() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        glassTab(4)
+        setSwitch(app.switches["settings_glass_look"].firstMatch, to: true)
+        glassTab(0)
+        let frames = stableNativeTabFrames()
+        let location = element("home_location").label
+        element("home_location").tap()
+        let search = app.textFields["ekadashi_location_search"].firstMatch
+        XCTAssertTrue(search.waitForExistence(timeout: 10))
+        XCTAssertTrue(search.isHittable)
+        XCTAssertTrue(element("ekadashi_location_current").exists)
+        snap("glass-enabled-city-picker")
+        app.buttons["city_picker_cancel"].tap()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 10))
+        XCTAssertEqual(element("home_location").label, location)
+        assertNativeTabFramesMatch(frames)
+    }
+
+    func testGlassLookDoesNotResetTheSelectedCalendarDay() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        glassTab(1)
+        let day = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", ", 6 ")).firstMatch
+        XCTAssertTrue(day.waitForExistence(timeout: 10))
+        day.tap()
+        let header = element("calendar_year_selector")
+        XCTAssertTrue(header.waitForExistence(timeout: 10))
+        let selectedDate = header.label
+        XCTAssertTrue(selectedDate.contains(", 6 "), selectedDate)
+        for enabled in [true, false] {
+            glassTab(4)
+            setSwitch(app.switches["settings_glass_look"].firstMatch, to: enabled)
+            glassTab(1)
+            XCTAssertEqual(header.label, selectedDate, "Appearance must not reset Calendar state")
+        }
+    }
+
+    private func assertSingleNativeTabBar() {
+        XCTAssertEqual(app.tabBars.count, 1)
+        XCTAssertEqual(app.tabBars.buttons.count, 5)
+        XCTAssertEqual(app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "glass_tab_")).count, 0,
+            "The enabled appearance must retain the native bar without a replacement overlay")
+    }
+
+    private func nativeTabFrames() -> [CGRect] {
+        (0..<5).map { app.tabBars.buttons.element(boundBy: $0).frame }
+    }
+
+    private func tapNativeTabFrame(_ frame: CGRect) {
+        app.coordinate(withNormalizedOffset: .zero)
+            .withOffset(CGVector(dx: frame.midX, dy: frame.midY)).tap()
+    }
+
+    private func glassTab(_ index: Int) {
+        for _ in 0..<3 {
+            let frames = stableNativeTabFrames()
+            guard frames.count == 5 else { return XCTFail("Native tabs did not expand") }
+            // A coordinate grounded in settled accessibility frames avoids an
+            // element-index query racing iOS's native minimization animation.
+            tapNativeTabFrame(frames[index])
+            _ = stableNativeTabFrames()
+            let item = app.tabBars.buttons.element(boundBy: index)
+            if item.exists && item.isSelected { return }
+        }
+        XCTFail("Native tab \(index) did not become selected")
+    }
+
+    private func stableNativeTabFrames() -> [CGRect] {
+        var previous: [CGRect] = []
+        var result: [CGRect] = []
+        if app.tabBars.buttons.count < 5 {
+            app.swipeDown(velocity: .fast)
+            if app.tabBars.buttons.count < 5, app.tabBars.buttons.firstMatch.exists {
+                tapNativeTabFrame(app.tabBars.buttons.firstMatch.frame)
+            }
+        }
+        let stable = NSPredicate { [self] _, _ in
+            guard app.tabBars.buttons.count == 5 else { return false }
+            let frames = nativeTabFrames()
+            defer { previous = frames }
+            guard previous.count == frames.count else { return false }
+            let unchanged = zip(frames, previous).allSatisfy { a, b in
+                abs(a.minX - b.minX) < 0.01 && abs(a.midY - b.midY) < 0.01
+                    && abs(a.width - b.width) < 0.01 && abs(a.height - b.height) < 0.01
+            }
+            if unchanged { result = frames }
+            return unchanged
+        }
+        XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: stable, object: nil)], timeout: 8), .completed)
+        return result.isEmpty ? nativeTabFrames() : result
+    }
+
+    private func assertNativeTabFramesMatch(_ expected: [CGRect]) {
+        // Native bars can still be morphing after a color-scheme transition.
+        // Keep the geometry requirement; wait for the system animation to end.
+        let settled = NSPredicate { [self] _, _ in
+            guard app.tabBars.buttons.count == 5 else { return false }
+            return zip(nativeTabFrames(), expected).allSatisfy { frame, baseline in
+                abs(frame.minX - baseline.minX) <= 1 && abs(frame.midY - baseline.midY) <= 1
+                    && abs(frame.width - baseline.width) <= 1 && abs(frame.height - baseline.height) <= 1
+            }
+        }
+        XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: settled, object: nil)], timeout: 8), .completed,
+            "The native bar must settle at its original geometry")
+        assertSingleNativeTabBar()
+        for (index, frame) in nativeTabFrames().enumerated() {
+            XCTAssertEqual(frame.minX, expected[index].minX, accuracy: 1, "Tab \(index) horizontal position")
+            XCTAssertEqual(frame.midY, expected[index].midY, accuracy: 1, "Tab \(index) vertical position")
+            XCTAssertEqual(frame.width, expected[index].width, accuracy: 1, "Tab \(index) width")
+            XCTAssertEqual(frame.height, expected[index].height, accuracy: 1, "Tab \(index) height")
+        }
+    }
+
+    private func assertPageBackgroundContinuesBehindGlassTabs() {
+        guard let image = app.screenshot().image.cgImage else { return XCTFail("Missing screenshot") }
+        let scale = CGFloat(image.width) / app.windows.firstMatch.frame.width
+        let bar = app.tabBars.buttons.element(boundBy: 0).frame
+        // The page remains behind the native floating bar, including after
+        // an appearance change, without a separate white/black strip.
+        let sample = CGRect(x: 8 * scale, y: bar.midY * scale, width: 1, height: 1)
+        guard let pixel = image.cropping(to: sample) else { return XCTFail("Missing background pixel") }
+        var bytes = [UInt8](repeating: 0, count: 4)
+        bytes.withUnsafeMutableBytes { buffer in
+            let context = CGContext(data: buffer.baseAddress, width: 1, height: 1, bitsPerComponent: 8,
+                bytesPerRow: 4, space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
+            context.draw(pixel, in: CGRect(x: 0, y: 0, width: 1, height: 1))
+        }
+        XCTAssertGreaterThan(Int(bytes[1]), Int(bytes[0]) + 1, "Continue the teal page behind the floating bar: \(bytes)")
+    }
+
+    private func setSwitch(_ toggle: XCUIElement, to enabled: Bool) {
+        if !toggle.exists || !toggle.isHittable { XCTAssertTrue(reveal(toggle)) }
+        XCTAssertTrue(toggle.waitForExistence(timeout: 5))
+        // A long translated label can be hittable while its switch thumb is
+        // behind the floating native tab bar. Bring the entire row into view.
+        for _ in 0..<4 where toggle.frame.maxY > app.windows.firstMatch.frame.height * 0.8 {
+            app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7))
+                .press(forDuration: 0.05,
+                    thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)))
+        }
+        let value = enabled ? "1" : "0"
+        if toggle.value as? String != value {
+            // A SwiftUI Toggle can expose the label and thumb as one wide
+            // accessibility element. Tap the actual switch at its trailing end.
+            toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.93, dy: 0.5)).tap()
+        }
+        XCTAssertTrue(NSPredicate(format: "value == %@", value).evaluate(with: toggle)
+            || XCTWaiter.wait(for: [expectation(for: NSPredicate(format: "value == %@", value), evaluatedWith: toggle)], timeout: 5) == .completed)
     }
 
     private func pixelDifference(_ first: UIImage, _ second: UIImage) -> Double {
@@ -193,7 +451,7 @@ final class ScreenshotTests: XCTestCase {
             XCTAssertTrue(ring.label.contains("72%"), "The fixed Chennai clock must be used: \(language)")
             snap("approved-home-progress-\(language)")
             tab(4)
-            app.buttons["settings_appearance_tube"].firstMatch.tap()
+            app.buttons["settings_widget_preview"].firstMatch.tap()
             let sizes = app.segmentedControls["widget_preview_size"]
             XCTAssertTrue(sizes.waitForExistence(timeout: 10))
             for index in 0..<3 {
@@ -300,7 +558,7 @@ final class ScreenshotTests: XCTestCase {
                 app.buttons[language].tap()
             }
             tab(4)
-            app.buttons["settings_appearance_tube"].firstMatch.tap()
+            app.buttons["settings_widget_preview"].firstMatch.tap()
             let kinds = app.segmentedControls["widget_preview_kind"]
             XCTAssertTrue(kinds.waitForExistence(timeout: 10))
             let window = app.windows.firstMatch.frame

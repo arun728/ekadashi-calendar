@@ -53,6 +53,8 @@ final class AppModel {
 
     private(set) var language: String
     private(set) var isDarkMode: Bool
+    private(set) var isGlassLookEnabled: Bool
+    static let glassLookKey = "ios_glass_look_enabled"
     private(set) var locationState: LocationState = .unknown
     /// Where Home and Calendar calculate Ekadashis: the place the user set,
     /// else the last detected one, else Chennai.
@@ -92,12 +94,12 @@ final class AppModel {
     /// Bumped when Home sets the Panchang location.
     private(set) var panchangCityRevision = 0
 
-    init() {
+    init(store injectedStore: KeyValueStore? = nil) {
         let group = Bundle.main.object(forInfoDictionaryKey: "EkadashiAppGroup") as? String ?? ""
         // UI tests start from a clean, already-launched English state.
-        let store: KeyValueStore = ProcessInfo.processInfo.arguments.contains("-ui-testing")
+        let store: KeyValueStore = injectedStore ?? (ProcessInfo.processInfo.arguments.contains("-ui-testing")
             ? InMemoryKeyValueStore(["has_launched": true, "language_code": "en"])
-            : UserDefaultsKeyValueStore(defaults: UserDefaults(suiteName: group) ?? .standard)
+            : UserDefaultsKeyValueStore(defaults: UserDefaults(suiteName: group) ?? .standard))
         let premium = StoreKitPremiumService()
         let snapshot = premium.snapshot
         self.store = store
@@ -108,6 +110,7 @@ final class AppModel {
         schedule = repository.map { EkadashiSchedule(repository: $0, cacheDirectory: caches) }
         language = store.string(forKey: "language_code").flatMap { Localizer.languages.contains($0) ? $0 : nil } ?? Self.systemLanguage
         isDarkMode = store.bool(forKey: "is_dark_mode") ?? true
+        isGlassLookEnabled = store.bool(forKey: Self.glassLookKey) ?? false
         ekadashiCity = Self.loadCity(store) ?? Self.defaultCity
         ekadashiCityIsManual = store.bool(forKey: Self.manualCityKey) ?? false
         tradition = store.string(forKey: Self.traditionKey).flatMap(EkadashiTradition.init(rawValue:)) ?? .gaudiya
@@ -496,6 +499,11 @@ final class AppModel {
         store.set(code, forKey: "language_code")
         prepareCitySearch()
         reload()
+    }
+
+    func setGlassLook(_ enabled: Bool) {
+        isGlassLookEnabled = enabled
+        store.set(enabled, forKey: Self.glassLookKey)
     }
 
     func setDarkMode(_ on: Bool) {

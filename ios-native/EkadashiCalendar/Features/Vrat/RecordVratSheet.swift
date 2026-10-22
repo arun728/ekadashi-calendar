@@ -105,7 +105,7 @@ struct RecordVratSheet: View {
             }
         }
         .presentationDetents([.large])
-        .presentationBackground(.thinMaterial)
+        .glassSheetBackground()
         .onAppear(perform: load)
         // A sheet cannot be presented from the root while this one is up,
         // so the paywall opens from here.

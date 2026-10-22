@@ -1,4 +1,5 @@
 import XCTest
+import SwiftUI
 import EkadashiCore
 @testable import EkadashiCalendar
 
@@ -6,6 +7,39 @@ import EkadashiCore
 /// domain rules are covered by the EkadashiCore package tests).
 @MainActor
 final class AppModelTests: XCTestCase {
+    func testGlassLookIsOffByDefaultAndPersistedIndependentlyOfOtherSettings() {
+        for seed: [String: Any] in [[:], [AppModel.glassLookKey: "invalid"]] {
+            XCTAssertFalse(AppModel(store: InMemoryKeyValueStore(seed)).isGlassLookEnabled)
+        }
+        let store = InMemoryKeyValueStore(["language_code": "ta", "is_dark_mode": false,
+            AppModel.traditionKey: "smarta", "has_launched": true])
+        let model = AppModel(store: store)
+        XCTAssertFalse(model.isGlassLookEnabled)
+        let city = model.ekadashiCity, year = model.selectedYear
+        model.setGlassLook(true)
+        XCTAssertTrue(model.isGlassLookEnabled)
+        XCTAssertEqual(store.bool(forKey: AppModel.glassLookKey), true)
+        XCTAssertTrue(AppModel(store: store).isGlassLookEnabled, "Survives a fresh app model")
+        XCTAssertEqual(model.language, "ta")
+        XCTAssertFalse(model.isDarkMode)
+        XCTAssertEqual(model.tradition, .smarta)
+        XCTAssertEqual(model.ekadashiCity, city)
+        XCTAssertEqual(model.selectedYear, year)
+        model.setDarkMode(true)
+        XCTAssertTrue(model.isGlassLookEnabled, "Dark Mode is independent")
+        model.setGlassLook(false)
+        XCTAssertFalse(AppModel(store: store).isGlassLookEnabled, "Explicit Off survives relaunch too")
+        XCTAssertTrue(model.isDarkMode)
+    }
+
+    func testGlassLookDefaultsOffInTheEnvironment() {
+        XCTAssertFalse(EnvironmentValues().glassLookEnabled)
+        XCTAssertFalse(GlassLookPolicy.isActive(preference: false, reduceTransparency: false))
+        XCTAssertFalse(GlassLookPolicy.isActive(preference: false, reduceTransparency: true))
+        XCTAssertFalse(GlassLookPolicy.isActive(preference: true, reduceTransparency: true))
+        XCTAssertTrue(GlassLookPolicy.isActive(preference: true, reduceTransparency: false))
+    }
+
     func testBlockedRecordingExplainsParanaForTodayAndUpcomingInEveryLanguageAndTradition() async throws {
         let model = AppModel()
         let originalLanguage = model.language, originalTradition = model.tradition

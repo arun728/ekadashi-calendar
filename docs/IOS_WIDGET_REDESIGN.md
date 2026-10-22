@@ -210,3 +210,11 @@ eligibility, so the fixed-date UI regressions remain repeatable after today.
 Release builds continue using live time. Final native screenshots were inspected
 for Tamil feedback, Calendar time endpoints and both Medium preview appearances.
 No CI was run and no merge was made.
+
+
+## Optional Glass Look (22 October 2026)
+
+The iOS-only Settings appearance preference and its validation are documented in
+[Optional Glass Look](IOS_GLASS_LOOK.md). It starts Off, preserving the current
+app appearance, and does not alter WidgetKit designs or exported share cards.
+Android implementation remains deferred.

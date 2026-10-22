@@ -26,7 +26,7 @@ struct AchievementUnlockView: View {
             .primaryActionStyle()
         }
         .padding(28)
-        .presentationBackground(.thinMaterial)
+        .glassSheetBackground()
         .sensoryFeedback(.success, trigger: achievement.id)
     }
 }

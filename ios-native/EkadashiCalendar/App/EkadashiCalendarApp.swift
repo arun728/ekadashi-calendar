@@ -47,6 +47,7 @@ struct EkadashiCalendarApp: App {
         WindowGroup {
             RootView()
                 .environment(delegate.model)
+                .environment(\.glassLookEnabled, delegate.model.isGlassLookEnabled)
                 .preferredColorScheme(delegate.model.isDarkMode ? .dark : .light)
                 .environment(\.locale, delegate.model.locale)
                 .onOpenURL { url in

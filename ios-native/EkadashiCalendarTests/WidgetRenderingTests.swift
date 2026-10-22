@@ -9,6 +9,79 @@ import EkadashiCore
 /// the shared selection, percentage, formatter, timeline and link behaviour.
 @MainActor
 final class WidgetRenderingTests: XCTestCase {
+    func testGlassOffPreservesTheOriginalPanelAndCapsuleInBothAppearances() throws {
+        for scheme in [ColorScheme.dark, .light] {
+            let current = glassProbe(scheme: scheme, enabled: false, reduced: false, legacy: false)
+            let legacy = glassProbe(scheme: scheme, enabled: false, reduced: false, legacy: true)
+            XCTAssertTrue(try glassPixels(current) == glassPixels(legacy), "Off must retain the existing renderer: \(scheme)")
+        }
+    }
+
+    func testGlassOnChangesTheSurfaceAndRespectsReduceTransparencyInBothAppearances() throws {
+        for scheme in [ColorScheme.dark, .light] {
+            let off = try glassPixels(glassProbe(scheme: scheme, enabled: false, reduced: false, legacy: false))
+            let on = try glassPixels(glassProbe(scheme: scheme, enabled: true, reduced: false, legacy: false))
+            XCTAssertTrue(off != on, "Opt-in look has a distinct surface")
+            let reduced = try glassPixels(glassProbe(scheme: scheme, enabled: true, reduced: true, legacy: false))
+            let systemReduced = try glassPixels(glassProbe(scheme: scheme, enabled: false, reduced: true, legacy: false))
+            XCTAssertTrue(reduced == systemReduced, "Never override reduced transparency")
+        }
+    }
+
+    func testGlassAppearanceEvidenceInEveryLanguageAndBothColorSchemes() throws {
+        for language in Localizer.languages {
+            for scheme in [ColorScheme.dark, .light] {
+                for enabled in [false, true] {
+                    let view = VStack(spacing: 18) {
+                        Text(Localizer.shared.translate("ios_glass_look", language: language)).font(.title3.bold())
+                        Text(Localizer.shared.translate("ios_glass_look_desc", language: language))
+                            .font(.body).fixedSize(horizontal: false, vertical: true)
+                        Text(Localizer.shared.translate("view_details", language: language)).padding(16).glassCapsule()
+                    }.padding(20).frame(width: 320).glassPanel(cornerRadius: 24)
+                        .padding(20).background(AppBackground()).environment(\.colorScheme, scheme)
+                        .environment(\.glassLookEnabled, enabled)
+                    let renderer = ImageRenderer(content: view)
+                    renderer.scale = 2
+                    let image = try XCTUnwrap(renderer.uiImage)
+                    XCTAssertLessThan(image.size.height, 440, "\(language)")
+                    let attachment = XCTAttachment(image: image)
+                    attachment.name = "glass-surface-\(language)-\(scheme)-\(enabled ? "on" : "off")"
+                    attachment.lifetime = .keepAlways
+                    add(attachment)
+                }
+            }
+        }
+    }
+
+    private func glassProbe(scheme: ColorScheme, enabled: Bool, reduced: Bool, legacy: Bool) -> some View {
+        VStack(spacing: 10) {
+            if legacy {
+                // Frozen pre-feature rendering contract from Glass.swift.
+                if #available(iOS 26.0, *) {
+                    Text("Card").padding(20).glassEffect(.regular, in: .rect(cornerRadius: 22))
+                    Text("Control").padding(12).glassEffect(.regular.interactive(), in: .capsule)
+                } else {
+                    Text("Card").padding(20).background(Color.clear.opacity(0.16), in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+                        .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).strokeBorder(Color.white.opacity(0.14), lineWidth: 0.7))
+                    Text("Control").padding(12).background(.ultraThinMaterial, in: Capsule())
+                        .overlay(Capsule().strokeBorder(Color.white.opacity(0.18), lineWidth: 0.7))
+                        .background(Color.clear.opacity(0.25), in: Capsule())
+                }
+            } else {
+                Text("Card").padding(20).glassPanel()
+                Text("Control").padding(12).glassCapsule()
+            }
+        }.padding(20).frame(width: 250, height: 210).background(AppBackground())
+            .environment(\.colorScheme, scheme)
+            .environment(\.glassLookEnabled, GlassLookPolicy.isActive(preference: enabled, reduceTransparency: reduced))
+    }
+
+    private func glassPixels<V: View>(_ view: V) throws -> [UInt8] {
+        let renderer = ImageRenderer(content: view); renderer.scale = 2
+        return try rgba(XCTUnwrap(renderer.uiImage?.cgImage))
+    }
+
     func testTodayMediumLocationIsSeparatedFromTimingInkInEveryLanguage() throws {
         for language in Localizer.languages {
             let events = try CalendarRepository.bundled().ekadashis(timezone: "IST", language: language)

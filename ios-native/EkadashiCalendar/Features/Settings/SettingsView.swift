@@ -38,8 +38,19 @@ struct SettingsView: View {
                     Label(model.t("dark_mode"), systemImage: AppSymbol.darkMode)
                 }
                 .tint(Theme.teal)
+                .accessibilityIdentifier("settings_dark_mode")
+                Toggle(isOn: Binding(get: { model.isGlassLookEnabled }, set: { model.setGlassLook($0) })) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(model.t("ios_glass_look"))
+                        Text(model.t("ios_glass_look_desc")).font(.caption).foregroundStyle(.secondary)
+                    }
+                }
+                .tint(Theme.teal)
+                .accessibilityIdentifier("settings_glass_look")
             }
-            .accessibilityIdentifier("settings_appearance_tube")
+            .glassListRows()
+            // Keep identifiers on the individual rows; a Section identifier
+            // replaces those of its switches and navigation links.
 
             Section(model.t("notifications")) {
                 Toggle(isOn: Binding(get: { settings.enabled && hasPermission }, set: { on in Task { await toggleNotifications(on) } })) {
@@ -121,6 +132,7 @@ struct SettingsView: View {
                     Text(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "").foregroundStyle(.secondary)
                 }
             }
+            .glassListRows()
             .accessibilityIdentifier("settings_about_tube")
         }
         .scrollContentBackground(.hidden)

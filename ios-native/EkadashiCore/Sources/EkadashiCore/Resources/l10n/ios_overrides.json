@@ -20,7 +20,9 @@
   "ios_share_card_photos_denied": "Photo access is off. Allow adding photos in Settings to save cards.",
   "ios_widget_preview_desc": "Preview Home Screen and Lock Screen widgets",
   "ios_widget_desc_ekadashi": "Today’s Ekadashi with the percentage remaining, or the next Ekadashi and its timings.",
-  "ios_widget_desc_next": "The next five upcoming Ekadashis. Tap an Ekadashi to open its Home card."
+  "ios_widget_desc_next": "The next five upcoming Ekadashis. Tap an Ekadashi to open its Home card.",
+  "ios_glass_look": "Glass Look",
+  "ios_glass_look_desc": "Use clearer, translucent cards and controls."
  },
  "ta": {
   "rate_app_desc": "ஆப் ஸ்டோரில் எங்களை மதிப்பிடவும்",
@@ -42,7 +44,9 @@
   "ios_share_card_photos_denied": "புகைப்பட அனுமதி முடக்கப்பட்டுள்ளது. அட்டைகளைச் சேமிக்க அமைப்புகளில் புகைப்படங்களைச் சேர்க்க அனுமதியுங்கள்.",
   "ios_widget_preview_desc": "முகப்புத்திரை மற்றும் பூட்டுத்திரை விட்ஜெட்டுகளைப் பார்க்கவும்",
   "ios_widget_desc_ekadashi": "இன்றைய ஏகாதசியின் மீதமுள்ள சதவீதம் அல்லது அடுத்த ஏகாதசியும் அதன் நேரங்களும்.",
-  "ios_widget_desc_next": "அடுத்து வரும் ஐந்து ஏகாதசிகள். ஓர் ஏகாதசியைத் தொட்டு அதன் முகப்புப் பக்கத்தைத் திறக்கவும்."
+  "ios_widget_desc_next": "அடுத்து வரும் ஐந்து ஏகாதசிகள். ஓர் ஏகாதசியைத் தொட்டு அதன் முகப்புப் பக்கத்தைத் திறக்கவும்.",
+  "ios_glass_look": "கண்ணாடித் தோற்றம்",
+  "ios_glass_look_desc": "தெளிவான, ஒளி ஊடுருவும் அட்டைகளையும் கட்டுப்பாடுகளையும் பயன்படுத்தவும்."
  },
  "hi": {
   "rate_app_desc": "ऐप स्टोर पर हमें रेट करें",
@@ -64,7 +68,9 @@
   "ios_share_card_photos_denied": "फ़ोटो की अनुमति बंद है। कार्ड सहेजने के लिए सेटिंग्स में फ़ोटो जोड़ने की अनुमति दें।",
   "ios_widget_preview_desc": "होम स्क्रीन और लॉक स्क्रीन विजेट देखें",
   "ios_widget_desc_ekadashi": "आज की एकादशी का शेष प्रतिशत, या अगली एकादशी और उसके समय।",
-  "ios_widget_desc_next": "आने वाली पाँच एकादशियाँ। किसी एकादशी पर टैप करके उसका होम कार्ड खोलें।"
+  "ios_widget_desc_next": "आने वाली पाँच एकादशियाँ। किसी एकादशी पर टैप करके उसका होम कार्ड खोलें।",
+  "ios_glass_look": "काँच जैसा रूप",
+  "ios_glass_look_desc": "अधिक पारदर्शी कार्ड और नियंत्रण दिखाएँ।"
  },
  "te": {
   "rate_app_desc": "యాప్ స్టోర్‌లో రేట్ చేయండి",
@@ -86,7 +92,9 @@
   "ios_share_card_photos_denied": "ఫోటో అనుమతి ఆపివేయబడింది. కార్డ్‌లను భద్రపరచడానికి సెట్టింగ్స్‌లో ఫోటోలను జోడించడానికి అనుమతించండి.",
   "ios_widget_preview_desc": "హోమ్ స్క్రీన్ మరియు లాక్ స్క్రీన్ విడ్జెట్‌లను చూడండి",
   "ios_widget_desc_ekadashi": "నేటి ఏకాదశి మిగిలిన శాతం లేదా తదుపరి ఏకాదశి మరియు సమయాలు.",
-  "ios_widget_desc_next": "రాబోయే ఐదు ఏకాదశులు. ఏకాదశిని తాకి దాని హోమ్ కార్డును తెరవండి."
+  "ios_widget_desc_next": "రాబోయే ఐదు ఏకాదశులు. ఏకాదశిని తాకి దాని హోమ్ కార్డును తెరవండి.",
+  "ios_glass_look": "గాజు రూపం",
+  "ios_glass_look_desc": "మరింత పారదర్శకంగా కనిపించే కార్డులు, నియంత్రణలను ఉపయోగించండి."
  },
  "gu": {
   "rate_app_desc": "એપ સ્ટોર પર અમને રેટ કરો",
@@ -108,7 +116,9 @@
   "ios_share_card_photos_denied": "ફોટાની પરવાનગી બંધ છે. કાર્ડ સાચવવા માટે સેટિંગ્સમાં ફોટા ઉમેરવાની પરવાનગી આપો.",
   "ios_widget_preview_desc": "હોમ સ્ક્રીન અને લૉક સ્ક્રીન વિજેટ જુઓ",
   "ios_widget_desc_ekadashi": "આજની એકાદશીની બાકી ટકાવારી અથવા આગામી એકાદશી અને તેના સમય.",
-  "ios_widget_desc_next": "આગામી પાંચ એકાદશીઓ. એકાદશીનું હોમ કાર્ડ ખોલવા તેના પર ટૅપ કરો."
+  "ios_widget_desc_next": "આગામી પાંચ એકાદશીઓ. એકાદશીનું હોમ કાર્ડ ખોલવા તેના પર ટૅપ કરો.",
+  "ios_glass_look": "કાચ જેવો દેખાવ",
+  "ios_glass_look_desc": "વધુ પારદર્શક કાર્ડ અને નિયંત્રણો વાપરો."
  },
  "bn": {
   "rate_app_desc": "অ্যাপ স্টোর-এ আমাদের রেট দিন",
@@ -130,6 +140,8 @@
   "ios_share_card_photos_denied": "ফটোর অনুমতি বন্ধ আছে। কার্ড সংরক্ষণ করতে সেটিংসে ফটো যোগ করার অনুমতি দিন।",
   "ios_widget_preview_desc": "হোম স্ক্রিন ও লক স্ক্রিন উইজেট দেখুন",
   "ios_widget_desc_ekadashi": "আজকের একাদশীর বাকি শতাংশ অথবা পরবর্তী একাদশী ও তার সময়।",
-  "ios_widget_desc_next": "পরবর্তী পাঁচটি একাদশী। কোনো একাদশীতে ট্যাপ করে তার হোম কার্ড খুলুন।"
+  "ios_widget_desc_next": "পরবর্তী পাঁচটি একাদশী। কোনো একাদশীতে ট্যাপ করে তার হোম কার্ড খুলুন।",
+  "ios_glass_look": "কাচের মতো চেহারা",
+  "ios_glass_look_desc": "আরও স্বচ্ছ কার্ড ও নিয়ন্ত্রণ ব্যবহার করুন।"
  }
 }
