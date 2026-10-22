@@ -22,6 +22,43 @@ final class ScreenshotTests: XCTestCase {
         add(attachment)
     }
 
+    func testFreshHomeDefaultsToVaishnavaAndListsItBeforeSmarta() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        let menu = app.buttons["home_tradition_menu"]
+        XCTAssertTrue(menu.label.contains("Vaishnava"))
+        menu.tap()
+        let vaishnava = app.buttons["Vaishnava"].firstMatch, smarta = app.buttons["Smarta"].firstMatch
+        XCTAssertTrue(vaishnava.waitForExistence(timeout: 5))
+        XCTAssertLessThan(vaishnava.frame.minY, smarta.frame.minY)
+    }
+
+    func testBlockedHomeRecordButtonShowsTheExistingParanaMessage() {
+        app.terminate()
+        app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = "2026-10-22T07:15:00Z"
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        app.open(URL(string: "ekadashi://ekadashi?uid=ekadashi%3A2026%3A20")!)
+        let record = app.buttons["home_record_vrat"].firstMatch
+        XCTAssertTrue(record.waitForExistence(timeout: 10))
+        XCTAssertTrue(record.isEnabled, "The grey control must accept an informational tap")
+        record.tap()
+        XCTAssertTrue(app.staticTexts["You can record this fast once Parana begins"].waitForExistence(timeout: 3))
+        snap("blocked-home-record-parana-message")
+    }
+
+    func testCalendarParanaUsesTheSelectedLanguage() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        app.open(URL(string: "ekadashi://calendar?date=2026-10-22")!)
+        tab(0)
+        element("language_menu").tap()
+        app.buttons["தமிழ்"].tap()
+        tab(1)
+        let parana = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", "விரதம் முடித்தல்:")).firstMatch
+        XCTAssertTrue(parana.waitForExistence(timeout: 10))
+        XCTAssertFalse(parana.label.contains("AM"))
+        XCTAssertFalse(parana.label.contains("PM"))
+    }
+
     func testTodayProgressStaysLeftOfTheTodayBadgeAndOnlyAppearsOnTodaysCard() {
         app.terminate()
         app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = "2026-10-22T07:15:00Z"

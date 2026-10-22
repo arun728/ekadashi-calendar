@@ -6,6 +6,20 @@ import EkadashiCore
 /// domain rules are covered by the EkadashiCore package tests).
 @MainActor
 final class AppModelTests: XCTestCase {
+    func testVaishnavaIsTheDefaultForMissingOrInvalidTraditionAndSavedChoicesSurvive() {
+        let store = AppModel().store
+        let original = store.string(forKey: AppModel.traditionKey)
+        defer { if let original { store.set(original, forKey: AppModel.traditionKey) } else { store.remove(AppModel.traditionKey) } }
+        store.remove(AppModel.traditionKey)
+        XCTAssertEqual(AppModel().tradition, .gaudiya)
+        store.set("invalid", forKey: AppModel.traditionKey)
+        XCTAssertEqual(AppModel().tradition, .gaudiya)
+        for tradition in EkadashiTradition.allCases {
+            store.set(tradition.rawValue, forKey: AppModel.traditionKey)
+            XCTAssertEqual(AppModel().tradition, tradition)
+        }
+    }
+
     func testDisplayClockCanOnlyBePinnedByAnExplicitDebugUITest() {
         let live = ISO8601.instant("2026-10-24T00:00:00Z")!
         let pinned = ISO8601.instant("2026-10-22T07:15:00Z")!

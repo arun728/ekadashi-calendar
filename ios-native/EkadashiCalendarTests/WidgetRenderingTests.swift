@@ -9,6 +9,37 @@ import EkadashiCore
 /// the shared selection, percentage, formatter, timeline and link behaviour.
 @MainActor
 final class WidgetRenderingTests: XCTestCase {
+    func testTodayMediumLocationIsSeparatedFromTimingInkInEveryLanguage() throws {
+        for language in Localizer.languages {
+            let events = try CalendarRepository.bundled().ekadashis(timezone: "IST", language: language)
+            let event = try XCTUnwrap(events.first { $0.fastingStart != nil })
+            let now = event.fastingStart!.addingTimeInterval(3600)
+            let snapshot = WidgetSnapshot.build(occurrences: [event], timezone: "IST", locationName: "Chennai", language: language, now: now, tradition: "smarta")
+            let renderer = ImageRenderer(content: EkadashiWidgetView(snapshot: snapshot, now: now, family: .systemMedium)
+                .padding(16).frame(width: 350, height: 170).environment(\.colorScheme, .dark))
+            renderer.scale = 3
+            let image = try XCTUnwrap(renderer.uiImage?.cgImage)
+            let pixels = try rgba(image)
+            var bands: [ClosedRange<Int>] = []
+            for y in 0..<image.height {
+                let ink = (0..<image.width).contains { x in
+                    let i = (y * image.width + x) * 4
+                    // System secondary text has a slight cool tint; include it
+                    // along with primary ink, but exclude the teal ring/labels.
+                    return pixels[i + 3] > 90 && abs(Int(pixels[i]) - Int(pixels[i + 1])) < 16 && abs(Int(pixels[i + 1]) - Int(pixels[i + 2])) < 16
+                }
+                if ink {
+                    if let last = bands.last, last.upperBound == y - 1 { bands[bands.count - 1] = last.lowerBound...y }
+                    else { bands.append(y...y) }
+                }
+            }
+            XCTAssertGreaterThanOrEqual(bands.count, 2)
+            let footer = try XCTUnwrap(bands.last)
+            let time = bands[bands.count - 2]
+            XCTAssertGreaterThanOrEqual(Double(footer.lowerBound - time.upperBound - 1) / 3, 8, language)
+        }
+    }
+
     func testHomeHeaderProgressUsesTheViewedOccurrenceAndHomeCivilDateInEveryLanguage() throws {
         for language in Localizer.languages {
             let event = EkadashiOccurrence(id: 20, occurrenceUid: "ekadashi:2026:20",
