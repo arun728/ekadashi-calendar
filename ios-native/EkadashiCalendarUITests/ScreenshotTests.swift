@@ -41,6 +41,49 @@ final class ScreenshotTests: XCTestCase {
         XCTAssertFalse(ring.exists, "A past card never shows today's progress")
     }
 
+    func testApprovedProgressPreviewsAndHomeInEverySupportedLanguage() {
+        app.terminate()
+        app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = "2026-10-22T07:15:00Z"
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        // open(_:) starts a fresh clean UI-test session. Select the occurrence
+        // once, then keep each chosen language while visiting Home/Settings.
+        app.open(URL(string: "ekadashi://ekadashi?uid=ekadashi%3A2026%3A20")!)
+        let translations = [("English", "Today", "Papankusha Ekadashi"),
+            ("हिंदी", "आज", "पापांकुशा एकादशी"), ("தமிழ்", "இன்று", "பாபாங்குசா ஏகாதசி"),
+            ("తెలుగు", "ఈరోజు", "పాపాంకుశ ఏకాదశి"), ("ગુજરાતી", "આજે", "પાપાંકુશા એકાદશી"),
+            ("বাংলা", "আজ", "পাপাঙ্কুশা একাদশী")]
+        for (language, today, name) in translations {
+            tab(0)
+            if language != "English" {
+                element("language_menu").tap()
+                app.buttons[language].tap()
+            }
+            let ring = app.descendants(matching: .any)["home_remaining_ring"].firstMatch
+            let badge = app.staticTexts["home_day_badge"].firstMatch
+            XCTAssertTrue(ring.waitForExistence(timeout: 10), language)
+            XCTAssertEqual(badge.label, today, "The screenshot must actually use \(language)")
+            XCTAssertTrue(app.staticTexts[name].firstMatch.waitForExistence(timeout: 10), language)
+            XCTAssertLessThan(ring.frame.maxX, badge.frame.minX, language)
+            XCTAssertTrue(ring.label.contains("72%"), "The fixed Chennai clock must be used: \(language)")
+            snap("approved-home-progress-\(language)")
+            tab(4)
+            app.buttons["settings_appearance_tube"].firstMatch.tap()
+            let sizes = app.segmentedControls["widget_preview_size"]
+            XCTAssertTrue(sizes.waitForExistence(timeout: 10))
+            for index in 0..<3 {
+                sizes.buttons.element(boundBy: index).tap()
+                let preview = app.buttons["widget_preview_open"].firstMatch
+                XCTAssertTrue(preview.waitForExistence(timeout: 10))
+                XCTAssertGreaterThanOrEqual(preview.frame.minX, app.windows.firstMatch.frame.minX)
+                XCTAssertLessThanOrEqual(preview.frame.maxX, app.windows.firstMatch.frame.maxX)
+                if index == 2 { XCTAssertEqual(app.images.matching(identifier: "widget_lock_icon").count, 2) }
+                snap("approved-progress-preview-\(language)-\(index)")
+            }
+            app.navigationBars.buttons.element(boundBy: 0).tap()
+        }
+    }
+
     func testRealWidgetPreviewOpensItsDisplayedHomeCard() {
         openWidgetPreviews()
         XCTAssertFalse(app.staticTexts["No Ekadashi on this day"].exists)

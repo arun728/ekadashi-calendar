@@ -221,28 +221,14 @@ struct EkadashiCard: View {
     @State private var recording = false
     @State private var sharing = false
 
-    private var daysUntil: Int { model.today.days(until: event.date) }
-
-    private var daysText: String {
-        switch daysUntil {
-        case 0: return model.t("today")
-        case 1: return model.t("tomorrow")
-        case ..<0: return model.t("passed")
-        default: return model.t("in_days", String(daysUntil))
-        }
-    }
-
     var body: some View {
         VStack(spacing: 16) {
             ScrollView {
                 VStack(spacing: 0) {
-                    Text(daysText)
-                        .font(.footnote.bold())
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 6)
-                        .background(daysUntil < 0 ? Color.gray : Theme.teal, in: Capsule())
-                        .frame(maxWidth: .infinity, alignment: .trailing)
+                    TimelineView(.periodic(from: .now, by: 60)) { context in
+                        EkadashiStatusHeader(event: event, timeZone: model.ekadashiCity.timeZoneId,
+                            language: model.language, now: DisplayClock.date(context.date))
+                    }
                     Text(model.fullDate(event.date)).font(.title2.weight(.light)).padding(.top, 16)
                     Text(event.name)
                         .font(.title.bold())
@@ -308,6 +294,51 @@ struct EkadashiCard: View {
             Text(Localizer.shared.localizeClock(time, language: model.language)).font(.title3.weight(.semibold))
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+/// Reserved status row: today's ring leads, the existing day badge trails.
+/// The date, name and timings below retain the card's full text width.
+struct EkadashiStatusHeader: View {
+    let event: EkadashiOccurrence
+    let timeZone: String
+    let language: String
+    let now: Date
+
+    private var daysUntil: Int {
+        let today = TzDatabase.shared.location(timeZone)?.wallClock(now).date ?? CivilDate(utc: now)
+        return today.days(until: event.date)
+    }
+
+    private var daysText: String {
+        let key: String
+        switch daysUntil {
+        case 0: key = "today"
+        case 1: key = "tomorrow"
+        case ..<0: key = "passed"
+        default: return Localizer.shared.translate("in_days", language: language, args: [String(daysUntil)])
+        }
+        return Localizer.shared.translate(key, language: language)
+    }
+
+    var body: some View {
+        HStack(spacing: 12) {
+            if daysUntil == 0 {
+                let snapshot = WidgetSnapshot.build(occurrences: [event], timezone: timeZone, locationName: "", language: language, now: now)
+                if let headline = snapshot.headline(at: now, selection: .today) {
+                    RemainingRing(item: headline.item, snapshot: snapshot, now: now)
+                        .frame(width: 48, height: 48)
+                        .accessibilityIdentifier("home_remaining_ring")
+                }
+            }
+            Spacer(minLength: 0)
+            Text(daysText)
+                .font(.footnote.bold()).foregroundStyle(.white)
+                .padding(.horizontal, 14).padding(.vertical, 6)
+                .background(daysUntil < 0 ? Color.gray : Theme.teal, in: Capsule())
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityIdentifier("home_day_badge")
+        }
     }
 }
 

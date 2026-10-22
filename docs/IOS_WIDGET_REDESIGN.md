@@ -114,3 +114,56 @@ It has a circular safety clip, and Settings uses the same renderer.
 The original full iOS UI run above remains historical evidence; the two affected
 UI tests were rerun after this follow-up. Actual WidgetKit placement and
 Always-On/vibrancy remain physical-device release checks.
+
+## Progress layout follow-up (22 October 2026)
+
+The Home Screen Small/Medium rings now show only the remaining percentage;
+the translated word “remaining” is retained in accessibility labels and in the
+rectangular Lock Screen widget. Percentage text has its own safe interior box,
+including at 100%. The Medium widget places the ring to the right of the name,
+increases the title and timing fonts, and chooses a compact vertical layout
+when a longer translation or smaller host needs it. The circular Lock Screen
+symbol has a smaller, independent frame inside a proportional ring with an
+empty annulus between them. Settings uses these same native views.
+
+On Home, the approved status row has the percentage ring on the left and the
+existing Today badge on the right, above the full-width date and name. It uses
+the viewed occurrence and the Home city's civil date; past and future cards
+never display today's progress. A minute timeline keeps it current and handles
+local midnight. Progress uses the same fasting-start-to-Parana-start calculation
+as widgets, including a full ring before sunrise on the Ekadashi date.
+
+The app and Settings use the real clock. Only explicit Debug UI tests can pin
+`EKADASHI_UI_TEST_NOW` with `-ui-testing`; this override is absent from Release
+builds. The UI regression pins Chennai to 22 October 2026 at 12:45 IST and checks
+the expected 72%, placement, all six languages and all three preview choices.
+The language sweep asserts each translated Today badge and occurrence name;
+it selects the deep-linked occurrence once so a fresh UI-test launch cannot
+silently reset subsequent language captures to English.
+Pure rendering tests also cover the UTC/Chennai date difference and both sides
+of local midnight.
+
+TDD began with `ea93ad0`: the original implementation failed 51 internal-clearance
+assertions in two native rendering tests, and the Home UI test failed because
+the progress ring was missing. This adds checks that outer rectangle/circle
+containment alone could not provide. A pre-existing app-model test now explicitly
+selects English before asserting English display strings, restoring the saved
+language afterwards.
+
+The changes in this follow-up are iOS-only. Android code, resources and designs
+are untouched; no CI or merge was requested.
+
+Final local verification on the booted iPhone 17 Pro (iOS 26.5):
+
+- Native app/rendering suite: **21 passed**, zero failures.
+- Affected Simulator UI suite: **9 passed**, zero failures, including the
+  six-language Home/progress-preview sweep, prior preview/navigation regressions
+  and five individually linked Upcoming rows.
+- Full Swift core suite: **269 passed**, zero failures.
+- Full Flutter suite: **746 passed**, zero failures.
+- `flutter analyze`: **no issues**; `git diff --check`: passed.
+
+Native attachments include Home and Small/Medium/Lock Screen Settings previews
+for each supported language, plus both-appearance rendering sheets with long
+Ekadashi names. Simulator results validate the shared renderers; system
+WidgetKit delivery and physical-device appearance remain release checks.

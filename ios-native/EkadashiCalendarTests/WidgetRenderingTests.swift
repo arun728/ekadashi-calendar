@@ -9,6 +9,34 @@ import EkadashiCore
 /// the shared selection, percentage, formatter, timeline and link behaviour.
 @MainActor
 final class WidgetRenderingTests: XCTestCase {
+    func testHomeHeaderProgressUsesTheViewedOccurrenceAndHomeCivilDateInEveryLanguage() throws {
+        for language in Localizer.languages {
+            let event = EkadashiOccurrence(id: 20, occurrenceUid: "ekadashi:2026:20",
+                name: "", date: CivilDate(2026, 10, 22), fastingStartISO: "2026-10-22T06:00:00+05:30",
+                paranaStartISO: "2026-10-23T06:00:00+05:30", paranaEndISO: "2026-10-23T08:21:00+05:30")
+            let cases = [("2026-10-21T17:00:00Z", "Asia/Kolkata", false),
+                         ("2026-10-21T23:30:00Z", "Asia/Kolkata", true),
+                         ("2026-10-21T23:30:00Z", "UTC", false),
+                         ("2026-10-22T07:15:00Z", "Asia/Kolkata", true),
+                         ("2026-10-22T19:00:00Z", "Asia/Kolkata", false)]
+            for (date, zone, hasProgress) in cases {
+                let now = ISO8601.instant(date)!
+                let header = EkadashiStatusHeader(event: event, timeZone: zone, language: language, now: now)
+                try assertFits(header, width: 220, height: 96, inset: 0, label: "Home status \(language) \(date) \(zone)")
+                let renderer = ImageRenderer(content: header.frame(width: 220, height: 96, alignment: .topLeading).environment(\.colorScheme, .dark))
+                renderer.scale = 1
+                let image = try XCTUnwrap(renderer.uiImage?.cgImage)
+                let pixels = try rgba(image)
+                var leadingTeal = 0
+                for y in 0..<image.height { for x in 0..<52 {
+                    let i = (y * image.width + x) * 4
+                    if pixels[i] < 5 && abs(Int(pixels[i + 1]) - 161) < 5 && abs(Int(pixels[i + 2]) - 155) < 5 && pixels[i + 3] > 200 { leadingTeal += 1 }
+                } }
+                XCTAssertEqual(leadingTeal > 20, hasProgress, "Only today's viewed occurrence gets a leading ring: \(language) \(date) \(zone)")
+            }
+        }
+    }
+
     func testPercentageInkHasClearanceFromTheRingInEveryLanguageIncludingOneHundredPercent() throws {
         let events = try CalendarRepository.bundled().ekadashis(timezone: "IST", language: "en")
         let event = try XCTUnwrap(events.first { $0.fastingStart != nil })

@@ -27,7 +27,7 @@ struct WidgetPreviewView: View {
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 60)) { context in
-            let now = context.date
+            let now = DisplayClock.date(context.date)
             let snapshot = WidgetSnapshot.build(occurrences: model.ekadashis, timezone: model.ekadashiCity.timeZoneId,
                 locationName: model.ekadashiCityName, language: model.language, now: now, tradition: model.tradition.rawValue)
             ScrollView {

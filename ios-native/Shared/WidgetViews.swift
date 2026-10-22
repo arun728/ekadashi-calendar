@@ -24,6 +24,7 @@ private struct WidgetColumnText: View {
     let value: String
     let size: CGFloat
     var weight: Font.Weight = .regular
+    var lineHeightMultiple: CGFloat = 1.5
 
     var body: some View {
         GeometryReader { geometry in
@@ -38,7 +39,7 @@ private struct WidgetColumnText: View {
         }
         // A fixed line box accommodates Indic ascenders/descenders while the
         // flexible width gives ViewThatFits the actual column's proposal.
-        .frame(height: ceil(size * 1.5))
+        .frame(height: ceil(size * lineHeightMultiple))
         .accessibilityLabel(value)
     }
 
@@ -52,30 +53,31 @@ struct RemainingRing: View {
     let item: WidgetItem
     let snapshot: WidgetSnapshot
     let now: Date
-    var prominent = false
     @Environment(\.widgetRenderingMode) private var rendering
 
     private var accent: Color { rendering == .fullColor ? WidgetStyle.teal : .primary }
 
     var body: some View {
-        ZStack {
-            Circle().inset(by: prominent ? 4.5 : 2).stroke(Color.primary.opacity(0.15), lineWidth: prominent ? 9 : 4)
-            Circle().inset(by: prominent ? 4.5 : 2)
-                .trim(from: 0, to: item.remainingFraction(at: now))
-                .stroke(accent, style: StrokeStyle(lineWidth: prominent ? 9 : 4, lineCap: .round))
-                .rotationEffect(.degrees(-90))
-                .widgetAccentable()
-            VStack(spacing: 0) {
+        GeometryReader { geometry in
+            let side = min(geometry.size.width, geometry.size.height)
+            ZStack {
+                Circle().inset(by: 2).stroke(Color.primary.opacity(0.15), lineWidth: 4)
+                Circle().inset(by: 2)
+                    .trim(from: 0, to: item.remainingFraction(at: now))
+                    .stroke(accent, style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                    .rotationEffect(.degrees(-90))
+                    .widgetAccentable()
                 Text("\(item.remainingPercent(at: now))%")
-                    .font(.system(size: prominent ? 30 : 16, weight: .bold))
-                    .monospacedDigit().lineLimit(1).minimumScaleFactor(0.65)
-                Text(WidgetText(snapshot: snapshot).remainingLabel)
-                    .font(.system(size: prominent ? 10 : 8)).lineLimit(1).minimumScaleFactor(0.8)
+                    .font(.system(size: side * 0.31, weight: .bold))
+                    .monospacedDigit().lineLimit(1).minimumScaleFactor(0.5)
+                    // Text owns a safe interior box, including the wider 100%.
+                    .frame(width: side * 0.62, height: side * 0.36)
             }
+            .frame(width: side, height: side)
         }
-        .padding(2)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(item.remainingPercent(at: now))% \(WidgetText(snapshot: snapshot).remainingLabel)")
+        .accessibilityIdentifier("widget_remaining_ring")
     }
 }
 
@@ -154,38 +156,44 @@ struct EkadashiWidgetView: View {
     }
 
     private func medium(_ snapshot: WidgetSnapshot, _ headline: WidgetHeadline) -> some View {
+        ViewThatFits(in: .vertical) {
+            mediumContent(snapshot, headline, compact: false).fixedSize(horizontal: false, vertical: true)
+            mediumContent(snapshot, headline, compact: true)
+        }
+    }
+
+    private func mediumContent(_ snapshot: WidgetSnapshot, _ headline: WidgetHeadline, compact: Bool) -> some View {
         let item = headline.item
         let text = WidgetText(snapshot: snapshot)
         return VStack(alignment: .leading, spacing: 2) {
             header(snapshot, headline)
             HStack(spacing: 10) {
-                if headline.isToday {
-                    RemainingRing(item: item, snapshot: snapshot, now: now).frame(width: 42, height: 42)
-                }
                 VStack(alignment: .leading, spacing: 2) {
-                    name(item, font: .system(size: 15, weight: .bold))
-                    Text(item.localizedDate).font(.system(size: 10)).foregroundStyle(.secondary)
+                    name(item, font: .system(size: compact ? 16 : 17, weight: .bold))
+                    Text(item.localizedDate).font(.system(size: compact ? 10 : 11)).foregroundStyle(.secondary)
                         .lineLimit(1).minimumScaleFactor(0.75)
                 }
+                if headline.isToday {
+                    RemainingRing(item: item, snapshot: snapshot, now: now)
+                        .frame(width: compact ? 44 : 48, height: compact ? 44 : 48)
+                }
             }
-            Spacer(minLength: 0)
             HStack(alignment: .top, spacing: 12) {
-                compactTiming(snapshot.string("fasting_starts", ""), date: text.date(item.fastingStart), value: text.time(item.fastingStart))
-                compactTiming(snapshot.string("parana_window", ""), date: text.date(item.paranaStart), value: text.window(item.paranaStart, item.paranaEnd))
+                compactTiming(snapshot.string("fasting_starts", ""), date: text.date(item.fastingStart), value: text.time(item.fastingStart), compact: compact)
+                compactTiming(snapshot.string("parana_window", ""), date: text.date(item.paranaStart), value: text.window(item.paranaStart, item.paranaEnd), compact: compact)
             }
-            Spacer(minLength: 0)
             location(snapshot)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .frame(maxWidth: .infinity, alignment: .topLeading)
     }
 
     /// Equal-width columns keep translated labels readable instead of squeezing
     /// them beside a full-width date and Parana window.
-    private func compactTiming(_ title: String, date: String, value: String) -> some View {
+    private func compactTiming(_ title: String, date: String, value: String, compact: Bool) -> some View {
         VStack(alignment: .leading, spacing: 1) {
-            WidgetColumnText(value: title, size: 9, weight: .semibold).foregroundStyle(accent)
-            WidgetColumnText(value: date, size: 9).foregroundStyle(.secondary)
-            WidgetColumnText(value: value, size: 10, weight: .semibold)
+            WidgetColumnText(value: title, size: compact ? 10 : 11, weight: .semibold, lineHeightMultiple: 1.3).foregroundStyle(accent)
+            WidgetColumnText(value: date, size: compact ? 9 : 10, lineHeightMultiple: 1.3).foregroundStyle(.secondary)
+            WidgetColumnText(value: value, size: compact ? 11 : 12, weight: .semibold, lineHeightMultiple: 1.3)
         }
         .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
     }
@@ -196,14 +204,14 @@ struct EkadashiWidgetView: View {
             VStack(spacing: side * 0.03) {
                 ZStack {
                     if headline.isToday {
-                        Circle().inset(by: 2).stroke(.primary.opacity(0.2), lineWidth: 3)
-                        Circle().inset(by: 2).trim(from: 0, to: headline.item.remainingFraction(at: now))
-                            .stroke(.primary, style: StrokeStyle(lineWidth: 3, lineCap: .round)).rotationEffect(.degrees(-90))
+                        Circle().inset(by: side * 0.02).stroke(.primary.opacity(0.2), lineWidth: side * 0.04)
+                        Circle().inset(by: side * 0.02).trim(from: 0, to: headline.item.remainingFraction(at: now))
+                            .stroke(.primary, style: StrokeStyle(lineWidth: side * 0.04, lineCap: .round)).rotationEffect(.degrees(-90))
                     }
                     WidgetBrandIcon()
-                        .padding(headline.isToday ? side * 0.055 : 0)
+                        .frame(width: side * (headline.isToday ? 0.23 : 0.43), height: side * (headline.isToday ? 0.23 : 0.43))
                 }
-                .frame(width: side * 0.43, height: side * 0.43)
+                .frame(width: side * (headline.isToday ? 0.52 : 0.43), height: side * (headline.isToday ? 0.52 : 0.43))
                 Group {
                     if headline.isToday {
                         Text("\(headline.item.remainingPercent(at: now))%")

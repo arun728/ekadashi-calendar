@@ -6,6 +6,20 @@ import EkadashiCore
 /// domain rules are covered by the EkadashiCore package tests).
 @MainActor
 final class AppModelTests: XCTestCase {
+    func testDisplayClockCanOnlyBePinnedByAnExplicitDebugUITest() {
+        let live = ISO8601.instant("2026-10-24T00:00:00Z")!
+        let pinned = ISO8601.instant("2026-10-22T07:15:00Z")!
+        let environment = ["EKADASHI_UI_TEST_NOW": "2026-10-22T07:15:00Z"]
+        XCTAssertEqual(DisplayClock.date(live, arguments: [], environment: environment), live)
+        XCTAssertEqual(DisplayClock.date(live, arguments: ["-ui-testing"], environment: [:]), live)
+        XCTAssertEqual(DisplayClock.date(live, arguments: ["-ui-testing"], environment: ["EKADASHI_UI_TEST_NOW": "invalid"]), live)
+        #if DEBUG
+        XCTAssertEqual(DisplayClock.date(live, arguments: ["-ui-testing"], environment: environment), pinned)
+        #else
+        XCTAssertEqual(DisplayClock.date(live, arguments: ["-ui-testing"], environment: environment), live)
+        #endif
+    }
+
     func testBundledScheduleLoadsInEveryLanguage() async {
         let model = AppModel()
         let original = model.language
@@ -139,6 +153,7 @@ final class AppModelTests: XCTestCase {
     func testHomeCityTraditionAndYearApplyAcrossTheApp() async {
         let model = AppModel()
         let city = model.ekadashiCity, manual = model.ekadashiCityIsManual
+        let language = model.language
         let tradition = model.tradition, year = model.selectedYear, panchang = model.panchangCity
         defer {
             // The tests share the app's settings; put them back.
@@ -146,7 +161,10 @@ final class AppModelTests: XCTestCase {
             model.setYear(year)
             if manual { model.chooseEkadashiCity(city) }
             model.savePanchangCity(panchang)
+            model.setLanguage(language)
         }
+        // These assertions deliberately check English display strings.
+        model.setLanguage("en")
         XCTAssertEqual(model.enabledYears, [2026, 2027])
         XCTAssertEqual(AppModel.defaultCity.label, "Chennai (IN)")
 
