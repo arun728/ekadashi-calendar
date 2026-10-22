@@ -1,4 +1,5 @@
 import XCTest
+import UIKit
 
 /// Walks the five tabs, search and the paywall, attaching a screenshot of
 /// each (kept with the test results) and checking the main controls exist.
@@ -20,6 +21,56 @@ final class ScreenshotTests: XCTestCase {
         attachment.name = name
         attachment.lifetime = .keepAlways
         add(attachment)
+    }
+
+    func testGlassLookStartsOffAndRestoresTheCurrentHomeAppearance() {
+        app.terminate()
+        app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = "2026-10-22T07:15:00Z"
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        let before = app.screenshot().image
+        snap("glass-baseline-home-off")
+        tab(4)
+        let toggle = app.switches["settings_glass_look"].firstMatch
+        XCTAssertTrue(toggle.waitForExistence(timeout: 5), "Glass Look must be an opt-in Appearance setting")
+        XCTAssertEqual(toggle.value as? String, "0", "Existing users keep the current appearance")
+        toggle.tap()
+        XCTAssertEqual(toggle.value as? String, "1")
+        snap("glass-settings-enabled")
+        tab(0)
+        snap("glass-home-enabled")
+        let enabled = app.screenshot().image
+        XCTAssertGreaterThan(pixelDifference(before, enabled), 0.01, "The enabled appearance must be visibly distinct")
+        tab(4)
+        toggle.tap()
+        XCTAssertEqual(toggle.value as? String, "0")
+        tab(0)
+        snap("glass-home-restored-off")
+        XCTAssertLessThan(pixelDifference(before, app.screenshot().image), 0.003, "Off restores the current Home, including its native tab bar")
+    }
+
+    private func pixelDifference(_ first: UIImage, _ second: UIImage) -> Double {
+        guard let a = first.cgImage, let b = second.cgImage, a.width == b.width, a.height == b.height else { return 1 }
+        func rgba(_ image: CGImage) -> [UInt8] {
+            var bytes = [UInt8](repeating: 0, count: image.width * image.height * 4)
+            bytes.withUnsafeMutableBytes { buffer in
+                let context = CGContext(data: buffer.baseAddress, width: image.width, height: image.height, bitsPerComponent: 8,
+                    bytesPerRow: image.width * 4, space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
+                context.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
+            }
+            return bytes
+        }
+        let left = rgba(a), right = rgba(b)
+        var changed = 0, total = 0
+        // Exclude the live system clock/status bar and bottom home indicator.
+        for y in Int(90 * first.scale)..<(a.height - Int(30 * first.scale)) {
+            for x in 0..<a.width {
+                let i = (y * a.width + x) * 4
+                if (0..<3).contains(where: { abs(Int(left[i + $0]) - Int(right[i + $0])) > 4 }) { changed += 1 }
+                total += 1
+            }
+        }
+        return Double(changed) / Double(max(total, 1))
     }
 
     func testFreshHomeDefaultsToVaishnavaAndListsItBeforeSmarta() {
