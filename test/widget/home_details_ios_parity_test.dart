@@ -253,7 +253,7 @@ void main() {
       await tester.pumpAndSettle();
       var record = find.byKey(const Key('home_record_vrat'));
       expect(tester.widget(record), isA<OutlinedButton>());
-      expect(tester.widget<OutlinedButton>(record).onPressed, isNull);
+      expect(tester.widget<OutlinedButton>(record).onPressed, isNotNull);
       expect(
         tester.widget<OutlinedButton>(record).style!.shape!.resolve({}),
         isA<CircleBorder>(),
