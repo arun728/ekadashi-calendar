@@ -382,7 +382,7 @@ void main() {
       // How the times are calculated (EkadashiDetailsView on iOS).
       expect(
         tester.widget<StatusPill>(pill).text,
-        'Smarta • Chennai (IN) • IST',
+        'Vaishnava • Chennai (IN) • IST',
       );
       final section = find.text('Significance');
       expect(styleOf(tester, section).fontSize, IosText.title3);

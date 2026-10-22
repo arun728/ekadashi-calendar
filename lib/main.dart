@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:clock/clock.dart';
+import 'widgets/home_fasting_progress.dart';
 import 'services/premium_service.dart';
 import 'services/play_billing_service.dart';
 import 'package:flutter/foundation.dart';
@@ -208,6 +210,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   /// Re-checks Google Play while the app stays open, so an ended
   /// subscription is noticed without leaving the app.
   Timer? _premiumRecheck;
+  Timer? _homeClockTimer;
   static const premiumRecheckInterval = Duration(minutes: 5);
   bool _premiumSessionStarted = false;
 
@@ -255,6 +258,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _startHomeClock();
     NativeWidgetService().initializeDeepLinkListener(handleDeepLink);
     EventReminderService.instance.attach(_scheduleEventReminders);
     // City and country names in the app language.
@@ -306,8 +310,16 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     _settings?.removeListener(_settingsChanged);
     PlaceNameResolver.instance.removeListener(_namesChanged);
     _premiumRecheck?.cancel();
+    _homeClockTimer?.cancel();
     _pageController.dispose();
     super.dispose();
+  }
+
+  void _startHomeClock() {
+    _homeClockTimer?.cancel();
+    _homeClockTimer = Timer.periodic(const Duration(minutes: 1), (_) {
+      if (mounted && _currentIndex == 0) setState(() {});
+    });
   }
 
   void _startPremiumRecheck() {
@@ -320,8 +332,13 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused) _premiumRecheck?.cancel();
+    if (state == AppLifecycleState.paused) {
+      _premiumRecheck?.cancel();
+      _homeClockTimer?.cancel();
+    }
     if (state == AppLifecycleState.resumed) {
+      _startHomeClock();
+      setState(() {});
       // Pick up renewals, cancellations and refunds made in Google Play.
       if (Platform.isAndroid) {
         _premium?.refresh();
@@ -734,11 +751,11 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
     try {
       final location = tz.getLocation(_getIANATimezone(_currentTimezone));
-      nowTz = tz.TZDateTime.now(location);
+      nowTz = tz.TZDateTime.from(clock.now(), location);
       today = DateTime(nowTz.year, nowTz.month, nowTz.day);
     } catch (e) {
       debugPrint('Error parsing timezone $_currentTimezone: $e');
-      final now = DateTime.now();
+      final now = clock.now();
       today = DateTime(now.year, now.month, now.day);
     }
 
@@ -1471,11 +1488,11 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     DateTime today;
     try {
       final location = tz.getLocation(_getIANATimezone(_currentTimezone));
-      final nowTz = tz.TZDateTime.now(location);
+      final nowTz = tz.TZDateTime.from(clock.now(), location);
       today = DateTime(nowTz.year, nowTz.month, nowTz.day);
     } catch (e) {
       // Fallback to local time if timezone is invalid
-      final now = DateTime.now();
+      final now = clock.now();
       today = DateTime(now.year, now.month, now.day);
     }
 
@@ -1486,6 +1503,11 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       ekadashi.date.day,
     );
     final daysUntil = ekadashiDate.difference(today).inDays;
+    final remaining = HomeFastingProgress.remaining(
+      ekadashi,
+      clock.now(),
+      _getIANATimezone(_currentTimezone),
+    );
 
     const tealColor = IosColors.teal;
     final lang = Provider.of<LanguageService>(context);
@@ -1552,29 +1574,39 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  // Days badge
-                  Align(
-                    alignment: AlignmentDirectional.centerEnd,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 6,
-                      ),
-                      decoration: ShapeDecoration(
-                        color: daysUntil < 0
-                            ? IosColors.gray(context)
-                            : tealColor,
-                        shape: const StadiumBorder(),
-                      ),
-                      child: Text(
-                        daysText,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: IosText.footnote,
+                  // Reserve a separate header lane for the ring and badge.
+                  Row(
+                    children: [
+                      if (remaining != null)
+                        HomeFastingProgress(
+                          key: const Key('home_fasting_progress'),
+                          fraction: remaining,
+                          language: code,
+                        ),
+                      const Spacer(),
+                      Flexible(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 6,
+                          ),
+                          decoration: ShapeDecoration(
+                            color: daysUntil < 0
+                                ? IosColors.gray(context)
+                                : tealColor,
+                            shape: const StadiumBorder(),
+                          ),
+                          child: Text(
+                            daysText,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: IosText.footnote,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                    ],
                   ),
                   const SizedBox(height: 16),
                   // Date: weekday, date, month and year, as on every tab.
@@ -1702,11 +1734,13 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     LanguageService lang,
   ) {
     final record = tracker.getRecordByUid(ekadashi.occurrenceUid);
-    final open = VratRecording.isOpen(
-      ekadashi,
-      now: DateTime.now(),
-      timezone: _currentTimezone,
-    );
+    final open =
+        record != null ||
+        VratRecording.isOpen(
+          ekadashi,
+          now: clock.now(),
+          timezone: _currentTimezone,
+        );
     final color = open ? IosColors.teal : IosColors.tertiary(context);
     final Widget icon = switch (record?.status) {
       ObservanceStatus.observed => Icon(AppIcons.cardObserved, color: color),
@@ -1716,21 +1750,23 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     };
     return OutlinedButton(
       key: const Key('home_record_vrat'),
-      onPressed: open
-          ? () async {
-              final unlocks = await RecordVratDialog.show(
-                context,
-                ekadashi: ekadashi,
-                allOccurrences: _allEkadashis,
-                currentTimezone: _currentTimezone,
-              );
-              if (unlocks != null && unlocks.isNotEmpty && mounted) {
-                for (final u in unlocks) {
-                  await AchievementUnlockDialog.show(context, u);
-                }
-              }
-            }
-          : null,
+      onPressed: () async {
+        if (!open) {
+          showToast(context, lang.translate('journey_record_after_parana'));
+          return;
+        }
+        final unlocks = await RecordVratDialog.show(
+          context,
+          ekadashi: ekadashi,
+          allOccurrences: _allEkadashis,
+          currentTimezone: _currentTimezone,
+        );
+        if (unlocks != null && unlocks.isNotEmpty && mounted) {
+          for (final u in unlocks) {
+            await AchievementUnlockDialog.show(context, u);
+          }
+        }
+      },
       // A round glass button, neutral grey while recording is closed.
       style: IosButtons.glass(context).copyWith(
         shape: const WidgetStatePropertyAll(CircleBorder()),
@@ -1738,17 +1774,14 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         fixedSize: const WidgetStatePropertyAll(Size.square(48)),
         minimumSize: const WidgetStatePropertyAll(Size.square(48)),
         backgroundColor: WidgetStateProperty.resolveWith(
-          (states) => states.contains(WidgetState.disabled)
+          (states) => !open
               ? IosColors.gray(context).withValues(alpha: .18)
               : IosColors.teal.withValues(alpha: .10),
         ),
         side: WidgetStateProperty.resolveWith(
           (states) => BorderSide(
-            color:
-                (states.contains(WidgetState.disabled)
-                        ? IosColors.gray(context)
-                        : IosColors.teal)
-                    .withValues(alpha: .28),
+            color: (!open ? IosColors.gray(context) : IosColors.teal)
+                .withValues(alpha: .28),
             width: .7,
           ),
         ),

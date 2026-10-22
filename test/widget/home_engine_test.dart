@@ -120,7 +120,10 @@ void main() {
       find.byType(CalendarScreen),
     );
     expect(calendar.selectedYear, 2027);
-    expect(text(tester, 'calendar_ekadashi_source'), 'Vaishnava • Chennai (IN)');
+    expect(
+      text(tester, 'calendar_ekadashi_source'),
+      'Vaishnava • Chennai (IN)',
+    );
     // Under the date title, inside the month header row (no extra row).
     final header = box(tester, 'calendar_month_tube');
     final source = box(tester, 'calendar_ekadashi_source');

@@ -1,7 +1,6 @@
 # Android follow-up requested 22 October 2026
 
-Pending Android implementation. The current work is iOS-only; implement these
-app changes on Android when Arun resumes Android work in this chat:
+Implemented on Android on 22 October 2026 after approval, on PR #24:
 
 1. **Home progress:** only the viewed Ekadashi whose civil date is today in
    the Home city's time zone gets a remaining-fast percentage ring. Place the
@@ -24,3 +23,5 @@ app changes on Android when Arun resumes Android work in this chat:
 
 Use TDD when implementing these. The iOS-only Today Medium widget footer-spacing
 adjustment is not an Android Home Screen widget redesign request.
+
+TDD evidence: `9cc2eed` records the missing ring, blocked-button callback and old default. First implementation gates: Flutter **769 passed**, analyzer **no issues**, Swift core **270 passed**. Calendar already used the complete-window localization helper; six-language/both-tradition rendered-card tests now guard it. Fixed-clock tests also cover minute refresh, Home-city midnight, timing boundaries and 0/72/100 percent at large text sizes. Android widget designs are unchanged.
