@@ -1712,4 +1712,11 @@ class AppLocalizationsTe extends AppLocalizations {
   @override
   String get widget_lock_support =>
       'మద్దతు ఉన్న పరికరాల్లో లాక్ స్క్రీన్ విడ్జెట్‌లు అందుబాటులో ఉంటాయి. పరిమాణం, స్థానం మీ పరికరంపై ఆధారపడతాయి.';
+
+  @override
+  String get glass_look => 'గాజు రూపం';
+
+  @override
+  String get glass_look_desc =>
+      'మరింత పారదర్శకంగా కనిపించే కార్డులు, నియంత్రణలను ఉపయోగించండి.';
 }

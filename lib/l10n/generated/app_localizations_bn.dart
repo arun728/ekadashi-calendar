@@ -1711,4 +1711,10 @@ class AppLocalizationsBn extends AppLocalizations {
   @override
   String get widget_lock_support =>
       'সমর্থিত যন্ত্রে লক স্ক্রিন উইজেট পাওয়া যায়। আকার ও অবস্থান আপনার যন্ত্রের উপর নির্ভর করে।';
+
+  @override
+  String get glass_look => 'কাচের মতো চেহারা';
+
+  @override
+  String get glass_look_desc => 'আরও স্বচ্ছ কার্ড ও নিয়ন্ত্রণ ব্যবহার করুন।';
 }

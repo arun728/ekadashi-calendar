@@ -166,7 +166,8 @@ final class LocalizationTests: XCTestCase {
         // and the 20 Ekadashi-engine, city picker and share card strings
         // (docs/EKADASHI_ENGINE_SCHEDULE.md).
         // Eight shared widget-preview/localization keys were ported from iOS overrides to ARB.
-        XCTAssertEqual(english.count, 521)
+        // Two Android Glass Look preference strings share the approved iOS wording.
+        XCTAssertEqual(english.count, 523)
         var problems: [String] = []
         for language in ["ta", "hi", "te", "gu", "bn"] {
             for key in english {

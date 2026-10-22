@@ -1701,4 +1701,10 @@ class AppLocalizationsGu extends AppLocalizations {
   @override
   String get widget_lock_support =>
       'લૉક સ્ક્રીન વિજેટ સમર્થિત ઉપકરણો પર ઉપલબ્ધ છે. કદ અને સ્થાન તમારા ઉપકરણ પર આધાર રાખે છે.';
+
+  @override
+  String get glass_look => 'કાચ જેવો દેખાવ';
+
+  @override
+  String get glass_look_desc => 'વધુ પારદર્શક કાર્ડ અને નિયંત્રણો વાપરો.';
 }

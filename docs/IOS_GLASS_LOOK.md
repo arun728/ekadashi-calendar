@@ -58,7 +58,7 @@ fix and guard runtime sharing plus regeneration. The regenerated original
 project is also built with company signing. The app is reopened without test
 arguments/clock after verification.
 
-Android work remains deferred. This change adds no Android UI or preference.
+The approved Android port is documented separately in [ANDROID_GLASS_LOOK.md](ANDROID_GLASS_LOOK.md). The iOS appearance implementation itself is unchanged by that port.
 
 ## Final local checks
 

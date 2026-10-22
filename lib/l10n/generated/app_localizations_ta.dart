@@ -1720,4 +1720,11 @@ class AppLocalizationsTa extends AppLocalizations {
   @override
   String get widget_lock_support =>
       'பூட்டுத் திரை விட்ஜெட்கள் ஆதரிக்கும் சாதனங்களில் கிடைக்கும். அளவும் இடமும் உங்கள் சாதனத்தைப் பொறுத்தது.';
+
+  @override
+  String get glass_look => 'கண்ணாடித் தோற்றம்';
+
+  @override
+  String get glass_look_desc =>
+      'தெளிவான, ஒளி ஊடுருவும் அட்டைகளையும் கட்டுப்பாடுகளையும் பயன்படுத்தவும்.';
 }

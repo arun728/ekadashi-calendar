@@ -1708,4 +1708,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get widget_lock_support =>
       'Lock Screen widgets are available on supported devices. Sizes and placement depend on your device.';
+
+  @override
+  String get glass_look => 'Glass Look';
+
+  @override
+  String get glass_look_desc => 'Use clearer, translucent cards and controls.';
 }

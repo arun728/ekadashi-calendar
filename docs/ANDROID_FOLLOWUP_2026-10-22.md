@@ -25,3 +25,5 @@ Use TDD when implementing these. The iOS-only Today Medium widget footer-spacing
 adjustment is not an Android Home Screen widget redesign request.
 
 TDD evidence: `9cc2eed` records the missing ring, blocked-button callback and old default. First implementation gates: Flutter **769 passed**, analyzer **no issues**, Swift core **270 passed**. Calendar already used the complete-window localization helper; six-language/both-tradition rendered-card tests now guard it. Fixed-clock tests also cover minute refresh, Home-city midnight, timing boundaries and 0/72/100 percent at large text sizes. Android widget designs are unchanged.
+
+Final recording/layout follow-up: existing saved records stay editable before Parana, and the ring stroke stays inside its frame. Both were reproduced by failing tests and corrected in `82b6322`. The optional Android Glass Look and final device evidence are documented in [ANDROID_GLASS_LOOK.md](ANDROID_GLASS_LOOK.md).

@@ -192,9 +192,9 @@ AM/PM and footer-spacing failures in `5dc06e1`, before implementation. The
 recording tests cover all future events, all six languages, both traditions and
 the second before/at Parana.
 
-Android remains deferred. The four requested app changes, including the Home
-progress ring, are tracked in [the Android follow-up](ANDROID_FOLLOWUP_2026-10-22.md).
-No Android code or resources are changed by this follow-up.
+The four requested app changes were subsequently approved and ported to Android;
+see [the Android follow-up](ANDROID_FOLLOWUP_2026-10-22.md). The widget footer
+spacing adjustment remains iOS-only.
 
 Final local verification for this follow-up:
 
@@ -217,4 +217,5 @@ No CI was run and no merge was made.
 The iOS-only Settings appearance preference and its validation are documented in
 [Optional Glass Look](IOS_GLASS_LOOK.md). It starts Off, preserving the current
 app appearance, and does not alter WidgetKit designs or exported share cards.
-Android implementation remains deferred.
+The subsequently approved Android implementation is documented in
+[Android Glass Look](ANDROID_GLASS_LOOK.md); Android widget designs remain unchanged.

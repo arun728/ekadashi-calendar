@@ -3231,6 +3231,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Lock Screen widgets are available on supported devices. Sizes and placement depend on your device.'**
   String get widget_lock_support;
+
+  /// No description provided for @glass_look.
+  ///
+  /// In en, this message translates to:
+  /// **'Glass Look'**
+  String get glass_look;
+
+  /// No description provided for @glass_look_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Use clearer, translucent cards and controls.'**
+  String get glass_look_desc;
 }
 
 class _AppLocalizationsDelegate

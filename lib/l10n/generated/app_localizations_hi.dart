@@ -1701,4 +1701,10 @@ class AppLocalizationsHi extends AppLocalizations {
   @override
   String get widget_lock_support =>
       'लॉक स्क्रीन विजेट समर्थित उपकरणों पर उपलब्ध हैं। आकार और स्थान आपके उपकरण पर निर्भर करते हैं।';
+
+  @override
+  String get glass_look => 'काँच जैसा रूप';
+
+  @override
+  String get glass_look_desc => 'अधिक पारदर्शी कार्ड और नियंत्रण दिखाएँ।';
 }

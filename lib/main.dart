@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:clock/clock.dart';
 import 'widgets/home_fasting_progress.dart';
+import 'widgets/glass_look.dart';
 import 'services/premium_service.dart';
 import 'services/play_billing_service.dart';
 import 'package:flutter/foundation.dart';
@@ -103,6 +104,10 @@ class MyApp extends StatelessWidget {
         builder: (context, themeService, lang, child) {
           return MaterialApp(
             title: 'Ekadashi Calendar',
+            builder: (context, child) => GlassLook(
+              enabled: themeService.isGlassLookEnabled,
+              child: child ?? const SizedBox(),
+            ),
             locale: lang.currentLocale,
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,

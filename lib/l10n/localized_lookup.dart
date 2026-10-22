@@ -523,6 +523,8 @@ Map<String, String> localizedLookup(AppLocalizations l) => {
   'widget_preview_tap': l.widget_preview_tap,
   'widget_no_next': l.widget_no_next,
   'widget_lock_support': l.widget_lock_support,
+  'glass_look': l.glass_look,
+  'glass_look_desc': l.glass_look_desc,
 };
 Map<String, String> localizedTemplates(AppLocalizations l) => {
   'app_title': l.app_title,
@@ -1054,4 +1056,6 @@ Map<String, String> localizedTemplates(AppLocalizations l) => {
   'widget_preview_tap': l.widget_preview_tap,
   'widget_no_next': l.widget_no_next,
   'widget_lock_support': l.widget_lock_support,
+  'glass_look': l.glass_look,
+  'glass_look_desc': l.glass_look_desc,
 };
