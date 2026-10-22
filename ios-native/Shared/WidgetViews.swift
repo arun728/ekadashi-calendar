@@ -48,7 +48,7 @@ private struct WidgetColumnText: View {
     }
 }
 
-private struct RemainingRing: View {
+struct RemainingRing: View {
     let item: WidgetItem
     let snapshot: WidgetSnapshot
     let now: Date

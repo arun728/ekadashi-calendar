@@ -22,6 +22,25 @@ final class ScreenshotTests: XCTestCase {
         add(attachment)
     }
 
+    func testTodayProgressStaysLeftOfTheTodayBadgeAndOnlyAppearsOnTodaysCard() {
+        app.terminate()
+        app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = "2026-10-22T07:15:00Z"
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        app.open(URL(string: "ekadashi://ekadashi?uid=ekadashi%3A2026%3A20")!)
+        let ring = app.descendants(matching: .any)["home_remaining_ring"].firstMatch
+        let badge = app.staticTexts["home_day_badge"].firstMatch
+        XCTAssertTrue(ring.waitForExistence(timeout: 10))
+        XCTAssertTrue(badge.exists)
+        XCTAssertEqual(badge.label, "Today")
+        XCTAssertLessThan(ring.frame.maxX, badge.frame.minX)
+        snap("approved-home-today-ring-left-badge-right")
+        app.open(URL(string: "ekadashi://ekadashi?uid=ekadashi%3A2026%3A21")!)
+        XCTAssertFalse(ring.exists, "A future card never shows today's progress")
+        app.open(URL(string: "ekadashi://ekadashi?uid=ekadashi%3A2026%3A19")!)
+        XCTAssertFalse(ring.exists, "A past card never shows today's progress")
+    }
+
     func testRealWidgetPreviewOpensItsDisplayedHomeCard() {
         openWidgetPreviews()
         XCTAssertFalse(app.staticTexts["No Ekadashi on this day"].exists)

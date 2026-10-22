@@ -9,6 +9,57 @@ import EkadashiCore
 /// the shared selection, percentage, formatter, timeline and link behaviour.
 @MainActor
 final class WidgetRenderingTests: XCTestCase {
+    func testPercentageInkHasClearanceFromTheRingInEveryLanguageIncludingOneHundredPercent() throws {
+        let events = try CalendarRepository.bundled().ekadashis(timezone: "IST", language: "en")
+        let event = try XCTUnwrap(events.first { $0.fastingStart != nil })
+        for language in Localizer.languages {
+            let snapshot = WidgetSnapshot.build(occurrences: [event], timezone: "IST", locationName: "", language: language, now: event.fastingStart!)
+            let item = try XCTUnwrap(snapshot.nextEkadashi)
+            for side in [CGFloat(42), 48, 52, 58] {
+                for fraction in [0.0, 0.28, 0.99, 1.0] {
+                    let now = item.fastingStart.addingTimeInterval(item.paranaStart.timeIntervalSince(item.fastingStart) * fraction)
+                    let renderer = ImageRenderer(content: RemainingRing(item: item, snapshot: snapshot, now: now)
+                        .frame(width: side, height: side).foregroundStyle(.white).environment(\.colorScheme, .dark))
+                    renderer.scale = 3
+                    let image = try XCTUnwrap(renderer.uiImage?.cgImage)
+                    let pixels = try rgba(image)
+                    var textPixels = 0, touching = 0
+                    for y in 0..<image.height { for x in 0..<image.width {
+                        let i = (y * image.width + x) * 4
+                        if pixels[i] > 230 && pixels[i + 1] > 230 && pixels[i + 2] > 230 && pixels[i + 3] > 230 {
+                            textPixels += 1
+                            if hypot(Double(x) + 0.5 - Double(image.width) / 2, Double(y) + 0.5 - Double(image.height) / 2) > Double(side / 2 - 6) * 3 { touching += 1 }
+                        }
+                    } }
+                    XCTAssertGreaterThan(textPixels, 15)
+                    XCTAssertEqual(touching, 0, "Percentage-only ink must stay clear: \(language) \(side) \(item.remainingPercent(at: now))%")
+                }
+            }
+        }
+    }
+
+    func testCircularSymbolHasAnEmptyAnnulusBetweenItAndTheProgressRing() throws {
+        let events = try CalendarRepository.bundled().ekadashis(timezone: "IST", language: "en")
+        let now = try XCTUnwrap(events.first?.fastingStart).addingTimeInterval(3600)
+        let snapshot = WidgetSnapshot.build(occurrences: events, timezone: "IST", locationName: "", language: "en", now: now)
+        for side in [CGFloat(48), 62, 76] {
+            let renderer = ImageRenderer(content: EkadashiWidgetView(snapshot: snapshot, now: now, family: .accessoryCircular)
+                .frame(width: side, height: side).environment(\.colorScheme, .dark))
+            renderer.scale = 3
+            let image = try XCTUnwrap(renderer.uiImage?.cgImage)
+            let pixels = try rgba(image)
+            let centerX = Double(side / 2) * 3
+            let centerY = Double(side * (0.5 - (0.03 + 0.24) / 2)) * 3
+            var touching = 0
+            for y in 0..<image.height { for x in 0..<image.width {
+                let i = (y * image.width + x) * 4
+                let radius = hypot(Double(x) + 0.5 - centerX, Double(y) + 0.5 - centerY) / 3
+                if radius > Double(side * 0.18) && radius < Double(side * 0.21), pixels[i] > 230 && pixels[i + 1] > 230 && pixels[i + 2] > 230 && pixels[i + 3] > 230 { touching += 1 }
+            } }
+            XCTAssertEqual(touching, 0, "Reserve space between the symbol and ring at \(side) pt")
+        }
+    }
+
     func testEveryHomeFamilyUsesAppTealAndItsApprovedBackgroundInBothStates() throws {
         let events = try CalendarRepository.bundled().ekadashis(timezone: "IST", language: "en")
         let event = try XCTUnwrap(events.first { $0.fastingStart != nil && $0.paranaStart != nil })
