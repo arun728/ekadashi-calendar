@@ -46,6 +46,7 @@ class HomeFastingProgress extends StatelessWidget {
                 child: CircularProgressIndicator(
                   value: fraction,
                   strokeWidth: 3.5,
+                  strokeAlign: CircularProgressIndicator.strokeAlignInside,
                   strokeCap: StrokeCap.round,
                   color: IosColors.teal,
                   backgroundColor: IosColors.primary(

@@ -261,7 +261,9 @@ void main() {
       findsNothing,
     );
     await tester.tap(find.byKey(const Key('vrat_record_save')));
-    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 100)));
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 100)),
+    );
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('vrat_record_save')), findsNothing);
     await tester.pumpWidget(const SizedBox());
