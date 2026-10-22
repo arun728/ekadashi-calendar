@@ -216,25 +216,54 @@ void main() {
       });
     },
   );
-  testWidgets('an existing saved observance remains editable before Parana', (tester) async {
+  testWidgets('an existing saved observance remains editable before Parana', (
+    tester,
+  ) async {
     final harness = AppHarness();
-    await tester.runAsync(() => harness.install(preferences: {'vrat_tracker_enabled': true}));
+    await tester.runAsync(
+      () => harness.install(preferences: {'vrat_tracker_enabled': true}),
+    );
     addTearDown(harness.uninstall);
     await tester.pumpWidget(harness.app());
     await tester.pumpAndSettle();
     final context = tester.element(find.byKey(const Key('home_record_vrat')));
     final tracker = context.read<VratTrackerService>();
     final now = DateTime.now();
-    final event = EkadashiDate(id: 9000, occurrenceUid: 'existing-today', name: 'Existing fast', date: DateTime(now.year, now.month, now.day), fastStartTime: '', fastBreakTime: '', description: '', paranaStartIso: now.add(const Duration(hours: 6)).toIso8601String());
-    await tester.runAsync(() => tracker.recordVrat(ekadashiOccurrenceId: event.id, occurrenceUid: event.occurrenceUid, ekadashiDate: event.date.toIso8601String().substring(0,10), ekadashiName: event.name, status: ObservanceStatus.observed));
+    final event = EkadashiDate(
+      id: 9000,
+      occurrenceUid: 'existing-today',
+      name: 'Existing fast',
+      date: DateTime(now.year, now.month, now.day),
+      fastStartTime: '',
+      fastBreakTime: '',
+      description: '',
+      paranaStartIso: now.add(const Duration(hours: 6)).toIso8601String(),
+    );
+    await tester.runAsync(
+      () => tracker.recordVrat(
+        ekadashiOccurrenceId: event.id,
+        occurrenceUid: event.occurrenceUid,
+        ekadashiDate: event.date.toIso8601String().substring(0, 10),
+        ekadashiName: event.name,
+        status: ObservanceStatus.observed,
+      ),
+    );
     expect(tracker.getRecordByUid(event.occurrenceUid), isNotNull);
-    RecordVratDialog.show(context, ekadashi: event, allOccurrences: [event], currentTimezone: 'IST');
+    RecordVratDialog.show(
+      context,
+      ekadashi: event,
+      allOccurrences: [event],
+      currentTimezone: 'IST',
+    );
     await tester.pumpAndSettle();
-    expect(find.text('You can record this fast once Parana begins'), findsNothing);
+    expect(
+      find.text('You can record this fast once Parana begins'),
+      findsNothing,
+    );
     await tester.tap(find.byKey(const Key('vrat_record_save')));
+    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 100)));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('vrat_record_save')), findsNothing);
     await tester.pumpWidget(const SizedBox());
   });
-
 }
