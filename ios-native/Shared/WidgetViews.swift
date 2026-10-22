@@ -165,7 +165,7 @@ struct EkadashiWidgetView: View {
     private func mediumContent(_ snapshot: WidgetSnapshot, _ headline: WidgetHeadline, compact: Bool) -> some View {
         let item = headline.item
         let text = WidgetText(snapshot: snapshot)
-        return VStack(alignment: .leading, spacing: 2) {
+        return VStack(alignment: .leading, spacing: compact && headline.isToday ? 1 : 2) {
             header(snapshot, headline)
             HStack(spacing: 10) {
                 VStack(alignment: .leading, spacing: 2) {
@@ -182,7 +182,7 @@ struct EkadashiWidgetView: View {
                 compactTiming(snapshot.string("fasting_starts", ""), date: text.date(item.fastingStart), value: text.time(item.fastingStart), compact: compact)
                 compactTiming(snapshot.string("parana_window", ""), date: text.date(item.paranaStart), value: text.window(item.paranaStart, item.paranaEnd), compact: compact)
             }
-            location(snapshot)
+            location(snapshot).padding(.top, headline.isToday ? 6 : 0)
         }
         .frame(maxWidth: .infinity, alignment: .topLeading)
     }

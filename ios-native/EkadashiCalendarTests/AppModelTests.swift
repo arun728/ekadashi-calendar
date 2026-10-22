@@ -6,6 +6,34 @@ import EkadashiCore
 /// domain rules are covered by the EkadashiCore package tests).
 @MainActor
 final class AppModelTests: XCTestCase {
+    func testBlockedRecordingExplainsParanaForTodayAndUpcomingInEveryLanguageAndTradition() async throws {
+        let model = AppModel()
+        let originalLanguage = model.language, originalTradition = model.tradition
+        defer { model.setLanguage(originalLanguage); model.setTradition(originalTradition) }
+        let now = ISO8601.instant("2026-10-22T07:15:00Z")!
+        for language in Localizer.languages {
+            model.setLanguage(language)
+            for tradition in EkadashiTradition.allCases {
+                model.setTradition(tradition)
+                await model.waitForLoad()
+                for event in model.ekadashis.filter({ $0.date >= CivilDate(2026, 10, 22) }) {
+                    model.toast = nil
+                    XCTAssertFalse(model.requestVratRecording(event, now: now), "\(language) \(tradition) \(event.date)")
+                    XCTAssertEqual(model.toast?.text, model.t("journey_record_after_parana"))
+                    model.toast = nil
+                    let parana = try XCTUnwrap(event.paranaStart)
+                    XCTAssertTrue(model.requestVratRecording(event, now: parana), "Opens at Parana, not earlier")
+                    XCTAssertNil(model.toast)
+                    XCTAssertFalse(model.requestVratRecording(event, now: parana.addingTimeInterval(-1)))
+                }
+            }
+        }
+    }
+
+    func testHomeTraditionOrderIsVaishnavaThenSmarta() {
+        XCTAssertEqual(HomeControls.traditions, [.gaudiya, .smarta])
+    }
+
     func testVaishnavaIsTheDefaultForMissingOrInvalidTraditionAndSavedChoicesSurvive() {
         let store = AppModel().store
         let original = store.string(forKey: AppModel.traditionKey)

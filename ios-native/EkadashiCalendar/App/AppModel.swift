@@ -110,7 +110,7 @@ final class AppModel {
         isDarkMode = store.bool(forKey: "is_dark_mode") ?? true
         ekadashiCity = Self.loadCity(store) ?? Self.defaultCity
         ekadashiCityIsManual = store.bool(forKey: Self.manualCityKey) ?? false
-        tradition = store.string(forKey: Self.traditionKey).flatMap(EkadashiTradition.init(rawValue:)) ?? .smarta
+        tradition = store.string(forKey: Self.traditionKey).flatMap(EkadashiTradition.init(rawValue:)) ?? .gaudiya
         let years = EkadashiYears.enabled()
         selectedYear = store.string(forKey: Self.yearKey).flatMap(Int.init).flatMap { years.contains($0) ? $0 : nil }
             ?? EkadashiYears.defaultYear(today: CivilDate.today(), enabled: years)
@@ -162,7 +162,7 @@ final class AppModel {
     }
 
     var scheduleZone: TzLocation { ekadashiCity.zone }
-    var today: CivilDate { scheduleZone.wallClock(Date()).date }
+    var today: CivilDate { scheduleZone.wallClock(DisplayClock.date(Date())).date }
     var locationName: String { if case .located(let city) = locationState { return city }; return "" }
 
     /// Place names Apple's geocoder gave in the app language (see [placeName]).
@@ -364,7 +364,7 @@ final class AppModel {
         guard enabledYears.contains(year), year != selectedYear else { return }
         selectedYear = year
         store.set(String(year), forKey: Self.yearKey)
-        homeIndex = HomeSelection.index(of: homeEkadashis, now: Date(), zone: scheduleZone, includeParana: true)
+        homeIndex = HomeSelection.index(of: homeEkadashis, now: DisplayClock.date(Date()), zone: scheduleZone, includeParana: true)
         calendarFocus = year == today.year ? today : CivilDate(year, 1, 1)
     }
 
@@ -373,7 +373,7 @@ final class AppModel {
         guard enabledYears.contains(year), year != selectedYear else { return }
         selectedYear = year
         store.set(String(year), forKey: Self.yearKey)
-        homeIndex = HomeSelection.index(of: homeEkadashis, now: Date(), zone: scheduleZone, includeParana: true)
+        homeIndex = HomeSelection.index(of: homeEkadashis, now: DisplayClock.date(Date()), zone: scheduleZone, includeParana: true)
     }
 
     static let cityKey = "ekadashi_city"
@@ -473,7 +473,7 @@ final class AppModel {
         if !scrollToNext, let current, let index = home.firstIndex(where: { $0.occurrenceUid == current }) {
             homeIndex = index
         } else {
-            homeIndex = HomeSelection.index(of: home, now: Date(), zone: scheduleZone, includeParana: true)
+            homeIndex = HomeSelection.index(of: home, now: DisplayClock.date(Date()), zone: scheduleZone, includeParana: true)
         }
         syncWidgets()
         Task { await scheduleReminders() }
@@ -627,7 +627,7 @@ final class AppModel {
         case .tab(let tab):
             showSearch = false
             selectedTab = tab
-            if tab == .today { homeIndex = HomeSelection.index(of: homeEkadashis, now: Date(), zone: scheduleZone, includeParana: true) }
+            if tab == .today { homeIndex = HomeSelection.index(of: homeEkadashis, now: DisplayClock.date(Date()), zone: scheduleZone, includeParana: true) }
         case .calendar(let date):
             showSearch = false
             selectedTab = .calendar
@@ -663,7 +663,7 @@ final class AppModel {
     /// Ekadashi; Calendar returns to today.
     func reselect(_ tab: AppTab) {
         if tab == .today {
-            homeIndex = HomeSelection.index(of: homeEkadashis, now: Date(), zone: scheduleZone, includeParana: false)
+            homeIndex = HomeSelection.index(of: homeEkadashis, now: DisplayClock.date(Date()), zone: scheduleZone, includeParana: false)
         } else if tab == .calendar {
             calendarFocus = today
         }
@@ -687,8 +687,17 @@ final class AppModel {
 
     /// Recording opens once the fast has happened (Parana started, or the
     /// day after); an existing record stays editable.
-    func canRecord(_ event: EkadashiOccurrence) -> Bool {
-        vrat.record(for: event.occurrenceUid) != nil || VratRecording.isOpen(event, now: Date(), zone: scheduleZone)
+    func canRecord(_ event: EkadashiOccurrence, now: Date = Date()) -> Bool {
+        vrat.record(for: event.occurrenceUid) != nil || VratRecording.isOpen(event, now: DisplayClock.date(now), zone: scheduleZone)
+    }
+
+    /// A closed fast still responds with the same localized explanation as Details.
+    func requestVratRecording(_ event: EkadashiOccurrence, now: Date = Date()) -> Bool {
+        guard canRecord(event, now: now) else {
+            show("journey_record_after_parana")
+            return false
+        }
+        return true
     }
 
     // MARK: Premium paywall

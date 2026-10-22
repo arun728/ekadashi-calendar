@@ -359,7 +359,8 @@ struct CalendarEkadashiCard: View {
                 }
             }
             Text("\(model.t("start_fasting")): \(Localizer.shared.localizeClock(event.fastStartTime, language: model.language))").font(.subheadline)
-            Text("\(model.t("break_fasting")): \(EkadashiDisplay.breakTime(event))").font(.subheadline)
+            Text("\(model.t("break_fasting")): \(Localizer.shared.localizeClock(EkadashiDisplay.breakTime(event), language: model.language))").font(.subheadline)
+                .accessibilityIdentifier("calendar_break_fasting")
             NavigationLink {
                 EkadashiDetailsView(event: event)
             } label: {

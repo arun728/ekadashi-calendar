@@ -59,6 +59,43 @@ final class ScreenshotTests: XCTestCase {
         XCTAssertFalse(parana.label.contains("PM"))
     }
 
+    func testRecordFeedbackAndCalendarWindowInEveryLanguage() {
+        app.terminate()
+        app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = "2026-10-22T07:15:00Z"
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        app.open(URL(string: "ekadashi://calendar?date=2026-10-22")!)
+        tab(0)
+        let cases = [("English", "Papankusha Ekadashi", "You can record this fast once Parana begins"),
+            ("हिंदी", "पापांकुशा एकादशी", "पारण शुरू होने के बाद आप यह व्रत दर्ज कर सकते हैं"),
+            ("தமிழ்", "பாபாங்குசா ஏகாதசி", "பாரணை தொடங்கியதும் இந்த விரதத்தைப் பதிவு செய்யலாம்"),
+            ("తెలుగు", "పాపాంకుశ ఏకాదశి", "పారణ మొదలైన తర్వాత ఈ ఉపవాసాన్ని నమోదు చేయవచ్చు"),
+            ("ગુજરાતી", "પાપાંકુશા એકાદશી", "પારણા શરૂ થયા પછી તમે આ ઉપવાસ નોંધી શકશો"),
+            ("বাংলা", "পাপাঙ্কুশা একাদশী", "পারণ শুরু হলে আপনি এই উপবাস নথিভুক্ত করতে পারবেন")]
+        for (language, name, message) in cases {
+            if language != "English" {
+                element("language_menu").tap()
+                app.buttons[language].tap()
+            }
+            XCTAssertTrue(app.staticTexts[name].firstMatch.waitForExistence(timeout: 10), language)
+            let record = app.buttons["home_record_vrat"].firstMatch
+            XCTAssertTrue(record.isEnabled)
+            record.tap()
+            XCTAssertTrue(app.staticTexts[message].waitForExistence(timeout: 3), language)
+            snap("home-parana-feedback-\(language)")
+            tab(1)
+            let parana = app.staticTexts["calendar_break_fasting"].firstMatch
+            XCTAssertTrue(parana.waitForExistence(timeout: 10), language)
+            XCTAssertTrue(parana.label.contains("09:55"), "Keep the complete end time: \(language)")
+            if language != "English" {
+                XCTAssertFalse(parana.label.contains("AM"), language)
+                XCTAssertFalse(parana.label.contains("PM"), language)
+            }
+            snap("calendar-localized-parana-\(language)")
+            tab(0)
+        }
+    }
+
     func testTodayProgressStaysLeftOfTheTodayBadgeAndOnlyAppearsOnTodaysCard() {
         app.terminate()
         app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = "2026-10-22T07:15:00Z"
@@ -401,7 +438,7 @@ final class ScreenshotTests: XCTestCase {
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 10))
         tab(1)
         XCTAssertTrue(element("calendar_ekadashi_source").waitForExistence(timeout: 5))
-        // "Smarta • Chennai (IN)" sits under the date title, within the month
+        // The selected tradition and city sit under the date title, within the month
         // header row (no extra row, so short screens keep the day in view).
         let source = element("calendar_ekadashi_source").frame
         let title = element("calendar_year_selector").frame

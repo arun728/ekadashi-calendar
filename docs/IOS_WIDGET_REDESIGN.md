@@ -167,3 +167,46 @@ Native attachments include Home and Small/Medium/Lock Screen Settings previews
 for each supported language, plus both-appearance rendering sheets with long
 Ekadashi names. Simulator results validate the shared renderers; system
 WidgetKit delivery and physical-device appearance remain release checks.
+
+
+## Footer, recording feedback and Home defaults (22 October 2026)
+
+Today Medium reserves an extra six points above the city/tradition footer.
+Its compact variant slightly reduces the other stack gaps to retain the minimum
+host height. The same native renderer is used by Settings previews; Next Medium
+and the other widget families keep their layouts. A native pixel test measures
+the gap between timing ink and footer ink in all six languages, alongside the
+existing containment and larger-text checks.
+
+The grey Home observance action now accepts a tap before Parana and shows the
+same localized message as Details, using the existing transient toast. It stays
+grey until recording opens; a minute timeline refreshes eligibility. Current and
+future occurrences in both traditions use the same gate; existing records stay
+editable. Calendar localizes the complete break-fast window, including both
+AM/PM markers, through the existing clock formatter.
+
+Home lists Vaishnava before Smarta and defaults to Vaishnava when no valid saved
+preference exists. An explicit saved selection of either tradition survives.
+The new tests first reproduced the default, disabled-tap, unlocalized Calendar
+AM/PM and footer-spacing failures in `5dc06e1`, before implementation. The
+recording tests cover all future events, all six languages, both traditions and
+the second before/at Parana.
+
+Android remains deferred. The four requested app changes, including the Home
+progress ring, are tracked in [the Android follow-up](ANDROID_FOLLOWUP_2026-10-22.md).
+No Android code or resources are changed by this follow-up.
+
+Final local verification for this follow-up:
+
+- **25 native app/rendering tests passed**, including measured footer separation.
+- **All 27 Simulator UI tests passed**, including the six-language recording /
+  Calendar sweep and previous preview, Home-link, reminder, search and navigation
+  regressions (iPhone 17 Pro, iOS 26.5).
+- **269 Swift core tests passed**; **746 Flutter tests passed**.
+- `flutter analyze`: **no issues**; `git diff --check`: passed.
+
+The deterministic Debug test clock also drives Home's date/selection and record
+eligibility, so the fixed-date UI regressions remain repeatable after today.
+Release builds continue using live time. Final native screenshots were inspected
+for Tamil feedback, Calendar time endpoints and both Medium preview appearances.
+No CI was run and no merge was made.

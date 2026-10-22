@@ -80,6 +80,7 @@ struct HomeControls: View {
     @State private var choosingCity = false
     static let spacing: CGFloat = 10
     static let pillHeight: CGFloat = 44
+    static let traditions: [EkadashiTradition] = [.gaudiya, .smarta]
 
     var body: some View {
         VStack(spacing: Self.spacing) {
@@ -124,7 +125,7 @@ struct HomeControls: View {
 
     private var traditionMenu: some View {
         Menu {
-            ForEach(EkadashiTradition.allCases, id: \.self) { tradition in
+            ForEach(Self.traditions, id: \.self) { tradition in
                 Button { model.setTradition(tradition) } label: {
                     if tradition == model.tradition {
                         Label(model.traditionName(tradition), systemImage: AppSymbol.checkmark)
@@ -265,18 +266,23 @@ struct EkadashiCard: View {
                     .accessibilityLabel(model.t("share_card"))
                     .accessibilityIdentifier("home_share_card")
                     if model.vrat.isEnabled {
-                        Button {
-                            recording = true
-                        } label: {
-                            Image(systemName: VratStatusStyle(model.vrat.record(for: event.occurrenceUid)?.status).cardSymbol)
-                                .font(.title3)
-                                .padding(.vertical, 4)
+                        TimelineView(.periodic(from: .now, by: 60)) { context in
+                            let open = model.canRecord(event, now: context.date)
+                            Button {
+                                recording = model.requestVratRecording(event)
+                            } label: {
+                                Image(systemName: VratStatusStyle(model.vrat.record(for: event.occurrenceUid)?.status).cardSymbol)
+                                    .font(.title3)
+                                    .padding(.vertical, 4)
+                            }
+                            .secondaryActionStyle()
+                            .tint(open ? Theme.teal : .gray)
+                            .foregroundStyle(open ? Theme.teal : .gray)
+                            .opacity(open ? 1 : 0.6)
+                            .accessibilityLabel(model.t(model.vrat.record(for: event.occurrenceUid) == nil ? "record_vrat" : "edit_record"))
+                            .accessibilityHint(open ? "" : model.t("journey_record_after_parana"))
+                            .accessibilityIdentifier("home_record_vrat")
                         }
-                        .secondaryActionStyle()
-                        .disabled(!model.canRecord(event))
-                        .accessibilityLabel(model.t(model.vrat.record(for: event.occurrenceUid) == nil ? "record_vrat" : "edit_record"))
-                        .accessibilityHint(model.canRecord(event) ? "" : model.t("journey_record_after_parana"))
-                        .accessibilityIdentifier("home_record_vrat")
                     }
                 }
             }
