@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/adaptive_layout.dart';
 import '../widgets/app_background.dart';
 import '../widgets/ios_style.dart';
 import 'package:provider/provider.dart';
@@ -368,8 +369,15 @@ class _PremiumScreenState extends State<PremiumScreen> {
               child: Column(
                 children: [
                   Expanded(
+                    // Wide screens keep the plans at a readable width.
                     child: ListView(
-                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: AdaptiveLayout.readableInset(
+                          AdaptiveLayout.widthOf(context),
+                          20,
+                        ),
+                        vertical: 8,
+                      ),
                       children: [
                         if (premium.lifetime) ...[
                           _statusCard(

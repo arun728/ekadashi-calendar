@@ -12,6 +12,7 @@ import '../../services/premium_service.dart';
 import '../../services/vrat_recording.dart';
 import '../../services/vrat_statistics_service.dart';
 import '../../services/vrat_tracker_service.dart';
+import '../../widgets/adaptive_layout.dart';
 import '../../widgets/ios_style.dart';
 import '../../widgets/section_pager.dart';
 import '../premium_screen.dart';
@@ -171,67 +172,82 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
     );
     final unit = lang.translate('ekadashis_unit');
 
+    // Wide screens show the metrics beside the recent Ekadashis.
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, _bottomInset),
       children: [
-        _pair(
-          key: const Key('journey_overview_streaks'),
-          _MetricCard(
-            panelKey: const Key('journey_metric_current_streak'),
-            title: lang.translate('current_streak'),
-            value: '$currentStreak',
-            subtitle: unit,
-            icon: AppIcons.journeyStreak,
-            color: IosColors.orange(context),
+        AdaptivePanes(
+          stackedSpacing: 20,
+          leading: Column(
+            key: const Key('journey_overview_metrics_pane'),
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _pair(
+                key: const Key('journey_overview_streaks'),
+                _MetricCard(
+                  panelKey: const Key('journey_metric_current_streak'),
+                  title: lang.translate('current_streak'),
+                  value: '$currentStreak',
+                  subtitle: unit,
+                  icon: AppIcons.journeyStreak,
+                  color: IosColors.orange(context),
+                ),
+                _MetricCard(
+                  panelKey: const Key('journey_metric_longest_streak'),
+                  title: lang.translate('longest_streak'),
+                  value: '$longestStreak',
+                  subtitle: unit,
+                  icon: AppIcons.journeyBest,
+                  color: IosColors.amber,
+                ),
+              ),
+              const SizedBox(height: 12),
+              _pair(
+                _MetricCard(
+                  panelKey: const Key('journey_metric_annual_completion'),
+                  title: '$selectedYear ${lang.translate('annual_completion')}',
+                  value: '${yearStats.completionPercentage.round()}%',
+                  subtitle:
+                      '${yearStats.observedCount} / ${yearStats.totalOccurrences}',
+                  icon: AppIcons.journeyRate,
+                  color: teal,
+                ),
+                _MetricCard(
+                  panelKey: const Key('journey_metric_total_observed'),
+                  title: lang.translate('total_observed'),
+                  value: '$totalObserved',
+                  subtitle: unit,
+                  icon: AppIcons.journeyObserved,
+                  color: IosColors.green(context),
+                ),
+              ),
+              if (nextMilestone != null) ...[
+                const SizedBox(height: 20),
+                _buildNextMilestoneCard(lang, nextMilestone),
+              ],
+            ],
           ),
-          _MetricCard(
-            panelKey: const Key('journey_metric_longest_streak'),
-            title: lang.translate('longest_streak'),
-            value: '$longestStreak',
-            subtitle: unit,
-            icon: AppIcons.journeyBest,
-            color: IosColors.amber,
+          trailing: Column(
+            key: const Key('journey_overview_record_pane'),
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                lang.translate('record_observance'),
+                style: const TextStyle(
+                  fontSize: IosText.headline,
+                  fontWeight: FontWeight.w600,
+                  color: teal,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                lang.translate('tap_to_record_instruction'),
+                style: _secondary(IosText.caption),
+              ),
+              ..._recentRows(lang, tracker),
+            ],
           ),
         ),
-        const SizedBox(height: 12),
-        _pair(
-          _MetricCard(
-            panelKey: const Key('journey_metric_annual_completion'),
-            title: '$selectedYear ${lang.translate('annual_completion')}',
-            value: '${yearStats.completionPercentage.round()}%',
-            subtitle:
-                '${yearStats.observedCount} / ${yearStats.totalOccurrences}',
-            icon: AppIcons.journeyRate,
-            color: teal,
-          ),
-          _MetricCard(
-            panelKey: const Key('journey_metric_total_observed'),
-            title: lang.translate('total_observed'),
-            value: '$totalObserved',
-            subtitle: unit,
-            icon: AppIcons.journeyObserved,
-            color: IosColors.green(context),
-          ),
-        ),
-        if (nextMilestone != null) ...[
-          const SizedBox(height: 20),
-          _buildNextMilestoneCard(lang, nextMilestone),
-        ],
-        const SizedBox(height: 20),
-        Text(
-          lang.translate('record_observance'),
-          style: const TextStyle(
-            fontSize: IosText.headline,
-            fontWeight: FontWeight.w600,
-            color: teal,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Text(
-          lang.translate('tap_to_record_instruction'),
-          style: _secondary(IosText.caption),
-        ),
-        ..._recentRows(lang, tracker),
       ],
     );
   }
@@ -323,6 +339,7 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
 
   // ==================== HISTORY ====================
   Widget _buildHistoryTab(LanguageService lang, VratTrackerService tracker) {
+    final columns = AdaptiveLayout.of(context).columns;
     final availableYears = _years(tracker);
     final selectedYear = _coherentSelectedYear(availableYears);
     final filtered = widget.ekadashiList.where((e) {
@@ -391,11 +408,29 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
               else
                 SliverPadding(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, _bottomInset),
+                  // Two columns of rows on wide screens.
                   sliver: SliverList.separated(
-                    itemCount: filtered.length,
+                    itemCount: (filtered.length / columns).ceil(),
                     separatorBuilder: (_, _) => const SizedBox(height: 12),
-                    itemBuilder: (_, i) =>
-                        _buildEkadashiRow(lang, tracker, filtered[i]),
+                    itemBuilder: (_, line) => columns == 1
+                        ? _buildEkadashiRow(lang, tracker, filtered[line])
+                        : Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              for (var c = 0; c < columns; c++) ...[
+                                if (c > 0) const SizedBox(width: 12),
+                                Expanded(
+                                  child: line * columns + c < filtered.length
+                                      ? _buildEkadashiRow(
+                                          lang,
+                                          tracker,
+                                          filtered[line * columns + c],
+                                        )
+                                      : const SizedBox.shrink(),
+                                ),
+                              ],
+                            ],
+                          ),
                   ),
                 ),
             ],
@@ -662,84 +697,97 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
           ],
         ),
         const SizedBox(height: 16),
-        GlassPanel(
-          radius: 16,
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            spacing: 12,
-            children: [
-              Text(
-                '$selectedYear ${lang.translate('annual_completion')}',
-                textAlign: TextAlign.center,
-                style: headline,
-              ),
-              SizedBox(
-                key: const Key('journey_stats_ring'),
-                width: 130,
-                height: 130,
-                child: CustomPaint(
-                  painter: _RingPainter(percent / 100),
-                  child: Center(
-                    child: Text(
-                      '${percent.round()}%',
-                      style: const TextStyle(
-                        fontSize: IosText.title,
-                        fontWeight: FontWeight.w700,
-                        color: teal,
+        // Wide screens show the ring beside the counts.
+        AdaptivePanes(
+          stackedSpacing: 16,
+          leading: GlassPanel(
+            radius: 16,
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              spacing: 12,
+              children: [
+                Text(
+                  '$selectedYear ${lang.translate('annual_completion')}',
+                  textAlign: TextAlign.center,
+                  style: headline,
+                ),
+                SizedBox(
+                  key: const Key('journey_stats_ring'),
+                  width: 130,
+                  height: 130,
+                  child: CustomPaint(
+                    painter: _RingPainter(percent / 100),
+                    child: Center(
+                      child: Text(
+                        '${percent.round()}%',
+                        style: const TextStyle(
+                          fontSize: IosText.title,
+                          fontWeight: FontWeight.w700,
+                          color: teal,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              Text(
-                AppStrings.translateWithArgs(
-                  'observed_of_total',
-                  lang.currentLocale.languageCode,
-                  ['${stats.observedCount}', '${stats.totalOccurrences}'],
-                ),
-                textAlign: TextAlign.center,
-                style: _secondary(IosText.subheadline),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final label = labelHeight((constraints.maxWidth - 12) / 2 - 28);
-            return Column(
-              spacing: 12,
-              children: [
-                _pair(
-                  tile(
-                    'observed',
-                    stats.observedCount,
-                    IosColors.green(context),
-                    label,
+                Text(
+                  AppStrings.translateWithArgs(
+                    'observed_of_total',
+                    lang.currentLocale.languageCode,
+                    ['${stats.observedCount}', '${stats.totalOccurrences}'],
                   ),
-                  tile('partial', stats.partialCount, IosColors.partial, label),
-                ),
-                _pair(
-                  tile('missed', stats.missedCount, IosColors.missed, label),
-                  tile(
-                    'unrecorded',
-                    stats.unrecordedCount,
-                    IosColors.gray(context),
-                    label,
-                  ),
-                ),
-                _pair(
-                  tile(
-                    'current_streak',
-                    currentStreak,
-                    IosColors.orange(context),
-                    label,
-                  ),
-                  tile('longest_streak', longestStreak, IosColors.amber, label),
+                  textAlign: TextAlign.center,
+                  style: _secondary(IosText.subheadline),
                 ),
               ],
-            );
-          },
+            ),
+          ),
+          trailing: LayoutBuilder(
+            builder: (context, constraints) {
+              final label = labelHeight((constraints.maxWidth - 12) / 2 - 28);
+              return Column(
+                spacing: 12,
+                children: [
+                  _pair(
+                    tile(
+                      'observed',
+                      stats.observedCount,
+                      IosColors.green(context),
+                      label,
+                    ),
+                    tile(
+                      'partial',
+                      stats.partialCount,
+                      IosColors.partial,
+                      label,
+                    ),
+                  ),
+                  _pair(
+                    tile('missed', stats.missedCount, IosColors.missed, label),
+                    tile(
+                      'unrecorded',
+                      stats.unrecordedCount,
+                      IosColors.gray(context),
+                      label,
+                    ),
+                  ),
+                  _pair(
+                    tile(
+                      'current_streak',
+                      currentStreak,
+                      IosColors.orange(context),
+                      label,
+                    ),
+                    tile(
+                      'longest_streak',
+                      longestStreak,
+                      IosColors.amber,
+                      label,
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
         ),
       ],
     );

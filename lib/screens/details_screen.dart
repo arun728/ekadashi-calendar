@@ -9,6 +9,7 @@ import '../l10n/app_language.dart';
 import '../services/language_service.dart';
 import '../services/vrat_tracker_service.dart';
 import '../models/vrat_tracker_models.dart';
+import '../widgets/adaptive_layout.dart';
 import '../widgets/app_background.dart';
 import '../widgets/ios_style.dart';
 import 'vrat_tracker/record_vrat_dialog.dart';
@@ -112,11 +113,12 @@ class DetailsScreen extends StatelessWidget {
             ),
           ],
         ),
+        // Wide screens keep the text at a readable width.
         body: SingleChildScrollView(
           padding: EdgeInsets.fromLTRB(
+            AdaptiveLayout.readableInset(AdaptiveLayout.widthOf(context), 20),
             20,
-            20,
-            20,
+            AdaptiveLayout.readableInset(AdaptiveLayout.widthOf(context), 20),
             100 + MediaQuery.paddingOf(context).bottom,
           ),
           child: Column(

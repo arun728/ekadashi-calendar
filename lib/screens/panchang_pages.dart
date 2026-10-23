@@ -16,6 +16,7 @@ import '../services/panchang/panchang_models.dart';
 import '../services/panchang/panchang_terms.dart';
 import '../services/premium_service.dart';
 import '../services/search/search_catalog.dart';
+import '../widgets/adaptive_layout.dart';
 import '../widgets/ios_style.dart';
 import 'global_search_screen.dart' show searchCategoryIcon;
 import 'premium_screen.dart';
@@ -466,12 +467,13 @@ class _PanchangKeyDaysViewState extends State<PanchangKeyDaysView> {
             ),
           )
         else
-          Column(
+          // Two columns of days on wide screens.
+          AdaptiveGrid(
             key: const Key('panchang_key_days'),
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: _spaced([
+            spacing: 10,
+            children: [
               for (final day in days) _row(context, day, premium, language),
-            ], 10),
+            ],
           ),
       ], 12),
     );
@@ -668,19 +670,30 @@ class PanchangDailyView extends StatelessWidget {
         PanchangFormat.time(instant, day.city, day.date, language);
     String? until(DateTime? instant) =>
         instant == null ? null : _t(context, 'panchang_until', [time(instant)]);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: _spaced([
-        _hero(context, language, until),
-        _sunAndMoon(context, time),
-        if (premium) ...[
-          _limbs(context, language, until),
-          _timings(context, language),
-          if (day.observances.isNotEmpty) _observances(context, language),
-          _details(context, language, until),
-        ] else
-          const PanchangUpgradeCard(),
-      ], 16),
+    // Wide screens show the day in two columns, in the same order.
+    return AdaptivePanes(
+      stackedSpacing: 16,
+      leading: Column(
+        key: const Key('panchang_daily_leading_pane'),
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: _spaced([
+          _hero(context, language, until),
+          _sunAndMoon(context, time),
+          if (premium) _limbs(context, language, until),
+        ], 16),
+      ),
+      trailing: Column(
+        key: const Key('panchang_daily_trailing_pane'),
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: _spaced([
+          if (premium) ...[
+            _timings(context, language),
+            if (day.observances.isNotEmpty) _observances(context, language),
+            _details(context, language, until),
+          ] else
+            const PanchangUpgradeCard(),
+        ], 16),
+      ),
     );
   }
 
@@ -1221,39 +1234,52 @@ class _PanchangMuhurtaViewState extends State<PanchangMuhurtaView> {
             if (value != null) setState(() => _night = value);
           },
         ),
-        PanchangCard(
-          title: _t(context, 'panchang_choghadiya'),
-          icon: const Icon(AppIcons.choghadiya, key: Key('panchang_dot_grid')),
-          children: [
-            Text(
-              _t(context, 'panchang_choghadiya_hint'),
-              style: _secondary(context, IosText.caption),
+        // Wide screens show Choghadiya beside Hora and Lagna.
+        AdaptivePanes(
+          stackedSpacing: 16,
+          leading: PanchangCard(
+            title: _t(context, 'panchang_choghadiya'),
+            icon: const Icon(
+              AppIcons.choghadiya,
+              key: Key('panchang_dot_grid'),
             ),
-            if (choghadiya.isEmpty) unavailable(),
-            for (final p in choghadiya)
-              row(
-                p.name.split('·').last.trim(),
-                PanchangTermKind.choghadiya,
-                p,
-                quality(p.name),
+            children: [
+              Text(
+                _t(context, 'panchang_choghadiya_hint'),
+                style: _secondary(context, IosText.caption),
               ),
-          ],
-        ),
-        PanchangCard(
-          title: _t(context, 'panchang_hora'),
-          icon: const Icon(AppIcons.hora),
-          children: [
-            if (hora.isEmpty) unavailable(),
-            for (final p in hora) row(p.name, PanchangTermKind.hora, p),
-          ],
-        ),
-        PanchangCard(
-          title: _t(context, 'panchang_lagna'),
-          icon: const Icon(AppIcons.lagna),
-          children: [
-            if (day.lagna.isEmpty) unavailable(),
-            for (final p in day.lagna) row(p.name, PanchangTermKind.rashi, p),
-          ],
+              if (choghadiya.isEmpty) unavailable(),
+              for (final p in choghadiya)
+                row(
+                  p.name.split('·').last.trim(),
+                  PanchangTermKind.choghadiya,
+                  p,
+                  quality(p.name),
+                ),
+            ],
+          ),
+          trailing: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: _spaced([
+              PanchangCard(
+                title: _t(context, 'panchang_hora'),
+                icon: const Icon(AppIcons.hora),
+                children: [
+                  if (hora.isEmpty) unavailable(),
+                  for (final p in hora) row(p.name, PanchangTermKind.hora, p),
+                ],
+              ),
+              PanchangCard(
+                title: _t(context, 'panchang_lagna'),
+                icon: const Icon(AppIcons.lagna),
+                children: [
+                  if (day.lagna.isEmpty) unavailable(),
+                  for (final p in day.lagna)
+                    row(p.name, PanchangTermKind.rashi, p),
+                ],
+              ),
+            ], 16),
+          ),
         ),
       ], 16),
     );
@@ -1278,56 +1304,65 @@ class PanchangRashiView extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: _spaced([
-        PanchangCard(
-          title: _t(context, 'panchang_sun_rashi'),
-          icon: const Icon(AppIcons.sunRashi),
-          children: [
-            PanchangValueRow(
-              label: _t(context, 'panchang_rashi'),
-              value: terms.translate(
-                day.sunRashi,
-                PanchangTermKind.rashi,
-                language,
+        // Wide screens show the rashis beside the nakshatra.
+        AdaptivePanes(
+          stackedSpacing: 16,
+          leading: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: _spaced([
+              PanchangCard(
+                title: _t(context, 'panchang_sun_rashi'),
+                icon: const Icon(AppIcons.sunRashi),
+                children: [
+                  PanchangValueRow(
+                    label: _t(context, 'panchang_rashi'),
+                    value: terms.translate(
+                      day.sunRashi,
+                      PanchangTermKind.rashi,
+                      language,
+                    ),
+                    detail: until(day.sunRashiEndsAtUtc),
+                  ),
+                ],
               ),
-              detail: until(day.sunRashiEndsAtUtc),
-            ),
-          ],
-        ),
-        PanchangCard(
-          title: _t(context, 'panchang_moon_rashi'),
-          icon: const Icon(AppIcons.moonRashi),
-          children: [
-            PanchangValueRow(
-              label: _t(context, 'panchang_rashi'),
-              value: terms.translate(
-                day.moonRashi,
-                PanchangTermKind.rashi,
-                language,
+              PanchangCard(
+                title: _t(context, 'panchang_moon_rashi'),
+                icon: const Icon(AppIcons.moonRashi),
+                children: [
+                  PanchangValueRow(
+                    label: _t(context, 'panchang_rashi'),
+                    value: terms.translate(
+                      day.moonRashi,
+                      PanchangTermKind.rashi,
+                      language,
+                    ),
+                    detail: until(day.moonRashiEndsAtUtc),
+                  ),
+                ],
               ),
-              detail: until(day.moonRashiEndsAtUtc),
-            ),
-          ],
-        ),
-        PanchangCard(
-          title: _t(context, 'panchang_nakshatra'),
-          icon: const Icon(AppIcons.nakshatra),
-          children: [
-            PanchangValueRow(
-              label: _t(context, 'panchang_nakshatra'),
-              value: terms.translate(
-                day.nakshatra.name,
-                PanchangTermKind.nakshatra,
-                language,
+            ], 16),
+          ),
+          trailing: PanchangCard(
+            title: _t(context, 'panchang_nakshatra'),
+            icon: const Icon(AppIcons.nakshatra),
+            children: [
+              PanchangValueRow(
+                label: _t(context, 'panchang_nakshatra'),
+                value: terms.translate(
+                  day.nakshatra.name,
+                  PanchangTermKind.nakshatra,
+                  language,
+                ),
+                detail: until(day.nakshatra.endsAtUtc),
               ),
-              detail: until(day.nakshatra.endsAtUtc),
-            ),
-            _divider(context),
-            PanchangValueRow(
-              label: _t(context, 'panchang_nakshatra_pada'),
-              value: '${day.nakshatraPada}',
-              detail: until(day.padaEndsAtUtc),
-            ),
-          ],
+              _divider(context),
+              PanchangValueRow(
+                label: _t(context, 'panchang_nakshatra_pada'),
+                value: '${day.nakshatraPada}',
+                detail: until(day.padaEndsAtUtc),
+              ),
+            ],
+          ),
         ),
         Text(
           _t(context, 'panchang_rashi_note'),

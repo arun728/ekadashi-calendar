@@ -63,6 +63,16 @@ void main() {
     expect(AdaptiveLayout.sideMargin(double.nan), 0);
   });
 
+  /// A list padded by [base] keeps that padding on phones and centres its
+  /// content at the readable width on wide screens.
+  test('the readable inset of a padded list', () {
+    expect(AdaptiveLayout.readableInset(393, 16), 16);
+    expect(AdaptiveLayout.readableInset(752, 16), 16);
+    expect(AdaptiveLayout.readableInset(951, 16), 115.5);
+    expect(AdaptiveLayout.readableInset(951, 20), 115.5);
+    expect(AdaptiveLayout.readableInset(0, 20), 20);
+  });
+
   /// As on iOS (AdaptiveSourceTests): layout comes from the space a screen
   /// is given, never from the orientation.
   test('no screen chooses its layout from the orientation', () {

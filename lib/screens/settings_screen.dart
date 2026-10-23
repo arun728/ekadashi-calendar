@@ -1,5 +1,6 @@
 import 'widgets/settings_premium_card.dart';
 import '../services/app_version.dart';
+import '../widgets/adaptive_layout.dart';
 import '../widgets/ios_style.dart';
 import 'widgets/event_reminder_rows.dart';
 import '../services/notifications/event_reminder_service.dart';
@@ -315,11 +316,16 @@ class _SettingsScreenState extends State<SettingsScreen>
           onChanged: togglesEnabled ? onChanged : null,
         );
 
+    // Wide screens keep the list at a readable width.
+    final inset = AdaptiveLayout.readableInset(
+      AdaptiveLayout.widthOf(context),
+      16,
+    );
     return ListView(
       padding: EdgeInsets.fromLTRB(
+        inset,
         16,
-        16,
-        16,
+        inset,
         16 + MediaQuery.paddingOf(context).bottom,
       ),
       children: [

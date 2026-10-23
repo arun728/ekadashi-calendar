@@ -1,6 +1,7 @@
 import '../l10n/app_language.dart';
 import 'premium_screen.dart';
 import '../services/premium_service.dart';
+import '../widgets/adaptive_layout.dart';
 import '../widgets/ios_style.dart';
 import 'dart:async';
 import '../models/calendar_entry.dart';
@@ -778,25 +779,31 @@ class CalendarScreenState extends State<CalendarScreen> {
           ),
           const SizedBox(height: 12),
           // A horizontal swipe on the month title, the grid or the selected
-          // day changes the month when the finger lifts, as on iOS.
+          // day changes the month when the finger lifts, as on iOS. Wide
+          // screens show the selected day beside the month.
           _MonthSwipe(
             onSwipe: _swipeMonth,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _monthHeader(language),
-                const SizedBox(height: 12),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: _grid(language),
-                ),
-                const SizedBox(height: 12),
-                Padding(
+            child: AdaptivePanes(
+              leading: Column(
+                key: const Key('calendar_grid_pane'),
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _monthHeader(language),
+                  const SizedBox(height: 12),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: _grid(language),
+                  ),
+                ],
+              ),
+              trailing: KeyedSubtree(
+                key: const Key('calendar_day_pane'),
+                child: Padding(
                   key: const Key('calendar_day_details'),
                   padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
                   child: _selectedDaySection(lang),
                 ),
-              ],
+              ),
             ),
           ),
         ],

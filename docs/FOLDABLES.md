@@ -29,7 +29,11 @@ in landscape) gets two.
   `@Environment(\.paneLayout)`, use `AdaptivePanes`, `.readableWidth()` and
   `.readableListMargins()` (DesignSystem/Adaptive.swift).
 - Android: `AdaptiveLayout` in `lib/widgets/adaptive_layout.dart`
-  (`adaptive_layout_test.dart`), measured with a `LayoutBuilder` per tab.
+  (`test/unit/adaptive_layout_test.dart`). The width is the window's
+  (`MediaQuery`) minus the side system insets, which is what every tab is
+  given. Screens use `AdaptivePanes`, `AdaptiveGrid`, `ReadableWidth` and
+  `AdaptiveLayout.readableInset` (`test/widget/wide_screen_layout_test.dart`
+  runs the app at 393, 466, 669 and 951 wide).
 
 ## What each screen does on a wide screen
 
@@ -52,8 +56,10 @@ Stacked, every screen is exactly the phone layout, in the same order.
 ## Folding and unfolding
 
 Opening or closing the Duo resizes the app. The panes switch in place
-(`AnyLayout` on iOS, the same widget tree on Android), so the selected
-tab, date, month, Home card, Journey section and Panchang sub-tab stay.
+(`AnyLayout` on iOS; on Android each pane keeps a `GlobalKey`, and the
+activity handles `screenSize|smallestScreenSize|screenLayout` changes
+itself, so it is not recreated), so the selected tab, date, month, Home
+card, Journey section and Panchang sub-tab stay.
 `AdaptiveLayoutUITests.testResizingKeepsTheSelectedDay` rotates the device
 as a stand-in for a resize.
 
@@ -72,7 +78,9 @@ iPhone Duo simulator when one is installed
 
 iPhones stay portrait (`UISupportedInterfaceOrientations`). Reports say the
 Duo's inner screen does not honour that, so the layouts never depend on
-orientation. `AdaptiveSourceTests` keeps `UIScreen.main`,
+orientation. Android phones stay portrait too (`screenOrientation` and
+`SystemChrome` in main.dart); Android 16 ignores that on large screens for
+apps that target it, and older versions letterbox the app there. `AdaptiveSourceTests` keeps `UIScreen.main`,
 `userInterfaceIdiom`, `UIDevice.current.orientation`,
 `interfaceOrientation` and `UIRequiresFullScreen` out of the app.
 

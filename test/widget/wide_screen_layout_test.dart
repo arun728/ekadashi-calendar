@@ -97,6 +97,35 @@ void main() {
       expect(find.text('2'), findsOneWidget);
     });
 
+    testWidgets('AdaptiveGrid lays out one column on phones and two on wide '
+        'screens', (tester) async {
+      addTearDown(tester.view.reset);
+      Widget grid() => MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: AdaptiveGrid(
+              spacing: 10,
+              children: [
+                for (var i = 0; i < 3; i++)
+                  SizedBox(key: Key('cell$i'), height: 20 + i * 10.0),
+              ],
+            ),
+          ),
+        ),
+      );
+      setSize(tester, phone);
+      await tester.pumpWidget(grid());
+      expect(box(tester, 'cell1').top, box(tester, 'cell0').bottom + 10);
+      expect(box(tester, 'cell0').width, 393);
+      setSize(tester, innerPortrait);
+      await tester.pumpWidget(grid());
+      expectSideBySide(tester, 'cell0', 'cell1');
+      expect(box(tester, 'cell1').left, box(tester, 'cell0').right + 10);
+      // A row is as tall as its tallest cell.
+      expect(box(tester, 'cell2').top, box(tester, 'cell1').bottom + 10);
+      expect(box(tester, 'cell2').left, 0);
+    });
+
     testWidgets('readable content stops at 720 and stays centred', (
       tester,
     ) async {

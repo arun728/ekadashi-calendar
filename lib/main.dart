@@ -4,6 +4,7 @@ import 'services/play_billing_service.dart';
 import 'package:flutter/foundation.dart';
 import 'widgets/glass_navigation_bar.dart';
 import 'data/calendar_entry_repository.dart';
+import 'widgets/adaptive_layout.dart';
 import 'widgets/app_background.dart';
 import 'widgets/ios_style.dart';
 import 'widgets/tab_shell.dart';
@@ -32,6 +33,7 @@ import 'services/place_name_resolver.dart';
 import 'screens/share_card_screen.dart';
 import 'screens/widgets/city_picker_sheet.dart';
 import 'screens/widgets/home_controls.dart';
+import 'screens/widgets/home_ekadashi_list.dart';
 import 'services/notification_service.dart';
 import 'services/native_location_service.dart';
 import 'services/native_notification_service.dart';
@@ -1265,9 +1267,11 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   /// Home's four menus in a 2×2 grid (HomeControls in TodayView.swift).
   Widget _buildHomeHeader(LanguageService lang, Color tealColor) => Padding(
     padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-    child: HomeControls(
-      locating: _isRequestingLocation,
-      onLocation: _openLocationPicker,
+    child: ReadableWidth(
+      child: HomeControls(
+        locating: _isRequestingLocation,
+        onLocation: _openLocationPicker,
+      ),
     ),
   );
 
@@ -1310,80 +1314,118 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     final bool isFirstPage = _currentPage == 0;
     final bool isLastPage = _currentPage >= _ekadashiList.length - 1;
 
+    final wide = AdaptiveLayout.of(context).isSideBySide;
     return Column(
       children: [
         _buildHomeHeader(lang, tealColor),
-
-        // Page indicator
-        Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: Text(
-            '${_currentPage + 1} / ${_ekadashiList.length}',
-            key: const Key('home_page_indicator'),
-            style: TextStyle(
-              fontSize: IosText.footnote,
-              color: IosColors.secondary(context),
-            ),
-          ),
-        ),
-
-        // Card with navigation arrows; dimmed while another city or
-        // tradition is calculated.
+        // Wide screens list the year's Ekadashis beside the card.
         Expanded(
-          child: Padding(
-            padding: const EdgeInsets.only(left: 4, right: 4, bottom: 8),
-            child: Stack(
-              alignment: Alignment.center,
+          child: AdaptivePanes(
+            fill: true,
+            stackedSpacing: 0,
+            leading: Column(
+              key: const Key('home_card_pane'),
               children: [
-                Opacity(
-                  opacity: _isCalculating ? 0.5 : 1,
-                  child: Row(
-                    children: [
-                      _homeArrow(
-                        key: const Key('home_previous'),
-                        icon: AppIcons.previous,
-                        target: _currentPage - 1,
-                        enabled: !isFirstPage,
-                        onPressed: () => _pageController.previousPage(
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
-                        ),
-                      ),
-                      Expanded(
-                        child: PageView.builder(
-                          controller: _pageController,
-                          itemCount: _ekadashiList.length,
-                          onPageChanged: (index) {
-                            if (mounted) {
-                              setState(() => _currentPage = index);
-                            }
-                          },
-                          itemBuilder: (context, index) => Padding(
-                            padding: const EdgeInsets.all(4),
-                            child: _buildEkadashiCard(_ekadashiList[index]),
-                          ),
-                        ),
-                      ),
-                      _homeArrow(
-                        key: const Key('home_next'),
-                        icon: AppIcons.next,
-                        target: _currentPage + 1,
-                        enabled: !isLastPage,
-                        onPressed: () => _pageController.nextPage(
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
-                        ),
-                      ),
-                    ],
+                // Page indicator
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Text(
+                    '${_currentPage + 1} / ${_ekadashiList.length}',
+                    key: const Key('home_page_indicator'),
+                    style: TextStyle(
+                      fontSize: IosText.footnote,
+                      color: IosColors.secondary(context),
+                    ),
                   ),
                 ),
-                if (_isCalculating)
-                  const CircularProgressIndicator(
-                    key: Key('home_recalculating'),
-                    color: IosColors.teal,
+
+                // Card with navigation arrows; dimmed while another city or
+                // tradition is calculated.
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                      left: 4,
+                      right: 4,
+                      bottom: 8,
+                    ),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Opacity(
+                          opacity: _isCalculating ? 0.5 : 1,
+                          child: Row(
+                            children: [
+                              _homeArrow(
+                                key: const Key('home_previous'),
+                                icon: AppIcons.previous,
+                                target: _currentPage - 1,
+                                enabled: !isFirstPage,
+                                onPressed: () => _pageController.previousPage(
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                ),
+                              ),
+                              Expanded(
+                                child: PageView.builder(
+                                  controller: _pageController,
+                                  itemCount: _ekadashiList.length,
+                                  onPageChanged: (index) {
+                                    if (mounted) {
+                                      setState(() => _currentPage = index);
+                                    }
+                                  },
+                                  itemBuilder: (context, index) => Padding(
+                                    padding: const EdgeInsets.all(4),
+                                    child: _buildEkadashiCard(
+                                      _ekadashiList[index],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              _homeArrow(
+                                key: const Key('home_next'),
+                                icon: AppIcons.next,
+                                target: _currentPage + 1,
+                                enabled: !isLastPage,
+                                onPressed: () => _pageController.nextPage(
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (_isCalculating)
+                          const CircularProgressIndicator(
+                            key: Key('home_recalculating'),
+                            color: IosColors.teal,
+                          ),
+                      ],
+                    ),
                   ),
+                ),
               ],
             ),
+            trailing: wide
+                ? Padding(
+                    padding: const EdgeInsets.only(right: 16, bottom: 8),
+                    child: Opacity(
+                      opacity: _isCalculating ? 0.5 : 1,
+                      child: HomeEkadashiList(
+                        key: const Key('home_list_pane'),
+                        ekadashis: _ekadashiList,
+                        selected: _currentPage,
+                        year: _settings?.year ?? _ekadashiList.first.date.year,
+                        today: DateTime.now(),
+                        onSelect: (index) => _pageController.animateToPage(
+                          index,
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                        ),
+                      ),
+                    ),
+                  )
+                : null,
           ),
         ),
       ],

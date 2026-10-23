@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/adaptive_layout.dart';
 import '../widgets/tab_shell.dart';
 import '../services/notifications/event_reminder_service.dart';
 import 'package:provider/provider.dart';
@@ -384,7 +385,11 @@ class PanchangScreenState extends State<PanchangScreen> {
                         padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
                         sliver: SliverList.list(
                           children: [
-                            _controls(t, language, page),
+                            // The location and date stay at a readable width.
+                            ReadableWidth(
+                              alignment: AlignmentDirectional.topStart,
+                              child: _controls(t, language, page),
+                            ),
                             const SizedBox(height: 16),
                             _content(premium, page),
                           ],

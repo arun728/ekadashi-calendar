@@ -39,7 +39,7 @@ status table as each phase moves forward.
 | 9 | Swipeable sub-sections and back to search | Done | Done (`feature/android-v2`) |
 | 10 | Gujarati and Bengali | Done | Done (`feature/android-v2`) |
 | 11 | Ekadashis from the Panchang engine per city, tradition and year menus on Home, city search on Home, free share card | Draft (`feature/engine-ekadashi`, PR #22) | Ported (same PR) |
-| 12 | Wide screens: iPhone Duo inner screen and Android foldables in two panes ([FOLDABLES.md](FOLDABLES.md)) | Draft (`feature/iphone-duo`) | Pending |
+| 12 | Wide screens: iPhone Duo inner screen and Android foldables in two panes ([FOLDABLES.md](FOLDABLES.md)) | Draft (`feature/iphone-duo`) | Ported (same branch) |
 
 ## Phase 0: housekeeping
 
