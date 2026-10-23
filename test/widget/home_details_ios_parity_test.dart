@@ -1,8 +1,10 @@
 import 'package:ekadashi_calendar/widgets/app_icons.dart';
+import 'package:ekadashi_calendar/services/display_clock.dart';
 import 'package:ekadashi_calendar/l10n/app_language.dart';
 import 'package:ekadashi_calendar/models/vrat_tracker_models.dart';
 import 'package:ekadashi_calendar/screens/details_screen.dart';
 import 'package:ekadashi_calendar/services/ekadashi_schedule.dart';
+import 'package:ekadashi_calendar/services/ekadashi_settings.dart';
 import 'package:ekadashi_calendar/services/ekadashi_service.dart';
 import 'package:ekadashi_calendar/services/vrat_recording.dart';
 import 'package:ekadashi_calendar/services/vrat_tracker_service.dart';
@@ -39,11 +41,19 @@ void main() {
       tester.widget<Text>(text).style ?? const TextStyle();
 
   /// The Ekadashis on Home and the index of the card on screen.
-  (List<EkadashiDate>, int) homeCards(WidgetTester tester) {
-    final list = EkadashiService().getEkadashis(
-      timezone: 'IST',
+  Future<(List<EkadashiDate>, int)> homeCards(WidgetTester tester) async {
+    final settings = tester
+        .element(find.byKey(const Key('home_ekadashi_card')))
+        .read<EkadashiSettings>();
+    final all = await EkadashiService().engineEkadashis(
+      city: settings.city,
+      tradition: settings.tradition,
       languageCode: 'en',
+      years: settings.years,
     );
+    final list = all
+        .where((event) => event.date.year == settings.year)
+        .toList();
     final indicator = tester
         .widget<Text>(find.byKey(const Key('home_page_indicator')))
         .data!;
@@ -166,7 +176,7 @@ void main() {
       expect(card, findsOneWidget);
       expect(tester.widget(card), isA<GlassPanel>());
       expect(tester.widget<GlassPanel>(card).radius, 24);
-      final (list, index) = homeCards(tester);
+      final (list, index) = await homeCards(tester);
       final event = list[index];
       final name = find.descendant(of: card, matching: find.text(event.name));
       expect(styleOf(tester, name).fontSize, IosText.title);
@@ -253,7 +263,7 @@ void main() {
       await tester.pumpAndSettle();
       var record = find.byKey(const Key('home_record_vrat'));
       expect(tester.widget(record), isA<OutlinedButton>());
-      expect(tester.widget<OutlinedButton>(record).onPressed, isNull);
+      expect(tester.widget<OutlinedButton>(record).onPressed, isNotNull);
       expect(
         tester.widget<OutlinedButton>(record).style!.shape!.resolve({}),
         isA<CircleBorder>(),
@@ -281,7 +291,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('home_previous')));
       await tester.pumpAndSettle();
-      final (list, index) = homeCards(tester);
+      final (list, index) = await homeCards(tester);
       expect(
         VratRecording.isOpen(list[index], now: DateTime.now(), timezone: 'IST'),
         isTrue,
@@ -365,7 +375,7 @@ void main() {
 
     testWidgets('iOS sizes, time-zone pill, glass timings box', (tester) async {
       await pumpHome(tester);
-      final (list, index) = homeCards(tester);
+      final (list, index) = await homeCards(tester);
       final event = list[index];
       await openDetails(tester);
       final details = find.byType(DetailsScreen);
@@ -376,13 +386,15 @@ void main() {
       expect(styleOf(tester, name).fontSize, IosText.largeTitle);
       final pill = find.descendant(
         of: details,
-        matching: find.byType(StatusPill),
+        matching: find.byWidgetPredicate(
+          (w) => w is StatusPill && w.text.contains('Chennai'),
+        ),
       );
       expect(pill, findsOneWidget);
       // How the times are calculated (EkadashiDetailsView on iOS).
       expect(
         tester.widget<StatusPill>(pill).text,
-        'Smarta • Chennai (IN) • IST',
+        'Vaishnava • Chennai (IN) • IST',
       );
       final section = find.text('Significance');
       expect(styleOf(tester, section).fontSize, IosText.title3);
@@ -449,13 +461,52 @@ void main() {
       expect(opacity, lessThan(1));
     });
 
+    testWidgets('saved record stays editable before Parana in Details', (
+      tester,
+    ) async {
+      await pumpHome(tester);
+      await tester.tap(find.byKey(const Key('home_previous')));
+      await tester.pumpAndSettle();
+      final (list, index) = await homeCards(tester);
+      final event = list[index];
+      final tracker = tester
+          .element(find.byKey(const Key('home_record_vrat')))
+          .read<VratTrackerService>();
+      await tester.runAsync(
+        () => tracker.recordVrat(
+          ekadashiOccurrenceId: event.id,
+          occurrenceUid: event.occurrenceUid,
+          ekadashiDate: event.date.toIso8601String().substring(0, 10),
+          ekadashiName: event.name,
+          status: ObservanceStatus.observed,
+          timezone: 'IST',
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(tracker.getRecordByUid(event.occurrenceUid), isNotNull);
+      DisplayClock.setTestClock(
+        () => DateTime.parse(
+          event.paranaStartIso,
+        ).subtract(const Duration(hours: 1)),
+      );
+      addTearDown(() => DisplayClock.setTestClock(null));
+      await openDetails(tester);
+      final button = find.byKey(const Key('details_record_vrat'));
+      await tester.ensureVisible(button);
+      expect(tester.widget<OutlinedButton>(button).onPressed, isNotNull);
+      expect(
+        find.descendant(of: button, matching: find.text('Vrat: Observed')),
+        findsOneWidget,
+      );
+    });
+
     testWidgets('open: grey questionmark Record Vrat; observed: green check', (
       tester,
     ) async {
       await pumpHome(tester);
       await tester.tap(find.byKey(const Key('home_previous')));
       await tester.pumpAndSettle();
-      final (list, index) = homeCards(tester);
+      final (list, index) = await homeCards(tester);
       final event = list[index];
       await openDetails(tester);
       final button = find.byKey(const Key('details_record_vrat'));

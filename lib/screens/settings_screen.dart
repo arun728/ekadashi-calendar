@@ -21,6 +21,7 @@ import '../services/native_notification_service.dart'
         EkadashiNotificationData,
         NotificationSettings;
 import '../widgets/app_icons.dart';
+import '../services/place_name_resolver.dart';
 
 /// Settings Screen - Updated to use native Kotlin services for:
 /// - Permission handling (no freeze on return from system settings)
@@ -338,6 +339,15 @@ class _SettingsScreenState extends State<SettingsScreen>
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (_) => WidgetPreviewScreen(
+                    locationName: context.read<EkadashiSettings?>() == null
+                        ? ''
+                        : PlaceNameResolver.instance.city(
+                            context.read<EkadashiSettings>().city,
+                            lang.currentLocale.languageCode,
+                          ),
+                    tradition:
+                        context.read<EkadashiSettings?>()?.tradition.name ??
+                        'smarta',
                     ekadashiList:
                         context.read<EkadashiSettings?>()?.cachedEkadashis(
                           lang.currentLocale.languageCode,
@@ -352,6 +362,7 @@ class _SettingsScreenState extends State<SettingsScreen>
             ),
             const SettingsSeparator(inset: SettingsStyle.iconInset),
             SettingsSwitchTile(
+              key: const Key('settings_dark_mode'),
               icon: AppIcons.darkMode,
               title: Text(lang.translate('dark_mode')),
               value: Provider.of<ThemeService>(context).isDarkMode,
@@ -362,6 +373,14 @@ class _SettingsScreenState extends State<SettingsScreen>
                 ).toggleTheme(value);
                 _settingsService.setDarkMode(value);
               },
+            ),
+            const SettingsSeparator(),
+            SettingsSwitchTile(
+              key: const Key('settings_glass_look'),
+              title: Text(lang.translate('glass_look')),
+              subtitle: Text(lang.translate('glass_look_desc')),
+              value: context.watch<ThemeService>().isGlassLookEnabled,
+              onChanged: context.read<ThemeService>().setGlassLook,
             ),
           ],
         ),

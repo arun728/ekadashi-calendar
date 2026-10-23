@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'glass_look.dart';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -111,6 +112,9 @@ class GlassPanel extends StatelessWidget {
           child: content,
         ),
       );
+    }
+    if (GlassLook.active(context)) {
+      return ClearGlassSurface(radius: radius, tint: tint, child: content);
     }
     return ClipRRect(
       borderRadius: shape,
@@ -274,10 +278,17 @@ abstract final class IosButtons {
     Color color = IosColors.teal,
   }) => OutlinedButton.styleFrom(
     foregroundColor: color,
-    backgroundColor: color.withValues(alpha: .10),
+    backgroundColor: GlassLook.active(context)
+        ? Colors.white.withValues(alpha: .018)
+        : color.withValues(alpha: .10),
     disabledForegroundColor: IosColors.tertiary(context),
     shape: const StadiumBorder(),
-    side: BorderSide(color: color.withValues(alpha: .28), width: .7),
+    side: BorderSide(
+      color: GlassLook.active(context)
+          ? Colors.white.withValues(alpha: .18)
+          : color.withValues(alpha: .28),
+      width: .7,
+    ),
     padding: EdgeInsets.symmetric(vertical: vertical, horizontal: 18),
   );
 
@@ -384,7 +395,11 @@ Future<T?> showAppSheet<T>(
     useSafeArea: true,
     showDragHandle: false,
     routeSettings: routeSettings,
-    backgroundColor: IosColors.sheet(context),
+    backgroundColor: GlassLook.active(context)
+        ? (Theme.of(context).brightness == Brightness.dark
+              ? const Color(0xE0121212)
+              : const Color(0xE0F5F5F5))
+        : IosColors.sheet(context),
     clipBehavior: Clip.antiAlias,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -416,7 +431,10 @@ Future<T?> showAppSheet<T>(
         ],
       );
       return BackdropFilter(
-        filter: ui.ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+        filter: ui.ImageFilter.blur(
+          sigmaX: GlassLook.active(context) ? 4 : 30,
+          sigmaY: GlassLook.active(context) ? 4 : 30,
+        ),
         child: large
             ? FractionallySizedBox(heightFactor: 1, child: body)
             : body,

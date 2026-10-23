@@ -159,9 +159,11 @@ void main() {
               .first,
         );
 
-        await tester.ensureVisible(
-          find.widgetWithText(SwitchListTile, language.translate('dark_mode')),
+        await Scrollable.ensureVisible(
+          tester.element(find.byKey(const Key('settings_dark_mode'))),
+          alignment: .5,
         );
+        await tester.pumpAndSettle();
         await tester.tap(
           find.widgetWithText(SwitchListTile, language.translate('dark_mode')),
         );

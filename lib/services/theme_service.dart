@@ -4,6 +4,9 @@ import '../widgets/app_icons.dart';
 
 class ThemeService extends ChangeNotifier {
   ThemeMode _themeMode = ThemeMode.dark;
+  static const glassLookKey = 'android_glass_look_enabled';
+  bool _glassLookEnabled = false;
+  bool get isGlassLookEnabled => _glassLookEnabled;
 
   ThemeMode get themeMode => _themeMode;
 
@@ -12,8 +15,18 @@ class ThemeService extends ChangeNotifier {
   Future<void> loadTheme() async {
     final prefs = await SharedPreferences.getInstance();
     final isDark = prefs.getBool('is_dark_mode') ?? true;
+    _glassLookEnabled = prefs.get(glassLookKey) == true;
     _themeMode = isDark ? ThemeMode.dark : ThemeMode.light;
     notifyListeners();
+  }
+
+  Future<void> setGlassLook(bool enabled) async {
+    _glassLookEnabled = enabled;
+    notifyListeners();
+    await (await SharedPreferences.getInstance()).setBool(
+      glassLookKey,
+      enabled,
+    );
   }
 
   Future<void> toggleTheme(bool isDark) async {

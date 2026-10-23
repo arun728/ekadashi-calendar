@@ -36,12 +36,15 @@ struct TodayView: View {
                     arrow(AppSymbol.previous, target: model.homeIndex - 1) { model.homeIndex -= 1 }
                     TabView(selection: $model.homeIndex) {
                         ForEach(Array(events.enumerated()), id: \.element.occurrenceUid) { index, event in
-                            EkadashiCard(event: event)
+                            EkadashiCard(event: event, isVisible: index == model.homeIndex && model.selectedTab == .today)
                                 .padding(4)
                                 .tag(index)
                         }
                     }
                     .tabViewStyle(.page(indexDisplayMode: .never))
+                    // Years have different page counts. Recreate the pager so
+                    // a linked final page is not reset against the previous year.
+                    .id(model.selectedYear)
                     arrow(AppSymbol.next, target: model.homeIndex + 1) { model.homeIndex += 1 }
                 }
                 .padding(.horizontal, 4)
@@ -77,6 +80,7 @@ struct HomeControls: View {
     @State private var choosingCity = false
     static let spacing: CGFloat = 10
     static let pillHeight: CGFloat = 44
+    static let traditions: [EkadashiTradition] = [.gaudiya, .smarta]
 
     var body: some View {
         VStack(spacing: Self.spacing) {
@@ -121,7 +125,7 @@ struct HomeControls: View {
 
     private var traditionMenu: some View {
         Menu {
-            ForEach(EkadashiTradition.allCases, id: \.self) { tradition in
+            ForEach(Self.traditions, id: \.self) { tradition in
                 Button { model.setTradition(tradition) } label: {
                     if tradition == model.tradition {
                         Label(model.traditionName(tradition), systemImage: AppSymbol.checkmark)
@@ -215,31 +219,18 @@ struct HomeControls: View {
 struct EkadashiCard: View {
     @Environment(AppModel.self) private var model
     let event: EkadashiOccurrence
+    var isVisible = true
     @State private var recording = false
     @State private var sharing = false
-
-    private var daysUntil: Int { model.today.days(until: event.date) }
-
-    private var daysText: String {
-        switch daysUntil {
-        case 0: return model.t("today")
-        case 1: return model.t("tomorrow")
-        case ..<0: return model.t("passed")
-        default: return model.t("in_days", String(daysUntil))
-        }
-    }
 
     var body: some View {
         VStack(spacing: 16) {
             ScrollView {
                 VStack(spacing: 0) {
-                    Text(daysText)
-                        .font(.footnote.bold())
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 6)
-                        .background(daysUntil < 0 ? Color.gray : Theme.teal, in: Capsule())
-                        .frame(maxWidth: .infinity, alignment: .trailing)
+                    OccurrenceTimeline(events: [event], timeZone: model.ekadashiCity.timeZoneId, active: isVisible) { now in
+                        EkadashiStatusHeader(event: event, timeZone: model.ekadashiCity.timeZoneId,
+                            language: model.language, now: now)
+                    }
                     Text(model.fullDate(event.date)).font(.title2.weight(.light)).padding(.top, 16)
                     Text(event.name)
                         .font(.title.bold())
@@ -276,18 +267,23 @@ struct EkadashiCard: View {
                     .accessibilityLabel(model.t("share_card"))
                     .accessibilityIdentifier("home_share_card")
                     if model.vrat.isEnabled {
-                        Button {
-                            recording = true
-                        } label: {
-                            Image(systemName: VratStatusStyle(model.vrat.record(for: event.occurrenceUid)?.status).cardSymbol)
-                                .font(.title3)
-                                .padding(.vertical, 4)
+                        OccurrenceTimeline(events: [event], timeZone: model.ekadashiCity.timeZoneId, active: isVisible) { now in
+                            let open = model.canRecord(event, now: now)
+                            Button {
+                                recording = model.requestVratRecording(event)
+                            } label: {
+                                Image(systemName: VratStatusStyle(model.vrat.record(for: event.occurrenceUid)?.status).cardSymbol)
+                                    .font(.title3)
+                                    .padding(.vertical, 4)
+                            }
+                            .secondaryActionStyle()
+                            .tint(open ? Theme.teal : .gray)
+                            .foregroundStyle(open ? Theme.teal : .gray)
+                            .opacity(open ? 1 : 0.6)
+                            .accessibilityLabel(model.t(model.vrat.record(for: event.occurrenceUid) == nil ? "record_vrat" : "edit_record"))
+                            .accessibilityHint(open ? "" : model.t("journey_record_after_parana"))
+                            .accessibilityIdentifier("home_record_vrat")
                         }
-                        .secondaryActionStyle()
-                        .disabled(!model.canRecord(event))
-                        .accessibilityLabel(model.t(model.vrat.record(for: event.occurrenceUid) == nil ? "record_vrat" : "edit_record"))
-                        .accessibilityHint(model.canRecord(event) ? "" : model.t("journey_record_after_parana"))
-                        .accessibilityIdentifier("home_record_vrat")
                     }
                 }
             }
@@ -305,6 +301,41 @@ struct EkadashiCard: View {
             Text(Localizer.shared.localizeClock(time, language: model.language)).font(.title3.weight(.semibold))
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+/// Reserved status row: today's ring leads, the existing day badge trails.
+/// The date, name and timings below retain the card's full text width.
+struct EkadashiStatusHeader: View {
+    let event: EkadashiOccurrence
+    let timeZone: String
+    let language: String
+    let now: Date
+
+    private var status: EkadashiLifecycle {
+        event.lifecycle(at: now, zone: TzDatabase.shared.location(timeZone) ?? AppTimezone.ist.location)
+    }
+
+    var body: some View {
+        HStack(spacing: 12) {
+            if status.progress != nil {
+                let snapshot = WidgetSnapshot.build(occurrences: [event], timezone: timeZone, locationName: "", language: language, now: now)
+                if let headline = snapshot.headline(at: now) {
+                    RemainingRing(item: headline.item, snapshot: snapshot, now: now)
+                        .frame(width: 48, height: 48)
+                        .accessibilityIdentifier("home_remaining_ring")
+                }
+            }
+            Spacer(minLength: 0)
+            Text(status.label(language: language))
+                .font(.footnote.bold()).monospacedDigit().foregroundStyle(.white)
+                .lineLimit(1).minimumScaleFactor(0.6)
+                .padding(.horizontal, 14).padding(.vertical, 8)
+                .background(status.phase == .passed ? Color.gray : Theme.teal, in: Capsule())
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityHint(status.phase == .countdown ? Localizer.shared.translate("widget_starts_in", language: language) : "")
+                .accessibilityIdentifier("home_day_badge")
+        }
     }
 }
 

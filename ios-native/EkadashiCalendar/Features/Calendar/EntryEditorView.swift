@@ -50,7 +50,7 @@ struct EntryEditorView: View {
             }
         }
         .presentationDetents([.medium, .large])
-        .presentationBackground(.thinMaterial)
+        .glassSheetBackground()
         .onAppear(perform: load)
     }
 

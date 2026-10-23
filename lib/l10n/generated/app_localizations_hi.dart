@@ -1475,10 +1475,11 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get widget_desc_ekadashi =>
-      'आज की एकादशी और व्रत की प्रगति, या अगली एकादशी और बचे हुए दिन।';
+      'वर्तमान एकादशी, व्रत की प्रगति और पारण, या अगली एकादशी और उसका समय।';
 
   @override
-  String get widget_desc_upcoming => 'आने वाली एकादशियाँ एक नज़र में।';
+  String get widget_desc_upcoming =>
+      'आने वाली पाँच एकादशियाँ। किसी एकादशी पर टैप करके उसका होम कार्ड खोलें।';
 
   @override
   String get widget_preview_during => 'बाएँ: अभी · दाएँ: अगली एकादशी के दौरान';
@@ -1675,4 +1676,35 @@ class AppLocalizationsHi extends AppLocalizations {
   @override
   String get share_card_photos_denied =>
       'फ़ोटो की अनुमति बंद है। कार्ड सहेजने के लिए सेटिंग्स में अनुमति दें।';
+
+  @override
+  String get widget_remaining => 'शेष';
+
+  @override
+  String get widget_size_small => 'छोटा';
+
+  @override
+  String get widget_size_medium => 'मध्यम';
+
+  @override
+  String get widget_size_large => 'बड़ा';
+
+  @override
+  String get widget_size_lock => 'लॉक स्क्रीन';
+
+  @override
+  String get widget_preview_tap => 'इस एकादशी को देखने के लिए टैप करें';
+
+  @override
+  String get widget_no_next => 'उपलब्ध पंचांग में अगली एकादशी नहीं है';
+
+  @override
+  String get widget_lock_support =>
+      'लॉक स्क्रीन विजेट समर्थित उपकरणों पर उपलब्ध हैं। आकार और स्थान आपके उपकरण पर निर्भर करते हैं।';
+
+  @override
+  String get glass_look => 'काँच जैसा रूप';
+
+  @override
+  String get glass_look_desc => 'अधिक पारदर्शी कार्ड और नियंत्रण दिखाएँ।';
 }

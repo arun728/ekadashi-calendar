@@ -65,11 +65,13 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
 
     // A fast can be recorded once it is over: past Ekadashis, and today's
     // once Parana begins (docs/ROADMAP.md Phase 4).
-    _isFutureEvent = !VratRecording.isOpen(
-      widget.ekadashi,
-      now: DateTime.now(),
-      timezone: widget.currentTimezone,
-    );
+    _isFutureEvent =
+        _existingRecord == null &&
+        !VratRecording.isOpen(
+          widget.ekadashi,
+          now: DateTime.now(),
+          timezone: widget.currentTimezone,
+        );
 
     _status =
         _existingRecord?.status ??

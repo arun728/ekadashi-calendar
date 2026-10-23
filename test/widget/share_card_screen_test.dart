@@ -124,7 +124,7 @@ void main() {
     expect(card, findsOneWidget);
     for (final text in [
       'Papankusha Ekadashi',
-      'SMARTA',
+      'VAISHNAVA',
       'Thursday, October 22, 2026',
       'FASTING BEGINS',
       'PARANA WINDOW',

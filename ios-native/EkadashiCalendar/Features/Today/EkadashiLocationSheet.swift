@@ -101,7 +101,7 @@ struct CityPickerSheet<Extra: View>: View {
                 }
             }
         }
-        .presentationBackground(.thinMaterial)
+        .glassSheetBackground()
     }
 
     private func row(_ city: PanchangCity) -> some View {

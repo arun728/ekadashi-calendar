@@ -17,6 +17,9 @@ object WidgetDeepLinks {
     const val PARAM_DATE = "date"
     const val ACTION_PARANA = "parana"
 
+    fun buildOccurrenceUri(uid: String): Uri = Uri.Builder().scheme(SCHEME).authority("ekadashi")
+        .appendQueryParameter("uid", uid).build()
+
     fun buildDashboardUri(): Uri {
         return Uri.parse("$SCHEME://$HOST_DASHBOARD")
     }

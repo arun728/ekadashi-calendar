@@ -128,7 +128,10 @@ class HomeControls extends StatelessWidget {
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
     offset: const Offset(0, pillHeight),
     itemBuilder: (_) => [
-      for (final tradition in EkadashiTradition.values)
+      for (final tradition in [
+        EkadashiTradition.gaudiya,
+        EkadashiTradition.smarta,
+      ])
         _item(
           tradition,
           lang.translate(EkadashiSettings.traditionKeyFor(tradition)),

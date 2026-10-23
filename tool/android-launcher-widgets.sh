@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Dedicated stock-launcher emulator only: clears Launcher3, never personal devices.
-# Run after multi_year_android_test.dart creates databases/widget-fixture-{en,ta,hi,te}.json.
+# Run after android_widget_parity_test.dart creates databases/widget-fixture-{en,hi,ta,te,gu,bn}.json.
 set -euo pipefail
 output_dir=build/android-widget-evidence
 package_name=com.applausestudios.ekadashi_calendar
@@ -11,7 +11,7 @@ bash tool/adb-install-retry.sh build/app/outputs/flutter-apk/app-debug.apk
 bash tool/adb-install-retry.sh build/app/outputs/apk/androidTest/debug/app-debug-androidTest.apk
 adb logcat -c
 trap 'adb logcat -d > "$output_dir/logcat.txt"; adb pull "/sdcard/Android/data/$package_name/files/widget-evidence/." "$output_dir/" >/dev/null || true' EXIT
-timeout --kill-after=10s 900s adb shell am instrument -w "$package_name.test/androidx.test.runner.AndroidJUnitRunner" | tee "$output_dir/instrumentation.txt"
+timeout --kill-after=10s 900s adb shell am instrument -w -e class "$package_name.LauncherWidgetTest" "$package_name.test/androidx.test.runner.AndroidJUnitRunner" | tee "$output_dir/instrumentation.txt"
 # adb shell can return exit zero even when AndroidJUnit reports failures.
 # Ekadashi and Upcoming (the retired Today widget is hidden from the picker).
 grep -Fq 'OK (2 tests)' "$output_dir/instrumentation.txt"

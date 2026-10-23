@@ -454,8 +454,8 @@
   "widget_days_to_go": "আর {value0} দিন",
   "widget_fast_done": "উপবাস {value0}% সম্পন্ন",
   "widget_name_ekadashi": "একাদশী",
-  "widget_desc_ekadashi": "আজকের একাদশী ও আপনার উপবাসের অগ্রগতি, অথবা পরবর্তী একাদশী ও বাকি দিন।",
-  "widget_desc_upcoming": "এক নজরে পরবর্তী একাদশীগুলো।",
+  "widget_desc_ekadashi": "বর্তমান একাদশী, উপবাসের অগ্রগতি ও পারণ, অথবা পরবর্তী একাদশী এবং তার সময়।",
+  "widget_desc_upcoming": "পরবর্তী পাঁচটি একাদশী। কোনো একাদশীতে ট্যাপ করে তার হোম কার্ড খুলুন।",
   "widget_preview_during": "বাঁয়ে: এখন · ডানে: পরবর্তী একাদশীর সময়",
   "event_reminder_today": "{value0} আজ ({value1})",
   "event_reminder_tomorrow": "{value0} আগামীকাল ({value1})",
@@ -512,5 +512,15 @@
   "home_popular_cities": "জনপ্রিয় শহর",
   "share_card_save": "গ্যালারিতে সংরক্ষণ করুন",
   "share_card_saved": "কার্ড গ্যালারিতে সংরক্ষিত হয়েছে।",
-  "share_card_photos_denied": "ফটোর অনুমতি বন্ধ আছে। কার্ড সংরক্ষণ করতে সেটিংসে অনুমতি দিন।"
+  "share_card_photos_denied": "ফটোর অনুমতি বন্ধ আছে। কার্ড সংরক্ষণ করতে সেটিংসে অনুমতি দিন।",
+  "widget_remaining": "বাকি",
+  "widget_size_small": "ছোট",
+  "widget_size_medium": "মাঝারি",
+  "widget_size_large": "বড়",
+  "widget_size_lock": "লক স্ক্রিন",
+  "widget_preview_tap": "এই একাদশী দেখতে ট্যাপ করুন",
+  "widget_no_next": "উপলব্ধ সময়সূচিতে পরবর্তী একাদশী নেই",
+  "widget_lock_support": "সমর্থিত যন্ত্রে লক স্ক্রিন উইজেট পাওয়া যায়। আকার ও অবস্থান আপনার যন্ত্রের উপর নির্ভর করে।",
+  "glass_look": "কাচের মতো চেহারা",
+  "glass_look_desc": "আরও স্বচ্ছ কার্ড ও নিয়ন্ত্রণ ব্যবহার করুন।"
 }

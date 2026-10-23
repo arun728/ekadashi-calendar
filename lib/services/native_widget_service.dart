@@ -36,6 +36,10 @@ class NativeWidgetService {
     });
   }
 
+  void openOccurrence(String uid) => _deepLinkListener?.call(
+    Uri(scheme: 'ekadashi', host: 'ekadashi', queryParameters: {'uid': uid}),
+  );
+
   /// Retrieve the deep link that launched the app on cold start (if any)
   Future<Uri?> getInitialDeepLink() async {
     try {

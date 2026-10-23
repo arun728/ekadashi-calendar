@@ -23,12 +23,17 @@
             android:orientation="horizontal">
 
             <TextView
+            android:id="@+id/widget_large_decoration_0"
+            android:maxLines="1"
+            android:ellipsize="end"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="🕉️"
                 android:textSize="13sp" />
 
             <TextView
+            android:maxLines="1"
+            android:ellipsize="end"
                 android:id="@+id/widget_large_hero_title"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -44,6 +49,8 @@
                 android:shadowRadius="2" />
 
             <TextView
+            android:maxLines="1"
+            android:ellipsize="end"
                 android:id="@+id/widget_large_badge"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -78,6 +85,9 @@
                 android:textStyle="bold" />
 
             <TextView
+            android:id="@+id/widget_large_decoration_1"
+            android:maxLines="1"
+            android:ellipsize="end"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="6dp"
@@ -88,6 +98,8 @@
         </LinearLayout>
 
         <TextView
+            android:maxLines="1"
+            android:ellipsize="end"
             android:id="@+id/widget_large_hero_date"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -110,6 +122,8 @@
                 android:orientation="vertical">
 
                 <TextView
+            android:maxLines="1"
+            android:ellipsize="end"
                     android:id="@+id/widget_large_fasting_label"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -119,6 +133,8 @@
                     android:textStyle="bold" />
 
                 <TextView
+            android:maxLines="1"
+            android:ellipsize="end"
                     android:id="@+id/widget_large_fasting_val"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -135,6 +151,8 @@
                 android:orientation="vertical">
 
                 <TextView
+            android:maxLines="1"
+            android:ellipsize="end"
                     android:id="@+id/widget_large_parana_label"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -144,6 +162,8 @@
                     android:textStyle="bold" />
 
                 <TextView
+            android:maxLines="1"
+            android:ellipsize="end"
                     android:id="@+id/widget_large_parana_val"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -157,6 +177,8 @@
 
     <!-- Upcoming List Header -->
     <TextView
+            android:maxLines="1"
+            android:ellipsize="end"
         android:id="@+id/widget_large_upcoming_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -185,6 +207,8 @@
 
     <!-- Empty fallback view for list -->
     <TextView
+            android:maxLines="1"
+            android:ellipsize="end"
         android:id="@+id/widget_large_empty"
         android:layout_width="match_parent"
         android:layout_height="0dp"
