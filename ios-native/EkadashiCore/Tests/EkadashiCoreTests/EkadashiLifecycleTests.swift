@@ -128,4 +128,17 @@ final class EkadashiLifecycleTests: XCTestCase {
         XCTAssertNil(event.nextLifecycleUpdate(after: event.paranaEnd!, zone: zone))
     }
 
+    func testParanaEntryDoesNotCreateAFastingDayMarker() {
+        let event = events()[0]
+        let fastingDay = EkadashiCalendarDay(events: [event], day: event.date, zone: zone)
+        XCTAssertTrue(fastingDay.showsFastingMarker)
+        XCTAssertEqual(fastingDay.fasting.map(\.occurrenceUid), [event.occurrenceUid])
+        let paranaDay = EkadashiCalendarDay(events: [event], day: event.date.adding(days: 1), zone: zone)
+        XCTAssertFalse(paranaDay.showsFastingMarker)
+        XCTAssertTrue(paranaDay.fasting.isEmpty)
+        XCTAssertEqual(paranaDay.parana.map(\.occurrenceUid), [event.occurrenceUid])
+        let empty = EkadashiCalendarDay(events: [event], day: event.date.adding(days: 2), zone: zone)
+        XCTAssertFalse(empty.showsFastingMarker); XCTAssertTrue(empty.parana.isEmpty)
+    }
+
 }
