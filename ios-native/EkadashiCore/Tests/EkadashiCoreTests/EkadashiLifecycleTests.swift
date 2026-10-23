@@ -117,4 +117,15 @@ final class EkadashiLifecycleTests: XCTestCase {
         }
     }
 
+    func testRefreshCadenceUsesSecondsOnlyBeforeStartAndHitsExactBoundaries() {
+        let event = events()[0]
+        let countdown = instant("2026-10-22T05:59:58+05:30")
+        XCTAssertEqual(event.nextLifecycleUpdate(after: countdown, zone: zone), countdown.addingTimeInterval(1))
+        let fasting = event.fastingStart!.addingTimeInterval(100)
+        XCTAssertEqual(event.nextLifecycleUpdate(after: fasting, zone: zone), fasting.addingTimeInterval(60))
+        XCTAssertEqual(event.nextLifecycleUpdate(after: event.paranaStart!.addingTimeInterval(-2), zone: zone), event.paranaStart)
+        XCTAssertEqual(event.nextLifecycleUpdate(after: event.paranaEnd!.addingTimeInterval(-2), zone: zone), event.paranaEnd)
+        XCTAssertNil(event.nextLifecycleUpdate(after: event.paranaEnd!, zone: zone))
+    }
+
 }
