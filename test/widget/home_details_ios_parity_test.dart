@@ -385,7 +385,9 @@ void main() {
       expect(styleOf(tester, name).fontSize, IosText.largeTitle);
       final pill = find.descendant(
         of: details,
-        matching: find.byType(StatusPill),
+        matching: find.byWidgetPredicate(
+          (w) => w is StatusPill && w.text.contains('Chennai'),
+        ),
       );
       expect(pill, findsOneWidget);
       // How the times are calculated (EkadashiDetailsView on iOS).
@@ -456,6 +458,30 @@ void main() {
           .first
           .opacity;
       expect(opacity, lessThan(1));
+    });
+
+    testWidgets('saved record stays editable before Parana in Details', (tester) async {
+      await pumpHome(tester);
+      await tester.tap(find.byKey(const Key('home_next')));
+      await tester.pumpAndSettle();
+      final (list, index) = await homeCards(tester);
+      final event = list[index];
+      final tracker = tester.element(find.byKey(const Key('home_record_vrat')))
+          .read<VratTrackerService>();
+      await tester.runAsync(() => tracker.recordVrat(
+        ekadashiOccurrenceId: event.id,
+        occurrenceUid: event.occurrenceUid,
+        ekadashiDate: event.date.toIso8601String().substring(0, 10),
+        ekadashiName: event.name,
+        status: ObservanceStatus.observed,
+        timezone: 'IST',
+      ));
+      await tester.pumpAndSettle();
+      await openDetails(tester);
+      final button = find.byKey(const Key('details_record_vrat'));
+      await tester.ensureVisible(button);
+      expect(tester.widget<OutlinedButton>(button).onPressed, isNotNull);
+      expect(find.descendant(of: button, matching: find.text('Vrat: Observed')), findsOneWidget);
     });
 
     testWidgets('open: grey questionmark Record Vrat; observed: green check', (
