@@ -16,6 +16,19 @@ final class ScreenshotTests: XCTestCase {
         app.launch()
     }
 
+    func testLifecycleHomeRetainsParanaAndShowsNextAtItsEnd() {
+        for (time, label) in [("2026-10-22T00:00:00+05:30", "06:00:00"),
+                              ("2026-10-23T00:00:00+05:30", "Now"),
+                              ("2026-10-23T06:00:00+05:30", "Parana")] {
+            app.terminate()
+            app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = time
+            app.launch()
+            XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+            XCTAssertEqual(app.staticTexts["home_day_badge"].firstMatch.label, label)
+            snap("lifecycle-home-\(label.replacingOccurrences(of: ":", with: "-"))")
+        }
+    }
+
     private func snap(_ name: String) {
         let attachment = XCTAttachment(screenshot: app.screenshot())
         attachment.name = name
