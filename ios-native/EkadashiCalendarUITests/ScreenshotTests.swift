@@ -29,6 +29,116 @@ final class ScreenshotTests: XCTestCase {
         }
     }
 
+    func testDebugSessionAutomaticallyAdvancesAtParanaEndAndCanJumpBack() {
+        app.terminate()
+        app.launchArguments += ["-lifecycle-testing"]
+        app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = "2026-10-23T09:54:35+05:30"
+        app.launchEnvironment["EKADASHI_TEST_RATE"] = "1"
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        let badge = app.staticTexts["home_day_badge"].firstMatch
+        XCTAssertEqual(badge.label, "Parana")
+        snap("lifecycle-debug-before-parana-end")
+        let next = app.staticTexts["Rama Ekadashi"].firstMatch
+        XCTAssertTrue(next.waitForExistence(timeout: 40), "Home advances without a relaunch or tap")
+        snap("lifecycle-debug-after-parana-end")
+        tab(4)
+        let clock = app.buttons["settings_test_clock"].firstMatch
+        XCTAssertTrue(clock.waitForExistence(timeout: 5))
+        clock.tap()
+        app.buttons["test_clock_midnight"].firstMatch.tap()
+        tab(0)
+        XCTAssertEqual(badge.label, "06:00:00")
+        XCTAssertFalse(app.descendants(matching: .any)["home_remaining_ring"].firstMatch.exists)
+        snap("lifecycle-debug-midnight-countdown")
+    }
+
+    func testParanaCalendarDetailsAndWidgetPreviewsInEveryLanguage() {
+        app.terminate()
+        app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = "2026-10-23T07:00:00+05:30"
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        let languages = [("English", "Parana"), ("हिंदी", "पारण"), ("தமிழ்", "பாரணை"),
+                         ("తెలుగు", "పారణ"), ("ગુજરાતી", "પારણા"), ("বাংলা", "পারণ")]
+        for (language, parana) in languages {
+            tab(0)
+            if language != "English" { element("language_menu").tap(); app.buttons[language].tap() }
+            XCTAssertEqual(app.staticTexts["home_day_badge"].firstMatch.label, parana)
+            snap("lifecycle-parana-home-\(language)")
+            tab(1)
+            let calendarStatus = app.staticTexts["calendar_lifecycle_status"].firstMatch
+            XCTAssertTrue(calendarStatus.waitForExistence(timeout: 5))
+            XCTAssertEqual(calendarStatus.label, parana)
+            snap("lifecycle-parana-calendar-\(language)")
+            app.buttons["calendar_view_details"].firstMatch.tap()
+            let status = element("home_day_badge")
+            for _ in 0..<8 where !status.isHittable { app.swipeUp() }
+            XCTAssertEqual(status.label, parana)
+            // Show the status together with its timings, above the tab bar.
+            app.swipeUp()
+            snap("lifecycle-parana-details-\(language)")
+            app.navigationBars.buttons.element(boundBy: 0).tap()
+            tab(4)
+            app.buttons["settings_widget_preview"].firstMatch.tap()
+            let sizes = app.segmentedControls["widget_preview_size"]
+            XCTAssertTrue(sizes.waitForExistence(timeout: 5))
+            for index in 0..<3 {
+                sizes.buttons.element(boundBy: index).tap()
+                snap("lifecycle-parana-preview-\(language)-\(index)")
+            }
+            app.navigationBars.buttons.element(boundBy: 0).tap()
+        }
+    }
+
+    func testParanaOnlyDayHasNoEmptyEkadashiMessageWhenFiltered() {
+        app.terminate()
+        app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = "2026-10-23T07:00:00+05:30"
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        tab(1)
+        app.buttons["Ekadashi"].firstMatch.tap()
+        XCTAssertTrue(app.staticTexts["calendar_lifecycle_status"].firstMatch.waitForExistence(timeout: 5))
+        XCTAssertFalse(app.staticTexts["No Ekadashi on this day"].exists)
+    }
+
+    func testCalendarFirstOpenUsesHomeCityDateAcrossMidnight() {
+        app.terminate()
+        app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = "2026-10-23T07:00:00+05:30"
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        element("home_location").tap()
+        let search = app.textFields["ekadashi_location_search"]
+        XCTAssertTrue(search.waitForExistence(timeout: 5)); search.tap(); search.typeText("New York")
+        let city = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'New York'")).firstMatch
+        XCTAssertTrue(city.waitForExistence(timeout: 10)); city.tap()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        XCTAssertTrue(element("home_location_name").label.hasPrefix("New York"))
+        tab(1)
+        XCTAssertTrue(element("calendar_year_selector").label.contains("22 Oct 2026"))
+        snap("lifecycle-calendar-New-York-previous-civil-day")
+    }
+
+    func testRunningCountdownChangesThenStartsTheFillingRing() {
+        app.terminate()
+        app.launchArguments += ["-lifecycle-testing"]
+        app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = "2026-10-22T05:59:35+05:30"
+        app.launchEnvironment["EKADASHI_TEST_RATE"] = "1"
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 20))
+        let badge = app.staticTexts["home_day_badge"].firstMatch
+        let first = badge.label
+        XCTAssertTrue(first.hasPrefix("00:00:"), first)
+        snap("lifecycle-running-countdown")
+        let changed = NSPredicate(format: "label != %@", first)
+        XCTAssertEqual(XCTWaiter.wait(for: [expectation(for: changed, evaluatedWith: badge)], timeout: 3), .completed)
+        let started = NSPredicate(format: "label == 'Now'")
+        XCTAssertEqual(XCTWaiter.wait(for: [expectation(for: started, evaluatedWith: badge)], timeout: 35), .completed)
+        let ring = app.descendants(matching: .any)["home_remaining_ring"].firstMatch
+        XCTAssertTrue(ring.exists)
+        XCTAssertTrue(ring.label.contains("0%"))
+        snap("lifecycle-running-countdown-started-zero")
+    }
+
     private func snap(_ name: String) {
         let attachment = XCTAttachment(screenshot: app.screenshot())
         attachment.name = name
@@ -122,7 +232,7 @@ final class ScreenshotTests: XCTestCase {
                 XCTAssertTrue(app.staticTexts[eventName].firstMatch.waitForExistence(timeout: 10), language)
                 if theme == "dark" { assertNativeTabFramesMatch(offTabFrames) }
                 let ring = app.descendants(matching: .any)["home_remaining_ring"].firstMatch
-                XCTAssertTrue(ring.label.contains("72%"), language)
+                XCTAssertTrue(ring.label.contains("28%"), language)
                 let window = app.windows.firstMatch.frame
                 for index in 0..<5 {
                     let item = app.tabBars.buttons.element(boundBy: index)
@@ -428,7 +538,7 @@ final class ScreenshotTests: XCTestCase {
         let badge = app.staticTexts["home_day_badge"].firstMatch
         XCTAssertTrue(ring.waitForExistence(timeout: 10))
         XCTAssertTrue(badge.exists)
-        XCTAssertEqual(badge.label, "Today")
+        XCTAssertEqual(badge.label, "Now")
         XCTAssertLessThan(ring.frame.maxX, badge.frame.minX)
         snap("approved-home-today-ring-left-badge-right")
         app.open(URL(string: "ekadashi://ekadashi?uid=ekadashi%3A2026%3A21")!)
@@ -445,10 +555,10 @@ final class ScreenshotTests: XCTestCase {
         // open(_:) starts a fresh clean UI-test session. Select the occurrence
         // once, then keep each chosen language while visiting Home/Settings.
         app.open(URL(string: "ekadashi://ekadashi?uid=ekadashi%3A2026%3A20")!)
-        let translations = [("English", "Today", "Papankusha Ekadashi"),
-            ("हिंदी", "आज", "पापांकुशा एकादशी"), ("தமிழ்", "இன்று", "பாபாங்குசா ஏகாதசி"),
-            ("తెలుగు", "ఈరోజు", "పాపాంకుశ ఏకాదశి"), ("ગુજરાતી", "આજે", "પાપાંકુશા એકાદશી"),
-            ("বাংলা", "আজ", "পাপাঙ্কুশা একাদশী")]
+        let translations = [("English", "Now", "Papankusha Ekadashi"),
+            ("हिंदी", "अभी", "पापांकुशा एकादशी"), ("தமிழ்", "இப்போது", "பாபாங்குசா ஏகாதசி"),
+            ("తెలుగు", "ఇప్పుడు", "పాపాంకుశ ఏకాదశి"), ("ગુજરાતી", "હમણાં", "પાપાંકુશા એકાદશી"),
+            ("বাংলা", "এখন", "পাপাঙ্কুশা একাদশী")]
         for (language, today, name) in translations {
             tab(0)
             if language != "English" {
@@ -461,7 +571,7 @@ final class ScreenshotTests: XCTestCase {
             XCTAssertEqual(badge.label, today, "The screenshot must actually use \(language)")
             XCTAssertTrue(app.staticTexts[name].firstMatch.waitForExistence(timeout: 10), language)
             XCTAssertLessThan(ring.frame.maxX, badge.frame.minX, language)
-            XCTAssertTrue(ring.label.contains("72%"), "The fixed Chennai clock must be used: \(language)")
+            XCTAssertTrue(ring.label.contains("28%"), "The fixed Chennai clock must be used: \(language)")
             snap("approved-home-progress-\(language)")
             tab(4)
             app.buttons["settings_widget_preview"].firstMatch.tap()
@@ -790,7 +900,7 @@ final class ScreenshotTests: XCTestCase {
 
         app.buttons["home_share_card"].firstMatch.tap()
         XCTAssertTrue(element("share_card_preview").waitForExistence(timeout: 10))
-        XCTAssertTrue(app.buttons["share_card_share"].waitForExistence(timeout: 10))
+        XCTAssertTrue(reveal(app.buttons["share_card_share"].firstMatch), "Share remains reachable below the rendered image")
         XCTAssertFalse(app.buttons["premium_close"].exists, "the share card is free")
         snap("15-share-card")
     }
