@@ -51,4 +51,70 @@ final class EkadashiLifecycleTests: XCTestCase {
         XCTAssertEqual(payload.upcoming(after: instant("2026-10-22T05:59:59+05:30")).first?.id, 20)
         XCTAssertEqual(payload.upcoming(after: instant("2026-10-22T06:00:00+05:30")).first?.id, 21)
     }
+    func testExactStatusCountdownProgressAndParanaBoundaries() {
+        let event = events()[0]
+        let cases: [(String, EkadashiLifecycle.Phase, String, Int?)] = [
+            ("2026-10-22T00:00:00+05:30", .countdown, "06:00:00", nil),
+            ("2026-10-22T05:59:59+05:30", .countdown, "00:00:01", nil),
+            ("2026-10-22T06:00:00+05:30", .fasting, "Now", 0),
+            ("2026-10-23T00:00:00+05:30", .fasting, "Now", 75),
+            ("2026-10-23T05:59:59+05:30", .fasting, "Now", 99),
+            ("2026-10-23T06:00:00+05:30", .parana, "Parana", 100),
+            ("2026-10-23T08:20:59+05:30", .parana, "Parana", 100),
+            ("2026-10-23T08:21:00+05:30", .passed, "Passed", nil)]
+        for (time, phase, label, percent) in cases {
+            let status = event.lifecycle(at: instant(time), zone: zone)
+            XCTAssertEqual(status.phase, phase, time); XCTAssertEqual(status.label(language: "en"), label, time)
+            XCTAssertEqual(status.percent, percent, time)
+        }
+    }
+    func testLanguageAndScheduleZoneNeverChangeInstantBoundaries() {
+        let event = events()[0]
+        for zoneName in ["Asia/Kolkata", "Asia/Kathmandu", "America/New_York", "Australia/Sydney", "Pacific/Auckland", "UTC"] {
+            let zone = TzDatabase.shared.location(zoneName)!
+            for language in Localizer.languages {
+                for (now, phase) in [(event.fastingStart!, EkadashiLifecycle.Phase.fasting),
+                                     (event.paranaStart!, .parana), (event.paranaEnd!, .passed)] {
+                    let status = event.lifecycle(at: now, zone: zone)
+                    XCTAssertEqual(status.phase, phase)
+                    if language != "en" { XCTAssertNil(status.label(language: language).range(of: "[A-Za-z]", options: .regularExpression)) }
+                }
+            }
+        }
+    }
+    func testDSTTransitionUsesElapsedInstantsAndParanaCalendarEntryKeepsIdentity() {
+        let zone = TzDatabase.shared.location("America/New_York")!
+        let event = EkadashiOccurrence(id: 1, name: "Fast", date: CivilDate(2026, 10, 31),
+            fastingStartISO: "2026-10-31T06:00:00-04:00", paranaStartISO: "2026-11-01T06:00:00-05:00",
+            paranaEndISO: "2026-11-01T08:00:00-05:00")
+        let midpoint = event.fastingStart!.addingTimeInterval(12.5 * 3600)
+        XCTAssertEqual(event.lifecycle(at: midpoint, zone: zone).percent, 50)
+        XCTAssertTrue(event.hasParana(on: CivilDate(2026, 11, 1), zone: zone))
+        XCTAssertFalse(event.hasParana(on: event.date, zone: zone))
+        XCTAssertFalse(event.hasParana(on: CivilDate(2026, 11, 2), zone: zone))
+    }
+    func testMalformedTimingsNeverInventAnActiveFastOrRing() {
+        let event = EkadashiOccurrence(id: 0, name: "", date: CivilDate(2026, 10, 22))
+        let status = event.lifecycle(at: instant("2026-10-22T06:00:00+05:30"), zone: zone)
+        XCTAssertEqual(status.phase, .unavailable); XCTAssertNil(status.progress)
+        XCTAssertFalse(event.hasParana(on: event.date, zone: zone))
+    }
+    func testActualSchedulesForBothTraditionsAndAllLanguagesRespectEveryBoundary() throws {
+        let repository = try CalendarRepository.bundled()
+        let schedule = EkadashiSchedule(repository: repository)
+        for tradition in EkadashiTradition.allCases {
+            for language in Localizer.languages {
+                let events = try schedule.ekadashis(city: PanchangCity(id: "chennai", label: "Chennai", latitude: 13.08784, longitude: 80.27847, timeZoneId: "Asia/Kolkata"), tradition: tradition, language: language, years: [2026])
+                for event in events {
+                    let start = try XCTUnwrap(event.fastingStart), parana = try XCTUnwrap(event.paranaStart), end = try XCTUnwrap(event.paranaEnd)
+                    XCTAssertNil(event.lifecycle(at: start.addingTimeInterval(-1), zone: zone).progress)
+                    XCTAssertEqual(event.lifecycle(at: start, zone: zone).percent, 0)
+                    XCTAssertEqual(event.lifecycle(at: parana, zone: zone).percent, 100)
+                    XCTAssertEqual(event.lifecycle(at: end.addingTimeInterval(-1), zone: zone).phase, .parana)
+                    XCTAssertEqual(event.lifecycle(at: end, zone: zone).phase, .passed)
+                }
+            }
+        }
+    }
+
 }

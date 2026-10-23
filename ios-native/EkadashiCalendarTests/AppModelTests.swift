@@ -7,6 +7,53 @@ import EkadashiCore
 /// domain rules are covered by the EkadashiCore package tests).
 @MainActor
 final class AppModelTests: XCTestCase {
+    func testCurrentOccurrenceAdvancesAtParanaEndWithoutMovingBrowsedCards() async throws {
+        let model = AppModel(store: InMemoryKeyValueStore(["has_launched": true, "language_code": "en", AppModel.yearKey: "2026"]))
+        model.reload(); await model.waitForLoad()
+        let event = try XCTUnwrap(model.ekadashis.first { $0.date == CivilDate(2026, 10, 22) })
+        let end = try XCTUnwrap(event.paranaEnd)
+        model.selectCurrentOccurrence(now: end.addingTimeInterval(-1))
+        XCTAssertEqual(model.homeEkadashis[model.homeIndex].occurrenceUid, event.occurrenceUid)
+        model.refreshCurrentOccurrence(previousNow: end.addingTimeInterval(-1), now: end)
+        XCTAssertNotEqual(model.homeEkadashis[model.homeIndex].occurrenceUid, event.occurrenceUid)
+        let nextUID = model.homeEkadashis[model.homeIndex].occurrenceUid
+        model.refreshCurrentOccurrence(previousNow: end.addingTimeInterval(-1), now: end)
+        XCTAssertEqual(model.homeEkadashis[model.homeIndex].occurrenceUid, nextUID)
+        model.homeIndex = 0
+        model.refreshCurrentOccurrence(previousNow: end.addingTimeInterval(-1), now: end)
+        XCTAssertEqual(model.homeIndex, 0, "Historical browsing stays put")
+    }
+
+    func testCurrentSelectionSurvivesTheYearBoundaryUntilParanaEnds() async throws {
+        let model = AppModel(store: InMemoryKeyValueStore(["has_launched": true, "language_code": "en"]))
+        model.reload(); await model.waitForLoad()
+        for event in model.ekadashis where event.date.year == 2026 {
+            let end = try XCTUnwrap(event.paranaEnd)
+            model.selectCurrentOccurrence(now: end.addingTimeInterval(-1))
+            XCTAssertEqual(model.homeEkadashis[model.homeIndex].occurrenceUid, event.occurrenceUid)
+            model.refreshCurrentOccurrence(previousNow: end.addingTimeInterval(-1), now: end)
+            if let next = model.ekadashis.first(where: { $0.date > event.date }) {
+                XCTAssertEqual(model.homeEkadashis[model.homeIndex].occurrenceUid, next.occurrenceUid)
+            }
+        }
+    }
+
+    #if DEBUG
+    func testDebugClockIsPausedOrScaledAndNeverUsesTheProductionSnapshotKey() throws {
+        defer { WidgetClock.set(nil) }
+        let live = ISO8601.instant("2026-10-23T12:00:00Z")!
+        let virtual = ISO8601.instant("2026-10-22T00:30:00Z")!
+        WidgetClock.set(virtual, rate: 0, live: live)
+        XCTAssertEqual(WidgetClock.date(live.addingTimeInterval(3600)), virtual)
+        XCTAssertNotEqual(WidgetClock.snapshotKey, WidgetSnapshot.appGroupKey)
+        WidgetClock.set(virtual, rate: 60, live: live)
+        XCTAssertEqual(WidgetClock.date(live.addingTimeInterval(10)), virtual.addingTimeInterval(600))
+        WidgetClock.set(nil)
+        XCTAssertEqual(WidgetClock.date(live), live)
+        XCTAssertEqual(WidgetClock.snapshotKey, WidgetSnapshot.appGroupKey)
+    }
+    #endif
+
     func testGlassLookIsOffByDefaultAndPersistedIndependentlyOfOtherSettings() {
         for seed: [String: Any] in [[:], [AppModel.glassLookKey: "invalid"]] {
             XCTAssertFalse(AppModel(store: InMemoryKeyValueStore(seed)).isGlassLookEnabled)

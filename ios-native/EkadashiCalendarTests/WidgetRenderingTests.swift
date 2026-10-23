@@ -9,6 +9,26 @@ import EkadashiCore
 /// the shared selection, percentage, formatter, timeline and link behaviour.
 @MainActor
 final class WidgetRenderingTests: XCTestCase {
+    func testAllLifecycleStatesFitEveryWidgetFamilyAndLargeHomeTextInEveryLanguage() throws {
+        let repository = try CalendarRepository.bundled()
+        for language in Localizer.languages {
+            let events = repository.ekadashis(timezone: "IST", language: language)
+            let event = try XCTUnwrap(events.first { $0.fastingStart != nil })
+            for now in [event.fastingStart!.addingTimeInterval(-1), event.fastingStart!,
+                        event.paranaStart!, event.paranaEnd!.addingTimeInterval(-1)] {
+                let snapshot = WidgetSnapshot.build(occurrences: events, timezone: "IST", locationName: "", language: language, now: now)
+                for (family, width, height) in [(WidgetFamily.systemSmall, 158.0, 158.0), (.systemMedium, 320.0, 158.0),
+                                               (.accessoryCircular, 62.0, 62.0), (.accessoryRectangular, 160.0, 62.0)] {
+                    try assertFits(EkadashiWidgetView(snapshot: snapshot, now: now, family: family), width: width, height: height,
+                        inset: 0, label: "Lifecycle \(language) \(family) \(now)")
+                }
+                try assertFits(EkadashiStatusHeader(event: event, timeZone: "Asia/Kolkata", language: language, now: now)
+                    .environment(\.dynamicTypeSize, .accessibility3), width: 220, height: 100,
+                    inset: 0, label: "Status \(language)")
+            }
+        }
+    }
+
     func testGlassOffPreservesTheOriginalPanelAndCapsuleInBothAppearances() throws {
         for scheme in [ColorScheme.dark, .light] {
             let current = glassProbe(scheme: scheme, enabled: false, reduced: false, legacy: false)
@@ -119,10 +139,10 @@ final class WidgetRenderingTests: XCTestCase {
                 name: "", date: CivilDate(2026, 10, 22), fastingStartISO: "2026-10-22T06:00:00+05:30",
                 paranaStartISO: "2026-10-23T06:00:00+05:30", paranaEndISO: "2026-10-23T08:21:00+05:30")
             let cases = [("2026-10-21T17:00:00Z", "Asia/Kolkata", false),
-                         ("2026-10-21T23:30:00Z", "Asia/Kolkata", true),
+                         ("2026-10-21T23:30:00Z", "Asia/Kolkata", false),
                          ("2026-10-21T23:30:00Z", "UTC", false),
                          ("2026-10-22T07:15:00Z", "Asia/Kolkata", true),
-                         ("2026-10-22T19:00:00Z", "Asia/Kolkata", false)]
+                         ("2026-10-22T19:00:00Z", "Asia/Kolkata", true)]
             for (date, zone, hasProgress) in cases {
                 let now = ISO8601.instant(date)!
                 let header = EkadashiStatusHeader(event: event, timeZone: zone, language: language, now: now)
