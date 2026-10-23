@@ -66,20 +66,17 @@ void main() {
     },
   );
 
-  test(
-    'yesterday Parana cannot remain the headline in a new civil day',
-    () async {
-      final p = await payload(
-        [
-          event(2027, 1, DateTime.utc(2027, 1, 5)),
-          event(2027, 2, DateTime.utc(2027, 1, 20)),
-        ],
-        DateTime.utc(2027, 1, 6),
-        zone: 'UTC',
-      );
-      expect(p['nextEkadashi']['occurrenceUid'], 'ekadashi:2027:2');
-    },
-  );
+  test('ongoing Ekadashi remains the headline through Parana', () async {
+    final p = await payload(
+      [
+        event(2027, 1, DateTime.utc(2027, 1, 5)),
+        event(2027, 2, DateTime.utc(2027, 1, 20)),
+      ],
+      DateTime.utc(2027, 1, 6),
+      zone: 'UTC',
+    );
+    expect(p['nextEkadashi']['occurrenceUid'], 'ekadashi:2027:1');
+  });
 
   test('duplicate occurrences do not consume the five future slots', () async {
     final rows = List.generate(
@@ -151,7 +148,12 @@ void main() {
           e.fastingStartIso,
         ),
         (start, 'FASTING_ACTIVE', e.paranaStartIso),
-        (start.add(const Duration(days: 1)), 'FALLBACK', ''),
+        (
+          start.add(const Duration(days: 1)),
+          'PARANA_AVAILABLE',
+          e.paranaEndIso,
+        ),
+        (DateTime.parse(e.paranaEndIso), 'FALLBACK', ''),
       ]) {
         final p = await payload([e], tuple.$1);
         expect(p['currentState'], tuple.$2);
@@ -181,7 +183,7 @@ void main() {
           language: language,
         );
         final strings = p['localizedStrings'] as Map;
-        expect(strings, hasLength(28));
+        expect(strings, hasLength(29));
         // Phase 6 headline strings keep their {value0} placeholder.
         expect(strings['widget.days_to_go'], contains('{value0}'));
         expect(strings['widget.fast_done'], contains('{value0}'));

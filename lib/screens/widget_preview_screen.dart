@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../services/display_clock.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -32,23 +33,67 @@ class WidgetPreviewScreen extends StatefulWidget {
   State<WidgetPreviewScreen> createState() => _WidgetPreviewScreenState();
 }
 
-class _WidgetPreviewScreenState extends State<WidgetPreviewScreen> {
+class _WidgetPreviewScreenState extends State<WidgetPreviewScreen>
+    with WidgetsBindingObserver {
   WidgetPreviewKind _kind = WidgetPreviewKind.ekadashi;
   WidgetPreviewSize _size = WidgetPreviewSize.medium;
   Timer? _timer;
   @override
   void initState() {
     super.initState();
-    if (widget.now == null) {
-      _timer = Timer.periodic(const Duration(minutes: 1), (_) {
-        if (mounted) setState(() {});
-      });
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _schedule();
+  }
+
+  bool _active = true;
+  void _schedule() {
+    _timer?.cancel();
+    if (!mounted ||
+        widget.now != null ||
+        !_active ||
+        !TickerMode.of(context) ||
+        ModalRoute.of(context)?.isCurrent == false) {
+      return;
     }
+    final now = DisplayClock.now();
+    var delay = const Duration(minutes: 1);
+    for (final event in widget.ekadashiList) {
+      for (final iso in [
+        event.fastingStartIso,
+        event.paranaStartIso,
+        event.paranaEndIso,
+      ]) {
+        final target = DateTime.tryParse(iso);
+        if (target != null &&
+            target.isAfter(now) &&
+            target.difference(now) < delay) {
+          delay = target.difference(now);
+        }
+      }
+    }
+    _timer = Timer(delay, () {
+      if (mounted) {
+        setState(() {});
+        _schedule();
+      }
+    });
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    _active = state == AppLifecycleState.resumed;
+    _schedule();
   }
 
   @override
   void dispose() {
     _timer?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
@@ -67,7 +112,7 @@ class _WidgetPreviewScreenState extends State<WidgetPreviewScreen> {
   @override
   Widget build(BuildContext context) {
     final lang = context.watch<LanguageService>();
-    final now = widget.now ?? DateTime.now();
+    final now = widget.now ?? DisplayClock.now();
     final payload = WidgetSyncManager().buildPayload(
       ekadashiList: widget.ekadashiList,
       timezone: widget.currentTimezone ?? 'Asia/Kolkata',
@@ -135,6 +180,7 @@ class _WidgetPreviewScreenState extends State<WidgetPreviewScreen> {
                 };
                 return Center(
                   child: NativeWidgetPreview(
+                    live: widget.now == null && !DisplayClock.isTesting,
                     key: ValueKey(
                       _kind == WidgetPreviewKind.ekadashi
                           ? 'card_ekadashi'

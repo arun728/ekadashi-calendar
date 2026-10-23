@@ -25,14 +25,15 @@ import com.applausestudios.ekadashi_calendar.widget.model.WidgetTimeline
 import com.applausestudios.ekadashi_calendar.widget.data.WidgetLocalization
 import java.time.LocalDate
 import java.util.Locale
-import kotlin.math.ceil
+import kotlin.math.floor
+import com.applausestudios.ekadashi_calendar.widget.model.startCountdown
 
 /** The installed widgets and Settings previews use these same native layouts and binders. */
 object WidgetRenderer {
     fun localized(context: Context, payload: WidgetPayload): WidgetPayload = payload.copy(
         localizedStrings = WidgetLocalization.strings(context, payload.metadata.locale) + payload.localizedStrings)
 
-    fun single(context: Context, payload: WidgetPayload, width: Int, height: Int, now: Instant = Instant.now()): RemoteViews {
+    fun single(context: Context, payload: WidgetPayload, width: Int, height: Int, now: Instant = Instant.now(), liveCountdown: Boolean = true): RemoteViews {
         val p = localized(context, payload)
         val headline = WidgetHeadline.of(p, now)
         val views = if (width >= 250) buildMediumWidget(context, p, headline, now) else buildSmallWidget(context, p, headline, now)
@@ -44,7 +45,7 @@ object WidgetRenderer {
             views.setInt(R.id.widget_small_name, "setMaxLines", 1)
             views.setViewVisibility(R.id.widget_small_countdown_label, View.GONE)
             if (headline is WidgetHeadline.Today) views.setTextViewText(R.id.widget_small_countdown_value,
-                "${remainingPercent(headline.progress)}% ${p.localized("widget.remaining", "")}")
+                "${remainingPercent(headline.progress)}% ")
         }
         if (width < 250 && height < 100) {
             // Keep the same compact card's essential name and countdown in very short host placements.
@@ -54,6 +55,14 @@ object WidgetRenderer {
             views.setInt(R.id.widget_small_name, "setMaxLines", 1)
             views.setTextViewTextSize(R.id.widget_small_name, android.util.TypedValue.COMPLEX_UNIT_SP, 10f)
             views.setTextViewTextSize(R.id.widget_small_countdown_value, android.util.TypedValue.COMPLEX_UNIT_SP, 10f)
+        }
+        val countdownId = if (width >= 250) R.id.widget_medium_countdown_value else R.id.widget_small_countdown_value
+        val before = headline as? WidgetHeadline.Next
+        if (liveCountdown && before?.secondsUntilStart != null) {
+            views.setChronometer(countdownId, android.os.SystemClock.elapsedRealtime() + Duration.between(now, before.item.fastingStartInstant).toMillis().coerceAtLeast(0), null, true)
+            views.setChronometerCountDown(countdownId, true)
+        } else {
+            views.setBoolean(countdownId, "setStarted", false)
         }
         fit(context, views, width, height)
         return views
@@ -107,19 +116,19 @@ object WidgetRenderer {
         if (collectionItem) setOnClickFillInIntent(R.id.widget_upcoming_item_root, Intent().apply { data = WidgetDeepLinks.buildOccurrenceUri(item.occurrenceUid) })
     }
 
-    private fun remainingPercent(fraction: Double) = ceil((fraction * 100).coerceIn(0.0, 100.0) - 0.000000001).toInt()
+    private fun remainingPercent(fraction: Double) = floor((fraction * 100).coerceIn(0.0, 100.0) + 0.000000001).toInt()
 
     private fun displayName(item: EkadashiItem) = item.localizedName.ifEmpty { item.name }
 
     private fun badge(payload: WidgetPayload, headline: WidgetHeadline) = when (headline) {
-        is WidgetHeadline.Today -> payload.localized("widget.today_is_ekadashi", "Today is Ekadashi")
+        is WidgetHeadline.Today -> if (headline.state == WidgetState.PARANA_AVAILABLE) payload.localized("widget.parana", "Parana") else payload.localized("widget.now", "Now")
         is WidgetHeadline.Next -> payload.localized("widget.next_ekadashi", "Next Ekadashi")
     }
 
-    /** Remaining percentage today, otherwise calendar days to go. */
+    /** Completed percentage while active, otherwise countdown or days to go. */
     private fun countdown(payload: WidgetPayload, headline: WidgetHeadline): Pair<String, String> = when (headline) {
-        is WidgetHeadline.Today -> payload.localized("widget.remaining", "remaining") to "${remainingPercent(headline.progress)}%"
-        is WidgetHeadline.Next -> "" to payload.daysToGo(headline.days)
+        is WidgetHeadline.Today -> "" to "${remainingPercent(headline.progress)}%"
+        is WidgetHeadline.Next -> "" to (headline.startCountdown() ?: payload.daysToGo(headline.days))
     }
 
     private fun setProgress(views: RemoteViews, id: Int, payload: WidgetPayload, headline: WidgetHeadline?) {
@@ -127,7 +136,7 @@ object WidgetRenderer {
             val percent = remainingPercent(headline.progress)
             views.setViewVisibility(id, View.VISIBLE)
             views.setProgressBar(id, 100, percent, false)
-            views.setContentDescription(id, "$percent% ${payload.localized("widget.remaining", "remaining")}")
+            views.setContentDescription(id, "$percent% ")
         } else {
             views.setViewVisibility(id, View.GONE)
         }
@@ -189,21 +198,21 @@ object WidgetRenderer {
             when (item.stateAt(now)) {
                 WidgetState.FASTING_ACTIVE -> {
                     views.setTextColor(R.id.widget_medium_badge, context.getColor(R.color.widget_amber))
-                    views.setTextViewText(R.id.widget_medium_badge, "${remainingPercent((headline as? WidgetHeadline.Today)?.progress ?: 1.0)}% ${payload.localized("widget.remaining", "remaining")}")
+                    views.setTextViewText(R.id.widget_medium_badge, "${remainingPercent((headline as? WidgetHeadline.Today)?.progress ?: 1.0)}% ")
                 }
                 WidgetState.PARANA_AVAILABLE -> {
                     views.setTextColor(R.id.widget_medium_badge, context.getColor(R.color.widget_green))
-                    views.setTextViewText(R.id.widget_medium_badge, payload.localized("widget.parana_available", "PARANA AVAILABLE"))
+                    views.setTextViewText(R.id.widget_medium_badge, payload.localized("widget.parana", "Parana"))
                 }
                 else -> {
                     views.setTextColor(R.id.widget_medium_badge, context.getColor(R.color.widget_gold))
-                    views.setTextViewText(R.id.widget_medium_badge, payload.daysToGo((headline as? WidgetHeadline.Next)?.days ?: 0))
+                    views.setTextViewText(R.id.widget_medium_badge, (headline as? WidgetHeadline.Next)?.let { it.startCountdown() ?: payload.daysToGo(it.days) } ?: "")
                 }
             }
             val (label, value) = countdown(payload, headline)
-            views.setTextViewText(R.id.widget_medium_countdown_label, label.ifEmpty { payload.localized("widget.starts_in", "Starts in") })
+            views.setTextViewText(R.id.widget_medium_countdown_label, label.ifEmpty { if (headline is WidgetHeadline.Next) payload.localized("widget.starts_in", "Starts in") else "" })
             views.setTextViewText(R.id.widget_medium_countdown_value,
-                if (headline is WidgetHeadline.Next) formatRemaining(payload, item.fastingStartInstant, now) else value)
+                if (headline is WidgetHeadline.Next && headline.days > 0) formatRemaining(payload, item.fastingStartInstant, now) else value)
         } else {
             views.setTextViewText(R.id.widget_medium_title, payload.localized("widget.title", "Ekadashi Calendar"))
             views.setTextViewText(R.id.widget_medium_badge, payload.localized("widget.notice", "NOTICE"))

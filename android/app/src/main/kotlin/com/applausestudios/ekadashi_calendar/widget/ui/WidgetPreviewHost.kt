@@ -14,10 +14,10 @@ import java.time.Instant
 
 /** A regular native view for Settings; no widget binding permission or fake AppWidget ID. */
 class WidgetPreviewHost(context: Context, private val onOpen: (String) -> Unit) : FrameLayout(context) {
-    fun update(payload: WidgetPayload, upcoming: Boolean, width: Int, height: Int, now: Instant) {
+    fun update(payload: WidgetPayload, upcoming: Boolean, width: Int, height: Int, now: Instant, liveCountdown: Boolean = false) {
         removeAllViews()
         val remote = if (upcoming) WidgetRenderer.upcoming(context, payload, now = now, height = height)
-            else WidgetRenderer.single(context, payload, width, height, now)
+            else WidgetRenderer.single(context, payload, width, height, now, liveCountdown)
         val content = remote.apply(context, this)
         addView(content, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
         if (upcoming) {

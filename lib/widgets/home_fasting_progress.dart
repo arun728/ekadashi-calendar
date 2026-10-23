@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:timezone/timezone.dart' as tz;
+import '../services/ekadashi_lifecycle.dart';
 import '../l10n/app_language.dart';
 import '../services/ekadashi_service.dart';
 import 'ios_style.dart';
 
-/// Today's remaining fast, in the Home city's civil day. It never appears on
-/// a future/past card, including after midnight while Parana is still ahead.
+/// Completed fasting progress, retained overnight and through Parana.
+/// The legacy helper name remains compatible with existing callers.
 class HomeFastingProgress extends StatelessWidget {
   const HomeFastingProgress({
     super.key,
@@ -16,26 +16,18 @@ class HomeFastingProgress extends StatelessWidget {
   final String language;
 
   static double? remaining(EkadashiDate event, DateTime now, String timezone) {
-    final local = tz.TZDateTime.from(now, tz.getLocation(timezone));
-    if (local.year != event.date.year ||
-        local.month != event.date.month ||
-        local.day != event.date.day) {
-      return null;
-    }
-    final start = DateTime.tryParse(event.fastingStartIso);
-    final end = DateTime.tryParse(event.paranaStartIso);
-    if (start == null || end == null || !end.isAfter(start)) return null;
-    return (end.difference(now).inMilliseconds /
-            end.difference(start).inMilliseconds)
-        .clamp(0.0, 1.0);
+    return EkadashiLifecycle.of(event, now, timezone).progress;
   }
 
   @override
   Widget build(BuildContext context) {
-    // Match iOS: round remaining time upwards, with exact boundaries stable.
-    final percent = (fraction.clamp(0.0, 1.0) * 100 - 0.000000001).ceil();
+    // Match iOS: round completed time downwards, with exact boundaries stable.
+    final percent = (fraction.clamp(0.0, 1.0) * 100 + 0.000000001).floor();
     return Semantics(
-      label: '$percent% ${AppStrings.translate('widget_remaining', language)}',
+      label: AppStrings.translate(
+        'widget_fast_done',
+        language,
+      ).replaceAll('{value0}', '$percent'),
       child: ExcludeSemantics(
         child: SizedBox.square(
           dimension: 48,

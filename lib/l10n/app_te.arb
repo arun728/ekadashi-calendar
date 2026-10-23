@@ -482,7 +482,7 @@
   "widget_days_to_go": "ఇంకా {value0} రోజులు",
   "widget_fast_done": "ఉపవాసం {value0}% పూర్తి",
   "widget_name_ekadashi": "ఏకాదశి",
-  "widget_desc_ekadashi": "నేటి ఏకాదశి మిగిలిన శాతం లేదా తదుపరి ఏకాదశి మరియు సమయాలు.",
+  "widget_desc_ekadashi": "ప్రస్తుత ఏకాదశి, ఉపవాస పురోగతి మరియు పారణ, లేదా తదుపరి ఏకాదశి మరియు దాని సమయాలు.",
   "widget_desc_upcoming": "రాబోయే ఐదు ఏకాదశులు. ఏకాదశిని తాకి దాని హోమ్ కార్డును తెరవండి.",
   "widget_preview_during": "ఎడమ: ఇప్పుడు · కుడి: తదుపరి ఏకాదశి సమయంలో",
   "event_reminder_today": "{value0} ఈ రోజు ({value1})",

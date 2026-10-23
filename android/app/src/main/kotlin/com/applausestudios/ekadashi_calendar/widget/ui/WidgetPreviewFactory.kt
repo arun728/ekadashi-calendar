@@ -28,7 +28,7 @@ private class NativePreview(context: Context, messenger: BinaryMessenger, viewId
     }
     private fun update(args: Map<*, *>) {
         val payload = WidgetPayload.fromJsonString(args["payloadJson"] as String)
-        host.update(payload, args["upcoming"] == true, (args["width"] as Number).toInt(), (args["height"] as Number).toInt(), Instant.parse(args["now"] as String))
+        host.update(payload, args["upcoming"] == true, (args["width"] as Number).toInt(), (args["height"] as Number).toInt(), Instant.parse(args["now"] as String), args["live"] == true)
     }
     override fun getView(): View = host
     override fun dispose() { channel.setMethodCallHandler(null); host.removeAllViews() }

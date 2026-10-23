@@ -162,7 +162,7 @@ class LauncherWidgetTest {
    // Provider updates arrive through broadcasts; wait for the visible heading.
    // The Ekadashi widget leads with today's Ekadashi or the next one (docs/ROADMAP.md Phase 6).
    val headings=(if(receiver=="UpcomingEkadashisWidgetReceiver") listOf("widget.upcoming_ekadashis")
-    else listOf("widget.next_ekadashi","widget.today_is_ekadashi")).map { payload.localizedStrings.getValue(it) }
+    else listOf("widget.next_ekadashi","widget.now","widget.parana")).map { payload.localizedStrings.getValue(it) }
    assertTrue("Translated heading $code on launcher",device.wait(Until.hasObject(By.text(Pattern.compile(headings.joinToString("|") { Pattern.quote(it) }))),20000))
    capture("${receiver}_$code")
    assertNotNull(device.findObject(By.res(packageName,rootId)))

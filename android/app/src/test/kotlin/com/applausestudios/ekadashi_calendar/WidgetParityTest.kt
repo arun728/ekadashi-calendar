@@ -33,17 +33,17 @@ class WidgetParityTest {
     @Test fun todayStartsAtLocalMidnightBeforeFastingStarts() {
         val day = LocalDate.parse("2026-10-22")
         val result = WidgetHeadline.of(payload(listOf(event(1, day))), Instant.parse("2026-10-22T01:00:00Z"))
-        assertTrue("Civil-date today before sunrise", result is WidgetHeadline.Today)
-        assertEquals(1.0, (result as WidgetHeadline.Today).progress, 0.001)
+        assertTrue("Countdown before sunrise", result is WidgetHeadline.Next)
+        assertEquals("05:00:00", (result as WidgetHeadline.Next).startCountdown())
     }
-    @Test fun progressIsRemainingRatherThanCompleted() {
+    @Test fun progressIsCompletedRatherThanRemaining() {
         val result = WidgetHeadline.of(payload(listOf(event(1, LocalDate.parse("2026-10-22")))), Instant.parse("2026-10-22T12:00:00Z"))
-        assertEquals(0.75, (result as WidgetHeadline.Today).progress, 0.001)
+        assertEquals(0.25, (result as WidgetHeadline.Today).progress, 0.001)
     }
-    @Test fun yesterdayParanaDoesNotReplaceTheNextEkadashi() {
+    @Test fun ongoingOvernightFastRemainsCurrent() {
         val result = WidgetHeadline.of(payload(listOf(event(1, LocalDate.parse("2026-10-22")), event(2, LocalDate.parse("2026-11-05")))), Instant.parse("2026-10-23T01:00:00Z"))
-        assertTrue(result is WidgetHeadline.Next)
-        assertEquals(2, result!!.item.id)
+        assertTrue(result is WidgetHeadline.Today)
+        assertEquals(1, result!!.item.id)
     }
     @Test fun upcomingIsExactlyFiveFutureDatesWithNearestFirst() {
         val today = LocalDate.now(ZoneOffset.UTC)

@@ -1,4 +1,7 @@
-# Ekadashi lifecycle — iOS first, Android deferred (23 October 2026)
+# Ekadashi lifecycle — iOS and Android (23 October 2026)
+
+Android was subsequently authorized before iOS review. See
+[Android implementation and verification](ANDROID_EKADASHI_LIFECYCLE.md).
 
 Approved behavior:
 
@@ -81,7 +84,7 @@ tradition. Android production source remains unchanged.
 
 The expanded native sweep reproduced 14 Tamil status/Bengali Small glyph-bound failures before adding badge scaling and a two-point horizontal and three-point bottom Small-widget ink bearing. Release exclusion passed for both built binaries. Verification: the full Swift core suite passes **284 tests**, including the worldwide sample below; full Flutter passes **799 tests** and the analyzer reports no issues. All **36 native app/rendering tests** pass. All **39 current Simulator UI test methods** pass across the full run and targeted reruns, including live countdown/start, automatic end advancement, all-language Parana previews/Details, city-date selection and filtering. Debug positive-control and Release exclusion audits pass; Release contains neither the simulation payload nor its controls.
 
-## Android port checklist — wait for explicit iOS approval
+## Original Android port checklist — subsequently authorized and implemented
 
 - Port the lifecycle and exact-boundary test vectors to Dart and Kotlin.
 - Change Home current selection/re-tap/foreground and resume advancement.
@@ -164,4 +167,4 @@ it preserves the original schedule and linked Calendar entry.
 Simulator edge regressions also reproduce and fix first-open Calendar selection
 using the device date instead of the Home city's date (New York is still on
 22 October when Chennai is on 23 October), and a contradictory empty message
-above a valid Parana entry under the Ekadashi filter. Port both fixes to Android.
+above a valid Parana entry under the Ekadashi filter. Both fixes are also included in the Android port (see ANDROID_EKADASHI_LIFECYCLE.md).

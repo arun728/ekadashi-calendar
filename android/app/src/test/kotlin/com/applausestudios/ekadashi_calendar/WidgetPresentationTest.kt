@@ -65,8 +65,8 @@ class WidgetPresentationTest {
         val p = payload(); var opened = ""
         val host = WidgetPreviewHost(context) { opened = it }
         host.update(p, false, 140, 160, now)
-        assertEquals(75, host.findViewById<ProgressBar>(R.id.widget_small_progress).progress)
-        assertTrue(host.findViewById<TextView>(R.id.widget_small_countdown_value).text.contains("75%"))
+        assertEquals(25, host.findViewById<ProgressBar>(R.id.widget_small_progress).progress)
+        assertTrue(host.findViewById<TextView>(R.id.widget_small_countdown_value).text.contains("25%"))
         host.findViewById<View>(R.id.widget_small_root).performClick()
         assertEquals(p.nextEkadashi!!.occurrenceUid, opened)
         host.update(p, true, 320, 280, now)

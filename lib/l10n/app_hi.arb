@@ -482,7 +482,7 @@
   "widget_days_to_go": "{value0} दिन बाकी",
   "widget_fast_done": "व्रत का {value0}% पूरा",
   "widget_name_ekadashi": "एकादशी",
-  "widget_desc_ekadashi": "आज की एकादशी का शेष प्रतिशत, या अगली एकादशी और उसके समय।",
+  "widget_desc_ekadashi": "वर्तमान एकादशी, व्रत की प्रगति और पारण, या अगली एकादशी और उसका समय।",
   "widget_desc_upcoming": "आने वाली पाँच एकादशियाँ। किसी एकादशी पर टैप करके उसका होम कार्ड खोलें।",
   "widget_preview_during": "बाएँ: अभी · दाएँ: अगली एकादशी के दौरान",
   "event_reminder_today": "{value0} आज है ({value1})",

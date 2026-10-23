@@ -4,8 +4,8 @@
     <string name="widget_a_title">ఏకాదశి</string>
     <string name="widget_b_title">నేటి ఏకాదశి</string>
     <string name="widget_c_title">రాబోయే ఏకాదశులు</string>
-    <string name="widget_a_description">నేటి ఏకాదశి మిగిలిన శాతం లేదా తదుపరి ఏకాదశి మరియు సమయాలు.</string>
-    <string name="widget_b_description">నేటి ఏకాదశి మిగిలిన శాతం లేదా తదుపరి ఏకాదశి మరియు సమయాలు.</string>
+    <string name="widget_a_description">ప్రస్తుత ఏకాదశి, ఉపవాస పురోగతి మరియు పారణ, లేదా తదుపరి ఏకాదశి మరియు దాని సమయాలు.</string>
+    <string name="widget_b_description">ప్రస్తుత ఏకాదశి, ఉపవాస పురోగతి మరియు పారణ, లేదా తదుపరి ఏకాదశి మరియు దాని సమయాలు.</string>
     <string name="widget_c_description">రాబోయే ఐదు ఏకాదశులు. ఏకాదశిని తాకి దాని హోమ్ కార్డును తెరవండి.</string>
     <string name="widget_title">ఏకాదశి క్యాలెండర్</string>
     <string name="widget_next_ekadashi">తదుపరి ఏకాదశి</string>
@@ -50,4 +50,5 @@
     <string name="widget_days_to_go">ఇంకా {value0} రోజులు</string>
     <string name="widget_remaining">మిగిలింది</string>
     <string name="widget_no_next">అందుబాటులో ఉన్న పట్టికలో తదుపరి ఏకాదశి లేదు</string>
+    <string name="widget_parana_short">పారణ</string>
 </resources>

@@ -28,8 +28,13 @@ TDD evidence: `9cc2eed` records the missing ring, blocked-button callback and ol
 
 Final recording/layout follow-up: existing saved records stay editable before Parana, and the ring stroke stays inside its frame. Both were reproduced by failing tests and corrected in `82b6322`. The optional Android Glass Look and final device evidence are documented in [ANDROID_GLASS_LOOK.md](ANDROID_GLASS_LOOK.md).
 
-23 October: the iOS-first lifecycle correction is **not yet ported to Android**.
+Earlier on 23 October, the iOS-first lifecycle correction was initially deferred on Android.
 The approved countdown → Now/filling progress → Parana/100% → Passed behavior,
 Calendar/Details changes and Debug-only test clock are tracked with an explicit
 Android port checklist in [IOS_EKADASHI_LIFECYCLE.md](IOS_EKADASHI_LIFECYCLE.md).
-Wait for Arun's approval of iOS before starting that Android port.
+That deferral was superseded by Arun's later explicit authorization below.
+
+Later on 23 October Arun explicitly authorized the port before his iOS review.
+The lifecycle now fills progress and persists through Parana end on Android;
+the original today-only/remaining behavior above is superseded. See
+[Android lifecycle implementation](ANDROID_EKADASHI_LIFECYCLE.md).

@@ -1,0 +1,142 @@
+[
+  {
+    "id": "chennai",
+    "label": "Chennai",
+    "latitude": 13.0827,
+    "longitude": 80.2707,
+    "timezone": "Asia/Kolkata"
+  },
+  {
+    "id": "london",
+    "label": "London",
+    "latitude": 51.5074,
+    "longitude": -0.1278,
+    "timezone": "Europe/London"
+  },
+  {
+    "id": "new-york",
+    "label": "New York",
+    "latitude": 40.7128,
+    "longitude": -74.006,
+    "timezone": "America/New_York"
+  },
+  {
+    "id": "sydney",
+    "label": "Sydney",
+    "latitude": -33.8688,
+    "longitude": 151.2093,
+    "timezone": "Australia/Sydney"
+  },
+  {
+    "id": "kathmandu",
+    "label": "Kathmandu",
+    "latitude": 27.7172,
+    "longitude": 85.324,
+    "timezone": "Asia/Kathmandu"
+  },
+  {
+    "id": "adelaide",
+    "label": "Adelaide",
+    "latitude": -34.9285,
+    "longitude": 138.6007,
+    "timezone": "Australia/Adelaide"
+  },
+  {
+    "id": "chatham",
+    "label": "Chatham",
+    "latitude": -43.9535,
+    "longitude": -176.5597,
+    "timezone": "Pacific/Chatham"
+  },
+  {
+    "id": "honolulu",
+    "label": "Honolulu",
+    "latitude": 21.3099,
+    "longitude": -157.8581,
+    "timezone": "Pacific/Honolulu"
+  },
+  {
+    "id": "geonames-2394824",
+    "label": "Comé",
+    "latitude": 6.40764,
+    "longitude": 1.88198,
+    "timezone": "Africa/Porto-Novo"
+  },
+  {
+    "id": "geonames-933004",
+    "label": "Tlokweng",
+    "latitude": -24.66861,
+    "longitude": 25.97111,
+    "timezone": "Africa/Gaborone"
+  },
+  {
+    "id": "geonames-5001929",
+    "label": "Midland",
+    "latitude": 43.61558,
+    "longitude": -84.24721,
+    "timezone": "America/Detroit"
+  },
+  {
+    "id": "geonames-3472666",
+    "label": "Alegre",
+    "latitude": -20.76361,
+    "longitude": -41.53306,
+    "timezone": "America/Sao_Paulo"
+  },
+  {
+    "id": "geonames-2023469",
+    "label": "Irkutsk",
+    "latitude": 52.29566,
+    "longitude": 104.29076,
+    "timezone": "Asia/Irkutsk"
+  },
+  {
+    "id": "geonames-2029156",
+    "label": "Sühbaatar",
+    "latitude": 50.23139,
+    "longitude": 106.20778,
+    "timezone": "Asia/Ulaanbaatar"
+  },
+  {
+    "id": "geonames-8012683",
+    "label": "Labrador",
+    "latitude": -27.94402,
+    "longitude": 153.39815,
+    "timezone": "Australia/Brisbane"
+  },
+  {
+    "id": "geonames-2154481",
+    "label": "Officer",
+    "latitude": -38.05916,
+    "longitude": 145.40947,
+    "timezone": "Australia/Melbourne"
+  },
+  {
+    "id": "geonames-2936871",
+    "label": "Dinslaken",
+    "latitude": 51.56227,
+    "longitude": 6.7434,
+    "timezone": "Europe/Berlin"
+  },
+  {
+    "id": "geonames-2966749",
+    "label": "Ballincollig",
+    "latitude": 51.88333,
+    "longitude": -8.58333,
+    "timezone": "Europe/Dublin"
+  },
+  {
+    "id": "geonames-2105033",
+    "label": "Nggosi",
+    "latitude": -9.43056,
+    "longitude": 159.92103,
+    "timezone": "Pacific/Guadalcanal"
+  },
+  {
+    "id": "geonames-2187404",
+    "label": "Manukau City",
+    "latitude": -36.99282,
+    "longitude": 174.87986,
+    "timezone": "Pacific/Auckland"
+  }
+]

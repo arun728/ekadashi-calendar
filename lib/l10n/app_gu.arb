@@ -454,7 +454,7 @@
   "widget_days_to_go": "{value0} દિવસ બાકી",
   "widget_fast_done": "ઉપવાસ {value0}% પૂર્ણ",
   "widget_name_ekadashi": "એકાદશી",
-  "widget_desc_ekadashi": "આજની એકાદશીની બાકી ટકાવારી અથવા આગામી એકાદશી અને તેના સમય.",
+  "widget_desc_ekadashi": "વર્તમાન એકાદશી, ઉપવાસની પ્રગતિ અને પારણું, અથવા આગામી એકાદશી અને તેના સમય.",
   "widget_desc_upcoming": "આગામી પાંચ એકાદશીઓ. એકાદશીનું હોમ કાર્ડ ખોલવા તેના પર ટૅપ કરો.",
   "widget_preview_during": "ડાબે: હમણાં · જમણે: આગામી એકાદશી દરમિયાન",
   "event_reminder_today": "{value0} આજે છે ({value1})",

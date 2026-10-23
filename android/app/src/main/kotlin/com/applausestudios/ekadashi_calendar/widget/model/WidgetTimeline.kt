@@ -12,12 +12,11 @@ object WidgetTimeline {
 
     fun remaining(payload: WidgetPayload, now: Instant = Instant.now()): List<EkadashiItem> {
         val today = now.atZone(payload.zoneId()).toLocalDate().toString()
-        return all(payload).filter { it.date >= today }
+        return all(payload).filter { it.paranaEndInstant?.let { end -> now < end } ?: (it.date >= today) }
     }
 
     fun upcoming(payload: WidgetPayload, now: Instant = Instant.now()): List<EkadashiItem> {
-        val today = now.atZone(payload.zoneId()).toLocalDate().toString()
-        return all(payload).filter { it.date > today }.take(5)
+        return all(payload).filter { it.fastingStartInstant?.let { start -> now < start } == true }.take(5)
     }
 
     /** The system may deliver work later; selection is always evaluated at render time. */

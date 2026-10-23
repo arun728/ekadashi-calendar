@@ -564,7 +564,7 @@
     }
   },
   "widget_name_ekadashi": "Ekadashi",
-  "widget_desc_ekadashi": "Today’s Ekadashi with the percentage remaining, or the next Ekadashi and its timings.",
+  "widget_desc_ekadashi": "The current Ekadashi, fasting progress and Parana, or the next Ekadashi and its timings.",
   "widget_desc_upcoming": "The next five upcoming Ekadashis. Tap an Ekadashi to open its Home card.",
   "widget_preview_during": "Left: now · Right: during the next Ekadashi",
   "event_reminder_today": "{value0} is today ({value1})",

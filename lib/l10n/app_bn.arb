@@ -454,7 +454,7 @@
   "widget_days_to_go": "আর {value0} দিন",
   "widget_fast_done": "উপবাস {value0}% সম্পন্ন",
   "widget_name_ekadashi": "একাদশী",
-  "widget_desc_ekadashi": "আজকের একাদশীর বাকি শতাংশ অথবা পরবর্তী একাদশী ও তার সময়।",
+  "widget_desc_ekadashi": "বর্তমান একাদশী, উপবাসের অগ্রগতি ও পারণ, অথবা পরবর্তী একাদশী এবং তার সময়।",
   "widget_desc_upcoming": "পরবর্তী পাঁচটি একাদশী। কোনো একাদশীতে ট্যাপ করে তার হোম কার্ড খুলুন।",
   "widget_preview_during": "বাঁয়ে: এখন · ডানে: পরবর্তী একাদশীর সময়",
   "event_reminder_today": "{value0} আজ ({value1})",

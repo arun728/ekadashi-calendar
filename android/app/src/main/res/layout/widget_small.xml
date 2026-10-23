@@ -122,7 +122,7 @@
         android:textStyle="bold" />
 
     <!-- Countdown Value -->
-    <TextView
+    <Chronometer
             android:maxLines="1"
             android:ellipsize="end"
         android:id="@+id/widget_small_countdown_value"

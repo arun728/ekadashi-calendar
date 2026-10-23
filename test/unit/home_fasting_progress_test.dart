@@ -17,19 +17,27 @@ void main() {
     description: '',
     fastingStartIso: start,
     paranaStartIso: end,
+    paranaEndIso:
+        DateTime.tryParse(
+          end,
+        )?.add(const Duration(hours: 2)).toIso8601String() ??
+        '',
   );
   test('remaining fraction is clamped and only on the Home city civil day', () {
     double? value(String now, {String zone = 'Asia/Kolkata'}) =>
         HomeFastingProgress.remaining(event(), DateTime.parse(now), zone);
-    expect(value('2026-10-21T20:00:00Z'), 1); // already 22 October in Chennai
-    expect(value('2026-10-22T00:30:00Z'), 1);
+    expect(
+      value('2026-10-21T20:00:00Z'),
+      isNull,
+    ); // already 22 October in Chennai
+    expect(value('2026-10-22T00:30:00Z'), 0);
     expect(value('2026-10-22T12:30:00Z'), .5);
     expect(
       value('2026-10-22T18:30:00Z'),
-      isNull,
+      .75,
     ); // next civil day, even before Parana
     expect(value('2026-10-21T18:29:59Z'), isNull);
-    expect(value('2026-10-22T00:30:00Z', zone: 'America/Los_Angeles'), isNull);
+    expect(value('2026-10-22T00:30:00Z', zone: 'America/Los_Angeles'), 0);
   });
   test(
     'invalid intervals are hidden; completed same-day intervals show zero',
@@ -51,7 +59,7 @@ void main() {
           now,
           'Asia/Kolkata',
         ),
-        0,
+        isNull,
       );
     },
   );

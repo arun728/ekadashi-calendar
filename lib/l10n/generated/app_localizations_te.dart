@@ -1485,7 +1485,7 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get widget_desc_ekadashi =>
-      'నేటి ఏకాదశి మిగిలిన శాతం లేదా తదుపరి ఏకాదశి మరియు సమయాలు.';
+      'ప్రస్తుత ఏకాదశి, ఉపవాస పురోగతి మరియు పారణ, లేదా తదుపరి ఏకాదశి మరియు దాని సమయాలు.';
 
   @override
   String get widget_desc_upcoming =>

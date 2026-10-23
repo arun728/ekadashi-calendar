@@ -191,7 +191,7 @@ void main() {
     },
   );
   testWidgets(
-    'today ring refreshes each minute and disappears at city midnight',
+    'completed ring refreshes each minute and persists across city midnight',
     (tester) async {
       final harness = AppHarness();
       await tester.runAsync(harness.install);
@@ -208,10 +208,11 @@ void main() {
         final before = amount();
         now = now.add(const Duration(minutes: 1));
         await tester.pump(const Duration(minutes: 1));
-        expect(amount(), lessThan(before));
+        expect(amount(), greaterThan(before));
         now = DateTime.utc(2026, 10, 22, 18, 30);
         await tester.pump(const Duration(minutes: 1));
-        expect(find.byKey(const Key('home_fasting_progress')), findsNothing);
+        expect(find.byKey(const Key('home_fasting_progress')), findsOneWidget);
+        expect(amount(), closeTo(.75, .01));
         await tester.pumpWidget(const SizedBox());
       });
     },
@@ -267,5 +268,22 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('vrat_record_save')), findsNothing);
     await tester.pumpWidget(const SizedBox());
+  });
+  testWidgets('Home advances at Parana end without a retap', (tester) async {
+    final harness = AppHarness();
+    await tester.runAsync(harness.install);
+    addTearDown(harness.uninstall);
+    var now = DateTime.utc(2026, 10, 23, 4, 24, 59);
+    await withClock(Clock(() => now), () async {
+      await tester.pumpWidget(harness.app());
+      await tester.pumpAndSettle();
+      expect(find.text('Parana'), findsOneWidget);
+      now = DateTime.utc(2026, 10, 23, 4, 25);
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pumpAndSettle();
+      expect(find.text('Rama Ekadashi'), findsOneWidget);
+      expect(find.text('21 / 24'), findsOneWidget);
+      await tester.pumpWidget(const SizedBox());
+    });
   });
 }

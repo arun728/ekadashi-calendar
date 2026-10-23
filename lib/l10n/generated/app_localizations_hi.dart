@@ -1475,7 +1475,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get widget_desc_ekadashi =>
-      'आज की एकादशी का शेष प्रतिशत, या अगली एकादशी और उसके समय।';
+      'वर्तमान एकादशी, व्रत की प्रगति और पारण, या अगली एकादशी और उसका समय।';
 
   @override
   String get widget_desc_upcoming =>

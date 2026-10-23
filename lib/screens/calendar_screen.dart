@@ -3,6 +3,9 @@ import 'premium_screen.dart';
 import '../services/premium_service.dart';
 import '../widgets/ios_style.dart';
 import 'dart:async';
+import '../services/display_clock.dart';
+import '../services/ekadashi_lifecycle.dart';
+import '../widgets/ekadashi_lifecycle_status.dart';
 import '../models/calendar_entry.dart';
 import '../models/calendar_day_merge.dart';
 import '../data/calendar_entry_repository.dart';
@@ -346,7 +349,10 @@ class CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
-  DateTime _now() => (widget.clock ?? DateTime.now)();
+  DateTime _now() => EkadashiLifecycle.localDay(
+    (widget.clock ?? DisplayClock.now)(),
+    _settings?.city.timeZoneId ?? widget.currentTimezone ?? 'IST',
+  );
 
   bool _isPremium() => context.read<PremiumService?>()?.isPremium == true;
 
@@ -1057,6 +1063,11 @@ class CalendarScreenState extends State<CalendarScreen> {
   /// Ekadashi filter) and its Google and custom entries.
   Widget _selectedDaySection(LanguageService lang) {
     final ekadashi = _selectedEkadashi;
+    final parana = EkadashiCalendarDay(
+      widget.ekadashiList,
+      _selectedDay,
+      _settings?.city.timeZoneId ?? widget.currentTimezone ?? 'IST',
+    ).parana;
     final showEkadashi =
         _filter == CalendarFilter.all || _filter == CalendarFilter.ekadashi;
     return Column(
@@ -1064,7 +1075,7 @@ class CalendarScreenState extends State<CalendarScreen> {
       children: [
         if (ekadashi != null && showEkadashi)
           _ekadashiCard(ekadashi)
-        else if (_filter == CalendarFilter.ekadashi)
+        else if (_filter == CalendarFilter.ekadashi && parana.isEmpty)
           Text(
             lang.translate('no_ekadashi'),
             key: const Key('calendar_no_ekadashi'),
@@ -1073,11 +1084,14 @@ class CalendarScreenState extends State<CalendarScreen> {
               color: IosColors.secondary(context),
             ),
           ),
+        if (showEkadashi)
+          for (final event in parana) _ekadashiCard(event, paranaOnly: true),
         if (_filter != CalendarFilter.ekadashi) ...[
           if (ekadashi != null && showEkadashi) const SizedBox(height: 10),
           DayEntriesList(
             // An Ekadashi is the day's entry: no "No entries for this day".
-            showEmptyText: ekadashi == null || !showEkadashi,
+            showEmptyText:
+                (ekadashi == null && parana.isEmpty) || !showEkadashi,
             items: CalendarDayMerge.merge(
               day: _selectedDay,
               ekadashis: const [],
@@ -1119,7 +1133,7 @@ class CalendarScreenState extends State<CalendarScreen> {
 
   /// The selected day's Ekadashi with its fasting times and View Details
   /// (CalendarEkadashiCard); recording happens on Home and Journey.
-  Widget _ekadashiCard(EkadashiDate ekadashi) {
+  Widget _ekadashiCard(EkadashiDate ekadashi, {bool paranaOnly = false}) {
     final lang = Provider.of<LanguageService>(context);
     final tracker = Provider.of<VratTrackerService>(context);
     final language = lang.currentLocale.languageCode;
@@ -1172,11 +1186,22 @@ class CalendarScreenState extends State<CalendarScreen> {
             ],
           ),
           const SizedBox(height: 10),
-          Text(
-            '${lang.translate('start_fasting')}: '
-            '${AppStrings.localizeClock(ekadashi.fastStartTime, language)}',
-            style: line,
+          LifecycleBuilder(
+            event: ekadashi,
+            timezone:
+                _settings?.city.timeZoneId ?? widget.currentTimezone ?? 'IST',
+            builder: (context, state) => Text(
+              state.label(language),
+              key: const Key('calendar_lifecycle_status'),
+              style: line.copyWith(color: IosColors.teal),
+            ),
           ),
+          if (!paranaOnly)
+            Text(
+              '${lang.translate('start_fasting')}: '
+              '${AppStrings.localizeClock(ekadashi.fastStartTime, language)}',
+              style: line,
+            ),
           const SizedBox(height: 10),
           Text('${lang.translate('break_fasting')}: $breakTime', style: line),
           const SizedBox(height: 10),

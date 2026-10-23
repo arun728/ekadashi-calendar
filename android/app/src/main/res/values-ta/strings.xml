@@ -4,8 +4,8 @@
     <string name="widget_a_title">ஏகாதசி</string>
     <string name="widget_b_title">இன்றைய ஏகாதசி</string>
     <string name="widget_c_title">வரவிருக்கும் ஏகாதசிகள்</string>
-    <string name="widget_a_description">இன்றைய ஏகாதசியின் மீதமுள்ள சதவீதம் அல்லது அடுத்த ஏகாதசியும் அதன் நேரங்களும்.</string>
-    <string name="widget_b_description">இன்றைய ஏகாதசியின் மீதமுள்ள சதவீதம் அல்லது அடுத்த ஏகாதசியும் அதன் நேரங்களும்.</string>
+    <string name="widget_a_description">நடப்பு ஏகாதசி, விரத முன்னேற்றம் மற்றும் பாரணை, அல்லது அடுத்த ஏகாதசியும் அதன் நேரங்களும்.</string>
+    <string name="widget_b_description">நடப்பு ஏகாதசி, விரத முன்னேற்றம் மற்றும் பாரணை, அல்லது அடுத்த ஏகாதசியும் அதன் நேரங்களும்.</string>
     <string name="widget_c_description">அடுத்து வரும் ஐந்து ஏகாதசிகள். ஓர் ஏகாதசியைத் தொட்டு அதன் முகப்புப் பக்கத்தைத் திறக்கவும்.</string>
     <string name="widget_title">ஏகாதசி காலண்டர்</string>
     <string name="widget_next_ekadashi">அடுத்த ஏகாதசி</string>
@@ -50,4 +50,5 @@
     <string name="widget_days_to_go">இன்னும் {value0} நாட்கள்</string>
     <string name="widget_remaining">மீதமுள்ளது</string>
     <string name="widget_no_next">கிடைக்கும் அட்டவணையில் அடுத்த ஏகாதசி இல்லை</string>
+    <string name="widget_parana_short">பாரணை</string>
 </resources>

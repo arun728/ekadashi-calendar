@@ -2833,7 +2833,7 @@ abstract class AppLocalizations {
   /// No description provided for @widget_desc_ekadashi.
   ///
   /// In en, this message translates to:
-  /// **'Today’s Ekadashi with the percentage remaining, or the next Ekadashi and its timings.'**
+  /// **'The current Ekadashi, fasting progress and Parana, or the next Ekadashi and its timings.'**
   String get widget_desc_ekadashi;
 
   /// No description provided for @widget_desc_upcoming.

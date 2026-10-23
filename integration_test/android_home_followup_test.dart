@@ -65,7 +65,7 @@ void main() {
             await frames(15);
             final ring = find.byKey(const Key('home_fasting_progress'));
             expect(ring, findsOneWidget);
-            final today = find.text(language.translate('today'));
+            final today = find.text(language.translate('widget_now'));
             expect(
               tester.getRect(ring).right,
               lessThan(tester.getRect(today).left),

@@ -9,18 +9,20 @@ import java.time.temporal.ChronoUnit
 sealed class WidgetHeadline {
     abstract val item: EkadashiItem
 
-    /** Today's civil date: fraction of the fast remaining, 0..1. */
-    data class Today(override val item: EkadashiItem, val progress: Double) : WidgetHeadline()
+    /** Active fasting or Parana: completed fraction, 0..1 (including overnight). */
+    data class Today(override val item: EkadashiItem, val progress: Double, val state: WidgetState = WidgetState.FASTING_ACTIVE) : WidgetHeadline()
 
     /** The next Ekadashi and the calendar days until it. */
-    data class Next(override val item: EkadashiItem, val days: Long) : WidgetHeadline()
+    data class Next(override val item: EkadashiItem, val days: Long, val secondsUntilStart: Long? = null) : WidgetHeadline()
 
     companion object {
         fun of(payload: WidgetPayload, now: Instant = Instant.now()): WidgetHeadline? {
             val item = WidgetTimeline.remaining(payload, now).firstOrNull() ?: return null
             val today = now.atZone(payload.zoneId()).toLocalDate()
-            return if (LocalDate.parse(item.date) == today) Today(item, 1 - item.fastProgress(now))
-                else Next(item, ChronoUnit.DAYS.between(today, LocalDate.parse(item.date)))
+            val days = ChronoUnit.DAYS.between(today, LocalDate.parse(item.date))
+            val start = item.fastingStartInstant
+            return if (start != null && now >= start) Today(item, item.fastProgress(now), item.stateAt(now))
+                else Next(item, days, if (days <= 0 && start != null) ((java.time.Duration.between(now, start).toMillis() + 999) / 1000).coerceAtLeast(0) else null)
         }
     }
 }
@@ -48,3 +50,7 @@ private val legacyZones = mapOf(
 /** The schedule's zone; older payloads stored an abbreviation. */
 fun WidgetPayload.zoneId(): ZoneId =
     runCatching { ZoneId.of(legacyZones[metadata.timezone] ?: metadata.timezone) }.getOrDefault(ZoneId.of("Asia/Kolkata"))
+
+fun WidgetHeadline.Next.startCountdown(): String? = secondsUntilStart?.let { seconds ->
+    "%02d:%02d:%02d".format(java.util.Locale.ROOT, seconds / 3600, seconds / 60 % 60, seconds % 60)
+}

@@ -51,7 +51,7 @@ class WidgetRedesignTest {
   val e=event(1,-21600)
   val headline=WidgetHeadline.of(payload(e),now)
   assertTrue(headline is WidgetHeadline.Today)
-  assertEquals(1-e.fastProgress(now),(headline as WidgetHeadline.Today).progress,0.01)
+  assertEquals(e.fastProgress(now),(headline as WidgetHeadline.Today).progress,0.01)
  }
  @Test fun headlineShowsNextWithCalendarDaysToGo() {
   val e=event(1,14*86400L)
@@ -62,12 +62,12 @@ class WidgetRedesignTest {
  }
  @Test fun ekadashiWidgetLeadsWithTodayAndProgressDuringTheFast() {
   val view=render(NextEkadashiWidgetReceiver(),payload(event(1,-21600)))
-  assertEquals("Today is Ekadashi",text(view,R.id.widget_small_badge))
+  assertEquals("Now",text(view,R.id.widget_small_badge))
   assertEquals("Event 1",text(view,R.id.widget_small_name))
-  assertEquals("remaining",text(view,R.id.widget_small_countdown_label))
+  assertEquals("",text(view,R.id.widget_small_countdown_label))
   val progress=view.findViewById<ProgressBar>(R.id.widget_small_progress)
   assertEquals(View.VISIBLE,progress.visibility)
-  assertEquals((1-event(1,-21600).fastProgress(now))*100,progress.progress.toDouble(),2.0)
+  assertEquals((event(1,-21600).fastProgress(now))*100,progress.progress.toDouble(),2.0)
  }
  @Test fun ekadashiWidgetShowsNextEkadashiAndDaysToGo() {
   val e=event(1,14*86400L)
@@ -79,7 +79,7 @@ class WidgetRedesignTest {
  }
  @Test fun retiredTodayWidgetKeepsWorkingWithTheEkadashiLayout() {
   val view=render(EkadashiTodayWidgetReceiver(),payload(event(1,-21600)))
-  assertEquals("Today is Ekadashi",text(view,R.id.widget_small_badge))
+  assertEquals("Now",text(view,R.id.widget_small_badge))
  }
  @Test fun upcomingWidgetIsAListWithoutTheHeroCard() {
   val view=render(UpcomingEkadashisWidgetReceiver(),payload(event(1,86400),event(2,15*86400L)))

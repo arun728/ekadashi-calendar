@@ -9,6 +9,7 @@ object WidgetLocalization {
   val config=Configuration(context.resources.configuration);config.setLocale(Locale.forLanguageTag(code))
   val localized=context.createConfigurationContext(config)
   return mapOf(
+   "widget.parana" to localized.getString(R.string.widget_parana_short),
    "widget.today_is_ekadashi" to localized.getString(R.string.widget_today_is_ekadashi),
    "widget.tomorrow" to localized.getString(R.string.widget_tomorrow),
    "widget.days_to_go" to localized.getString(R.string.widget_days_to_go),

@@ -249,7 +249,7 @@
                 android:textSize="@dimen/widget_text_countdown_label"
                 android:textStyle="bold" />
 
-            <TextView
+            <Chronometer
             android:maxLines="1"
             android:ellipsize="end"
                 android:id="@+id/widget_medium_countdown_value"

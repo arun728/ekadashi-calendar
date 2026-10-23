@@ -15,9 +15,10 @@ class NativeWidgetPreview extends StatefulWidget {
     required this.height,
     required this.now,
     required this.onOpenOccurrence,
+    this.live = false,
   });
   final Map<String, dynamic> payload;
-  final bool upcoming;
+  final bool upcoming, live;
   final double width, height;
   final DateTime now;
   final ValueChanged<String> onOpenOccurrence;
@@ -31,6 +32,7 @@ class _NativeWidgetPreviewState extends State<NativeWidgetPreview> {
   Map<String, Object> get _arguments => {
     'payloadJson': jsonEncode(widget.payload),
     'upcoming': widget.upcoming,
+    'live': widget.live,
     'width': widget.width,
     'height': widget.height,
     'now': widget.now.toUtc().toIso8601String(),

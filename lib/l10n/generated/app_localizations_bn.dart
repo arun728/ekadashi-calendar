@@ -1484,7 +1484,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get widget_desc_ekadashi =>
-      'আজকের একাদশীর বাকি শতাংশ অথবা পরবর্তী একাদশী ও তার সময়।';
+      'বর্তমান একাদশী, উপবাসের অগ্রগতি ও পারণ, অথবা পরবর্তী একাদশী এবং তার সময়।';
 
   @override
   String get widget_desc_upcoming =>

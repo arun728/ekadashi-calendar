@@ -54,14 +54,9 @@ class WidgetSyncManager {
     final events = {
       for (final event in ekadashiList) event.occurrenceUid: event,
     }.values.toList()..sort((a, b) => a.date.compareTo(b.date));
-    final localDay = DateTime(local.year, local.month, local.day);
     final remaining = events
         .where(
-          (e) => !DateTime(
-            e.date.year,
-            e.date.month,
-            e.date.day,
-          ).isBefore(localDay),
+          (e) => DateTime.tryParse(e.paranaEndIso)?.isAfter(clock) ?? false,
         )
         .toList();
     final next = remaining.firstOrNull;
@@ -108,6 +103,7 @@ class WidgetSyncManager {
     const keys = {
       'title': 'app_title',
       'remaining': 'widget_remaining',
+      'parana': 'panchang_parana',
       'no_next': 'widget_no_next',
       'next_ekadashi': 'next_ekadashi',
       'fasting_active': 'fasting_active',
@@ -149,7 +145,7 @@ class WidgetSyncManager {
     final upcoming = events
         .where(
           (e) =>
-              DateTime(e.date.year, e.date.month, e.date.day).isAfter(localDay),
+              (DateTime.tryParse(e.fastingStartIso)?.isAfter(clock) ?? false),
         )
         .take(5)
         .map(item)

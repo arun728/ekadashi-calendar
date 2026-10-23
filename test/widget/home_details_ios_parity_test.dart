@@ -484,7 +484,11 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(tracker.getRecordByUid(event.occurrenceUid), isNotNull);
-      DisplayClock.setTestClock(() => DateTime.parse(event.paranaStartIso).subtract(const Duration(hours: 1)));
+      DisplayClock.setTestClock(
+        () => DateTime.parse(
+          event.paranaStartIso,
+        ).subtract(const Duration(hours: 1)),
+      );
       addTearDown(() => DisplayClock.setTestClock(null));
       await openDetails(tester);
       final button = find.byKey(const Key('details_record_vrat'));

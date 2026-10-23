@@ -69,7 +69,7 @@ class WidgetLinkContractTest {
     }
     @Test fun archiveRollsPastTheFiveVisibleDatesAcrossYearsAndSurvivesCacheRoundTrip() {
         val p = payload(); val first=p.nextEkadashi!!
-        val later=first.copy(id=2601,date="2028-01-01",occurrenceUid="ekadashi:2028:01")
+        val later=first.copy(id=2601,date="2028-01-01",occurrenceUid="ekadashi:2028:01",fastingStartUTC="2028-01-01T06:00:00Z",paranaStartUTC="2028-01-02T06:00:00Z",paranaEndUTC="2028-01-02T08:00:00Z")
         val archive=p.copy(schedule=listOf(first,later))
         val restored=WidgetPayload.fromJsonString(archive.toJsonString())
         assertEquals(later.occurrenceUid,WidgetHeadline.of(restored,Instant.parse("2027-12-31T12:00:00Z"))!!.item.occurrenceUid)

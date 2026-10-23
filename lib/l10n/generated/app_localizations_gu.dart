@@ -1475,7 +1475,7 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get widget_desc_ekadashi =>
-      'આજની એકાદશીની બાકી ટકાવારી અથવા આગામી એકાદશી અને તેના સમય.';
+      'વર્તમાન એકાદશી, ઉપવાસની પ્રગતિ અને પારણું, અથવા આગામી એકાદશી અને તેના સમય.';
 
   @override
   String get widget_desc_upcoming =>

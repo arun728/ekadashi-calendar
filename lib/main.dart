@@ -1,6 +1,7 @@
 import 'dart:io';
-import 'package:clock/clock.dart';
+import 'services/display_clock.dart';
 import 'widgets/home_fasting_progress.dart';
+import 'services/ekadashi_lifecycle.dart';
 import 'widgets/glass_look.dart';
 import 'services/premium_service.dart';
 import 'services/play_billing_service.dart';
@@ -53,7 +54,6 @@ import 'screens/vrat_tracker/vrat_tracker_screen.dart';
 import 'screens/vrat_tracker/record_vrat_dialog.dart';
 import 'screens/vrat_tracker/achievement_unlock_dialog.dart';
 import 'models/vrat_tracker_models.dart';
-import 'package:timezone/timezone.dart' as tz;
 import 'widgets/app_icons.dart';
 
 void main() async {
@@ -320,10 +320,58 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     super.dispose();
   }
 
+  void refreshLifecycle() {
+    _startHomeClock();
+    if (mounted) setState(() {});
+  }
+
+  DateTime? _lastHomeNow;
+  bool _homeClockActive = true;
   void _startHomeClock() {
     _homeClockTimer?.cancel();
-    _homeClockTimer = Timer.periodic(const Duration(minutes: 1), (_) {
-      if (mounted && _currentIndex == 0) setState(() {});
+    if (!mounted || !_homeClockActive) return;
+    final now = DisplayClock.now();
+    final events = _allEkadashis;
+    if (events.isNotEmpty &&
+        _lastHomeNow != null &&
+        _ekadashiList.isNotEmpty &&
+        _currentPage < _ekadashiList.length) {
+      final previous =
+          events[EkadashiLifecycle.currentIndex(
+            events,
+            _lastHomeNow!,
+            _getIANATimezone(_currentTimezone),
+          )];
+      final end = DateTime.tryParse(previous.paranaEndIso);
+      if (previous.occurrenceUid == _ekadashiList[_currentPage].occurrenceUid &&
+          end != null &&
+          !now.isBefore(end)) {
+        _scrollToNextEkadashi(animate: false);
+        _syncSearchAndWidgets();
+      }
+    }
+    _lastHomeNow = now;
+    var delay = const Duration(hours: 1);
+    if (_currentIndex == 0 &&
+        !_tabPushed &&
+        _currentPage < _ekadashiList.length) {
+      final event = _ekadashiList[_currentPage];
+      delay = EkadashiLifecycle.of(
+        event,
+        now,
+        _getIANATimezone(_currentTimezone),
+      ).nextDelay(event, now, _getIANATimezone(_currentTimezone));
+    }
+    for (final event in events) {
+      final end = DateTime.tryParse(event.paranaEndIso);
+      if (end != null && end.isAfter(now) && end.difference(now) < delay) {
+        delay = end.difference(now);
+      }
+    }
+    _homeClockTimer = Timer(delay, () {
+      if (!mounted || !_homeClockActive) return;
+      if (_currentIndex == 0 && !_tabPushed) setState(() {});
+      _startHomeClock();
     });
   }
 
@@ -337,13 +385,14 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused) {
+    if (state != AppLifecycleState.resumed) {
+      _homeClockActive = false;
       _premiumRecheck?.cancel();
       _homeClockTimer?.cancel();
     }
     if (state == AppLifecycleState.resumed) {
-      _startHomeClock();
-      setState(() {});
+      _homeClockActive = true;
+      refreshLifecycle();
       // Pick up renewals, cancellations and refunds made in Google Play.
       if (Platform.isAndroid) {
         _premium?.refresh();
@@ -609,7 +658,11 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       if (_pageController.hasClients) _pageController.jumpToPage(0);
       if (!_selectWidgetOccurrence()) {
         _widgetOccurrenceUid = null;
-        _scrollToNextEkadashi(animate: false, includeParana: true);
+        _scrollToNextEkadashi(
+          animate: false,
+          includeParana: true,
+          acrossYears: false,
+        );
       }
     } else {
       setState(() {});
@@ -697,6 +750,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         if (index != -1) {
           if (_pageController.hasClients) _pageController.jumpToPage(index);
           setState(() => _currentPage = index);
+          _startHomeClock();
         } else {
           // Use a slight delay to ensure PageView is built with new data
           Future.delayed(const Duration(milliseconds: 100), () {
@@ -707,6 +761,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         }
       });
 
+      _startHomeClock();
       // Schedule notifications
       _scheduleNotifications();
       _syncSearchAndWidgets();
@@ -724,13 +779,14 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     }
   }
 
-  /// Scroll to next upcoming Ekadashi
-  /// [includeParana] - if true, will scroll to a "Passed" Ekadashi if the Parana time is still active.
-  /// If false (e.g. user manually taps Home), it skips to the strictly next upcoming one.
+  /// Select the first unfinished occurrence, retaining it through Parana end.
+  /// [includeParana] is retained for existing callers; all selections now use
+  /// the full lifecycle. Explicit year browsing disables [acrossYears].
   void _scrollToNextEkadashi({
     bool animate = true,
     int retryCount = 0,
     bool includeParana = true,
+    bool acrossYears = true,
   }) {
     if (_ekadashiList.isEmpty) return;
 
@@ -743,6 +799,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
               animate: animate,
               retryCount: retryCount + 1,
               includeParana: includeParana,
+              acrossYears: acrossYears,
             );
           }
         });
@@ -750,73 +807,24 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       return;
     }
 
-    // Use timezone-aware "today" calculation - MUST MATCH _buildEkadashiCard LOGIC EXACTLY
-    DateTime today;
-    tz.TZDateTime? nowTz;
-
-    try {
-      final location = tz.getLocation(_getIANATimezone(_currentTimezone));
-      nowTz = tz.TZDateTime.from(clock.now(), location);
-      today = DateTime(nowTz.year, nowTz.month, nowTz.day);
-    } catch (e) {
-      debugPrint('Error parsing timezone $_currentTimezone: $e');
-      final now = clock.now();
-      today = DateTime(now.year, now.month, now.day);
+    final now = DisplayClock.now();
+    final all = !acrossYears || _allEkadashis.isEmpty
+        ? _ekadashiList
+        : _allEkadashis;
+    final event =
+        all[EkadashiLifecycle.currentIndex(
+          all,
+          now,
+          _getIANATimezone(_currentTimezone),
+        )];
+    if (_settings != null && _settings!.year != event.date.year) {
+      _settings!.setYear(event.date.year);
+      _ekadashiList = _homeYearList();
     }
-
-    int indexToScroll = 0;
-    bool found = false;
-
-    for (int i = 0; i < _ekadashiList.length; i++) {
-      final ekadashi = _ekadashiList[i];
-
-      // Calculate difference based on dates only (ignoring time)
-      // This MUST match the logic in _buildEkadashiCard to ensure consistency
-      final ekadashiDate = DateTime(
-        ekadashi.date.year,
-        ekadashi.date.month,
-        ekadashi.date.day,
-      );
-      final daysUntil = ekadashiDate.difference(today).inDays;
-
-      bool isParanaActive = false;
-
-      // Check Parana logic if requested and we have current time (nowTz)
-      if (includeParana &&
-          daysUntil < 0 &&
-          nowTz != null &&
-          ekadashi.paranaEndIso.isNotEmpty) {
-        try {
-          // Parse paranaEndIso (e.g. "2026-02-14T08:52:00+05:30")
-          // We need to parse it carefully to compare with nowTz
-          final paranaEnd = tz.TZDateTime.parse(
-            tz.getLocation(_getIANATimezone(_currentTimezone)),
-            ekadashi.paranaEndIso,
-          );
-
-          if (nowTz.isBefore(paranaEnd)) {
-            // Parana is still active
-            isParanaActive = true;
-          }
-        } catch (e) {
-          debugPrint('Error checking parana active: $e');
-        }
-      }
-
-      // If daysUntil >= 0, it means Today (0) or Future (>0) - show it!
-      // OR if Parana is still active for a passed Ekadashi
-      if (daysUntil >= 0 || isParanaActive) {
-        indexToScroll = i;
-        found = true;
-        break;
-      }
-    }
-
-    // Safety check: If list is not empty but nothing found (rare end-of-year edge case)
-    // stay at last index.
-    if (!found && _ekadashiList.isNotEmpty) {
-      indexToScroll = _ekadashiList.length - 1;
-    }
+    final indexToScroll = _ekadashiList.indexWhere(
+      (e) => e.occurrenceUid == event.occurrenceUid,
+    );
+    if (indexToScroll < 0) return;
 
     // Fix for Race Condition: Give the PageView a moment to verify layout before jumping
     Future.delayed(const Duration(milliseconds: 50), () {
@@ -906,6 +914,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     if (index < 0) return false;
     if (_pageController.hasClients) _pageController.jumpToPage(index);
     setState(() => _currentPage = index);
+    _startHomeClock();
     return true;
   }
 
@@ -962,6 +971,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       ),
       languageService: lang,
       tradition: settings.tradition.name,
+      now: DisplayClock.now(),
     );
     final pending = _pendingDeepLink;
     _pendingDeepLink = null;
@@ -997,6 +1007,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       // Switching tabs keeps each tab where it was (Home keeps its card),
       // as on iOS.
       setState(() => _currentIndex = index);
+      _startHomeClock();
     }
   }
 
@@ -1286,6 +1297,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         ekadashiList: _allEkadashis,
         currentTimezone: _currentTimezone,
         barSlots: _calendarBar,
+        clock: DisplayClock.now,
       ),
       2 => SafeArea(
         top: false,
@@ -1312,10 +1324,13 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         index: _currentIndex,
         children: [
           for (var i = 0; i < 5; i++)
-            TabNavigator(
-              index: i,
-              navigatorKey: _tabNavigators[i],
-              observer: _tabObservers[i],
+            TickerMode(
+              enabled: i == _currentIndex,
+              child: TabNavigator(
+                index: i,
+                navigatorKey: _tabNavigators[i],
+                observer: _tabObservers[i],
+              ),
             ),
         ],
       ),
@@ -1423,6 +1438,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                                 _widgetOccurrenceUid = null;
                               }
                               setState(() => _currentPage = index);
+                              _startHomeClock();
                             }
                           },
                           itemBuilder: (context, index) => Padding(
@@ -1489,50 +1505,20 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   /// the countdown, dates, fast and Parana times, the description, View
   /// Details (prominent) and the Vrat record button (glass).
   Widget _buildEkadashiCard(EkadashiDate ekadashi) {
-    // Use timezone-aware "today" calculation
-    DateTime today;
-    try {
-      final location = tz.getLocation(_getIANATimezone(_currentTimezone));
-      final nowTz = tz.TZDateTime.from(clock.now(), location);
-      today = DateTime(nowTz.year, nowTz.month, nowTz.day);
-    } catch (e) {
-      // Fallback to local time if timezone is invalid
-      final now = clock.now();
-      today = DateTime(now.year, now.month, now.day);
-    }
-
-    // Calculate difference based on dates only (ignoring time)
-    final ekadashiDate = DateTime(
-      ekadashi.date.year,
-      ekadashi.date.month,
-      ekadashi.date.day,
-    );
-    final daysUntil = ekadashiDate.difference(today).inDays;
-    final remaining = HomeFastingProgress.remaining(
+    final state = EkadashiLifecycle.of(
       ekadashi,
-      clock.now(),
+      DisplayClock.now(),
       _getIANATimezone(_currentTimezone),
     );
-
+    final remaining = state.progress;
     const tealColor = IosColors.teal;
     final lang = Provider.of<LanguageService>(context);
     final code = lang.currentLocale.languageCode;
-
+    final daysText = state.label(code);
     final breakTime = AppStrings.localizeClock(
       ekadashi.fastBreakTime.replaceAll(RegExp(r'^[a-zA-Z]{3} \d{1,2}, '), ''),
       code,
     );
-
-    String daysText;
-    if (daysUntil == 0) {
-      daysText = lang.translate('today');
-    } else if (daysUntil == 1) {
-      daysText = lang.translate('tomorrow');
-    } else if (daysUntil < 0) {
-      daysText = lang.translate('passed');
-    } else {
-      daysText = lang.translateWithArgs('in_days', [daysUntil.toString()]);
-    }
 
     Widget timing(String title, DateTime date, String time) => SizedBox(
       width: double.infinity,
@@ -1596,7 +1582,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                             vertical: 6,
                           ),
                           decoration: ShapeDecoration(
-                            color: daysUntil < 0
+                            color: state.phase == EkadashiPhase.passed
                                 ? IosColors.gray(context)
                                 : tealColor,
                             shape: const StadiumBorder(),
@@ -1743,7 +1729,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         record != null ||
         VratRecording.isOpen(
           ekadashi,
-          now: clock.now(),
+          now: DisplayClock.now(),
           timezone: _currentTimezone,
         );
     final color = open ? IosColors.teal : IosColors.tertiary(context);

@@ -1482,7 +1482,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get widget_desc_ekadashi =>
-      'Today’s Ekadashi with the percentage remaining, or the next Ekadashi and its timings.';
+      'The current Ekadashi, fasting progress and Parana, or the next Ekadashi and its timings.';
 
   @override
   String get widget_desc_upcoming =>

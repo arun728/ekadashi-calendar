@@ -1490,7 +1490,7 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get widget_desc_ekadashi =>
-      'இன்றைய ஏகாதசியின் மீதமுள்ள சதவீதம் அல்லது அடுத்த ஏகாதசியும் அதன் நேரங்களும்.';
+      'நடப்பு ஏகாதசி, விரத முன்னேற்றம் மற்றும் பாரணை, அல்லது அடுத்த ஏகாதசியும் அதன் நேரங்களும்.';
 
   @override
   String get widget_desc_upcoming =>
