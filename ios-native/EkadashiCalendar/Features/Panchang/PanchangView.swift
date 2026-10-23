@@ -45,7 +45,8 @@ struct PanchangView: View {
                 ForEach(Page.allCases, id: \.self) { page in
                     ScrollView {
                         VStack(alignment: .leading, spacing: 16) {
-                            controls(page)
+                            // The location and date stay at a readable width.
+                            controls(page).readableWidth(alignment: .leading)
                             content(page)
                         }
                         .padding(EdgeInsets(top: 8, leading: 16, bottom: 100, trailing: 16))

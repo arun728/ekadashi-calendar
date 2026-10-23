@@ -51,15 +51,25 @@ struct CalendarView: View {
                 }
                 filterBar
                 // A horizontal swipe on the month title, the grid or the
-                // selected day changes the month, as on Android.
-                VStack(spacing: 12) {
-                    monthHeader
-                    MonthGrid(month: month, selected: selected, today: CivilDate.today(), firstDay: firstDay, lastDay: lastDay,
-                              markers: { markers(for: $0, loaded.list) }, select: { selected = $0 })
-                        .padding(.horizontal, 12)
-                        .id(month)
-                        .transition(.push(from: forward ? .trailing : .leading))
+                // selected day changes the month, as on Android. Wide
+                // screens show the selected day beside the month.
+                AdaptivePanes {
+                    VStack(spacing: 12) {
+                        monthHeader
+                        MonthGrid(month: month, selected: selected, today: CivilDate.today(), firstDay: firstDay, lastDay: lastDay,
+                                  markers: { markers(for: $0, loaded.list) }, select: { selected = $0 })
+                            .padding(.horizontal, 12)
+                            .id(month)
+                            .transition(.push(from: forward ? .trailing : .leading))
+                    }
+                    // The sliding month stays inside its pane.
+                    .clipped()
+                    .accessibilityElement(children: .contain)
+                    .accessibilityIdentifier("calendar_grid_pane")
+                } trailing: {
                     selectedDay(loaded.list)
+                        .accessibilityElement(children: .contain)
+                        .accessibilityIdentifier("calendar_day_pane")
                 }
                 .contentShape(Rectangle())
                 .clipped()

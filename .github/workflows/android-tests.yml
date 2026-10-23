@@ -133,11 +133,15 @@ jobs:
     timeout-minutes: 75
     steps:
       - uses: actions/checkout@v4
-      - name: Select Xcode 26 (iOS 26 SDK, Liquid Glass)
+      - name: Select Xcode 27.1 (iPhone Duo SDK), else Xcode 26 (Liquid Glass)
         run: |
           ls -d /Applications/Xcode*.app
-          XCODE=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
-          if [ -z "$XCODE" ]; then echo "::error::Xcode 26 is required"; exit 1; fi
+          XCODE=$(ls -d /Applications/Xcode_27*.app 2>/dev/null | sort -V | tail -1)
+          if [ -z "$XCODE" ]; then
+            echo "::warning::Xcode 27.1 not on this runner: building with the iOS 26 SDK (the iPhone Duo shows the app at iPhone size)"
+            XCODE=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+          fi
+          if [ -z "$XCODE" ]; then echo "::error::Xcode 26 or newer is required"; exit 1; fi
           sudo xcode-select -s "$XCODE/Contents/Developer"
           xcodebuild -version
       - name: EkadashiCore package tests
@@ -157,6 +161,20 @@ jobs:
           status=$?
           grep -E "error:|Test Case .*(passed|failed)|Executed|\*\* " ../build/ios/xcodebuild.log | tail -300
           exit $status
+      - name: Wide-screen UI tests on the iPhone Duo simulator (Xcode 27.1)
+        run: |
+          set +e
+          UDID=$(xcrun simctl list devices available -j | python3 tool/ios/pick_simulator.py --prefer "iPhone Duo")
+          if [ $? -eq 3 ]; then echo "No iPhone Duo simulator on this runner: skipped"; exit 0; fi
+          echo "Simulator: $UDID"
+          cd ios-native
+          xcodebuild test -project EkadashiCalendar.xcodeproj -scheme EkadashiCalendar \
+            -destination "id=$UDID" -only-testing:EkadashiCalendarUITests/AdaptiveLayoutUITests \
+            -resultBundlePath ../build/ios/EkadashiCalendar-duo.xcresult \
+            CODE_SIGNING_ALLOWED=NO > ../build/ios/xcodebuild-duo.log 2>&1
+          status=$?
+          grep -E "error:|Test Case .*(passed|failed)|Executed|\*\* " ../build/ios/xcodebuild-duo.log | tail -100
+          exit $status
       - name: Export UI screenshots
         if: always()
         run: |
@@ -164,11 +182,17 @@ jobs:
             xcrun xcresulttool export attachments --path build/ios/EkadashiCalendar.xcresult \
               --output-path build/ios/screenshots || true
           fi
+          if [ -d build/ios/EkadashiCalendar-duo.xcresult ]; then
+            xcrun xcresulttool export attachments --path build/ios/EkadashiCalendar-duo.xcresult \
+              --output-path build/ios/screenshots-duo || true
+          fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: ios-tests-and-screenshots
           path: |
             build/ios/xcodebuild.log
+            build/ios/xcodebuild-duo.log
             build/ios/screenshots/
+            build/ios/screenshots-duo/
 

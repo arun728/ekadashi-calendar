@@ -124,6 +124,8 @@ struct SettingsView: View {
         }
         .scrollContentBackground(.hidden)
         .contentMargins(.bottom, 80, for: .scrollContent)
+        // Wide screens keep the list at a readable width.
+        .readableListMargins()
         .sheet(item: $editingReminder) { request in
             EventReminderEditor(original: request.reminder)
         }

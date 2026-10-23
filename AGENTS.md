@@ -350,3 +350,12 @@ launch, on a language change and when the sheet opens), searched in about
 compute place names for the whole catalog in a view body, `onChanged` or
 any other per-keystroke path. Keep CitySearchIndexTests and
 city_search_index_test.dart green.
+
+## iPhone Duo and foldables (23 October 2026)
+
+Arun asked for the iPhone Duo (Apple's foldable) to be supported with TDD on
+`feature/iphone-duo` from `dev` (draft PR to `dev`, no merge, `[skip ci]`),
+iOS first, then Android foldables. Wide screens show two panes from one
+width rule in `test/fixtures/adaptive_layout.json`; phones keep today's
+layout. Never size a screen from the device, idiom, orientation or
+`UIScreen.main`. See docs/FOLDABLES.md.

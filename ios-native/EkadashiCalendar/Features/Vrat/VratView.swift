@@ -7,6 +7,7 @@ import EkadashiCore
 /// The sections are glass chips, as in Panchang, and change with a swipe.
 struct VratView: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.paneLayout) private var panes
     enum Section: String, CaseIterable { case overview, history, statistics, achievements }
     @State private var section: Section = .overview
     @State private var selectedYear = CivilDate.today().year
@@ -66,45 +67,57 @@ struct VratView: View {
                                                            totalObserved: totalObserved, longestStreak: longest)
         let today = CivilDate.today()
         let recent = events.sorted { $0.date < $1.date }.filter { abs(today.days(until: $0.date)) <= 30 }.prefix(4)
+        // Wide screens show the metrics beside the recent Ekadashis.
         return ScrollView {
-            VStack(alignment: .leading, spacing: 12) {
-                Grid(horizontalSpacing: 12, verticalSpacing: 12) {
-                    GridRow {
-                        MetricCard(title: model.t("current_streak"), value: "\(model.vrat.currentStreak(events))",
-                                   subtitle: model.t("ekadashis_unit"), symbol: AppSymbol.journeyStreak, color: .orange)
-                            .accessibilityIdentifier("journey_overview_streaks")
-                        MetricCard(title: model.t("longest_streak"), value: "\(longest)", subtitle: model.t("ekadashis_unit"),
-                                   symbol: AppSymbol.journeyBest, color: Theme.amber)
-                    }
-                    GridRow {
-                        MetricCard(title: "\(year) \(model.t("annual_completion"))",
-                                   value: "\(Int(stats.completionPercentage.rounded()))%",
-                                   subtitle: "\(stats.observedCount) / \(stats.totalOccurrences)",
-                                   symbol: AppSymbol.journeyRate, color: Theme.teal)
-                        MetricCard(title: model.t("total_observed"), value: "\(totalObserved)", subtitle: model.t("ekadashis_unit"),
-                                   symbol: AppSymbol.journeyObserved, color: Theme.observed)
-                    }
-                }
-                if let milestone {
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Label(model.t("next_milestone"), systemImage: AppSymbol.journeyMilestone)
-                            Spacer()
-                            Text("\(milestone.currentProgress) / \(milestone.target)")
+            AdaptivePanes {
+                VStack(alignment: .leading, spacing: 12) {
+                    Grid(horizontalSpacing: 12, verticalSpacing: 12) {
+                        GridRow {
+                            MetricCard(title: model.t("current_streak"), value: "\(model.vrat.currentStreak(events))",
+                                       subtitle: model.t("ekadashis_unit"), symbol: AppSymbol.journeyStreak, color: .orange)
+                                .accessibilityIdentifier("journey_overview_streaks")
+                            MetricCard(title: model.t("longest_streak"), value: "\(longest)", subtitle: model.t("ekadashis_unit"),
+                                       symbol: AppSymbol.journeyBest, color: Theme.amber)
                         }
-                        .font(.caption.bold())
-                        .foregroundStyle(Theme.teal)
-                        Text(model.t(milestone.achievement.titleKey)).font(.headline)
-                        ProgressView(value: Double(milestone.currentProgress), total: Double(max(milestone.target, 1)))
-                            .tint(Theme.teal)
+                        GridRow {
+                            MetricCard(title: "\(year) \(model.t("annual_completion"))",
+                                       value: "\(Int(stats.completionPercentage.rounded()))%",
+                                       subtitle: "\(stats.observedCount) / \(stats.totalOccurrences)",
+                                       symbol: AppSymbol.journeyRate, color: Theme.teal)
+                            MetricCard(title: model.t("total_observed"), value: "\(totalObserved)", subtitle: model.t("ekadashis_unit"),
+                                       symbol: AppSymbol.journeyObserved, color: Theme.observed)
+                        }
                     }
-                    .padding(16)
-                    .glassPanel(cornerRadius: 16, tint: Theme.teal)
-                    .padding(.top, 8)
+                    if let milestone {
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                Label(model.t("next_milestone"), systemImage: AppSymbol.journeyMilestone)
+                                Spacer()
+                                Text("\(milestone.currentProgress) / \(milestone.target)")
+                            }
+                            .font(.caption.bold())
+                            .foregroundStyle(Theme.teal)
+                            Text(model.t(milestone.achievement.titleKey)).font(.headline)
+                            ProgressView(value: Double(milestone.currentProgress), total: Double(max(milestone.target, 1)))
+                                .tint(Theme.teal)
+                        }
+                        .padding(16)
+                        .glassPanel(cornerRadius: 16, tint: Theme.teal)
+                        .padding(.top, 8)
+                    }
                 }
-                Text(model.t("record_observance")).font(.headline).foregroundStyle(Theme.teal).padding(.top, 8)
-                Text(model.t("tap_to_record_instruction")).font(.caption).foregroundStyle(.secondary)
-                ForEach(Array(recent)) { row($0) }
+                .accessibilityElement(children: .contain)
+                .accessibilityIdentifier("journey_overview_metrics_pane")
+            } trailing: {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text(model.t("record_observance")).font(.headline).foregroundStyle(Theme.teal)
+                        .padding(.top, panes.isSideBySide ? 0 : 8)
+                    Text(model.t("tap_to_record_instruction")).font(.caption).foregroundStyle(.secondary)
+                    ForEach(Array(recent)) { row($0) }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .accessibilityElement(children: .contain)
+                .accessibilityIdentifier("journey_overview_record_pane")
             }
             .padding(16)
         }
@@ -142,7 +155,11 @@ struct VratView: View {
                 ContentUnavailableView(model.t("no_ekadashi"), systemImage: AppSymbol.journeyEmpty)
             } else {
                 ScrollView {
-                    LazyVStack(spacing: 12) { ForEach(filtered) { row($0) } }.padding(16)
+                    // Two columns of rows on wide screens.
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: panes.columns), spacing: 12) {
+                        ForEach(filtered) { row($0) }
+                    }
+                    .padding(16)
                 }
             }
         }
@@ -214,34 +231,38 @@ struct VratView: View {
                     Spacer()
                     yearMenu
                 }
-                VStack(spacing: 12) {
-                    Text("\(year) \(model.t("annual_completion"))").font(.headline)
-                    ZStack {
-                        Circle().stroke(Theme.teal.opacity(0.15), lineWidth: 12)
-                        Circle().trim(from: 0, to: stats.completionPercentage / 100)
-                            .stroke(Theme.teal, style: StrokeStyle(lineWidth: 12, lineCap: .round))
-                            .rotationEffect(.degrees(-90))
-                        Text("\(Int(stats.completionPercentage.rounded()))%").font(.title.bold()).foregroundStyle(Theme.teal)
+                // Wide screens show the ring beside the counts.
+                AdaptivePanes(stackedSpacing: 16) {
+                    VStack(spacing: 12) {
+                        Text("\(year) \(model.t("annual_completion"))").font(.headline)
+                        ZStack {
+                            Circle().stroke(Theme.teal.opacity(0.15), lineWidth: 12)
+                            Circle().trim(from: 0, to: stats.completionPercentage / 100)
+                                .stroke(Theme.teal, style: StrokeStyle(lineWidth: 12, lineCap: .round))
+                                .rotationEffect(.degrees(-90))
+                            Text("\(Int(stats.completionPercentage.rounded()))%").font(.title.bold()).foregroundStyle(Theme.teal)
+                        }
+                        .frame(width: 130, height: 130)
+                        Text(model.t("observed_of_total", "\(stats.observedCount)", "\(stats.totalOccurrences)"))
+                            .font(.subheadline).foregroundStyle(.secondary)
                     }
-                    .frame(width: 130, height: 130)
-                    Text(model.t("observed_of_total", "\(stats.observedCount)", "\(stats.totalOccurrences)"))
-                        .font(.subheadline).foregroundStyle(.secondary)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(20)
-                .glassPanel(cornerRadius: 16)
-                Grid(horizontalSpacing: 12, verticalSpacing: 12) {
-                    GridRow {
-                        countCard("observed", stats.observedCount, Theme.observed)
-                        countCard("partial", stats.partialCount, Theme.partial)
-                    }
-                    GridRow {
-                        countCard("missed", stats.missedCount, Theme.missed)
-                        countCard("unrecorded", stats.unrecordedCount, .gray)
-                    }
-                    GridRow {
-                        countCard("current_streak", model.vrat.currentStreak(events), .orange)
-                        countCard("longest_streak", model.vrat.longestStreak(events), Theme.amber)
+                    .frame(maxWidth: .infinity)
+                    .padding(20)
+                    .glassPanel(cornerRadius: 16)
+                } trailing: {
+                    Grid(horizontalSpacing: 12, verticalSpacing: 12) {
+                        GridRow {
+                            countCard("observed", stats.observedCount, Theme.observed)
+                            countCard("partial", stats.partialCount, Theme.partial)
+                        }
+                        GridRow {
+                            countCard("missed", stats.missedCount, Theme.missed)
+                            countCard("unrecorded", stats.unrecordedCount, .gray)
+                        }
+                        GridRow {
+                            countCard("current_streak", model.vrat.currentStreak(events), .orange)
+                            countCard("longest_streak", model.vrat.longestStreak(events), Theme.amber)
+                        }
                     }
                 }
             }

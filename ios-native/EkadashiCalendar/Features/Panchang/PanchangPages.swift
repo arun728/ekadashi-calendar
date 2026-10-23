@@ -8,6 +8,7 @@ import EkadashiCore
 /// (Premium, shown with a lock for free users).
 struct PanchangKeyDaysView: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.paneLayout) private var panes
     let month: CivilDate
     let city: PanchangCity
     let onOpen: (CivilDate) -> Void
@@ -26,7 +27,8 @@ struct PanchangKeyDaysView: View {
                     Text(model.t("panchang_no_key_days")).font(.subheadline).foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, minHeight: 120)
                 } else {
-                    LazyVStack(spacing: 10) {
+                    // Two columns of days on wide screens.
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: panes.columns), spacing: 10) {
                         ForEach(shown) { day in
                             Button { open(day) } label: { row(day) }.buttonStyle(.plain)
                         }
@@ -144,18 +146,28 @@ struct PanchangDailyView: View {
     }
     private func until(_ instant: Date?) -> String? { instant.map { model.t("panchang_until", time($0)) } }
 
+    /// Wide screens show the day in two columns, in the same order.
     var body: some View {
-        VStack(spacing: 16) {
-            hero
-            sunAndMoon
-            if model.premium.isPremium {
-                limbs
-                timings
-                observances
-                details
-            } else {
-                PanchangUpgradeCard()
+        AdaptivePanes(stackedSpacing: 16) {
+            VStack(spacing: 16) {
+                hero
+                sunAndMoon
+                if model.premium.isPremium { limbs }
             }
+            .accessibilityElement(children: .contain)
+            .accessibilityIdentifier("panchang_daily_leading_pane")
+        } trailing: {
+            VStack(spacing: 16) {
+                if model.premium.isPremium {
+                    timings
+                    observances
+                    details
+                } else {
+                    PanchangUpgradeCard()
+                }
+            }
+            .accessibilityElement(children: .contain)
+            .accessibilityIdentifier("panchang_daily_trailing_pane")
         }
     }
 
@@ -335,22 +347,28 @@ struct PanchangMuhurtaView: View {
             .pickerStyle(.segmented)
             .accessibilityIdentifier("panchang_day_night")
             let choghadiya = day.choghadiya.filter { $0.name.hasPrefix(night ? "Night" : "Day") }
-            PanchangCard(title: model.t("panchang_choghadiya"), symbol: AppSymbol.choghadiya) {
-                Text(model.t("panchang_choghadiya_hint")).font(.caption).foregroundStyle(.secondary)
-                if choghadiya.isEmpty { Text(model.t("panchang_unavailable")).font(.subheadline).foregroundStyle(.secondary) }
-                ForEach(Array(choghadiya.enumerated()), id: \.offset) { _, period in
-                    periodRow(String(period.name.split(separator: "·").last ?? "").trimmingCharacters(in: .whitespaces),
-                              kind: .choghadiya, period, color: quality(period.name))
-                }
-            }
             let hora = Array(day.hora.enumerated().filter { night ? $0.offset >= 12 : $0.offset < 12 }.map(\.element))
-            PanchangCard(title: model.t("panchang_hora"), symbol: AppSymbol.hora) {
-                if hora.isEmpty { Text(model.t("panchang_unavailable")).font(.subheadline).foregroundStyle(.secondary) }
-                ForEach(Array(hora.enumerated()), id: \.offset) { _, period in periodRow(period.name, kind: .hora, period) }
-            }
-            PanchangCard(title: model.t("panchang_lagna"), symbol: AppSymbol.lagna) {
-                if day.lagna.isEmpty { Text(model.t("panchang_unavailable")).font(.subheadline).foregroundStyle(.secondary) }
-                ForEach(Array(day.lagna.enumerated()), id: \.offset) { _, period in periodRow(period.name, kind: .rashi, period) }
+            // Wide screens show Choghadiya beside Hora and Lagna.
+            AdaptivePanes(stackedSpacing: 16) {
+                PanchangCard(title: model.t("panchang_choghadiya"), symbol: AppSymbol.choghadiya) {
+                    Text(model.t("panchang_choghadiya_hint")).font(.caption).foregroundStyle(.secondary)
+                    if choghadiya.isEmpty { Text(model.t("panchang_unavailable")).font(.subheadline).foregroundStyle(.secondary) }
+                    ForEach(Array(choghadiya.enumerated()), id: \.offset) { _, period in
+                        periodRow(String(period.name.split(separator: "·").last ?? "").trimmingCharacters(in: .whitespaces),
+                                  kind: .choghadiya, period, color: quality(period.name))
+                    }
+                }
+            } trailing: {
+                VStack(spacing: 16) {
+                    PanchangCard(title: model.t("panchang_hora"), symbol: AppSymbol.hora) {
+                        if hora.isEmpty { Text(model.t("panchang_unavailable")).font(.subheadline).foregroundStyle(.secondary) }
+                        ForEach(Array(hora.enumerated()), id: \.offset) { _, period in periodRow(period.name, kind: .hora, period) }
+                    }
+                    PanchangCard(title: model.t("panchang_lagna"), symbol: AppSymbol.lagna) {
+                        if day.lagna.isEmpty { Text(model.t("panchang_unavailable")).font(.subheadline).foregroundStyle(.secondary) }
+                        ForEach(Array(day.lagna.enumerated()), id: \.offset) { _, period in periodRow(period.name, kind: .rashi, period) }
+                    }
+                }
             }
         }
     }
@@ -388,19 +406,25 @@ struct PanchangRashiView: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            PanchangCard(title: model.t("panchang_sun_rashi"), symbol: AppSymbol.sunRashi) {
-                PanchangRow(label: model.t("panchang_rashi"), value: terms.translate(day.sunRashi, .rashi, language: language),
-                            detail: until(day.sunRashiEndsAt))
-            }
-            PanchangCard(title: model.t("panchang_moon_rashi"), symbol: AppSymbol.moonRashi) {
-                PanchangRow(label: model.t("panchang_rashi"), value: terms.translate(day.moonRashi, .rashi, language: language),
-                            detail: until(day.moonRashiEndsAt))
-            }
-            PanchangCard(title: model.t("panchang_nakshatra"), symbol: AppSymbol.nakshatra) {
-                PanchangRow(label: model.t("panchang_nakshatra"), value: terms.translate(day.nakshatra.name, .nakshatra, language: language),
-                            detail: until(day.nakshatra.endsAt))
-                Divider()
-                PanchangRow(label: model.t("panchang_nakshatra_pada"), value: "\(day.nakshatraPada)", detail: until(day.padaEndsAt))
+            // Wide screens show the rashis beside the nakshatra.
+            AdaptivePanes(stackedSpacing: 16) {
+                VStack(spacing: 16) {
+                    PanchangCard(title: model.t("panchang_sun_rashi"), symbol: AppSymbol.sunRashi) {
+                        PanchangRow(label: model.t("panchang_rashi"), value: terms.translate(day.sunRashi, .rashi, language: language),
+                                    detail: until(day.sunRashiEndsAt))
+                    }
+                    PanchangCard(title: model.t("panchang_moon_rashi"), symbol: AppSymbol.moonRashi) {
+                        PanchangRow(label: model.t("panchang_rashi"), value: terms.translate(day.moonRashi, .rashi, language: language),
+                                    detail: until(day.moonRashiEndsAt))
+                    }
+                }
+            } trailing: {
+                PanchangCard(title: model.t("panchang_nakshatra"), symbol: AppSymbol.nakshatra) {
+                    PanchangRow(label: model.t("panchang_nakshatra"), value: terms.translate(day.nakshatra.name, .nakshatra, language: language),
+                                detail: until(day.nakshatra.endsAt))
+                    Divider()
+                    PanchangRow(label: model.t("panchang_nakshatra_pada"), value: "\(day.nakshatraPada)", detail: until(day.padaEndsAt))
+                }
             }
             Text(model.t("panchang_rashi_note")).font(.caption).foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity, alignment: .leading)

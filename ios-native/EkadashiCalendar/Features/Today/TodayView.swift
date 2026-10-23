@@ -7,6 +7,7 @@ import EkadashiCore
 /// the chosen city; the menus apply to Calendar, reminders and widgets too.
 struct TodayView: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.paneLayout) private var panes
 
     private var events: [EkadashiOccurrence] { model.homeEkadashis }
 
@@ -14,6 +15,7 @@ struct TodayView: View {
         @Bindable var model = model
         VStack(spacing: 0) {
             HomeControls()
+                .readableWidth()
                 .padding(.horizontal, 20)
                 .padding(.top, 12)
                 .padding(.bottom, 12)
@@ -27,28 +29,44 @@ struct TodayView: View {
             } else if events.isEmpty {
                 ContentUnavailableView(model.t("no_ekadashi"), systemImage: AppSymbol.noEkadashi)
             } else {
-                Text("\(model.homeIndex + 1) / \(events.count)")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .padding(.bottom, 8)
-                    .accessibilityIdentifier("home_page_indicator")
-                HStack(spacing: 0) {
-                    arrow(AppSymbol.previous, target: model.homeIndex - 1) { model.homeIndex -= 1 }
-                    TabView(selection: $model.homeIndex) {
-                        ForEach(Array(events.enumerated()), id: \.element.occurrenceUid) { index, event in
-                            EkadashiCard(event: event)
-                                .padding(4)
-                                .tag(index)
+                // Wide screens list the year's Ekadashis beside the card.
+                AdaptivePanes(stackedSpacing: 0) {
+                    VStack(spacing: 0) {
+                        Text("\(model.homeIndex + 1) / \(events.count)")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .padding(.bottom, 8)
+                            .accessibilityIdentifier("home_page_indicator")
+                        HStack(spacing: 0) {
+                            arrow(AppSymbol.previous, target: model.homeIndex - 1) { model.homeIndex -= 1 }
+                            TabView(selection: $model.homeIndex) {
+                                ForEach(Array(events.enumerated()), id: \.element.occurrenceUid) { index, event in
+                                    EkadashiCard(event: event)
+                                        .padding(4)
+                                        .tag(index)
+                                }
+                            }
+                            .tabViewStyle(.page(indexDisplayMode: .never))
+                            arrow(AppSymbol.next, target: model.homeIndex + 1) { model.homeIndex += 1 }
                         }
+                        .padding(.horizontal, 4)
+                        .padding(.bottom, 8)
+                        .animation(.easeInOut(duration: 0.3), value: model.homeIndex)
+                        .opacity(model.isCalculating ? 0.5 : 1)
+                        .overlay { if model.isCalculating { ProgressView().tint(Theme.teal) } }
                     }
-                    .tabViewStyle(.page(indexDisplayMode: .never))
-                    arrow(AppSymbol.next, target: model.homeIndex + 1) { model.homeIndex += 1 }
+                    .accessibilityElement(children: .contain)
+                    .accessibilityIdentifier("home_card_pane")
+                } trailing: {
+                    if panes.isSideBySide {
+                        HomeEkadashiList(events: events)
+                            .padding(.trailing, 16)
+                            .padding(.bottom, 8)
+                            .accessibilityElement(children: .contain)
+                            .accessibilityIdentifier("home_list_pane")
+                            .opacity(model.isCalculating ? 0.5 : 1)
+                    }
                 }
-                .padding(.horizontal, 4)
-                .padding(.bottom, 8)
-                .animation(.easeInOut(duration: 0.3), value: model.homeIndex)
-                .opacity(model.isCalculating ? 0.5 : 1)
-                .overlay { if model.isCalculating { ProgressView().tint(Theme.teal) } }
             }
         }
     }
@@ -63,6 +81,68 @@ struct TodayView: View {
         .disabled(!enabled)
         .foregroundStyle(enabled ? Theme.teal : .gray)
         .accessibilityLabel(enabled ? events[target].name : "")
+    }
+}
+
+/// The year's Ekadashis beside the card on wide screens (docs/FOLDABLES.md):
+/// the card's Ekadashi is highlighted and a tap opens another's card.
+struct HomeEkadashiList: View {
+    @Environment(AppModel.self) private var model
+    let events: [EkadashiOccurrence]
+
+    var body: some View {
+        ScrollViewReader { proxy in
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: 8) {
+                    Text(String(model.selectedYear) + " " + model.t("ekadashis_unit"))
+                        .font(.headline)
+                        .foregroundStyle(Theme.teal)
+                        .padding(.horizontal, 4)
+                    ForEach(Array(events.enumerated()), id: \.element.occurrenceUid) { index, event in
+                        row(index, event).id(index)
+                    }
+                }
+                .padding(.vertical, 4)
+            }
+            .scrollIndicators(.hidden)
+            .onAppear { proxy.scrollTo(model.homeIndex, anchor: .center) }
+            .onChange(of: model.homeIndex) { _, index in
+                withAnimation { proxy.scrollTo(index, anchor: .center) }
+            }
+        }
+    }
+
+    private func row(_ index: Int, _ event: EkadashiOccurrence) -> some View {
+        let selected = index == model.homeIndex
+        let passed = model.today.days(until: event.date) < 0
+        let status = model.vrat.isEnabled ? model.vrat.record(for: event.occurrenceUid)?.status : nil
+        return Button {
+            model.homeIndex = index
+        } label: {
+            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(event.name)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(selected ? Theme.teal : .primary)
+                        .lineLimit(2)
+                    Text(model.fullDate(event.date)).font(.caption).foregroundStyle(.secondary)
+                }
+                Spacer(minLength: 8)
+                if let status {
+                    let style = VratStatusStyle(status)
+                    Image(systemName: style.symbol).foregroundStyle(style.color)
+                }
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .glassPanel(cornerRadius: 14, tint: selected ? Theme.teal : nil, interactive: true)
+        .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(selected ? Theme.teal : .clear, lineWidth: 1.5))
+        .opacity(passed && !selected ? 0.6 : 1)
+        .accessibilityAddTraits(selected ? .isSelected : [])
+        .accessibilityIdentifier("home_list_row_\(index)")
     }
 }
 

@@ -79,6 +79,8 @@ struct RootView: View {
                     content
                 }
             }
+            // Each tab's width decides one or two panes (iPhone Duo).
+            .measuresPaneLayout()
             .background(AppBackground())
             .navigationTitle(model.t("app_title"))
             .navigationBarTitleDisplayMode(.inline)

@@ -1,7 +1,9 @@
 # XcodeGen spec for the native iOS app (https://github.com/yonaskolb/XcodeGen).
 #   brew install xcodegen && cd ios-native && xcodegen generate && open EkadashiCalendar.xcodeproj
 # Requires Xcode 26 (iOS 26 SDK) for Liquid Glass; the app runs on iOS 17+
-# and falls back to system materials before iOS 26.
+# and falls back to system materials before iOS 26. Build releases with
+# Xcode 27.1 (iOS 27.1 SDK): the iPhone Duo then shows the app edge to edge
+# on both screens instead of at iPhone size (docs/FOLDABLES.md).
 name: EkadashiCalendar
 options:
   bundleIdPrefix: com.applausestudios
@@ -61,6 +63,8 @@ targets:
         BGTaskSchedulerPermittedIdentifiers: [com.applausestudios.ekadashi-calendar.refresh]
         UILaunchScreen:
           UIColorName: LaunchBackground
+        # iPhones stay portrait. The iPhone Duo's inner screen can lay the app
+        # out in landscape anyway, so screens choose panes by width.
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         UIApplicationSupportsIndirectInputEvents: true
         ITSAppUsesNonExemptEncryption: false

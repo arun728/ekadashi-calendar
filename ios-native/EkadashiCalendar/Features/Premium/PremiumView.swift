@@ -54,8 +54,10 @@ struct PremiumView: View {
                 }
                 .padding(.horizontal, 20)
                 .padding(.vertical, 8)
+                // Wide screens keep the plans at a readable width.
+                .readableWidth()
             }
-            footer
+            footer.readableWidth()
         }
         .background(AppBackground())
         .navigationTitle(model.t("premium_title"))

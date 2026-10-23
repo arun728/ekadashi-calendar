@@ -115,9 +115,11 @@ PR cancels the older run.
   ones fail), `integration_test/android_app_test.dart` in every mode and, in
   granted mode, every other `integration_test/*_android_test.dart` (found
   automatically; `--list` prints them) plus the launcher widget tests.
-- **ios-tests** (macOS 15, Xcode 26): `swift test` for EkadashiCore (the
-  Swift half of the parity fixtures), then the app, widgets, unit and UI
-  screenshot tests on a simulator.
+- **ios-tests** (macOS 15, Xcode 27.1 when the runner has it, else Xcode
+  26): `swift test` for EkadashiCore (the Swift half of the parity
+  fixtures), then the app, widgets, unit and UI screenshot tests on a
+  simulator, then `AdaptiveLayoutUITests` on the iPhone Duo simulator when
+  one is installed (docs/FOLDABLES.md).
 
 `.github/workflows/backend-tests.yml` runs the dormant billing backend's tests
 only when `backend/` changes.

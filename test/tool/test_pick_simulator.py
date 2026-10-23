@@ -1,12 +1,11 @@
-"""Tests for pick_simulator.py: python3 -m unittest discover -s tool/ios -p 'test_*.py'"""
-import io
+"""tool/ios/pick_simulator.py picks the CI simulator, and the iPhone Duo on request."""
 import json
 import subprocess
 import sys
 import unittest
 from pathlib import Path
 
-SCRIPT = Path(__file__).with_name("pick_simulator.py")
+SCRIPT = Path(__file__).resolve().parents[2] / "tool/ios/pick_simulator.py"
 
 DEVICES = {
     "devices": {

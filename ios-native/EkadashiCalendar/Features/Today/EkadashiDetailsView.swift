@@ -36,6 +36,8 @@ struct EkadashiDetailsView: View {
                 if model.vrat.isEnabled { vratButton }
             }
             .padding(20)
+            // Wide screens keep the text at a readable width.
+            .readableWidth()
         }
         .background(AppBackground())
         .navigationTitle(model.t("app_title"))
