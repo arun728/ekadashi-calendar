@@ -1,0 +1,19 @@
+{
+  "about": "One width rule for wide screens (iPhone Duo inner screen, Android foldables and tablets), shared by AdaptiveLayout in EkadashiCore and lib/widgets/adaptive_layout.dart. Widths are the points (iOS) or logical pixels (Android) a screen's content is given, after the side safe areas. See docs/FOLDABLES.md.",
+  "twoPaneMinWidth": 560,
+  "readableMaxWidth": 720,
+  "paneSpacing": 16,
+  "cases": [
+    { "name": "not measured yet", "width": 0, "panes": 1, "readableWidth": 0 },
+    { "name": "small iPhone", "width": 320, "panes": 1, "readableWidth": 320 },
+    { "name": "iPhone", "width": 402, "panes": 1, "readableWidth": 402 },
+    { "name": "largest iPhone", "width": 440, "panes": 1, "readableWidth": 440 },
+    { "name": "iPhone Duo outer screen", "width": 466, "panes": 1, "readableWidth": 466 },
+    { "name": "just below the rule", "width": 559.5, "panes": 1, "readableWidth": 559.5 },
+    { "name": "the rule", "width": 560, "panes": 2, "readableWidth": 560 },
+    { "name": "iPhone Duo inner screen, portrait, beside the status bar", "width": 586, "panes": 2, "readableWidth": 586 },
+    { "name": "iPhone Duo inner screen, portrait", "width": 669, "panes": 2, "readableWidth": 669 },
+    { "name": "readable limit", "width": 720, "panes": 2, "readableWidth": 720 },
+    { "name": "iPhone Duo inner screen, landscape", "width": 951, "panes": 2, "readableWidth": 720 }
+  ]
+}
