@@ -141,4 +141,18 @@ final class EkadashiLifecycleTests: XCTestCase {
         XCTAssertFalse(empty.showsFastingMarker); XCTAssertTrue(empty.parana.isEmpty)
     }
 
+    func testMinuteCollapsedParanaWindowKeepsTheFastValidUntilItsRecordedEnd() {
+        let event = EkadashiOccurrence(id: 1, name: "Fast", date: CivilDate(2026, 7, 24),
+            fastingStartISO: "2026-07-24T05:45:00-04:00", paranaStartISO: "2026-07-25T08:40:00-04:00",
+            paranaEndISO: "2026-07-25T08:40:00-04:00")
+        let zone = TzDatabase.shared.location("America/New_York")!
+        XCTAssertEqual(event.lifecycle(at: event.fastingStart!.addingTimeInterval(-1), zone: zone).countdown, "00:00:01")
+        XCTAssertEqual(event.lifecycle(at: event.fastingStart!, zone: zone).phase, .fasting)
+        XCTAssertEqual(event.lifecycle(at: event.paranaStart!.addingTimeInterval(-1), zone: zone).percent, 99)
+        XCTAssertEqual(event.lifecycle(at: event.paranaEnd!, zone: zone).phase, .passed)
+        let day = EkadashiCalendarDay(events: [event], day: CivilDate(2026, 7, 25), zone: zone)
+        XCTAssertEqual(day.parana.map(\.occurrenceUid), [event.occurrenceUid])
+        XCTAssertFalse(day.showsFastingMarker)
+    }
+
 }
