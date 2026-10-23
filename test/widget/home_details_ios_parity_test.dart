@@ -1,4 +1,5 @@
 import 'package:ekadashi_calendar/widgets/app_icons.dart';
+import 'package:ekadashi_calendar/services/display_clock.dart';
 import 'package:ekadashi_calendar/l10n/app_language.dart';
 import 'package:ekadashi_calendar/models/vrat_tracker_models.dart';
 import 'package:ekadashi_calendar/screens/details_screen.dart';
@@ -460,28 +461,39 @@ void main() {
       expect(opacity, lessThan(1));
     });
 
-    testWidgets('saved record stays editable before Parana in Details', (tester) async {
+    testWidgets('saved record stays editable before Parana in Details', (
+      tester,
+    ) async {
       await pumpHome(tester);
-      await tester.tap(find.byKey(const Key('home_next')));
+      await tester.tap(find.byKey(const Key('home_previous')));
       await tester.pumpAndSettle();
       final (list, index) = await homeCards(tester);
       final event = list[index];
-      final tracker = tester.element(find.byKey(const Key('home_record_vrat')))
+      final tracker = tester
+          .element(find.byKey(const Key('home_record_vrat')))
           .read<VratTrackerService>();
-      await tester.runAsync(() => tracker.recordVrat(
-        ekadashiOccurrenceId: event.id,
-        occurrenceUid: event.occurrenceUid,
-        ekadashiDate: event.date.toIso8601String().substring(0, 10),
-        ekadashiName: event.name,
-        status: ObservanceStatus.observed,
-        timezone: 'IST',
-      ));
+      await tester.runAsync(
+        () => tracker.recordVrat(
+          ekadashiOccurrenceId: event.id,
+          occurrenceUid: event.occurrenceUid,
+          ekadashiDate: event.date.toIso8601String().substring(0, 10),
+          ekadashiName: event.name,
+          status: ObservanceStatus.observed,
+          timezone: 'IST',
+        ),
+      );
       await tester.pumpAndSettle();
+      expect(tracker.getRecordByUid(event.occurrenceUid), isNotNull);
+      DisplayClock.setTestClock(() => DateTime.parse(event.paranaStartIso).subtract(const Duration(hours: 1)));
+      addTearDown(() => DisplayClock.setTestClock(null));
       await openDetails(tester);
       final button = find.byKey(const Key('details_record_vrat'));
       await tester.ensureVisible(button);
       expect(tester.widget<OutlinedButton>(button).onPressed, isNotNull);
-      expect(find.descendant(of: button, matching: find.text('Vrat: Observed')), findsOneWidget);
+      expect(
+        find.descendant(of: button, matching: find.text('Vrat: Observed')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('open: grey questionmark Record Vrat; observed: green check', (
