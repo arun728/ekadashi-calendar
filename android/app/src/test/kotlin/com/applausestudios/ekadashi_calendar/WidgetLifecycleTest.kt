@@ -13,6 +13,10 @@ class WidgetLifecycleTest {
   assertTrue(h is WidgetHeadline.Next); assertEquals(0L,(h as WidgetHeadline.Next).days)
   assertEquals(item,WidgetTimeline.upcoming(payload,start.minusSeconds(1)).first())
  }
+ @Test fun lastFractionalSecondStillShowsOneSecond() {
+  val h=WidgetHeadline.of(payload,start.minusMillis(500)) as WidgetHeadline.Next
+  assertEquals("00:00:01",h.startCountdown())
+ }
  @Test fun fillsAndRetainsCurrentThroughParanaEnd() {
   val halfway=WidgetHeadline.of(payload,start.plusSeconds(43200)) as WidgetHeadline.Today
   assertEquals(.5,halfway.progress,0.00001)
