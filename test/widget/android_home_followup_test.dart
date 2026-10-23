@@ -46,7 +46,7 @@ void main() {
               final ring = find.byKey(const Key('home_fasting_progress'));
               expect(ring, findsOneWidget);
               final badge = find.text(
-                AppStrings.translate('today', language.code),
+                AppStrings.translate('widget_now', language.code),
               );
               expect(badge, findsOneWidget);
               expect(
@@ -59,7 +59,7 @@ void main() {
               );
               expect(
                 tester.widget<CircularProgressIndicator>(circles).value,
-                closeTo(.72, .01),
+                closeTo(.28, .01),
               );
               final record = find.byKey(const Key('home_record_vrat'));
               final button = tester.widget<OutlinedButton>(record);
