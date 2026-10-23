@@ -8,6 +8,7 @@ struct WidgetPreviewView: View {
     @Environment(\.colorScheme) private var scheme
     @State private var kind = PreviewKind.single
     @State private var size = PreviewSize.medium
+    @State private var visible = false
 
     private enum PreviewKind: String { case single, upcoming }
     private enum PreviewSize: String, CaseIterable {
@@ -26,8 +27,7 @@ struct WidgetPreviewView: View {
     private var sizes: [PreviewSize] { kind == .single ? [.small, .medium, .lock] : [.medium, .large] }
 
     var body: some View {
-        TimelineView(.periodic(from: .now, by: 60)) { context in
-            let now = DisplayClock.date(context.date)
+        OccurrenceTimeline(events: model.ekadashis, timeZone: model.ekadashiCity.timeZoneId, active: visible) { now in
             let snapshot = WidgetSnapshot.build(occurrences: model.ekadashis, timezone: model.ekadashiCity.timeZoneId,
                 locationName: model.ekadashiCityName, language: model.language, now: now, tradition: model.tradition.rawValue)
             ScrollView {
@@ -61,6 +61,7 @@ struct WidgetPreviewView: View {
         .onChange(of: kind) { _, _ in
             if !sizes.contains(size) { size = .medium }
         }
+        .onAppear { visible = true }.onDisappear { visible = false }
         .background(AppBackground())
         .navigationTitle(model.t("widget_preview"))
         .navigationBarTitleDisplayMode(.inline)

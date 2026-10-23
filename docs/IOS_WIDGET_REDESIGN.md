@@ -219,3 +219,11 @@ The iOS-only Settings appearance preference and its validation are documented in
 app appearance, and does not alter WidgetKit designs or exported share cards.
 The subsequently approved Android implementation is documented in
 [Android Glass Look](ANDROID_GLASS_LOOK.md); Android widget designs remain unchanged.
+
+## Lifecycle correction (23 October 2026)
+
+The later approval replaces civil-date-only status and remaining-progress
+behavior on iOS: keep the occurrence current through Parana end; fill progress
+from fasting start to Parana start; show a pre-start seconds countdown, Now,
+then Parana. Calendar/Details and isolated Debug-only testing are described in
+[IOS_EKADASHI_LIFECYCLE.md](IOS_EKADASHI_LIFECYCLE.md). Android waits for iOS approval.

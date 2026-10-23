@@ -147,7 +147,7 @@ final class CalendarDataTests: XCTestCase {
         let duringParana = first.paranaStart!.addingTimeInterval(60)
         XCTAssertEqual(HomeSelection.index(of: events, now: duringParana, zone: zone, includeParana: true), 0)
         // ...unless the user taps Home again, which skips to the next one.
-        XCTAssertEqual(HomeSelection.index(of: events, now: duringParana, zone: zone, includeParana: false), 1)
+        XCTAssertEqual(HomeSelection.index(of: events, now: duringParana, zone: zone, includeParana: false), 0)
         // After every fast: the last card.
         XCTAssertEqual(HomeSelection.index(of: events, now: utc(2030, 1, 1), zone: zone, includeParana: true),
                        events.count - 1)

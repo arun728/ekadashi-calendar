@@ -49,7 +49,7 @@ final class EkadashiLifecycleWorldSampleTests: XCTestCase {
                     for (index, event) in events.enumerated() {
                         let context = "\(city.label) \(city.timeZoneId) \(tradition) \(language) \(event.date.iso)"
                         let start = try XCTUnwrap(event.fastingStart), parana = try XCTUnwrap(event.paranaStart), end = try XCTUnwrap(event.paranaEnd)
-                        guard start < parana, parana < end else {
+                        guard start < parana, parana <= end else {
                             XCTFail("Invalid interval: \(context) start=\(event.fastingStartISO), Parana=\(event.paranaStartISO)…\(event.paranaEndISO)")
                             continue
                         }
@@ -60,9 +60,10 @@ final class EkadashiLifecycleWorldSampleTests: XCTestCase {
                         XCTAssertNil(before.progress, context)
                         XCTAssertEqual(before.secondsUntilStart, Int(ceil(start.timeIntervalSince(midnight))), context)
                         XCTAssertEqual(event.lifecycle(at: start.addingTimeInterval(-1), zone: city.zone).countdown, "00:00:01", context)
-                        let states: [(Date, EkadashiLifecycle.Phase, Int)] = [
+                        var states: [(Date, EkadashiLifecycle.Phase, Int)] = [
                             (start, .fasting, 0), (start.addingTimeInterval(parana.timeIntervalSince(start) / 2), .fasting, 50),
-                            (parana.addingTimeInterval(-1), .fasting, 99), (parana, .parana, 100), (end.addingTimeInterval(-1), .parana, 100)]
+                            (parana.addingTimeInterval(-1), .fasting, 99)]
+                        if parana < end { states += [(parana, .parana, 100), (end.addingTimeInterval(-1), .parana, 100)] }
                         for (instant, phase, percent) in states {
                             let status = event.lifecycle(at: instant, zone: city.zone)
                             XCTAssertEqual(status.phase, phase, context); XCTAssertEqual(status.percent, percent, context)

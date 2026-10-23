@@ -97,7 +97,7 @@ final class AppModel {
     init(store injectedStore: KeyValueStore? = nil) {
         let group = Bundle.main.object(forInfoDictionaryKey: "EkadashiAppGroup") as? String ?? ""
         // UI tests start from a clean, already-launched English state.
-        let store: KeyValueStore = injectedStore ?? (ProcessInfo.processInfo.arguments.contains("-ui-testing")
+        let store: KeyValueStore = injectedStore ?? ((ProcessInfo.processInfo.arguments.contains("-ui-testing") || DisplayClock.isSimulationSession)
             ? InMemoryKeyValueStore(["has_launched": true, "language_code": "en"])
             : UserDefaultsKeyValueStore(defaults: UserDefaults(suiteName: group) ?? .standard))
         let premium = StoreKitPremiumService()
@@ -122,8 +122,8 @@ final class AppModel {
         recents = RecentSearches(store: store)
         let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         try? FileManager.default.createDirectory(at: support, withIntermediateDirectories: true)
-        entries = (try? FileCalendarEntryStore(url: support.appendingPathComponent("calendar_entries.json")))
-            ?? InMemoryCalendarEntryStore()
+        entries = DisplayClock.isSimulationSession ? InMemoryCalendarEntryStore() :
+            ((try? FileCalendarEntryStore(url: support.appendingPathComponent("calendar_entries.json"))) ?? InMemoryCalendarEntryStore())
         registry = FirestoreFreeSyncRegistry.fromConfiguration(
             apiKey: Bundle.main.object(forInfoDictionaryKey: "EkadashiFirebaseApiKey") as? String,
             projectId: Bundle.main.object(forInfoDictionaryKey: "EkadashiFirebaseProjectId") as? String)
@@ -273,6 +273,10 @@ final class AppModel {
     /// in v1); without a fix the last known (or chosen) city stays, else
     /// Chennai.
     func handleLocation(atLaunch: Bool = false) async {
+        if DisplayClock.isSimulationSession {
+            locationState = .located(ekadashiCityName)
+            return
+        }
         locationState = .detecting
         var fix = await location.currentFix(store: store)
         if fix == nil, location.hasPermission { fix = location.cachedFix(store: store) }
@@ -401,6 +405,7 @@ final class AppModel {
     /// A newly detected place becomes the Ekadashi city unless the user picked
     /// one on Home; the schedule recalculates only when the place moved.
     func refreshLocationOnResume() async {
+        guard !DisplayClock.isSimulationSession else { return }
         guard started, !refreshingLocation, locationState != .detecting else { return }
         refreshingLocation = true
         defer { refreshingLocation = false }
@@ -468,6 +473,7 @@ final class AppModel {
         let shown = homeEkadashis
         let current = shown.indices.contains(homeIndex) ? shown[homeIndex].occurrenceUid : nil
         ekadashis = list
+        lifecycleScheduleRevision += 1
         loadError = nil
         isLoading = false
         isCalculating = false
@@ -478,6 +484,7 @@ final class AppModel {
         } else {
             homeIndex = HomeSelection.index(of: home, now: DisplayClock.date(Date()), zone: scheduleZone, includeParana: true)
         }
+        if scrollToNext { selectCurrentOccurrence(now: DisplayClock.date(Date())) }
         syncWidgets()
         Task { await scheduleReminders() }
         if let route = pendingRoute {
@@ -541,6 +548,7 @@ final class AppModel {
     }
 
     private func scheduleRemindersNow() async {
+        guard !DisplayClock.isSimulationSession else { return }
         let settings = ReminderSettings.load(from: store)
         guard settings.enabled, await notifications.isAuthorized() else {
             await notifications.cancelAll()
@@ -569,11 +577,12 @@ final class AppModel {
     func syncWidgets() {
         guard !ekadashis.isEmpty else { return }
         WidgetBridge.publish(WidgetSnapshot.build(occurrences: ekadashis, timezone: ekadashiCity.timeZoneId,
-                                                  locationName: ekadashiCityName, language: language, now: Date(),
+                                                  locationName: ekadashiCityName, language: language, now: DisplayClock.date(Date()),
                                                   tradition: tradition.rawValue))
     }
 
     func scheduleBackgroundRefresh() {
+        guard !DisplayClock.isSimulationSession else { return }
         let request = BGAppRefreshTaskRequest(identifier: Self.refreshTaskId)
         request.earliestBeginDate = Date().addingTimeInterval(6 * 3600)
         try? BGTaskScheduler.shared.submit(request)
@@ -667,15 +676,39 @@ final class AppModel {
         selectedTab = tab
     }
 
-    /// Tapping the selected tab again: Today skips to the strictly next
-    /// Ekadashi; Calendar returns to today.
+    /// Tapping Home again selects the same current/next lifecycle occurrence;
+    /// Calendar returns to the Home city's actual current date.
     func reselect(_ tab: AppTab) {
         if tab == .today {
-            homeIndex = HomeSelection.index(of: homeEkadashis, now: DisplayClock.date(Date()), zone: scheduleZone, includeParana: false)
+            selectCurrentOccurrence(now: DisplayClock.date(Date()))
         } else if tab == .calendar {
             calendarFocus = today
         }
     }
+
+    /// Select across enabled years so Dec/Jan Parana is not lost at midnight.
+    func selectCurrentOccurrence(now: Date) {
+        guard let event = ekadashis.first(where: { $0.paranaEnd.map { now < $0 } ?? ($0.date >= scheduleZone.wallClock(now).date) }) else { return }
+        if selectedYear != event.date.year {
+            selectedYear = event.date.year
+            store.set(String(selectedYear), forKey: Self.yearKey)
+        }
+        if let index = homeEkadashis.firstIndex(where: { $0.occurrenceUid == event.occurrenceUid }) { homeIndex = index }
+    }
+
+    /// Advance only a displayed current occurrence that just finished. Browsing
+    /// another historical/future card never causes an unsolicited page jump.
+    func refreshCurrentOccurrence(previousNow: Date, now: Date) {
+        guard let previous = ekadashis.first(where: { $0.paranaEnd.map { previousNow < $0 } ?? false }),
+              homeEkadashis.indices.contains(homeIndex),
+              homeEkadashis[homeIndex].occurrenceUid == previous.occurrenceUid,
+              let end = previous.paranaEnd, now >= end else { return }
+        selectCurrentOccurrence(now: now)
+        syncWidgets()
+    }
+
+    private(set) var lifecycleScheduleRevision = 0
+    @ObservationIgnored var lifecycleLastNow: Date?
 
     // MARK: Vrat
 
@@ -696,7 +729,7 @@ final class AppModel {
     /// Recording opens once the fast has happened (Parana started, or the
     /// day after); an existing record stays editable.
     func canRecord(_ event: EkadashiOccurrence, now: Date = Date()) -> Bool {
-        vrat.record(for: event.occurrenceUid) != nil || VratRecording.isOpen(event, now: DisplayClock.date(now), zone: scheduleZone)
+        !DisplayClock.isSimulationSession && (vrat.record(for: event.occurrenceUid) != nil || VratRecording.isOpen(event, now: DisplayClock.date(now), zone: scheduleZone))
     }
 
     /// A closed fast still responds with the same localized explanation as Details.

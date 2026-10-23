@@ -2,7 +2,7 @@ import Foundation
 import XCTest
 @testable import EkadashiCore
 
-/// Approved widget behaviour: one real occurrence and percentage REMAINING.
+/// Approved widget behaviour: one real occurrence and percentage COMPLETED.
 final class WidgetRemainingTests: XCTestCase {
     private let start = instant("2026-10-22T06:00:00+05:30")
 
@@ -17,15 +17,15 @@ final class WidgetRemainingTests: XCTestCase {
                                     language: "en", now: now, tradition: "Smarta")
     }
 
-    func testRingShowsRemainingNotElapsedAtAnAsymmetricTime() {
+    func testRingShowsCompletedAtAnAsymmetricTime() {
         let now = start.addingTimeInterval(15 * 3600)
         guard case .today(_, let remaining) = snapshot(now).headline(at: now) else { return XCTFail("today") }
-        XCTAssertEqual(remaining, 0.375, accuracy: 0.0001)
+        XCTAssertEqual(remaining, 0.625, accuracy: 0.0001)
     }
 
-    func testRingStartsFullAndDecreasesAsTimePasses() {
+    func testRingStartsEmptyAndFillsAsTimePasses() {
         let snapshot = snapshot(start)
-        for (hours, expected) in [(0.0, 1.0), (3, 0.875), (12, 0.5), (17, 7.0 / 24)] {
+        for (hours, expected) in [(0.0, 0.0), (3, 0.125), (12, 0.5), (17, 17.0 / 24)] {
             guard case .today(_, let remaining) = snapshot.headline(at: start.addingTimeInterval(hours * 3600)) else {
                 return XCTFail("today at \(hours)")
             }
@@ -33,24 +33,22 @@ final class WidgetRemainingTests: XCTestCase {
         }
     }
 
-    func testTodaysEkadashiBeforeSunriseShowsAFullRing() {
+    func testBeforeSunriseShowsCountdownAndParanaRetainsCompletedRing() {
         let now = start.addingTimeInterval(-3600)
-        guard case .today(let item, let remaining) = snapshot(now).headline(at: now) else { return XCTFail("today before start") }
-        XCTAssertEqual(item.date, "2026-10-22")
-        XCTAssertEqual(remaining, 1)
+        guard case .next(let item, let days) = snapshot(now).headline(at: now) else { return XCTFail("countdown") }
+        XCTAssertEqual(days, 0)
+        XCTAssertEqual(item.lifecycle(at: now, timeZone: "Asia/Kolkata").countdown, "01:00:00")
+        let parana = instant("2026-10-23T07:00:00+05:30")
+        guard case .today(let active, let progress) = snapshot(parana).headline(at: parana) else { return XCTFail("Parana active") }
+        XCTAssertEqual(active.occurrenceUid, "ekadashi:2026:20")
+        XCTAssertEqual(progress, 1)
     }
 
-    func testNonEkadashiDayShowsExactlyTheNextOccurrenceEvenDuringYesterdaysParana() {
-        let now = instant("2026-10-23T07:00:00+05:30")
-        guard case .next(let item, let days) = snapshot(now).headline(at: now) else { return XCTFail("next on a non-Ekadashi day") }
-        XCTAssertEqual(item.occurrenceUid, "ekadashi:2026:21")
-        XCTAssertEqual(days, 13)
-    }
-
-    func testTodayIsEvaluatedInTheScheduleTimeZone() {
-        let now = instant("2026-10-21T23:30:00Z") // 22 Oct in Chennai, still 21 Oct in UTC.
-        guard case .today = snapshot(now).headline(at: now) else { return XCTFail("Chennai date") }
-        guard case .next = snapshot(now, zone: "UTC").headline(at: now) else { return XCTFail("UTC date") }
+    func testCountdownDayUsesScheduleZoneWhileActivePhaseUsesInstants() throws {
+        let now = instant("2026-10-21T23:30:00Z")
+        let item = try XCTUnwrap(snapshot(now).nextEkadashi)
+        XCTAssertEqual(item.lifecycle(at: now, timeZone: "Asia/Kolkata").phase, .countdown)
+        XCTAssertEqual(item.lifecycle(at: now, timeZone: "UTC").phase, .scheduled)
     }
 
     func testWidgetDatesIncludeTheWeekdayAndActualYear() {

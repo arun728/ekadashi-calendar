@@ -36,7 +36,7 @@ struct TodayView: View {
                     arrow(AppSymbol.previous, target: model.homeIndex - 1) { model.homeIndex -= 1 }
                     TabView(selection: $model.homeIndex) {
                         ForEach(Array(events.enumerated()), id: \.element.occurrenceUid) { index, event in
-                            EkadashiCard(event: event)
+                            EkadashiCard(event: event, isVisible: index == model.homeIndex && model.selectedTab == .today)
                                 .padding(4)
                                 .tag(index)
                         }
@@ -219,6 +219,7 @@ struct HomeControls: View {
 struct EkadashiCard: View {
     @Environment(AppModel.self) private var model
     let event: EkadashiOccurrence
+    var isVisible = true
     @State private var recording = false
     @State private var sharing = false
 
@@ -226,9 +227,9 @@ struct EkadashiCard: View {
         VStack(spacing: 16) {
             ScrollView {
                 VStack(spacing: 0) {
-                    TimelineView(.periodic(from: .now, by: 60)) { context in
+                    OccurrenceTimeline(events: [event], timeZone: model.ekadashiCity.timeZoneId, active: isVisible) { now in
                         EkadashiStatusHeader(event: event, timeZone: model.ekadashiCity.timeZoneId,
-                            language: model.language, now: DisplayClock.date(context.date))
+                            language: model.language, now: now)
                     }
                     Text(model.fullDate(event.date)).font(.title2.weight(.light)).padding(.top, 16)
                     Text(event.name)
@@ -266,8 +267,8 @@ struct EkadashiCard: View {
                     .accessibilityLabel(model.t("share_card"))
                     .accessibilityIdentifier("home_share_card")
                     if model.vrat.isEnabled {
-                        TimelineView(.periodic(from: .now, by: 60)) { context in
-                            let open = model.canRecord(event, now: context.date)
+                        OccurrenceTimeline(events: [event], timeZone: model.ekadashiCity.timeZoneId, active: isVisible) { now in
+                            let open = model.canRecord(event, now: now)
                             Button {
                                 recording = model.requestVratRecording(event)
                             } label: {
@@ -311,38 +312,28 @@ struct EkadashiStatusHeader: View {
     let language: String
     let now: Date
 
-    private var daysUntil: Int {
-        let today = TzDatabase.shared.location(timeZone)?.wallClock(now).date ?? CivilDate(utc: now)
-        return today.days(until: event.date)
-    }
-
-    private var daysText: String {
-        let key: String
-        switch daysUntil {
-        case 0: key = "today"
-        case 1: key = "tomorrow"
-        case ..<0: key = "passed"
-        default: return Localizer.shared.translate("in_days", language: language, args: [String(daysUntil)])
-        }
-        return Localizer.shared.translate(key, language: language)
+    private var status: EkadashiLifecycle {
+        event.lifecycle(at: now, zone: TzDatabase.shared.location(timeZone) ?? AppTimezone.ist.location)
     }
 
     var body: some View {
         HStack(spacing: 12) {
-            if daysUntil == 0 {
+            if status.progress != nil {
                 let snapshot = WidgetSnapshot.build(occurrences: [event], timezone: timeZone, locationName: "", language: language, now: now)
-                if let headline = snapshot.headline(at: now, selection: .today) {
+                if let headline = snapshot.headline(at: now) {
                     RemainingRing(item: headline.item, snapshot: snapshot, now: now)
                         .frame(width: 48, height: 48)
                         .accessibilityIdentifier("home_remaining_ring")
                 }
             }
             Spacer(minLength: 0)
-            Text(daysText)
-                .font(.footnote.bold()).foregroundStyle(.white)
-                .padding(.horizontal, 14).padding(.vertical, 6)
-                .background(daysUntil < 0 ? Color.gray : Theme.teal, in: Capsule())
+            Text(status.label(language: language))
+                .font(.footnote.bold()).monospacedDigit().foregroundStyle(.white)
+                .lineLimit(1).minimumScaleFactor(0.6)
+                .padding(.horizontal, 14).padding(.vertical, 8)
+                .background(status.phase == .passed ? Color.gray : Theme.teal, in: Capsule())
                 .fixedSize(horizontal: false, vertical: true)
+                .accessibilityHint(status.phase == .countdown ? Localizer.shared.translate("widget_starts_in", language: language) : "")
                 .accessibilityIdentifier("home_day_badge")
         }
     }

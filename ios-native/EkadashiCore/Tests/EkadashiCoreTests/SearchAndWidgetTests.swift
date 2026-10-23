@@ -364,10 +364,11 @@ final class WidgetRedesignTests: XCTestCase {
         XCTAssertEqual(progress, 0.5, accuracy: 0.01)
         XCTAssertEqual(item.fastProgress(at: probe.fastingStart.addingTimeInterval(-60)), 0)
         XCTAssertEqual(item.fastProgress(at: probe.paranaEnd), 1)
-        // On the next civil day, show the single next Ekadashi.
+        // The occurrence persists through the following day's Parana.
         let parana = probe.paranaStart.addingTimeInterval(60)
-        guard case .next(let next, _) = snapshot.headline(at: parana) else { return XCTFail("expected next") }
-        XCTAssertNotEqual(next.occurrenceUid, probe.occurrenceUid)
+        guard case .today(let current, let completed) = snapshot.headline(at: parana) else { return XCTFail("expected Parana") }
+        XCTAssertEqual(current.occurrenceUid, probe.occurrenceUid)
+        XCTAssertEqual(completed, 1)
     }
 
     func testEveryLanguageHasTheNewWidgetStrings() {

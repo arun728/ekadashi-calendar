@@ -8,7 +8,7 @@ enum WidgetBridge {
 
     static func publish(_ snapshot: WidgetSnapshot) {
         guard let defaults = UserDefaults(suiteName: appGroup), let data = try? JSONEncoder().encode(snapshot) else { return }
-        defaults.set(data, forKey: WidgetSnapshot.appGroupKey)
+        defaults.set(data, forKey: WidgetClock.snapshotKey)
         WidgetCenter.shared.reloadAllTimelines()
     }
 }

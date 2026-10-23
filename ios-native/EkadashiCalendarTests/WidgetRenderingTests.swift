@@ -361,15 +361,20 @@ final class WidgetRenderingTests: XCTestCase {
             let image = try XCTUnwrap(renderer.uiImage?.cgImage)
             let pixels = try rgba(image)
             var escaped = 0
+            var outside: [(Int, Int)] = []
             var ink = 0
             for offset in stride(from: 3, to: pixels.count, by: 4) where pixels[offset] > 20 { ink += 1 }
             XCTAssertGreaterThan(ink, 20, "A blank render must not pass the bounds check: \(label)")
             for y in 0..<image.height {
                 for x in 0..<image.width where x < margin - 1 || y < margin - 1 || x >= margin + Int(width) + 1 || y >= margin + Int(height) + 1 {
-                    if pixels[(y * image.width + x) * 4 + 3] > 20 { escaped += 1 }
+                    if pixels[(y * image.width + x) * 4 + 3] > 20 { escaped += 1; outside.append((x, y)) }
                 }
             }
-            XCTAssertEqual(escaped, 0, "Content escapes widget bounds: \(label) \(textSize)")
+            if escaped > 0 {
+                let attachment = XCTAttachment(image: UIImage(cgImage: image))
+                attachment.name = "overflow-\(label)-\(textSize)"; attachment.lifetime = .keepAlways; add(attachment)
+            }
+            XCTAssertEqual(escaped, 0, "Content escapes widget bounds: \(label) \(textSize), pixels \(outside.prefix(12))")
         }
     }
 

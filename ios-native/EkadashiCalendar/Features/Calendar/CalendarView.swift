@@ -12,6 +12,7 @@ import EkadashiCore
 /// Journey only.
 struct CalendarView: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.scenePhase) private var scenePhase
     @State private var month = CivilDate.today().firstOfMonth
     @State private var selected = CivilDate.today()
     @State private var filter: CalendarFilter = .all
@@ -35,7 +36,15 @@ struct CalendarView: View {
         do { return (try model.entries.all(), false) } catch { return ([], true) }
     }
 
-    private var selectedEkadashi: EkadashiOccurrence? { model.ekadashis.first { $0.date == selected } }
+    private var selectedDay: EkadashiCalendarDay {
+        EkadashiCalendarDay(events: model.ekadashis, day: selected, zone: model.scheduleZone)
+    }
+    private var selectedEkadashi: EkadashiOccurrence? { selectedDay.fasting.first }
+    private var selectedParana: [EkadashiOccurrence] { selectedDay.parana }
+    @State private var displayedDay: CivilDate?
+    @State private var visible = false
+    @State private var hasFocused = false
+
 
     var body: some View {
         let loaded = entries
@@ -54,7 +63,7 @@ struct CalendarView: View {
                 // selected day changes the month, as on Android.
                 VStack(spacing: 12) {
                     monthHeader
-                    MonthGrid(month: month, selected: selected, today: CivilDate.today(), firstDay: firstDay, lastDay: lastDay,
+                    MonthGrid(month: month, selected: selected, today: displayedDay ?? model.today, firstDay: firstDay, lastDay: lastDay,
                               markers: { markers(for: $0, loaded.list) }, select: { selected = $0 })
                         .padding(.horizontal, 12)
                         .id(month)
@@ -77,8 +86,8 @@ struct CalendarView: View {
         }
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                Button(model.t("today")) { focus(CivilDate.today()) }
-                    .disabled(selected == CivilDate.today() && month == CivilDate.today().firstOfMonth)
+                Button(model.t("today")) { focus(model.today) }
+                    .disabled(selected == model.today && month == model.today.firstOfMonth)
                     .accessibilityIdentifier("calendar_today")
             }
             ToolbarItemGroup(placement: .topBarTrailing) {
@@ -94,7 +103,17 @@ struct CalendarView: View {
             PanchangMonthPicker(month: month, years: years.first.map { $0...(years.last ?? $0) }) { focusMonth($0) }
                 .presentationDetents([.height(320)])
         }
-        .onAppear { focusInitial() }
+        .onAppear { visible = true; focusInitial() }.onDisappear { visible = false }
+        .task(id: "\(visible)-\(model.selectedTab)-\(scenePhase)-\(model.lifecycleScheduleRevision)") {
+            guard visible, model.selectedTab == .calendar, scenePhase == .active else { return }
+            while !Task.isCancelled {
+                displayedDay = model.today
+                let now = DisplayClock.date(Date())
+                let midnight = model.scheduleZone.utc(model.today.adding(days: 1))
+                let delay = min(3600, DisplayClock.realInterval(midnight.timeIntervalSince(now)))
+                do { try await Task.sleep(for: .seconds(delay)) } catch { break }
+            }
+        }
         // Home's year menu and Calendar stay on the same year.
         .onChange(of: month) { _, value in model.calendarShowsYear(value.year) }
         .onChange(of: model.calendarFocus) { _, date in
@@ -188,14 +207,17 @@ struct CalendarView: View {
     private func selectedDay(_ list: [CalendarEntry]) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             if let event = selectedEkadashi, filter == .all || filter == .ekadashi {
-                CalendarEkadashiCard(event: event)
-            } else if filter == .ekadashi {
+                CalendarEkadashiCard(event: event, isVisible: visible && model.selectedTab == .calendar)
+            } else if filter == .ekadashi && selectedParana.isEmpty {
                 Text(model.t("no_ekadashi")).font(.subheadline).foregroundStyle(.secondary)
+            }
+            if filter == .all || filter == .ekadashi {
+                ForEach(selectedParana) { event in CalendarEkadashiCard(event: event, paranaOnly: true, isVisible: visible && model.selectedTab == .calendar) }
             }
             if filter != .ekadashi {
                 // An Ekadashi is the day's entry: no "No entries for this day".
                 DayEntriesList(day: selected, entries: list, filter: filter,
-                               showsEmptyText: selectedEkadashi == nil || filter != .all,
+                               showsEmptyText: (selectedEkadashi == nil && selectedParana.isEmpty) || filter != .all,
                                edit: { editing = EntryEditorRequest(day: selected, existing: $0) }, delete: delete)
             }
         }
@@ -207,8 +229,9 @@ struct CalendarView: View {
 
     /// Opens on the year chosen on Home: today in this year, else its January.
     private func focusInitial() {
-        guard month.year != model.selectedYear else { return }
-        let today = CivilDate.today()
+        guard !hasFocused || month.year != model.selectedYear else { return }
+        hasFocused = true
+        let today = model.today
         focus(today.year == model.selectedYear ? today : CivilDate(model.selectedYear, 1, 1))
     }
 
@@ -222,7 +245,7 @@ struct CalendarView: View {
 
     /// A picked month selects today when it is this month, else its first day.
     private func focusMonth(_ picked: CivilDate) {
-        let today = CivilDate.today()
+        let today = model.today
         focus(picked.firstOfMonth == today.firstOfMonth ? today : picked.firstOfMonth)
     }
 
@@ -239,7 +262,7 @@ struct CalendarView: View {
     private func markers(for day: CivilDate, _ list: [CalendarEntry]) -> [Color] {
         var colors: [Color] = []
         let zone = TimeZone.current
-        if (filter == .all || filter == .ekadashi) && model.ekadashis.contains(where: { $0.date == day }) { colors.append(Theme.teal) }
+        if (filter == .all || filter == .ekadashi) && EkadashiCalendarDay(events: model.ekadashis, day: day, zone: model.scheduleZone).showsFastingMarker { colors.append(Theme.teal) }
         if (filter == .all || filter == .google) && list.contains(where: { $0.source == .google && $0.occurs(on: day, in: zone) }) {
             colors.append(Theme.googleBlue)
         }
@@ -346,6 +369,8 @@ struct MonthGrid: View {
 struct CalendarEkadashiCard: View {
     @Environment(AppModel.self) private var model
     let event: EkadashiOccurrence
+    var paranaOnly = false
+    var isVisible = true
 
     var body: some View {
         let status = model.vrat.record(for: event.occurrenceUid)?.status
@@ -358,7 +383,15 @@ struct CalendarEkadashiCard: View {
                     StatusPill(text: model.t(style.listKey), systemImage: style.symbol, color: style.color)
                 }
             }
-            Text("\(model.t("start_fasting")): \(Localizer.shared.localizeClock(event.fastStartTime, language: model.language))").font(.subheadline)
+            OccurrenceTimeline(events: [event], timeZone: model.ekadashiCity.timeZoneId, active: isVisible) { now in
+                let status = event.lifecycle(at: now, zone: model.scheduleZone)
+                Text(status.label(language: model.language)).font(.footnote.bold()).monospacedDigit()
+                    .foregroundStyle(status.phase == .passed ? .secondary : Theme.teal)
+                    .accessibilityIdentifier("calendar_lifecycle_status")
+            }
+            if !paranaOnly {
+                Text("\(model.t("start_fasting")): \(Localizer.shared.localizeClock(event.fastStartTime, language: model.language))").font(.subheadline)
+            }
             Text("\(model.t("break_fasting")): \(Localizer.shared.localizeClock(EkadashiDisplay.breakTime(event), language: model.language))").font(.subheadline)
                 .accessibilityIdentifier("calendar_break_fasting")
             NavigationLink {

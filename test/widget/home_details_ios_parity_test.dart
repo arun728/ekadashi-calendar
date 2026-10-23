@@ -3,6 +3,7 @@ import 'package:ekadashi_calendar/l10n/app_language.dart';
 import 'package:ekadashi_calendar/models/vrat_tracker_models.dart';
 import 'package:ekadashi_calendar/screens/details_screen.dart';
 import 'package:ekadashi_calendar/services/ekadashi_schedule.dart';
+import 'package:ekadashi_calendar/services/ekadashi_settings.dart';
 import 'package:ekadashi_calendar/services/ekadashi_service.dart';
 import 'package:ekadashi_calendar/services/vrat_recording.dart';
 import 'package:ekadashi_calendar/services/vrat_tracker_service.dart';
@@ -39,11 +40,19 @@ void main() {
       tester.widget<Text>(text).style ?? const TextStyle();
 
   /// The Ekadashis on Home and the index of the card on screen.
-  (List<EkadashiDate>, int) homeCards(WidgetTester tester) {
-    final list = EkadashiService().getEkadashis(
-      timezone: 'IST',
+  Future<(List<EkadashiDate>, int)> homeCards(WidgetTester tester) async {
+    final settings = tester
+        .element(find.byKey(const Key('home_ekadashi_card')))
+        .read<EkadashiSettings>();
+    final all = await EkadashiService().engineEkadashis(
+      city: settings.city,
+      tradition: settings.tradition,
       languageCode: 'en',
+      years: settings.years,
     );
+    final list = all
+        .where((event) => event.date.year == settings.year)
+        .toList();
     final indicator = tester
         .widget<Text>(find.byKey(const Key('home_page_indicator')))
         .data!;
@@ -166,7 +175,7 @@ void main() {
       expect(card, findsOneWidget);
       expect(tester.widget(card), isA<GlassPanel>());
       expect(tester.widget<GlassPanel>(card).radius, 24);
-      final (list, index) = homeCards(tester);
+      final (list, index) = await homeCards(tester);
       final event = list[index];
       final name = find.descendant(of: card, matching: find.text(event.name));
       expect(styleOf(tester, name).fontSize, IosText.title);
@@ -281,7 +290,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('home_previous')));
       await tester.pumpAndSettle();
-      final (list, index) = homeCards(tester);
+      final (list, index) = await homeCards(tester);
       expect(
         VratRecording.isOpen(list[index], now: DateTime.now(), timezone: 'IST'),
         isTrue,
@@ -365,7 +374,7 @@ void main() {
 
     testWidgets('iOS sizes, time-zone pill, glass timings box', (tester) async {
       await pumpHome(tester);
-      final (list, index) = homeCards(tester);
+      final (list, index) = await homeCards(tester);
       final event = list[index];
       await openDetails(tester);
       final details = find.byType(DetailsScreen);
@@ -455,7 +464,7 @@ void main() {
       await pumpHome(tester);
       await tester.tap(find.byKey(const Key('home_previous')));
       await tester.pumpAndSettle();
-      final (list, index) = homeCards(tester);
+      final (list, index) = await homeCards(tester);
       final event = list[index];
       await openDetails(tester);
       final button = find.byKey(const Key('details_record_vrat'));

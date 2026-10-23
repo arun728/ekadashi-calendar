@@ -6,6 +6,7 @@ import EkadashiCore
 /// Liquid Glass.
 struct RootView: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         @Bindable var model = model
@@ -47,6 +48,29 @@ struct RootView: View {
                 .presentationDetents([.medium])
         }
         .toast($model.toast)
+        .task(id: "\(scenePhase)-\(model.lifecycleScheduleRevision)") {
+            guard scenePhase == .active else { return }
+            while !Task.isCancelled {
+                let now = DisplayClock.date(Date())
+                model.refreshCurrentOccurrence(previousNow: model.lifecycleLastNow ?? now, now: now)
+                model.lifecycleLastNow = now
+                let end = model.ekadashis.compactMap(\.paranaEnd).first { $0 > now }
+                var delay = min(3600, max(0.05, end?.timeIntervalSince(now) ?? 3600))
+                #if DEBUG
+                if DisplayClock.isSimulationSession { delay = 0.25 }
+                #endif
+                do { try await Task.sleep(for: .seconds(delay)) } catch { break }
+            }
+        }
+        #if DEBUG
+        .safeAreaInset(edge: .top, spacing: 0) {
+            if DisplayClock.isSimulationSession {
+                Text(DebugClockWords.text("banner", model.language))
+                    .font(.caption2.bold()).foregroundStyle(.black).frame(maxWidth: .infinity)
+                    .padding(4).background(.yellow)
+            }
+        }
+        #endif
     }
 
     @Environment(\.glassLookEnabled) private var glassLookEnabled

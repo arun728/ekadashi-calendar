@@ -136,15 +136,14 @@ public struct WidgetSnapshot: Codable, Equatable, Sendable {
         ([nextEkadashi].compactMap { $0 } + upcoming).first { now < $0.paranaEnd }
     }
 
-    /// The exclusive upcoming widget: the first five strictly future civil
-    /// dates, including the nearest one. Reevaluate cached data at render time.
+    /// The exclusive upcoming widget: the first five not-yet-started occurrences,
+    /// including this fasting date before sunrise. Reevaluate cached data at render time.
     public func upcoming(after now: Date) -> [WidgetItem] {
-        let today = TzDatabase.shared.location(timeZone)?.wallClock(now).date ?? CivilDate(utc: now)
         var seen = Set<String>()
         let items = ([todayEkadashi, nextEkadashi].compactMap { $0 } + upcoming)
             .sorted { $0.date < $1.date }
             .filter { item in
-                guard let date = CivilDate(iso: item.date), date > today else { return false }
+                guard item.fastingStart > now else { return false }
                 return seen.insert(item.occurrenceUid).inserted
             }
         return Array(items.prefix(5))
@@ -153,7 +152,7 @@ public struct WidgetSnapshot: Codable, Equatable, Sendable {
     /// When the widget timeline must refresh: every state change ahead.
     public func refreshDates(after now: Date) -> [Date] {
         let items = [todayEkadashi, nextEkadashi].compactMap { $0 } + upcoming
-        var dates = items.flatMap { [$0.fastingStart, $0.paranaStart, $0.paranaEnd] }
+        var dates = items.flatMap { [$0.fastingStart, $0.fastingStart.addingTimeInterval(-36000), $0.paranaStart, $0.paranaEnd] }
         // Text and arc change together at each percentage boundary.
         for item in items where item.paranaStart > item.fastingStart {
             let interval = item.paranaStart.timeIntervalSince(item.fastingStart)
@@ -185,9 +184,10 @@ public struct WidgetSnapshot: Codable, Equatable, Sendable {
 
 /// What the Ekadashi widget leads with (docs/ROADMAP.md Phase 6).
 public enum WidgetHeadline: Equatable, Sendable {
-    /// Today's civil-date Ekadashi: fraction of scheduled fasting time REMAINING.
+    /// An ongoing occurrence, including overnight and Parana: completed fraction.
+    /// The legacy case name is retained for source compatibility.
     case today(WidgetItem, progress: Double)
-    /// The next Ekadashi and the calendar days until it.
+    /// The next Ekadashi; zero civil days means a pre-start seconds countdown.
     case next(WidgetItem, days: Int)
 }
 
@@ -212,11 +212,13 @@ extension WidgetSnapshot {
     public func headline(at now: Date, selection: WidgetSelection = .automatic) -> WidgetHeadline? {
         let today = TzDatabase.shared.location(timeZone)?.wallClock(now).date ?? CivilDate(utc: now)
         let items = ([todayEkadashi, nextEkadashi].compactMap { $0 } + upcoming).sorted { $0.date < $1.date }
-        if selection != .next, let item = items.first(where: { CivilDate(iso: $0.date) == today }) {
-            return .today(item, progress: item.remainingFraction(at: now))
+        let unique = items.reduce(into: [WidgetItem]()) { result, item in
+            if !result.contains(where: { $0.occurrenceUid == item.occurrenceUid }) { result.append(item) }
         }
-        guard selection != .today,
-              let item = items.first(where: { CivilDate(iso: $0.date).map { $0 > today } ?? false }),
+        if selection != .next, let item = unique.first(where: { $0.fastingStart <= now && now < $0.paranaEnd }) {
+            return .today(item, progress: item.fastProgress(at: now))
+        }
+        guard selection != .today, let item = unique.first(where: { $0.fastingStart > now }),
               let day = CivilDate(iso: item.date) else { return nil }
         return .next(item, days: today.days(until: day))
     }

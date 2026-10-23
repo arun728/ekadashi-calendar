@@ -75,15 +75,16 @@ public enum HomeSelection {
         zone.wallClock(now).date.days(until: date)
     }
 
-    /// The next Ekadashi from today; a passed one while its Parana is still
-    /// open when [includeParana]; the last one after every fast.
+    /// The first unfinished occurrence, including Parana; the last one after
+    /// every fast. includeParana remains only for source compatibility.
     public static func index(of events: [EkadashiOccurrence], now: Date, zone: TzLocation, includeParana: Bool) -> Int {
         guard !events.isEmpty else { return 0 }
         let today = zone.wallClock(now).date
         for (i, event) in events.enumerated() {
-            let days = today.days(until: event.date)
-            if days >= 0 { return i }
-            if includeParana, let end = event.paranaEnd, now < end { return i }
+            // The old includeParana flag is retained for call-site compatibility.
+            // Re-tapping Home must use the same lifecycle as launch and widgets.
+            if let end = event.paranaEnd { if now < end { return i } }
+            else if today.days(until: event.date) >= 0 { return i }
         }
         return events.count - 1
     }

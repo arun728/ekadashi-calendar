@@ -8,6 +8,7 @@ struct EkadashiDetailsView: View {
     let event: EkadashiOccurrence
     @State private var recording = false
     @State private var sharing = false
+    @State private var visible = false
 
     var body: some View {
         ScrollView {
@@ -26,6 +27,12 @@ struct EkadashiDetailsView: View {
                 section("story_history", event.story)
                 section("fasting_rules", event.fastingRules)
                 section("spiritual_benefits", event.benefits)
+                OccurrenceTimeline(events: [event], timeZone: model.ekadashiCity.timeZoneId, active: visible) { now in
+                    EkadashiStatusHeader(event: event, timeZone: model.ekadashiCity.timeZoneId,
+                        language: model.language, now: now)
+                }
+                .accessibilityElement(children: .contain)
+                .accessibilityIdentifier("details_lifecycle_status")
                 VStack(spacing: 0) {
                     timing(AppSymbol.startFasting, model.t("start_fasting"), event.date, event.fastStartTime)
                     Divider().padding(.vertical, 12)
@@ -33,10 +40,13 @@ struct EkadashiDetailsView: View {
                 }
                 .padding(16)
                 .glassPanel(cornerRadius: 16, tint: Theme.teal)
-                if model.vrat.isEnabled { vratButton }
+                if model.vrat.isEnabled {
+                    OccurrenceTimeline(events: [event], timeZone: model.ekadashiCity.timeZoneId, active: visible) { _ in vratButton }
+                }
             }
             .padding(20)
         }
+        .onAppear { visible = true }.onDisappear { visible = false }
         .background(AppBackground())
         .accessibilityIdentifier("ekadashi_details")
         .navigationTitle(model.t("app_title"))

@@ -21,6 +21,14 @@ struct SettingsView: View {
 
     var body: some View {
         List {
+            #if DEBUG
+            if DisplayClock.isSimulationSession {
+                Section(DebugClockWords.text("title", model.language)) {
+                    NavigationLink(DebugClockWords.text("title", model.language)) { DebugLifecycleClockView() }
+                        .accessibilityIdentifier("settings_test_clock")
+                }
+            }
+            #endif
             Section {
                 SettingsPremiumCard()
                     .listRowInsets(EdgeInsets())

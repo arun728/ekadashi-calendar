@@ -27,3 +27,9 @@ adjustment is not an Android Home Screen widget redesign request.
 TDD evidence: `9cc2eed` records the missing ring, blocked-button callback and old default. First implementation gates: Flutter **769 passed**, analyzer **no issues**, Swift core **270 passed**. Calendar already used the complete-window localization helper; six-language/both-tradition rendered-card tests now guard it. Fixed-clock tests also cover minute refresh, Home-city midnight, timing boundaries and 0/72/100 percent at large text sizes. Android widget designs are unchanged.
 
 Final recording/layout follow-up: existing saved records stay editable before Parana, and the ring stroke stays inside its frame. Both were reproduced by failing tests and corrected in `82b6322`. The optional Android Glass Look and final device evidence are documented in [ANDROID_GLASS_LOOK.md](ANDROID_GLASS_LOOK.md).
+
+23 October: the iOS-first lifecycle correction is **not yet ported to Android**.
+The approved countdown → Now/filling progress → Parana/100% → Passed behavior,
+Calendar/Details changes and Debug-only test clock are tracked with an explicit
+Android port checklist in [IOS_EKADASHI_LIFECYCLE.md](IOS_EKADASHI_LIFECYCLE.md).
+Wait for Arun's approval of iOS before starting that Android port.

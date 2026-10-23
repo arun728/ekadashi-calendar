@@ -3,7 +3,7 @@ import WidgetKit
 import EkadashiCore
 
 /// Shared by the extension and Settings: the same real occurrence, palette,
-/// local dates, complete timings and remaining-only ring on both surfaces.
+/// local dates, complete timings and filling progress ring on both surfaces.
 enum WidgetStyle {
     static let teal = color(WidgetPalette.teal)
     static func color(_ hex: UInt32) -> Color {
@@ -49,6 +49,39 @@ private struct WidgetColumnText: View {
     }
 }
 
+struct WidgetStartCountdown: View {
+    let item: WidgetItem
+    let snapshot: WidgetSnapshot
+    let now: Date
+    let days: Int
+    @Environment(\.isWidgetPresentation) private var nativeWidget
+    var body: some View {
+        if days <= 0 {
+            Group {
+                if nativeWidget && WidgetClock.supportsSystemCountdown {
+                    let live = Date()
+                    let target = WidgetClock.realDate(for: item.fastingStart, liveNow: live) ?? live
+                    HStack(spacing: 0) {
+                        if item.fastingStart.timeIntervalSince(now) < 36000 { Text("0") }
+                        Text(timerInterval: live...max(live, target), countsDown: true, showsHours: true)
+                            .multilineTextAlignment(.leading)
+                    }
+                } else {
+                    Text(item.lifecycle(at: now, timeZone: snapshot.timeZone).countdown)
+                }
+            }.monospacedDigit().accessibilityIdentifier("ekadashi_start_countdown")
+        } else { Text(snapshot.daysToGo(days)) }
+    }
+}
+
+private struct WidgetPresentationKey: EnvironmentKey { static let defaultValue = false }
+extension EnvironmentValues {
+    var isWidgetPresentation: Bool {
+        get { self[WidgetPresentationKey.self] }
+        set { self[WidgetPresentationKey.self] = newValue }
+    }
+}
+
 struct RemainingRing: View {
     let item: WidgetItem
     let snapshot: WidgetSnapshot
@@ -63,11 +96,11 @@ struct RemainingRing: View {
             ZStack {
                 Circle().inset(by: 2).stroke(Color.primary.opacity(0.15), lineWidth: 4)
                 Circle().inset(by: 2)
-                    .trim(from: 0, to: item.remainingFraction(at: now))
+                    .trim(from: 0, to: item.fastProgress(at: now))
                     .stroke(accent, style: StrokeStyle(lineWidth: 4, lineCap: .round))
                     .rotationEffect(.degrees(-90))
                     .widgetAccentable()
-                Text("\(item.remainingPercent(at: now))%")
+                Text("\(item.completedPercent(at: now))%")
                     .font(.system(size: side * 0.31, weight: .bold))
                     .monospacedDigit().lineLimit(1).minimumScaleFactor(0.5)
                     // Text owns a safe interior box, including the wider 100%.
@@ -76,7 +109,7 @@ struct RemainingRing: View {
             .frame(width: side, height: side)
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(item.remainingPercent(at: now))% \(WidgetText(snapshot: snapshot).remainingLabel)")
+        .accessibilityLabel("\(item.completedPercent(at: now))% \(Localizer.shared.translate("ios_fast_completed", language: snapshot.locale))")
         .accessibilityIdentifier("widget_remaining_ring")
     }
 }
@@ -99,6 +132,9 @@ struct EkadashiWidgetView: View {
                 case .accessoryRectangular: rectangular(snapshot, headline)
                 case .systemMedium: medium(snapshot, headline)
                 default: small(snapshot, headline)
+                    // Protect Bengali glyph ink at the small widget's edges.
+                    .padding(.horizontal, family == .systemSmall ? 2 : 0)
+                    .padding(.bottom, family == .systemSmall ? 3 : 0)
                 }
             } else {
                 Text(emptyLabel).font(.caption).multilineTextAlignment(.leading)
@@ -115,11 +151,11 @@ struct EkadashiWidgetView: View {
 
     private func header(_ snapshot: WidgetSnapshot, _ headline: WidgetHeadline) -> some View {
         HStack(alignment: .firstTextBaseline) {
-            Text(snapshot.string(headline.isToday ? "today_title" : "next_ekadashi", ""))
+            Text(headline.isToday ? headline.item.lifecycle(at: now, timeZone: snapshot.timeZone).label(language: snapshot.locale) : snapshot.string("next_ekadashi", ""))
                 .font(.system(size: 10, weight: .bold)).foregroundStyle(accent).lineLimit(1).minimumScaleFactor(0.7).widgetAccentable()
             Spacer(minLength: 4)
             if case .next(_, let days) = headline, family != .systemSmall {
-                Text(snapshot.daysToGo(days)).font(.system(size: 10, weight: .semibold)).foregroundStyle(accent)
+                WidgetStartCountdown(item: headline.item, snapshot: snapshot, now: now, days: days).font(.system(size: 10, weight: .semibold)).foregroundStyle(accent)
                     .lineLimit(1).minimumScaleFactor(0.7)
             }
         }
@@ -144,7 +180,7 @@ struct EkadashiWidgetView: View {
                 RemainingRing(item: headline.item, snapshot: snapshot, now: now)
                     .frame(width: 58, height: 58).frame(maxWidth: .infinity)
             } else if case .next(_, let days) = headline {
-                Text(snapshot.daysToGo(days)).font(.system(size: 19, weight: .bold)).foregroundStyle(accent)
+                WidgetStartCountdown(item: headline.item, snapshot: snapshot, now: now, days: days).font(.system(size: 19, weight: .bold)).foregroundStyle(accent)
                     .lineLimit(2).minimumScaleFactor(0.75).widgetAccentable()
             }
             name(headline.item, font: .system(size: 13, weight: .bold))
@@ -205,7 +241,7 @@ struct EkadashiWidgetView: View {
                 ZStack {
                     if headline.isToday {
                         Circle().inset(by: side * 0.02).stroke(.primary.opacity(0.2), lineWidth: side * 0.04)
-                        Circle().inset(by: side * 0.02).trim(from: 0, to: headline.item.remainingFraction(at: now))
+                        Circle().inset(by: side * 0.02).trim(from: 0, to: headline.item.fastProgress(at: now))
                             .stroke(.primary, style: StrokeStyle(lineWidth: side * 0.04, lineCap: .round)).rotationEffect(.degrees(-90))
                     }
                     WidgetBrandIcon()
@@ -214,9 +250,11 @@ struct EkadashiWidgetView: View {
                 .frame(width: side * (headline.isToday ? 0.52 : 0.43), height: side * (headline.isToday ? 0.52 : 0.43))
                 Group {
                     if headline.isToday {
-                        Text("\(headline.item.remainingPercent(at: now))%")
+                        Text(headline.item.state(at: now) == .paranaAvailable ? Localizer.shared.translate("panchang_parana", language: snapshot.locale) : "\(headline.item.completedPercent(at: now))%")
                     } else if case .next(_, let days) = headline {
-                        Text("\(days) \(snapshot.string("day_unit", ""))")
+                        if days <= 0 {
+                            WidgetStartCountdown(item: headline.item, snapshot: snapshot, now: now, days: days)
+                        } else { Text("\(days) \(snapshot.string("day_unit", ""))") }
                     }
                 }
                 .font(.system(size: side * 0.22, weight: .bold)).monospacedDigit()
@@ -239,10 +277,12 @@ struct EkadashiWidgetView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(headline.item.name).font(.system(size: 12, weight: .bold)).lineLimit(2).minimumScaleFactor(0.75)
                 if headline.isToday {
-                    Text("\(headline.item.remainingPercent(at: now))% \(WidgetText(snapshot: snapshot).remainingLabel)")
+                    Text(headline.item.state(at: now) == .paranaAvailable
+                        ? Localizer.shared.translate("panchang_parana", language: snapshot.locale)
+                        : "\(snapshot.string("now", "")) · \(headline.item.completedPercent(at: now))% \(Localizer.shared.translate("ios_fast_completed", language: snapshot.locale))")
                         .font(.system(size: 10)).lineLimit(1).minimumScaleFactor(0.75)
                 } else if case .next(_, let days) = headline {
-                    Text(snapshot.daysToGo(days)).font(.system(size: 10)).lineLimit(1).minimumScaleFactor(0.75)
+                    WidgetStartCountdown(item: headline.item, snapshot: snapshot, now: now, days: days).font(.system(size: 10)).lineLimit(1).minimumScaleFactor(0.75)
                 }
                 Text(headline.item.localizedDate).font(.system(size: 9)).lineLimit(1).minimumScaleFactor(0.7)
             }

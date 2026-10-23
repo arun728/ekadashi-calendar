@@ -46,12 +46,43 @@ final class AppModelTests: XCTestCase {
         WidgetClock.set(virtual, rate: 0, live: live)
         XCTAssertEqual(WidgetClock.date(live.addingTimeInterval(3600)), virtual)
         XCTAssertNotEqual(WidgetClock.snapshotKey, WidgetSnapshot.appGroupKey)
+        XCTAssertNil(WidgetClock.realDate(for: virtual.addingTimeInterval(600), liveNow: live))
         WidgetClock.set(virtual, rate: 60, live: live)
         XCTAssertEqual(WidgetClock.date(live.addingTimeInterval(10)), virtual.addingTimeInterval(600))
+        XCTAssertEqual(WidgetClock.realDate(for: virtual.addingTimeInterval(600), liveNow: live), live.addingTimeInterval(10))
         WidgetClock.set(nil)
         XCTAssertEqual(WidgetClock.date(live), live)
         XCTAssertEqual(WidgetClock.snapshotKey, WidgetSnapshot.appGroupKey)
     }
+    #endif
+
+    #if DEBUG
+    func testDebugControlsAreTranslatedWithoutReleaseResources() {
+        for language in Localizer.languages {
+            for key in DebugClockWords.keys {
+                let value = DebugClockWords.text(key, language)
+                XCTAssertNotEqual(value, key)
+                if language != "en" { XCTAssertNil(value.range(of: "[A-Za-z]", options: .regularExpression), "\(language): \(key)") }
+            }
+        }
+    }
+
+    func testInactiveTimelineHasNoTicksAndActiveFastingUsesMinuteCadence() throws {
+        WidgetClock.set(nil)
+        let start = ISO8601.instant("2026-10-22T00:30:00Z")!
+        let event = EkadashiOccurrence(id: 1, name: "", date: CivilDate(2026, 10, 22),
+            fastingStartISO: ISO8601.string(start), paranaStartISO: ISO8601.string(start.addingTimeInterval(86400)),
+            paranaEndISO: ISO8601.string(start.addingTimeInterval(93600)))
+        let zone = TzDatabase.shared.location("Asia/Kolkata")!
+        let inactive = OccurrenceTimelineSchedule(events: [event], zone: zone, active: false)
+        XCTAssertEqual(Array(inactive.entries(from: start, mode: .normal)), [start])
+        let active = OccurrenceTimelineSchedule(events: [event], zone: zone, active: true)
+        XCTAssertEqual(Array(active.entries(from: start, mode: .normal).prefix(3)),
+            [start, start.addingTimeInterval(60), start.addingTimeInterval(120)])
+        XCTAssertEqual(Array(active.entries(from: start.addingTimeInterval(-2), mode: .normal).prefix(3)),
+            [start.addingTimeInterval(-2), start.addingTimeInterval(-1), start])
+    }
+
     #endif
 
     func testGlassLookIsOffByDefaultAndPersistedIndependentlyOfOtherSettings() {

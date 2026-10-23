@@ -1,6 +1,7 @@
 import SwiftUI
 import UserNotifications
 import GoogleSignIn
+import EkadashiCore
 
 /// Notification taps open their `ekadashi://` link, like the Android
 /// notification payloads.
@@ -42,6 +43,17 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
 struct EkadashiCalendarApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var delegate
     @Environment(\.scenePhase) private var scenePhase
+
+    init() {
+        #if DEBUG
+        let args = ProcessInfo.processInfo.arguments
+        let value = ProcessInfo.processInfo.environment["EKADASHI_UI_TEST_NOW"]
+        if args.contains("-lifecycle-testing") || (args.contains("-ui-testing") && value.flatMap(ISO8601.instant) != nil) {
+            WidgetClock.set(value.flatMap(ISO8601.instant) ?? Date(),
+                rate: Double(ProcessInfo.processInfo.environment["EKADASHI_TEST_RATE"] ?? "0") ?? 0)
+        } else { WidgetClock.set(nil) }
+        #endif
+    }
 
     var body: some Scene {
         WindowGroup {

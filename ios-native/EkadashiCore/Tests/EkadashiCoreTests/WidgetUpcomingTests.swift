@@ -37,15 +37,16 @@ final class WidgetUpcomingTests: XCTestCase {
         for item in items { XCTAssertEqual(AppRoute(url: item.detailsURL), .ekadashi(item.occurrenceUid)) }
     }
 
-    func testUpcomingExcludesTodayBeforeSunriseAndYesterdayDuringParana() {
-        for now in [utc(2026, 12, 1, 1), utc(2026, 12, 2, 7)] {
+    func testUpcomingIncludesBeforeSunriseAndExcludesAlreadyStarted() {
+        XCTAssertEqual(snapshot(utc(2026, 12, 1, 1)).upcoming(after: utc(2026, 12, 1, 1)).first?.occurrenceUid, "fast:0")
+        for now in [utc(2026, 12, 1, 6), utc(2026, 12, 2, 7)] {
             XCTAssertEqual(snapshot(now).upcoming(after: now).map(\.occurrenceUid), (1...5).map { "fast:\($0)" })
         }
     }
 
     func testStaleSnapshotReevaluatesAtLocalMidnightAndDoesNotSkipTheNextFast() {
         let payload = snapshot(utc(2026, 11, 30))
-        XCTAssertEqual(payload.upcoming(after: utc(2026, 12, 15)).map(\.occurrenceUid), (2...6).map { "fast:\($0)" })
+        XCTAssertEqual(payload.upcoming(after: utc(2026, 12, 15)).map(\.occurrenceUid), (1...5).map { "fast:\($0)" })
         XCTAssertEqual(payload.upcoming(after: utc(2027, 3, 8)).map(\.occurrenceUid), ["fast:7"])
         XCTAssertTrue(payload.upcoming(after: utc(2027, 4, 1)).isEmpty)
     }
