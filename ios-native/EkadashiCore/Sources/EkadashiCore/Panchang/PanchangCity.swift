@@ -72,6 +72,7 @@ public struct PanchangCity: Hashable, Codable, Sendable, Identifiable {
     }
 
     public func wallClock(_ instant: Date) -> WallClock { zone.wallClock(instant) }
+    public func displayClock(_ instant: Date) -> WallClock { wallClock(instant) }
     public func midnight(_ date: CivilDate, dayOffset: Int = 0) -> Date { zone.utc(date.adding(days: dayOffset)) }
     public func dateAtHour(_ date: CivilDate, _ hour: Int) -> Date { zone.utc(date, hour: hour) }
     /// The zone's short name now in English: "IST", "EDT", "GMT", "AEST",

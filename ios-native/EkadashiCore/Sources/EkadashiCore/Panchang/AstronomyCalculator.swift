@@ -200,6 +200,10 @@ public enum AstronomyCalculator {
         return 23.857092328 + t * (1.3968879428 + t * 0.00030708955)
     }
 
+    public static func drikSunLongitude(_ instant: Date) -> Double { sunLongitude(instant) }
+    public static func drikMoonLongitude(_ instant: Date) -> Double { moonLongitude(instant) }
+    public static func drikLahiriAyanamsa(_ instant: Date) -> Double { apparentLahiriAyanamsa(instant) }
+
     /// Apparent tropical positions refer to the true equinox. Remove nutation
     /// along with the mean Lahiri offset when forming sidereal longitudes.
     public static func apparentLahiriAyanamsa(_ instant: Date) -> Double {

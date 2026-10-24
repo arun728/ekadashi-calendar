@@ -62,6 +62,9 @@ class PanchangCity {
 
   DateTime wallClock(DateTime instant) =>
       tz.TZDateTime.from(instant.toUtc(), zone);
+
+  /// The wall-clock minute shown for [instant].
+  DateTime displayClock(DateTime instant) => wallClock(instant);
   DateTime midnight(DateTime date, {int dayOffset = 0}) =>
       tz.TZDateTime(zone, date.year, date.month, date.day + dayOffset).toUtc();
   DateTime dateAtHour(DateTime date, int hour) =>

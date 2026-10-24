@@ -219,6 +219,12 @@ class AstronomyCalculator {
     return 23.857092328 + t * (1.3968879428 + t * 0.00030708955);
   }
 
+  /// Drik Panchang's Sun, Moon and Lahiri ayanamsa.
+  static double drikSunLongitude(DateTime instant) => sunLongitude(instant);
+  static double drikMoonLongitude(DateTime instant) => moonLongitude(instant);
+  static double drikLahiriAyanamsa(DateTime instant) =>
+      apparentLahiriAyanamsa(instant);
+
   /// Apparent tropical positions refer to the true equinox. Remove nutation
   /// along with the mean Lahiri offset when forming sidereal longitudes.
   static double apparentLahiriAyanamsa(DateTime instant) =>
