@@ -68,9 +68,9 @@ public struct EkadashiScheduleKey: Hashable, Sendable {
 /// - In other years every fast is numbered in date order, and the texts come
 ///   from the newest pack that has that Ekadashi.
 public final class EkadashiSchedule: @unchecked Sendable {
-    /// Bumped when the cached form changes (2: times cut to the minute like
-    /// the Panchang tab, not rounded), so older caches are recalculated.
-    public static let formatVersion = "schedule-2"
+    /// Recalculate caches after timezone history and post-2037 DST coverage
+    /// changed. Display still cuts to the minute, as in schedule-2.
+    public static let formatVersion = "schedule-3"
     private let repository: CalendarRepository
     private let localizer: Localizer
     private let engine: CalculatedEkadashiEngine
