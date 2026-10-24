@@ -243,7 +243,7 @@ void main() {
     final rows = <(String, DateTime?, String)>[];
     for (final expected in fixture['heldOut2028TithiBoundaries'] as List) {
       final drik = DateTime.parse(
-        '${expected}:00Z',
+        '$expected:00Z',
       ).subtract(const Duration(hours: 5, minutes: 30));
       final nearest = ends.reduce(
         (a, b) => (a.difference(drik).abs() < b.difference(drik).abs()) ? a : b,
@@ -354,7 +354,7 @@ void main() {
     var matched = 0, total = 0;
     for (final expected in fixture['nakshatraEnds'] as List) {
       final drik = DateTime.parse(
-        '${expected}:00Z',
+        '$expected:00Z',
       ).subtract(const Duration(hours: 5, minutes: 30));
       final nearest = ends.reduce(
         (a, b) => (a.difference(drik).abs() < b.difference(drik).abs()) ? a : b,

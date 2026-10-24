@@ -271,20 +271,6 @@ class PanchangEngine {
         rising: false,
       );
     }
-    final moonrise = _findCrossing(
-      startUtc,
-      endUtc,
-      city,
-      moon: true,
-      rising: true,
-    );
-    final moonset = _findCrossing(
-      startUtc,
-      endUtc,
-      city,
-      moon: true,
-      rising: false,
-    );
     final hasSolarDay =
         sunrise != null && sunset != null && sunset.isAfter(sunrise);
     final localSunrise = sunrise ?? city.dateAtHour(calendarDate, 6);
@@ -298,6 +284,26 @@ class PanchangEngine {
       city,
       moon: false,
       rising: true,
+    );
+    // Drik Panchang's day runs from sunrise to the next sunrise, and it shows
+    // the first moonrise and moonset in it; the civil day without a sunrise.
+    final moonStart = sunrise ?? startUtc;
+    final moonEnd = sunrise == null
+        ? endUtc
+        : nightEnd ?? moonStart.add(const Duration(days: 1));
+    final moonrise = _findCrossing(
+      moonStart,
+      moonEnd,
+      city,
+      moon: true,
+      rising: true,
+    );
+    final moonset = _findCrossing(
+      moonStart,
+      moonEnd,
+      city,
+      moon: true,
+      rising: false,
     );
 
     final tithi = _tithiAt(localSunrise);
@@ -384,7 +390,7 @@ class PanchangEngine {
       nakshatraPada:
           ((_siderealMoon(localSunrise) % (360 / 27)) / (360 / 108)).floor() +
           1,
-      ayanamsa: AstronomyCalculator.lahiriAyanamsa(localSunrise),
+      ayanamsa: AstronomyCalculator.drikLahiriAyanamsa(localSunrise),
       ritu: const [
         'Vasanta',
         'Grishma',
@@ -394,8 +400,8 @@ class PanchangEngine {
         'Shishira',
       ][month.index ~/ 2],
       ayana:
-          (AstronomyCalculator.sunLongitude(localSunrise) >= 270 ||
-              AstronomyCalculator.sunLongitude(localSunrise) < 90)
+          (AstronomyCalculator.drikSunLongitude(localSunrise) >= 270 ||
+              AstronomyCalculator.drikSunLongitude(localSunrise) < 90)
           ? 'Uttarayana (tropical)'
           : 'Dakshinayana (tropical)',
       hora: !hasSolarDay || nightEnd == null
@@ -411,12 +417,7 @@ class PanchangEngine {
             ),
       specialYogas: _specialYogas(localSunrise, calendarDate.weekday),
       nextSunriseUtc: nightEnd,
-      sunRashi: _rashi(
-        AstronomyCalculator.normalize(
-          AstronomyCalculator.sunLongitude(localSunrise) -
-              AstronomyCalculator.apparentLahiriAyanamsa(localSunrise),
-        ),
-      ),
+      sunRashi: _rashi(_siderealSun(localSunrise)),
       moonRashi: _rashi(_siderealMoon(localSunrise)),
       abhijit: !hasSolarDay || calendarDate.weekday == DateTime.wednesday
           ? null
@@ -543,7 +544,7 @@ class PanchangEngine {
             city.latitude,
             city.longitude,
           ) -
-          AstronomyCalculator.lahiriAyanamsa(instant),
+          AstronomyCalculator.drikLahiriAyanamsa(instant),
     );
     final result = <PanchangPeriod>[];
     var cursor = start;
@@ -893,24 +894,24 @@ class PanchangEngine {
   }
 
   double _elongation(DateTime utc) => AstronomyCalculator.normalize(
-    AstronomyCalculator.moonLongitude(utc) -
-        AstronomyCalculator.sunLongitude(utc),
+    AstronomyCalculator.drikMoonLongitude(utc) -
+        AstronomyCalculator.drikSunLongitude(utc),
   );
 
   double _siderealSun(DateTime utc) => AstronomyCalculator.normalize(
-    AstronomyCalculator.sunLongitude(utc) -
-        AstronomyCalculator.apparentLahiriAyanamsa(utc),
+    AstronomyCalculator.drikSunLongitude(utc) -
+        AstronomyCalculator.drikLahiriAyanamsa(utc),
   );
 
   double _siderealMoon(DateTime utc) => AstronomyCalculator.normalize(
-    AstronomyCalculator.moonLongitude(utc) -
-        AstronomyCalculator.apparentLahiriAyanamsa(utc),
+    AstronomyCalculator.drikMoonLongitude(utc) -
+        AstronomyCalculator.drikLahiriAyanamsa(utc),
   );
 
   double _yogaAngle(DateTime utc) => AstronomyCalculator.normalize(
-    AstronomyCalculator.moonLongitude(utc) +
-        AstronomyCalculator.sunLongitude(utc) -
-        2 * AstronomyCalculator.apparentLahiriAyanamsa(utc),
+    AstronomyCalculator.drikMoonLongitude(utc) +
+        AstronomyCalculator.drikSunLongitude(utc) -
+        2 * AstronomyCalculator.drikLahiriAyanamsa(utc),
   );
 
   ({int index, String name, bool adhika}) _monthFor(DateTime utc) {
@@ -918,16 +919,16 @@ class PanchangEngine {
     // conjunction, then apply the traditional one-sign month-name offset.
     final newMoon = _previousNewMoon(utc);
     final siderealSun = AstronomyCalculator.normalize(
-      AstronomyCalculator.sunLongitude(newMoon) -
-          AstronomyCalculator.apparentLahiriAyanamsa(newMoon),
+      AstronomyCalculator.drikSunLongitude(newMoon) -
+          AstronomyCalculator.drikLahiriAyanamsa(newMoon),
     );
     // The month follows the sidereal solar sign at the preceding new moon.
     final index = ((siderealSun / 30).floor() + 1) % 12;
     final nextNewMoon = _previousNewMoon(newMoon.add(const Duration(days: 32)));
     final nextSign =
         (AstronomyCalculator.normalize(
-                  AstronomyCalculator.sunLongitude(nextNewMoon) -
-                      AstronomyCalculator.apparentLahiriAyanamsa(nextNewMoon),
+                  AstronomyCalculator.drikSunLongitude(nextNewMoon) -
+                      AstronomyCalculator.drikLahiriAyanamsa(nextNewMoon),
                 ) /
                 30)
             .floor();
@@ -973,25 +974,30 @@ class PanchangEngine {
     required bool rising,
   }) {
     const step = Duration(minutes: 5);
-    // Apparent upper limb on a sea-level horizon: geometric altitude of the
-    // centre equals -(horizon refraction + actual semidiameter).
-    double difference(DateTime instant) =>
-        AstronomyCalculator.altitudeDegrees(
-          instant: instant,
-          latitude: city.latitude,
-          longitude: city.longitude,
-          moon: moon,
-        ) +
-        AstronomyCalculator.horizonRefraction +
-        AstronomyCalculator.semidiameterDegrees(instant, moon: moon);
+    // The Sun: apparent upper limb on a sea-level horizon (geometric altitude
+    // of the centre equals -(horizon refraction + actual semidiameter)). The
+    // Moon: the centre of the disc without refraction, as Drik Panchang shows
+    // it (docs/PANCHANG_ACCURACY.md, "Drik time base").
+    double difference(DateTime instant) {
+      final altitude = AstronomyCalculator.altitudeDegrees(
+        instant: instant,
+        latitude: city.latitude,
+        longitude: city.longitude,
+        moon: moon,
+      );
+      return moon
+          ? altitude
+          : altitude +
+                AstronomyCalculator.horizonRefraction +
+                AstronomyCalculator.semidiameterDegrees(instant, moon: false);
+    }
 
     var low = start;
     var lowValue = difference(low);
-    for (
-      var high = start.add(step);
-      !high.isAfter(end);
-      high = high.add(step)
-    ) {
+    // The last step stops at the end, so an event just before it (a moonset
+    // minutes before the next sunrise) is found too.
+    for (var next = start.add(step); low.isBefore(end); next = next.add(step)) {
+      final high = next.isAfter(end) ? end : next;
       final highValue = difference(high);
       final crossed = rising
           ? lowValue <= 0 && highValue > 0
@@ -1397,8 +1403,8 @@ class PanchangEngine {
 
   int _siderealSign(DateTime instant) =>
       (AstronomyCalculator.normalize(
-                AstronomyCalculator.sunLongitude(instant) -
-                    AstronomyCalculator.apparentLahiriAyanamsa(instant),
+                AstronomyCalculator.drikSunLongitude(instant) -
+                    AstronomyCalculator.drikLahiriAyanamsa(instant),
               ) /
               30)
           .floor()
@@ -1682,8 +1688,8 @@ class PanchangEngine {
 
   DateTime? _solarIngress(DateTime start, DateTime end) {
     double sidereal(DateTime instant) => AstronomyCalculator.normalize(
-      AstronomyCalculator.sunLongitude(instant) -
-          AstronomyCalculator.apparentLahiriAyanamsa(instant),
+      AstronomyCalculator.drikSunLongitude(instant) -
+          AstronomyCalculator.drikLahiriAyanamsa(instant),
     );
     var low = start;
     var lowAngle = sidereal(low);

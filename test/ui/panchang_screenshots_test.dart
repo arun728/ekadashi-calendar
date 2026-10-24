@@ -262,11 +262,6 @@ void main() {
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
       await capture(tester, boundaryKey, 'drik_delhi_$page');
-      if (page == 'ekadashi') {
-        await tester.drag(find.byType(Scrollable).first, const Offset(0, -400));
-        await tester.pumpAndSettle();
-        await capture(tester, boundaryKey, 'drik_delhi_${page}_more');
-      }
     }
   });
 }

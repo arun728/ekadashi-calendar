@@ -219,11 +219,29 @@ class AstronomyCalculator {
     return 23.857092328 + t * (1.3968879428 + t * 0.00030708955);
   }
 
-  /// Drik Panchang's Sun, Moon and Lahiri ayanamsa.
-  static double drikSunLongitude(DateTime instant) => sunLongitude(instant);
-  static double drikMoonLongitude(DateTime instant) => moonLongitude(instant);
+  // --- Drik time base ------------------------------------------------------
+
+  /// Drik Panchang's Sun and Moon at an instant are the astronomical (JPL)
+  /// positions one Delta T later, so its tithi, nakshatra, yoga and karana
+  /// moments come about a minute (Delta T) before the astronomical ones.
+  /// Measured on its published New Delhi pages, 2026-2028, and in six
+  /// other time zones (docs/PANCHANG_ACCURACY.md, "Drik time base").
+  static DateTime drikInstant(DateTime instant) {
+    final year = 2000 + (julianDay(instant) - _j2000) / 365.25;
+    return instant.add(
+      Duration(milliseconds: (deltaTSeconds(year) * 1000).round()),
+    );
+  }
+
+  /// Drik's Lahiri ayanamsa: the mean Lahiri value plus 24.2″ (no nutation).
+  static const double drikAyanamsaOffset = 24.2 / 3600;
+
+  static double drikSunLongitude(DateTime instant) =>
+      sunLongitude(drikInstant(instant));
+  static double drikMoonLongitude(DateTime instant) =>
+      moonLongitude(drikInstant(instant));
   static double drikLahiriAyanamsa(DateTime instant) =>
-      apparentLahiriAyanamsa(instant);
+      lahiriAyanamsa(drikInstant(instant)) + drikAyanamsaOffset;
 
   /// Apparent tropical positions refer to the true equinox. Remove nutation
   /// along with the mean Lahiri offset when forming sidereal longitudes.

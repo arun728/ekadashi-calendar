@@ -186,7 +186,7 @@ class PanchangFormat {
     String language,
   ) {
     if (instant == null) return '—';
-    final local = city.wallClock(instant);
+    final local = city.displayClock(instant);
     var text = AppStrings.clock(local.hour, local.minute, language);
     final day = DateTime.utc(date.year, date.month, date.day);
     final delta = DateTime.utc(

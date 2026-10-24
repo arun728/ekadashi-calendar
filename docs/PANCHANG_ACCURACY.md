@@ -64,20 +64,25 @@ second. Drik differs from both in four ways, and the app now follows Drik:
 | Drik's Lahiri ayanamsa is the mean value (no nutation) plus 24.2″ | 13 dated position pages: 24.2″ ± 0.6″ | `drikLahiriAyanamsa` |
 | Drik's moonrise/moonset is the centre of the disc without refraction, the first after sunrise (its day runs sunrise to sunrise) | 22/23 each; 0/23 for every other convention | `findCrossing` for the Moon, searched from sunrise to the next sunrise |
 
-Results (test/unit/drik_match_test.dart, DrikMatchTests.swift; values within
-a few seconds of a half minute can round either way and are not required):
+Results at Drik's New Delhi coordinates (test/unit/drik_match_test.dart,
+DrikMatchTests.swift):
 
 | Check | Before (cut) | After |
 |---|---|---|
-| Smarta + Vaishnava Ekadashi begins/ends, 2026-2027 (196) | 40% / 36% | 98%+, every miss within 6 s of a half minute |
-| Held-out 2028 tithi boundaries (50) | 35% | 94%+ (one tithi touching no sunrise included), misses within 6 s |
-| Six other cities, 2026 Smarta dates and tithi times | dates 100%, times 33% | dates 100%, times 95%+ |
-| Vaishnava fast dates (49) | 47/49 | 49/49 (25 Jun 2026 and 11 Sep 2027: Purnima/Shravana within 20 s of sunrise) |
-| Smarta fast dates (49) | 49/49 | 49/49 |
-| Parana start/end, Hari Vasara, Dwadashi end | about 55% | 90% Smarta, 88% Vaishnava; every miss within 5 s of a half minute (Drik's sunrise) |
-| Sunrise / sunset (730 days) | 55% / 42% | 92% / 94%, misses within 9 s of a half minute |
-| Nakshatra ends (701) | 77% | 93% |
-| Moonrise / moonset (23) | 0% | 96% |
+| Smarta + Vaishnava Ekadashi begins/ends, 2026-2027 | 75/196 | 192/196 |
+| Held-out 2028 tithi boundaries | 17/49 | 48/50 |
+| Six other cities, 2026 Smarta tithi times (each) | 16/48 | 47/48 |
+| Six other cities, 2026 Smarta dates | 24/24 | 24/24 |
+| Vaishnava fast dates | 47/49 | 49/49 (25 Jun 2026 and 11 Sep 2027: Purnima/Shravana within 20 s of sunrise) |
+| Smarta fast dates | 49/49 | 49/49 |
+| Smarta Parana, Hari Vasara, Dwadashi end | about half | 135/144 |
+| Vaishnava Parana | about half | 88/98 |
+| Sunrise / sunset (730 days) | 399 / 306 | 673 / 685 |
+| Nakshatra ends (701) | 542 | 650 |
+| Moonrise / moonset (23 each) | 0 / 0 | 22 / 22 |
+
+Every remaining difference is a value within 9 s of a half minute (6 s for
+tithi times), which rounds either way depending on Drik's own clock.
 
 Known limits:
 

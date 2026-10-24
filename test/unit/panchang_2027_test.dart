@@ -29,6 +29,11 @@ void main() {
         if (city == PanchangCity.newDelhi) {
           expected.remove('2027-06-14');
           expected.add('2027-06-15');
+          // Shravana ends 17 s after sunrise on 13 September in JPL time,
+          // before it in Drik's time base (one Delta T earlier), so there is
+          // no Vijaya Mahadvadashi: Drik's ISKCON list fasts on the 11th.
+          expected.remove('2027-09-12');
+          expected.add('2027-09-11');
         }
         final actual = const CalculatedEkadashiEngine().calculate(
           DateTime.utc(2027),

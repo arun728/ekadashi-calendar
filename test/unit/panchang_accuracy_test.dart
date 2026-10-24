@@ -77,8 +77,12 @@ void main() {
       );
       final expected = DateTime.parse(row['utc'] as String);
       final local = city.wallClock(expected);
+      // Moon rows name their day: a moonrise after midnight belongs to the
+      // Panchang day that began at the previous sunrise.
       final day = engine.calculate(
-        DateTime.utc(local.year, local.month, local.day),
+        row['date'] != null
+            ? DateTime.parse('${row['date']}T00:00:00Z')
+            : DateTime.utc(local.year, local.month, local.day),
         city: city,
       );
       final actual = switch ('${row['body']} ${row['event']}') {
