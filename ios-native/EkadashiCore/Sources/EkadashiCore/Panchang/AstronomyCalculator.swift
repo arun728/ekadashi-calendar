@@ -200,9 +200,26 @@ public enum AstronomyCalculator {
         return 23.857092328 + t * (1.3968879428 + t * 0.00030708955)
     }
 
-    public static func drikSunLongitude(_ instant: Date) -> Double { sunLongitude(instant) }
-    public static func drikMoonLongitude(_ instant: Date) -> Double { moonLongitude(instant) }
-    public static func drikLahiriAyanamsa(_ instant: Date) -> Double { apparentLahiriAyanamsa(instant) }
+    // MARK: Drik time base
+
+    /// Drik Panchang's Sun and Moon at an instant are the astronomical (JPL)
+    /// positions one Delta T later, so its tithi, nakshatra, yoga and karana
+    /// moments come about a minute (Delta T) before the astronomical ones.
+    /// Measured on its published New Delhi pages, 2026-2028, and in six
+    /// other time zones (docs/PANCHANG_ACCURACY.md, "Drik time base").
+    public static func drikInstant(_ instant: Date) -> Date {
+        let year = 2000 + (julianDay(instant) - j2000) / 365.25
+        return instant.addingTimeInterval((deltaTSeconds(year) * 1000).rounded() / 1000)
+    }
+
+    /// Drik's Lahiri ayanamsa: the mean Lahiri value plus 24.2″ (no nutation).
+    public static let drikAyanamsaOffset = 24.2 / 3600
+
+    public static func drikSunLongitude(_ instant: Date) -> Double { sunLongitude(drikInstant(instant)) }
+    public static func drikMoonLongitude(_ instant: Date) -> Double { moonLongitude(drikInstant(instant)) }
+    public static func drikLahiriAyanamsa(_ instant: Date) -> Double {
+        lahiriAyanamsa(drikInstant(instant)) + drikAyanamsaOffset
+    }
 
     /// Apparent tropical positions refer to the true equinox. Remove nutation
     /// along with the mean Lahiri offset when forming sidereal longitudes.

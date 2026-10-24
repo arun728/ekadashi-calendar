@@ -68,9 +68,10 @@ public struct EkadashiScheduleKey: Hashable, Sendable {
 /// - In other years every fast is numbered in date order, and the texts come
 ///   from the newest pack that has that Ekadashi.
 public final class EkadashiSchedule: @unchecked Sendable {
-    /// Bumped when the cached form changes (2: times cut to the minute like
-    /// the Panchang tab, not rounded), so older caches are recalculated.
-    public static let formatVersion = "schedule-2"
+    /// Bumped when the cached form changes (3: times rounded to the nearest
+    /// minute like the Panchang tab and Drik Panchang), so older caches are
+    /// recalculated.
+    public static let formatVersion = "schedule-3"
     private let repository: CalendarRepository
     private let localizer: Localizer
     private let engine: CalculatedEkadashiEngine
@@ -191,11 +192,11 @@ public final class EkadashiSchedule: @unchecked Sendable {
         return ["ashvina": "ashwin", "kartika": "kartik"][key] ?? key
     }
 
-    /// Local wall-clock time with its offset, to the minute: the form of the
-    /// published packs ("2026-01-14T06:35:00+05:30"). The seconds are dropped,
-    /// as the Panchang tab shows the same instants, so both read the same.
+    /// Local wall-clock time with its offset, to the nearest minute: the form
+    /// of the published packs ("2026-01-14T06:35:00+05:30"). Rounded as the
+    /// Panchang tab and Drik Panchang show the same instants, so all read the same.
     static func iso(_ instant: Date, _ zone: TzLocation) -> String {
-        let wall = zone.wallClock(instant)
+        let wall = zone.displayClock(instant)
         let offset = abs(wall.offsetSeconds) / 60
         return "\(wall.date.iso)T\(pad2(wall.hour)):\(pad2(wall.minute)):00\(wall.offsetSeconds < 0 ? "-" : "+")"
             + "\(pad2(offset / 60)):\(pad2(offset % 60))"

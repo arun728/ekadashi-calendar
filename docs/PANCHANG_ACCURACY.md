@@ -46,6 +46,59 @@ SE_EPHE_PATH=EPHE_DIR python compare.py /tmp/engine.json /tmp/reference.json /tm
 python check_positions.py EPHE_DIR /tmp/positions   # compiled positions.dart
 ```
 
+## Drik time base (October 2026)
+
+Arun asked why Panchang times were a minute off drikpanchang.com and for an
+exact match, in every location and time zone. Drik's published New Delhi
+pages (default settings: upper-limb sunrise, elevation off) for 2026-2027
+were compared second by second with the engine and with Swiss Ephemeris;
+2028 was held out, and the 2026 Smarta lists of Chennai, Kathmandu
+(UTC+5:45), London, New York, Los Angeles and Sydney checked every other
+kind of zone. The engine already matched Swiss Ephemeris/JPL to about a
+second. Drik differs from both in four ways, and the app now follows Drik:
+
+| Cause | Measured | Fix |
+|---|---|---|
+| Drik rounds times to the nearest minute; the app cut them | sunrise showed Drik's minute 55% of the time (cut), 92% (rounded) | `displayClock` rounds the local wall time, on every screen, widget, reminder and the Home schedule |
+| Drik's Sun and Moon are the JPL positions one Delta T later (its tithi, nakshatra, yoga and karana moments come one Delta T, about 69 s in 2026, before the astronomical ones) | Drik's displayed positions: Sun +2.4″, Moon +32-44″ (57-74 s of motion); tithi times fit true − 68.5 s (ΔT 68.8-69.0 s) | `AstronomyCalculator.drikSunLongitude/drikMoonLongitude` evaluate at t + ΔT for every Panchang angle |
+| Drik's Lahiri ayanamsa is the mean value (no nutation) plus 24.2″ | 13 dated position pages: 24.2″ ± 0.6″ | `drikLahiriAyanamsa` |
+| Drik's moonrise/moonset is the centre of the disc without refraction, the first after sunrise (its day runs sunrise to sunrise) | 22/23 each; 0/23 for every other convention | `findCrossing` for the Moon, searched from sunrise to the next sunrise |
+
+Results (test/unit/drik_match_test.dart, DrikMatchTests.swift; values within
+a few seconds of a half minute can round either way and are not required):
+
+| Check | Before (cut) | After |
+|---|---|---|
+| Smarta + Vaishnava Ekadashi begins/ends, 2026-2027 (196) | 40% / 36% | 98%+, every miss within 6 s of a half minute |
+| Held-out 2028 tithi boundaries (50) | 35% | 94%+ (one tithi touching no sunrise included), misses within 6 s |
+| Six other cities, 2026 Smarta dates and tithi times | dates 100%, times 33% | dates 100%, times 95%+ |
+| Vaishnava fast dates (49) | 47/49 | 49/49 (25 Jun 2026 and 11 Sep 2027: Purnima/Shravana within 20 s of sunrise) |
+| Smarta fast dates (49) | 49/49 | 49/49 |
+| Parana start/end, Hari Vasara, Dwadashi end | about 55% | 90% Smarta, 88% Vaishnava; every miss within 5 s of a half minute (Drik's sunrise) |
+| Sunrise / sunset (730 days) | 55% / 42% | 92% / 94%, misses within 9 s of a half minute |
+| Nakshatra ends (701) | 77% | 93% |
+| Moonrise / moonset (23) | 0% | 96% |
+
+Known limits:
+
+- Drik's sunrise wobbles about ±5 s around the exact upper-limb sunrise
+  with a half-yearly pattern (earlier around March-April and
+  August-October, later in December-January). No refraction constant,
+  disc convention or frozen-position method reproduces it, so a sunrise
+  within a few seconds of a half minute can show a minute apart, and
+  Parana limits taken from sunrise with it. The engine keeps the exact
+  sunrise rather than fitting one city.
+- The Delta T time base was measured in 2026-2028 only. Drik serves other
+  years behind a reCAPTCHA, which was not bypassed, so for 1900-2100 the
+  engine assumes the same mechanism (positions at t + ΔT with its yearly
+  ΔT table). If Drik instead uses a fixed offset, years far from 2026 would
+  differ by up to ΔT − 69 s (about −72 s in 1900, +24 s in 2100).
+- Nakshatra ends keep about 7% one-minute differences that no single
+  offset removes (Drik's lunar theory or interpolation differs by a few
+  arcseconds).
+- The Drik values are kept only as a test reference
+  (test/fixtures/panchang/drik_reference.json), never shipped.
+
 ## Smarta and Vaishnava (Gaudiya/ISKCON) Ekadashi
 
 Both traditions were measured with the same harness, before and after,

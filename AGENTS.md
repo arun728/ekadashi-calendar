@@ -286,7 +286,8 @@ stays Premium. New years are enabled in `assets/calendar/ekadashi_years.json`;
 texts are reused by Ekadashi. The share card from PR #20 is free (no paywall)
 and matches Sakthi's Android card in PR #20 exactly (no location on the card).
 Home's dates and times match the Panchang tab's Ekadashi sub-tab to the minute
-(times are cut to the minute, never rounded). The tradition is called "Smarta"
+(times are rounded to the nearest minute, as Drik Panchang shows them; see
+"Drik minute match" below). The tradition is called "Smarta"
 or "Vaishnava" everywhere. See docs/EKADASHI_ENGINE_SCHEDULE.md.
 On 13 October 2026, after testing iOS, Arun asked for the Android port on the
 same branch and PR #22 (no CI, no merge); both platforms now share the
@@ -350,3 +351,20 @@ launch, on a language change and when the sheet opens), searched in about
 compute place names for the whole catalog in a view body, `onChanged` or
 any other per-keystroke path. Keep CitySearchIndexTests and
 city_search_index_test.dart green.
+
+## Drik minute match (24 October 2026)
+
+Arun asked for every time and date to match drikpanchang.com exactly, for
+all locations, cities and time zones, 1900-2100, on top of `dev` with TDD.
+Branch `feature/drik-minute-match`; do not merge to `dev` or `main` without
+his approval. Measured cause and fix (docs/PANCHANG_ACCURACY.md, "Drik time
+base"): Drik shows times rounded to the nearest minute (we cut them); its
+tithi, nakshatra, yoga and karana moments are those of the Sun and Moon one
+Delta T after the astronomical (JPL) moment; and its Lahiri ayanamsa is the
+mean Lahiri value plus 24.2″. Both platforms use `AstronomyCalculator`'s
+`drik*` positions for every Panchang angle and `displayClock` for every time
+shown; raw rise/set and positions stay exact. Keep
+`test/unit/drik_match_test.dart` and `DrikMatchTests` green; the reference is
+`test/fixtures/panchang/drik_reference.json` (displayed Drik values, a test
+reference only, never shipped).
+

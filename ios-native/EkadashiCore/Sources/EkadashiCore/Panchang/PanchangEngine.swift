@@ -54,14 +54,19 @@ public struct PanchangEngine: Sendable {
         if let sunrise, sunset == nil || sunset! < sunrise {
             sunset = findCrossing(sunrise, city.midnight(date, dayOffset: 2), city, moon: false, rising: false)
         }
-        let moonrise = findCrossing(startUtc, endUtc, city, moon: true, rising: true)
-        let moonset = findCrossing(startUtc, endUtc, city, moon: true, rising: false)
         let hasSolarDay = sunrise != nil && sunset != nil && sunset! > sunrise!
         let localSunrise = sunrise ?? city.dateAtHour(date, 6)
         let localSunset = sunset ?? city.dateAtHour(date, 18)
         let dayLength = localSunset.timeIntervalSince(localSunrise)
         let madhyahna = localSunrise.adding(truncatedMicroseconds(dayLength, dividedBy: 2))
         let nightEnd = findCrossing(localSunset, city.midnight(date, dayOffset: 2), city, moon: false, rising: true)
+        // Drik Panchang's day runs from sunrise to the next sunrise, and it
+        // shows the first moonrise and moonset in it; the civil day without
+        // a sunrise.
+        let moonStart = sunrise ?? startUtc
+        let moonEnd = sunrise == nil ? endUtc : nightEnd ?? moonStart.adding(86400)
+        let moonrise = findCrossing(moonStart, moonEnd, city, moon: true, rising: true)
+        let moonset = findCrossing(moonStart, moonEnd, city, moon: true, rising: false)
 
         let tithi = tithiAt(localSunrise)
         let nakshatra = nakshatraAt(localSunrise)
@@ -79,7 +84,7 @@ public struct PanchangEngine: Sendable {
             ? sankrantiOnly(city, date, sunset)
             : observances(city: city, date: date, sunrise: localSunrise, sunset: localSunset, tithi: tithi)
         let fullNight = hasSolarDay && nightEnd != nil
-        let sunLongitude = AstronomyCalculator.sunLongitude(localSunrise)
+        let sunLongitude = AstronomyCalculator.drikSunLongitude(localSunrise)
         let shakaOffset = date.month <= 4 && month.index >= 9 ? 1 : 0
         let timelineEnd = nightEnd ?? endUtc
         let thirtieth = truncatedMicroseconds(dayLength, dividedBy: 30)
@@ -100,10 +105,10 @@ public struct PanchangEngine: Sendable {
             lagna: !fullNight || abs(city.latitude) >= 66 ? [] : lagna(localSunrise, nightEnd!, city),
             specialYogas: specialYogas(localSunrise, weekday),
             nakshatraPada: Int(floor(dartMod(siderealMoon(localSunrise), 360.0 / 27) / (360.0 / 108))) + 1,
-            ayanamsa: AstronomyCalculator.lahiriAyanamsa(localSunrise),
+            ayanamsa: AstronomyCalculator.drikLahiriAyanamsa(localSunrise),
             ritu: Self.ritus[month.index / 2],
             ayana: Self.ayanas[sunLongitude >= 270 || sunLongitude < 90 ? 0 : 1],
-            sunRashi: Self.rashi(AstronomyCalculator.normalize(sunLongitude - AstronomyCalculator.apparentLahiriAyanamsa(localSunrise))),
+            sunRashi: Self.rashi(siderealSun(localSunrise)),
             moonRashi: Self.rashi(siderealMoon(localSunrise)),
             sunRashiEndsAt: nextBoundary(localSunrise, siderealSun(localSunrise), 30, siderealSun),
             moonRashiEndsAt: nextBoundary(localSunrise, siderealMoon(localSunrise), 30, siderealMoon),
@@ -206,20 +211,20 @@ public struct PanchangEngine: Sendable {
     }
 
     func elongation(_ instant: Date) -> Double {
-        AstronomyCalculator.normalize(AstronomyCalculator.moonLongitude(instant) - AstronomyCalculator.sunLongitude(instant))
+        AstronomyCalculator.normalize(AstronomyCalculator.drikMoonLongitude(instant) - AstronomyCalculator.drikSunLongitude(instant))
     }
 
     func siderealSun(_ instant: Date) -> Double {
-        AstronomyCalculator.normalize(AstronomyCalculator.sunLongitude(instant) - AstronomyCalculator.apparentLahiriAyanamsa(instant))
+        AstronomyCalculator.normalize(AstronomyCalculator.drikSunLongitude(instant) - AstronomyCalculator.drikLahiriAyanamsa(instant))
     }
 
     func siderealMoon(_ instant: Date) -> Double {
-        AstronomyCalculator.normalize(AstronomyCalculator.moonLongitude(instant) - AstronomyCalculator.apparentLahiriAyanamsa(instant))
+        AstronomyCalculator.normalize(AstronomyCalculator.drikMoonLongitude(instant) - AstronomyCalculator.drikLahiriAyanamsa(instant))
     }
 
     func yogaAngle(_ instant: Date) -> Double {
-        AstronomyCalculator.normalize(AstronomyCalculator.moonLongitude(instant) + AstronomyCalculator.sunLongitude(instant)
-            - 2 * AstronomyCalculator.apparentLahiriAyanamsa(instant))
+        AstronomyCalculator.normalize(AstronomyCalculator.drikMoonLongitude(instant) + AstronomyCalculator.drikSunLongitude(instant)
+            - 2 * AstronomyCalculator.drikLahiriAyanamsa(instant))
     }
 
     static func rashi(_ angle: Double) -> String { signs[dartMod(Int(floor(angle / 30)), 12)] }
@@ -264,15 +269,22 @@ public struct PanchangEngine: Sendable {
 
     func findCrossing(_ start: Date, _ end: Date, _ city: PanchangCity, moon: Bool, rising: Bool) -> Date? {
         let step = 300.0
-        // Apparent upper limb on a sea-level horizon.
+        // The Sun: apparent upper limb on a sea-level horizon. The Moon: the
+        // centre of the disc without refraction, as Drik Panchang shows it
+        // (docs/PANCHANG_ACCURACY.md, "Drik time base").
         func difference(_ instant: Date) -> Double {
-            AstronomyCalculator.altitudeDegrees(instant: instant, latitude: city.latitude, longitude: city.longitude, moon: moon)
-                + AstronomyCalculator.horizonRefraction + AstronomyCalculator.semidiameterDegrees(instant, moon: moon)
+            let altitude = AstronomyCalculator.altitudeDegrees(instant: instant, latitude: city.latitude,
+                                                               longitude: city.longitude, moon: moon)
+            return moon ? altitude
+                : altitude + AstronomyCalculator.horizonRefraction + AstronomyCalculator.semidiameterDegrees(instant, moon: false)
         }
         var low = start
         var lowValue = difference(low)
         var high = start.adding(step)
-        while high <= end {
+        // The last step stops at the end, so an event just before it (a moonset
+        // minutes before the next sunrise) is found too.
+        while low < end {
+            if high > end { high = end }
             let highValue = difference(high)
             let crossed = rising ? lowValue <= 0 && highValue > 0 : lowValue >= 0 && highValue < 0
             if crossed {
@@ -424,7 +436,7 @@ public struct PanchangEngine: Sendable {
         func angle(_ instant: Date) -> Double {
             AstronomyCalculator.normalize(AstronomyCalculator.ascendantLongitude(instant, latitude: city.latitude,
                                                                                  longitude: city.longitude)
-                - AstronomyCalculator.lahiriAyanamsa(instant))
+                - AstronomyCalculator.drikLahiriAyanamsa(instant))
         }
         var result: [PanchangPeriod] = []
         var cursor = start

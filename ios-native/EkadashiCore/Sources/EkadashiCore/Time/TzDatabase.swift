@@ -152,6 +152,16 @@ public struct TzLocation: Sendable {
         lookup(millis: Int64((instant.timeIntervalSince1970 * 1000).rounded(.down))).zone
     }
 
+    /// The wall clock shown for an instant: rounded to the nearest minute
+    /// (half a minute rounds up), as Drik Panchang shows times. The local
+    /// time is rounded, so offsets with seconds (Madras time, +5:21:10) work too.
+    public func displayClock(_ instant: Date) -> WallClock {
+        let offset = Double(zone(at: instant).offsetSeconds)
+        let local = instant.timeIntervalSince1970 + offset
+        let rounded = ((local + 30) / 60).rounded(.down) * 60
+        return wallClock(Date(timeIntervalSince1970: rounded - offset))
+    }
+
     public func wallClock(_ instant: Date) -> WallClock {
         let zone = self.zone(at: instant)
         let local = instant.timeIntervalSince1970 + Double(zone.offsetSeconds)
