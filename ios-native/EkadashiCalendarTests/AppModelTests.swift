@@ -1,5 +1,7 @@
 import XCTest
 import SwiftUI
+import StoreKit
+import StoreKitTest
 import EkadashiCore
 @testable import EkadashiCalendar
 
@@ -7,6 +9,23 @@ import EkadashiCore
 /// domain rules are covered by the EkadashiCore package tests).
 @MainActor
 final class AppModelTests: XCTestCase {
+    /// Read the StoreKit-resolved metadata, not only the JSON text. Initializing
+    /// a session refreshes local test metadata without buying, cancelling,
+    /// clearing, or otherwise changing the device's existing transactions.
+    func testEveryStoreKitPlanResolvesToTheCustomerFacingPremiumName() async throws {
+        let configuration = try XCTUnwrap(Bundle.main.url(forResource: "Products", withExtension: "storekit"))
+        let session = try SKTestSession(contentsOf: configuration)
+        let products = try await Product.products(for: PremiumProduct.all)
+        XCTAssertEqual(Set(products.map(\.id)), Set(PremiumProduct.all))
+        for product in products {
+            XCTAssertEqual(product.displayName, "Ekadashi Premium", product.id)
+            if let subscription = product.subscription {
+                XCTAssertEqual(subscription.groupDisplayName, "Ekadashi Premium", product.id)
+            }
+        }
+        withExtendedLifetime(session) {}
+    }
+
     func testCurrentOccurrenceAdvancesAtParanaEndWithoutMovingBrowsedCards() async throws {
         let model = AppModel(store: InMemoryKeyValueStore(["has_launched": true, "language_code": "en", AppModel.yearKey: "2026"]))
         model.reload(); await model.waitForLoad()

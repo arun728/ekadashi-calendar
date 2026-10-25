@@ -1,5 +1,6 @@
 import 'package:ekadashi_calendar/widgets/app_icons.dart';
 import 'package:ekadashi_calendar/services/display_clock.dart';
+import 'package:ekadashi_calendar/services/theme_service.dart';
 import 'package:ekadashi_calendar/l10n/app_language.dart';
 import 'package:ekadashi_calendar/models/vrat_tracker_models.dart';
 import 'package:ekadashi_calendar/screens/details_screen.dart';
@@ -168,6 +169,40 @@ void main() {
   });
 
   group('Home card', () {
+    testWidgets('Home actions have visible circular borders and stay separate '
+        'while pressed in both Glass modes', (tester) async {
+      await pumpHome(tester);
+      final theme = tester.element(find.byKey(const Key('view_details'))).read<ThemeService>();
+      for (final enabled in [false, true]) {
+        await theme.setGlassLook(enabled);
+        await tester.pumpAndSettle();
+        final buttons = [find.byKey(const Key('view_details')),
+          find.byKey(const Key('home_share_card')), find.byKey(const Key('home_record_vrat'))];
+        final before = buttons.map(tester.getRect).toList();
+        for (final icon in buttons.skip(1)) {
+          expect(tester.getSize(icon), const Size.square(48));
+          final style = tester.widget<OutlinedButton>(icon).style!;
+          expect(style.shape!.resolve({}), isA<CircleBorder>());
+          for (final states in [<WidgetState>{}, {WidgetState.pressed}]) {
+            final border = style.side!.resolve(states)!;
+            expect(border.style, BorderStyle.solid);
+            expect(border.width, greaterThanOrEqualTo(.7));
+            expect(border.color.a, greaterThan(0));
+          }
+        }
+        for (var i = 1; i < before.length; i++) {
+          expect(before[i].left - before[i - 1].right, greaterThanOrEqualTo(8));
+        }
+        final gesture = await tester.startGesture(tester.getCenter(buttons[2]));
+        await tester.pump(const Duration(milliseconds: 120));
+        expect(buttons.map(tester.getRect).toList(), before);
+        await gesture.up();
+        await tester.pumpAndSettle();
+        expect(buttons.map(tester.getRect).toList(), before);
+        expect(tester.takeException(), isNull);
+      }
+    });
+
     testWidgets('glass card radius 24, iOS text sizes, labelled arrows', (
       tester,
     ) async {
@@ -356,7 +391,7 @@ void main() {
         findsNothing,
       );
       expect(
-        find.descendant(of: details, matching: find.byType(BackButton)),
+        find.descendant(of: details, matching: find.byIcon(AppIcons.back)),
         findsOneWidget,
       );
       // The last element scrolls clear of the floating tab bar.
@@ -367,7 +402,7 @@ void main() {
         ),
       );
       expect((scroll.padding! as EdgeInsets).bottom, greaterThanOrEqualTo(100));
-      await tester.tap(find.byType(BackButton));
+      await tester.tap(find.byIcon(AppIcons.back));
       await tester.pumpAndSettle();
       expect(find.byType(DetailsScreen), findsNothing);
       expect(find.byKey(const Key('home_ekadashi_card')), findsOneWidget);
@@ -542,7 +577,7 @@ void main() {
         IosColors.green(context),
       );
       // Home shows the filled check for an observed fast.
-      await tester.tap(find.byType(BackButton));
+      await tester.tap(find.byIcon(AppIcons.back));
       await tester.pumpAndSettle();
       final record = find.byKey(const Key('home_record_vrat'));
       expect(

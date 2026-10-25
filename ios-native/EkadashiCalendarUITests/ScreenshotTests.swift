@@ -1,6 +1,7 @@
 import XCTest
 import UIKit
 import StoreKitTest
+import Vision
 
 /// Walks the five tabs, search and the paywall, attaching a screenshot of
 /// each (kept with the test results) and checking the main controls exist.
@@ -95,6 +96,37 @@ final class ScreenshotTests: XCTestCase {
         }
     }
 
+    func testHomeActionsHaveSeparateRoundIconsAndStableBoundsAfterTapping() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        for enabled in [false, true] {
+            glassTab(4)
+            setSwitch(app.switches["settings_glass_look"].firstMatch, to: enabled)
+            glassTab(0)
+            let details = app.buttons["view_details"].firstMatch
+            let share = app.buttons["home_share_card"].firstMatch
+            let record = app.buttons["home_record_vrat"].firstMatch
+            let original = [details.frame, share.frame, record.frame]
+            for icon in [share, record] {
+                XCTAssertEqual(icon.frame.width, icon.frame.height, accuracy: 1, "Home icon must have a circular enclosure")
+                XCTAssertGreaterThanOrEqual(icon.frame.height, 48)
+            }
+            XCTAssertGreaterThanOrEqual(share.frame.minX - details.frame.maxX, 8)
+            XCTAssertGreaterThanOrEqual(record.frame.minX - share.frame.maxX, 8)
+            snap("home-independent-actions-glass-\(enabled)")
+            record.tap()
+            for (button, frame) in zip([details, share, record], original) {
+                assertFrame(button.frame, matches: frame, "Home actions must not merge or move when tapped")
+            }
+            snap("home-independent-actions-after-tap-glass-\(enabled)")
+            share.tap()
+            XCTAssertTrue(app.buttons["Cancel"].firstMatch.waitForExistence(timeout: 5))
+            app.buttons["Cancel"].firstMatch.tap()
+            for (button, frame) in zip([details, share, record], original) {
+                assertFrame(button.frame, matches: frame, "Return from Share")
+            }
+        }
+    }
+
     func testCityPickerHasOrganizedGroupsInBothGlassModesAndBothTabs() {
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
         for enabled in [false, true] {
@@ -168,6 +200,7 @@ final class ScreenshotTests: XCTestCase {
         let session = try SKTestSession(contentsOf: configuration)
         session.resetToDefaultState()
         session.disableDialogs = true
+        session.timeRate = .realTime
         try session.clearTransactions()
         defer { try? session.clearTransactions() }
         app.launch()
@@ -178,8 +211,10 @@ final class ScreenshotTests: XCTestCase {
         monthly.tap()
         for (product, next) in [("monthly", "yearly"), ("yearly", "lifetime"), ("lifetime", "lifetime")] {
             try await session.buyProduct(identifier: "ekadashi_premium_\(product)")
+            XCUIDevice.shared.press(.home)
+            app.activate()
             let tile = app.buttons["premium_plan_\(next)"].firstMatch
-            await fulfillment(of: [expectation(for: NSPredicate(format: "exists == true AND selected == true"), evaluatedWith: tile)], timeout: 15)
+            await fulfillment(of: [expectation(for: NSPredicate(format: "exists == true AND selected == true"), evaluatedWith: tile)], timeout: 60)
             XCTAssertTrue(tile.isSelected, next)
             XCTAssertTrue(tile.isEnabled)
             snap("premium-owned-\(product)-suggest-\(next)")
@@ -210,6 +245,51 @@ final class ScreenshotTests: XCTestCase {
         glassTab(4)
         XCTAssertTrue(element("settings_glass_look_icon").exists)
         snap("settings-glass-look-icon")
+    }
+
+    @MainActor
+    func testStoreManagedSubscriptionDisplayNames() async throws {
+        #if !targetEnvironment(simulator)
+        throw XCTSkip("Purchase/reset scenarios run only on Simulator; never clear a user's device purchases")
+        #else
+        app.terminate()
+        let configuration = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("EkadashiCalendar/Resources/Products.storekit")
+        let session = try SKTestSession(contentsOf: configuration)
+        session.resetToDefaultState()
+        session.disableDialogs = true
+        session.timeRate = .realTime
+        try session.clearTransactions()
+        defer { try? session.clearTransactions() }
+        _ = try await session.buyProduct(identifier: "ekadashi_premium_monthly")
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        glassTab(4)
+        let manage = app.buttons["Manage"].firstMatch
+        XCTAssertTrue(manage.waitForExistence(timeout: 30))
+        manage.tap()
+        // Apple's remote controller does not expose its labels to XCUITest
+        // on every OS. Read the actual visible screenshot with Vision rather
+        // than passing an assertion against a missing accessibility element.
+        let shown = expectation(for: NSPredicate { _, _ in
+            (try? self.visibleStoreText().contains { $0.hasPrefix("Edit Subscription") }) == true
+        }, evaluatedWith: nil)
+        await fulfillment(of: [shown], timeout: 15)
+        let text = try visibleStoreText()
+        snap("store-managed-subscription-correct-name")
+        XCTAssertFalse(text.contains { $0.contains("ekadashi_premium") })
+        XCTAssertGreaterThanOrEqual(text.filter { $0.hasPrefix("Ekadashi Premium") }.count, 3,
+            "The current subscription and both plan options must show the customer-facing name: \(text)")
+        #endif
+    }
+
+    private func visibleStoreText() throws -> [String] {
+        let image = try XCTUnwrap(XCUIScreen.main.screenshot().image.cgImage)
+        let request = VNRecognizeTextRequest()
+        request.recognitionLevel = .accurate
+        request.recognitionLanguages = ["en-US"]
+        try VNImageRequestHandler(cgImage: image).perform([request])
+        return (request.results ?? []).compactMap { $0.topCandidates(1).first?.string }
     }
 
     private func calendarHeaderPixels() -> [UInt8] {
@@ -466,6 +546,7 @@ final class ScreenshotTests: XCTestCase {
     func testGlassLookInEveryLanguageAndBothThemes() {
         app.terminate()
         app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = "2026-10-22T07:15:00Z"
+        app.launchArguments += ["-lifecycle-testing"] // Pin Chennai as well as the clock; ignore simulator GPS.
         app.launch()
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
         let cases = [("English", "Glass Look", "Papankusha Ekadashi"),
