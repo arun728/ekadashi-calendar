@@ -16,6 +16,73 @@ final class ScreenshotTests: XCTestCase {
         app.launch()
     }
 
+    func testPanchangHasOnlyTheSharedTrailingSearchInBothGlassModes() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        for enabled in [false, true] {
+            glassTab(4)
+            setSwitch(app.switches["settings_glass_look"].firstMatch, to: enabled)
+            let settings = app.buttons["open_global_search"].firstMatch.frame
+            glassTab(0)
+            let home = app.buttons["open_global_search"].firstMatch.frame
+            glassTab(3)
+            XCTAssertFalse(app.buttons["panchang_notes"].exists)
+            let search = app.buttons["open_global_search"].firstMatch
+            XCTAssertTrue(search.isHittable)
+            for reference in [settings, home] {
+                XCTAssertEqual(search.frame.width, reference.width, accuracy: 1)
+                XCTAssertEqual(search.frame.height, reference.height, accuracy: 1)
+                XCTAssertEqual(search.frame.maxX, reference.maxX, accuracy: 1)
+            }
+            snap("panchang-toolbar-glass-\(enabled)")
+            search.tap()
+            XCTAssertTrue(app.searchFields.firstMatch.waitForExistence(timeout: 5))
+            app.buttons["global_search_back"].firstMatch.tap()
+        }
+    }
+
+    func testCalendarRetainsGlassOffHeaderAppearanceInBothModes() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        glassTab(1)
+        let offSearch = app.buttons["open_global_search"].firstMatch.frame
+        let off = calendarHeaderPixels()
+        snap("calendar-approved-off")
+        glassTab(4)
+        setSwitch(app.switches["settings_glass_look"].firstMatch, to: true)
+        glassTab(1)
+        let onSearch = app.buttons["open_global_search"].firstMatch.frame
+        XCTAssertEqual(onSearch.width, offSearch.width, accuracy: 1)
+        XCTAssertEqual(onSearch.height, offSearch.height, accuracy: 1)
+        XCTAssertEqual(onSearch.minX, offSearch.minX, accuracy: 1)
+        let on = calendarHeaderPixels()
+        XCTAssertEqual(on.count, off.count)
+        let changed = stride(from: 0, to: min(on.count, off.count), by: 4).filter { pixel in
+            (0..<3).contains { abs(Int(on[pixel + $0]) - Int(off[pixel + $0])) > 20 }
+        }.count
+        let fraction = Double(changed) / Double(max(1, off.count / 4))
+        XCTAssertLessThan(fraction, 0.025, "Calendar header must retain Off rendering: changed fraction \(fraction)")
+        snap("calendar-approved-on")
+        app.buttons["calendar_google_menu"].firstMatch.tap()
+        XCTAssertTrue(app.buttons["import_google_year"].firstMatch.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["disconnect_google"].firstMatch.exists)
+    }
+
+    private func calendarHeaderPixels() -> [UInt8] {
+        let shot = XCUIScreen.main.screenshot().image
+        let scale = CGFloat(shot.cgImage!.width) / app.frame.width
+        let top = app.navigationBars.firstMatch.frame.minY
+        let crop = shot.cgImage!.cropping(to: CGRect(x: 0, y: top * scale,
+            width: app.frame.width * scale, height: 220 * scale))!
+        let width = Int(app.frame.width), height = 220
+        var bytes = [UInt8](repeating: 0, count: width * height * 4)
+        bytes.withUnsafeMutableBytes { buffer in
+            let context = CGContext(data: buffer.baseAddress, width: width, height: height,
+                bitsPerComponent: 8, bytesPerRow: width * 4, space: CGColorSpaceCreateDeviceRGB(),
+                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
+            context.draw(crop, in: CGRect(x: 0, y: 0, width: width, height: height))
+        }
+        return bytes
+    }
+
     func testLifecycleHomeRetainsParanaAndShowsNextAtItsEnd() {
         for (time, label) in [("2026-10-22T00:00:00+05:30", "06:00:00"),
                               ("2026-10-23T00:00:00+05:30", "Now"),
