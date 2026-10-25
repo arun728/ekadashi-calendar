@@ -172,18 +172,26 @@ void main() {
     testWidgets('Home actions have visible circular borders and stay separate '
         'while pressed in both Glass modes', (tester) async {
       await pumpHome(tester);
-      final theme = tester.element(find.byKey(const Key('view_details'))).read<ThemeService>();
+      final theme = tester
+          .element(find.byKey(const Key('view_details')))
+          .read<ThemeService>();
       for (final enabled in [false, true]) {
         await theme.setGlassLook(enabled);
         await tester.pumpAndSettle();
-        final buttons = [find.byKey(const Key('view_details')),
-          find.byKey(const Key('home_share_card')), find.byKey(const Key('home_record_vrat'))];
+        final buttons = [
+          find.byKey(const Key('view_details')),
+          find.byKey(const Key('home_share_card')),
+          find.byKey(const Key('home_record_vrat')),
+        ];
         final before = buttons.map(tester.getRect).toList();
         for (final icon in buttons.skip(1)) {
           expect(tester.getSize(icon), const Size.square(48));
           final style = tester.widget<OutlinedButton>(icon).style!;
           expect(style.shape!.resolve({}), isA<CircleBorder>());
-          for (final states in [<WidgetState>{}, {WidgetState.pressed}]) {
+          for (final states in [
+            <WidgetState>{},
+            {WidgetState.pressed},
+          ]) {
             final border = style.side!.resolve(states)!;
             expect(border.style, BorderStyle.solid);
             expect(border.width, greaterThanOrEqualTo(.7));
@@ -199,6 +207,12 @@ void main() {
         await gesture.up();
         await tester.pumpAndSettle();
         expect(buttons.map(tester.getRect).toList(), before);
+        expect(
+          tester.getRect(find.byKey(const Key('app_toast'))).bottom,
+          lessThanOrEqualTo(
+            before.map((rect) => rect.top).reduce((a, b) => a < b ? a : b) - 8,
+          ),
+        );
         expect(tester.takeException(), isNull);
       }
     });

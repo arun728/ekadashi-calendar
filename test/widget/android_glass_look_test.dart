@@ -53,6 +53,26 @@ void main() {
                   5,
                   (i) => tester.getRect(find.byKey(Key('glass_tab_$i'))),
                 );
+                Future<void> feedbackStaysAboveActions() async {
+                  await tester.tap(find.byKey(const Key('home_record_vrat')));
+                  await tester.pumpAndSettle();
+                  final actions = [
+                    'view_details',
+                    'home_share_card',
+                    'home_record_vrat',
+                  ].map((key) => tester.getRect(find.byKey(Key(key))));
+                  final top = actions
+                      .map((rect) => rect.top)
+                      .reduce((a, b) => a < b ? a : b);
+                  expect(
+                    tester.getRect(find.byKey(const Key('app_toast'))).bottom,
+                    lessThanOrEqualTo(top - 8),
+                  );
+                  expect(tester.takeException(), isNull);
+                  await tester.pump(const Duration(seconds: 5));
+                  await tester.pumpAndSettle();
+                }
+
                 Future<List<int>> pixels() async =>
                     (await tester.runAsync(() async {
                       final image = await tester
@@ -66,6 +86,7 @@ void main() {
                       image.dispose();
                       return data!.buffer.asUint8List();
                     }))!;
+                await feedbackStaysAboveActions();
                 final original = code == 'en' ? await pixels() : <int>[];
                 final before = tabs();
                 await tester.tap(find.byKey(const Key('glass_tab_1')));
@@ -89,7 +110,13 @@ void main() {
                 );
                 await tester.pumpAndSettle();
                 expect(toggle, findsOneWidget);
-                expect(find.descendant(of: toggle, matching: find.byIcon(AppIcons.all['glass_look']!)), findsOneWidget);
+                expect(
+                  find.descendant(
+                    of: toggle,
+                    matching: find.byIcon(AppIcons.all['glass_look']!),
+                  ),
+                  findsOneWidget,
+                );
                 await Scrollable.ensureVisible(
                   tester.element(toggle),
                   alignment: .5,
@@ -125,6 +152,7 @@ void main() {
                   expect(listEquals(original, await pixels()), isFalse);
                 }
                 final details = find.byKey(const Key('view_details'));
+                await feedbackStaysAboveActions();
                 expect(details.hitTestable(), findsOneWidget);
                 expect(
                   tester.getRect(details).bottom,

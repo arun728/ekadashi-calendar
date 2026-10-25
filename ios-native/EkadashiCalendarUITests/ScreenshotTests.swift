@@ -114,6 +114,10 @@ final class ScreenshotTests: XCTestCase {
             XCTAssertGreaterThanOrEqual(record.frame.minX - share.frame.maxX, 8)
             snap("home-independent-actions-glass-\(enabled)")
             record.tap()
+            let feedback = app.staticTexts["You can record this fast once Parana begins"].firstMatch
+            XCTAssertTrue(feedback.waitForExistence(timeout: 5))
+            XCTAssertLessThanOrEqual(feedback.frame.maxY + 14, original.map(\.minY).min()! - 8,
+                "The feedback capsule must stay above every Home action")
             for (button, frame) in zip([details, share, record], original) {
                 assertFrame(button.frame, matches: frame, "Home actions must not merge or move when tapped")
             }
@@ -123,6 +127,89 @@ final class ScreenshotTests: XCTestCase {
             app.buttons["Cancel"].firstMatch.tap()
             for (button, frame) in zip([details, share, record], original) {
                 assertFrame(button.frame, matches: frame, "Return from Share")
+            }
+        }
+    }
+
+    func testCalendarEditorSaveCancelAndGoogleSignInCancellation() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        for enabled in [false, true] {
+            glassTab(4)
+            setSwitch(app.switches["settings_glass_look"].firstMatch, to: enabled)
+            glassTab(1)
+            app.buttons["add_calendar_entry"].firstMatch.tap()
+            XCTAssertTrue(app.textFields["entry_title"].firstMatch.waitForExistence(timeout: 5))
+            snap("calendar-entry-toolbar-glass-\(enabled)")
+            app.buttons["Cancel"].firstMatch.tap()
+            XCTAssertFalse(app.textFields["entry_title"].firstMatch.exists)
+            app.buttons["add_calendar_entry"].firstMatch.tap()
+            let title = app.textFields["entry_title"].firstMatch
+            XCTAssertTrue(title.waitForExistence(timeout: 5))
+            title.tap(); title.typeText("Toolbar regression \(enabled)")
+            app.buttons["save_entry"].firstMatch.tap()
+            XCTAssertTrue(app.staticTexts["Toolbar regression \(enabled)"].firstMatch.waitForExistence(timeout: 10))
+            app.buttons["calendar_google_menu"].firstMatch.tap()
+            app.buttons["import_google_year"].firstMatch.tap()
+            let prompt = app.alerts.firstMatch
+            if prompt.waitForExistence(timeout: 8), prompt.buttons["Cancel"].exists {
+                prompt.buttons["Cancel"].tap()
+            } else if app.buttons["Cancel"].firstMatch.exists {
+                app.buttons["Cancel"].firstMatch.tap()
+            } else {
+                // ASWebAuthenticationSession is hosted by SafariViewService,
+                // so its Cancel control is outside our app's AX tree.
+                let authentication = XCUIApplication(bundleIdentifier: "com.apple.SafariViewService")
+                let cancel = authentication.buttons["Cancel"].firstMatch
+                XCTAssertTrue(cancel.waitForExistence(timeout: 10))
+                cancel.tap()
+            }
+            XCTAssertTrue(app.buttons["calendar_google_menu"].firstMatch.waitForExistence(timeout: 15), "Cancelled sign-in must restore the toolbar without crashing")
+            snap("calendar-google-cancelled-glass-\(enabled)")
+        }
+    }
+
+    func testRecordEditorCancelSaveAndDeleteKeepTheirToolbarControls() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        app.buttons["Papankusha Ekadashi"].firstMatch.tap()
+        app.buttons["home_record_vrat"].firstMatch.tap()
+        XCTAssertTrue(app.buttons["vrat_record_save"].firstMatch.waitForExistence(timeout: 5))
+        app.buttons["Cancel"].firstMatch.tap()
+        app.buttons["home_record_vrat"].firstMatch.tap()
+        app.buttons["vrat_record_save"].firstMatch.tap()
+        for _ in 0..<3 {
+            let acknowledgement = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Hari Om")).firstMatch
+            if acknowledgement.waitForExistence(timeout: 2) { acknowledgement.tap() }
+            else { break }
+        }
+        XCTAssertTrue(app.buttons["home_record_vrat"].firstMatch.waitForExistence(timeout: 5))
+        if app.buttons["Papankusha Ekadashi"].firstMatch.exists {
+            app.buttons["Papankusha Ekadashi"].firstMatch.tap()
+        }
+        app.buttons["home_record_vrat"].firstMatch.tap()
+        let delete = app.buttons["Delete Record"].firstMatch
+        XCTAssertTrue(delete.waitForExistence(timeout: 5))
+        snap("record-editor-existing-toolbar")
+        delete.tap()
+        XCTAssertTrue(app.alerts.firstMatch.waitForExistence(timeout: 5))
+        app.alerts.buttons["Delete Record"].firstMatch.tap()
+        XCTAssertTrue(app.buttons["home_record_vrat"].firstMatch.waitForExistence(timeout: 5))
+    }
+
+    func testCalendarMonthPickerCancelAndDoneWorkInBothGlassModes() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        for enabled in [false, true] {
+            glassTab(4)
+            setSwitch(app.switches["settings_glass_look"].firstMatch, to: enabled)
+            glassTab(1)
+            for action in ["Cancel", "Done"] {
+                app.buttons["calendar_year_selector"].firstMatch.tap()
+                XCTAssertTrue(app.pickerWheels.firstMatch.waitForExistence(timeout: 5))
+                XCTAssertEqual(app.pickerWheels.count, 2)
+                XCTAssertTrue(app.buttons[action].firstMatch.isHittable)
+                snap("calendar-month-picker-\(action)-glass-\(enabled)")
+                app.buttons[action].firstMatch.tap()
+                XCTAssertFalse(app.pickerWheels.firstMatch.exists)
+                XCTAssertTrue(app.buttons["calendar_year_selector"].firstMatch.isHittable)
             }
         }
     }
@@ -194,6 +281,9 @@ final class ScreenshotTests: XCTestCase {
 
     @MainActor
     func testPremiumSuggestionsFollowVerifiedStoreKitPurchases() async throws {
+        #if !targetEnvironment(simulator)
+        throw XCTSkip("Purchases and resets belong only to isolated Simulator test accounts")
+        #else
         let configuration = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
             .appendingPathComponent("EkadashiCalendar/Resources/Products.storekit")
         app.terminate()
@@ -210,7 +300,8 @@ final class ScreenshotTests: XCTestCase {
         XCTAssertTrue(monthly.waitForExistence(timeout: 10))
         monthly.tap()
         for (product, next) in [("monthly", "yearly"), ("yearly", "lifetime"), ("lifetime", "lifetime")] {
-            try await session.buyProduct(identifier: "ekadashi_premium_\(product)")
+            app.buttons["premium_buy"].firstMatch.tap()
+            if product == "lifetime" { app.alerts.buttons["Buy lifetime"].tap() }
             XCUIDevice.shared.press(.home)
             app.activate()
             let tile = app.buttons["premium_plan_\(next)"].firstMatch
@@ -220,6 +311,7 @@ final class ScreenshotTests: XCTestCase {
             snap("premium-owned-\(product)-suggest-\(next)")
         }
         XCTAssertFalse(app.buttons["premium_buy"].exists, "Lifetime ownership must not offer another charge")
+        #endif
     }
 
     func testShareActionsSaveLeftAndShareRightInBothGlassModes() {
@@ -261,10 +353,17 @@ final class ScreenshotTests: XCTestCase {
         session.timeRate = .realTime
         try session.clearTransactions()
         defer { try? session.clearTransactions() }
-        _ = try await session.buyProduct(identifier: "ekadashi_premium_monthly")
         app.launch()
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
         glassTab(4)
+        app.buttons["settings_premium"].firstMatch.tap()
+        let product = app.buttons["premium_plan_monthly"].firstMatch
+        await fulfillment(of: [expectation(for: NSPredicate(format: "exists == true AND enabled == true"), evaluatedWith: product)], timeout: 30)
+        product.tap()
+        app.buttons["premium_buy"].firstMatch.tap()
+        XCUIDevice.shared.press(.home)
+        app.activate()
+        app.buttons["premium_close"].firstMatch.tap()
         let manage = app.buttons["Manage"].firstMatch
         XCTAssertTrue(manage.waitForExistence(timeout: 30))
         manage.tap()
@@ -561,6 +660,7 @@ final class ScreenshotTests: XCTestCase {
                 app.buttons[language].tap()
             }
             XCTAssertTrue(app.staticTexts[eventName].firstMatch.waitForExistence(timeout: 10), language)
+            assertHomeActionEnclosures(language)
             let offTabFrames = stableNativeTabFrames()
             glassTab(4)
             let glass = app.switches["settings_glass_look"].firstMatch
@@ -578,6 +678,7 @@ final class ScreenshotTests: XCTestCase {
                     glassTab(0)
                 }
                 XCTAssertTrue(app.staticTexts[eventName].firstMatch.waitForExistence(timeout: 10), language)
+                assertHomeActionEnclosures("\(language) \(theme)")
                 if theme == "dark" { assertNativeTabFramesMatch(offTabFrames) }
                 let ring = app.descendants(matching: .any)["home_remaining_ring"].firstMatch
                 XCTAssertTrue(ring.label.contains("28%"), language)
@@ -593,6 +694,18 @@ final class ScreenshotTests: XCTestCase {
             setSwitch(app.switches["settings_dark_mode"].firstMatch, to: true)
             setSwitch(glass, to: false)
             glassTab(0)
+        }
+    }
+
+    private func assertHomeActionEnclosures(_ context: String) {
+        let buttons = ["view_details", "home_share_card", "home_record_vrat"]
+            .map { app.buttons[$0].firstMatch.frame }
+        for frame in buttons.dropFirst() {
+            XCTAssertEqual(frame.width, frame.height, accuracy: 1, context)
+            XCTAssertGreaterThanOrEqual(frame.height, 48, context)
+        }
+        for index in 1..<buttons.count {
+            XCTAssertGreaterThanOrEqual(buttons[index].minX - buttons[index - 1].maxX, 8, context)
         }
     }
 
@@ -862,6 +975,9 @@ final class ScreenshotTests: XCTestCase {
             XCTAssertTrue(record.isEnabled)
             record.tap()
             XCTAssertTrue(app.staticTexts[message].waitForExistence(timeout: 3), language)
+            let actionTop = ["view_details", "home_share_card", "home_record_vrat"]
+                .map { app.buttons[$0].firstMatch.frame.minY }.min()!
+            XCTAssertLessThanOrEqual(app.staticTexts[message].frame.maxY + 14, actionTop - 8, language)
             snap("home-parana-feedback-\(language)")
             tab(1)
             let parana = app.staticTexts["calendar_break_fasting"].firstMatch
@@ -1246,6 +1362,11 @@ final class ScreenshotTests: XCTestCase {
         mumbai.tap()
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
 
+        element("home_location").tap()
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label ==[c] %@", "Recent Searches")).firstMatch.waitForExistence(timeout: 5))
+        snap("city-picker-recent-group")
+        app.buttons["city_picker_cancel"].firstMatch.tap()
+
         app.buttons["home_share_card"].firstMatch.tap()
         XCTAssertTrue(element("share_card_preview").waitForExistence(timeout: 10))
         XCTAssertTrue(reveal(app.buttons["share_card_share"].firstMatch), "Share remains reachable below the rendered image")
@@ -1284,6 +1405,10 @@ final class ScreenshotTests: XCTestCase {
             XCTAssertTrue(app.datePickers.firstMatch.waitForExistence(timeout: 5), "\(page) opens the full calendar")
             snap("16-panchang-calendar-\(page)")
             app.buttons["Done"].firstMatch.tap()
+            app.buttons[picker].firstMatch.tap()
+            XCTAssertTrue(app.datePickers.firstMatch.waitForExistence(timeout: 5))
+            app.buttons["Today"].firstMatch.tap()
+            XCTAssertFalse(app.datePickers.firstMatch.exists)
         }
     }
 
@@ -1405,6 +1530,10 @@ final class ScreenshotTests: XCTestCase {
         element("event_reminder_save").tap()
         XCTAssertTrue(element("event_reminder_row_calendar:custom").waitForExistence(timeout: 10))
         snap("13-notifications")
+        element("event_reminder_row_calendar:custom").tap()
+        XCTAssertTrue(element("event_reminder_save").waitForExistence(timeout: 5))
+        app.buttons["Cancel"].firstMatch.tap()
+        XCTAssertTrue(element("event_reminder_row_calendar:custom").waitForExistence(timeout: 5))
     }
 
     /// A notification shown while the app is open must not crash it (the
