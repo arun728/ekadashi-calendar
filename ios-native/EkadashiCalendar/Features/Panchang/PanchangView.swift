@@ -29,7 +29,6 @@ struct PanchangView: View {
     @State private var tradition: EkadashiTradition = .smarta
     @State private var editingLocation = false
     @State private var pickingDate = false
-    @State private var showingNotes = false
     @State private var started = false
     @State private var toast: ToastMessage?
 
@@ -61,11 +60,6 @@ struct PanchangView: View {
                     .disabled(isToday)
                     .accessibilityIdentifier("panchang_today")
             }
-            ToolbarItem(placement: .topBarTrailing) {
-                Button { showingNotes = true } label: { Image(systemName: AppSymbol.info) }
-                    .accessibilityLabel(model.t("panchang_notes_title"))
-                    .accessibilityIdentifier("panchang_notes")
-            }
         }
         .sheet(isPresented: $editingLocation) {
             PanchangLocationSheet(city: city) { changeCity($0) }
@@ -73,7 +67,6 @@ struct PanchangView: View {
         // Every sub-tab opens the same full calendar; the monthly ones then
         // show the picked date's month.
         .sheet(isPresented: $pickingDate) { datePicker }
-        .sheet(isPresented: $showingNotes) { PanchangNotesSheet() }
         .toast($toast)
         .onAppear {
             start()
@@ -315,31 +308,6 @@ struct PanchangMonthPicker: View {
             selectedMonth = month.month
             selectedYear = month.year
         }
-    }
-}
-
-/// How the Panchang is calculated, in a few lines (replaces the Guide tab).
-struct PanchangNotesSheet: View {
-    @Environment(AppModel.self) private var model
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 14) {
-                    Text(model.t("panchang_notes_body")).font(.body)
-                    Text(model.t("panchang_notes_traditions")).font(.body)
-                    Text(model.t("panchang_notes_sources")).font(.footnote).foregroundStyle(.secondary)
-                }
-                .padding(20)
-            }
-            .navigationTitle(model.t("panchang_notes_title"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) { Button(model.t("panchang_done")) { dismiss() } }
-            }
-        }
-        .presentationDetents([.medium, .large])
     }
 }
 

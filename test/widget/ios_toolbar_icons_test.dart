@@ -51,47 +51,71 @@ void main() {
     });
   }
 
-  testWidgets('Panchang removes notes and matches Home/Settings trailing search in both modes', (tester) async {
-    await open(tester, 393);
-    final theme = tester.element(find.byKey(const Key('open_global_search'))).read<ThemeService>();
-    for (final enabled in [false, true]) {
-      await theme.setGlassLook(enabled);
-      await tester.pumpAndSettle();
-      final frames = <Rect>[];
-      for (final tab in [0, 4, 3]) {
-        await tester.tap(find.byKey(Key('glass_tab_$tab')));
+  testWidgets(
+    'Panchang removes notes and matches Home/Settings trailing search in both modes',
+    (tester) async {
+      await open(tester, 393);
+      final theme = tester
+          .element(find.byKey(const Key('open_global_search')))
+          .read<ThemeService>();
+      for (final enabled in [false, true]) {
+        await theme.setGlassLook(enabled);
         await tester.pumpAndSettle();
-        frames.add(tester.getRect(find.byKey(const Key('open_global_search'))));
+        final frames = <Rect>[];
+        for (final tab in [0, 4, 3]) {
+          await tester.tap(find.byKey(Key('glass_tab_$tab')));
+          await tester.pumpAndSettle();
+          frames.add(
+            tester.getRect(find.byKey(const Key('open_global_search'))),
+          );
+        }
+        expect(find.byKey(const Key('panchang_notes')), findsNothing);
+        expect(frames[2], frames[0]);
+        expect(frames[2], frames[1]);
+        await tester.tap(find.byKey(const Key('open_global_search')));
+        await tester.pumpAndSettle();
+        expect(find.byKey(const Key('global_search_field')), findsOneWidget);
+        await tester.tap(find.byKey(const Key('global_search_back')));
+        await tester.pumpAndSettle();
       }
-      expect(find.byKey(const Key('panchang_notes')), findsNothing);
-      expect(frames[2], frames[0]);
-      expect(frames[2], frames[1]);
-      await tester.tap(find.byKey(const Key('open_global_search')));
-      await tester.pumpAndSettle();
-      expect(find.byKey(const Key('global_search_field')), findsOneWidget);
-      await tester.tap(find.byKey(const Key('global_search_back')));
-      await tester.pumpAndSettle();
-    }
-  });
+    },
+  );
 
-  testWidgets('Calendar keeps its Off renderer and toolbar under either preference', (tester) async {
-    await open(tester, 393);
-    final theme = tester.element(find.byKey(const Key('open_global_search'))).read<ThemeService>();
-    for (final enabled in [false, true]) {
-      await theme.setGlassLook(enabled);
-      await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const Key('glass_tab_1')));
-      await tester.pumpAndSettle();
-      expect(GlassLook.active(tester.element(find.byType(CalendarScreen))), isFalse);
-      expect(GlassLook.active(tester.element(find.byKey(const Key('open_global_search')))), isFalse);
-      final search = tester.getRect(find.byKey(const Key('open_global_search')));
-      final add = tester.getRect(find.byKey(const Key('add_calendar_entry')));
-      final google = tester.getRect(find.byKey(const Key('calendar_google_menu')));
-      expect(search.right, lessThanOrEqualTo(add.left));
-      expect(add.right, lessThanOrEqualTo(google.left));
-      expect(tester.takeException(), isNull);
-    }
-  });
+  testWidgets(
+    'Calendar keeps its Off toolbar while body follows the preference',
+    (tester) async {
+      await open(tester, 393);
+      final theme = tester
+          .element(find.byKey(const Key('open_global_search')))
+          .read<ThemeService>();
+      for (final enabled in [false, true]) {
+        await theme.setGlassLook(enabled);
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const Key('glass_tab_1')));
+        await tester.pumpAndSettle();
+        expect(
+          GlassLook.active(tester.element(find.byType(CalendarScreen))),
+          enabled,
+        );
+        expect(
+          GlassLook.active(
+            tester.element(find.byKey(const Key('open_global_search'))),
+          ),
+          isFalse,
+        );
+        final search = tester.getRect(
+          find.byKey(const Key('open_global_search')),
+        );
+        final add = tester.getRect(find.byKey(const Key('add_calendar_entry')));
+        final google = tester.getRect(
+          find.byKey(const Key('calendar_google_menu')),
+        );
+        expect(search.right, lessThanOrEqualTo(add.left));
+        expect(add.right, lessThanOrEqualTo(google.left));
+        expect(tester.takeException(), isNull);
+      }
+    },
+  );
 
   testWidgets('Google uses circular sync and person-minus iOS glyphs', (
     tester,

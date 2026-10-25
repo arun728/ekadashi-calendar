@@ -77,22 +77,23 @@ struct RootView: View {
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
     @ToolbarContentBuilder
-    private var searchToolbarItem: some ToolbarContent {
+    private func searchToolbarItem(for tab: AppTab) -> some ToolbarContent {
         #if compiler(>=6.2)
         if #available(iOS 26.0, *) {
-            if GlassLookPolicy.isActive(preference: glassLookEnabled, reduceTransparency: reduceTransparency) {
-                searchToolbarBase.sharedBackgroundVisibility(.hidden)
-            } else { searchToolbarBase }
-        } else { searchToolbarBase }
+            if tab != .calendar && GlassLookPolicy.isActive(preference: glassLookEnabled, reduceTransparency: reduceTransparency) {
+                searchToolbarBase(for: tab).sharedBackgroundVisibility(.hidden)
+            } else { searchToolbarBase(for: tab) }
+        } else { searchToolbarBase(for: tab) }
         #else
-        searchToolbarBase
+        searchToolbarBase(for: tab)
         #endif
     }
 
-    private var searchToolbarBase: some ToolbarContent {
+    private func searchToolbarBase(for tab: AppTab) -> some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) {
             Button { model.open(.search) } label: { Image(systemName: AppSymbol.search) }
                 .glassToolbarButton()
+                .environment(\.glassLookEnabled, tab == .calendar ? false : glassLookEnabled)
                 .accessibilityLabel(model.t("search"))
                 .accessibilityIdentifier("open_global_search")
         }
@@ -147,7 +148,7 @@ struct RootView: View {
                         .accessibilityIdentifier("search_return")
                     }
                 }
-                searchToolbarItem
+                searchToolbarItem(for: tab)
             }
         }
     }

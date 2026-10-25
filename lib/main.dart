@@ -1244,13 +1244,19 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     ];
     // The iPhone top bar: Today and "‹ Search" in a glass capsule on the
     // left, search and the tab's actions in one on the right.
-    return ShellTopBar(
+    final bar = ShellTopBar(
       title: lang.translate('app_title'),
       searchTooltip: lang.translate('search'),
       onSearch: _openSearch,
       leading: leading,
       actions: slots?.actions(context) ?? const [],
     );
+    return _currentIndex == 1
+        ? PreferredSize(
+            preferredSize: bar.preferredSize,
+            child: GlassLook(enabled: false, child: bar),
+          )
+        : bar;
   }
 
   Widget _buildBody(LanguageService lang, Color tealColor) {

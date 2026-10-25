@@ -201,12 +201,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('panchang_key_days_unlock')), findsOneWidget);
     await capture(tester, boundaryKey, 'key_days_free_dark');
-    await tester.tap(find.byKey(const Key('panchang_notes')));
-    await tester.pumpAndSettle();
-    expect(find.byKey(const Key('panchang_notes_sheet')), findsOneWidget);
-    await capture(tester, boundaryKey, 'notes_sheet');
-    await tester.tap(find.byKey(const Key('panchang_notes_done')));
-    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('panchang_notes')), findsNothing);
     await tester.tap(find.byKey(const Key('panchang_tab_daily')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('panchang_selected_date')));

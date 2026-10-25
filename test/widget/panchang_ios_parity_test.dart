@@ -127,51 +127,48 @@ void main() {
   TextStyle styleOf(WidgetTester tester, Finder text) =>
       tester.widget<Text>(text).style ?? const TextStyle();
 
-  testWidgets('Today and the calculation notes live in the top bar', (
+  testWidgets(
+    'Today stays in the top bar without the removed calculation notes',
+    (tester) async {
+      final premium = await premiumService(false);
+      addTearDown(premium.dispose);
+      await show(tester, premium: premium, date: DateTime(2026, 10, 8));
+      expect(inBar(find.byKey(const Key('panchang_today'))), findsOneWidget);
+      expect(inBar(find.byKey(const Key('panchang_notes'))), findsNothing);
+      expect(inPage(find.byKey(const Key('panchang_today'))), findsNothing);
+      expect(inPage(find.byKey(const Key('panchang_notes'))), findsNothing);
+      // Today is a teal bar button, enabled away from today.
+      final today = tester.widget<BarTextButton>(
+        find.byKey(const Key('panchang_today')),
+      );
+      expect(today.onPressed, isNotNull);
+      await tester.tap(find.byKey(const Key('panchang_today')));
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<BarTextButton>(find.byKey(const Key('panchang_today')))
+            .onPressed,
+        isNull,
+        reason: 'Today is disabled on today',
+      );
+    },
+  );
+
+  testWidgets('no Panchang section exposes the removed notes action or sheet', (
     tester,
   ) async {
-    final premium = await premiumService(false);
+    final premium = await premiumService(true);
     addTearDown(premium.dispose);
     await show(tester, premium: premium, date: DateTime(2026, 10, 8));
-    expect(inBar(find.byKey(const Key('panchang_today'))), findsOneWidget);
-    expect(inBar(find.byKey(const Key('panchang_notes'))), findsOneWidget);
-    expect(inPage(find.byKey(const Key('panchang_today'))), findsNothing);
-    expect(inPage(find.byKey(const Key('panchang_notes'))), findsNothing);
-    // Today is a teal bar button, enabled away from today.
-    final today = tester.widget<BarTextButton>(
-      find.byKey(const Key('panchang_today')),
-    );
-    expect(today.onPressed, isNotNull);
-    await tester.tap(find.byKey(const Key('panchang_today')));
-    await tester.pumpAndSettle();
-    expect(
-      tester
-          .widget<BarTextButton>(find.byKey(const Key('panchang_today')))
-          .onPressed,
-      isNull,
-      reason: 'Today is disabled on today',
-    );
-  });
-
-  testWidgets('calculation notes are an iOS sheet with Done', (tester) async {
-    final premium = await premiumService(false);
-    addTearDown(premium.dispose);
-    await show(tester, premium: premium, date: DateTime(2026, 10, 8));
-    await tester.tap(find.byKey(const Key('panchang_notes')));
-    await tester.pumpAndSettle();
-    expect(find.byKey(const Key('panchang_notes_sheet')), findsOneWidget);
-    expect(find.byType(SheetBar), findsOneWidget);
-    final body = find.text(
-      'Everything is calculated on your phone for the chosen location, '
-      'with its own time zone. Tithi, nakshatra, yoga and karana are taken '
-      'at local sunrise; times after midnight are marked as the next day. '
-      'Sunrise and sunset use the visible upper edge of the Sun at sea '
-      'level, so hills and buildings can shift them by a few minutes.',
-    );
-    expect(styleOf(tester, body).fontSize, IosText.body);
-    await tester.tap(find.byKey(const Key('panchang_notes_done')));
-    await tester.pumpAndSettle();
-    expect(find.byKey(const Key('panchang_notes_sheet')), findsNothing);
+    for (final page in PanchangPage.values) {
+      final chip = find.byKey(Key('panchang_tab_${page.raw}'));
+      await tester.ensureVisible(chip);
+      await tester.pumpAndSettle();
+      await tester.tap(chip);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('panchang_notes')), findsNothing);
+      expect(find.byKey(const Key('panchang_notes_sheet')), findsNothing);
+    }
   });
 
   testWidgets('location pill is a glass capsule; time zone at the far right', (

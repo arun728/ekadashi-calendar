@@ -315,28 +315,14 @@ class PanchangScreenState extends State<PanchangScreen> {
     );
   }
 
-  /// The iOS toolbar: Today (leading) and the calculation notes (trailing).
+  /// The shared toolbar keeps Today leading and Search alone trailing.
   Widget _barLeading(BuildContext context) => BarTextButton(
     key: const Key('panchang_today'),
     label: _text('today'),
     onPressed: _date == _today() ? null : _goToToday,
   );
 
-  List<Widget> _barActions(BuildContext context) => [
-    IconButton(
-      key: const Key('panchang_notes'),
-      tooltip: _text('panchang_notes_title'),
-      color: IosColors.teal,
-      icon: const Icon(AppIcons.info),
-      onPressed: _showNotes,
-    ),
-  ];
-
-  void _showNotes() => showAppSheet<void>(
-    context,
-    large: false,
-    builder: (_) => PanchangNotesSheet(language: _language),
-  );
+  List<Widget> _barActions(BuildContext context) => const [];
 
   /// What the top bar shows; it is rebuilt when this changes.
   String? _barState;
@@ -598,61 +584,6 @@ class PanchangScreenState extends State<PanchangScreen> {
             ? PanchangRashiView(day: _day, terms: terms)
             : const PanchangUpgradeCard();
     }
-  }
-}
-
-/// How the Panchang is calculated, in a few lines (replaces the Guide tab):
-/// an iOS sheet with an inline title and Done.
-class PanchangNotesSheet extends StatelessWidget {
-  const PanchangNotesSheet({super.key, required this.language});
-  final String language;
-
-  @override
-  Widget build(BuildContext context) {
-    String t(String key) => AppStrings.translate(key, language);
-    final body = TextStyle(
-      fontSize: IosText.body,
-      color: IosColors.primary(context),
-    );
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        SheetBar(
-          title: t('panchang_notes_title'),
-          trailing: BarTextButton(
-            key: const Key('panchang_notes_done'),
-            label: t('panchang_done'),
-            bold: true,
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-        ),
-        Flexible(
-          child: SingleChildScrollView(
-            key: const Key('panchang_notes_sheet'),
-            padding: const EdgeInsets.all(20),
-            child: SafeArea(
-              top: false,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(t('panchang_notes_body'), style: body),
-                  const SizedBox(height: 14),
-                  Text(t('panchang_notes_traditions'), style: body),
-                  const SizedBox(height: 14),
-                  Text(
-                    t('panchang_notes_sources'),
-                    style: TextStyle(
-                      fontSize: IosText.footnote,
-                      color: IosColors.secondary(context),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
   }
 }
 

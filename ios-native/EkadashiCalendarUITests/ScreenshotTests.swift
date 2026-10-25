@@ -40,7 +40,7 @@ final class ScreenshotTests: XCTestCase {
         }
     }
 
-    func testCalendarRetainsGlassOffHeaderAppearanceInBothModes() {
+    func testCalendarRetainsGlassOffToolbarAppearanceInBothModes() {
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
         glassTab(1)
         let offSearch = app.buttons["open_global_search"].firstMatch.frame
@@ -59,7 +59,7 @@ final class ScreenshotTests: XCTestCase {
             (0..<3).contains { abs(Int(on[pixel + $0]) - Int(off[pixel + $0])) > 20 }
         }.count
         let fraction = Double(changed) / Double(max(1, off.count / 4))
-        XCTAssertLessThan(fraction, 0.025, "Calendar header must retain Off rendering: changed fraction \(fraction)")
+        XCTAssertLessThan(fraction, 0.025, "Calendar toolbar must retain Off rendering: changed fraction \(fraction)")
         snap("calendar-approved-on")
         app.buttons["calendar_google_menu"].firstMatch.tap()
         XCTAssertTrue(app.buttons["import_google_year"].firstMatch.waitForExistence(timeout: 5))
@@ -71,8 +71,8 @@ final class ScreenshotTests: XCTestCase {
         let scale = CGFloat(shot.cgImage!.width) / app.frame.width
         let top = app.navigationBars.firstMatch.frame.minY
         let crop = shot.cgImage!.cropping(to: CGRect(x: 0, y: top * scale,
-            width: app.frame.width * scale, height: 220 * scale))!
-        let width = Int(app.frame.width), height = 220
+            width: app.frame.width * scale, height: 52 * scale))!
+        let width = Int(app.frame.width), height = 52
         var bytes = [UInt8](repeating: 0, count: width * height * 4)
         bytes.withUnsafeMutableBytes { buffer in
             let context = CGContext(data: buffer.baseAddress, width: width, height: height,
@@ -81,6 +81,60 @@ final class ScreenshotTests: XCTestCase {
             context.draw(crop, in: CGRect(x: 0, y: 0, width: width, height: height))
         }
         return bytes
+    }
+
+    /// Evidence-only audit: retain all appearance differences for the user's review.
+    func testAuditGlassModesAcrossTabsSubsectionsAndSheets() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        var geometry: [String] = []
+        for enabled in [false, true] {
+            glassTab(4)
+            setSwitch(app.switches["settings_glass_look"].firstMatch, to: enabled)
+            for index in 0..<5 {
+                glassTab(index)
+                let search = app.buttons["open_global_search"].firstMatch
+                XCTAssertTrue(search.isHittable)
+                geometry.append("glass=\(enabled) tab=\(index) search=\(search.frame)")
+                snap("audit-glass-\(enabled)-tab-\(index)")
+                if index == 2 {
+                    for section in ["overview", "history", "statistics", "achievements"] {
+                        app.buttons["journey_tab_\(section)"].firstMatch.tap()
+                        snap("audit-glass-\(enabled)-journey-\(section)")
+                    }
+                }
+                if index == 3 {
+                    for section in ["keydays", "daily", "muhurta", "ekadashi", "rashi"] {
+                        let chip = app.buttons["panchang_tab_\(section)"].firstMatch
+                        if !chip.isHittable {
+                            app.buttons["panchang_tab_ekadashi"].firstMatch.swipeLeft()
+                        }
+                        chip.tap()
+                        snap("audit-glass-\(enabled)-panchang-\(section)")
+                    }
+                }
+            }
+            glassTab(0)
+            app.buttons["view_details"].firstMatch.tap()
+            snap("audit-glass-\(enabled)-details")
+            app.navigationBars.buttons.element(boundBy: 0).tap()
+            app.buttons["open_global_search"].firstMatch.tap()
+            XCTAssertTrue(app.searchFields.firstMatch.waitForExistence(timeout: 5))
+            snap("audit-glass-\(enabled)-search")
+            app.buttons["global_search_back"].firstMatch.tap()
+            element("home_location").tap()
+            XCTAssertTrue(app.textFields["ekadashi_location_search"].firstMatch.waitForExistence(timeout: 5))
+            snap("audit-glass-\(enabled)-city-picker")
+            app.buttons["city_picker_cancel"].firstMatch.tap()
+            glassTab(4)
+            app.buttons["settings_widget_preview"].firstMatch.tap()
+            XCTAssertTrue(app.buttons["widget_preview_open"].firstMatch.waitForExistence(timeout: 5))
+            snap("audit-glass-\(enabled)-widget-preview")
+            app.navigationBars.buttons.element(boundBy: 0).tap()
+        }
+        let attachment = XCTAttachment(string: geometry.joined(separator: "\n"))
+        attachment.name = "audit-search-control-geometry"
+        attachment.lifetime = .keepAlways
+        add(attachment)
     }
 
     func testLifecycleHomeRetainsParanaAndShowsNextAtItsEnd() {
