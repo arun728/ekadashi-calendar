@@ -120,6 +120,14 @@ void main() {
     },
   );
 
+  testWidgets('Premium X has the iOS 44 point glass enclosure', (tester) async {
+    await pump(tester);
+    final close = find.byKey(const Key('premium_close'));
+    expect(find.ancestor(of: close, matching: find.byType(GlassPanel)), findsOneWidget);
+    expect(tester.getSize(close), const Size(44, 44));
+    expect(tester.getCenter(close).dx, lessThan(tester.getCenter(find.text('Ekadashi Premium')).dx));
+  });
+
   testWidgets('bar, background, reason and features as on iOS', (tester) async {
     await pump(tester, reason: 'search_premium_locked');
     // A centred inline title and an X to close.

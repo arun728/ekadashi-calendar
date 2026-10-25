@@ -116,6 +116,18 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  testWidgets('Share opens as an iOS-style sheet with Cancel and pulls down', (tester) async {
+    SharedPreferences.setMockInitialValues({'language_code': 'en'});
+    await tester.pumpWidget(ChangeNotifierProvider(create: (_) => LanguageService(), child: MaterialApp(home: Builder(builder: (context) => Scaffold(body: TextButton(onPressed: () => openShareCard(context, event), child: const Text('Open share')))))));
+    await tester.tap(find.text('Open share'));
+    await tester.pumpAndSettle();
+    expect(find.byType(BottomSheet), findsOneWidget);
+    expect(find.text('Cancel'), findsOneWidget);
+    await tester.fling(find.text('Cancel'), const Offset(0, 650), 1200);
+    await tester.pumpAndSettle();
+    expect(find.byType(ShareCardScreen), findsNothing);
+  });
+
   testWidgets('the preview shows the card without any location', (
     tester,
   ) async {
