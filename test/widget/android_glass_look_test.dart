@@ -1,4 +1,6 @@
 import 'dart:ui' as ui;
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
+import 'package:ekadashi_calendar/widgets/app_icons.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/foundation.dart';
 import 'package:clock/clock.dart';
@@ -9,6 +11,9 @@ import 'package:flutter_test/flutter_test.dart';
 import '../support/app_harness.dart';
 
 void main() {
+  test('Glass Look uses the shared Apple-style overlapping glass shapes', () {
+    expect(AppIcons.all['glass_look'], CupertinoIcons.square_on_circle);
+  });
   for (final code in AppLanguage.codes) {
     for (final dark in [true, false]) {
       for (final layout in [(393.0, 1.0), (320.0, 2.0)]) {
@@ -84,6 +89,7 @@ void main() {
                 );
                 await tester.pumpAndSettle();
                 expect(toggle, findsOneWidget);
+                expect(find.descendant(of: toggle, matching: find.byIcon(AppIcons.all['glass_look']!)), findsOneWidget);
                 await Scrollable.ensureVisible(
                   tester.element(toggle),
                   alignment: .5,

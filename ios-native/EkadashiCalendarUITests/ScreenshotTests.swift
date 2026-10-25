@@ -1,5 +1,6 @@
 import XCTest
 import UIKit
+import StoreKitTest
 
 /// Walks the five tabs, search and the paywall, attaching a screenshot of
 /// each (kept with the test results) and checking the main controls exist.
@@ -50,6 +51,7 @@ final class ScreenshotTests: XCTestCase {
         setSwitch(app.switches["settings_glass_look"].firstMatch, to: true)
         glassTab(1)
         let onSearch = app.buttons["open_global_search"].firstMatch.frame
+        XCTAssertGreaterThan(app.buttons["calendar_today"].firstMatch.frame.width, 60, "Today must remain a readable capsule, not an ellipsis")
         XCTAssertEqual(onSearch.width, offSearch.width, accuracy: 1)
         XCTAssertEqual(onSearch.height, offSearch.height, accuracy: 1)
         XCTAssertEqual(onSearch.minX, offSearch.minX, accuracy: 1)
@@ -70,6 +72,8 @@ final class ScreenshotTests: XCTestCase {
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
         let actionIDs = ["view_details", "home_share_card", "home_record_vrat"]
         let actions = actionIDs.map { app.buttons[$0].firstMatch.frame }
+        print("HOME ACTIONS OFF: \(actions)")
+        snap("home-actions-off")
         var off: [CGRect] = []
         for index in 0..<5 {
             glassTab(index)
@@ -81,6 +85,8 @@ final class ScreenshotTests: XCTestCase {
             let search = app.buttons["open_global_search"].firstMatch
             assertFrame(search.frame, matches: off[index], "Search tab \(index)")
             if index == 0 {
+                print("HOME ACTIONS ON: \(actionIDs.map { app.buttons[$0].firstMatch.frame })")
+                snap("home-actions-on")
                 for (key, rect) in zip(actionIDs, actions) {
                     assertFrame(app.buttons[key].firstMatch.frame, matches: rect, key)
                 }
@@ -136,7 +142,7 @@ final class ScreenshotTests: XCTestCase {
 
     func testIOSPresentedSheetsDismissByPullingTheirHeaderDown() {
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
-        for source in ["home_location", "home_share_card", "premium", "panchang_city_selector"] {
+        for source in ["home_location", "home_share_card", "premium", "panchang_city_selector", "open_global_search"] {
             if source == "premium" {
                 glassTab(4)
                 app.buttons["settings_premium"].firstMatch.tap()
@@ -144,7 +150,7 @@ final class ScreenshotTests: XCTestCase {
                 glassTab(source == "panchang_city_selector" ? 3 : 0)
                 element(source).tap()
             }
-            let key = source == "home_share_card" ? "Cancel" : source == "premium" ? "premium_close" : "city_picker_cancel"
+            let key = source == "open_global_search" ? "global_search_back" : source == "home_share_card" ? "Cancel" : source == "premium" ? "premium_close" : "city_picker_cancel"
             let close = app.buttons[key].firstMatch
             XCTAssertTrue(close.waitForExistence(timeout: 8), source)
             let start = app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: app.frame.midX, dy: close.frame.midY))
@@ -152,6 +158,58 @@ final class ScreenshotTests: XCTestCase {
             XCTAssertTrue(XCTWaiter.wait(for: [expectation(for: NSPredicate(format: "exists == false"), evaluatedWith: close)], timeout: 5) == .completed, source)
             snap("ios-pull-dismiss-\(source)")
         }
+    }
+
+    @MainActor
+    func testPremiumSuggestionsFollowVerifiedStoreKitPurchases() async throws {
+        let configuration = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("EkadashiCalendar/Resources/Products.storekit")
+        app.terminate()
+        let session = try SKTestSession(contentsOf: configuration)
+        session.resetToDefaultState()
+        session.disableDialogs = true
+        try session.clearTransactions()
+        defer { try? session.clearTransactions() }
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        glassTab(4); app.buttons["settings_premium"].firstMatch.tap()
+        let monthly = app.buttons["premium_plan_monthly"].firstMatch
+        XCTAssertTrue(monthly.waitForExistence(timeout: 10))
+        monthly.tap()
+        for (product, next) in [("monthly", "yearly"), ("yearly", "lifetime"), ("lifetime", "lifetime")] {
+            try await session.buyProduct(identifier: "ekadashi_premium_\(product)")
+            let tile = app.buttons["premium_plan_\(next)"].firstMatch
+            await fulfillment(of: [expectation(for: NSPredicate(format: "exists == true AND selected == true"), evaluatedWith: tile)], timeout: 15)
+            XCTAssertTrue(tile.isSelected, next)
+            XCTAssertTrue(tile.isEnabled)
+            snap("premium-owned-\(product)-suggest-\(next)")
+        }
+        XCTAssertFalse(app.buttons["premium_buy"].exists, "Lifetime ownership must not offer another charge")
+    }
+
+    func testShareActionsSaveLeftAndShareRightInBothGlassModes() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        for enabled in [false, true] {
+            glassTab(4)
+            setSwitch(app.switches["settings_glass_look"].firstMatch, to: enabled)
+            glassTab(0)
+            app.buttons["home_share_card"].firstMatch.tap()
+            let save = app.buttons["share_card_save"].firstMatch
+            let share = app.buttons["share_card_share"].firstMatch
+            XCTAssertTrue(reveal(save))
+            XCTAssertTrue(share.exists)
+            XCTAssertLessThan(save.frame.midX, share.frame.midX)
+            XCTAssertLessThanOrEqual(save.frame.maxX, share.frame.minX)
+            snap("share-save-left-share-right-glass-\(enabled)")
+            app.buttons["Cancel"].firstMatch.tap()
+        }
+    }
+
+    func testGlassLookSettingHasSharedAppleStyleSymbol() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        glassTab(4)
+        XCTAssertTrue(element("settings_glass_look_icon").exists)
+        snap("settings-glass-look-icon")
     }
 
     private func calendarHeaderPixels() -> [UInt8] {
