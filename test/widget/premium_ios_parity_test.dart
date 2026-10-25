@@ -69,6 +69,57 @@ void main() {
     return (premium, billing);
   }
 
+  testWidgets(
+    'confirmed ownership advances the selected upgrade and retains lifetime',
+    (tester) async {
+      final (premium, billing) = await pump(tester);
+      await tester.tap(find.byKey(const Key('premium_plan_monthly')));
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<Semantics>(find.byKey(const Key('premium_plan_monthly')))
+            .properties
+            .selected,
+        isTrue,
+      );
+      billing.currentPlanId = 'monthly';
+      premium.applyOwned({PremiumService.subscriptionId});
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<Semantics>(find.byKey(const Key('premium_plan_yearly')))
+            .properties
+            .selected,
+        isTrue,
+      );
+      await tester.tap(find.byKey(const Key('premium_plan_yearly')));
+      billing.currentPlanId = 'yearly';
+      premium.applyOwned({PremiumService.subscriptionId});
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<Semantics>(find.byKey(const Key('premium_plan_lifetime')))
+            .properties
+            .selected,
+        isTrue,
+      );
+      premium.applyOwned({PremiumService.lifetimeId});
+      await tester.pumpAndSettle();
+      final lifetime = find.byKey(const Key('premium_plan_lifetime'));
+      expect(lifetime, findsOneWidget);
+      expect(tester.widget<Semantics>(lifetime).properties.selected, isTrue);
+      final opacity = tester.widget<Opacity>(
+        find.descendant(of: lifetime, matching: find.byType(Opacity)).first,
+      );
+      expect(opacity.opacity, 1);
+      expect(
+        billing.canBuy(billing.plans.last),
+        isFalse,
+        reason: 'Owning Lifetime must never allow a duplicate charge',
+      );
+    },
+  );
+
   testWidgets('bar, background, reason and features as on iOS', (tester) async {
     await pump(tester, reason: 'search_premium_locked');
     // A centred inline title and an X to close.

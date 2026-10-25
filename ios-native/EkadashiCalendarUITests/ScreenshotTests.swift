@@ -40,7 +40,7 @@ final class ScreenshotTests: XCTestCase {
         }
     }
 
-    func testCalendarRetainsGlassOffToolbarAppearanceInBothModes() {
+    func testCalendarKeepsGroupingWhileItsWholeToolbarChangesGlassSurface() {
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
         glassTab(1)
         let offSearch = app.buttons["open_global_search"].firstMatch.frame
@@ -59,11 +59,99 @@ final class ScreenshotTests: XCTestCase {
             (0..<3).contains { abs(Int(on[pixel + $0]) - Int(off[pixel + $0])) > 20 }
         }.count
         let fraction = Double(changed) / Double(max(1, off.count / 4))
-        XCTAssertLessThan(fraction, 0.025, "Calendar toolbar must retain Off rendering: changed fraction \(fraction)")
+        XCTAssertGreaterThan(fraction, 0.01, "Calendar toolbar, including Today, must actually change its Glass surface: \(fraction)")
         snap("calendar-approved-on")
         app.buttons["calendar_google_menu"].firstMatch.tap()
         XCTAssertTrue(app.buttons["import_google_year"].firstMatch.waitForExistence(timeout: 5))
         XCTAssertTrue(app.buttons["disconnect_google"].firstMatch.exists)
+    }
+
+    func testGlassToggleKeepsSearchTodayAndHomeActionsFixed() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        let actionIDs = ["view_details", "home_share_card", "home_record_vrat"]
+        let actions = actionIDs.map { app.buttons[$0].firstMatch.frame }
+        var off: [CGRect] = []
+        for index in 0..<5 {
+            glassTab(index)
+            off.append(app.buttons["open_global_search"].firstMatch.frame)
+        }
+        setSwitch(app.switches["settings_glass_look"].firstMatch, to: true)
+        for index in 0..<5 {
+            glassTab(index)
+            let search = app.buttons["open_global_search"].firstMatch
+            assertFrame(search.frame, matches: off[index], "Search tab \(index)")
+            if index == 0 {
+                for (key, rect) in zip(actionIDs, actions) {
+                    assertFrame(app.buttons[key].firstMatch.frame, matches: rect, key)
+                }
+            }
+            snap("consistent-glass-on-tab-\(index)")
+        }
+    }
+
+    func testCityPickerHasOrganizedGroupsInBothGlassModesAndBothTabs() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        for enabled in [false, true] {
+            glassTab(4)
+            setSwitch(app.switches["settings_glass_look"].firstMatch, to: enabled)
+            for index in [0, 3] {
+                glassTab(index)
+                element(index == 0 ? "home_location" : "panchang_city_selector").tap()
+                let current = element("ekadashi_location_current")
+                XCTAssertTrue(current.waitForExistence(timeout: 5))
+                XCTAssertTrue(app.textFields["ekadashi_location_search"].firstMatch.exists)
+                XCTAssertTrue(app.staticTexts["Popular cities"].firstMatch.exists)
+                if !enabled {
+                    let image = XCUIScreen.main.screenshot().image.cgImage!
+                    let scale = CGFloat(image.width) / app.frame.width
+                    let inside = CGPoint(x: current.frame.minX + 2, y: current.frame.maxY - 3)
+                    let outside = CGPoint(x: 5, y: inside.y)
+                    let contrast = zip(rgb(image, at: inside, scale: scale), rgb(image, at: outside, scale: scale))
+                        .map { abs($0 - $1) }.max()!
+                    XCTAssertGreaterThan(contrast, 3, "Off should still have visible grouped city categories")
+                }
+                snap("consistent-city-picker-\(index)-glass-\(enabled)")
+                app.buttons["city_picker_cancel"].firstMatch.tap()
+            }
+        }
+    }
+
+    private func assertFrame(_ actual: CGRect, matches expected: CGRect, _ label: String) {
+        XCTAssertEqual(actual.minX, expected.minX, accuracy: 1, label)
+        XCTAssertEqual(actual.minY, expected.minY, accuracy: 1, label)
+        XCTAssertEqual(actual.width, expected.width, accuracy: 1, label)
+        XCTAssertEqual(actual.height, expected.height, accuracy: 1, label)
+    }
+
+    private func rgb(_ image: CGImage, at point: CGPoint, scale: CGFloat) -> [Int] {
+        let cropped = image.cropping(to: CGRect(x: point.x * scale, y: point.y * scale, width: 1, height: 1))!
+        var pixel = [UInt8](repeating: 0, count: 4)
+        pixel.withUnsafeMutableBytes { data in
+            CGContext(data: data.baseAddress, width: 1, height: 1, bitsPerComponent: 8, bytesPerRow: 4,
+                space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
+                .draw(cropped, in: CGRect(x: 0, y: 0, width: 1, height: 1))
+        }
+        return pixel.prefix(3).map(Int.init)
+    }
+
+    func testIOSPresentedSheetsDismissByPullingTheirHeaderDown() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        for source in ["home_location", "home_share_card", "premium", "panchang_city_selector"] {
+            if source == "premium" {
+                glassTab(4)
+                app.buttons["settings_premium"].firstMatch.tap()
+            } else {
+                glassTab(source == "panchang_city_selector" ? 3 : 0)
+                element(source).tap()
+            }
+            let key = source == "home_share_card" ? "Cancel" : source == "premium" ? "premium_close" : "city_picker_cancel"
+            let close = app.buttons[key].firstMatch
+            XCTAssertTrue(close.waitForExistence(timeout: 8), source)
+            let start = app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: app.frame.midX, dy: close.frame.midY))
+            start.press(forDuration: 0.1, thenDragTo: start.withOffset(CGVector(dx: 0, dy: 650)))
+            XCTAssertTrue(XCTWaiter.wait(for: [expectation(for: NSPredicate(format: "exists == false"), evaluatedWith: close)], timeout: 5) == .completed, source)
+            snap("ios-pull-dismiss-\(source)")
+        }
     }
 
     private func calendarHeaderPixels() -> [UInt8] {

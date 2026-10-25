@@ -29,6 +29,22 @@ final class WidgetRenderingTests: XCTestCase {
         }
     }
 
+    func testActionButtonDimensionsAreIdenticalAcrossGlassModes() throws {
+        for scheme in [ColorScheme.dark, .light] {
+            for size in [DynamicTypeSize.large, .accessibility2] {
+                func image(_ enabled: Bool) throws -> UIImage {
+                    let view = HStack(spacing: 8) {
+                        Button("View Details") {}.primaryActionStyle()
+                        Button("Share") {}.secondaryActionStyle()
+                    }.padding(24).environment(\.glassLookEnabled, enabled)
+                        .environment(\.colorScheme, scheme).environment(\.dynamicTypeSize, size)
+                    return try XCTUnwrap(ImageRenderer(content: view).uiImage)
+                }
+                XCTAssertEqual(try image(false).size, try image(true).size)
+            }
+        }
+    }
+
     func testGlassOffPreservesTheOriginalPanelAndCapsuleInBothAppearances() throws {
         for scheme in [ColorScheme.dark, .light] {
             let current = glassProbe(scheme: scheme, enabled: false, reduced: false, legacy: false)
