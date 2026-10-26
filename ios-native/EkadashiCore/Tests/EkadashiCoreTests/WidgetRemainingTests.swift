@@ -39,6 +39,17 @@ final class WidgetRemainingTests: XCTestCase {
         XCTAssertTrue(self.snapshot(midnight.addingTimeInterval(-1)).timelineDates(after: midnight.addingTimeInterval(-1), through: start).contains(midnight))
     }
 
+    func testUpcomingTimelineKeepsCivilMidnightForEveryScheduleZone() throws {
+        let now = instant("2026-10-20T12:00:00Z")
+        for zone in ["Asia/Kolkata", "America/New_York", "Pacific/Auckland"] {
+            var calendar = Calendar(identifier: .gregorian)
+            calendar.timeZone = try XCTUnwrap(TimeZone(identifier: zone))
+            let midnight = try XCTUnwrap(calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: now)))
+            let before = midnight.addingTimeInterval(-1)
+            XCTAssertTrue(snapshot(before, zone: zone).timelineDates(after: before, through: midnight.addingTimeInterval(1), includesProgress: false).contains(midnight))
+        }
+    }
+
     func testUpcomingTimelineAvoidsCurrentFastProgressButRemovesAnOccurrenceAtItsStart() {
         let now = start.addingTimeInterval(-1), end = start.addingTimeInterval(6 * 3600)
         XCTAssertEqual(snapshot(now).timelineDates(after: now, through: end, includesProgress: false), [now, start, end])

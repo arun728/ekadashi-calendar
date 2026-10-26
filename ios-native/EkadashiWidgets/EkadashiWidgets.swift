@@ -17,10 +17,10 @@ struct SnapshotEntry: TimelineEntry {
     var displayDate: Date { WidgetClock.date(date) }
 }
 
-/// Timeline entries at every fasting/Parana boundary and every 15 minutes
-/// for the next six hours, so states, progress and countdowns change on
-/// time without the app running.
+/// Render only visible changes over the next six hours. System timer text
+/// handles seconds; progress and every lifecycle boundary remain scheduled.
 struct SnapshotProvider: TimelineProvider {
+    var includesProgress = true
     static var appGroup: String { Bundle.main.object(forInfoDictionaryKey: "EkadashiAppGroup") as? String ?? "" }
 
     static func load() -> WidgetSnapshot? {
@@ -37,12 +37,12 @@ struct SnapshotProvider: TimelineProvider {
     func getTimeline(in context: Context, completion: @escaping (Timeline<SnapshotEntry>) -> Void) {
         let now = Date()
         let snapshot = Self.load()
-        var dates = Set((0...24).map { now.addingTimeInterval(Double($0) * 15 * 60) })
+        let horizon = now.addingTimeInterval(6 * 3600)
+        var dates: Set<Date> = [now, horizon]
         if let snapshot {
-            let horizon = now.addingTimeInterval(6 * 3600)
-            for boundary in snapshot.refreshDates(after: WidgetClock.date(now)) {
-                if let date = WidgetClock.realDate(for: boundary, liveNow: now), date > now, date <= horizon { dates.insert(date) }
-            }
+            dates = Set(snapshot.timelineDates(after: WidgetClock.date(now), through: WidgetClock.date(horizon),
+                includesProgress: includesProgress).compactMap { WidgetClock.realDate(for: $0, liveNow: now) })
+            dates.insert(now)
             #if DEBUG
             if let config = WidgetClock.config {
                 if config.rate == 0 { dates = [now] }
@@ -62,12 +62,13 @@ struct SnapshotProvider: TimelineProvider {
 private struct WidgetShell<Content: View>: View {
     @Environment(\.widgetFamily) private var family
     let url: URL
+    let language: String
     @ViewBuilder var content: () -> Content
 
     var body: some View {
         content()
             .environment(\.isWidgetPresentation, true)
-            .environment(\.locale, Localizer.locale(WidgetLanguage.current))
+            .environment(\.locale, Localizer.locale(language))
             .containerBackground(for: .widget) {
                 if family == .accessoryCircular || family == .accessoryRectangular { Color.clear }
                 else { WidgetCardBackground() }
@@ -81,7 +82,7 @@ private struct EkadashiWidgetEntryView: View {
     let entry: SnapshotEntry
 
     var body: some View {
-        WidgetShell(url: entry.snapshot?.headline(at: entry.displayDate)?.item.detailsURL ?? AppRoute.dashboardURL) {
+        WidgetShell(url: entry.snapshot?.headline(at: entry.displayDate)?.item.detailsURL ?? AppRoute.dashboardURL, language: entry.snapshot?.locale ?? WidgetLanguage.current) {
             EkadashiWidgetView(snapshot: entry.snapshot, now: entry.displayDate, family: family)
         }
     }
@@ -92,7 +93,7 @@ private struct UpcomingWidgetEntryView: View {
     let entry: SnapshotEntry
 
     var body: some View {
-        WidgetShell(url: entry.snapshot?.upcoming(after: entry.displayDate).first?.detailsURL ?? AppRoute.dashboardURL) {
+        WidgetShell(url: entry.snapshot?.upcoming(after: entry.displayDate).first?.detailsURL ?? AppRoute.dashboardURL, language: entry.snapshot?.locale ?? WidgetLanguage.current) {
             UpcomingEkadashiWidgetView(snapshot: entry.snapshot, now: entry.displayDate, family: family)
         }
     }
@@ -112,7 +113,7 @@ struct EkadashiWidget: Widget {
 
 struct UpcomingEkadashiWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "UpcomingEkadashiWidget", provider: SnapshotProvider()) { entry in
+        StaticConfiguration(kind: "UpcomingEkadashiWidget", provider: SnapshotProvider(includesProgress: false)) { entry in
             UpcomingWidgetEntryView(entry: entry)
         }
         .configurationDisplayName(Localizer.shared.translate("upcoming_ekadashis", language: WidgetLanguage.current))

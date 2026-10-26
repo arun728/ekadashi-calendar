@@ -236,8 +236,9 @@ struct PanchangView: View {
     private func recalculate() async {
         start()
         let city = self.city, date = self.date
-        let result = await Task.detached(priority: .userInitiated) { PanchangEngine().calculate(date, city: city) }.value
-        if city == self.city && date == self.date { day = result }
+        day = nil
+        let result = await model.panchangData.day(date, city: city)
+        if !Task.isCancelled, city == self.city, date == self.date { day = result }
     }
 
     /// A day opened from an event reminder (the Panchang tab only).

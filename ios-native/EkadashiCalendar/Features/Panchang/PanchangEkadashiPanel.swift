@@ -53,10 +53,8 @@ struct PanchangEkadashiPanel: View {
         failed = false
         let month = self.month, city = self.city, tradition = self.tradition
         do {
-            let result = try await Task.detached(priority: .userInitiated) {
-                try CalculatedEkadashiEngine().calculate(start: month, count: month.daysInMonth, city: city, tradition: tradition)
-            }.value
-            guard !Task.isCancelled else { return }
+            let result = try await model.panchangData.fasts(month: month, city: city, tradition: tradition)
+            guard !Task.isCancelled, month == self.month, city == self.city, tradition == self.tradition else { return }
             fasts = result
         } catch {
             if !Task.isCancelled { failed = true }

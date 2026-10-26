@@ -18,6 +18,76 @@ final class ScreenshotTests: XCTestCase {
         app.launch()
     }
 
+    @MainActor
+    func testPanchangPerformanceAcrossAllSections() throws {
+        #if !targetEnvironment(simulator)
+        throw XCTSkip("Only isolated Simulator StoreKit accounts may be reset")
+        #else
+        app.terminate()
+        let configuration = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("EkadashiCalendar/Resources/Products.storekit")
+        let session = try SKTestSession(contentsOf: configuration)
+        session.resetToDefaultState(); session.disableDialogs = true
+        try session.clearTransactions()
+        defer { try? session.clearTransactions() }
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        tab(4); app.buttons["settings_premium"].firstMatch.tap()
+        let lifetime = app.buttons["premium_plan_lifetime"].firstMatch
+        guard lifetime.waitForExistence(timeout: 10) else { XCTFail("Local StoreKit catalog missing"); return }
+        lifetime.tap(); app.buttons["premium_buy"].firstMatch.tap()
+        let confirm = app.alerts.buttons["Buy lifetime"]
+        if confirm.exists { confirm.tap() }
+        let owned = NSPredicate(format: "label CONTAINS %@", "Your current plan")
+        guard XCTWaiter.wait(for: [expectation(for: owned, evaluatedWith: lifetime)], timeout: 10) == .completed else {
+            XCTFail("Purchase must be verified by the app before testing Premium pages"); return
+        }
+        app.buttons["premium_close"].firstMatch.tap()
+        let languages = [("English", "Sun rashi", "Fast"), ("हिंदी", "सूर्य राशि", "व्रत"),
+                         ("தமிழ்", "சூரிய ராசி", "விரதம்"), ("తెలుగు", "సూర్య రాశి", "ఉపవాసం"),
+                         ("ગુજરાતી", "સૂર્ય રાશિ", "ઉપવાસ"), ("বাংলা", "সূর্য রাশি", "উপবাস")]
+        let pages = ["keydays", "daily", "muhurta", "ekadashi", "rashi"]
+        func revealChip(_ page: String) {
+            let chip = app.buttons["panchang_tab_\(page)"].firstMatch
+            for _ in 0..<3 where !chip.isHittable {
+                let current = pages.first { app.buttons["panchang_tab_\($0)"].firstMatch.isSelected } ?? "keydays"
+                let selected = app.buttons["panchang_tab_\(current)"].firstMatch
+                let y = selected.frame.midY
+                let right = pages.firstIndex(of: page)! < pages.firstIndex(of: current)!
+                let from = app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: app.frame.width * (right ? 0.15 : 0.85), dy: y))
+                let to = app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: app.frame.width * (right ? 0.85 : 0.15), dy: y))
+                from.press(forDuration: 0.05, thenDragTo: to)
+            }
+        }
+        for (language, sun, fast) in languages {
+            tab(0)
+            if language != "English" { element("language_menu").tap(); app.buttons[language].tap() }
+            tab(3)
+            for pass in ["first", "repeat"] {
+                for page in ["keydays", "daily", "muhurta", "ekadashi", "rashi"] {
+                    let chip = app.buttons["panchang_tab_\(page)"].firstMatch
+                    revealChip(page)
+                    let start = Date()
+                    chip.tap()
+                    let loaded: XCUIElement
+                    switch page {
+                    case "keydays": loaded = element("panchang_key_days")
+                    case "daily": loaded = element("panchang_tithi_title")
+                    case "muhurta": loaded = element("panchang_day_night")
+                    case "ekadashi": loaded = app.staticTexts[fast].firstMatch
+                    default: loaded = app.staticTexts[sun].firstMatch
+                    }
+                    guard loaded.waitForExistence(timeout: 4), loaded.isHittable else {
+                        XCTFail("Missing visible content: \(language) \(page) \(pass)"); return
+                    }
+                    print("PANCHANG_UI \(language) \(page) \(pass) action_to_content_s=\(Date().timeIntervalSince(start))")
+                    if pass == "first" { snap("performance-\(language)-\(page)") }
+                }
+            }
+        }
+        #endif
+    }
+
     func testPanchangHasOnlyTheSharedTrailingSearchInBothGlassModes() {
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
         for enabled in [false, true] {

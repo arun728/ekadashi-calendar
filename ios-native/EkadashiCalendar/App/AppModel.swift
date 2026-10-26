@@ -45,7 +45,7 @@ final class AppModel {
     @ObservationIgnored private var started = false
     @ObservationIgnored private var pendingRoute: AppRoute?
     @ObservationIgnored private var hasOpenedHomeOccurrence = false
-    @ObservationIgnored private var observanceCache: [String: [DatedObservance]] = [:]
+    @ObservationIgnored let panchangData = PanchangDataStore()
     @ObservationIgnored private var schedulingTask: Task<Void, Never>?
 
     let premium: StoreKitPremiumService
@@ -859,16 +859,9 @@ final class AppModel {
         return result
     }
 
-    /// A year of observances at [city], calculated off the main thread and
-    /// kept for the session (Key days and search share it).
+    /// Session reuse shared by all Panchang pages, search and reminders.
     func panchangObservances(year: Int, city: PanchangCity) async -> [DatedObservance] {
-        let key = "\(city.id)|\(city.latitude)|\(city.longitude)|\(city.timeZoneId)|\(year)"
-        if let cached = observanceCache[key] { return cached }
-        let calculated = await Task.detached(priority: .userInitiated) {
-            PanchangEngine().observanceCalendar(year: year, city: city)
-        }.value
-        observanceCache[key] = calculated
-        return calculated
+        await panchangData.observances(year: year, city: city)
     }
 
     var calendarYears: ClosedRange<Int>? {

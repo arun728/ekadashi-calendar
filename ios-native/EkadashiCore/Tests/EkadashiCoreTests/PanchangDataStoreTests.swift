@@ -4,6 +4,26 @@ import XCTest
 final class PanchangDataStoreTests: XCTestCase {
     private let month = CivilDate(2026, 10, 1)
 
+    func testCachedLoadMeasurementsForAllFiveSubtabs() async throws {
+        let store = PanchangDataStore()
+        for pass in ["first", "repeat"] {
+            var start = Date.timeIntervalSinceReferenceDate
+            _ = await store.observances(month: month, city: .chennai)
+            print("PANCHANG_OPTIMIZED \(pass) keydays_ms=\((Date.timeIntervalSinceReferenceDate-start)*1000)")
+            for page in ["daily", "muhurta", "rashi"] {
+                start = Date.timeIntervalSinceReferenceDate
+                let day = await store.day(month, city: .chennai)
+                XCTAssertEqual(day.city, .chennai)
+                print("PANCHANG_OPTIMIZED \(pass) \(page)_ms=\((Date.timeIntervalSinceReferenceDate-start)*1000)")
+            }
+            for tradition in EkadashiTradition.allCases {
+                start = Date.timeIntervalSinceReferenceDate
+                _ = try await store.fasts(month: month, city: .chennai, tradition: tradition)
+                print("PANCHANG_OPTIMIZED \(pass) ekadashi_\(tradition.rawValue)_ms=\((Date.timeIntervalSinceReferenceDate-start)*1000)")
+            }
+        }
+    }
+
     func testKeyDaysCalculatesOnlyTheVisibleMonthAndCoalescesConcurrentLoads() async {
         let dates = Locked<[CivilDate]>([])
         let store = PanchangDataStore(observances: { date, _ in

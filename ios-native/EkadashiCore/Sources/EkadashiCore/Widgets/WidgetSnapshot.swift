@@ -165,6 +165,26 @@ public struct WidgetSnapshot: Codable, Equatable, Sendable {
         return Set(dates.filter { $0 > now }).sorted()
     }
 
+    /// Only observable changes, plus the bounded reload horizon. Timer text
+    /// counts down in the system process and needs no quarter-hour copies.
+    /// Upcoming lists change when an occurrence starts or its civil day changes.
+    public func timelineDates(after now: Date, through end: Date, includesProgress: Bool = true) -> [Date] {
+        guard end > now else { return [now] }
+        var dates: Set<Date> = [now, end]
+        if includesProgress {
+            dates.formUnion(refreshDates(after: now).filter { $0 <= end })
+        } else {
+            let items = [todayEkadashi, nextEkadashi].compactMap { $0 } + upcoming
+            dates.formUnion(items.map(\.fastingStart).filter { $0 > now && $0 <= end })
+            var calendar = Calendar(identifier: .gregorian)
+            calendar.timeZone = TimeZone(identifier: timeZone) ?? TimeZone(secondsFromGMT: 0)!
+            if let midnight = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: now)), midnight <= end {
+                dates.insert(midnight)
+            }
+        }
+        return dates.sorted()
+    }
+
     public func string(_ key: String, _ fallback: String) -> String { strings["widget.\(key)"] ?? fallback }
 
     /// "2 d 3 h", "3 h 2 min", "0 min" or "Now", as the Android widgets.

@@ -36,6 +36,30 @@ final class WidgetRenderingTests: XCTestCase {
         }
     }
 
+    func testStaticLanguageRefreshRenderWorkAcrossEveryWidgetFamily() throws {
+        let now = ISO8601.instant("2026-10-26T09:30:00+05:30")!
+        for language in Localizer.languages {
+            let events = try CalendarRepository.bundled().ekadashis(timezone: "IST", language: language)
+            let snapshot = WidgetSnapshot.build(occurrences: events, timezone: "IST", locationName: "Chennai", language: language, now: now)
+            let old = (0...24).map { now.addingTimeInterval(Double($0) * 900) }
+            let new = snapshot.timelineDates(after: now, through: now.addingTimeInterval(21600))
+            XCTAssertEqual(new.count, 2)
+            for (label, dates) in [("previous", old), ("optimized", new)] {
+                let start = Date.timeIntervalSinceReferenceDate
+                for date in dates {
+                    for (family, width, height) in [(WidgetFamily.systemSmall, 170.0, 170.0), (.systemMedium, 360.0, 170.0), (.accessoryCircular, 62.0, 62.0), (.accessoryRectangular, 160.0, 62.0)] {
+                        _ = try nextWidgetImage(snapshot, now: date, family: family, width: width, height: height, scheme: .dark)
+                    }
+                    for (family, height) in [(WidgetFamily.systemMedium, 170.0), (.systemLarge, 368.0)] {
+                        let renderer = ImageRenderer(content: UpcomingEkadashiWidgetView(snapshot: snapshot, now: date, family: family).padding(16).frame(width: 360, height: height))
+                        XCTAssertNotNil(renderer.uiImage)
+                    }
+                }
+                print("WIDGET_RENDER_WORK \(language) \(label) entries=\(dates.count) six_families_ms=\((Date.timeIntervalSinceReferenceDate-start)*1000)")
+            }
+        }
+    }
+
     func testNextSmallShowsBothLocationAndTraditionInEveryLanguageAndAppearance() throws {
         let repository = try CalendarRepository.bundled()
         for language in Localizer.languages {
