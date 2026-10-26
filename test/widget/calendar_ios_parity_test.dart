@@ -340,7 +340,7 @@ void main() {
       );
     });
 
-    testWidgets('No Ekadashi sits below the grid, left aligned', (
+    testWidgets('No Ekadashi sits below the grid, centered', (
       tester,
     ) async {
       await open(tester);
@@ -353,7 +353,8 @@ void main() {
         tester.getRect(empty).top,
         greaterThan(tester.getRect(grid).bottom),
       );
-      expect(tester.getRect(empty).left, closeTo(16, 1));
+      expect(tester.widget<Text>(empty).textAlign, TextAlign.center);
+      expect(tester.getRect(empty).center.dx, closeTo(tester.getRect(grid).center.dx, 1));
       expect(tester.widget<Text>(empty).style?.fontSize, IosText.subheadline);
     });
 

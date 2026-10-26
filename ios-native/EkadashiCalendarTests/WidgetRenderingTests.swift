@@ -206,6 +206,24 @@ final class WidgetRenderingTests: XCTestCase {
         return try XCTUnwrap(renderer.uiImage)
     }
 
+    func testHomeRecordToastUsesTheStandardSurfaceInBothGlassModesAndAllLanguages() throws {
+        for language in Localizer.languages {
+            for scheme in [ColorScheme.dark, .light] {
+                func render(_ enabled: Bool) throws -> Data {
+                    let message = ToastMessage(text: Localizer.shared.translate("journey_record_after_parana", language: language))
+                    let view = ZStack {
+                        Color.gray
+                        Text("Description behind the message").font(.largeTitle).foregroundStyle(.white)
+                    }.frame(width: 320, height: 260)
+                        .toast(.constant(message), bottomPadding: 24, transition: .opacity, usesStandardSurface: true)
+                        .environment(\.glassLookEnabled, enabled).environment(\.colorScheme, scheme)
+                    return try XCTUnwrap(ImageRenderer(content: view).uiImage?.pngData())
+                }
+                XCTAssertEqual(try render(false), try render(true), "\(language) \(scheme): the toast surface must retain the readable Off appearance")
+            }
+        }
+    }
+
     func testCityRowSurfacesAndDefaultToastRenderAcrossGlassModes() throws {
         for enabled in [false, true] {
             let row = CityPickerRowSurface().frame(width: 300, height: 48)
