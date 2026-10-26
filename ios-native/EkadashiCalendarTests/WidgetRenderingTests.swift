@@ -9,6 +9,118 @@ import EkadashiCore
 /// the shared selection, percentage, formatter, timeline and link behaviour.
 @MainActor
 final class WidgetRenderingTests: XCTestCase {
+    func testNextSmallShowsBothLocationAndTraditionInEveryLanguageAndAppearance() throws {
+        let repository = try CalendarRepository.bundled()
+        for language in Localizer.languages {
+            let event = try XCTUnwrap(repository.ekadashis(timezone: "IST", language: language).max { $0.name.count < $1.name.count })
+            let now = try XCTUnwrap(event.fastingStart).addingTimeInterval(-10 * 86400)
+            func snapshot(_ city: String, _ tradition: String) -> WidgetSnapshot {
+                WidgetSnapshot.build(occurrences: [event], timezone: "IST",
+                    locationName: PlaceNames.shared.label(city, language: language), language: language, now: now, tradition: tradition)
+            }
+            for scheme in [ColorScheme.dark, .light] {
+                func image(_ city: String, _ tradition: String) throws -> Data {
+                    try nextWidgetImage(snapshot(city, tradition), now: now, family: .systemSmall, width: 158, height: 158, scheme: scheme).pngData()!
+                }
+                XCTAssertNotEqual(try image("Chennai (IN)", "smarta"), try image("Mumbai (IN)", "smarta"), "Small must show the actual location: \(language) \(scheme)")
+                XCTAssertNotEqual(try image("Chennai (IN)", "smarta"), try image("Chennai (IN)", "gaudiya"), "Small must show the selected tradition: \(language) \(scheme)")
+            }
+        }
+    }
+
+    func testNextMediumHasSeparateTimingAndLocationGroupsInEveryLanguage() throws {
+        for language in Localizer.languages {
+            let event = try XCTUnwrap(CalendarRepository.bundled().ekadashis(timezone: "IST", language: language).max { $0.name.count < $1.name.count })
+            let now = try XCTUnwrap(event.fastingStart).addingTimeInterval(-10 * 86400)
+            let snapshot = WidgetSnapshot.build(occurrences: [event], timezone: "IST",
+                locationName: PlaceNames.shared.label("Chennai (IN)", language: language), language: language, now: now, tradition: "gaudiya")
+            for scheme in [ColorScheme.dark, .light] {
+                for (width, height) in [(320.0, 158.0), (360.0, 170.0)] {
+                    let image = try XCTUnwrap(nextWidgetImage(snapshot, now: now, family: .systemMedium, width: width, height: height, scheme: scheme).cgImage)
+                    let pixels = try rgba(image)
+                    var bands: [ClosedRange<Int>] = []
+                    for y in 0..<image.height {
+                        let ink = (0..<image.width).contains { x in
+                            let i = (y * image.width + x) * 4
+                            return pixels[i + 3] > 90 && abs(Int(pixels[i]) - Int(pixels[i + 1])) < 16 && abs(Int(pixels[i + 1]) - Int(pixels[i + 2])) < 16
+                        }
+                        if ink {
+                            if let last = bands.last, last.upperBound == y - 1 { bands[bands.count - 1] = last.lowerBound...y }
+                            else { bands.append(y...y) }
+                        }
+                    }
+                    XCTAssertGreaterThanOrEqual(bands.count, 4)
+                    let footer = try XCTUnwrap(bands.last)
+                    let timings = bands[bands.count - 2]
+                    XCTAssertGreaterThanOrEqual(Double(footer.lowerBound - timings.upperBound - 1) / 3, 8,
+                        "Next footer needs a distinct category gap: \(language) \(scheme) \(width)")
+                    XCTAssertLessThanOrEqual(Double(try XCTUnwrap(bands.first).lowerBound) / 3, 24)
+                    XCTAssertGreaterThanOrEqual(Double(footer.upperBound) / 3, height - 25, "Use the widget height instead of centering a cramped block")
+                }
+            }
+        }
+    }
+
+    func testNextLayoutsFitLongNamesBothTraditionsAndPreStartCountdownInEveryLanguage() throws {
+        for language in Localizer.languages {
+            let event = try XCTUnwrap(CalendarRepository.bundled().ekadashis(timezone: "IST", language: language).max { $0.name.count < $1.name.count })
+            for tradition in ["smarta", "gaudiya"] {
+                for offset in [-10.0 * 86400, -5.0] {
+                    let now = try XCTUnwrap(event.fastingStart).addingTimeInterval(offset)
+                    let snapshot = WidgetSnapshot.build(occurrences: [event], timezone: "IST",
+                        locationName: PlaceNames.shared.label("Thiruvananthapuram (IN)", language: language), language: language, now: now, tradition: tradition)
+                    for scheme in [ColorScheme.dark, .light] {
+                        for (family, width, height) in [(WidgetFamily.systemSmall, 158.0, 158.0), (.systemSmall, 170.0, 170.0), (.systemMedium, 320.0, 158.0), (.systemMedium, 360.0, 170.0)] {
+                            try assertFits(EkadashiWidgetView(snapshot: snapshot, now: now, family: family).environment(\.colorScheme, scheme),
+                                width: width, height: height, inset: 16, label: "Next \(language) \(tradition) \(scheme) \(family) \(offset)")
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /// Before/after PNG comparison of these attachments guards the expressly
+    /// excluded Today, Upcoming and Lock Screen renderers during this fix.
+    func testWidgetScopeEvidenceForTodayUpcomingAndNext() throws {
+        for language in Localizer.languages {
+            let events = try CalendarRepository.bundled().ekadashis(timezone: "IST", language: language)
+            let event = try XCTUnwrap(events.first { $0.date == CivilDate(2026, 10, 22) })
+            let start = try XCTUnwrap(event.fastingStart), parana = try XCTUnwrap(event.paranaStart)
+            for scheme in [ColorScheme.dark, .light] {
+                for (state, now) in [("next", start.addingTimeInterval(-10 * 86400)), ("today", start.addingTimeInterval(parana.timeIntervalSince(start) / 2))] {
+                    let snapshot = WidgetSnapshot.build(occurrences: [event], timezone: "IST",
+                        locationName: PlaceNames.shared.label("Chennai (IN)", language: language), language: language, now: now, tradition: "gaudiya")
+                    for (family, width, height) in [(WidgetFamily.systemSmall, 170.0, 170.0), (.systemMedium, 360.0, 170.0), (.accessoryCircular, 62.0, 62.0), (.accessoryRectangular, 160.0, 62.0)] {
+                        let image = try nextWidgetImage(snapshot, now: now, family: family, width: width, height: height, scheme: scheme)
+                        let attachment = XCTAttachment(image: image)
+                        attachment.name = "next-spacing-\(state)-\(language)-\(scheme)-\(family)"
+                        attachment.lifetime = .keepAlways; add(attachment)
+                    }
+                }
+                let snapshot = WidgetSnapshot.build(occurrences: events, timezone: "IST", locationName: "", language: language,
+                    now: start.addingTimeInterval(-10 * 86400))
+                for (family, width, height) in [(WidgetFamily.systemMedium, 360.0, 170.0), (.systemLarge, 360.0, 368.0)] {
+                    let renderer = ImageRenderer(content: UpcomingEkadashiWidgetView(snapshot: snapshot, now: snapshot.generatedAt, family: family)
+                        .padding(16).frame(width: width, height: height).background(WidgetCardBackground()).environment(\.colorScheme, scheme))
+                    renderer.scale = 3
+                    let attachment = XCTAttachment(image: try XCTUnwrap(renderer.uiImage))
+                    attachment.name = "next-spacing-upcoming-\(language)-\(scheme)-\(family)"
+                    attachment.lifetime = .keepAlways; add(attachment)
+                }
+            }
+        }
+    }
+
+    private func nextWidgetImage(_ snapshot: WidgetSnapshot, now: Date, family: WidgetFamily, width: CGFloat, height: CGFloat, scheme: ColorScheme) throws -> UIImage {
+        // Transparent rendering lets spacing tests measure actual glyph ink.
+        let inset: CGFloat = family == .systemSmall || family == .systemMedium ? 16 : 0
+        let renderer = ImageRenderer(content: EkadashiWidgetView(snapshot: snapshot, now: now, family: family)
+            .padding(inset).frame(width: width, height: height).environment(\.colorScheme, scheme))
+        renderer.scale = 3
+        return try XCTUnwrap(renderer.uiImage)
+    }
+
     func testCityRowSurfacesAndDefaultToastRenderAcrossGlassModes() throws {
         for enabled in [false, true] {
             let row = CityPickerRowSurface().frame(width: 300, height: 48)
