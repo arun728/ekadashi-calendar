@@ -54,7 +54,10 @@ final class WidgetRenderingTests: XCTestCase {
                     let timings = bands[bands.count - 2]
                     XCTAssertGreaterThanOrEqual(Double(footer.lowerBound - timings.upperBound - 1) / 3, 8,
                         "Next footer needs a distinct category gap: \(language) \(scheme) \(width)")
-                    XCTAssertLessThanOrEqual(Double(try XCTUnwrap(bands.first).lowerBound) / 3, 24)
+                    let firstInk = try XCTUnwrap((0..<image.height).first { y in
+                        (0..<image.width).contains { x in pixels[(y * image.width + x) * 4 + 3] > 90 }
+                    })
+                    XCTAssertLessThanOrEqual(Double(firstInk) / 3, 24, "The header should use the top of the widget")
                     XCTAssertGreaterThanOrEqual(Double(footer.upperBound) / 3, height - 25, "Use the widget height instead of centering a cramped block")
                 }
             }
@@ -71,8 +74,10 @@ final class WidgetRenderingTests: XCTestCase {
                         locationName: PlaceNames.shared.label("Thiruvananthapuram (IN)", language: language), language: language, now: now, tradition: tradition)
                     for scheme in [ColorScheme.dark, .light] {
                         for (family, width, height) in [(WidgetFamily.systemSmall, 158.0, 158.0), (.systemSmall, 170.0, 170.0), (.systemMedium, 320.0, 158.0), (.systemMedium, 360.0, 170.0)] {
-                            try assertFits(EkadashiWidgetView(snapshot: snapshot, now: now, family: family).environment(\.colorScheme, scheme),
-                                width: width, height: height, inset: 16, label: "Next \(language) \(tradition) \(scheme) \(family) \(offset)")
+                            for inset in [0.0, 16.0] {
+                                try assertFits(EkadashiWidgetView(snapshot: snapshot, now: now, family: family).environment(\.colorScheme, scheme),
+                                    width: width, height: height, inset: inset, label: "Next \(language) \(tradition) \(scheme) \(family) \(offset) inset=\(inset)")
+                            }
                         }
                     }
                 }
@@ -106,6 +111,35 @@ final class WidgetRenderingTests: XCTestCase {
                     renderer.scale = 3
                     let attachment = XCTAttachment(image: try XCTUnwrap(renderer.uiImage))
                     attachment.name = "next-spacing-upcoming-\(language)-\(scheme)-\(family)"
+                    attachment.lifetime = .keepAlways; add(attachment)
+                }
+            }
+        }
+    }
+
+    func testNextAndTodayWidgetScreenshotBoardsInEveryLanguageAndAppearance() throws {
+        // User-facing screenshot boards use the same engine schedule as Home,
+        // rather than the bundled legacy timing fixtures used by bounds tests.
+        let schedule = EkadashiSchedule(repository: try CalendarRepository.bundled())
+        for language in Localizer.languages {
+            let events = try schedule.ekadashis(city: .chennai, tradition: .gaudiya, language: language, years: [2026])
+            let event = try XCTUnwrap(events.first { $0.date == CivilDate(2026, 10, 22) })
+            let start = try XCTUnwrap(event.fastingStart), parana = try XCTUnwrap(event.paranaStart)
+            for (state, now) in [("next", start.addingTimeInterval(-10 * 86400)), ("today", start.addingTimeInterval(parana.timeIntervalSince(start) / 2))] {
+                let snapshot = WidgetSnapshot.build(occurrences: [event], timezone: "IST",
+                    locationName: PlaceNames.shared.label("Chennai (IN)", language: language), language: language, now: now, tradition: "gaudiya")
+                for scheme in [ColorScheme.dark, .light] {
+                    let board = HStack(alignment: .top, spacing: 16) {
+                        EkadashiWidgetView(snapshot: snapshot, now: now, family: .systemSmall)
+                            .padding(16).frame(width: 170, height: 170).background(WidgetCardBackground()).clipShape(.rect(cornerRadius: 24))
+                        EkadashiWidgetView(snapshot: snapshot, now: now, family: .systemMedium)
+                            .padding(16).frame(width: 360, height: 170).background(WidgetCardBackground()).clipShape(.rect(cornerRadius: 24))
+                    }.padding(16).environment(\.colorScheme, scheme)
+                    let renderer = ImageRenderer(content: board); renderer.scale = 3
+                    let image = try XCTUnwrap(renderer.uiImage)
+                    XCTAssertEqual(image.size.height, 202)
+                    let attachment = XCTAttachment(image: image)
+                    attachment.name = "widget-board-\(state)-\(language)-\(scheme)"
                     attachment.lifetime = .keepAlways; add(attachment)
                 }
             }

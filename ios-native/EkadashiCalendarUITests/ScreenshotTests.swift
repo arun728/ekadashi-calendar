@@ -1018,6 +1018,40 @@ final class ScreenshotTests: XCTestCase {
         XCTAssertFalse(ring.exists, "A past card never shows today's progress")
     }
 
+    func testNextSmallAndMediumSettingsPreviewsInEverySupportedLanguage() {
+        app.terminate()
+        app.launchArguments += ["-lifecycle-testing"]
+        app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = "2026-10-26T09:30:00+05:30"
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        for language in ["English", "हिंदी", "தமிழ்", "తెలుగు", "ગુજરાતી", "বাংলা"] {
+            tab(0)
+            if language != "English" { element("language_menu").tap(); app.buttons[language].tap() }
+            tab(4)
+            // Opening a preview's Home link preserves the Settings stack.
+            if app.segmentedControls["widget_preview_size"].exists {
+                app.navigationBars.buttons.element(boundBy: 0).tap()
+            }
+            app.buttons["settings_widget_preview"].firstMatch.tap()
+            let sizes = app.segmentedControls["widget_preview_size"]
+            XCTAssertTrue(sizes.waitForExistence(timeout: 10))
+            for index in 0..<2 {
+                sizes.buttons.element(boundBy: index).tap()
+                let previews = app.buttons.matching(identifier: "widget_preview_open")
+                XCTAssertEqual(previews.count, 2, "Both light and dark must be available")
+                let first = previews.element(boundBy: 0)
+                XCTAssertTrue(first.isHittable)
+                XCTAssertLessThanOrEqual(first.frame.maxX, app.frame.maxX)
+                XCTAssertGreaterThanOrEqual(first.frame.minX, app.frame.minX)
+                snap("next-spacing-settings-\(language)-\(index)")
+            }
+            // The preview still links to the actual next occurrence on Home.
+            app.buttons["widget_preview_open"].firstMatch.tap()
+            XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 10))
+            XCTAssertFalse(app.descendants(matching: .any)["home_remaining_ring"].firstMatch.exists)
+        }
+    }
+
     func testApprovedProgressPreviewsAndHomeInEverySupportedLanguage() {
         app.terminate()
         app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = "2026-10-22T07:15:00Z"

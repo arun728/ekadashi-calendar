@@ -172,30 +172,82 @@ struct EkadashiWidgetView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 
+    @ViewBuilder
     private func small(_ snapshot: WidgetSnapshot, _ headline: WidgetHeadline) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            header(snapshot, headline)
-            Spacer(minLength: 0)
-            if headline.isToday {
+        if case .next(_, let days) = headline {
+            nextSmall(snapshot, headline, days: days)
+        } else {
+            VStack(alignment: .leading, spacing: 4) {
+                header(snapshot, headline)
+                Spacer(minLength: 0)
                 RemainingRing(item: headline.item, snapshot: snapshot, now: now)
                     .frame(width: 58, height: 58).frame(maxWidth: .infinity)
-            } else if case .next(_, let days) = headline {
-                WidgetStartCountdown(item: headline.item, snapshot: snapshot, now: now, days: days).font(.system(size: 19, weight: .bold)).foregroundStyle(accent)
-                    .lineLimit(2).minimumScaleFactor(0.75).widgetAccentable()
+                name(headline.item, font: .system(size: 13, weight: .bold))
+                Spacer(minLength: 0)
+                Text(headline.item.localizedDate).font(.system(size: 10)).foregroundStyle(.secondary)
+                    .lineLimit(2).minimumScaleFactor(0.8)
             }
-            name(headline.item, font: .system(size: 13, weight: .bold))
-            Spacer(minLength: 0)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        }
+    }
+
+    /// Next has no progress ring: use its space for the actual city/tradition,
+    /// keeping the date with the name instead of isolating it at the bottom.
+    private func nextSmall(_ snapshot: WidgetSnapshot, _ headline: WidgetHeadline, days: Int) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            header(snapshot, headline)
+            Spacer(minLength: 4)
+            WidgetStartCountdown(item: headline.item, snapshot: snapshot, now: now, days: days)
+                .font(.system(size: 18, weight: .bold)).foregroundStyle(accent)
+                .lineLimit(1).minimumScaleFactor(0.65).widgetAccentable()
+            name(headline.item, font: .system(size: 13, weight: .bold)).padding(.top, 3)
             Text(headline.item.localizedDate).font(.system(size: 10)).foregroundStyle(.secondary)
-                .lineLimit(2).minimumScaleFactor(0.8)
+                .lineLimit(1).minimumScaleFactor(0.75).padding(.top, 4)
+            Spacer(minLength: 4)
+            VStack(alignment: .leading, spacing: 1) {
+                if !snapshot.locationName.isEmpty { Text(snapshot.locationName) }
+                Text(WidgetText(snapshot: snapshot).tradition)
+            }
+            .font(.system(size: 9)).foregroundStyle(.secondary)
+            .lineLimit(1).minimumScaleFactor(0.75)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 
+    @ViewBuilder
     private func medium(_ snapshot: WidgetSnapshot, _ headline: WidgetHeadline) -> some View {
-        ViewThatFits(in: .vertical) {
-            mediumContent(snapshot, headline, compact: false).fixedSize(horizontal: false, vertical: true)
-            mediumContent(snapshot, headline, compact: true)
+        if case .next = headline {
+            nextMedium(snapshot, headline)
+        } else {
+            ViewThatFits(in: .vertical) {
+                mediumContent(snapshot, headline, compact: false).fixedSize(horizontal: false, vertical: true)
+                mediumContent(snapshot, headline, compact: true)
+            }
         }
+    }
+
+    /// Three distinct groups fill the available height. Fixed line boxes keep
+    /// Indic glyphs clear; flexible gaps grow on the taller widget/preview.
+    private func nextMedium(_ snapshot: WidgetSnapshot, _ headline: WidgetHeadline) -> some View {
+        let item = headline.item
+        let text = WidgetText(snapshot: snapshot)
+        return VStack(alignment: .leading, spacing: 0) {
+            header(snapshot, headline)
+            Text(item.name).font(.system(size: 17, weight: .bold))
+                .lineLimit(1).minimumScaleFactor(0.75).padding(.top, 3)
+            Text(item.localizedDate).font(.system(size: 11)).foregroundStyle(.secondary)
+                .lineLimit(1).minimumScaleFactor(0.75).padding(.top, 2)
+            Spacer(minLength: 8)
+            HStack(alignment: .top, spacing: 12) {
+                compactTiming(snapshot.string("fasting_starts", ""), date: text.date(item.fastingStart), value: text.time(item.fastingStart), compact: false)
+                compactTiming(snapshot.string("parana_window", ""), date: text.date(item.paranaStart), value: text.window(item.paranaStart, item.paranaEnd), compact: false)
+            }
+            Spacer(minLength: 10)
+            location(snapshot)
+        }
+        // Telugu/Bengali descender ink can extend below the text's line box.
+        .padding(.bottom, 3)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 
     private func mediumContent(_ snapshot: WidgetSnapshot, _ headline: WidgetHeadline, compact: Bool) -> some View {
