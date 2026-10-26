@@ -17,6 +17,34 @@ final class WidgetRemainingTests: XCTestCase {
                                     language: "en", now: now, tradition: "Smarta")
     }
 
+    func testStaticNextTimelineDoesNotRenderIdenticalQuarterHourEntries() {
+        let now = start.addingTimeInterval(-5 * 86400), end = now.addingTimeInterval(6 * 3600)
+        XCTAssertEqual(snapshot(now).timelineDates(after: now, through: end), [now, end])
+    }
+
+    func testTimelinePreservesEveryVisibleBoundaryAndEveryCompletedPercent() throws {
+        let now = start.addingTimeInterval(15 * 3600), end = now.addingTimeInterval(6 * 3600)
+        let snapshot = snapshot(now)
+        let dates = snapshot.timelineDates(after: now, through: end)
+        XCTAssertEqual(dates.first, now); XCTAssertEqual(dates.last, end)
+        for boundary in snapshot.refreshDates(after: now) where boundary <= end {
+            XCTAssertTrue(dates.contains(boundary), "Missing \(boundary)")
+        }
+        XCTAssertEqual(dates, Array(Set(dates)).sorted())
+        let parana = try XCTUnwrap(snapshot.headline(at: now)?.item.paranaStart)
+        let endOfParana = try XCTUnwrap(snapshot.headline(at: now)?.item.paranaEnd)
+        let transitions = snapshot.timelineDates(after: parana.addingTimeInterval(-1), through: endOfParana.addingTimeInterval(1))
+        XCTAssertTrue(transitions.contains(parana)); XCTAssertTrue(transitions.contains(endOfParana))
+        let midnight = instant("2026-10-22T00:00:00+05:30")
+        XCTAssertTrue(self.snapshot(midnight.addingTimeInterval(-1)).timelineDates(after: midnight.addingTimeInterval(-1), through: start).contains(midnight))
+    }
+
+    func testUpcomingTimelineAvoidsCurrentFastProgressButRemovesAnOccurrenceAtItsStart() {
+        let now = start.addingTimeInterval(-1), end = start.addingTimeInterval(6 * 3600)
+        XCTAssertEqual(snapshot(now).timelineDates(after: now, through: end, includesProgress: false), [now, start, end])
+        XCTAssertEqual(snapshot(now).timelineDates(after: now, through: now), [now])
+    }
+
     func testRingShowsCompletedAtAnAsymmetricTime() {
         let now = start.addingTimeInterval(15 * 3600)
         guard case .today(_, let remaining) = snapshot(now).headline(at: now) else { return XCTFail("today") }

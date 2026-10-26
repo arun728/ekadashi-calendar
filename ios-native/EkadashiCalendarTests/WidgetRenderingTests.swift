@@ -9,6 +9,33 @@ import EkadashiCore
 /// the shared selection, percentage, formatter, timeline and link behaviour.
 @MainActor
 final class WidgetRenderingTests: XCTestCase {
+    func testWidgetLanguageRefreshPerformanceBaseline() throws {
+        let events = try CalendarRepository.bundled().ekadashis(timezone: "IST", language: "en")
+        let now = ISO8601.instant("2026-10-26T09:30:00+05:30")!
+        for language in Localizer.languages {
+            let localized = try CalendarRepository.bundled().ekadashis(timezone: "IST", language: language)
+            let started = Date.timeIntervalSinceReferenceDate
+            let snapshot = WidgetSnapshot.build(occurrences: localized, timezone: "IST",
+                locationName: PlaceNames.shared.label("Chennai (IN)", language: language), language: language, now: now, tradition: "gaudiya")
+            let built = Date.timeIntervalSinceReferenceDate
+            let data = try JSONEncoder().encode(snapshot)
+            for _ in 0..<100 { _ = try JSONDecoder().decode(WidgetSnapshot.self, from: data) }
+            let decoded = Date.timeIntervalSinceReferenceDate
+            for _ in 0..<100 { _ = snapshot.refreshDates(after: now) }
+            let planned = Date.timeIntervalSinceReferenceDate
+            for (family, width, height) in [(WidgetFamily.systemSmall, 170.0, 170.0), (.systemMedium, 360.0, 170.0), (.accessoryCircular, 62.0, 62.0), (.accessoryRectangular, 160.0, 62.0)] {
+                _ = try nextWidgetImage(snapshot, now: now, family: family, width: width, height: height, scheme: .dark)
+            }
+            for (family, height) in [(WidgetFamily.systemMedium, 170.0), (.systemLarge, 368.0)] {
+                let renderer = ImageRenderer(content: UpcomingEkadashiWidgetView(snapshot: snapshot, now: now, family: family).padding(16).frame(width: 360, height: height))
+                XCTAssertNotNil(renderer.uiImage)
+            }
+            let rendered = Date.timeIntervalSinceReferenceDate
+            print(String(format: "WIDGET_LANGUAGE_BASELINE %@ rows=%d bytes=%d build=%.2fms decode=%.2fms timeline=%.2fms six_family_render=%.2fms",
+                language, events.count, data.count, (built-started)*1000, (decoded-built)*10, (planned-decoded)*10, (rendered-planned)*1000))
+        }
+    }
+
     func testNextSmallShowsBothLocationAndTraditionInEveryLanguageAndAppearance() throws {
         let repository = try CalendarRepository.bundled()
         for language in Localizer.languages {
