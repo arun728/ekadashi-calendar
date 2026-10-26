@@ -20,15 +20,14 @@ struct PremiumView: View {
 
     private var store: StoreKitPremiumService { model.premium }
     private var state: PremiumState { store.state }
-    private var showPlans: Bool { !state.lifetime && !store.plans.isEmpty }
+    private var showPlans: Bool { !store.plans.isEmpty }
 
-    /// The tapped plan, else yearly (best value), monthly, lifetime among
-    /// those that can be bought, else the first.
+    /// A manual choice until verified ownership changes; then suggest the
+    /// next upgrade, retaining Lifetime when it is already owned.
     private var plan: PremiumPlanID? {
-        let plans = store.plans
-        if let selected, plans.contains(selected) { return selected }
-        for id in [PremiumPlanID.yearly, .monthly, .lifetime] where plans.contains(id) && store.canBuy(id) { return id }
-        return plans.first
+        if state.lifetime { return store.plans.contains(.lifetime) ? .lifetime : nil }
+        if let selected, store.plans.contains(selected) { return selected }
+        return state.defaultPlan(available: store.plans, pending: store.pending)
     }
 
     var body: some View {
@@ -61,12 +60,14 @@ struct PremiumView: View {
         .navigationTitle(model.t("premium_title"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
+            AppToolbarItem(placement: .cancellationAction, compact: true) {
                 Button { dismiss() } label: { Image(systemName: AppSymbol.close) }
                     .accessibilityLabel(model.t("premium_continue_free"))
                     .accessibilityIdentifier("premium_close")
             }
         }
+        .onChange(of: state.currentPlan) { _, _ in selected = nil }
+        .onChange(of: state.lifetime) { _, _ in selected = nil }
         .manageSubscriptionsSheet(isPresented: $managing)
         .alert(model.t("premium_lifetime_confirm_title"), isPresented: $confirmLifetime) {
             Button(model.t("cancel"), role: .cancel) {}
@@ -145,7 +146,7 @@ struct PremiumView: View {
 
     private func tile(_ id: PremiumPlanID) -> some View {
         let isSelected = id == plan
-        let current = state.subscribed && !state.lifetime && id == state.currentPlan
+        let current = (state.lifetime && id == .lifetime) || (state.subscribed && !state.lifetime && id == state.currentPlan)
         let period = id == .monthly ? "premium_per_month" : id == .yearly ? "premium_per_year" : "premium_one_time"
         return Button {
             selected = id
@@ -184,7 +185,7 @@ struct PremiumView: View {
 
     private var footer: some View {
         VStack(spacing: 4) {
-            if showPlans, let plan {
+            if showPlans, !state.lifetime, let plan {
                 let price = store.products[plan]?.displayPrice ?? ""
                 let title = state.subscriptionCancelled && plan == state.currentPlan
                     ? "\(model.t("premium_reactivate")) · \(price)" : "\(model.t("premium_\(plan.rawValue)")) · \(price)"

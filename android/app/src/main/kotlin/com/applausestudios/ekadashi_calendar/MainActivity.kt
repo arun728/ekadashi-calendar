@@ -95,6 +95,8 @@ class MainActivity: FlutterActivity() {
         setupNotificationChannel(flutterEngine)
         setupSettingsChannel(flutterEngine)
         setupWidgetChannel(flutterEngine)
+        flutterEngine.platformViewsController.registry.registerViewFactory(
+            "com.ekadashi.widget/preview", com.applausestudios.ekadashi_calendar.widget.ui.WidgetPreviewFactory(flutterEngine.dartExecutor.binaryMessenger))
     }
 
     private fun setupWidgetChannel(flutterEngine: FlutterEngine) {

@@ -1482,10 +1482,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get widget_desc_ekadashi =>
-      'Today\'s Ekadashi with your fast\'s progress, or the next Ekadashi and the days to go.';
+      'The current Ekadashi, fasting progress and Parana, or the next Ekadashi and its timings.';
 
   @override
-  String get widget_desc_upcoming => 'The next Ekadashis at a glance.';
+  String get widget_desc_upcoming =>
+      'The next five upcoming Ekadashis. Tap an Ekadashi to open its Home card.';
 
   @override
   String get widget_preview_during =>
@@ -1682,4 +1683,35 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get share_card_photos_denied =>
       'Photo access is off. Allow it in Settings to save cards.';
+
+  @override
+  String get widget_remaining => 'remaining';
+
+  @override
+  String get widget_size_small => 'Small';
+
+  @override
+  String get widget_size_medium => 'Medium';
+
+  @override
+  String get widget_size_large => 'Large';
+
+  @override
+  String get widget_size_lock => 'Lock Screen';
+
+  @override
+  String get widget_preview_tap => 'Tap to view this Ekadashi';
+
+  @override
+  String get widget_no_next => 'No upcoming Ekadashi in the available schedule';
+
+  @override
+  String get widget_lock_support =>
+      'Lock Screen widgets are available on supported devices. Sizes and placement depend on your device.';
+
+  @override
+  String get glass_look => 'Glass Look';
+
+  @override
+  String get glass_look_desc => 'Use clearer, translucent cards and controls.';
 }

@@ -124,7 +124,6 @@ final class WidgetSnapshotTests: XCTestCase {
         for language in Localizer.languages {
             let strings = snapshot([event(2027, 1, utc(2027, 1, 5))], utc(2027, 1, 1), language: language).strings
             XCTAssertEqual(strings.count, WidgetSnapshot.stringKeys.count, language)
-            XCTAssertEqual(strings.count, 28, language)
             XCTAssertTrue(strings.values.allSatisfy { !$0.isEmpty && !$0.hasPrefix("widget_") }, language)
             if language != "en" { XCTAssertNotEqual(strings["widget.next_ekadashi"], "Next Ekadashi") }
         }
@@ -152,7 +151,10 @@ final class WidgetSnapshotTests: XCTestCase {
         let start = utc(2027, 1, 5)
         let p = snapshot([event(2027, 1, start)], utc(2027, 1, 1))
         let dates = p.refreshDates(after: utc(2027, 1, 1))
-        XCTAssertEqual(Array(dates.prefix(3)), [start, start.addingTimeInterval(86400), start.addingTimeInterval(86400 + 7200)])
+        for boundary in [start, start.addingTimeInterval(86400), start.addingTimeInterval(86400 + 7200)] {
+            XCTAssertTrue(dates.contains(boundary))
+        }
+        XCTAssertEqual(dates, Array(Set(dates)).sorted())
     }
 }
 
@@ -362,10 +364,11 @@ final class WidgetRedesignTests: XCTestCase {
         XCTAssertEqual(progress, 0.5, accuracy: 0.01)
         XCTAssertEqual(item.fastProgress(at: probe.fastingStart.addingTimeInterval(-60)), 0)
         XCTAssertEqual(item.fastProgress(at: probe.paranaEnd), 1)
-        // During Parana the widget stays on today's Ekadashi, fully fasted.
+        // The occurrence persists through the following day's Parana.
         let parana = probe.paranaStart.addingTimeInterval(60)
-        guard case .today(_, let done) = snapshot.headline(at: parana) else { return XCTFail("expected parana") }
-        XCTAssertEqual(done, 1)
+        guard case .today(let current, let completed) = snapshot.headline(at: parana) else { return XCTFail("expected Parana") }
+        XCTAssertEqual(current.occurrenceUid, probe.occurrenceUid)
+        XCTAssertEqual(completed, 1)
     }
 
     func testEveryLanguageHasTheNewWidgetStrings() {

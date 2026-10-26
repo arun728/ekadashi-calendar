@@ -182,10 +182,10 @@ struct EventReminderEditor: View {
             .navigationTitle(model.t(original == nil ? "notifications_add_event" : "notifications_edit_event"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
+                AppToolbarItem(placement: .cancellationAction) {
                     Button(model.t("cancel")) { dismiss() }
                 }
-                ToolbarItem(placement: .confirmationAction) {
+                AppToolbarItem(placement: .confirmationAction) {
                     Button(model.t("save")) { save() }
                         .disabled(target == nil || days.isEmpty)
                         .accessibilityIdentifier("event_reminder_save")

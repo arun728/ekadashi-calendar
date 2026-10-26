@@ -57,6 +57,7 @@ public extension AppRoute {
         case .calendar: return .calendar
         case .panchang: return .panchang
         case .search: return nil
+        case .ekadashi: return .today
         }
     }
 }

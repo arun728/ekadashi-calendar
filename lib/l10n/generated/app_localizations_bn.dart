@@ -1484,10 +1484,11 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get widget_desc_ekadashi =>
-      'আজকের একাদশী ও আপনার উপবাসের অগ্রগতি, অথবা পরবর্তী একাদশী ও বাকি দিন।';
+      'বর্তমান একাদশী, উপবাসের অগ্রগতি ও পারণ, অথবা পরবর্তী একাদশী এবং তার সময়।';
 
   @override
-  String get widget_desc_upcoming => 'এক নজরে পরবর্তী একাদশীগুলো।';
+  String get widget_desc_upcoming =>
+      'পরবর্তী পাঁচটি একাদশী। কোনো একাদশীতে ট্যাপ করে তার হোম কার্ড খুলুন।';
 
   @override
   String get widget_preview_during =>
@@ -1685,4 +1686,35 @@ class AppLocalizationsBn extends AppLocalizations {
   @override
   String get share_card_photos_denied =>
       'ফটোর অনুমতি বন্ধ আছে। কার্ড সংরক্ষণ করতে সেটিংসে অনুমতি দিন।';
+
+  @override
+  String get widget_remaining => 'বাকি';
+
+  @override
+  String get widget_size_small => 'ছোট';
+
+  @override
+  String get widget_size_medium => 'মাঝারি';
+
+  @override
+  String get widget_size_large => 'বড়';
+
+  @override
+  String get widget_size_lock => 'লক স্ক্রিন';
+
+  @override
+  String get widget_preview_tap => 'এই একাদশী দেখতে ট্যাপ করুন';
+
+  @override
+  String get widget_no_next => 'উপলব্ধ সময়সূচিতে পরবর্তী একাদশী নেই';
+
+  @override
+  String get widget_lock_support =>
+      'সমর্থিত যন্ত্রে লক স্ক্রিন উইজেট পাওয়া যায়। আকার ও অবস্থান আপনার যন্ত্রের উপর নির্ভর করে।';
+
+  @override
+  String get glass_look => 'কাচের মতো চেহারা';
+
+  @override
+  String get glass_look_desc => 'আরও স্বচ্ছ কার্ড ও নিয়ন্ত্রণ ব্যবহার করুন।';
 }

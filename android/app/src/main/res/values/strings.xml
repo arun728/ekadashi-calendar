@@ -4,9 +4,9 @@
     <string name="widget_a_title">Ekadashi</string>
     <string name="widget_b_title">Ekadashi Today</string>
     <string name="widget_c_title">Upcoming Ekadashis</string>
-    <string name="widget_a_description">Today\'s Ekadashi with your fast\'s progress, or the next Ekadashi and the days to go.</string>
-    <string name="widget_b_description">Today\'s Ekadashi with your fast\'s progress, or the next Ekadashi and the days to go.</string>
-    <string name="widget_c_description">The next Ekadashis at a glance.</string>
+    <string name="widget_a_description">The current Ekadashi, fasting progress and Parana, or the next Ekadashi and its timings.</string>
+    <string name="widget_b_description">The current Ekadashi, fasting progress and Parana, or the next Ekadashi and its timings.</string>
+    <string name="widget_c_description">The next five upcoming Ekadashis. Tap an Ekadashi to open its Home card.</string>
     <string name="widget_title">Ekadashi Calendar</string>
     <string name="widget_next_ekadashi">Next Ekadashi</string>
     <string name="widget_fasting_active">Fasting active</string>
@@ -45,4 +45,10 @@
     <string name="widget_am">AM</string>
     <string name="widget_pm">PM</string>
     <string name="widget_seed_location">India (IST)</string>
+    <string name="widget_today_is_ekadashi">Today is Ekadashi</string>
+    <string name="widget_tomorrow">Tomorrow</string>
+    <string name="widget_days_to_go">{value0} days to go</string>
+    <string name="widget_remaining">remaining</string>
+    <string name="widget_no_next">No upcoming Ekadashi in the available schedule</string>
+    <string name="widget_parana_short">Parana</string>
 </resources>

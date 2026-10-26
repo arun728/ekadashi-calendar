@@ -1475,10 +1475,11 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get widget_desc_ekadashi =>
-      'આજની એકાદશી અને તમારા ઉપવાસની પ્રગતિ, અથવા આગામી એકાદશી અને બાકી દિવસો.';
+      'વર્તમાન એકાદશી, ઉપવાસની પ્રગતિ અને પારણું, અથવા આગામી એકાદશી અને તેના સમય.';
 
   @override
-  String get widget_desc_upcoming => 'આગામી એકાદશીઓ એક નજરમાં.';
+  String get widget_desc_upcoming =>
+      'આગામી પાંચ એકાદશીઓ. એકાદશીનું હોમ કાર્ડ ખોલવા તેના પર ટૅપ કરો.';
 
   @override
   String get widget_preview_during =>
@@ -1675,4 +1676,35 @@ class AppLocalizationsGu extends AppLocalizations {
   @override
   String get share_card_photos_denied =>
       'ફોટાની પરવાનગી બંધ છે. કાર્ડ સાચવવા માટે સેટિંગ્સમાં પરવાનગી આપો.';
+
+  @override
+  String get widget_remaining => 'બાકી';
+
+  @override
+  String get widget_size_small => 'નાનું';
+
+  @override
+  String get widget_size_medium => 'મધ્યમ';
+
+  @override
+  String get widget_size_large => 'મોટું';
+
+  @override
+  String get widget_size_lock => 'લૉક સ્ક્રીન';
+
+  @override
+  String get widget_preview_tap => 'આ એકાદશી જોવા ટૅપ કરો';
+
+  @override
+  String get widget_no_next => 'ઉપલબ્ધ સમયપત્રકમાં આગામી એકાદશી નથી';
+
+  @override
+  String get widget_lock_support =>
+      'લૉક સ્ક્રીન વિજેટ સમર્થિત ઉપકરણો પર ઉપલબ્ધ છે. કદ અને સ્થાન તમારા ઉપકરણ પર આધાર રાખે છે.';
+
+  @override
+  String get glass_look => 'કાચ જેવો દેખાવ';
+
+  @override
+  String get glass_look_desc => 'વધુ પારદર્શક કાર્ડ અને નિયંત્રણો વાપરો.';
 }

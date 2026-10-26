@@ -142,10 +142,28 @@ class _CityPickerSheetState extends State<CityPickerSheet> {
 
   Widget _row(PanchangCity city) => ListTile(
     key: Key('ekadashi_city_${city.id}'),
-    title: Text(PlaceNameResolver.instance.city(city, _language)),
-    trailing: Text(
-      city.timeZoneLabel(_language),
-      style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+    title: LayoutBuilder(
+      builder: (context, constraints) {
+        final name = Text(PlaceNameResolver.instance.city(city, _language));
+        final zone = Text(
+          city.timeZoneLabel(_language),
+          style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+        );
+        if (constraints.maxWidth < 300 ||
+            MediaQuery.textScalerOf(context).scale(12) > 16) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [name, const SizedBox(height: 4), zone],
+          );
+        }
+        return Row(
+          children: [
+            Expanded(child: name),
+            const SizedBox(width: 8),
+            Flexible(child: zone),
+          ],
+        );
+      },
     ),
     onTap: () => _pick(city),
   );
@@ -158,6 +176,15 @@ class _CityPickerSheetState extends State<CityPickerSheet> {
         color: Theme.of(context).colorScheme.primary,
         fontWeight: FontWeight.w600,
       ),
+    ),
+  );
+
+  Widget _group(String id, List<Widget> children) => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    child: GlassPanel(
+      key: Key('city_picker_group_$id'),
+      radius: 18,
+      child: Column(mainAxisSize: MainAxisSize.min, children: children),
     ),
   );
 
@@ -179,17 +206,19 @@ class _CityPickerSheetState extends State<CityPickerSheet> {
           child: ListView(
             key: const Key('city_picker_list'),
             children: [
-              ListTile(
-                key: const Key('ekadashi_location_current'),
-                leading: Icon(
-                  widget.icon,
-                  color: Theme.of(context).colorScheme.primary,
+              _group('current', [
+                ListTile(
+                  key: const Key('ekadashi_location_current'),
+                  leading: Icon(
+                    widget.icon,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  title: Text(
+                    PlaceNameResolver.instance.city(widget.current, _language),
+                  ),
+                  subtitle: Text(widget.current.timeZoneLabel(_language)),
                 ),
-                title: Text(
-                  PlaceNameResolver.instance.city(widget.current, _language),
-                ),
-                subtitle: Text(widget.current.timeZoneLabel(_language)),
-              ),
+              ]),
               if (widget.footer.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -198,49 +227,54 @@ class _CityPickerSheetState extends State<CityPickerSheet> {
                     style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
                   ),
                 ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-                child: TextField(
-                  key: const Key('ekadashi_location_search'),
-                  controller: _search,
-                  textCapitalization: TextCapitalization.words,
-                  decoration: InputDecoration(
-                    labelText: _t('panchang_search_cities'),
-                  ),
-                  onChanged: (value) {
-                    setState(() {});
-                    _query(value);
-                  },
-                ),
-              ),
-              for (final city in _matches.where((_) => typed)) _row(city),
-              ListTile(
-                key: const Key('ekadashi_location_current_button'),
-                leading: const Icon(AppIcons.useCurrentLocation),
-                title: Text(
-                  _t(
-                    _busy
-                        ? 'panchang_locating'
-                        : 'panchang_use_current_location',
-                  ),
-                ),
-                enabled: !_busy,
-                onTap: _locate,
-              ),
-              if (_message != null)
+              _group('search', [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Text(_message!, style: const TextStyle(fontSize: 12)),
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                  child: TextField(
+                    key: const Key('ekadashi_location_search'),
+                    controller: _search,
+                    textCapitalization: TextCapitalization.words,
+                    decoration: InputDecoration(
+                      labelText: _t('panchang_search_cities'),
+                    ),
+                    onChanged: (value) {
+                      setState(() {});
+                      _query(value);
+                    },
+                  ),
                 ),
+                for (final city in _matches.where((_) => typed)) _row(city),
+                ListTile(
+                  key: const Key('ekadashi_location_current_button'),
+                  leading: const Icon(AppIcons.useCurrentLocation),
+                  title: Text(
+                    _t(
+                      _busy
+                          ? 'panchang_locating'
+                          : 'panchang_use_current_location',
+                    ),
+                  ),
+                  enabled: !_busy,
+                  onTap: _locate,
+                ),
+                if (_message != null)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      _message!,
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ),
+              ]),
               if (!typed) ...[
                 if (_recent.isNotEmpty) ...[
                   _header(_t('recent_searches')),
-                  for (final city in _recent) _row(city),
+                  _group('recent', [for (final city in _recent) _row(city)]),
                 ],
                 _header(_t('home_popular_cities')),
-                for (final city in _popular) _row(city),
+                _group('popular', [for (final city in _popular) _row(city)]),
               ],
-              if (widget.extra != null) widget.extra!,
+              if (widget.extra != null) _group('manual', [widget.extra!]),
               const SizedBox(height: 24),
             ],
           ),

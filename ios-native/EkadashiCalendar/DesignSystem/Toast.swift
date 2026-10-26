@@ -11,7 +11,11 @@ struct ToastMessage: Identifiable, Equatable {
 }
 
 struct ToastOverlay: ViewModifier {
+    @Environment(\.glassLookEnabled) private var glassLookEnabled
     @Binding var message: ToastMessage?
+    var usesStandardSurface = false
+    var bottomPadding: CGFloat = 96
+    var transition: AnyTransition = .move(edge: .bottom).combined(with: .opacity)
 
     func body(content: Content) -> some View {
         content.overlay(alignment: .bottom) {
@@ -30,9 +34,10 @@ struct ToastOverlay: ViewModifier {
                 .padding(.horizontal, 18)
                 .padding(.vertical, 14)
                 .glassPanel(cornerRadius: 18)
+                .environment(\.glassLookEnabled, usesStandardSurface ? false : glassLookEnabled)
                 .padding(.horizontal, 16)
-                .padding(.bottom, 96)
-                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .padding(.bottom, bottomPadding)
+                .transition(transition)
                 .task(id: message.id) {
                     try? await Task.sleep(nanoseconds: 4_000_000_000)
                     if self.message?.id == message.id { withAnimation { self.message = nil } }
@@ -45,5 +50,8 @@ struct ToastOverlay: ViewModifier {
 }
 
 extension View {
-    func toast(_ message: Binding<ToastMessage?>) -> some View { modifier(ToastOverlay(message: message)) }
+    func toast(_ message: Binding<ToastMessage?>, bottomPadding: CGFloat = 96,
+               transition: AnyTransition = .move(edge: .bottom).combined(with: .opacity), usesStandardSurface: Bool = false) -> some View {
+        modifier(ToastOverlay(message: message, usesStandardSurface: usesStandardSurface, bottomPadding: bottomPadding, transition: transition))
+    }
 }

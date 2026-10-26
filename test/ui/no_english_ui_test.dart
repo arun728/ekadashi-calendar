@@ -156,10 +156,7 @@ void main() {
         await tapIfPresent(tester, find.byKey(Key('panchang_tab_${page.raw}')));
         collect(tester, 'panchang ${page.raw} (free)', found);
       }
-      await tapIfPresent(tester, find.byKey(const Key('panchang_notes')));
-      collect(tester, 'panchang notes', found);
-      await tester.binding.handlePopRoute();
-      await settle(tester);
+      expect(find.byKey(const Key('panchang_notes')), findsNothing);
       await tapIfPresent(
         tester,
         find.byKey(const Key('panchang_city_selector')),

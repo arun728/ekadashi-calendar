@@ -454,8 +454,8 @@
   "widget_days_to_go": "{value0} દિવસ બાકી",
   "widget_fast_done": "ઉપવાસ {value0}% પૂર્ણ",
   "widget_name_ekadashi": "એકાદશી",
-  "widget_desc_ekadashi": "આજની એકાદશી અને તમારા ઉપવાસની પ્રગતિ, અથવા આગામી એકાદશી અને બાકી દિવસો.",
-  "widget_desc_upcoming": "આગામી એકાદશીઓ એક નજરમાં.",
+  "widget_desc_ekadashi": "વર્તમાન એકાદશી, ઉપવાસની પ્રગતિ અને પારણું, અથવા આગામી એકાદશી અને તેના સમય.",
+  "widget_desc_upcoming": "આગામી પાંચ એકાદશીઓ. એકાદશીનું હોમ કાર્ડ ખોલવા તેના પર ટૅપ કરો.",
   "widget_preview_during": "ડાબે: હમણાં · જમણે: આગામી એકાદશી દરમિયાન",
   "event_reminder_today": "{value0} આજે છે ({value1})",
   "event_reminder_tomorrow": "{value0} આવતીકાલે છે ({value1})",
@@ -512,5 +512,15 @@
   "home_popular_cities": "લોકપ્રિય શહેરો",
   "share_card_save": "ગેલેરીમાં સાચવો",
   "share_card_saved": "કાર્ડ ગેલેરીમાં સાચવ્યું.",
-  "share_card_photos_denied": "ફોટાની પરવાનગી બંધ છે. કાર્ડ સાચવવા માટે સેટિંગ્સમાં પરવાનગી આપો."
+  "share_card_photos_denied": "ફોટાની પરવાનગી બંધ છે. કાર્ડ સાચવવા માટે સેટિંગ્સમાં પરવાનગી આપો.",
+  "widget_remaining": "બાકી",
+  "widget_size_small": "નાનું",
+  "widget_size_medium": "મધ્યમ",
+  "widget_size_large": "મોટું",
+  "widget_size_lock": "લૉક સ્ક્રીન",
+  "widget_preview_tap": "આ એકાદશી જોવા ટૅપ કરો",
+  "widget_no_next": "ઉપલબ્ધ સમયપત્રકમાં આગામી એકાદશી નથી",
+  "widget_lock_support": "લૉક સ્ક્રીન વિજેટ સમર્થિત ઉપકરણો પર ઉપલબ્ધ છે. કદ અને સ્થાન તમારા ઉપકરણ પર આધાર રાખે છે.",
+  "glass_look": "કાચ જેવો દેખાવ",
+  "glass_look_desc": "વધુ પારદર્શક કાર્ડ અને નિયંત્રણો વાપરો."
 }

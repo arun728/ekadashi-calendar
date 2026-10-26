@@ -31,13 +31,6 @@ struct ShareCardSheet: View {
                     if let image {
                         GlassGroup {
                             HStack(spacing: 10) {
-                                ShareLink(item: Image(uiImage: image), message: Text(message),
-                                          preview: SharePreview(event.name, image: Image(uiImage: image))) {
-                                    Label(model.t("share"), systemImage: AppSymbol.share)
-                                        .font(.callout.bold()).frame(maxWidth: .infinity).padding(.vertical, 6)
-                                }
-                                .primaryActionStyle()
-                                .accessibilityIdentifier("share_card_share")
                                 Button {
                                     Task { await save(image) }
                                 } label: {
@@ -47,6 +40,13 @@ struct ShareCardSheet: View {
                                 .secondaryActionStyle()
                                 .disabled(saving)
                                 .accessibilityIdentifier("share_card_save")
+                                ShareLink(item: Image(uiImage: image), message: Text(message),
+                                          preview: SharePreview(event.name, image: Image(uiImage: image))) {
+                                    Label(model.t("share"), systemImage: AppSymbol.share)
+                                        .font(.callout.bold()).frame(maxWidth: .infinity).padding(.vertical, 6)
+                                }
+                                .primaryActionStyle()
+                                .accessibilityIdentifier("share_card_share")
                             }
                         }
                     } else {
@@ -62,7 +62,7 @@ struct ShareCardSheet: View {
             .navigationTitle(model.t("share_card_title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button(model.t("cancel")) { dismiss() } }
+                AppToolbarItem(placement: .cancellationAction) { Button(model.t("cancel")) { dismiss() } }
             }
         }
         .task { render() }

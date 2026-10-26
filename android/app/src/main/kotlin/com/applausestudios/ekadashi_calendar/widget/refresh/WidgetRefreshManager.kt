@@ -5,6 +5,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import android.os.Build
 import com.applausestudios.ekadashi_calendar.widget.model.WidgetPayload
 import com.applausestudios.ekadashi_calendar.widget.provider.EkadashiWidgetReceiver
 import com.applausestudios.ekadashi_calendar.widget.storage.WidgetStorage
@@ -56,8 +57,9 @@ object WidgetRefreshManager {
                     context.sendBroadcast(updateIntent)
 
                     // Notify scrollable ListView adapter to reload upcoming events collection
-                    if (receiverClass == com.applausestudios.ekadashi_calendar.widget.provider.UpcomingEkadashisWidgetReceiver::class.java ||
-                        receiverClass == EkadashiWidgetReceiver::class.java) {
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S &&
+                        (receiverClass == com.applausestudios.ekadashi_calendar.widget.provider.UpcomingEkadashisWidgetReceiver::class.java ||
+                        receiverClass == EkadashiWidgetReceiver::class.java)) {
                         appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetIds, com.applausestudios.ekadashi_calendar.R.id.widget_large_list)
                     }
 

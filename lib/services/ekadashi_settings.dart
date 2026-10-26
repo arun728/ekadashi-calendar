@@ -30,7 +30,7 @@ class EkadashiSettings extends ChangeNotifier {
 
   PanchangCity city = defaultCity;
   bool isManual = false;
-  EkadashiTradition tradition = EkadashiTradition.smarta;
+  EkadashiTradition tradition = EkadashiTradition.gaudiya;
   List<int> years = EkadashiYears.fallback;
   int year = EkadashiYears.defaultYear(DateTime.now(), EkadashiYears.fallback);
 
@@ -54,7 +54,7 @@ class EkadashiSettings extends ChangeNotifier {
     isManual = prefs.getBool(manualKey) ?? false;
     tradition = EkadashiTradition.values.firstWhere(
       (t) => t.name == prefs.getString(traditionKey),
-      orElse: () => EkadashiTradition.smarta,
+      orElse: () => EkadashiTradition.gaudiya,
     );
     final saved = prefs.getInt(yearKey);
     year = saved != null && years.contains(saved)

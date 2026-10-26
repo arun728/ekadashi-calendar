@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../services/display_clock.dart';
+import '../widgets/ekadashi_lifecycle_status.dart';
 import 'package:provider/provider.dart';
 import '../services/ekadashi_service.dart';
 import '../services/ekadashi_settings.dart';
@@ -101,6 +103,8 @@ class DetailsScreen extends StatelessWidget {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
+          leadingWidth: 68,
+          leading: const LeadingBarIcon(),
           title: Text(lang.translate('app_title')),
           actions: [
             // The free share card (no paywall).
@@ -172,6 +176,13 @@ class DetailsScreen extends StatelessWidget {
               gap,
               section('spiritual_benefits', ekadashi.benefits),
               gap,
+              EkadashiLifecycleStatus(
+                key: const Key('details_lifecycle_status'),
+                event: ekadashi,
+                timezone: settings?.city.timeZoneId ?? zone,
+                language: language,
+              ),
+              gap,
               GlassPanel(
                 key: const Key('details_timings'),
                 radius: 16,
@@ -202,7 +213,12 @@ class DetailsScreen extends StatelessWidget {
                 builder: (ctx, tracker, _) => tracker.trackerEnabled
                     ? Padding(
                         padding: const EdgeInsets.only(top: 24),
-                        child: _vratButton(context, tracker, lang, zone),
+                        child: LifecycleBuilder(
+                          event: ekadashi,
+                          timezone: zone,
+                          builder: (context, _) =>
+                              _vratButton(context, tracker, lang, zone),
+                        ),
                       )
                     : const SizedBox.shrink(),
               ),
@@ -224,11 +240,9 @@ class DetailsScreen extends StatelessWidget {
   ) {
     final record = tracker.getRecordByUid(ekadashi.occurrenceUid);
     final style = _StatusStyle(record?.status, context);
-    final open = VratRecording.isOpen(
-      ekadashi,
-      now: DateTime.now(),
-      timezone: zone,
-    );
+    final open =
+        record != null ||
+        VratRecording.isOpen(ekadashi, now: DisplayClock.now(), timezone: zone);
     final label = record != null
         ? '${lang.translate('vrat')}: ${lang.translate(style.detailKey)}'
         : lang.translate(open ? 'record_vrat' : 'journey_record_after_parana');

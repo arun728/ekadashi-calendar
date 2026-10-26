@@ -24,14 +24,7 @@ class WidgetStorage(context: Context) {
     private val repository = WidgetDataRepository.getInstance(context)
 
     companion object {
-        @Volatile
-        private var instance: WidgetStorage? = null
-
-        fun getInstance(context: Context): WidgetStorage {
-            return instance ?: synchronized(this) {
-                instance ?: WidgetStorage(context).also { instance = it }
-            }
-        }
+        fun getInstance(context: Context): WidgetStorage = WidgetStorage(context.applicationContext)
     }
 
     fun savePayload(payload: WidgetPayload): Boolean = repository.saveWidgetSnapshot(payload)

@@ -1,3 +1,4 @@
+import 'package:ekadashi_calendar/widgets/app_icons.dart';
 import 'package:ekadashi_calendar/screens/global_search_screen.dart';
 import 'package:ekadashi_calendar/screens/panchang_screen.dart';
 import 'package:ekadashi_calendar/services/ekadashi_service.dart';
@@ -18,7 +19,7 @@ import '../support/premium_fixture.dart';
 
 /// Panchang opened from a search result (iOS pushes PanchangView in the
 /// search's navigation stack): the teal AppBackground, an inline title and
-/// Today and the calculation notes in its own bar.
+/// Today in its own bar, without the removed notes action.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   final service = EkadashiService();
@@ -40,7 +41,7 @@ void main() {
     }
   });
 
-  testWidgets('pushed Panchang paints AppBackground with Today and notes', (
+  testWidgets('pushed Panchang paints AppBackground with Today and no notes', (
     tester,
   ) async {
     SharedPreferences.setMockInitialValues({});
@@ -96,9 +97,9 @@ void main() {
         of: bar,
         matching: find.byKey(const Key('panchang_notes')),
       ),
-      findsOneWidget,
+      findsNothing,
     );
-    expect(find.byType(BackButton), findsOneWidget);
+    expect(find.byIcon(AppIcons.back), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

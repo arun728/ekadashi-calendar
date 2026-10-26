@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'glass_tube.dart';
+import 'glass_look.dart';
 import 'app_icons.dart';
 
 /// The iOS grouped-list look of Settings (SettingsView.swift): section
@@ -100,8 +101,9 @@ class SettingsCard extends StatelessWidget {
     final secondary = SettingsStyle.secondary(context);
     // From the theme's styles, so rows keep the app font.
     final text = Theme.of(context).textTheme;
-    return Material(
-      color: SettingsStyle.card(context),
+    final active = GlassLook.active(context);
+    final card = Material(
+      color: active ? Colors.transparent : SettingsStyle.card(context),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(SettingsStyle.radius),
       ),
@@ -132,6 +134,9 @@ class SettingsCard extends StatelessWidget {
         child: Column(mainAxisSize: MainAxisSize.min, children: children),
       ),
     );
+    return active
+        ? ClearGlassSurface(radius: SettingsStyle.radius, child: card)
+        : card;
   }
 }
 

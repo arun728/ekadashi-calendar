@@ -1,9 +1,14 @@
 import 'package:ekadashi_calendar/widgets/app_icons.dart';
+import 'package:ekadashi_calendar/services/theme_service.dart';
+import 'package:provider/provider.dart';
+import 'package:ekadashi_calendar/screens/calendar_screen.dart';
+import 'package:ekadashi_calendar/widgets/glass_look.dart';
 import 'package:ekadashi_calendar/widgets/glass_navigation_bar.dart';
 import 'package:ekadashi_calendar/widgets/ios_style.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import '../support/app_harness.dart';
+import 'package:ekadashi_calendar/screens/widgets/city_picker_sheet.dart';
 
 // Arun's iPhone references: large magnifying glass and SF-style Google actions.
 void main() {
@@ -46,6 +51,130 @@ void main() {
       }
     });
   }
+
+  testWidgets(
+    'Panchang removes notes and matches Home/Settings trailing search in both modes',
+    (tester) async {
+      await open(tester, 393);
+      final theme = tester
+          .element(find.byKey(const Key('open_global_search')))
+          .read<ThemeService>();
+      for (final enabled in [false, true]) {
+        await theme.setGlassLook(enabled);
+        await tester.pumpAndSettle();
+        final frames = <Rect>[];
+        for (final tab in [0, 4, 3]) {
+          await tester.tap(find.byKey(Key('glass_tab_$tab')));
+          await tester.pumpAndSettle();
+          frames.add(
+            tester.getRect(find.byKey(const Key('open_global_search'))),
+          );
+        }
+        expect(find.byKey(const Key('panchang_notes')), findsNothing);
+        expect(frames[2], frames[0]);
+        expect(frames[2], frames[1]);
+        await tester.tap(find.byKey(const Key('open_global_search')));
+        await tester.pumpAndSettle();
+        expect(find.byKey(const Key('global_search_field')), findsOneWidget);
+        await tester.tap(find.byKey(const Key('global_search_back')));
+        await tester.pumpAndSettle();
+      }
+    },
+  );
+
+  testWidgets(
+    'Calendar toolbar and Today follow Glass without changing grouping',
+    (tester) async {
+      await open(tester, 393);
+      final theme = tester
+          .element(find.byKey(const Key('open_global_search')))
+          .read<ThemeService>();
+      for (final enabled in [false, true]) {
+        await theme.setGlassLook(enabled);
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const Key('glass_tab_1')));
+        await tester.pumpAndSettle();
+        expect(
+          GlassLook.active(tester.element(find.byType(CalendarScreen))),
+          enabled,
+        );
+        expect(
+          GlassLook.active(
+            tester.element(find.byKey(const Key('open_global_search'))),
+          ),
+          enabled,
+        );
+        for (final key in [
+          'add_calendar_entry',
+          'calendar_google_menu',
+          'calendar_today',
+        ]) {
+          expect(
+            GlassLook.active(tester.element(find.byKey(Key(key)))),
+            enabled,
+          );
+        }
+        final search = tester.getRect(
+          find.byKey(const Key('open_global_search')),
+        );
+        final add = tester.getRect(find.byKey(const Key('add_calendar_entry')));
+        final google = tester.getRect(
+          find.byKey(const Key('calendar_google_menu')),
+        );
+        expect(search.right, lessThanOrEqualTo(add.left));
+        expect(add.right, lessThanOrEqualTo(google.left));
+        expect(tester.takeException(), isNull);
+      }
+    },
+  );
+
+  testWidgets(
+    'Home and Panchang city pickers retain grouped categories in both modes',
+    (tester) async {
+      await open(tester, 393);
+      final theme = tester
+          .element(find.byKey(const Key('open_global_search')))
+          .read<ThemeService>();
+      for (final enabled in [false, true]) {
+        await theme.setGlassLook(enabled);
+        await tester.pumpAndSettle();
+        for (final tab in [0, 3]) {
+          await tester.tap(find.byKey(Key('glass_tab_$tab')));
+          await tester.pumpAndSettle();
+          await tester.tap(
+            find.byKey(
+              Key(tab == 0 ? 'home_location' : 'panchang_city_selector'),
+            ),
+          );
+          await tester.pumpAndSettle();
+          expect(find.byType(CityPickerSheet), findsOneWidget);
+          for (final group in ['current', 'search', 'popular']) {
+            expect(find.byKey(Key('city_picker_group_$group')), findsOneWidget);
+          }
+          final group = find.byKey(const Key('city_picker_group_search'));
+          expect(
+            find.descendant(
+              of: group,
+              matching: find.byKey(const Key('ekadashi_location_search')),
+            ),
+            findsOneWidget,
+          );
+          expect(
+            find.descendant(
+              of: group,
+              matching: find.byKey(
+                const Key('ekadashi_location_current_button'),
+              ),
+            ),
+            findsOneWidget,
+          );
+          await tester.tap(find.byKey(const Key('city_picker_cancel')));
+          await tester.pumpAndSettle();
+          expect(tester.takeException(), isNull);
+        }
+      }
+    },
+  );
 
   testWidgets('Google uses circular sync and person-minus iOS glyphs', (
     tester,

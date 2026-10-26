@@ -1,4 +1,7 @@
 import XCTest
+import UIKit
+import StoreKitTest
+import Vision
 
 /// Walks the five tabs, search and the paywall, attaching a screenshot of
 /// each (kept with the test results) and checking the main controls exist.
@@ -15,11 +18,1318 @@ final class ScreenshotTests: XCTestCase {
         app.launch()
     }
 
+    @MainActor
+    func testPanchangPerformanceAcrossAllSections() throws {
+        #if !targetEnvironment(simulator)
+        throw XCTSkip("Only isolated Simulator StoreKit accounts may be reset")
+        #else
+        app.terminate()
+        let configuration = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("EkadashiCalendar/Resources/Products.storekit")
+        let session = try SKTestSession(contentsOf: configuration)
+        session.resetToDefaultState(); session.disableDialogs = true
+        try session.clearTransactions()
+        defer { try? session.clearTransactions() }
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        tab(4); app.buttons["settings_premium"].firstMatch.tap()
+        let lifetime = app.buttons["premium_plan_lifetime"].firstMatch
+        guard lifetime.waitForExistence(timeout: 10) else { XCTFail("Local StoreKit catalog missing"); return }
+        lifetime.tap(); app.buttons["premium_buy"].firstMatch.tap()
+        let confirm = app.alerts.buttons["Buy lifetime"]
+        if confirm.exists { confirm.tap() }
+        let owned = NSPredicate(format: "label CONTAINS %@", "Your current plan")
+        guard XCTWaiter.wait(for: [expectation(for: owned, evaluatedWith: lifetime)], timeout: 10) == .completed else {
+            XCTFail("Purchase must be verified by the app before testing Premium pages"); return
+        }
+        app.buttons["premium_close"].firstMatch.tap()
+        let languages = [("English", "Sun rashi", "Fast"), ("हिंदी", "सूर्य राशि", "व्रत"),
+                         ("தமிழ்", "சூரிய ராசி", "விரதம்"), ("తెలుగు", "సూర్య రాశి", "ఉపవాసం"),
+                         ("ગુજરાતી", "સૂર્ય રાશિ", "ઉપવાસ"), ("বাংলা", "সূর্য রাশি", "উপবাস")]
+        let pages = ["keydays", "daily", "muhurta", "ekadashi", "rashi"]
+        func revealChip(_ page: String) {
+            let chip = app.buttons["panchang_tab_\(page)"].firstMatch
+            for _ in 0..<3 where !chip.isHittable {
+                let current = pages.first { app.buttons["panchang_tab_\($0)"].firstMatch.isSelected } ?? "keydays"
+                let selected = app.buttons["panchang_tab_\(current)"].firstMatch
+                let y = selected.frame.midY
+                let right = pages.firstIndex(of: page)! < pages.firstIndex(of: current)!
+                let from = app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: app.frame.width * (right ? 0.15 : 0.85), dy: y))
+                let to = app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: app.frame.width * (right ? 0.85 : 0.15), dy: y))
+                from.press(forDuration: 0.05, thenDragTo: to)
+            }
+        }
+        for (language, sun, fast) in languages {
+            tab(0)
+            if language != "English" { element("language_menu").tap(); app.buttons[language].tap() }
+            tab(3)
+            for pass in ["first", "repeat"] {
+                for page in ["keydays", "daily", "muhurta", "ekadashi", "rashi"] {
+                    let chip = app.buttons["panchang_tab_\(page)"].firstMatch
+                    revealChip(page)
+                    let start = Date()
+                    chip.tap()
+                    let loaded: XCUIElement
+                    switch page {
+                    case "keydays": loaded = element("panchang_key_days")
+                    case "daily": loaded = element("panchang_tithi_title")
+                    case "muhurta": loaded = element("panchang_day_night")
+                    case "ekadashi": loaded = app.staticTexts[fast].firstMatch
+                    default: loaded = app.staticTexts[sun].firstMatch
+                    }
+                    guard loaded.waitForExistence(timeout: 4), loaded.isHittable else {
+                        XCTFail("Missing visible content: \(language) \(page) \(pass)"); return
+                    }
+                    print("PANCHANG_UI \(language) \(page) \(pass) action_to_content_s=\(Date().timeIntervalSince(start))")
+                    if pass == "first" { snap("performance-\(language)-\(page)") }
+                }
+            }
+        }
+        #endif
+    }
+
+    func testPanchangHasOnlyTheSharedTrailingSearchInBothGlassModes() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        for enabled in [false, true] {
+            glassTab(4)
+            setSwitch(app.switches["settings_glass_look"].firstMatch, to: enabled)
+            let settings = app.buttons["open_global_search"].firstMatch.frame
+            glassTab(0)
+            let home = app.buttons["open_global_search"].firstMatch.frame
+            glassTab(3)
+            XCTAssertFalse(app.buttons["panchang_notes"].exists)
+            let search = app.buttons["open_global_search"].firstMatch
+            XCTAssertTrue(search.isHittable)
+            for reference in [settings, home] {
+                XCTAssertEqual(search.frame.width, reference.width, accuracy: 1)
+                XCTAssertEqual(search.frame.height, reference.height, accuracy: 1)
+                XCTAssertEqual(search.frame.maxX, reference.maxX, accuracy: 1)
+            }
+            snap("panchang-toolbar-glass-\(enabled)")
+            search.tap()
+            XCTAssertTrue(app.searchFields.firstMatch.waitForExistence(timeout: 5))
+            app.buttons["global_search_back"].firstMatch.tap()
+        }
+    }
+
+    func testCalendarKeepsGroupingWhileItsWholeToolbarChangesGlassSurface() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        glassTab(1)
+        let offSearch = app.buttons["open_global_search"].firstMatch.frame
+        let off = calendarHeaderPixels()
+        snap("calendar-approved-off")
+        glassTab(4)
+        setSwitch(app.switches["settings_glass_look"].firstMatch, to: true)
+        glassTab(1)
+        let onSearch = app.buttons["open_global_search"].firstMatch.frame
+        XCTAssertGreaterThan(app.buttons["calendar_today"].firstMatch.frame.width, 60, "Today must remain a readable capsule, not an ellipsis")
+        XCTAssertEqual(onSearch.width, offSearch.width, accuracy: 1)
+        XCTAssertEqual(onSearch.height, offSearch.height, accuracy: 1)
+        XCTAssertEqual(onSearch.minX, offSearch.minX, accuracy: 1)
+        let on = calendarHeaderPixels()
+        XCTAssertEqual(on.count, off.count)
+        let changed = stride(from: 0, to: min(on.count, off.count), by: 4).filter { pixel in
+            (0..<3).contains { abs(Int(on[pixel + $0]) - Int(off[pixel + $0])) > 20 }
+        }.count
+        let fraction = Double(changed) / Double(max(1, off.count / 4))
+        XCTAssertGreaterThan(fraction, 0.01, "Calendar toolbar, including Today, must actually change its Glass surface: \(fraction)")
+        snap("calendar-approved-on")
+        app.buttons["calendar_google_menu"].firstMatch.tap()
+        XCTAssertTrue(app.buttons["import_google_year"].firstMatch.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["disconnect_google"].firstMatch.exists)
+    }
+
+    func testGlassToggleKeepsSearchTodayAndHomeActionsFixed() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        let actionIDs = ["view_details", "home_share_card", "home_record_vrat"]
+        let actions = actionIDs.map { app.buttons[$0].firstMatch.frame }
+        print("HOME ACTIONS OFF: \(actions)")
+        snap("home-actions-off")
+        var off: [CGRect] = []
+        for index in 0..<5 {
+            glassTab(index)
+            off.append(app.buttons["open_global_search"].firstMatch.frame)
+        }
+        setSwitch(app.switches["settings_glass_look"].firstMatch, to: true)
+        for index in 0..<5 {
+            glassTab(index)
+            let search = app.buttons["open_global_search"].firstMatch
+            assertFrame(search.frame, matches: off[index], "Search tab \(index)")
+            if index == 0 {
+                print("HOME ACTIONS ON: \(actionIDs.map { app.buttons[$0].firstMatch.frame })")
+                snap("home-actions-on")
+                for (key, rect) in zip(actionIDs, actions) {
+                    assertFrame(app.buttons[key].firstMatch.frame, matches: rect, key)
+                }
+            }
+            snap("consistent-glass-on-tab-\(index)")
+        }
+    }
+
+    func testHomeActionsHaveSeparateRoundIconsAndStableBoundsAfterTapping() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        for enabled in [false, true] {
+            glassTab(4)
+            setSwitch(app.switches["settings_glass_look"].firstMatch, to: enabled)
+            glassTab(0)
+            let details = app.buttons["view_details"].firstMatch
+            let share = app.buttons["home_share_card"].firstMatch
+            let record = app.buttons["home_record_vrat"].firstMatch
+            let original = [details.frame, share.frame, record.frame]
+            for icon in [share, record] {
+                XCTAssertEqual(icon.frame.width, icon.frame.height, accuracy: 1, "Home icon must have a circular enclosure")
+                XCTAssertGreaterThanOrEqual(icon.frame.height, 48)
+            }
+            XCTAssertGreaterThanOrEqual(share.frame.minX - details.frame.maxX, 8)
+            XCTAssertGreaterThanOrEqual(record.frame.minX - share.frame.maxX, 8)
+            snap("home-independent-actions-glass-\(enabled)")
+            record.tap()
+            let feedback = app.staticTexts["You can record this fast once Parana begins"].firstMatch
+            XCTAssertTrue(feedback.waitForExistence(timeout: 5))
+            XCTAssertLessThanOrEqual(feedback.frame.maxY + 14, original.map(\.minY).min()! - 8,
+                "The feedback capsule must stay above every Home action")
+            for (button, frame) in zip([details, share, record], original) {
+                assertFrame(button.frame, matches: frame, "Home actions must not merge or move when tapped")
+            }
+            snap("home-independent-actions-after-tap-glass-\(enabled)")
+            share.tap()
+            XCTAssertTrue(app.buttons["Cancel"].firstMatch.waitForExistence(timeout: 5))
+            app.buttons["Cancel"].firstMatch.tap()
+            for (button, frame) in zip([details, share, record], original) {
+                assertFrame(button.frame, matches: frame, "Return from Share")
+            }
+        }
+    }
+
+    func testCalendarEditorSaveCancelAndGoogleSignInCancellation() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        for enabled in [false, true] {
+            glassTab(4)
+            setSwitch(app.switches["settings_glass_look"].firstMatch, to: enabled)
+            glassTab(1)
+            app.buttons["add_calendar_entry"].firstMatch.tap()
+            XCTAssertTrue(app.textFields["entry_title"].firstMatch.waitForExistence(timeout: 5))
+            snap("calendar-entry-toolbar-glass-\(enabled)")
+            app.buttons["Cancel"].firstMatch.tap()
+            XCTAssertFalse(app.textFields["entry_title"].firstMatch.exists)
+            app.buttons["add_calendar_entry"].firstMatch.tap()
+            let title = app.textFields["entry_title"].firstMatch
+            XCTAssertTrue(title.waitForExistence(timeout: 5))
+            title.tap(); title.typeText("Toolbar regression \(enabled)")
+            app.buttons["save_entry"].firstMatch.tap()
+            XCTAssertTrue(app.staticTexts["Toolbar regression \(enabled)"].firstMatch.waitForExistence(timeout: 10))
+            app.buttons["calendar_google_menu"].firstMatch.tap()
+            app.buttons["import_google_year"].firstMatch.tap()
+            let prompt = app.alerts.firstMatch
+            if prompt.waitForExistence(timeout: 8), prompt.buttons["Cancel"].exists {
+                prompt.buttons["Cancel"].tap()
+            } else if app.buttons["Cancel"].firstMatch.exists {
+                app.buttons["Cancel"].firstMatch.tap()
+            } else {
+                // ASWebAuthenticationSession is hosted by SafariViewService,
+                // so its Cancel control is outside our app's AX tree.
+                let authentication = XCUIApplication(bundleIdentifier: "com.apple.SafariViewService")
+                let cancel = authentication.buttons["Cancel"].firstMatch
+                XCTAssertTrue(cancel.waitForExistence(timeout: 10))
+                cancel.tap()
+            }
+            XCTAssertTrue(app.buttons["calendar_google_menu"].firstMatch.waitForExistence(timeout: 15), "Cancelled sign-in must restore the toolbar without crashing")
+            snap("calendar-google-cancelled-glass-\(enabled)")
+        }
+    }
+
+    func testRecordEditorCancelSaveAndDeleteKeepTheirToolbarControls() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        app.buttons["Papankusha Ekadashi"].firstMatch.tap()
+        app.buttons["home_record_vrat"].firstMatch.tap()
+        XCTAssertTrue(app.buttons["vrat_record_save"].firstMatch.waitForExistence(timeout: 5))
+        app.buttons["Cancel"].firstMatch.tap()
+        app.buttons["home_record_vrat"].firstMatch.tap()
+        app.buttons["vrat_record_save"].firstMatch.tap()
+        for _ in 0..<3 {
+            let acknowledgement = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Hari Om")).firstMatch
+            if acknowledgement.waitForExistence(timeout: 2) { acknowledgement.tap() }
+            else { break }
+        }
+        XCTAssertTrue(app.buttons["home_record_vrat"].firstMatch.waitForExistence(timeout: 5))
+        if app.buttons["Papankusha Ekadashi"].firstMatch.exists {
+            app.buttons["Papankusha Ekadashi"].firstMatch.tap()
+        }
+        app.buttons["home_record_vrat"].firstMatch.tap()
+        let delete = app.buttons["Delete Record"].firstMatch
+        XCTAssertTrue(delete.waitForExistence(timeout: 5))
+        snap("record-editor-existing-toolbar")
+        delete.tap()
+        XCTAssertTrue(app.alerts.firstMatch.waitForExistence(timeout: 5))
+        app.alerts.buttons["Delete Record"].firstMatch.tap()
+        XCTAssertTrue(app.buttons["home_record_vrat"].firstMatch.waitForExistence(timeout: 5))
+    }
+
+    func testCalendarMonthPickerCancelAndDoneWorkInBothGlassModes() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        for enabled in [false, true] {
+            glassTab(4)
+            setSwitch(app.switches["settings_glass_look"].firstMatch, to: enabled)
+            glassTab(1)
+            for action in ["Cancel", "Done"] {
+                app.buttons["calendar_year_selector"].firstMatch.tap()
+                XCTAssertTrue(app.pickerWheels.firstMatch.waitForExistence(timeout: 5))
+                XCTAssertEqual(app.pickerWheels.count, 2)
+                XCTAssertTrue(app.buttons[action].firstMatch.isHittable)
+                snap("calendar-month-picker-\(action)-glass-\(enabled)")
+                app.buttons[action].firstMatch.tap()
+                XCTAssertFalse(app.pickerWheels.firstMatch.exists)
+                XCTAssertTrue(app.buttons["calendar_year_selector"].firstMatch.isHittable)
+            }
+        }
+    }
+
+    func testCityPickerHasOrganizedGroupsInBothGlassModesAndBothTabs() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        for enabled in [false, true] {
+            glassTab(4)
+            setSwitch(app.switches["settings_glass_look"].firstMatch, to: enabled)
+            for index in [0, 3] {
+                glassTab(index)
+                element(index == 0 ? "home_location" : "panchang_city_selector").tap()
+                let current = element("ekadashi_location_current")
+                XCTAssertTrue(current.waitForExistence(timeout: 5))
+                XCTAssertTrue(app.textFields["ekadashi_location_search"].firstMatch.exists)
+                XCTAssertTrue(app.staticTexts["Popular cities"].firstMatch.exists)
+                if !enabled {
+                    let image = XCUIScreen.main.screenshot().image.cgImage!
+                    let scale = CGFloat(image.width) / app.frame.width
+                    let inside = CGPoint(x: current.frame.minX + 2, y: current.frame.maxY - 3)
+                    let outside = CGPoint(x: 5, y: inside.y)
+                    let contrast = zip(rgb(image, at: inside, scale: scale), rgb(image, at: outside, scale: scale))
+                        .map { abs($0 - $1) }.max()!
+                    XCTAssertGreaterThan(contrast, 3, "Off should still have visible grouped city categories")
+                }
+                snap("consistent-city-picker-\(index)-glass-\(enabled)")
+                app.buttons["city_picker_cancel"].firstMatch.tap()
+            }
+        }
+    }
+
+    private func assertFrame(_ actual: CGRect, matches expected: CGRect, _ label: String) {
+        XCTAssertEqual(actual.minX, expected.minX, accuracy: 1, label)
+        XCTAssertEqual(actual.minY, expected.minY, accuracy: 1, label)
+        XCTAssertEqual(actual.width, expected.width, accuracy: 1, label)
+        XCTAssertEqual(actual.height, expected.height, accuracy: 1, label)
+    }
+
+    private func rgb(_ image: CGImage, at point: CGPoint, scale: CGFloat) -> [Int] {
+        let cropped = image.cropping(to: CGRect(x: point.x * scale, y: point.y * scale, width: 1, height: 1))!
+        var pixel = [UInt8](repeating: 0, count: 4)
+        pixel.withUnsafeMutableBytes { data in
+            CGContext(data: data.baseAddress, width: 1, height: 1, bitsPerComponent: 8, bytesPerRow: 4,
+                space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
+                .draw(cropped, in: CGRect(x: 0, y: 0, width: 1, height: 1))
+        }
+        return pixel.prefix(3).map(Int.init)
+    }
+
+    func testIOSPresentedSheetsDismissByPullingTheirHeaderDown() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        for source in ["home_location", "home_share_card", "premium", "panchang_city_selector", "open_global_search"] {
+            if source == "premium" {
+                glassTab(4)
+                app.buttons["settings_premium"].firstMatch.tap()
+            } else {
+                glassTab(source == "panchang_city_selector" ? 3 : 0)
+                element(source).tap()
+            }
+            let key = source == "open_global_search" ? "global_search_back" : source == "home_share_card" ? "Cancel" : source == "premium" ? "premium_close" : "city_picker_cancel"
+            let close = app.buttons[key].firstMatch
+            XCTAssertTrue(close.waitForExistence(timeout: 8), source)
+            let start = app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: app.frame.midX, dy: close.frame.midY))
+            start.press(forDuration: 0.1, thenDragTo: start.withOffset(CGVector(dx: 0, dy: 650)))
+            XCTAssertTrue(XCTWaiter.wait(for: [expectation(for: NSPredicate(format: "exists == false"), evaluatedWith: close)], timeout: 5) == .completed, source)
+            snap("ios-pull-dismiss-\(source)")
+        }
+    }
+
+    @MainActor
+    func testPremiumSuggestionsFollowVerifiedStoreKitPurchases() async throws {
+        #if !targetEnvironment(simulator)
+        throw XCTSkip("Purchases and resets belong only to isolated Simulator test accounts")
+        #else
+        let configuration = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("EkadashiCalendar/Resources/Products.storekit")
+        app.terminate()
+        let session = try SKTestSession(contentsOf: configuration)
+        session.resetToDefaultState()
+        session.disableDialogs = true
+        session.timeRate = .realTime
+        try session.clearTransactions()
+        defer { try? session.clearTransactions() }
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        glassTab(4); app.buttons["settings_premium"].firstMatch.tap()
+        let monthly = app.buttons["premium_plan_monthly"].firstMatch
+        XCTAssertTrue(monthly.waitForExistence(timeout: 10))
+        monthly.tap()
+        for (product, next) in [("monthly", "yearly"), ("yearly", "lifetime"), ("lifetime", "lifetime")] {
+            app.buttons["premium_buy"].firstMatch.tap()
+            if product == "lifetime" { app.alerts.buttons["Buy lifetime"].tap() }
+            XCUIDevice.shared.press(.home)
+            app.activate()
+            let owned = app.buttons["premium_plan_\(product)"].firstMatch
+            // Lifetime is already the selected suggestion after Yearly. Wait
+            // for verified ownership, not only the pre-existing selection.
+            await fulfillment(of: [expectation(for: NSPredicate(format: "label CONTAINS %@", "Your current plan"), evaluatedWith: owned)], timeout: 60)
+            let tile = app.buttons["premium_plan_\(next)"].firstMatch
+            await fulfillment(of: [expectation(for: NSPredicate(format: "exists == true AND selected == true"), evaluatedWith: tile)], timeout: 60)
+            XCTAssertTrue(tile.isSelected, next)
+            XCTAssertTrue(tile.isEnabled)
+            snap("premium-owned-\(product)-suggest-\(next)")
+        }
+        XCTAssertFalse(app.buttons["premium_buy"].exists, "Lifetime ownership must not offer another charge")
+        #endif
+    }
+
+    func testShareActionsSaveLeftAndShareRightInBothGlassModes() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        for enabled in [false, true] {
+            glassTab(4)
+            setSwitch(app.switches["settings_glass_look"].firstMatch, to: enabled)
+            glassTab(0)
+            app.buttons["home_share_card"].firstMatch.tap()
+            let save = app.buttons["share_card_save"].firstMatch
+            let share = app.buttons["share_card_share"].firstMatch
+            XCTAssertTrue(reveal(save))
+            XCTAssertTrue(share.exists)
+            XCTAssertLessThan(save.frame.midX, share.frame.midX)
+            XCTAssertLessThanOrEqual(save.frame.maxX, share.frame.minX)
+            snap("share-save-left-share-right-glass-\(enabled)")
+            app.buttons["Cancel"].firstMatch.tap()
+        }
+    }
+
+    func testGlassLookSettingHasSharedAppleStyleSymbol() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        glassTab(4)
+        XCTAssertTrue(element("settings_glass_look_icon").exists)
+        snap("settings-glass-look-icon")
+    }
+
+    @MainActor
+    func testStoreManagedSubscriptionDisplayNames() async throws {
+        #if !targetEnvironment(simulator)
+        throw XCTSkip("Purchase/reset scenarios run only on Simulator; never clear a user's device purchases")
+        #else
+        app.terminate()
+        let configuration = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("EkadashiCalendar/Resources/Products.storekit")
+        let session = try SKTestSession(contentsOf: configuration)
+        session.resetToDefaultState()
+        session.disableDialogs = true
+        session.timeRate = .realTime
+        try session.clearTransactions()
+        defer { try? session.clearTransactions() }
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        glassTab(4)
+        app.buttons["settings_premium"].firstMatch.tap()
+        let product = app.buttons["premium_plan_monthly"].firstMatch
+        await fulfillment(of: [expectation(for: NSPredicate(format: "exists == true AND enabled == true"), evaluatedWith: product)], timeout: 30)
+        product.tap()
+        app.buttons["premium_buy"].firstMatch.tap()
+        XCUIDevice.shared.press(.home)
+        app.activate()
+        await fulfillment(of: [expectation(for: NSPredicate(format: "label CONTAINS %@", "Your current plan"), evaluatedWith: product)], timeout: 60)
+        app.buttons["premium_close"].firstMatch.tap()
+        let manage = app.buttons["Manage"].firstMatch
+        XCTAssertTrue(manage.waitForExistence(timeout: 30))
+        for _ in 0..<5 where !manage.isHittable { app.swipeUp() }
+        XCTAssertTrue(manage.isHittable)
+        manage.tap()
+        // Apple's remote controller does not expose its labels to XCUITest
+        // on every OS. Read the actual visible screenshot with Vision rather
+        // than passing an assertion against a missing accessibility element.
+        let shown = expectation(for: NSPredicate { _, _ in
+            (try? self.visibleStoreText().contains { $0.hasPrefix("Edit Subscription") }) == true
+        }, evaluatedWith: nil)
+        await fulfillment(of: [shown], timeout: 15)
+        let text = try visibleStoreText()
+        snap("store-managed-subscription-correct-name")
+        XCTAssertFalse(text.contains { $0.contains("ekadashi_premium") })
+        XCTAssertGreaterThanOrEqual(text.filter { $0.hasPrefix("Ekadashi Premium") }.count, 3,
+            "The current subscription and both plan options must show the customer-facing name: \(text)")
+        #endif
+    }
+
+    private func visibleStoreText() throws -> [String] {
+        let image = try XCTUnwrap(XCUIScreen.main.screenshot().image.cgImage)
+        let request = VNRecognizeTextRequest()
+        request.recognitionLevel = .accurate
+        request.recognitionLanguages = ["en-US"]
+        try VNImageRequestHandler(cgImage: image).perform([request])
+        return (request.results ?? []).compactMap { $0.topCandidates(1).first?.string }
+    }
+
+    private func calendarHeaderPixels() -> [UInt8] {
+        let shot = XCUIScreen.main.screenshot().image
+        let scale = CGFloat(shot.cgImage!.width) / app.frame.width
+        let top = app.navigationBars.firstMatch.frame.minY
+        let crop = shot.cgImage!.cropping(to: CGRect(x: 0, y: top * scale,
+            width: app.frame.width * scale, height: 52 * scale))!
+        let width = Int(app.frame.width), height = 52
+        var bytes = [UInt8](repeating: 0, count: width * height * 4)
+        bytes.withUnsafeMutableBytes { buffer in
+            let context = CGContext(data: buffer.baseAddress, width: width, height: height,
+                bitsPerComponent: 8, bytesPerRow: width * 4, space: CGColorSpaceCreateDeviceRGB(),
+                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
+            context.draw(crop, in: CGRect(x: 0, y: 0, width: width, height: height))
+        }
+        return bytes
+    }
+
+    /// Evidence-only audit: retain all appearance differences for the user's review.
+    func testAuditGlassModesAcrossTabsSubsectionsAndSheets() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        var geometry: [String] = []
+        for enabled in [false, true] {
+            glassTab(4)
+            setSwitch(app.switches["settings_glass_look"].firstMatch, to: enabled)
+            for index in 0..<5 {
+                glassTab(index)
+                let search = app.buttons["open_global_search"].firstMatch
+                XCTAssertTrue(search.isHittable)
+                geometry.append("glass=\(enabled) tab=\(index) search=\(search.frame)")
+                snap("audit-glass-\(enabled)-tab-\(index)")
+                if index == 2 {
+                    for section in ["overview", "history", "statistics", "achievements"] {
+                        app.buttons["journey_tab_\(section)"].firstMatch.tap()
+                        snap("audit-glass-\(enabled)-journey-\(section)")
+                    }
+                }
+                if index == 3 {
+                    for section in ["keydays", "daily", "muhurta", "ekadashi", "rashi"] {
+                        let chip = app.buttons["panchang_tab_\(section)"].firstMatch
+                        if !chip.isHittable {
+                            app.buttons["panchang_tab_ekadashi"].firstMatch.swipeLeft()
+                        }
+                        chip.tap()
+                        snap("audit-glass-\(enabled)-panchang-\(section)")
+                    }
+                }
+            }
+            glassTab(0)
+            app.buttons["view_details"].firstMatch.tap()
+            snap("audit-glass-\(enabled)-details")
+            app.navigationBars.buttons.element(boundBy: 0).tap()
+            app.buttons["open_global_search"].firstMatch.tap()
+            XCTAssertTrue(app.searchFields.firstMatch.waitForExistence(timeout: 5))
+            snap("audit-glass-\(enabled)-search")
+            app.buttons["global_search_back"].firstMatch.tap()
+            element("home_location").tap()
+            XCTAssertTrue(app.textFields["ekadashi_location_search"].firstMatch.waitForExistence(timeout: 5))
+            snap("audit-glass-\(enabled)-city-picker")
+            app.buttons["city_picker_cancel"].firstMatch.tap()
+            glassTab(4)
+            app.buttons["settings_widget_preview"].firstMatch.tap()
+            XCTAssertTrue(app.buttons["widget_preview_open"].firstMatch.waitForExistence(timeout: 5))
+            snap("audit-glass-\(enabled)-widget-preview")
+            app.navigationBars.buttons.element(boundBy: 0).tap()
+        }
+        let attachment = XCTAttachment(string: geometry.joined(separator: "\n"))
+        attachment.name = "audit-search-control-geometry"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+
+    func testLifecycleHomeRetainsParanaAndShowsNextAtItsEnd() {
+        for (time, label) in [("2026-10-22T00:00:00+05:30", "06:00:00"),
+                              ("2026-10-23T00:00:00+05:30", "Now"),
+                              ("2026-10-23T06:00:00+05:30", "Parana")] {
+            app.terminate()
+            app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = time
+            app.launch()
+            XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+            XCTAssertEqual(app.staticTexts["home_day_badge"].firstMatch.label, label)
+            snap("lifecycle-home-\(label.replacingOccurrences(of: ":", with: "-"))")
+        }
+    }
+
+    func testDebugSessionAutomaticallyAdvancesAtParanaEndAndCanJumpBack() {
+        app.terminate()
+        app.launchArguments += ["-lifecycle-testing"]
+        app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = "2026-10-23T09:54:35+05:30"
+        app.launchEnvironment["EKADASHI_TEST_RATE"] = "1"
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        let badge = app.staticTexts["home_day_badge"].firstMatch
+        XCTAssertEqual(badge.label, "Parana")
+        snap("lifecycle-debug-before-parana-end")
+        let next = app.staticTexts["Rama Ekadashi"].firstMatch
+        XCTAssertTrue(next.waitForExistence(timeout: 40), "Home advances without a relaunch or tap")
+        snap("lifecycle-debug-after-parana-end")
+        tab(4)
+        let clock = app.buttons["settings_test_clock"].firstMatch
+        XCTAssertTrue(clock.waitForExistence(timeout: 5))
+        clock.tap()
+        app.buttons["test_clock_midnight"].firstMatch.tap()
+        tab(0)
+        XCTAssertEqual(badge.label, "06:00:00")
+        XCTAssertFalse(app.descendants(matching: .any)["home_remaining_ring"].firstMatch.exists)
+        snap("lifecycle-debug-midnight-countdown")
+    }
+
+    func testParanaCalendarDetailsAndWidgetPreviewsInEveryLanguage() {
+        app.terminate()
+        app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = "2026-10-23T07:00:00+05:30"
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        let languages = [("English", "Parana"), ("हिंदी", "पारण"), ("தமிழ்", "பாரணை"),
+                         ("తెలుగు", "పారణ"), ("ગુજરાતી", "પારણા"), ("বাংলা", "পারণ")]
+        for (language, parana) in languages {
+            tab(0)
+            if language != "English" { element("language_menu").tap(); app.buttons[language].tap() }
+            XCTAssertEqual(app.staticTexts["home_day_badge"].firstMatch.label, parana)
+            snap("lifecycle-parana-home-\(language)")
+            tab(1)
+            let calendarStatus = app.staticTexts["calendar_lifecycle_status"].firstMatch
+            XCTAssertTrue(calendarStatus.waitForExistence(timeout: 5))
+            XCTAssertEqual(calendarStatus.label, parana)
+            snap("lifecycle-parana-calendar-\(language)")
+            app.buttons["calendar_view_details"].firstMatch.tap()
+            let status = element("home_day_badge")
+            for _ in 0..<8 where !status.isHittable { app.swipeUp() }
+            XCTAssertEqual(status.label, parana)
+            // Show the status together with its timings, above the tab bar.
+            app.swipeUp()
+            snap("lifecycle-parana-details-\(language)")
+            app.navigationBars.buttons.element(boundBy: 0).tap()
+            tab(4)
+            app.buttons["settings_widget_preview"].firstMatch.tap()
+            let sizes = app.segmentedControls["widget_preview_size"]
+            XCTAssertTrue(sizes.waitForExistence(timeout: 5))
+            for index in 0..<3 {
+                sizes.buttons.element(boundBy: index).tap()
+                snap("lifecycle-parana-preview-\(language)-\(index)")
+            }
+            app.navigationBars.buttons.element(boundBy: 0).tap()
+        }
+    }
+
+    func testParanaOnlyDayHasNoEmptyEkadashiMessageWhenFiltered() {
+        app.terminate()
+        app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = "2026-10-23T07:00:00+05:30"
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        tab(1)
+        app.buttons["Ekadashi"].firstMatch.tap()
+        XCTAssertTrue(app.staticTexts["calendar_lifecycle_status"].firstMatch.waitForExistence(timeout: 5))
+        XCTAssertFalse(app.staticTexts["No Ekadashi on this day"].exists)
+    }
+
+    func testCalendarFirstOpenUsesHomeCityDateAcrossMidnight() {
+        app.terminate()
+        app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = "2026-10-23T07:00:00+05:30"
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        element("home_location").tap()
+        let search = app.textFields["ekadashi_location_search"]
+        XCTAssertTrue(search.waitForExistence(timeout: 5)); search.tap(); search.typeText("New York")
+        let city = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'New York'")).firstMatch
+        XCTAssertTrue(city.waitForExistence(timeout: 10)); city.tap()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        XCTAssertTrue(element("home_location_name").label.hasPrefix("New York"))
+        tab(1)
+        XCTAssertTrue(element("calendar_year_selector").label.contains("22 Oct 2026"))
+        snap("lifecycle-calendar-New-York-previous-civil-day")
+    }
+
+    func testRunningCountdownChangesThenStartsTheFillingRing() {
+        app.terminate()
+        app.launchArguments += ["-lifecycle-testing"]
+        app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = "2026-10-22T05:59:35+05:30"
+        app.launchEnvironment["EKADASHI_TEST_RATE"] = "1"
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 20))
+        let badge = app.staticTexts["home_day_badge"].firstMatch
+        let first = badge.label
+        XCTAssertTrue(first.hasPrefix("00:00:"), first)
+        snap("lifecycle-running-countdown")
+        let changed = NSPredicate(format: "label != %@", first)
+        XCTAssertEqual(XCTWaiter.wait(for: [expectation(for: changed, evaluatedWith: badge)], timeout: 3), .completed)
+        let started = NSPredicate(format: "label == 'Now'")
+        XCTAssertEqual(XCTWaiter.wait(for: [expectation(for: started, evaluatedWith: badge)], timeout: 35), .completed)
+        let ring = app.descendants(matching: .any)["home_remaining_ring"].firstMatch
+        XCTAssertTrue(ring.exists)
+        XCTAssertTrue(ring.label.contains("0%"))
+        snap("lifecycle-running-countdown-started-zero")
+    }
+
     private func snap(_ name: String) {
         let attachment = XCTAttachment(screenshot: app.screenshot())
         attachment.name = name
         attachment.lifetime = .keepAlways
         add(attachment)
+    }
+
+    func testGlassLookStartsOffAndRestoresTheCurrentHomeAppearance() {
+        app.terminate()
+        app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = "2026-10-22T07:15:00Z"
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        let before = app.screenshot().image
+        snap("glass-baseline-home-off")
+        glassTab(4)
+        let toggle = app.switches["settings_glass_look"].firstMatch
+        XCTAssertTrue(toggle.waitForExistence(timeout: 5), "Glass Look must be an opt-in Appearance setting")
+        XCTAssertEqual(toggle.value as? String, "0", "Existing users keep the current appearance")
+        setSwitch(toggle, to: true)
+        XCTAssertEqual(toggle.value as? String, "1")
+        snap("glass-settings-enabled")
+        XCTAssertEqual(app.tabBars.count, 1, "Both appearances retain the original native tab bar")
+        glassTab(0)
+        snap("glass-home-enabled")
+        assertSingleNativeTabBar()
+        assertPageBackgroundContinuesBehindGlassTabs()
+        XCTAssertLessThanOrEqual(app.buttons["view_details"].firstMatch.frame.maxY,
+            app.tabBars.buttons.element(boundBy: 0).frame.minY - 6, "The floating bar must not cover Home actions")
+        let enabled = app.screenshot().image
+        XCTAssertGreaterThan(pixelDifference(before, enabled), 0.01, "The enabled appearance must be visibly distinct")
+        glassTab(4)
+        setSwitch(toggle, to: false)
+        XCTAssertEqual(toggle.value as? String, "0")
+        glassTab(0)
+        snap("glass-home-restored-off")
+        XCTAssertLessThan(pixelDifference(before, app.screenshot().image), 0.003, "Off restores the current Home, including its native tab bar")
+    }
+
+    func testGlassLookKeepsTheNativeTabBarPositionAndSize() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        let native = stableNativeTabFrames()
+        let nativeBar = app.tabBars.firstMatch.frame
+        snap("glass-tab-geometry-off")
+        glassTab(4)
+        setSwitch(app.switches["settings_glass_look"].firstMatch, to: true)
+        glassTab(0)
+        let enabled = stableNativeTabFrames()
+        let geometry = XCTAttachment(string: "Native bar: \(nativeBar)\nOff items: \(native)\nOn items: \(enabled)")
+        geometry.name = "glass-tab-bar-geometry"; geometry.lifetime = .keepAlways; add(geometry)
+        snap("glass-tab-geometry-on")
+        assertNativeTabFramesMatch(native)
+        glassTab(4)
+        setSwitch(app.switches["settings_glass_look"].firstMatch, to: false)
+        glassTab(0)
+        assertNativeTabFramesMatch(native)
+    }
+
+    func testGlassLookInEveryLanguageAndBothThemes() {
+        app.terminate()
+        app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = "2026-10-22T07:15:00Z"
+        app.launchArguments += ["-lifecycle-testing"] // Pin Chennai as well as the clock; ignore simulator GPS.
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        let cases = [("English", "Glass Look", "Papankusha Ekadashi"),
+            ("हिंदी", "काँच जैसा रूप", "पापांकुशा एकादशी"),
+            ("தமிழ்", "கண்ணாடித் தோற்றம்", "பாபாங்குசா ஏகாதசி"),
+            ("తెలుగు", "గాజు రూపం", "పాపాంకుశ ఏకాదశి"),
+            ("ગુજરાતી", "કાચ જેવો દેખાવ", "પાપાંકુશા એકાદશી"),
+            ("বাংলা", "কাচের মতো চেহারা", "পাপাঙ্কুশা একাদশী")]
+        for (language, title, eventName) in cases {
+            if language != "English" {
+                element("language_menu").tap()
+                app.buttons[language].tap()
+            }
+            XCTAssertTrue(app.staticTexts[eventName].firstMatch.waitForExistence(timeout: 10), language)
+            assertHomeActionEnclosures(language)
+            let offTabFrames = stableNativeTabFrames()
+            glassTab(4)
+            let glass = app.switches["settings_glass_look"].firstMatch
+            XCTAssertTrue(glass.waitForExistence(timeout: 5))
+            XCTAssertTrue(glass.label.contains(title), language)
+            XCTAssertEqual(glass.value as? String, "0")
+            snap("glass-settings-off-\(language)")
+            setSwitch(glass, to: true)
+            snap("glass-settings-on-\(language)")
+            glassTab(0)
+            for theme in ["dark", "light"] {
+                if theme == "light" {
+                    glassTab(4)
+                    setSwitch(app.switches["settings_dark_mode"].firstMatch, to: false)
+                    glassTab(0)
+                }
+                XCTAssertTrue(app.staticTexts[eventName].firstMatch.waitForExistence(timeout: 10), language)
+                assertHomeActionEnclosures("\(language) \(theme)")
+                if theme == "dark" { assertNativeTabFramesMatch(offTabFrames) }
+                let ring = app.descendants(matching: .any)["home_remaining_ring"].firstMatch
+                XCTAssertTrue(ring.label.contains("28%"), language)
+                let window = app.windows.firstMatch.frame
+                for index in 0..<5 {
+                    let item = app.tabBars.buttons.element(boundBy: index)
+                    XCTAssertTrue(window.contains(item.frame), "\(language) \(theme) tab \(index)")
+                }
+                assertPageBackgroundContinuesBehindGlassTabs()
+                snap("glass-home-on-\(theme)-\(language)")
+            }
+            glassTab(4)
+            setSwitch(app.switches["settings_dark_mode"].firstMatch, to: true)
+            setSwitch(glass, to: false)
+            glassTab(0)
+        }
+    }
+
+    private func assertHomeActionEnclosures(_ context: String) {
+        let buttons = ["view_details", "home_share_card", "home_record_vrat"]
+            .map { app.buttons[$0].firstMatch.frame }
+        for frame in buttons.dropFirst() {
+            XCTAssertEqual(frame.width, frame.height, accuracy: 1, context)
+            XCTAssertGreaterThanOrEqual(frame.height, 48, context)
+        }
+        for index in 1..<buttons.count {
+            XCTAssertGreaterThanOrEqual(buttons[index].minX - buttons[index - 1].maxX, 8, context)
+        }
+    }
+
+    func testGlassLookPreservesAllTabsDetailsFeedbackAndWidgetNavigation() {
+        app.terminate()
+        app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = "2026-10-22T07:15:00Z"
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        glassTab(4)
+        setSwitch(app.switches["settings_glass_look"].firstMatch, to: true)
+        for index in 0..<5 {
+            glassTab(index)
+            snap("glass-enabled-tab-\(index)")
+        }
+        glassTab(0)
+        let record = app.buttons["home_record_vrat"].firstMatch
+        XCTAssertTrue(record.isEnabled)
+        record.tap()
+        let message = app.staticTexts["You can record this fast once Parana begins"]
+        XCTAssertTrue(message.waitForExistence(timeout: 3))
+        snap("glass-enabled-record-feedback")
+        XCTAssertTrue(XCTWaiter.wait(for: [expectation(for: NSPredicate(format: "exists == false"), evaluatedWith: message)], timeout: 6) == .completed)
+        app.buttons["view_details"].firstMatch.tap()
+        snap("glass-enabled-details")
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        glassTab(4)
+        app.buttons["settings_widget_preview"].firstMatch.tap()
+        let preview = app.buttons["widget_preview_open"].firstMatch
+        XCTAssertTrue(preview.waitForExistence(timeout: 10))
+        preview.tap()
+        XCTAssertTrue(app.staticTexts["Papankusha Ekadashi"].firstMatch.waitForExistence(timeout: 10))
+        XCTAssertTrue(app.tabBars.buttons.element(boundBy: 0).isSelected)
+        snap("glass-enabled-preview-to-home")
+    }
+
+    func testGlassLookCityPickerRemainsUsableWithoutMovingTabs() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        glassTab(4)
+        setSwitch(app.switches["settings_glass_look"].firstMatch, to: true)
+        glassTab(0)
+        let frames = stableNativeTabFrames()
+        let location = element("home_location").label
+        element("home_location").tap()
+        let search = app.textFields["ekadashi_location_search"].firstMatch
+        XCTAssertTrue(search.waitForExistence(timeout: 10))
+        XCTAssertTrue(search.isHittable)
+        XCTAssertTrue(element("ekadashi_location_current").exists)
+        snap("glass-enabled-city-picker")
+        app.buttons["city_picker_cancel"].tap()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 10))
+        XCTAssertEqual(element("home_location").label, location)
+        assertNativeTabFramesMatch(frames)
+    }
+
+    func testGlassLookDoesNotResetTheSelectedCalendarDay() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        glassTab(1)
+        let day = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", ", 6 ")).firstMatch
+        XCTAssertTrue(day.waitForExistence(timeout: 10))
+        day.tap()
+        let header = element("calendar_year_selector")
+        XCTAssertTrue(header.waitForExistence(timeout: 10))
+        let selectedDate = header.label
+        XCTAssertTrue(selectedDate.contains(", 6 "), selectedDate)
+        for enabled in [true, false] {
+            glassTab(4)
+            setSwitch(app.switches["settings_glass_look"].firstMatch, to: enabled)
+            glassTab(1)
+            XCTAssertEqual(header.label, selectedDate, "Appearance must not reset Calendar state")
+        }
+    }
+
+    private func assertSingleNativeTabBar() {
+        XCTAssertEqual(app.tabBars.count, 1)
+        XCTAssertEqual(app.tabBars.buttons.count, 5)
+        XCTAssertEqual(app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "glass_tab_")).count, 0,
+            "The enabled appearance must retain the native bar without a replacement overlay")
+    }
+
+    private func nativeTabFrames() -> [CGRect] {
+        (0..<5).map { app.tabBars.buttons.element(boundBy: $0).frame }
+    }
+
+    private func tapNativeTabFrame(_ frame: CGRect) {
+        app.coordinate(withNormalizedOffset: .zero)
+            .withOffset(CGVector(dx: frame.midX, dy: frame.midY)).tap()
+    }
+
+    private func glassTab(_ index: Int) {
+        for _ in 0..<3 {
+            let frames = stableNativeTabFrames()
+            guard frames.count == 5 else { return XCTFail("Native tabs did not expand") }
+            // A coordinate grounded in settled accessibility frames avoids an
+            // element-index query racing iOS's native minimization animation.
+            tapNativeTabFrame(frames[index])
+            _ = stableNativeTabFrames()
+            let item = app.tabBars.buttons.element(boundBy: index)
+            if item.exists && item.isSelected { return }
+        }
+        XCTFail("Native tab \(index) did not become selected")
+    }
+
+    private func stableNativeTabFrames() -> [CGRect] {
+        var previous: [CGRect] = []
+        var result: [CGRect] = []
+        if app.tabBars.buttons.count < 5 {
+            app.swipeDown(velocity: .fast)
+            if app.tabBars.buttons.count < 5, app.tabBars.buttons.firstMatch.exists {
+                tapNativeTabFrame(app.tabBars.buttons.firstMatch.frame)
+            }
+        }
+        let stable = NSPredicate { [self] _, _ in
+            guard app.tabBars.buttons.count == 5 else { return false }
+            let frames = nativeTabFrames()
+            defer { previous = frames }
+            guard previous.count == frames.count else { return false }
+            let unchanged = zip(frames, previous).allSatisfy { a, b in
+                abs(a.minX - b.minX) < 0.01 && abs(a.midY - b.midY) < 0.01
+                    && abs(a.width - b.width) < 0.01 && abs(a.height - b.height) < 0.01
+            }
+            if unchanged { result = frames }
+            return unchanged
+        }
+        XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: stable, object: nil)], timeout: 8), .completed)
+        return result.isEmpty ? nativeTabFrames() : result
+    }
+
+    private func assertNativeTabFramesMatch(_ expected: [CGRect]) {
+        // Native bars can still be morphing after a color-scheme transition.
+        // Keep the geometry requirement; wait for the system animation to end.
+        let settled = NSPredicate { [self] _, _ in
+            guard app.tabBars.buttons.count == 5 else { return false }
+            return zip(nativeTabFrames(), expected).allSatisfy { frame, baseline in
+                abs(frame.minX - baseline.minX) <= 1 && abs(frame.midY - baseline.midY) <= 1
+                    && abs(frame.width - baseline.width) <= 1 && abs(frame.height - baseline.height) <= 1
+            }
+        }
+        XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: settled, object: nil)], timeout: 8), .completed,
+            "The native bar must settle at its original geometry")
+        assertSingleNativeTabBar()
+        for (index, frame) in nativeTabFrames().enumerated() {
+            XCTAssertEqual(frame.minX, expected[index].minX, accuracy: 1, "Tab \(index) horizontal position")
+            XCTAssertEqual(frame.midY, expected[index].midY, accuracy: 1, "Tab \(index) vertical position")
+            XCTAssertEqual(frame.width, expected[index].width, accuracy: 1, "Tab \(index) width")
+            XCTAssertEqual(frame.height, expected[index].height, accuracy: 1, "Tab \(index) height")
+        }
+    }
+
+    private func assertPageBackgroundContinuesBehindGlassTabs() {
+        guard let image = app.screenshot().image.cgImage else { return XCTFail("Missing screenshot") }
+        let scale = CGFloat(image.width) / app.windows.firstMatch.frame.width
+        let bar = app.tabBars.buttons.element(boundBy: 0).frame
+        // The page remains behind the native floating bar, including after
+        // an appearance change, without a separate white/black strip.
+        let sample = CGRect(x: 8 * scale, y: bar.midY * scale, width: 1, height: 1)
+        guard let pixel = image.cropping(to: sample) else { return XCTFail("Missing background pixel") }
+        var bytes = [UInt8](repeating: 0, count: 4)
+        bytes.withUnsafeMutableBytes { buffer in
+            let context = CGContext(data: buffer.baseAddress, width: 1, height: 1, bitsPerComponent: 8,
+                bytesPerRow: 4, space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
+            context.draw(pixel, in: CGRect(x: 0, y: 0, width: 1, height: 1))
+        }
+        XCTAssertGreaterThan(Int(bytes[1]), Int(bytes[0]) + 1, "Continue the teal page behind the floating bar: \(bytes)")
+    }
+
+    private func setSwitch(_ toggle: XCUIElement, to enabled: Bool) {
+        if !toggle.exists || !toggle.isHittable { XCTAssertTrue(reveal(toggle)) }
+        XCTAssertTrue(toggle.waitForExistence(timeout: 5))
+        // A long translated label can be hittable while its switch thumb is
+        // behind the floating native tab bar. Bring the entire row into view.
+        for _ in 0..<4 where toggle.frame.maxY > app.windows.firstMatch.frame.height * 0.8 {
+            app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7))
+                .press(forDuration: 0.05,
+                    thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)))
+        }
+        let value = enabled ? "1" : "0"
+        if toggle.value as? String != value {
+            // A SwiftUI Toggle can expose the label and thumb as one wide
+            // accessibility element. Tap the actual switch at its trailing end.
+            toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.93, dy: 0.5)).tap()
+        }
+        XCTAssertTrue(NSPredicate(format: "value == %@", value).evaluate(with: toggle)
+            || XCTWaiter.wait(for: [expectation(for: NSPredicate(format: "value == %@", value), evaluatedWith: toggle)], timeout: 5) == .completed)
+    }
+
+    private func pixelDifference(_ first: UIImage, _ second: UIImage) -> Double {
+        guard let a = first.cgImage, let b = second.cgImage, a.width == b.width, a.height == b.height else { return 1 }
+        func rgba(_ image: CGImage) -> [UInt8] {
+            var bytes = [UInt8](repeating: 0, count: image.width * image.height * 4)
+            bytes.withUnsafeMutableBytes { buffer in
+                let context = CGContext(data: buffer.baseAddress, width: image.width, height: image.height, bitsPerComponent: 8,
+                    bytesPerRow: image.width * 4, space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
+                context.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
+            }
+            return bytes
+        }
+        let left = rgba(a), right = rgba(b)
+        var changed = 0, total = 0
+        // Exclude the live system clock/status bar and bottom home indicator.
+        for y in Int(90 * first.scale)..<(a.height - Int(30 * first.scale)) {
+            for x in 0..<a.width {
+                let i = (y * a.width + x) * 4
+                if (0..<3).contains(where: { abs(Int(left[i + $0]) - Int(right[i + $0])) > 4 }) { changed += 1 }
+                total += 1
+            }
+        }
+        return Double(changed) / Double(max(total, 1))
+    }
+
+    func testFreshHomeDefaultsToVaishnavaAndListsItBeforeSmarta() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        let menu = app.buttons["home_tradition_menu"]
+        XCTAssertTrue(menu.label.contains("Vaishnava"))
+        menu.tap()
+        let vaishnava = app.buttons["Vaishnava"].firstMatch, smarta = app.buttons["Smarta"].firstMatch
+        XCTAssertTrue(vaishnava.waitForExistence(timeout: 5))
+        XCTAssertLessThan(vaishnava.frame.minY, smarta.frame.minY)
+    }
+
+    func testBlockedHomeRecordButtonShowsTheExistingParanaMessage() {
+        app.terminate()
+        app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = "2026-10-22T07:15:00Z"
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        app.open(URL(string: "ekadashi://ekadashi?uid=ekadashi%3A2026%3A20")!)
+        let record = app.buttons["home_record_vrat"].firstMatch
+        XCTAssertTrue(record.waitForExistence(timeout: 10))
+        XCTAssertTrue(record.isEnabled, "The grey control must accept an informational tap")
+        record.tap()
+        XCTAssertTrue(app.staticTexts["You can record this fast once Parana begins"].waitForExistence(timeout: 3))
+        snap("blocked-home-record-parana-message")
+    }
+
+    func testCalendarParanaUsesTheSelectedLanguage() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        app.open(URL(string: "ekadashi://calendar?date=2026-10-22")!)
+        tab(0)
+        element("language_menu").tap()
+        app.buttons["தமிழ்"].tap()
+        tab(1)
+        let parana = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", "விரதம் முடித்தல்:")).firstMatch
+        XCTAssertTrue(parana.waitForExistence(timeout: 10))
+        XCTAssertFalse(parana.label.contains("AM"))
+        XCTAssertFalse(parana.label.contains("PM"))
+    }
+
+    func testUpcomingHomeRecordFeedbackInBothGlassModesAndEveryLanguage() {
+        app.terminate()
+        app.launchArguments += ["-lifecycle-testing"]
+        app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = "2026-10-26T09:30:00+05:30"
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        let cases = [("English", "You can record this fast once Parana begins"),
+            ("हिंदी", "पारण शुरू होने के बाद आप यह व्रत दर्ज कर सकते हैं"),
+            ("தமிழ்", "பாரணை தொடங்கியதும் இந்த விரதத்தைப் பதிவு செய்யலாம்"),
+            ("తెలుగు", "పారణ మొదలైన తర్వాత ఈ ఉపవాసాన్ని నమోదు చేయవచ్చు"),
+            ("ગુજરાતી", "પારણા શરૂ થયા પછી તમે આ ઉપવાસ નોંધી શકશો"),
+            ("বাংলা", "পারণ শুরু হলে আপনি এই উপবাস নথিভুক্ত করতে পারবেন")]
+        var current = "English"
+        for enabled in [false, true] {
+            glassTab(4)
+            setSwitch(app.switches["settings_glass_look"].firstMatch, to: enabled)
+            glassTab(0)
+            for (language, message) in cases {
+                if language != current {
+                    element("language_menu").tap()
+                    let option = app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", language)).firstMatch
+                    XCTAssertTrue(option.waitForExistence(timeout: 5))
+                    option.tap(); current = language
+                }
+                let record = app.buttons["home_record_vrat"].firstMatch
+                XCTAssertTrue(record.isHittable)
+                let actionsTop = ["view_details", "home_share_card", "home_record_vrat"]
+                    .map { app.buttons[$0].firstMatch.frame.minY }.min()!
+                let text = app.staticTexts[message].firstMatch
+                record.tap()
+                // Query promptly: this deliberately short-lived message must
+                // not be consumed by unrelated toolbar accessibility queries.
+                if !text.exists { record.tap() }
+                XCTAssertTrue(text.waitForExistence(timeout: 1))
+                XCTAssertLessThanOrEqual(text.frame.maxY + 14, actionsTop - 8)
+                XCTAssertTrue(app.frame.contains(text.frame))
+                snap("ios-record-toast-glass-\(enabled)-\(language)")
+                XCTAssertEqual(XCTWaiter.wait(for: [expectation(for: NSPredicate(format: "exists == false"), evaluatedWith: text)], timeout: 6), .completed)
+            }
+        }
+    }
+
+    func testRecordFeedbackAndCalendarWindowInEveryLanguage() {
+        app.terminate()
+        app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = "2026-10-22T07:15:00Z"
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        app.open(URL(string: "ekadashi://calendar?date=2026-10-22")!)
+        tab(0)
+        let cases = [("English", "Papankusha Ekadashi", "You can record this fast once Parana begins"),
+            ("हिंदी", "पापांकुशा एकादशी", "पारण शुरू होने के बाद आप यह व्रत दर्ज कर सकते हैं"),
+            ("தமிழ்", "பாபாங்குசா ஏகாதசி", "பாரணை தொடங்கியதும் இந்த விரதத்தைப் பதிவு செய்யலாம்"),
+            ("తెలుగు", "పాపాంకుశ ఏకాదశి", "పారణ మొదలైన తర్వాత ఈ ఉపవాసాన్ని నమోదు చేయవచ్చు"),
+            ("ગુજરાતી", "પાપાંકુશા એકાદશી", "પારણા શરૂ થયા પછી તમે આ ઉપવાસ નોંધી શકશો"),
+            ("বাংলা", "পাপাঙ্কুশা একাদশী", "পারণ শুরু হলে আপনি এই উপবাস নথিভুক্ত করতে পারবেন")]
+        for (language, name, message) in cases {
+            if language != "English" {
+                element("language_menu").tap()
+                app.buttons[language].tap()
+            }
+            XCTAssertTrue(app.staticTexts[name].firstMatch.waitForExistence(timeout: 10), language)
+            let record = app.buttons["home_record_vrat"].firstMatch
+            XCTAssertTrue(record.isEnabled)
+            record.tap()
+            XCTAssertTrue(app.staticTexts[message].waitForExistence(timeout: 3), language)
+            let actionTop = ["view_details", "home_share_card", "home_record_vrat"]
+                .map { app.buttons[$0].firstMatch.frame.minY }.min()!
+            XCTAssertLessThanOrEqual(app.staticTexts[message].frame.maxY + 14, actionTop - 8, language)
+            snap("home-parana-feedback-\(language)")
+            tab(1)
+            let parana = app.staticTexts["calendar_break_fasting"].firstMatch
+            XCTAssertTrue(parana.waitForExistence(timeout: 10), language)
+            XCTAssertTrue(parana.label.contains("09:55"), "Keep the complete end time: \(language)")
+            if language != "English" {
+                XCTAssertFalse(parana.label.contains("AM"), language)
+                XCTAssertFalse(parana.label.contains("PM"), language)
+            }
+            snap("calendar-localized-parana-\(language)")
+            tab(0)
+        }
+    }
+
+    func testTodayProgressStaysLeftOfTheTodayBadgeAndOnlyAppearsOnTodaysCard() {
+        app.terminate()
+        app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = "2026-10-22T07:15:00Z"
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        app.open(URL(string: "ekadashi://ekadashi?uid=ekadashi%3A2026%3A20")!)
+        let ring = app.descendants(matching: .any)["home_remaining_ring"].firstMatch
+        let badge = app.staticTexts["home_day_badge"].firstMatch
+        XCTAssertTrue(ring.waitForExistence(timeout: 10))
+        XCTAssertTrue(badge.exists)
+        XCTAssertEqual(badge.label, "Now")
+        XCTAssertLessThan(ring.frame.maxX, badge.frame.minX)
+        snap("approved-home-today-ring-left-badge-right")
+        app.open(URL(string: "ekadashi://ekadashi?uid=ekadashi%3A2026%3A21")!)
+        XCTAssertFalse(ring.exists, "A future card never shows today's progress")
+        app.open(URL(string: "ekadashi://ekadashi?uid=ekadashi%3A2026%3A19")!)
+        XCTAssertFalse(ring.exists, "A past card never shows today's progress")
+    }
+
+    func testNextSmallAndMediumSettingsPreviewsInEverySupportedLanguage() {
+        app.terminate()
+        app.launchArguments += ["-lifecycle-testing"]
+        app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = "2026-10-26T09:30:00+05:30"
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        for language in ["English", "हिंदी", "தமிழ்", "తెలుగు", "ગુજરાતી", "বাংলা"] {
+            tab(0)
+            if language != "English" { element("language_menu").tap(); app.buttons[language].tap() }
+            tab(4)
+            // Opening a preview's Home link preserves the Settings stack.
+            if app.segmentedControls["widget_preview_size"].exists {
+                app.navigationBars.buttons.element(boundBy: 0).tap()
+            }
+            app.buttons["settings_widget_preview"].firstMatch.tap()
+            let sizes = app.segmentedControls["widget_preview_size"]
+            XCTAssertTrue(sizes.waitForExistence(timeout: 10))
+            for index in 0..<2 {
+                sizes.buttons.element(boundBy: index).tap()
+                let previews = app.buttons.matching(identifier: "widget_preview_open")
+                XCTAssertEqual(previews.count, 2, "Both light and dark must be available")
+                let first = previews.element(boundBy: 0)
+                XCTAssertTrue(first.isHittable)
+                XCTAssertLessThanOrEqual(first.frame.maxX, app.frame.maxX)
+                XCTAssertGreaterThanOrEqual(first.frame.minX, app.frame.minX)
+                snap("next-spacing-settings-\(language)-\(index)")
+            }
+            // The preview still links to the actual next occurrence on Home.
+            app.buttons["widget_preview_open"].firstMatch.tap()
+            XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 10))
+            XCTAssertFalse(app.descendants(matching: .any)["home_remaining_ring"].firstMatch.exists)
+        }
+    }
+
+    func testApprovedProgressPreviewsAndHomeInEverySupportedLanguage() {
+        app.terminate()
+        app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = "2026-10-22T07:15:00Z"
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        // open(_:) starts a fresh clean UI-test session. Select the occurrence
+        // once, then keep each chosen language while visiting Home/Settings.
+        app.open(URL(string: "ekadashi://ekadashi?uid=ekadashi%3A2026%3A20")!)
+        let translations = [("English", "Now", "Papankusha Ekadashi"),
+            ("हिंदी", "अभी", "पापांकुशा एकादशी"), ("தமிழ்", "இப்போது", "பாபாங்குசா ஏகாதசி"),
+            ("తెలుగు", "ఇప్పుడు", "పాపాంకుశ ఏకాదశి"), ("ગુજરાતી", "હમણાં", "પાપાંકુશા એકાદશી"),
+            ("বাংলা", "এখন", "পাপাঙ্কুশা একাদশী")]
+        for (language, today, name) in translations {
+            tab(0)
+            if language != "English" {
+                element("language_menu").tap()
+                app.buttons[language].tap()
+            }
+            let ring = app.descendants(matching: .any)["home_remaining_ring"].firstMatch
+            let badge = app.staticTexts["home_day_badge"].firstMatch
+            XCTAssertTrue(ring.waitForExistence(timeout: 10), language)
+            XCTAssertEqual(badge.label, today, "The screenshot must actually use \(language)")
+            XCTAssertTrue(app.staticTexts[name].firstMatch.waitForExistence(timeout: 10), language)
+            XCTAssertLessThan(ring.frame.maxX, badge.frame.minX, language)
+            XCTAssertTrue(ring.label.contains("28%"), "The fixed Chennai clock must be used: \(language)")
+            snap("approved-home-progress-\(language)")
+            tab(4)
+            app.buttons["settings_widget_preview"].firstMatch.tap()
+            let sizes = app.segmentedControls["widget_preview_size"]
+            XCTAssertTrue(sizes.waitForExistence(timeout: 10))
+            for index in 0..<3 {
+                sizes.buttons.element(boundBy: index).tap()
+                let preview = app.buttons["widget_preview_open"].firstMatch
+                XCTAssertTrue(preview.waitForExistence(timeout: 10))
+                XCTAssertGreaterThanOrEqual(preview.frame.minX, app.windows.firstMatch.frame.minX)
+                XCTAssertLessThanOrEqual(preview.frame.maxX, app.windows.firstMatch.frame.maxX)
+                if index == 2 { XCTAssertEqual(app.images.matching(identifier: "widget_lock_icon").count, 2) }
+                snap("approved-progress-preview-\(language)-\(index)")
+            }
+            app.navigationBars.buttons.element(boundBy: 0).tap()
+        }
+    }
+
+    func testRealWidgetPreviewOpensItsDisplayedHomeCard() {
+        openWidgetPreviews()
+        XCTAssertFalse(app.staticTexts["No Ekadashi on this day"].exists)
+        let preview = app.buttons["widget_preview_open"].firstMatch
+        XCTAssertTrue(preview.waitForExistence(timeout: 10))
+        let displayed = preview.label.components(separatedBy: "\n")
+        preview.tap()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 10))
+        XCTAssertFalse(app.descendants(matching: .any)["ekadashi_details"].exists)
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label IN %@", displayed)).count > 0)
+    }
+
+    func testUpcomingPreviewShowsFiveIndividuallyTappableEkadashis() {
+        openWidgetPreviews()
+        app.segmentedControls["widget_preview_kind"].buttons["Upcoming Ekadashis"].tap()
+        let rows = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'widget_upcoming_open_'"))
+        XCTAssertEqual(rows.count, 5)
+        snap("widgets-upcoming-five-medium")
+        app.segmentedControls["widget_preview_size"].buttons["Large"].tap()
+        XCTAssertEqual(rows.count, 5)
+        snap("widgets-upcoming-five-large")
+        let displayed = rows.element(boundBy: 4).label.components(separatedBy: "\n")
+        rows.element(boundBy: 4).tap()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label IN %@", displayed)).count > 0)
+        XCTAssertFalse(app.descendants(matching: .any)["ekadashi_details"].exists)
+    }
+
+    func testSizeOptionsMatchEachWidgetAndResetUnsupportedSelection() {
+        openWidgetPreviews()
+        let kinds = app.segmentedControls["widget_preview_kind"]
+        let sizes = app.segmentedControls["widget_preview_size"]
+        XCTAssertEqual(sizes.buttons.allElementsBoundByIndex.map(\.label), ["Small", "Medium", "Lock Screen"])
+        snap("widget-ekadashi-supported-sizes")
+        kinds.buttons["Upcoming Ekadashis"].tap()
+        XCTAssertEqual(sizes.buttons.allElementsBoundByIndex.map(\.label), ["Medium", "Large"])
+        sizes.buttons["Large"].tap()
+        XCTAssertTrue(sizes.buttons["Large"].isSelected)
+        kinds.buttons["Ekadashi"].tap()
+        XCTAssertFalse(sizes.buttons["Large"].exists)
+        XCTAssertTrue(sizes.buttons["Medium"].isSelected)
+        sizes.buttons["Lock Screen"].tap()
+        XCTAssertTrue(app.images["widget_lock_icon"].firstMatch.exists)
+        snap("widget-enlarged-circular-lock")
+    }
+
+    func testLockPreviewIdentifiesEkadashiAndUsesTheSameWhitePanchangSymbol() {
+        openWidgetPreviews()
+        app.segmentedControls["widget_preview_size"].buttons["Lock Screen"].tap()
+        XCTAssertTrue(app.images["widget_lock_icon"].firstMatch.waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["widget_preview_open"].firstMatch.label.contains("Ekadashi"))
+        XCTAssertEqual(app.images.matching(identifier: "widget_lock_icon").count, 2)
+        XCTAssertFalse(app.images["widget_brand_icon"].exists)
+        snap("widgets-white-panchang-lock-preview")
+    }
+
+    func testInstalledWidgetURLReturnsFromDetailsToTheExactHomeCard() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        app.buttons["view_details"].firstMatch.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["ekadashi_details"].waitForExistence(timeout: 10))
+        app.open(URL(string: "ekadashi://ekadashi?uid=ekadashi%3A2027%3A25")!)
+        XCTAssertTrue(app.buttons["home_year_menu"].waitForExistence(timeout: 10))
+        snap("widget-url-home")
+        XCTAssertEqual(app.buttons["home_year_menu"].label.filter(\.isNumber), "2027")
+        XCTAssertEqual(app.staticTexts["home_page_indicator"].label, "25 / 25")
+        XCTAssertFalse(app.descendants(matching: .any)["ekadashi_details"].exists)
+    }
+
+    func testPreviewReturnsToHomeEvenWhenHomePreviouslyShowedDetails() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        app.buttons["view_details"].firstMatch.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["ekadashi_details"].waitForExistence(timeout: 10))
+        tab(4)
+        app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Widget Preview")).firstMatch.tap()
+        app.buttons["widget_preview_open"].firstMatch.tap()
+        XCTAssertTrue(app.buttons["home_year_menu"].waitForExistence(timeout: 10))
+        XCTAssertFalse(app.descendants(matching: .any)["ekadashi_details"].exists)
+    }
+
+    func testWidgetPreviewsFitInEverySupportedLanguage() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        for language in ["English", "हिंदी", "தமிழ்", "తెలుగు", "ગુજરાતી", "বাংলা"] {
+            tab(0)
+            // English is already selected at launch; selecting it again would
+            // match both the menu item and the underlying Home button.
+            if language != "English" {
+                element("language_menu").tap()
+                XCTAssertTrue(app.buttons[language].waitForExistence(timeout: 5))
+                app.buttons[language].tap()
+            }
+            tab(4)
+            app.buttons["settings_widget_preview"].firstMatch.tap()
+            let kinds = app.segmentedControls["widget_preview_kind"]
+            XCTAssertTrue(kinds.waitForExistence(timeout: 10))
+            let window = app.windows.firstMatch.frame
+            let preview = app.buttons["widget_preview_open"].firstMatch
+            XCTAssertTrue(preview.waitForExistence(timeout: 10))
+            XCTAssertGreaterThanOrEqual(preview.frame.minX, window.minX)
+            XCTAssertLessThanOrEqual(preview.frame.maxX, window.maxX)
+            snap("widget-single-\(language)")
+            app.segmentedControls["widget_preview_size"].buttons.element(boundBy: 2).tap()
+            snap("widget-lock-\(language)")
+            kinds.buttons.element(boundBy: 1).tap()
+            let rows = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'widget_upcoming_open_'"))
+            XCTAssertEqual(rows.count, 5, language)
+            for index in 0..<rows.count {
+                let frame = rows.element(boundBy: index).frame
+                XCTAssertGreaterThanOrEqual(frame.minX, window.minX, language)
+                XCTAssertLessThanOrEqual(frame.maxX, window.maxX, language)
+                XCTAssertGreaterThan(frame.height, 10, language)
+            }
+            snap("widget-upcoming-\(language)")
+            app.navigationBars.buttons.element(boundBy: 0).tap()
+        }
+    }
+
+    private func openWidgetPreviews() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        tab(4)
+        let entry = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Widget Preview")).firstMatch
+        XCTAssertTrue(entry.waitForExistence(timeout: 10))
+        entry.tap()
+        XCTAssertTrue(app.segmentedControls["widget_preview_kind"].waitForExistence(timeout: 10))
     }
 
     /// Selects a tab and waits until it is selected; a tap that lands while a
@@ -177,7 +1487,7 @@ final class ScreenshotTests: XCTestCase {
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 10))
         tab(1)
         XCTAssertTrue(element("calendar_ekadashi_source").waitForExistence(timeout: 5))
-        // "Smarta • Chennai (IN)" sits under the date title, within the month
+        // The selected tradition and city sit under the date title, within the month
         // header row (no extra row, so short screens keep the day in view).
         let source = element("calendar_ekadashi_source").frame
         let title = element("calendar_year_selector").frame
@@ -205,9 +1515,14 @@ final class ScreenshotTests: XCTestCase {
         mumbai.tap()
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
 
+        element("home_location").tap()
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label ==[c] %@", "Recent Searches")).firstMatch.waitForExistence(timeout: 5))
+        snap("city-picker-recent-group")
+        app.buttons["city_picker_cancel"].firstMatch.tap()
+
         app.buttons["home_share_card"].firstMatch.tap()
         XCTAssertTrue(element("share_card_preview").waitForExistence(timeout: 10))
-        XCTAssertTrue(app.buttons["share_card_share"].waitForExistence(timeout: 10))
+        XCTAssertTrue(reveal(app.buttons["share_card_share"].firstMatch), "Share remains reachable below the rendered image")
         XCTAssertFalse(app.buttons["premium_close"].exists, "the share card is free")
         snap("15-share-card")
     }
@@ -243,6 +1558,10 @@ final class ScreenshotTests: XCTestCase {
             XCTAssertTrue(app.datePickers.firstMatch.waitForExistence(timeout: 5), "\(page) opens the full calendar")
             snap("16-panchang-calendar-\(page)")
             app.buttons["Done"].firstMatch.tap()
+            app.buttons[picker].firstMatch.tap()
+            XCTAssertTrue(app.datePickers.firstMatch.waitForExistence(timeout: 5))
+            app.buttons["Today"].firstMatch.tap()
+            XCTAssertFalse(app.datePickers.firstMatch.exists)
         }
     }
 
@@ -364,6 +1683,10 @@ final class ScreenshotTests: XCTestCase {
         element("event_reminder_save").tap()
         XCTAssertTrue(element("event_reminder_row_calendar:custom").waitForExistence(timeout: 10))
         snap("13-notifications")
+        element("event_reminder_row_calendar:custom").tap()
+        XCTAssertTrue(element("event_reminder_save").waitForExistence(timeout: 5))
+        app.buttons["Cancel"].firstMatch.tap()
+        XCTAssertTrue(element("event_reminder_row_calendar:custom").waitForExistence(timeout: 5))
     }
 
     /// A notification shown while the app is open must not crash it (the
@@ -442,9 +1765,15 @@ final class ScreenshotTests: XCTestCase {
                 .press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.4)))
         }
         XCTAssertTrue(master.waitForExistence(timeout: 5))
-        let reminder = element("notify_toggle_notify_2day")
-        XCTAssertTrue(reminder.waitForExistence(timeout: 5))
         if (master.value as? String) == "1" { master.switches.firstMatch.exists ? master.switches.firstMatch.tap() : master.tap() }
+        let reminder = element("notify_toggle_notify_2day")
+        // The native List creates the next section lazily. Expose the actual
+        // reminder row before asserting its disabled state on short screens.
+        for _ in 0..<6 where !(reminder.exists && reminder.isHittable) {
+            app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7))
+                .press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)))
+        }
+        XCTAssertTrue(reminder.waitForExistence(timeout: 5))
         let off = expectation(for: NSPredicate(format: "value == '0' AND isEnabled == false"), evaluatedWith: reminder)
         XCTAssertEqual(XCTWaiter.wait(for: [off], timeout: 10), .completed, "off and greyed out")
         snap("18-reminders-off")

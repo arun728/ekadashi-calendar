@@ -29,6 +29,7 @@ class TimeChangeReceiver : BroadcastReceiver() {
             Intent.ACTION_MY_PACKAGE_REPLACED -> {
                 Log.i(TAG, "Invalidating and refreshing widget on system event: $action")
                 WidgetRefreshManager.refreshAllWidgets(context)
+                com.applausestudios.ekadashi_calendar.widget.worker.WidgetRefreshWorker.scheduleNextTransition(context)
             }
             else -> {
                 Log.d(TAG, "Unhandled broadcast action: $action")

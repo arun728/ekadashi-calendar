@@ -4,9 +4,9 @@
     <string name="widget_a_title">એકાદશી</string>
     <string name="widget_b_title">આજે એકાદશી</string>
     <string name="widget_c_title">આગામી એકાદશીઓ</string>
-    <string name="widget_a_description">આજની એકાદશી અને તમારા ઉપવાસની પ્રગતિ, અથવા આગામી એકાદશી અને બાકી દિવસો.</string>
-    <string name="widget_b_description">આજની એકાદશી અને તમારા ઉપવાસની પ્રગતિ, અથવા આગામી એકાદશી અને બાકી દિવસો.</string>
-    <string name="widget_c_description">આગામી એકાદશીઓ એક નજરમાં.</string>
+    <string name="widget_a_description">વર્તમાન એકાદશી, ઉપવાસની પ્રગતિ અને પારણું, અથવા આગામી એકાદશી અને તેના સમય.</string>
+    <string name="widget_b_description">વર્તમાન એકાદશી, ઉપવાસની પ્રગતિ અને પારણું, અથવા આગામી એકાદશી અને તેના સમય.</string>
+    <string name="widget_c_description">આગામી પાંચ એકાદશીઓ. એકાદશીનું હોમ કાર્ડ ખોલવા તેના પર ટૅપ કરો.</string>
     <string name="widget_title">એકાદશી કેલેન્ડર</string>
     <string name="widget_next_ekadashi">આગામી એકાદશી</string>
     <string name="widget_fasting_active">ઉપવાસ ચાલુ</string>
@@ -45,4 +45,10 @@
     <string name="widget_am">પૂર્વાહ્ન</string>
     <string name="widget_pm">અપરાહ્ન</string>
     <string name="widget_seed_location">ભારત (ભારતીય સમય)</string>
+    <string name="widget_today_is_ekadashi">આજે એકાદશી છે</string>
+    <string name="widget_tomorrow">આવતીકાલે</string>
+    <string name="widget_days_to_go">{value0} દિવસ બાકી</string>
+    <string name="widget_remaining">બાકી</string>
+    <string name="widget_no_next">ઉપલબ્ધ સમયપત્રકમાં આગામી એકાદશી નથી</string>
+    <string name="widget_parana_short">પારણા</string>
 </resources>

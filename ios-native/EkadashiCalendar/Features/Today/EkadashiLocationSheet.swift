@@ -61,6 +61,7 @@ struct CityPickerSheet<Extra: View>: View {
                 } footer: {
                     Text(footer)
                 }
+                .listRowBackground(CityPickerRowSurface())
                 Section {
                     TextField(model.t("panchang_search_cities"), text: $search)
                         .textInputAutocapitalization(.words)
@@ -76,17 +77,20 @@ struct CityPickerSheet<Extra: View>: View {
                     .accessibilityIdentifier("ekadashi_location_current_button")
                     if let message { Text(message).font(.caption).foregroundStyle(.secondary) }
                 }
+                .listRowBackground(CityPickerRowSurface())
                 // No identifiers on these Sections: they would replace the
                 // rows' ekadashi_city_<id> identifiers.
                 if CitySearchIndex.query(search) == nil {
                     let list = shortlist
                     if !list.recent.isEmpty {
-                        Section(model.t("recent_searches")) { ForEach(list.recent, id: \.self) { row($0) } }
+                        Section(model.t("recent_searches")) { ForEach(list.recent, id: \.self) { row($0) } }.listRowBackground(CityPickerRowSurface())
                     }
-                    Section(model.t("home_popular_cities")) { ForEach(list.popular, id: \.self) { row($0) } }
+                    Section(model.t("home_popular_cities")) { ForEach(list.popular, id: \.self) { row($0) } }.listRowBackground(CityPickerRowSurface())
                 }
-                extra()
+                extra().listRowBackground(CityPickerRowSurface())
             }
+            .formStyle(.grouped)
+            .listStyle(.insetGrouped)
             .scrollContentBackground(.hidden)
             // Prepares the names in the app language while the sheet opens.
             .task { await Self.index(model.language) }
@@ -95,13 +99,13 @@ struct CityPickerSheet<Extra: View>: View {
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
+                AppToolbarItem(placement: .cancellationAction) {
                     // Same key as Android's city_picker_cancel.
                     Button(model.t("cancel")) { dismiss() }.accessibilityIdentifier("city_picker_cancel")
                 }
             }
         }
-        .presentationBackground(.thinMaterial)
+        .glassSheetBackground()
     }
 
     private func row(_ city: PanchangCity) -> some View {

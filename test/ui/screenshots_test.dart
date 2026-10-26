@@ -159,9 +159,11 @@ void main() {
               .first,
         );
 
-        await tester.ensureVisible(
-          find.widgetWithText(SwitchListTile, language.translate('dark_mode')),
+        await Scrollable.ensureVisible(
+          tester.element(find.byKey(const Key('settings_dark_mode'))),
+          alignment: .5,
         );
+        await tester.pumpAndSettle();
         await tester.tap(
           find.widgetWithText(SwitchListTile, language.translate('dark_mode')),
         );
@@ -194,7 +196,7 @@ void main() {
         await tester.pumpAndSettle();
         expect(find.text(language.translate('significance')), findsOneWidget);
         await capture('details');
-        await tester.tap(find.byType(BackButton));
+        await tester.tap(find.byIcon(AppIcons.back));
         await tester.pumpAndSettle();
         expect(find.byKey(const Key('glass_tab_1')), findsOneWidget);
       },

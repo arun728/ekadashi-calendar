@@ -51,13 +51,15 @@ class WidgetSyncManager {
         }[timezone] ??
         timezone;
     final local = tz.TZDateTime.from(clock, tz.getLocation(zone));
-    final events = List<EkadashiDate>.of(ekadashiList)
-      ..sort((a, b) => a.date.compareTo(b.date));
-    final future = events.where((e) {
-      final end = DateTime.tryParse(e.paranaEndIso);
-      return end != null && clock.isBefore(end);
-    }).toList();
-    final next = future.isEmpty ? null : future.first;
+    final events = {
+      for (final event in ekadashiList) event.occurrenceUid: event,
+    }.values.toList()..sort((a, b) => a.date.compareTo(b.date));
+    final remaining = events
+        .where(
+          (e) => DateTime.tryParse(e.paranaEndIso)?.isAfter(clock) ?? false,
+        )
+        .toList();
+    final next = remaining.firstOrNull;
     final today = events
         .where(
           (e) =>
@@ -84,7 +86,7 @@ class WidgetSyncManager {
         'localizedName': e.name,
         'date': DateFormat('yyyy-MM-dd').format(e.date),
         'dateISO': DateFormat('yyyy-MM-dd').format(e.date),
-        'localizedDate': DateFormat('d MMM yyyy', locale).format(e.date),
+        'localizedDate': AppStrings.fullDate(e.date, locale),
         'paksha': e.paksha,
         'month': e.month,
         'fastingStartUTC': fs,
@@ -100,6 +102,9 @@ class WidgetSyncManager {
     final strings = <String, String>{};
     const keys = {
       'title': 'app_title',
+      'remaining': 'widget_remaining',
+      'parana': 'panchang_parana',
+      'no_next': 'widget_no_next',
       'next_ekadashi': 'next_ekadashi',
       'fasting_active': 'fasting_active',
       'parana_available': 'parana_available',
@@ -137,7 +142,14 @@ class WidgetSyncManager {
       (key, value) =>
           strings['widget.$key'] = AppStrings.translate(value, language),
     );
-    final upcoming = future.skip(1).map(item).toList();
+    final upcoming = events
+        .where(
+          (e) =>
+              (DateTime.tryParse(e.fastingStartIso)?.isAfter(clock) ?? false),
+        )
+        .take(5)
+        .map(item)
+        .toList();
     return {
       'metadata': {
         'schemaVersion': schemaVersion,
@@ -165,6 +177,7 @@ class WidgetSyncManager {
         'paranaStartUTC': toUtcIsoString(today?.paranaStartIso),
         'paranaEndUTC': toUtcIsoString(today?.paranaEndIso),
       },
+      'schedule': events.map(item).toList(),
       'upcoming': upcoming,
       'upcomingEkadashis': upcoming,
       'localizedStrings': strings,

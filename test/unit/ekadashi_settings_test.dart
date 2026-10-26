@@ -65,18 +65,18 @@ void main() {
     expect(first.city, EkadashiSettings.defaultCity);
     expect(first.city.label, 'Chennai (IN)');
     expect(first.isManual, isFalse);
-    expect(first.tradition, EkadashiTradition.smarta);
+    expect(first.tradition, EkadashiTradition.gaudiya);
     expect(first.years, [2026, 2027]);
 
-    await first.setTradition(EkadashiTradition.gaudiya);
+    await first.setTradition(EkadashiTradition.smarta);
     await first.setYear(2027);
     await first.setYear(2031); // not enabled: ignored
     expect(first.year, 2027);
-    expect(first.traditionNameKey, 'tradition_vaishnava');
+    expect(first.traditionNameKey, 'tradition_smarta');
 
     final again = EkadashiSettings();
     await again.load();
-    expect(again.tradition, EkadashiTradition.gaudiya);
+    expect(again.tradition, EkadashiTradition.smarta);
     expect(again.year, 2027);
   });
 

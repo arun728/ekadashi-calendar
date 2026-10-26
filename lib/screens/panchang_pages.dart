@@ -1,4 +1,3 @@
-import 'dart:isolate';
 import 'dart:math' as math;
 
 import 'package:flutter/cupertino.dart';
@@ -10,6 +9,7 @@ import '../services/ekadashi_service.dart';
 import '../services/language_service.dart';
 import '../services/panchang/calculated_ekadashi.dart';
 import '../services/panchang/observance_calendar_service.dart';
+import '../services/panchang/panchang_data_service.dart';
 import '../services/panchang/panchang_city.dart';
 import '../services/panchang/panchang_key_days.dart';
 import '../services/panchang/panchang_models.dart';
@@ -388,21 +388,15 @@ class _PanchangKeyDaysViewState extends State<PanchangKeyDaysView> {
 
   Future<void> _load() async {
     final key =
-        '${widget.month.year}|${widget.city.id}|${widget.city.latitude}|${widget.city.longitude}|${widget.city.timeZoneId}';
+        '${widget.month.year}-${widget.month.month}|${widget.city.id}|${widget.city.latitude}|${widget.city.longitude}|${widget.city.timeZoneId}';
     if (key == _loadedKey) return;
     _loadedKey = key;
-    final cached = ObservanceCalendarService.instance.cached(
-      widget.month.year,
-      widget.city,
-    );
+    final month = widget.month, city = widget.city;
+    final cached = ObservanceCalendarService.instance.cachedMonth(month, city);
     setState(() => _observances = cached);
     final catalog = await SearchCatalog.load();
     final observances =
-        cached ??
-        await ObservanceCalendarService.instance.year(
-          widget.month.year,
-          widget.city,
-        );
+        cached ?? await ObservanceCalendarService.instance.month(month, city);
     if (!mounted || key != _loadedKey) return;
     setState(() {
       _catalog = catalog;
@@ -1340,24 +1334,6 @@ class PanchangRashiView extends StatelessWidget {
 
 // MARK: Ekadashi
 
-/// The month's calculated fasts, off the UI thread in the app. A top-level
-/// function on purpose: a closure made inside a State method also captures
-/// the State (and its BuildContext), which cannot be sent to another
-/// isolate, so every month failed with "Could not calculate this month."
-Future<List<CalculatedEkadashi>> _calculateEkadashiMonth(
-  DateTime month,
-  PanchangCity city,
-  EkadashiTradition tradition,
-) {
-  final start = DateTime.utc(month.year, month.month, 1);
-  final days = DateTime.utc(month.year, month.month + 1, 0).day;
-  List<CalculatedEkadashi> calculate() =>
-      const CalculatedEkadashiEngine().calculate(start, days, city, tradition);
-  return ObservanceCalendarService.calculateInline
-      ? Future.value(calculate())
-      : Isolate.run(calculate);
-}
-
 /// Calculated Smarta or Gaudiya/ISKCON fasts for the month and location, in
 /// the app language. A preview: the published schedule still drives the
 /// calendar, reminders and Journey.
@@ -1410,7 +1386,11 @@ class _PanchangEkadashiViewState extends State<PanchangEkadashiView> {
       _failed = false;
     });
     try {
-      final result = await _calculateEkadashiMonth(month, city, tradition);
+      final result = await PanchangDataService.instance.fasts(
+        month,
+        city,
+        tradition,
+      );
       if (!mounted || key != _loadedKey) return;
       setState(() => _fasts = result);
     } catch (_) {

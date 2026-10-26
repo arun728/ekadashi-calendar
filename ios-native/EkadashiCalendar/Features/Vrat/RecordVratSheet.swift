@@ -83,11 +83,11 @@ struct RecordVratSheet: View {
                 .padding(20)
             }
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
+                AppToolbarItem(placement: .cancellationAction) {
                     Button(model.t("cancel")) { dismiss() }
                 }
                 if existing != nil {
-                    ToolbarItem(placement: .destructiveAction) {
+                    AppToolbarItem(placement: .destructiveAction) {
                         Button(role: .destructive) {
                             confirmDelete = true
                         } label: {
@@ -105,7 +105,7 @@ struct RecordVratSheet: View {
             }
         }
         .presentationDetents([.large])
-        .presentationBackground(.thinMaterial)
+        .glassSheetBackground()
         .onAppear(perform: load)
         // A sheet cannot be presented from the root while this one is up,
         // so the paywall opens from here.

@@ -126,8 +126,8 @@ void main() {
 
       // Verify upcomingEkadashis
       final upcoming = payload['upcomingEkadashis'] as List;
-      expect(upcoming.length, 1);
-      expect(upcoming.first['name'], 'Mokshada Ekadashi');
+      expect(upcoming.length, 2);
+      expect(upcoming.first['name'], 'Utpanna Ekadashi');
 
       // Verify localizedStrings bundle
       final localized = payload['localizedStrings'] as Map<String, dynamic>;
