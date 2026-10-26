@@ -142,11 +142,21 @@ void main() {
     await tester.fling(find.text('Cancel'), const Offset(0, 650), 1200);
     await tester.pumpAndSettle();
     expect(find.byType(ShareCardScreen), findsNothing);
+    await tester.tap(find.text('Open share'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+    expect(find.byType(ShareCardScreen), findsNothing);
+    expect(find.text('Open share'), findsOneWidget);
   });
 
-  testWidgets('Save is left and Share is right in every language', (tester) async {
+  testWidgets('Save is left and Share is right in every language', (
+    tester,
+  ) async {
     await showCard(tester);
-    final lang = tester.element(find.byType(ShareCardScreen)).read<LanguageService>();
+    final lang = tester
+        .element(find.byType(ShareCardScreen))
+        .read<LanguageService>();
     for (final code in ['en', 'hi', 'ta', 'te', 'gu', 'bn']) {
       await lang.changeLanguage(code);
       await tester.pumpAndSettle();

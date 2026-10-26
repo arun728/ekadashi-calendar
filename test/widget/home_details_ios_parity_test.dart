@@ -353,6 +353,40 @@ void main() {
       );
     });
 
+    testWidgets(
+      'Home record action cancels, saves a past fast and shows its achievement',
+      (tester) async {
+        await pumpHome(tester);
+        await tester.tap(find.byKey(const Key('home_previous')));
+        await tester.pumpAndSettle();
+        final (list, index) = await homeCards(tester);
+        final event = list[index];
+        final tracker = tester
+            .element(find.byKey(const Key('home_record_vrat')))
+            .read<VratTrackerService>();
+        await tester.tap(find.byKey(const Key('home_record_vrat')));
+        await tester.pumpAndSettle();
+        expect(find.byKey(const Key('vrat_record_form')), findsOneWidget);
+        await tester.tap(find.byKey(const Key('vrat_record_cancel')));
+        await tester.pumpAndSettle();
+        expect(tracker.getRecordByUid(event.occurrenceUid), isNull);
+        await tester.tap(find.byKey(const Key('home_record_vrat')));
+        await tester.pumpAndSettle();
+        await tester.ensureVisible(find.byKey(const Key('vrat_record_save')));
+        await tester.tap(find.byKey(const Key('vrat_record_save')));
+        await tester.pumpAndSettle();
+        expect(
+          tracker.getRecordByUid(event.occurrenceUid)?.status,
+          ObservanceStatus.observed,
+        );
+        expect(find.byKey(const Key('achievement_unlock_ok')), findsOneWidget);
+        await tester.tap(find.byKey(const Key('achievement_unlock_ok')));
+        await tester.pumpAndSettle();
+        expect(find.byKey(const Key('vrat_record_form')), findsNothing);
+        expect(tester.takeException(), isNull);
+      },
+    );
+
     testWidgets('another city: the menus stay, the cards dim and a progress '
         'view shows while it is calculated', (tester) async {
       await pumpHome(tester);

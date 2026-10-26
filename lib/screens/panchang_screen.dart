@@ -704,7 +704,10 @@ class _PanchangPushedPageState extends State<PanchangPushedPage> {
                 alignment: AlignmentDirectional.centerStart,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: [const BackButton(), ?today],
+                  children: [
+                    const SizedBox(width: 68, child: LeadingBarIcon()),
+                    ?today,
+                  ],
                 ),
               ),
               title: Text(

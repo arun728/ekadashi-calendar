@@ -124,11 +124,12 @@ public struct PremiumState: Equatable, Sendable {
         return plan != currentPlan || subscriptionCancelled
     }
 
-    /// Yearly first (best value), then the others that can be bought.
+    /// Suggest an upgrade after confirmed ownership; retain owned Lifetime.
     public func defaultPlan(available: [PremiumPlanID], pending: Bool) -> PremiumPlanID? {
-        for plan in [PremiumPlanID.yearly, .monthly, .lifetime] where available.contains(plan) && canBuy(plan, pending: pending) {
-            return plan
-        }
+        if lifetime, available.contains(.lifetime) { return .lifetime }
+        let order: [PremiumPlanID] = currentPlan == .yearly
+            ? [.lifetime, .monthly, .yearly] : [.yearly, .lifetime, .monthly]
+        for plan in order where available.contains(plan) && canBuy(plan, pending: pending) { return plan }
         return available.first
     }
 }

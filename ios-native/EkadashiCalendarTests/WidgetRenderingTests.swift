@@ -9,6 +9,56 @@ import EkadashiCore
 /// the shared selection, percentage, formatter, timeline and link behaviour.
 @MainActor
 final class WidgetRenderingTests: XCTestCase {
+    func testCityRowSurfacesAndDefaultToastRenderAcrossGlassModes() throws {
+        for enabled in [false, true] {
+            let row = CityPickerRowSurface().frame(width: 300, height: 48)
+                .environment(\.glassLookEnabled, enabled)
+            XCTAssertNotNil(ImageRenderer(content: row).uiImage)
+            let overlay = ToastOverlay(message: .constant(ToastMessage(text: "Feedback")))
+            let view = Color.clear.frame(width: 390, height: 400).modifier(overlay)
+                .environment(\.glassLookEnabled, enabled)
+            XCTAssertNotNil(ImageRenderer(content: view).uiImage)
+        }
+    }
+
+    func testEditorAndGooglePickerToolbarsRenderInBothGlassModes() async throws {
+        let model = AppModel(store: InMemoryKeyValueStore(["has_launched": true, "language_code": "en"]))
+        model.reload(); await model.waitForLoad()
+        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+        let previous = scene.keyWindow
+        let window = UIWindow(windowScene: scene)
+        window.frame = CGRect(x: 0, y: 0, width: 390, height: 844)
+        defer { window.isHidden = true; previous?.makeKeyAndVisible() }
+        let request = GooglePickerRequest(calendars: [GoogleCalendarInfo(id: "test-primary", summary: "Test calendar", primary: true)], saved: [], email: nil)
+        let views: [(String, AnyView)] = [
+            ("google-picker", AnyView(GoogleCalendarPickerView(request: request))),
+            ("entry-editor", AnyView(EntryEditorView(request: EntryEditorRequest(day: CivilDate(2026, 10, 26), existing: nil)))),
+            ("reminder-editor", AnyView(NavigationStack { EventReminderEditor(original: nil) }))
+        ]
+        for enabled in [false, true] {
+            for (name, view) in views {
+                let host = UIHostingController(rootView: view.environment(model).environment(\.glassLookEnabled, enabled))
+                window.rootViewController = host
+                window.makeKeyAndVisible()
+                host.view.setNeedsLayout(); host.view.layoutIfNeeded()
+                try await Task.sleep(for: .milliseconds(250))
+                host.view.layoutIfNeeded()
+                func navigationBars(_ view: UIView) -> [UINavigationBar] {
+                    (view as? UINavigationBar).map { [$0] } ?? view.subviews.flatMap(navigationBars)
+                }
+                let bar = try XCTUnwrap(navigationBars(host.view).first, "\(name) must have its navigation toolbar")
+                XCTAssertGreaterThanOrEqual(bar.frame.height, 44)
+                let image = UIGraphicsImageRenderer(bounds: host.view.bounds).image { _ in
+                    host.view.drawHierarchy(in: host.view.bounds, afterScreenUpdates: true)
+                }
+                let attachment = XCTAttachment(image: image)
+                attachment.name = "\(name)-toolbar-glass-\(enabled)"
+                attachment.lifetime = .keepAlways
+                add(attachment)
+            }
+        }
+    }
+
     func testAllLifecycleStatesFitEveryWidgetFamilyAndLargeHomeTextInEveryLanguage() throws {
         let repository = try CalendarRepository.bundled()
         for language in Localizer.languages {

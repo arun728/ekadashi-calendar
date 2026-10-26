@@ -304,6 +304,10 @@ final class ScreenshotTests: XCTestCase {
             if product == "lifetime" { app.alerts.buttons["Buy lifetime"].tap() }
             XCUIDevice.shared.press(.home)
             app.activate()
+            let owned = app.buttons["premium_plan_\(product)"].firstMatch
+            // Lifetime is already the selected suggestion after Yearly. Wait
+            // for verified ownership, not only the pre-existing selection.
+            await fulfillment(of: [expectation(for: NSPredicate(format: "label CONTAINS %@", "Your current plan"), evaluatedWith: owned)], timeout: 60)
             let tile = app.buttons["premium_plan_\(next)"].firstMatch
             await fulfillment(of: [expectation(for: NSPredicate(format: "exists == true AND selected == true"), evaluatedWith: tile)], timeout: 60)
             XCTAssertTrue(tile.isSelected, next)
@@ -363,9 +367,12 @@ final class ScreenshotTests: XCTestCase {
         app.buttons["premium_buy"].firstMatch.tap()
         XCUIDevice.shared.press(.home)
         app.activate()
+        await fulfillment(of: [expectation(for: NSPredicate(format: "label CONTAINS %@", "Your current plan"), evaluatedWith: product)], timeout: 60)
         app.buttons["premium_close"].firstMatch.tap()
         let manage = app.buttons["Manage"].firstMatch
         XCTAssertTrue(manage.waitForExistence(timeout: 30))
+        for _ in 0..<5 where !manage.isHittable { app.swipeUp() }
+        XCTAssertTrue(manage.isHittable)
         manage.tap()
         // Apple's remote controller does not expose its labels to XCUITest
         // on every OS. Read the actual visible screenshot with Vision rather

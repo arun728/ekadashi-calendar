@@ -25,7 +25,6 @@ extension View {
     func secondaryActionStyle() -> some View { modifier(GlassActionAppearance(prominent: false)) }
     func glassSheetBackground() -> some View { modifier(GlassSheetAppearance()) }
     func glassListRows() -> some View { modifier(GlassListAppearance()) }
-    func glassToolbarButton() -> some View { modifier(GlassToolbarAppearance()) }
 }
 
 /// Liquid Glass on iOS 26 (Apple's `glassEffect`), system materials before.
@@ -114,23 +113,9 @@ extension View {
 struct GlassGroup<Content: View>: View {
     var spacing: CGFloat = 12
     @ViewBuilder var content: () -> Content
-    @Environment(\.glassLookEnabled) private var enabled
-    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
-
     var body: some View {
-        if GlassLookPolicy.isActive(preference: enabled, reduceTransparency: reduceTransparency) {
-            content()
-        } else {
-        #if compiler(>=6.2)
-        if #available(iOS 26.0, *) {
-            GlassEffectContainer(spacing: spacing) { content() }
-        } else {
-            content()
-        }
-        #else
-        content()
-        #endif
-        }
+        if #available(iOS 26.0, *) { GlassEffectContainer(spacing: spacing) { content() } }
+        else { content() }
     }
 }
 
@@ -295,32 +280,21 @@ private struct GlassCapsuleAppearance: ViewModifier {
 
 private struct GlassActionAppearance: ViewModifier {
     let prominent: Bool
-    @Environment(\.glassLookEnabled) private var enabled
-    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
-    func body(content: Content) -> some View {
-        if GlassLookPolicy.isActive(preference: enabled, reduceTransparency: reduceTransparency) {
-            content.buttonStyle(ClearGlassActionStyle(prominent: prominent))
-        } else if prominent {
-            content.legacyPrimaryActionStyle()
-        } else {
-            content.legacySecondaryActionStyle()
-        }
-    }
+    func body(content: Content) -> some View { content.buttonStyle(StableGlassActionStyle(prominent: prominent)) }
 }
 
-private struct ClearGlassActionStyle: ButtonStyle {
+/// One label layout in both modes: only the capsule surface changes.
+private struct StableGlassActionStyle: ButtonStyle {
     let prominent: Bool
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.isEnabled) private var enabled
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .padding(.horizontal, 12)
-            .padding(.vertical, 7)
+            .padding(.horizontal, 12).padding(.vertical, 7)
             .foregroundStyle(prominent ? AnyShapeStyle(Color.white) : AnyShapeStyle(.tint))
-            .background {
-                if prominent { Capsule().fill(Theme.teal.opacity(0.95)) }
-            }
-            .background(ClearGlassSurface(shape: Capsule()))
+            .background { if prominent { Capsule().fill(Theme.teal.opacity(0.95)) } }
+            .glassCapsule(tint: prominent ? Theme.teal : nil)
+            .contentShape(Capsule())
             .opacity(enabled ? 1 : 0.5)
             .scaleEffect(!reduceMotion && configuration.isPressed ? 0.98 : 1)
             .animation(reduceMotion ? nil : .easeOut(duration: 0.14), value: configuration.isPressed)
@@ -347,14 +321,43 @@ private struct GlassListAppearance: ViewModifier {
     }
 }
 
-private struct GlassToolbarAppearance: ViewModifier {
+/// Fixed control layout, one enclosure per group, and a mode-dependent surface.
+struct AppToolbarItem<Content: View>: ToolbarContent {
+    let placement: ToolbarItemPlacement
+    var compact = false
+    @ViewBuilder var content: () -> Content
+    @ToolbarContentBuilder var body: some ToolbarContent {
+        if #available(iOS 26.0, *) { item.sharedBackgroundVisibility(.hidden) }
+        else { item }
+    }
+    private var item: some ToolbarContent {
+        ToolbarItem(placement: placement) {
+            HStack(spacing: 0) { content() }
+                .font(.body).imageScale(.large)
+                .buttonStyle(GlassToolbarControlStyle(compact: compact))
+                .foregroundStyle(Theme.teal).frame(minHeight: 44)
+                .fixedSize(horizontal: true, vertical: false).glassCapsule()
+        }
+    }
+}
+
+private struct GlassToolbarControlStyle: ButtonStyle {
+    let compact: Bool
+    @Environment(\.isEnabled) private var enabled
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label.fixedSize(horizontal: true, vertical: false).padding(.horizontal, compact ? 0 : 12)
+            .frame(minWidth: 44, minHeight: 44).contentShape(Rectangle())
+            .opacity(enabled ? 1 : 0.4)
+    }
+}
+
+/// Keep Form's category groups visible Off, with clear surfaces On.
+struct CityPickerRowSurface: View {
     @Environment(\.glassLookEnabled) private var enabled
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
-    func body(content: Content) -> some View {
+    var body: some View {
         if GlassLookPolicy.isActive(preference: enabled, reduceTransparency: reduceTransparency) {
-            content.buttonStyle(.plain).foregroundStyle(Theme.teal)
-                .frame(width: 40, height: 40)
-                .background(ClearGlassSurface(shape: Circle()))
-        } else { content }
+            ClearGlassSurface(shape: Rectangle(), border: false)
+        } else { Color(uiColor: .secondarySystemGroupedBackground) }
     }
 }

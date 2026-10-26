@@ -1,3 +1,4 @@
+import 'package:ekadashi_calendar/widgets/app_icons.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
@@ -96,7 +97,7 @@ void main() {
         await tester.tap(find.text(language.translate('widget_size_large')));
         await frames(tester);
         await binding.takeScreenshot('android-widget-$code-upcoming-large');
-        await tester.tap(find.byType(BackButton));
+        await tester.tap(find.byIcon(AppIcons.back));
         await frames(tester);
       }
       await language.changeLanguage('en');

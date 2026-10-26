@@ -38,7 +38,7 @@ struct GoogleCalendarPickerView: View {
             .navigationTitle(model.t("choose_calendars"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
+                AppToolbarItem(placement: .cancellationAction) {
                     Button(model.t("cancel")) { model.pickerFinished(.cancelled) }
                 }
             }

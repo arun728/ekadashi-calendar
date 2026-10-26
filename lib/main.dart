@@ -25,6 +25,7 @@ import 'screens/panchang_screen.dart';
 import 'l10n/generated/app_localizations.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show RenderFlex;
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -1251,12 +1252,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       leading: leading,
       actions: slots?.actions(context) ?? const [],
     );
-    return _currentIndex == 1
-        ? PreferredSize(
-            preferredSize: bar.preferredSize,
-            child: GlassLook(enabled: false, child: bar),
-          )
-        : bar;
+    return bar;
   }
 
   Widget _buildBody(LanguageService lang, Color tealColor) {
@@ -1654,8 +1650,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             ),
           ),
           const SizedBox(height: 16),
-          // View Details (prominent teal capsule) and the Vrat record button
-          // (glass capsule), as the iOS GlassGroup.
+          // Independent action enclosures, matching iOS; pressed ink stays
+          // inside each button's capsule/circle.
           Row(
             children: [
               Expanded(
@@ -1707,7 +1703,12 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             backgroundColor: WidgetStatePropertyAll(
               IosColors.teal.withValues(alpha: .10),
             ),
-            side: const WidgetStatePropertyAll(BorderSide.none),
+            side: WidgetStatePropertyAll(
+              BorderSide(
+                color: IosColors.teal.withValues(alpha: .28),
+                width: .7,
+              ),
+            ),
           ),
           child: const Icon(AppIcons.share, color: IosColors.teal),
         ),
@@ -1745,48 +1746,57 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       ObservanceStatus.missed => Icon(AppIcons.statusMissed, color: color),
       _ => Icon(AppIcons.cardUnrecorded, color: color),
     };
-    return OutlinedButton(
-      key: const Key('home_record_vrat'),
-      onPressed: () async {
-        if (!open) {
-          showToast(context, lang.translate('journey_record_after_parana'));
-          return;
-        }
-        final unlocks = await RecordVratDialog.show(
-          context,
-          ekadashi: ekadashi,
-          allOccurrences: _allEkadashis,
-          currentTimezone: _currentTimezone,
-        );
-        if (unlocks != null && unlocks.isNotEmpty && mounted) {
-          for (final u in unlocks) {
-            await AchievementUnlockDialog.show(context, u);
+    return Builder(
+      builder: (buttonContext) => OutlinedButton(
+        key: const Key('home_record_vrat'),
+        onPressed: () async {
+          if (!open) {
+            showToast(
+              context,
+              lang.translate('journey_record_after_parana'),
+              above: buttonContext
+                  .findAncestorRenderObjectOfType<RenderFlex>()
+                  ?.localToGlobal(Offset.zero)
+                  .dy,
+            );
+            return;
           }
-        }
-      },
-      // A round glass button, neutral grey while recording is closed.
-      style: IosButtons.glass(context).copyWith(
-        shape: const WidgetStatePropertyAll(CircleBorder()),
-        padding: const WidgetStatePropertyAll(EdgeInsets.zero),
-        fixedSize: const WidgetStatePropertyAll(Size.square(48)),
-        minimumSize: const WidgetStatePropertyAll(Size.square(48)),
-        backgroundColor: WidgetStateProperty.resolveWith(
-          (states) => !open
-              ? IosColors.gray(context).withValues(alpha: .18)
-              : IosColors.teal.withValues(alpha: .10),
-        ),
-        side: WidgetStateProperty.resolveWith(
-          (states) => BorderSide(
-            color: (!open ? IosColors.gray(context) : IosColors.teal)
-                .withValues(alpha: .28),
-            width: .7,
+          final unlocks = await RecordVratDialog.show(
+            context,
+            ekadashi: ekadashi,
+            allOccurrences: _allEkadashis,
+            currentTimezone: _currentTimezone,
+          );
+          if (unlocks != null && unlocks.isNotEmpty && mounted) {
+            for (final u in unlocks) {
+              await AchievementUnlockDialog.show(context, u);
+            }
+          }
+        },
+        // A round glass button, neutral grey while recording is closed.
+        style: IosButtons.glass(context).copyWith(
+          shape: const WidgetStatePropertyAll(CircleBorder()),
+          padding: const WidgetStatePropertyAll(EdgeInsets.zero),
+          fixedSize: const WidgetStatePropertyAll(Size.square(48)),
+          minimumSize: const WidgetStatePropertyAll(Size.square(48)),
+          backgroundColor: WidgetStateProperty.resolveWith(
+            (states) => !open
+                ? IosColors.gray(context).withValues(alpha: .18)
+                : IosColors.teal.withValues(alpha: .10),
+          ),
+          side: WidgetStateProperty.resolveWith(
+            (states) => BorderSide(
+              color: (!open ? IosColors.gray(context) : IosColors.teal)
+                  .withValues(alpha: .28),
+              width: .7,
+            ),
           ),
         ),
-      ),
-      child: Semantics(
-        label: lang.translate(record == null ? 'record_vrat' : 'edit_record'),
-        hint: open ? null : lang.translate('journey_record_after_parana'),
-        child: SizedBox(height: 24, child: Center(child: icon)),
+        child: Semantics(
+          label: lang.translate(record == null ? 'record_vrat' : 'edit_record'),
+          hint: open ? null : lang.translate('journey_record_after_parana'),
+          child: SizedBox(height: 24, child: Center(child: icon)),
+        ),
       ),
     );
   }

@@ -85,12 +85,15 @@ struct CalendarView: View {
             .padding(.bottom, 100)
         }
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
+            AppToolbarItem(placement: .topBarLeading) {
                 Button(model.t("today")) { focus(model.today) }
                     .disabled(selected == model.today && month == model.today.firstOfMonth)
                     .accessibilityIdentifier("calendar_today")
             }
-            ToolbarItemGroup(placement: .topBarTrailing) {
+            AppToolbarItem(placement: .topBarTrailing, compact: true) {
+                Button { model.open(.search) } label: { Image(systemName: AppSymbol.search) }
+                    .accessibilityLabel(model.t("search"))
+                    .accessibilityIdentifier("open_global_search")
                 Button { editing = EntryEditorRequest(day: selected, existing: nil) } label: { Image(systemName: AppSymbol.add) }
                     .disabled(loaded.failed)
                     .accessibilityLabel(model.t("add_entry"))
@@ -128,7 +131,7 @@ struct CalendarView: View {
     @ViewBuilder
     private var googleMenu: some View {
         if syncing {
-            ProgressView().tint(Theme.teal)
+            ProgressView().tint(Theme.teal).frame(width: 44, height: 44)
         } else {
             Menu {
                 Button { Task { await sync() } } label: {

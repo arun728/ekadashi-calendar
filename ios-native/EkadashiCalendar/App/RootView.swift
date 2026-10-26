@@ -73,27 +73,9 @@ struct RootView: View {
         #endif
     }
 
-    @Environment(\.glassLookEnabled) private var glassLookEnabled
-    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
-
-    @ToolbarContentBuilder
-    private func searchToolbarItem(for tab: AppTab) -> some ToolbarContent {
-        #if compiler(>=6.2)
-        if #available(iOS 26.0, *) {
-            if tab != .calendar && GlassLookPolicy.isActive(preference: glassLookEnabled, reduceTransparency: reduceTransparency) {
-                searchToolbarBase(for: tab).sharedBackgroundVisibility(.hidden)
-            } else { searchToolbarBase(for: tab) }
-        } else { searchToolbarBase(for: tab) }
-        #else
-        searchToolbarBase(for: tab)
-        #endif
-    }
-
-    private func searchToolbarBase(for tab: AppTab) -> some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
+    private var searchToolbarItem: some ToolbarContent {
+        AppToolbarItem(placement: .topBarTrailing, compact: true) {
             Button { model.open(.search) } label: { Image(systemName: AppSymbol.search) }
-                .glassToolbarButton()
-                .environment(\.glassLookEnabled, tab == .calendar ? false : glassLookEnabled)
                 .accessibilityLabel(model.t("search"))
                 .accessibilityIdentifier("open_global_search")
         }
@@ -138,7 +120,7 @@ struct RootView: View {
                 // A search result opened this tab: go back to its results,
                 // like a back button (the result was not pushed here).
                 if model.searchReturn.showsBack(on: tab) {
-                    ToolbarItem(placement: .topBarLeading) {
+                    AppToolbarItem(placement: .topBarLeading) {
                         Button { model.returnToSearch() } label: {
                             HStack(spacing: 3) {
                                 Image(systemName: AppSymbol.back).fontWeight(.semibold)
@@ -148,7 +130,7 @@ struct RootView: View {
                         .accessibilityIdentifier("search_return")
                     }
                 }
-                searchToolbarItem(for: tab)
+                if tab != .calendar { searchToolbarItem }
             }
         }
     }

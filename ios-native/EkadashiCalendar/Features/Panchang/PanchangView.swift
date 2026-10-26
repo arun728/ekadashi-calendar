@@ -55,7 +55,7 @@ struct PanchangView: View {
             .tabViewStyle(.page(indexDisplayMode: .never))
         }
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
+            AppToolbarItem(placement: .topBarLeading) {
                 Button(model.t("today")) { goToToday() }
                     .disabled(isToday)
                     .accessibilityIdentifier("panchang_today")
@@ -169,8 +169,8 @@ struct PanchangView: View {
                 .tint(Theme.teal)
                 .padding()
                 .toolbar {
-                    ToolbarItem(placement: .confirmationAction) { Button(model.t("panchang_done")) { pickingDate = false } }
-                    ToolbarItem(placement: .cancellationAction) {
+                    AppToolbarItem(placement: .confirmationAction) { Button(model.t("panchang_done")) { pickingDate = false } }
+                    AppToolbarItem(placement: .cancellationAction) {
                         Button(model.t("today")) {
                             date = city.today()
                             pickingDate = false
@@ -295,8 +295,8 @@ struct PanchangMonthPicker: View {
             .pickerStyle(.wheel)
             .padding(.horizontal)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button(model.t("cancel")) { dismiss() } }
-                ToolbarItem(placement: .confirmationAction) {
+                AppToolbarItem(placement: .cancellationAction) { Button(model.t("cancel")) { dismiss() } }
+                AppToolbarItem(placement: .confirmationAction) {
                     Button(model.t("panchang_done")) {
                         onPick(CivilDate(selectedYear, selectedMonth, 1))
                         dismiss()

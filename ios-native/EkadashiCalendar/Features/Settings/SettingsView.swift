@@ -48,9 +48,14 @@ struct SettingsView: View {
                 .tint(Theme.teal)
                 .accessibilityIdentifier("settings_dark_mode")
                 Toggle(isOn: Binding(get: { model.isGlassLookEnabled }, set: { model.setGlassLook($0) })) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(model.t("ios_glass_look"))
-                        Text(model.t("ios_glass_look_desc")).font(.caption).foregroundStyle(.secondary)
+                    Label {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(model.t("ios_glass_look"))
+                            Text(model.t("ios_glass_look_desc")).font(.caption).foregroundStyle(.secondary)
+                        }
+                    } icon: {
+                        Image(systemName: AppSymbol.glassLook)
+                            .accessibilityIdentifier("settings_glass_look_icon")
                     }
                 }
                 .tint(Theme.teal)

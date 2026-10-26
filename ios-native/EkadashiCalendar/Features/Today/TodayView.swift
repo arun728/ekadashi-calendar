@@ -222,6 +222,8 @@ struct EkadashiCard: View {
     var isVisible = true
     @State private var recording = false
     @State private var sharing = false
+    @State private var recordingFeedback: ToastMessage?
+    @State private var actionsHeight: CGFloat = 54
 
     var body: some View {
         VStack(spacing: 16) {
@@ -249,45 +251,55 @@ struct EkadashiCard: View {
                 }
             }
             .scrollIndicators(.hidden)
-            GlassGroup {
-                HStack(spacing: 8) {
-                    NavigationLink {
-                        EkadashiDetailsView(event: event)
-                    } label: {
-                        Text(model.t("view_details")).font(.callout.bold()).frame(maxWidth: .infinity).padding(.vertical, 6)
-                    }
-                    .primaryActionStyle()
-                    .accessibilityIdentifier("view_details")
-                    Button {
-                        sharing = true
-                    } label: {
-                        Image(systemName: AppSymbol.share).font(.title3).padding(.vertical, 4)
-                    }
-                    .secondaryActionStyle()
-                    .accessibilityLabel(model.t("share_card"))
-                    .accessibilityIdentifier("home_share_card")
-                    if model.vrat.isEnabled {
-                        OccurrenceTimeline(events: [event], timeZone: model.ekadashiCity.timeZoneId, active: isVisible) { now in
-                            let open = model.canRecord(event, now: now)
-                            Button {
-                                recording = model.requestVratRecording(event)
-                            } label: {
-                                Image(systemName: VratStatusStyle(model.vrat.record(for: event.occurrenceUid)?.status).cardSymbol)
-                                    .font(.title3)
-                                    .padding(.vertical, 4)
-                            }
-                            .secondaryActionStyle()
-                            .tint(open ? Theme.teal : .gray)
-                            .foregroundStyle(open ? Theme.teal : .gray)
-                            .opacity(open ? 1 : 0.6)
-                            .accessibilityLabel(model.t(model.vrat.record(for: event.occurrenceUid) == nil ? "record_vrat" : "edit_record"))
-                            .accessibilityHint(open ? "" : model.t("journey_record_after_parana"))
-                            .accessibilityIdentifier("home_record_vrat")
+            // Keep these independent: a shared GlassEffectContainer blends
+            // neighboring interactive surfaces during a press.
+            HStack(spacing: 8) {
+                NavigationLink {
+                    EkadashiDetailsView(event: event)
+                } label: {
+                    Text(model.t("view_details")).font(.callout.bold()).frame(maxWidth: .infinity).padding(.vertical, 6)
+                }
+                .primaryActionStyle()
+                .clipShape(Capsule())
+                .accessibilityIdentifier("view_details")
+                Button {
+                    sharing = true
+                } label: {
+                    Image(systemName: AppSymbol.share).font(.title3).frame(width: 24, height: 34)
+                }
+                .secondaryActionStyle()
+                .clipShape(Circle())
+                .overlay(Circle().strokeBorder(.primary.opacity(0.18), lineWidth: 0.7))
+                .accessibilityLabel(model.t("share_card"))
+                .accessibilityIdentifier("home_share_card")
+                if model.vrat.isEnabled {
+                    OccurrenceTimeline(events: [event], timeZone: model.ekadashiCity.timeZoneId, active: isVisible) { now in
+                        let open = model.canRecord(event, now: now)
+                        Button {
+                                if model.canRecord(event) { recording = true }
+                                else { recordingFeedback = ToastMessage(text: model.t("journey_record_after_parana")) }
+                        } label: {
+                            Image(systemName: VratStatusStyle(model.vrat.record(for: event.occurrenceUid)?.status).cardSymbol)
+                                .font(.title3)
+                                .frame(width: 24, height: 34)
                         }
+                        .secondaryActionStyle()
+                        .clipShape(Circle())
+                        .overlay(Circle().strokeBorder(.primary.opacity(0.18), lineWidth: 0.7))
+                        .tint(open ? Theme.teal : .gray)
+                        .foregroundStyle(open ? Theme.teal : .gray)
+                        .opacity(open ? 1 : 0.6)
+                        .accessibilityLabel(model.t(model.vrat.record(for: event.occurrenceUid) == nil ? "record_vrat" : "edit_record"))
+                        .accessibilityHint(open ? "" : model.t("journey_record_after_parana"))
+                        .accessibilityIdentifier("home_record_vrat")
                     }
                 }
             }
+            .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { actionsHeight = $0 }
         }
+        // Reserve the complete row, including enlarged translated labels;
+        // fading in place keeps the transition clear of the buttons too.
+        .toast($recordingFeedback, bottomPadding: actionsHeight + 28, transition: .opacity)
         .padding(EdgeInsets(top: 16, leading: 20, bottom: 16, trailing: 20))
         .glassPanel(cornerRadius: 24)
         .sheet(isPresented: $recording) { RecordVratSheet(event: event) }

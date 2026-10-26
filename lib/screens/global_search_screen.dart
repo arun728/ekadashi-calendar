@@ -321,10 +321,10 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
           backgroundColor: Colors.transparent,
           surfaceTintColor: Colors.transparent,
           centerTitle: true,
-          leading: IconButton(
-            key: const Key('global_search_back'),
-            icon: const Icon(AppIcons.dismissDown, size: 30),
-            color: IosColors.teal,
+          leadingWidth: 68,
+          leading: LeadingBarIcon(
+            buttonKey: const Key('global_search_back'),
+            icon: AppIcons.dismissDown,
             tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
             onPressed: () =>
                 Navigator.of(context, rootNavigator: true).maybePop(),

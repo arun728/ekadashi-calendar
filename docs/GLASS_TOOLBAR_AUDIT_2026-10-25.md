@@ -1,6 +1,10 @@
 # Toolbar fixes, Glass audit and Android port review — 25 October 2026
 
-Scope: PR #24, `feature/ios-widget-redesign`. Arun clarified that Calendar must
+> Historical audit: Arun subsequently approved the four appearance corrections,
+> matching Android dismissal/close controls and Premium updates. See
+> [the implemented follow-up](GLASS_SHEETS_PREMIUM_FOLLOWUP.md) for the current state.
+
+Scope at the time of this audit: PR #24, `feature/ios-widget-redesign`. Arun clarified that Calendar must
 match Glass Off **only for toolbar icons and grouping**. Filters, entry cards
 and other body surfaces must continue following the saved preference. No other
 appearance differences listed below are authorized for correction yet.

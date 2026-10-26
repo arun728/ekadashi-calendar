@@ -48,7 +48,7 @@ struct GlobalSearchView: View {
         .onSubmit(of: .search) { submit(query) }
         .onChange(of: query) { _, value in changed(value) }
         .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
+            AppToolbarItem(placement: .cancellationAction, compact: true) {
                 Button { dismiss() } label: { Image(systemName: AppSymbol.dismissDown) }
                     .accessibilityIdentifier("global_search_back")
             }

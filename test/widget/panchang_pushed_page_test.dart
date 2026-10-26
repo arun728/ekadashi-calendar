@@ -1,3 +1,4 @@
+import 'package:ekadashi_calendar/widgets/app_icons.dart';
 import 'package:ekadashi_calendar/screens/global_search_screen.dart';
 import 'package:ekadashi_calendar/screens/panchang_screen.dart';
 import 'package:ekadashi_calendar/services/ekadashi_service.dart';
@@ -98,7 +99,7 @@ void main() {
       ),
       findsNothing,
     );
-    expect(find.byType(BackButton), findsOneWidget);
+    expect(find.byIcon(AppIcons.back), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

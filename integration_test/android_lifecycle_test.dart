@@ -1,3 +1,4 @@
+import 'package:ekadashi_calendar/widgets/app_icons.dart';
 // Separate integration-test entrypoint. No clock override is linked into main.dart.
 import 'package:clock/clock.dart';
 import 'package:ekadashi_calendar/services/display_clock.dart';
@@ -114,7 +115,7 @@ void main() {
         await Scrollable.ensureVisible(tester.element(details), alignment: .25);
         await capture('android-details-parana');
       }
-      await tester.tap(find.byType(BackButton).first);
+      await tester.tap(find.byIcon(AppIcons.back).first);
       await frames();
       await tester.tap(find.byKey(const Key('glass_tab_4')));
       await frames();
@@ -145,7 +146,7 @@ void main() {
         );
       }
       expect(find.byType(NativeWidgetPreview), findsWidgets);
-      await tester.tap(find.byType(BackButton).first);
+      await tester.tap(find.byIcon(AppIcons.back).first);
       await frames();
       await setTime(end);
       expect(find.text('Parana'), findsNothing);

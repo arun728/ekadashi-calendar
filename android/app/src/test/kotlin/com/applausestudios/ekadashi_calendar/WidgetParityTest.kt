@@ -47,7 +47,10 @@ class WidgetParityTest {
     }
     @Test fun upcomingIsExactlyFiveFutureDatesWithNearestFirst() {
         val today = LocalDate.now(ZoneOffset.UTC)
-        val items = (0..7).map { event(it + 1, today.plusDays(it * 15L)) }
+        // The first fast has already started at every UTC test-run hour.
+        // Starting it at today's 06:00 made this assertion fail before 06:00,
+        // when including that same-day future start is the correct behavior.
+        val items = (0..7).map { event(it + 1, today.minusDays(1).plusDays(it * 15L)) }
         WidgetStorage.getInstance(context).savePayload(payload(items))
         val factory = EkadashiListRemoteViewsFactory(context, Intent())
         factory.onCreate()

@@ -12,6 +12,8 @@ struct ToastMessage: Identifiable, Equatable {
 
 struct ToastOverlay: ViewModifier {
     @Binding var message: ToastMessage?
+    var bottomPadding: CGFloat = 96
+    var transition: AnyTransition = .move(edge: .bottom).combined(with: .opacity)
 
     func body(content: Content) -> some View {
         content.overlay(alignment: .bottom) {
@@ -31,8 +33,8 @@ struct ToastOverlay: ViewModifier {
                 .padding(.vertical, 14)
                 .glassPanel(cornerRadius: 18)
                 .padding(.horizontal, 16)
-                .padding(.bottom, 96)
-                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .padding(.bottom, bottomPadding)
+                .transition(transition)
                 .task(id: message.id) {
                     try? await Task.sleep(nanoseconds: 4_000_000_000)
                     if self.message?.id == message.id { withAnimation { self.message = nil } }
@@ -45,5 +47,8 @@ struct ToastOverlay: ViewModifier {
 }
 
 extension View {
-    func toast(_ message: Binding<ToastMessage?>) -> some View { modifier(ToastOverlay(message: message)) }
+    func toast(_ message: Binding<ToastMessage?>, bottomPadding: CGFloat = 96,
+               transition: AnyTransition = .move(edge: .bottom).combined(with: .opacity)) -> some View {
+        modifier(ToastOverlay(message: message, bottomPadding: bottomPadding, transition: transition))
+    }
 }

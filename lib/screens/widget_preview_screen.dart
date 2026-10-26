@@ -1,3 +1,4 @@
+import '../widgets/ios_style.dart';
 import 'dart:async';
 import '../services/display_clock.dart';
 import 'dart:math' as math;
@@ -124,7 +125,8 @@ class _WidgetPreviewScreenState extends State<WidgetPreviewScreen>
     return Scaffold(
       appBar: AppBar(
         title: Text(lang.translate('widget_preview')),
-        leading: BackButton(onPressed: () => Navigator.pop(context)),
+        leadingWidth: 68,
+        leading: const LeadingBarIcon(),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),

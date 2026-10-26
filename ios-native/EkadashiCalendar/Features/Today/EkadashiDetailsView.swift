@@ -54,7 +54,7 @@ struct EkadashiDetailsView: View {
         .sheet(isPresented: $recording) { RecordVratSheet(event: event) }
         .sheet(isPresented: $sharing) { ShareCardSheet(event: event) }
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
+            AppToolbarItem(placement: .topBarTrailing, compact: true) {
                 Button { sharing = true } label: { Image(systemName: AppSymbol.share) }
                     .accessibilityLabel(model.t("share_card"))
                     .accessibilityIdentifier("details_share_card")

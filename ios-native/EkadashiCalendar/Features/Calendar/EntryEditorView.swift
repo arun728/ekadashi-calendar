@@ -43,8 +43,8 @@ struct EntryEditorView: View {
             .navigationTitle(model.t(request.existing == nil ? "add_entry" : "edit_entry"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button(model.t("cancel")) { dismiss() } }
-                ToolbarItem(placement: .confirmationAction) {
+                AppToolbarItem(placement: .cancellationAction) { Button(model.t("cancel")) { dismiss() } }
+                AppToolbarItem(placement: .confirmationAction) {
                     Button(model.t("save"), action: save).bold().accessibilityIdentifier("save_entry")
                 }
             }

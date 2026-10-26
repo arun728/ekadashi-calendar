@@ -45,3 +45,7 @@ Tests keep it that way:
 Add the role (and, for a new symbol, its Cupertino twin from the
 `CupertinoIcons` list) to the table, regenerate both files, then use
 `AppSymbol.<role>` and `AppIcons.<role>` at the same place on both platforms.
+
+Glass Look in Settings uses `glass_look`: SF `square.on.circle` and Cupertino
+`square_on_circle`. Modal dismissal preserves the per-screen role (Premium X,
+Search down-chevron, Cancel text); pushed pages retain the back-chevron.

@@ -196,7 +196,7 @@ void main() {
         await tester.pumpAndSettle();
         expect(find.text(language.translate('significance')), findsOneWidget);
         await capture('details');
-        await tester.tap(find.byType(BackButton));
+        await tester.tap(find.byIcon(AppIcons.back));
         await tester.pumpAndSettle();
         expect(find.byKey(const Key('glass_tab_1')), findsOneWidget);
       },

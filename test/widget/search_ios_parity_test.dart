@@ -158,18 +158,31 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('Search down-arrow has the iOS 44 point glass enclosure', (tester) async {
+  testWidgets('Search down-arrow has the iOS 44 point glass enclosure', (
+    tester,
+  ) async {
     await open(tester);
     final close = find.byKey(const Key('global_search_back'));
-    expect(find.ancestor(of: close, matching: find.byType(GlassPanel)), findsOneWidget);
+    expect(
+      find.ancestor(of: close, matching: find.byType(GlassPanel)),
+      findsOneWidget,
+    );
     expect(tester.getSize(close), const Size(44, 44));
   });
 
   for (final content in [false, true]) {
-    testWidgets('Search pulls down from header or content: content=$content', (tester) async {
+    testWidgets('Search pulls down from header or content: content=$content', (
+      tester,
+    ) async {
       await open(tester);
-      final source = content ? find.byKey(const Key('search_start')) : find.text('Search');
-      await tester.flingFrom(tester.getTopLeft(source) + const Offset(100, 25), const Offset(0, 650), 1200);
+      final source = content
+          ? find.byKey(const Key('search_start'))
+          : find.text('Search');
+      await tester.flingFrom(
+        tester.getTopLeft(source) + const Offset(100, 25),
+        const Offset(0, 650),
+        1200,
+      );
       await tester.pumpAndSettle();
       expect(find.byType(GlobalSearchScreen), findsNothing);
       expect(find.byKey(const Key('open')), findsOneWidget);

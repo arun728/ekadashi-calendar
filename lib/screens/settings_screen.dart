@@ -377,6 +377,7 @@ class _SettingsScreenState extends State<SettingsScreen>
             const SettingsSeparator(),
             SettingsSwitchTile(
               key: const Key('settings_glass_look'),
+              icon: AppIcons.glassLook,
               title: Text(lang.translate('glass_look')),
               subtitle: Text(lang.translate('glass_look_desc')),
               value: context.watch<ThemeService>().isGlassLookEnabled,

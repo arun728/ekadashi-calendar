@@ -103,6 +103,8 @@ class DetailsScreen extends StatelessWidget {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
+          leadingWidth: 68,
+          leading: const LeadingBarIcon(),
           title: Text(lang.translate('app_title')),
           actions: [
             // The free share card (no paywall).
