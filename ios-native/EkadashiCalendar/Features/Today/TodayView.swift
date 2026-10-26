@@ -299,7 +299,7 @@ struct EkadashiCard: View {
         }
         // Reserve the complete row, including enlarged translated labels;
         // fading in place keeps the transition clear of the buttons too.
-        .toast($recordingFeedback, bottomPadding: actionsHeight + 28, transition: .opacity)
+        .toast($recordingFeedback, bottomPadding: actionsHeight + 28, transition: .opacity, usesStandardSurface: true)
         .padding(EdgeInsets(top: 16, leading: 20, bottom: 16, trailing: 20))
         .glassPanel(cornerRadius: 24)
         .sheet(isPresented: $recording) { RecordVratSheet(event: event) }

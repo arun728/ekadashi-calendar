@@ -30,6 +30,7 @@ void main() {
   final service = EkadashiService();
 
   setUpAll(() async {
+    ObservanceCalendarService.calculateInline = true;
     tzdata.initializeTimeZones();
     await initializeDateFormatting();
     await service.initializeData();

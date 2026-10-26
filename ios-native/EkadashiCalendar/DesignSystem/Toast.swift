@@ -11,7 +11,9 @@ struct ToastMessage: Identifiable, Equatable {
 }
 
 struct ToastOverlay: ViewModifier {
+    @Environment(\.glassLookEnabled) private var glassLookEnabled
     @Binding var message: ToastMessage?
+    var usesStandardSurface = false
     var bottomPadding: CGFloat = 96
     var transition: AnyTransition = .move(edge: .bottom).combined(with: .opacity)
 
@@ -32,6 +34,7 @@ struct ToastOverlay: ViewModifier {
                 .padding(.horizontal, 18)
                 .padding(.vertical, 14)
                 .glassPanel(cornerRadius: 18)
+                .environment(\.glassLookEnabled, usesStandardSurface ? false : glassLookEnabled)
                 .padding(.horizontal, 16)
                 .padding(.bottom, bottomPadding)
                 .transition(transition)
@@ -48,7 +51,7 @@ struct ToastOverlay: ViewModifier {
 
 extension View {
     func toast(_ message: Binding<ToastMessage?>, bottomPadding: CGFloat = 96,
-               transition: AnyTransition = .move(edge: .bottom).combined(with: .opacity)) -> some View {
-        modifier(ToastOverlay(message: message, bottomPadding: bottomPadding, transition: transition))
+               transition: AnyTransition = .move(edge: .bottom).combined(with: .opacity), usesStandardSurface: Bool = false) -> some View {
+        modifier(ToastOverlay(message: message, usesStandardSurface: usesStandardSurface, bottomPadding: bottomPadding, transition: transition))
     }
 }

@@ -12,6 +12,7 @@ import '../services/language_service.dart';
 import '../services/panchang/calculated_ekadashi.dart';
 import '../services/panchang/panchang_city.dart';
 import '../services/panchang/panchang_engine.dart';
+import '../services/panchang/panchang_data_service.dart';
 import '../services/panchang/panchang_location_store.dart';
 import '../services/panchang/panchang_models.dart';
 import '../services/panchang/panchang_terms.dart';
@@ -60,6 +61,7 @@ class PanchangScreen extends StatefulWidget {
     this.engine = const PanchangEngine(),
     this.locationStore,
     this.barSlots,
+    this.data,
   });
 
   /// Today and the calculation notes go in the shared top bar (iOS toolbar).
@@ -71,6 +73,7 @@ class PanchangScreen extends StatefulWidget {
   /// The published schedule in the app language (Key days lists it).
   final List<EkadashiDate> ekadashiList;
   final PanchangEngine engine;
+  final PanchangDataService? data;
 
   /// Where the chosen city is kept (tests pass a slow one).
   final PanchangLocationStore? locationStore;
@@ -83,7 +86,9 @@ class PanchangScreenState extends State<PanchangScreen> {
   late DateTime _date;
   late DateTime _month;
   late PanchangCity _city;
-  late PanchangDay _day;
+  PanchangDay? _day;
+  int _dayGeneration = 0;
+  bool _dayFailed = false;
   PanchangTerms? _terms;
   PanchangPage _page = PanchangPage.keyDays;
   EkadashiTradition _tradition = EkadashiTradition.smarta;
@@ -184,7 +189,27 @@ class PanchangScreenState extends State<PanchangScreen> {
     showSectionPage(_pages, page.index);
   }
 
-  void _recalculate() => _day = widget.engine.calculate(_date, city: _city);
+  void _recalculate() {
+    final generation = ++_dayGeneration, date = _date, city = _city;
+    _day = null;
+    _dayFailed = false;
+    () async {
+      try {
+        final day = await (widget.data ?? PanchangDataService.instance).day(
+          date,
+          city,
+          engine: widget.engine,
+        );
+        if (mounted && generation == _dayGeneration) {
+          setState(() => _day = day);
+        }
+      } catch (_) {
+        if (mounted && generation == _dayGeneration) {
+          setState(() => _dayFailed = true);
+        }
+      }
+    }();
+  }
 
   DateTime _today() {
     final now = _city.wallClock(DateTime.now());
@@ -557,6 +582,21 @@ class PanchangScreenState extends State<PanchangScreen> {
         ),
       );
     }
+    final day = _day;
+    if (day == null &&
+        (page == PanchangPage.daily ||
+            (premium &&
+                (page == PanchangPage.muhurta ||
+                    page == PanchangPage.rashi)))) {
+      return Center(
+        child: _dayFailed
+            ? TextButton(
+                onPressed: () => setState(_recalculate),
+                child: Text(context.read<LanguageService>().translate('retry')),
+              )
+            : const CircularProgressIndicator(color: PanchangColors.teal),
+      );
+    }
     switch (page) {
       case PanchangPage.keyDays:
         return PanchangKeyDaysView(
@@ -566,10 +606,10 @@ class PanchangScreenState extends State<PanchangScreen> {
           onOpen: showDate,
         );
       case PanchangPage.daily:
-        return PanchangDailyView(day: _day, terms: terms);
+        return PanchangDailyView(day: day!, terms: terms);
       case PanchangPage.muhurta:
         return premium
-            ? PanchangMuhurtaView(day: _day, terms: terms)
+            ? PanchangMuhurtaView(day: day!, terms: terms)
             : const PanchangUpgradeCard();
       case PanchangPage.ekadashi:
         return PanchangEkadashiView(
@@ -581,7 +621,7 @@ class PanchangScreenState extends State<PanchangScreen> {
         );
       case PanchangPage.rashi:
         return premium
-            ? PanchangRashiView(day: _day, terms: terms)
+            ? PanchangRashiView(day: day!, terms: terms)
             : const PanchangUpgradeCard();
     }
   }

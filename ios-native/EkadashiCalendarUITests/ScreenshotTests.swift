@@ -1029,6 +1029,48 @@ final class ScreenshotTests: XCTestCase {
         XCTAssertFalse(parana.label.contains("PM"))
     }
 
+    func testUpcomingHomeRecordFeedbackInBothGlassModesAndEveryLanguage() {
+        app.terminate()
+        app.launchArguments += ["-lifecycle-testing"]
+        app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = "2026-10-26T09:30:00+05:30"
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        let cases = [("English", "You can record this fast once Parana begins"),
+            ("हिंदी", "पारण शुरू होने के बाद आप यह व्रत दर्ज कर सकते हैं"),
+            ("தமிழ்", "பாரணை தொடங்கியதும் இந்த விரதத்தைப் பதிவு செய்யலாம்"),
+            ("తెలుగు", "పారణ మొదలైన తర్వాత ఈ ఉపవాసాన్ని నమోదు చేయవచ్చు"),
+            ("ગુજરાતી", "પારણા શરૂ થયા પછી તમે આ ઉપવાસ નોંધી શકશો"),
+            ("বাংলা", "পারণ শুরু হলে আপনি এই উপবাস নথিভুক্ত করতে পারবেন")]
+        var current = "English"
+        for enabled in [false, true] {
+            glassTab(4)
+            setSwitch(app.switches["settings_glass_look"].firstMatch, to: enabled)
+            glassTab(0)
+            for (language, message) in cases {
+                if language != current {
+                    element("language_menu").tap()
+                    let option = app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", language)).firstMatch
+                    XCTAssertTrue(option.waitForExistence(timeout: 5))
+                    option.tap(); current = language
+                }
+                let record = app.buttons["home_record_vrat"].firstMatch
+                XCTAssertTrue(record.isHittable)
+                let actionsTop = ["view_details", "home_share_card", "home_record_vrat"]
+                    .map { app.buttons[$0].firstMatch.frame.minY }.min()!
+                let text = app.staticTexts[message].firstMatch
+                record.tap()
+                // Query promptly: this deliberately short-lived message must
+                // not be consumed by unrelated toolbar accessibility queries.
+                if !text.exists { record.tap() }
+                XCTAssertTrue(text.waitForExistence(timeout: 1))
+                XCTAssertLessThanOrEqual(text.frame.maxY + 14, actionsTop - 8)
+                XCTAssertTrue(app.frame.contains(text.frame))
+                snap("ios-record-toast-glass-\(enabled)-\(language)")
+                XCTAssertEqual(XCTWaiter.wait(for: [expectation(for: NSPredicate(format: "exists == false"), evaluatedWith: text)], timeout: 6), .completed)
+            }
+        }
+    }
+
     func testRecordFeedbackAndCalendarWindowInEveryLanguage() {
         app.terminate()
         app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = "2026-10-22T07:15:00Z"

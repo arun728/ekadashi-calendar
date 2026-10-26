@@ -53,10 +53,21 @@ void main() {
                 tester.getRect(ring).right,
                 lessThan(tester.getRect(badge).left),
               );
-              final badgeBox = find.ancestor(of: badge, matching: find.byType(Container)).first;
-              expect(tester.getRect(badgeBox).right,
-                  closeTo(tester.getRect(find.byKey(const Key('home_ekadashi_card'))).right - 20, 1),
-                  reason: 'Home badge must meet the trailing content edge like iOS');
+              final badgeBox = find
+                  .ancestor(of: badge, matching: find.byType(Container))
+                  .first;
+              expect(
+                tester.getRect(badgeBox).right,
+                closeTo(
+                  tester
+                          .getRect(find.byKey(const Key('home_ekadashi_card')))
+                          .right -
+                      20,
+                  1,
+                ),
+                reason:
+                    'Home badge must meet the trailing content edge like iOS',
+              );
               final circles = find.descendant(
                 of: ring,
                 matching: find.byType(CircularProgressIndicator),

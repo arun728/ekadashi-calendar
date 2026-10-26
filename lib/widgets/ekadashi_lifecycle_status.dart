@@ -104,13 +104,16 @@ class EkadashiLifecycleStatus extends StatelessWidget {
       children: [
         if (state.progress != null)
           HomeFastingProgress(fraction: state.progress!, language: language),
-        const Spacer(),
-        Flexible(
-          child: StatusPill(
-            text: state.label(language),
-            color: state.phase == EkadashiPhase.passed
-                ? IosColors.gray(context)
-                : IosColors.teal,
+        if (state.progress != null) const SizedBox(width: 12),
+        Expanded(
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: StatusPill(
+              text: state.label(language),
+              color: state.phase == EkadashiPhase.passed
+                  ? IosColors.gray(context)
+                  : IosColors.teal,
+            ),
           ),
         ),
       ],

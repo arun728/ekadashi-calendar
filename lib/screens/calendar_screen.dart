@@ -1079,6 +1079,7 @@ class CalendarScreenState extends State<CalendarScreen> {
           Text(
             lang.translate('no_ekadashi'),
             key: const Key('calendar_no_ekadashi'),
+            textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: IosText.subheadline,
               color: IosColors.secondary(context),

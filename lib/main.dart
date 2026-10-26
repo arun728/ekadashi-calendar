@@ -1576,25 +1576,28 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                           fraction: remaining,
                           language: code,
                         ),
-                      const Spacer(),
-                      Flexible(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 6,
-                          ),
-                          decoration: ShapeDecoration(
-                            color: state.phase == EkadashiPhase.passed
-                                ? IosColors.gray(context)
-                                : tealColor,
-                            shape: const StadiumBorder(),
-                          ),
-                          child: Text(
-                            daysText,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: IosText.footnote,
+                      if (remaining != null) const SizedBox(width: 12),
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 6,
+                            ),
+                            decoration: ShapeDecoration(
+                              color: state.phase == EkadashiPhase.passed
+                                  ? IosColors.gray(context)
+                                  : tealColor,
+                              shape: const StadiumBorder(),
+                            ),
+                            child: Text(
+                              daysText,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: IosText.footnote,
+                              ),
                             ),
                           ),
                         ),

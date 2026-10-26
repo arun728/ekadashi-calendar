@@ -1,3 +1,4 @@
+import 'package:ekadashi_calendar/services/panchang/observance_calendar_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -38,6 +39,7 @@ void main() {
   final data = EkadashiService();
   late LanguageService lang;
   setUpAll(() async {
+    ObservanceCalendarService.calculateInline = true;
     await data.initializeData();
     await initializeDateFormatting();
   });
