@@ -60,8 +60,8 @@ CI runs the iOS job in `.github/workflows/android-tests.yml` on macOS with Xcode
 
 All values are public client identifiers (the same kind Android gets through `--dart-define`). They go in `Config/Secrets.xcconfig`:
 
-- `DEVELOPMENT_TEAM`, and `APP_GROUP` if not `group.com.applausestudios.ekadashi-calendar`. Turn on the App Group for both the app ID and the widget extension ID.
-- Google Sign-In: create an **iOS OAuth client** in the Google Cloud project that hosts the Firebase free-sync registry, for bundle ID `com.applausestudios.ekadashi-calendar`.
+- Set the company `DEVELOPMENT_TEAM` in the ignored `Config/Secrets.xcconfig`. The shared default App Group is `group.com.apptinel.ekadashi-calendar`; enable it for both the app ID and widget extension ID. Both entitlements and runtime widget storage use `$(APP_GROUP)`. Keep bundle IDs in `project.yml` so `xcodegen generate` preserves them; do not rely on edits to the generated project.
+- Google Sign-In: create an **iOS OAuth client** in the Google Cloud project that hosts the Firebase free-sync registry, for bundle ID `com.apptinel.ekadashi-calendar`.
   - Set `GOOGLE_IOS_CLIENT_ID` and `GOOGLE_REVERSED_CLIENT_ID`.
   - In Firebase Authentication, add the iOS client ID to the Google provider's allowed client IDs, so Firebase accepts its ID tokens.
   - The app asks only for `calendar.readonly`. The paywall never needs Google sign-in.

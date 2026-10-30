@@ -1,7 +1,7 @@
 // Public build settings for the iOS app. Real values go in
 // Config/Secrets.xcconfig (not committed; copy Secrets.example.xcconfig).
 // None of these are secrets, but they identify the production projects.
-APP_GROUP = group.com.applausestudios.ekadashi-calendar
+APP_GROUP = group.com.apptinel.ekadashi-calendar
 GOOGLE_IOS_CLIENT_ID =
 GOOGLE_REVERSED_CLIENT_ID = com.googleusercontent.apps.unset
 FIREBASE_API_KEY =
