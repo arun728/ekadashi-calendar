@@ -70,6 +70,63 @@ final class JourneyPresentationTests: XCTestCase {
         }
     }
 
+    func testRealAchievementButtonsHaveUniformBackgroundFrames() async throws {
+        let model = AppModel()
+        let definitions = ["streak_24", "welcome_back", "every_effort", "journey_2026_q4"].compactMap { JourneyBadgeCatalog.definition($0) }
+        let summary = JourneyRewards.calculate(occurrences: [], history: [], completeYears: [])
+        for large in [false, true] {
+            var frames: [Int: CGRect] = [:]
+            let content = ScrollView {
+                JourneyUniformGrid {
+                    ForEach(Array(definitions.enumerated()), id: \.offset) { i, badge in
+                        Button {} label: { JourneyAchievementCard(definition: badge, summary: summary) }
+                            .buttonStyle(.plain)
+                            .background(GeometryReader { proxy in Color.clear.preference(key: JourneyCellFrames.self, value: [i: proxy.frame(in: .global)]) })
+                    }
+                }.padding(16)
+            }.environment(model).environment(\.dynamicTypeSize, large ? .accessibility3 : .large)
+                .onPreferenceChange(JourneyCellFrames.self) { frames = $0 }
+            let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 430, height: 1200))
+            let host = UIHostingController(rootView: content)
+            window.rootViewController = host; window.makeKeyAndVisible(); host.view.layoutIfNeeded()
+            try await Task.sleep(for: .milliseconds(150))
+            XCTAssertEqual(frames.count, 4)
+            let first = try XCTUnwrap(frames[0])
+            XCTAssertGreaterThanOrEqual(first.height, 234)
+            for frame in frames.values {
+                XCTAssertEqual(frame.width, first.width, accuracy: 0.5)
+                XCTAssertEqual(frame.height, first.height, accuracy: 0.5)
+            }
+            window.isHidden = true
+        }
+    }
+
+    func testStatisticsCardsUniformInAllLanguagesAndLargeText() async throws {
+        for code in ["en", "hi", "ta", "te", "gu", "bn"] {
+            let model = AppModel(store: InMemoryKeyValueStore(["language_code": code]))
+            for width: CGFloat in [320, 430] {
+                var frames: [Int: CGRect] = [:]
+                let keys = ["observed", "partial", "missed", "unrecorded", "current_streak", "longest_streak"]
+                let view = ScrollView {
+                    JourneyUniformGrid(columns: 2) {
+                        ForEach(0..<keys.count, id: \.self) { i in
+                            JourneyCountCard(title: model.t(keys[i]), value: 20, color: .orange)
+                                .background(GeometryReader { proxy in Color.clear.preference(key: JourneyCellFrames.self, value: [i: proxy.frame(in: .global)]) })
+                        }
+                    }.padding(16)
+                }.environment(\.dynamicTypeSize, .accessibility2).onPreferenceChange(JourneyCellFrames.self) { frames = $0 }
+                let window = UIWindow(frame: CGRect(x: 0, y: 0, width: width, height: 1400))
+                let host = UIHostingController(rootView: view)
+                window.rootViewController = host; window.makeKeyAndVisible(); host.view.layoutIfNeeded()
+                try await Task.sleep(for: .milliseconds(100))
+                XCTAssertEqual(frames.count, 6)
+                let first = try XCTUnwrap(frames[0])
+                for frame in frames.values { XCTAssertEqual(frame.size, first.size, "\(code) \(width)") }
+                window.isHidden = true
+            }
+        }
+    }
+
     func testEveryBadgeVectorRendersAtSmallAndLargeSizes() throws {
         for badge in JourneyBadgeCatalog.all(years: [2026, 2027]) {
             for size: CGFloat in [48, 160] {

@@ -140,6 +140,37 @@ final class JourneyRewardsTests: XCTestCase {
         }
     }
 
+    func testSelectedYearDoesNotLeakOtherYearsIntoProgressOrMilestones() {
+        let a = events(2026), b = events(2027, extra: true), list = a + b
+        let instant = ISO8601.instant("2026-10-31T12:00:00Z")!
+        let all = JourneyRewards.calculate(occurrences: list, history: a.prefix(3).map { record($0) }, completeYears: [2026, 2027], now: instant, zone: zone)
+        let earned = JourneyBadgeEvaluator.evaluate(summary: all, current: [:], newUnlockLimit: nil, now: instant).updated
+        let future = all.scoped(toYear: 2027)
+        XCTAssertEqual(future.observedCount, 0)
+        XCTAssertEqual(future.currentStreak, 0)
+        XCTAssertEqual(future.longestStreak, 0)
+        XCTAssertEqual(future.year(2027).points, 0)
+        XCTAssertEqual(future.year(2027).maximumPoints, 4100)
+        XCTAssertEqual(future.nextMilestone(earned: earned)?.id, "first_vrat")
+        XCTAssertEqual(all.lifetimePoints, 300)
+        XCTAssertEqual(all.visibleYears, [2026])
+        XCTAssertEqual(all.scoped(toYear: nil).observedCount, 3)
+    }
+
+    func testAllYearsOrderAndCrossYearStreakAtJanuaryRollover() {
+        let a = events(2026), b = events(2027, extra: true), list = a + b
+        let instant = ISO8601.instant("2027-01-05T12:00:00Z")!
+        let rows = [record(a[a.count - 2]), record(a.last!), record(b.first!, .partial)]
+        let all = JourneyRewards.calculate(occurrences: list, history: rows, completeYears: [2026, 2027], now: instant, zone: zone)
+        XCTAssertEqual(all.visibleYears, [2027, 2026])
+        XCTAssertEqual(all.scoped(toYear: nil).currentStreak, 3)
+        XCTAssertEqual(all.scoped(toYear: 2026).currentStreak, 2)
+        XCTAssertEqual(all.scoped(toYear: 2027).currentStreak, 1)
+        XCTAssertEqual(all.scoped(toYear: 2027).observedCount, 0)
+        XCTAssertEqual(all.scoped(toYear: 2027).partialCount, 1)
+        XCTAssertEqual(all.scoped(toYear: nil).eligibleSegments.count, 25)
+    }
+
     func testStatusPointsAndFutureExclusion() {
         let list = events(2027)
         let s = summary(list, [record(list[0]), record(list[1], .partial), record(list[2], .missed), record(list[3], .unrecorded)])
