@@ -60,6 +60,21 @@ void main() {
     expect(failures, isEmpty);
   });
 
+  test('held-out dates', () {
+    for (final row in (fixture['heldOut'] as List).cast<Map>()) {
+      final date = row['date'] as String;
+      expect(
+        dates(
+          row['id'] as String,
+          city(row['city'] as String),
+          int.parse(date.substring(0, 4)),
+        ),
+        [date],
+        reason: row['id'] as String,
+      );
+    }
+  });
+
   test('the engine lists exactly the fixture festivals', () {
     expect(PanchangEngine.searchedFestivalIds, {
       for (final row in festivals) row['id'] as String,
@@ -67,15 +82,25 @@ void main() {
   });
 
   test('each happens once a year and is major', () {
+    // Festivals of a solar month can fall twice in a calendar year, or not
+    // at all (no Vaikuntha Ekadashi in 2027).
+    const solarMonth = {'vaikuntha-ekadashi', 'thaipusam'};
     for (final id in PanchangEngine.searchedFestivalIds) {
+      var total = 0;
       for (final year in const [2026, 2027]) {
         final found = [
           for (final dated in calendar(PanchangCity.newDelhi, year))
             if (dated.observance.id == id) dated.observance,
         ];
-        expect(found, hasLength(1), reason: '$id $year');
-        expect(found.single.isMajor, isTrue, reason: id);
+        total += found.length;
+        if (solarMonth.contains(id)) {
+          expect(found.length, lessThanOrEqualTo(2), reason: '$id $year');
+        } else {
+          expect(found, hasLength(1), reason: '$id $year');
+        }
+        expect(found.every((o) => o.isMajor), isTrue, reason: id);
       }
+      expect(total, greaterThan(0), reason: id);
     }
   });
 

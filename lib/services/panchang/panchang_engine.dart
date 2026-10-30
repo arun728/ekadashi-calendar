@@ -10,7 +10,44 @@ class PanchangEngine {
 
   /// Widely searched festivals added in October 2026
   /// (docs/PANCHANG_ACCURACY.md).
-  static const searchedFestivalIds = <String>{};
+  static const searchedFestivalIds = {
+    'lohri',
+    'sakat-chauth',
+    'mauni-amavasya',
+    'ratha-saptami',
+    'sheetala-ashtami',
+    'gangaur',
+    'solar-new-year',
+    'mahavir-jayanti',
+    'parashurama-jayanti',
+    'sita-navami',
+    'narasimha-jayanti',
+    'buddha-purnima',
+    'vat-savitri',
+    'shani-jayanti',
+    'ganga-dussehra',
+    'vat-purnima',
+    'hariyali-teej',
+    'kajari-teej',
+    'hartalika-teej',
+    'rishi-panchami',
+    'radha-ashtami',
+    'anant-chaturdashi',
+    'vishwakarma-puja',
+    'sarva-pitru-amavasya',
+    'maha-navami',
+    'sharad-purnima',
+    'ahoi-ashtami',
+    'kali-puja',
+    'tulsi-vivah',
+    'kartika-purnima',
+    'guru-nanak-jayanti',
+    'vivah-panchami',
+    'gita-jayanti',
+    'vaikuntha-ekadashi',
+    'dattatreya-jayanti',
+    'thaipusam',
+  };
 
   static const _tithis = [
     'Pratipada',
@@ -1321,6 +1358,123 @@ class PanchangEngine {
       );
     }
 
+    // Widely searched festivals (searchedFestivalIds). Months are Amanta,
+    // so a Krishna paksha festival keeps the Amanta month of its fortnight.
+    void festival(String id, String name) => add(id, name, major: true);
+    if (_makarSankrantiDay(date.add(const Duration(days: 1)), city, days)) {
+      festival('lohri', 'Lohri');
+    }
+    if (observed(19, _Kala.moonrise, month: 'Pausha', tie: _Tie.first)) {
+      festival('sakat-chauth', 'Sakat Chauth');
+    }
+    if (observed(30, _Kala.sunrise, month: 'Pausha')) {
+      festival('mauni-amavasya', 'Mauni Amavasya');
+    }
+    if (observed(7, _Kala.sunrise, month: 'Magha')) {
+      festival('ratha-saptami', 'Ratha Saptami');
+    }
+    if (observed(23, _Kala.sunrise, month: 'Phalguna')) {
+      festival('sheetala-ashtami', 'Sheetala Ashtami (Basoda)');
+    }
+    if (observed(3, _Kala.sunrise, month: 'Chaitra')) {
+      festival('gangaur', 'Gangaur');
+    }
+    if (observed(13, _Kala.sunrise, month: 'Chaitra')) {
+      festival('mahavir-jayanti', 'Mahavir Jayanti');
+    }
+    if (observed(3, _Kala.pradosh, month: 'Vaishakha')) {
+      festival('parashurama-jayanti', 'Parashurama Jayanti');
+    }
+    if (observed(9, _Kala.madhyahna, month: 'Vaishakha')) {
+      festival('sita-navami', 'Sita Navami');
+    }
+    if (observed(14, _Kala.sunset, month: 'Vaishakha', tie: _Tie.first)) {
+      festival('narasimha-jayanti', 'Narasimha Jayanti');
+    }
+    if (observed(15, _Kala.upavasa, month: 'Vaishakha', tie: _Tie.first)) {
+      festival('buddha-purnima', 'Buddha Purnima');
+    }
+    if (observed(30, _Kala.sunrise, month: 'Vaishakha')) {
+      festival('vat-savitri', 'Vat Savitri Vrat');
+      festival('shani-jayanti', 'Shani Jayanti');
+    }
+    final dashami = occurrence(10);
+    if (dashami != null &&
+        _gangaDussehraMonth(dashami) &&
+        _sameDate(
+          dashami.observedOn(_Kala.sunrise, _Tie.longest, days, city),
+          date,
+        )) {
+      festival('ganga-dussehra', 'Ganga Dussehra');
+    }
+    if (observed(15, _Kala.upavasa, month: 'Jyeshtha', tie: _Tie.first)) {
+      festival('vat-purnima', 'Vat Purnima Vrat');
+    }
+    if (observed(3, _Kala.sunrise, month: 'Shravana')) {
+      festival('hariyali-teej', 'Hariyali Teej');
+    }
+    if (observed(18, _Kala.sunrise, month: 'Shravana')) {
+      festival('kajari-teej', 'Kajari Teej');
+    }
+    if (observed(3, _Kala.sunrise, month: 'Bhadrapada')) {
+      festival('hartalika-teej', 'Hartalika Teej');
+    }
+    if (observed(5, _Kala.madhyahna, month: 'Bhadrapada')) {
+      festival('rishi-panchami', 'Rishi Panchami');
+    }
+    if (observed(8, _Kala.sunrise, month: 'Bhadrapada')) {
+      festival('radha-ashtami', 'Radha Ashtami');
+    }
+    if (observed(14, _Kala.sunrise, month: 'Bhadrapada')) {
+      festival('anant-chaturdashi', 'Anant Chaturdashi (Ganesh Visarjan)');
+    }
+    if (observed(30, _Kala.aparahna, month: 'Bhadrapada')) {
+      festival('sarva-pitru-amavasya', 'Sarva Pitru Amavasya (Mahalaya)');
+    }
+    if (observed(9, _Kala.aparahna, month: 'Ashvina')) {
+      festival('maha-navami', 'Maha Navami');
+    }
+    if (observed(15, _Kala.pradosh, month: 'Ashvina')) {
+      festival('sharad-purnima', 'Sharad Purnima (Kojagara)');
+    }
+    if (observed(23, _Kala.pradosh, month: 'Ashvina', tie: _Tie.first)) {
+      festival('ahoi-ashtami', 'Ahoi Ashtami');
+    }
+    if (observed(30, _Kala.nishita, month: 'Ashvina')) {
+      festival('kali-puja', 'Kali Puja');
+    }
+    if (observed(12, _Kala.sunrise, month: 'Kartika')) {
+      festival('tulsi-vivah', 'Tulsi Vivah');
+    }
+    if (observed(15, _Kala.sunrise, month: 'Kartika')) {
+      festival('kartika-purnima', 'Kartika Purnima');
+      festival('guru-nanak-jayanti', 'Guru Nanak Jayanti');
+    }
+    if (observed(5, _Kala.sunrise, month: 'Margashirsha')) {
+      festival('vivah-panchami', 'Vivah Panchami');
+    }
+    final ekadashi = occurrence(11);
+    if (ekadashi != null && _smartaEkadashi(date, days)) {
+      if (ekadashi.month == 'Margashirsha') {
+        festival('gita-jayanti', 'Gita Jayanti');
+      }
+      if (_siderealSign(sunrise) == 8) {
+        festival('vaikuntha-ekadashi', 'Vaikuntha Ekadashi');
+      }
+    }
+    if (observed(15, _Kala.pradosh, month: 'Margashirsha')) {
+      festival('dattatreya-jayanti', 'Dattatreya Jayanti');
+    }
+    final previousSunrise = days
+        .of(date.subtract(const Duration(days: 1)))
+        .sunrise;
+    if (_nakshatraAt(sunrise).index == 8 &&
+        _siderealSign(sunrise) == 9 &&
+        !(previousSunrise != null &&
+            _nakshatraAt(previousSunrise).index == 8)) {
+      festival('thaipusam', 'Thaipusam');
+    }
+
     _addSankranti(add, city, date, sunset, days);
 
     items.sort((a, b) {
@@ -1376,6 +1530,10 @@ class PanchangEngine {
           note:
               'Sidereal solar ingress at ${formatPanchangTime(ingress, city, date)}.',
         );
+        if (sign == 0) {
+          add('solar-new-year', 'Vaisakhi / Solar New Year', major: true);
+        }
+        if (sign == 5) add('vishwakarma-puja', 'Vishwakarma Puja', major: true);
       } else if (sunset == null || ingress.isBefore(sunset)) {
         _addMakar(add, ingress, city, date);
       }
@@ -1417,6 +1575,30 @@ class PanchangEngine {
               30)
           .floor()
           .clamp(0, 11);
+
+  /// Whether Makar Sankranti is observed on [date] (Lohri is its eve).
+  bool _makarSankrantiDay(DateTime date, PanchangCity city, _SolarDays days) {
+    var found = false;
+    _addSankranti(
+      (id, name, {major = false, note = ''}) {
+        if (id == 'sankranti-9') found = true;
+      },
+      city,
+      date,
+      days.of(date).sunset,
+      days,
+    );
+    return found;
+  }
+
+  /// Ganga Dussehra keeps Jyeshtha Shukla Dashami, in the Adhika month when
+  /// there is one (Drik: 25 May 2026), so not again in the Nija month.
+  bool _gangaDussehraMonth(_Occurrence dashami) {
+    if (dashami.month == 'Adhika Jyeshtha') return true;
+    if (dashami.month != 'Jyeshtha') return false;
+    final month = _monthFor(dashami.start.subtract(const Duration(days: 29)));
+    return !(month.adhika && _lunarMonths[month.index] == 'Jyeshtha');
+  }
 
   void _addMakar(
     void Function(String, String, {bool major, String note}) add,
