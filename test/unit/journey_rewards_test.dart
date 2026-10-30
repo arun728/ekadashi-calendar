@@ -61,6 +61,55 @@ void main() {
   setUpAll(tzdata.initializeTimeZones);
   setUp(() => SharedPreferences.setMockInitialValues({}));
   test(
+    'year scope excludes future progress but retains original lifetime and resets next milestone',
+    () {
+      final a = journeyEvents(2026),
+          b = journeyEvents(2027, extra: true),
+          es = [...a, ...b];
+      final s = summary(
+        es,
+        a.take(3).map(journeyRecord).toList(),
+        now: DateTime.utc(2026, 10, 31, 12),
+      );
+      final earned = JourneyBadgeEvaluator.evaluate(
+        summary: s,
+        current: {},
+        now: journeyNow,
+      ).updated;
+      final future = s.scoped(toYear: 2027);
+      expect(future.currentStreak, 0);
+      expect(future.longestStreak, 0);
+      expect(future.observedCount, 0);
+      expect(future.year(2027).points, 0);
+      expect(future.year(2027).maximumPoints, 4100);
+      expect(future.nextMilestone(earned)?.id, 'first_vrat');
+      expect(s.lifetimePoints, 300);
+      expect(s.visibleYears, [2026]);
+      expect(s.scoped().observedCount, 3);
+    },
+  );
+  test(
+    'January rollover puts current year first and keeps only elapsed consolidated progress',
+    () {
+      final a = journeyEvents(2026),
+          b = journeyEvents(2027, extra: true),
+          es = [...a, ...b];
+      final s = summary(es, [
+        journeyRecord(a[a.length - 2]),
+        journeyRecord(a.last),
+        journeyRecord(b.first, ObservanceStatus.partial),
+      ], now: DateTime.utc(2027, 1, 5, 12));
+      expect(s.visibleYears, [2027, 2026]);
+      expect(s.scoped().currentStreak, 3);
+      expect(s.scoped(toYear: 2026).currentStreak, 2);
+      expect(s.scoped(toYear: 2027).currentStreak, 1);
+      expect(s.scoped(toYear: 2027).observedCount, 0);
+      expect(s.scoped(toYear: 2027).partialCount, 1);
+      expect(s.scoped().eligibleSegments.length, 25);
+    },
+  );
+
+  test(
     'consistency includes partial, ignores trailing empties and breaks on internal gaps or misses',
     () {
       final es = journeyEvents(2026);

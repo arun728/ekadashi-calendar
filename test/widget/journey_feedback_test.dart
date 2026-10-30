@@ -14,7 +14,7 @@ import 'package:ekadashi_calendar/screens/vrat_tracker/record_vrat_dialog.dart';
 import 'package:ekadashi_calendar/screens/vrat_tracker/vrat_tracker_screen.dart';
 import 'package:ekadashi_calendar/widgets/ios_style.dart';
 import 'package:ekadashi_calendar/widgets/glass_look.dart';
-import '../unit/journey_rewards_test.dart' show journeyEvents;
+import '../unit/journey_rewards_test.dart' show journeyEvents, journeyRecord;
 
 void main() {
   setUp(() {
@@ -198,6 +198,87 @@ void main() {
           );
         }
       }
+    },
+  );
+
+  testWidgets(
+    'future year has zero scoped progress, preserves lifetime, and Overview has no recording',
+    (tester) async {
+      final es = [...journeyEvents(2026), ...journeyEvents(2027, extra: true)];
+      final tracker = VratTrackerService(
+        now: () => DateTime.utc(2026, 10, 31, 12),
+      );
+      await tracker.init(occurrences: es);
+      for (final e in es.take(3)) {
+        await tracker.recordVrat(
+          ekadashiOccurrenceId: e.id,
+          occurrenceUid: e.occurrenceUid,
+          ekadashiDate: e.date.toIso8601String().substring(0, 10),
+          ekadashiName: e.name,
+          status: ObservanceStatus.observed,
+          occurrences: es,
+        );
+      }
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider.value(value: tracker),
+            ChangeNotifierProvider(create: (_) => LanguageService()),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: VratTrackerScreen(
+                ekadashiList: es,
+                currentTimezone: 'Asia/Kolkata',
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('journey_overview_year')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('2027').last);
+      await tester.pumpAndSettle();
+      expect(find.text('Current consistency streak · 0'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byKey(const Key('journey_lifetime_points')),
+          matching: find.text('300'),
+        ),
+        findsOneWidget,
+      );
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('journey_metric_total_observed')),
+        300,
+        scrollable: find.byType(Scrollable).last,
+      );
+      for (final id in ['current_streak', 'longest_streak', 'total_observed']) {
+        expect(
+          find.descendant(
+            of: find.byKey(Key('journey_metric_$id')),
+            matching: find.text('0'),
+          ),
+          findsOneWidget,
+        );
+      }
+      await tester.scrollUntilVisible(
+        find.text('First Step'),
+        200,
+        scrollable: find.byType(Scrollable).last,
+      );
+      expect(find.text('First Step'), findsOneWidget);
+      await tester.drag(find.byType(Scrollable).last, const Offset(0, -1800));
+      await tester.pumpAndSettle();
+      expect(find.text('Record Observance'), findsNothing);
+      expect(
+        find.byWidgetPredicate(
+          (w) =>
+              w.key is ValueKey<String> &&
+              (w.key! as ValueKey<String>).value.startsWith('journey_row_'),
+        ),
+        findsNothing,
+      );
     },
   );
 
