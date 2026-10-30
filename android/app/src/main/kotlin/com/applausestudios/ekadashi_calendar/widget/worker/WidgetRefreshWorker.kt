@@ -15,8 +15,8 @@ import java.util.concurrent.TimeUnit
  * Responsibilities:
  * 1. Reads cached shared data from WidgetStorage.
  * 2. Determines current state and updates widget UI.
- * 3. Enqueues the next one-shot execution at the exact upcoming state transition
- *    (e.g., fasting start, parana start, parana end) without polling.
+ * 3. Requests the next best-effort update at a state boundary, Home-city midnight,
+ *    or a 15-minute remaining-progress tick. Android controls delivery.
  * 4. NEVER executes network operations.
  */
 class WidgetRefreshWorker(
@@ -40,9 +40,7 @@ class WidgetRefreshWorker(
             }
 
             val now = Instant.now()
-            val candidates = (listOfNotNull(result.payload.nextEkadashi) + result.payload.upcomingEkadashis)
-                .flatMap { listOfNotNull(it.fastingStartInstant, it.paranaStartInstant, it.paranaEndInstant) }
-            val nextTransition = candidates.filter { it.isAfter(now) }.minOrNull()
+            val nextTransition = com.applausestudios.ekadashi_calendar.widget.model.WidgetTimeline.nextRefresh(result.payload, now)
             if (nextTransition != null) {
                 val delayMs = Duration.between(now, nextTransition).toMillis().coerceAtLeast(1000)
                 Log.i(TAG, "Scheduling next widget transition in ${delayMs / 1000}s (at $nextTransition)")

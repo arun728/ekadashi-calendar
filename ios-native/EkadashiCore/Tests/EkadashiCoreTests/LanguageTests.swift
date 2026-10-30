@@ -5,6 +5,16 @@ import XCTest
 /// Phase 2 (docs/ROADMAP.md): one app language for every tab, including
 /// Panchang, in a fixed order where new languages are only ever appended.
 final class AppLanguageTests: XCTestCase {
+    func testGlassLookSettingHasBothStringsInEveryLanguage() {
+        for language in Localizer.languages {
+            for key in ["ios_glass_look", "ios_glass_look_desc"] {
+                let value = Localizer.shared.translate(key, language: language)
+                XCTAssertNotEqual(value, key, "\(language) \(key)")
+                if language != "en" { XCTAssertNil(value.range(of: "[A-Za-z]", options: .regularExpression), language) }
+            }
+        }
+    }
+
     func testLanguagesKeepTheirOrderAndNewOnesAreAppended() {
         // Never reorder: add Bengali, Gujarati, ... after Telugu.
         XCTAssertEqual(Array(AppLanguage.all.map(\.code).prefix(4)), ["en", "hi", "ta", "te"])

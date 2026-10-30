@@ -4,9 +4,9 @@
     <string name="widget_a_title">एकादशी</string>
     <string name="widget_b_title">आज की एकादशी</string>
     <string name="widget_c_title">आगामी एकादशियाँ</string>
-    <string name="widget_a_description">आज की एकादशी और व्रत की प्रगति, या अगली एकादशी और बचे हुए दिन।</string>
-    <string name="widget_b_description">आज की एकादशी और व्रत की प्रगति, या अगली एकादशी और बचे हुए दिन।</string>
-    <string name="widget_c_description">आने वाली एकादशियाँ एक नज़र में।</string>
+    <string name="widget_a_description">वर्तमान एकादशी, व्रत की प्रगति और पारण, या अगली एकादशी और उसका समय।</string>
+    <string name="widget_b_description">वर्तमान एकादशी, व्रत की प्रगति और पारण, या अगली एकादशी और उसका समय।</string>
+    <string name="widget_c_description">आने वाली पाँच एकादशियाँ। किसी एकादशी पर टैप करके उसका होम कार्ड खोलें।</string>
     <string name="widget_title">एकादशी कैलेंडर</string>
     <string name="widget_next_ekadashi">अगली एकादशी</string>
     <string name="widget_fasting_active">व्रत चल रहा है</string>
@@ -45,4 +45,10 @@
     <string name="widget_am">पूर्वाह्न</string>
     <string name="widget_pm">अपराह्न</string>
     <string name="widget_seed_location">भारत (भारतीय समय)</string>
+    <string name="widget_today_is_ekadashi">आज एकादशी है</string>
+    <string name="widget_tomorrow">कल</string>
+    <string name="widget_days_to_go">{value0} दिन बाकी</string>
+    <string name="widget_remaining">शेष</string>
+    <string name="widget_no_next">उपलब्ध पंचांग में अगली एकादशी नहीं है</string>
+    <string name="widget_parana_short">पारण</string>
 </resources>

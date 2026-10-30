@@ -197,14 +197,7 @@ void main() {
         contains('America/New_York'),
       );
       await binding.takeScreenshot('v2_panchang_worldwide');
-      // The calculation notes (formerly the Guide tab) open from the toolbar.
-      await tester.tap(find.byKey(const Key('panchang_notes')));
-      await frames(tester);
-      final notes = find.byKey(const Key('panchang_notes_sheet'));
-      expect(notes, findsOneWidget);
-      await binding.takeScreenshot('v2_panchang_guide');
-      Navigator.of(tester.element(notes)).pop();
-      await frames(tester);
+      expect(find.byKey(const Key('panchang_notes')), findsNothing);
       final lang = tester
           .element(find.byType(MaterialApp).first)
           .read<LanguageService>();

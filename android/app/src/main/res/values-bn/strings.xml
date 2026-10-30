@@ -4,9 +4,9 @@
     <string name="widget_a_title">একাদশী</string>
     <string name="widget_b_title">আজ একাদশী</string>
     <string name="widget_c_title">আসন্ন একাদশীগুলো</string>
-    <string name="widget_a_description">আজকের একাদশী ও আপনার উপবাসের অগ্রগতি, অথবা পরবর্তী একাদশী ও বাকি দিন।</string>
-    <string name="widget_b_description">আজকের একাদশী ও আপনার উপবাসের অগ্রগতি, অথবা পরবর্তী একাদশী ও বাকি দিন।</string>
-    <string name="widget_c_description">এক নজরে পরবর্তী একাদশীগুলো।</string>
+    <string name="widget_a_description">বর্তমান একাদশী, উপবাসের অগ্রগতি ও পারণ, অথবা পরবর্তী একাদশী এবং তার সময়।</string>
+    <string name="widget_b_description">বর্তমান একাদশী, উপবাসের অগ্রগতি ও পারণ, অথবা পরবর্তী একাদশী এবং তার সময়।</string>
+    <string name="widget_c_description">পরবর্তী পাঁচটি একাদশী। কোনো একাদশীতে ট্যাপ করে তার হোম কার্ড খুলুন।</string>
     <string name="widget_title">একাদশী ক্যালেন্ডার</string>
     <string name="widget_next_ekadashi">পরবর্তী একাদশী</string>
     <string name="widget_fasting_active">উপবাস চলছে</string>
@@ -45,4 +45,10 @@
     <string name="widget_am">পূর্বাহ্ণ</string>
     <string name="widget_pm">অপরাহ্ণ</string>
     <string name="widget_seed_location">ভারত (ভারতীয় সময়)</string>
+    <string name="widget_today_is_ekadashi">আজ একাদশী</string>
+    <string name="widget_tomorrow">আগামীকাল</string>
+    <string name="widget_days_to_go">আর {value0} দিন</string>
+    <string name="widget_remaining">বাকি</string>
+    <string name="widget_no_next">উপলব্ধ সময়সূচিতে পরবর্তী একাদশী নেই</string>
+    <string name="widget_parana_short">পারণ</string>
 </resources>

@@ -11,8 +11,9 @@
     android:resizeMode="horizontal|vertical"
     android:updatePeriodMillis="3600000"
     android:description="@string/widget_c_description"
+    android:initialKeyguardLayout="@layout/widget_large"
     android:initialLayout="@layout/widget_large"
     android:previewLayout="@layout/preview_widget_upcoming"
     android:previewImage="@drawable/widget_preview_large"
-    android:widgetCategory="home_screen">
+    android:widgetCategory="home_screen|keyguard">
 </appwidget-provider>

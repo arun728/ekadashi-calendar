@@ -16,12 +16,11 @@ import '../services/ekadashi_settings.dart';
 import '../services/language_service.dart';
 import 'widgets/ekadashi_share_card.dart';
 import '../widgets/app_icons.dart';
+import '../widgets/ios_style.dart';
 
 /// Opens the share card of [event] (Home's share button, Details).
 Future<void> openShareCard(BuildContext context, EkadashiDate event) =>
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => ShareCardScreen(event: event)),
-    );
+    showAppSheet<void>(context, builder: (_) => ShareCardScreen(event: event));
 
 /// Preview of an Ekadashi share card with Share (the image and a message
 /// with the Play Store link) and Save to Gallery (ShareCardSheet.swift).
@@ -132,7 +131,16 @@ class _ShareCardScreenState extends State<ShareCardScreen> {
     );
     const teal = Color(0xFF00A19B);
     return Scaffold(
-      appBar: AppBar(title: Text(lang.translate('share_card_title'))),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(56),
+        child: SheetBar(
+          title: lang.translate('share_card_title'),
+          leading: BarTextButton(
+            label: lang.translate('cancel'),
+            onPressed: () => Navigator.of(context).maybePop(),
+          ),
+        ),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
@@ -165,19 +173,6 @@ class _ShareCardScreenState extends State<ShareCardScreen> {
               Row(
                 children: [
                   Expanded(
-                    child: FilledButton.icon(
-                      key: const Key('share_card_share'),
-                      onPressed: _busy ? null : _share,
-                      style: FilledButton.styleFrom(
-                        backgroundColor: teal,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                      icon: const Icon(AppIcons.share),
-                      label: Text(lang.translate('share')),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
                     child: OutlinedButton.icon(
                       key: const Key('share_card_save'),
                       onPressed: _busy ? null : _save,
@@ -187,6 +182,19 @@ class _ShareCardScreenState extends State<ShareCardScreen> {
                       ),
                       icon: const Icon(AppIcons.save),
                       label: Text(lang.translate('share_card_save')),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: FilledButton.icon(
+                      key: const Key('share_card_share'),
+                      onPressed: _busy ? null : _share,
+                      style: FilledButton.styleFrom(
+                        backgroundColor: teal,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      icon: const Icon(AppIcons.share),
+                      label: Text(lang.translate('share')),
                     ),
                   ),
                 ],

@@ -44,7 +44,8 @@ final class AppModel {
     @ObservationIgnored private var pickerContinuation: CheckedContinuation<GoogleCalendarPickerResult, Never>?
     @ObservationIgnored private var started = false
     @ObservationIgnored private var pendingRoute: AppRoute?
-    @ObservationIgnored private var observanceCache: [String: [DatedObservance]] = [:]
+    @ObservationIgnored private var hasOpenedHomeOccurrence = false
+    @ObservationIgnored let panchangData = PanchangDataStore()
     @ObservationIgnored private var schedulingTask: Task<Void, Never>?
 
     let premium: StoreKitPremiumService
@@ -52,6 +53,8 @@ final class AppModel {
 
     private(set) var language: String
     private(set) var isDarkMode: Bool
+    private(set) var isGlassLookEnabled: Bool
+    static let glassLookKey = "ios_glass_look_enabled"
     private(set) var locationState: LocationState = .unknown
     /// Where Home and Calendar calculate Ekadashis: the place the user set,
     /// else the last detected one, else Chennai.
@@ -79,6 +82,8 @@ final class AppModel {
     /// The search to show again when it reopens from that way back.
     var restoredSearch: SearchSession?
     var homeIndex = 0
+    /// Rebuild Home navigation when an occurrence link must return to its root.
+    private(set) var homeNavigationRevision = 0
     var calendarFocus: CivilDate?
     /// A day to open in Panchang (from an event reminder).
     var panchangFocus: CivilDate?
@@ -89,12 +94,12 @@ final class AppModel {
     /// Bumped when Home sets the Panchang location.
     private(set) var panchangCityRevision = 0
 
-    init() {
+    init(store injectedStore: KeyValueStore? = nil) {
         let group = Bundle.main.object(forInfoDictionaryKey: "EkadashiAppGroup") as? String ?? ""
         // UI tests start from a clean, already-launched English state.
-        let store: KeyValueStore = ProcessInfo.processInfo.arguments.contains("-ui-testing")
+        let store: KeyValueStore = injectedStore ?? ((ProcessInfo.processInfo.arguments.contains("-ui-testing") || DisplayClock.isSimulationSession)
             ? InMemoryKeyValueStore(["has_launched": true, "language_code": "en"])
-            : UserDefaultsKeyValueStore(defaults: UserDefaults(suiteName: group) ?? .standard)
+            : UserDefaultsKeyValueStore(defaults: UserDefaults(suiteName: group) ?? .standard))
         let premium = StoreKitPremiumService()
         let snapshot = premium.snapshot
         self.store = store
@@ -105,9 +110,10 @@ final class AppModel {
         schedule = repository.map { EkadashiSchedule(repository: $0, cacheDirectory: caches) }
         language = store.string(forKey: "language_code").flatMap { Localizer.languages.contains($0) ? $0 : nil } ?? Self.systemLanguage
         isDarkMode = store.bool(forKey: "is_dark_mode") ?? true
+        isGlassLookEnabled = store.bool(forKey: Self.glassLookKey) ?? false
         ekadashiCity = Self.loadCity(store) ?? Self.defaultCity
         ekadashiCityIsManual = store.bool(forKey: Self.manualCityKey) ?? false
-        tradition = store.string(forKey: Self.traditionKey).flatMap(EkadashiTradition.init(rawValue:)) ?? .smarta
+        tradition = store.string(forKey: Self.traditionKey).flatMap(EkadashiTradition.init(rawValue:)) ?? .gaudiya
         let years = EkadashiYears.enabled()
         selectedYear = store.string(forKey: Self.yearKey).flatMap(Int.init).flatMap { years.contains($0) ? $0 : nil }
             ?? EkadashiYears.defaultYear(today: CivilDate.today(), enabled: years)
@@ -116,8 +122,8 @@ final class AppModel {
         recents = RecentSearches(store: store)
         let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         try? FileManager.default.createDirectory(at: support, withIntermediateDirectories: true)
-        entries = (try? FileCalendarEntryStore(url: support.appendingPathComponent("calendar_entries.json")))
-            ?? InMemoryCalendarEntryStore()
+        entries = DisplayClock.isSimulationSession ? InMemoryCalendarEntryStore() :
+            ((try? FileCalendarEntryStore(url: support.appendingPathComponent("calendar_entries.json"))) ?? InMemoryCalendarEntryStore())
         registry = FirestoreFreeSyncRegistry.fromConfiguration(
             apiKey: Bundle.main.object(forInfoDictionaryKey: "EkadashiFirebaseApiKey") as? String,
             projectId: Bundle.main.object(forInfoDictionaryKey: "EkadashiFirebaseProjectId") as? String)
@@ -159,7 +165,7 @@ final class AppModel {
     }
 
     var scheduleZone: TzLocation { ekadashiCity.zone }
-    var today: CivilDate { scheduleZone.wallClock(Date()).date }
+    var today: CivilDate { scheduleZone.wallClock(DisplayClock.date(Date())).date }
     var locationName: String { if case .located(let city) = locationState { return city }; return "" }
 
     /// Place names Apple's geocoder gave in the app language (see [placeName]).
@@ -238,7 +244,7 @@ final class AppModel {
         guard !started, !Self.isHostingUnitTests else { return }
         started = true
         prepareCitySearch()
-        reload(scrollToNext: true)
+        reload(scrollToNext: !hasOpenedHomeOccurrence)
         await premium.start()
         premium.startRecheck()
         if store.bool(forKey: "has_launched") != true {
@@ -267,6 +273,10 @@ final class AppModel {
     /// in v1); without a fix the last known (or chosen) city stays, else
     /// Chennai.
     func handleLocation(atLaunch: Bool = false) async {
+        if DisplayClock.isSimulationSession {
+            locationState = .located(ekadashiCityName)
+            return
+        }
         locationState = .detecting
         var fix = await location.currentFix(store: store)
         if fix == nil, location.hasPermission { fix = location.cachedFix(store: store) }
@@ -279,7 +289,9 @@ final class AppModel {
         } else {
             locationState = location.isDenied ? .denied : .unknown
         }
-        reload(scrollToNext: true)
+        // Launch location arrives after the first schedule and URL delivery.
+        // Keep a widget-selected occurrence through that second calculation.
+        reload(scrollToNext: !atLaunch || !hasOpenedHomeOccurrence)
     }
 
     private func useDetected(_ fix: LocationService.Fix, atLaunch: Bool = false) {
@@ -359,7 +371,7 @@ final class AppModel {
         guard enabledYears.contains(year), year != selectedYear else { return }
         selectedYear = year
         store.set(String(year), forKey: Self.yearKey)
-        homeIndex = HomeSelection.index(of: homeEkadashis, now: Date(), zone: scheduleZone, includeParana: true)
+        homeIndex = HomeSelection.index(of: homeEkadashis, now: DisplayClock.date(Date()), zone: scheduleZone, includeParana: true)
         calendarFocus = year == today.year ? today : CivilDate(year, 1, 1)
     }
 
@@ -368,7 +380,7 @@ final class AppModel {
         guard enabledYears.contains(year), year != selectedYear else { return }
         selectedYear = year
         store.set(String(year), forKey: Self.yearKey)
-        homeIndex = HomeSelection.index(of: homeEkadashis, now: Date(), zone: scheduleZone, includeParana: true)
+        homeIndex = HomeSelection.index(of: homeEkadashis, now: DisplayClock.date(Date()), zone: scheduleZone, includeParana: true)
     }
 
     static let cityKey = "ekadashi_city"
@@ -393,6 +405,7 @@ final class AppModel {
     /// A newly detected place becomes the Ekadashi city unless the user picked
     /// one on Home; the schedule recalculates only when the place moved.
     func refreshLocationOnResume() async {
+        guard !DisplayClock.isSimulationSession else { return }
         guard started, !refreshingLocation, locationState != .detecting else { return }
         refreshingLocation = true
         defer { refreshingLocation = false }
@@ -460,6 +473,7 @@ final class AppModel {
         let shown = homeEkadashis
         let current = shown.indices.contains(homeIndex) ? shown[homeIndex].occurrenceUid : nil
         ekadashis = list
+        lifecycleScheduleRevision += 1
         loadError = nil
         isLoading = false
         isCalculating = false
@@ -468,8 +482,9 @@ final class AppModel {
         if !scrollToNext, let current, let index = home.firstIndex(where: { $0.occurrenceUid == current }) {
             homeIndex = index
         } else {
-            homeIndex = HomeSelection.index(of: home, now: Date(), zone: scheduleZone, includeParana: true)
+            homeIndex = HomeSelection.index(of: home, now: DisplayClock.date(Date()), zone: scheduleZone, includeParana: true)
         }
+        if scrollToNext { selectCurrentOccurrence(now: DisplayClock.date(Date())) }
         syncWidgets()
         Task { await scheduleReminders() }
         if let route = pendingRoute {
@@ -491,6 +506,11 @@ final class AppModel {
         store.set(code, forKey: "language_code")
         prepareCitySearch()
         reload()
+    }
+
+    func setGlassLook(_ enabled: Bool) {
+        isGlassLookEnabled = enabled
+        store.set(enabled, forKey: Self.glassLookKey)
     }
 
     func setDarkMode(_ on: Bool) {
@@ -528,6 +548,7 @@ final class AppModel {
     }
 
     private func scheduleRemindersNow() async {
+        guard !DisplayClock.isSimulationSession else { return }
         let settings = ReminderSettings.load(from: store)
         guard settings.enabled, await notifications.isAuthorized() else {
             await notifications.cancelAll()
@@ -556,11 +577,12 @@ final class AppModel {
     func syncWidgets() {
         guard !ekadashis.isEmpty else { return }
         WidgetBridge.publish(WidgetSnapshot.build(occurrences: ekadashis, timezone: ekadashiCity.timeZoneId,
-                                                  locationName: ekadashiCityName, language: language, now: Date(),
+                                                  locationName: ekadashiCityName, language: language, now: DisplayClock.date(Date()),
                                                   tradition: tradition.rawValue))
     }
 
     func scheduleBackgroundRefresh() {
+        guard !DisplayClock.isSimulationSession else { return }
         let request = BGAppRefreshTaskRequest(identifier: Self.refreshTaskId)
         request.earliestBeginDate = Date().addingTimeInterval(6 * 3600)
         try? BGTaskScheduler.shared.submit(request)
@@ -608,13 +630,21 @@ final class AppModel {
         }
         searchReturn.clear()
         switch route {
+        case .ekadashi(let uid):
+            guard let event = ekadashis.first(where: { $0.occurrenceUid == uid }) else { return }
+            hasOpenedHomeOccurrence = true
+            showSearch = false
+            selectedTab = .today
+            setYear(event.date.year)
+            if let index = homeEkadashis.firstIndex(where: { $0.occurrenceUid == uid }) { homeIndex = index }
+            homeNavigationRevision += 1
         case .search:
             restoredSearch = nil
             showSearch = true
         case .tab(let tab):
             showSearch = false
             selectedTab = tab
-            if tab == .today { homeIndex = HomeSelection.index(of: homeEkadashis, now: Date(), zone: scheduleZone, includeParana: true) }
+            if tab == .today { homeIndex = HomeSelection.index(of: homeEkadashis, now: DisplayClock.date(Date()), zone: scheduleZone, includeParana: true) }
         case .calendar(let date):
             showSearch = false
             selectedTab = .calendar
@@ -646,15 +676,39 @@ final class AppModel {
         selectedTab = tab
     }
 
-    /// Tapping the selected tab again: Today skips to the strictly next
-    /// Ekadashi; Calendar returns to today.
+    /// Tapping Home again selects the same current/next lifecycle occurrence;
+    /// Calendar returns to the Home city's actual current date.
     func reselect(_ tab: AppTab) {
         if tab == .today {
-            homeIndex = HomeSelection.index(of: homeEkadashis, now: Date(), zone: scheduleZone, includeParana: false)
+            selectCurrentOccurrence(now: DisplayClock.date(Date()))
         } else if tab == .calendar {
             calendarFocus = today
         }
     }
+
+    /// Select across enabled years so Dec/Jan Parana is not lost at midnight.
+    func selectCurrentOccurrence(now: Date) {
+        guard let event = ekadashis.first(where: { $0.paranaEnd.map { now < $0 } ?? ($0.date >= scheduleZone.wallClock(now).date) }) else { return }
+        if selectedYear != event.date.year {
+            selectedYear = event.date.year
+            store.set(String(selectedYear), forKey: Self.yearKey)
+        }
+        if let index = homeEkadashis.firstIndex(where: { $0.occurrenceUid == event.occurrenceUid }) { homeIndex = index }
+    }
+
+    /// Advance only a displayed current occurrence that just finished. Browsing
+    /// another historical/future card never causes an unsolicited page jump.
+    func refreshCurrentOccurrence(previousNow: Date, now: Date) {
+        guard let previous = ekadashis.first(where: { $0.paranaEnd.map { previousNow < $0 } ?? false }),
+              homeEkadashis.indices.contains(homeIndex),
+              homeEkadashis[homeIndex].occurrenceUid == previous.occurrenceUid,
+              let end = previous.paranaEnd, now >= end else { return }
+        selectCurrentOccurrence(now: now)
+        syncWidgets()
+    }
+
+    private(set) var lifecycleScheduleRevision = 0
+    @ObservationIgnored var lifecycleLastNow: Date?
 
     // MARK: Vrat
 
@@ -674,8 +728,17 @@ final class AppModel {
 
     /// Recording opens once the fast has happened (Parana started, or the
     /// day after); an existing record stays editable.
-    func canRecord(_ event: EkadashiOccurrence) -> Bool {
-        vrat.record(for: event.occurrenceUid) != nil || VratRecording.isOpen(event, now: Date(), zone: scheduleZone)
+    func canRecord(_ event: EkadashiOccurrence, now: Date = Date()) -> Bool {
+        !DisplayClock.isSimulationSession && (vrat.record(for: event.occurrenceUid) != nil || VratRecording.isOpen(event, now: DisplayClock.date(now), zone: scheduleZone))
+    }
+
+    /// A closed fast still responds with the same localized explanation as Details.
+    func requestVratRecording(_ event: EkadashiOccurrence, now: Date = Date()) -> Bool {
+        guard canRecord(event, now: now) else {
+            show("journey_record_after_parana")
+            return false
+        }
+        return true
     }
 
     // MARK: Premium paywall
@@ -796,16 +859,9 @@ final class AppModel {
         return result
     }
 
-    /// A year of observances at [city], calculated off the main thread and
-    /// kept for the session (Key days and search share it).
+    /// Session reuse shared by all Panchang pages, search and reminders.
     func panchangObservances(year: Int, city: PanchangCity) async -> [DatedObservance] {
-        let key = "\(city.id)|\(city.latitude)|\(city.longitude)|\(city.timeZoneId)|\(year)"
-        if let cached = observanceCache[key] { return cached }
-        let calculated = await Task.detached(priority: .userInitiated) {
-            PanchangEngine().observanceCalendar(year: year, city: city)
-        }.value
-        observanceCache[key] = calculated
-        return calculated
+        await panchangData.observances(year: year, city: city)
     }
 
     var calendarYears: ClosedRange<Int>? {

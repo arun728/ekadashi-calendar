@@ -340,21 +340,31 @@ void main() {
       );
     });
 
-    testWidgets('No Ekadashi sits below the grid, left aligned', (
-      tester,
-    ) async {
+    testWidgets('No Ekadashi sits below the grid, centered', (tester) async {
       await open(tester);
       await tester.tap(find.byKey(const Key('calendar_filter_ekadashi')));
       await tester.pumpAndSettle();
       await select(tester, DateTime(2026, 10, 1));
-      final empty = find.byKey(const Key('calendar_no_ekadashi'));
-      expect(empty, findsOneWidget);
-      expect(
-        tester.getRect(empty).top,
-        greaterThan(tester.getRect(grid).bottom),
-      );
-      expect(tester.getRect(empty).left, closeTo(16, 1));
-      expect(tester.widget<Text>(empty).style?.fontSize, IosText.subheadline);
+      for (final code in AppLanguage.codes) {
+        await language.changeLanguage(code);
+        await tester.pumpAndSettle();
+        final empty = find.byKey(const Key('calendar_no_ekadashi'));
+        expect(empty, findsOneWidget);
+        expect(
+          tester.widget<Text>(empty).data,
+          AppStrings.translate('no_ekadashi', code),
+        );
+        expect(
+          tester.getRect(empty).top,
+          greaterThan(tester.getRect(grid).bottom),
+        );
+        expect(tester.widget<Text>(empty).textAlign, TextAlign.center);
+        expect(
+          tester.getRect(empty).center.dx,
+          closeTo(tester.getRect(grid).center.dx, 1),
+        );
+        expect(tester.takeException(), isNull);
+      }
     });
 
     testWidgets('the month picker is a wheel sheet with Cancel and Done', (

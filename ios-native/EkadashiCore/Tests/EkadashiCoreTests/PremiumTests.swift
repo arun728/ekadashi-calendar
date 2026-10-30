@@ -111,6 +111,16 @@ final class PremiumTests: XCTestCase {
 
     // MARK: plan choice
 
+    func testUnavailablePlansPendingPurchasesAndUnknownProductsAreSafe() {
+        XCTAssertNil(PremiumPlanID(productId: "unknown_product"))
+        let state = PremiumState()
+        XCTAssertNil(state.defaultPlan(available: [], pending: false))
+        XCTAssertEqual(state.defaultPlan(available: [.monthly], pending: true), .monthly)
+        XCTAssertFalse(state.canBuy(.monthly, pending: true))
+        XCTAssertEqual(PremiumState.subscriptionYear(purchasedAt: local(2027, 1), now: local(2026, 12), calendar: calendar),
+            DateInterval(start: local(2027, 1), end: local(2028, 1)))
+    }
+
     func testAFreeUserCanBuyEveryPlan() {
         var state = PremiumState()
         state.apply(owned: [])
@@ -140,12 +150,16 @@ final class PremiumTests: XCTestCase {
         XCTAssertTrue(state.canBuy(.monthly, pending: false))
     }
 
-    func testDefaultPlanPrefersYearlyThenWhatCanBeBought() {
+    func testDefaultPlanSuggestsTheNextUpgradeAndRetainsLifetime() {
         var state = PremiumState()
         state.apply(owned: [])
         XCTAssertEqual(state.defaultPlan(available: [.monthly, .yearly, .lifetime], pending: false), .yearly)
         state.apply(owned: [owned(PremiumProduct.yearly, renews: true)])
-        XCTAssertEqual(state.defaultPlan(available: [.monthly, .yearly, .lifetime], pending: false), .monthly)
+        XCTAssertEqual(state.defaultPlan(available: [.monthly, .yearly, .lifetime], pending: false), .lifetime)
+        state.apply(owned: [owned(PremiumProduct.monthly, renews: true)])
+        XCTAssertEqual(state.defaultPlan(available: [.monthly, .yearly, .lifetime], pending: false), .yearly)
+        state.apply(owned: [owned(PremiumProduct.lifetime)])
+        XCTAssertEqual(state.defaultPlan(available: [.monthly, .yearly, .lifetime], pending: false), .lifetime)
         XCTAssertEqual(PremiumPlanID.allCases.map(\.productId),
                        ["ekadashi_premium_monthly", "ekadashi_premium_yearly", "ekadashi_premium_lifetime"])
     }

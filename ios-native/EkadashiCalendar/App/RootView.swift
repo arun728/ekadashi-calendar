@@ -6,11 +6,13 @@ import EkadashiCore
 /// Liquid Glass.
 struct RootView: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         @Bindable var model = model
         TabView(selection: tabSelection) {
             screen(TodayView(), tab: .today)
+                .id(model.homeNavigationRevision)
                 .tabItem { Label(model.t("home"), systemImage: AppSymbol.tabHome) }
                 .tag(AppTab.today)
             screen(CalendarView(), tab: .calendar)
@@ -46,6 +48,37 @@ struct RootView: View {
                 .presentationDetents([.medium])
         }
         .toast($model.toast)
+        .task(id: "\(scenePhase)-\(model.lifecycleScheduleRevision)") {
+            guard scenePhase == .active else { return }
+            while !Task.isCancelled {
+                let now = DisplayClock.date(Date())
+                model.refreshCurrentOccurrence(previousNow: model.lifecycleLastNow ?? now, now: now)
+                model.lifecycleLastNow = now
+                let end = model.ekadashis.compactMap(\.paranaEnd).first { $0 > now }
+                var delay = min(3600, max(0.05, end?.timeIntervalSince(now) ?? 3600))
+                #if DEBUG
+                if DisplayClock.isSimulationSession { delay = 0.25 }
+                #endif
+                do { try await Task.sleep(for: .seconds(delay)) } catch { break }
+            }
+        }
+        #if DEBUG
+        .safeAreaInset(edge: .top, spacing: 0) {
+            if DisplayClock.isSimulationSession {
+                Text(DebugClockWords.text("banner", model.language))
+                    .font(.caption2.bold()).foregroundStyle(.black).frame(maxWidth: .infinity)
+                    .padding(4).background(.yellow)
+            }
+        }
+        #endif
+    }
+
+    private var searchToolbarItem: some ToolbarContent {
+        AppToolbarItem(placement: .topBarTrailing, compact: true) {
+            Button { model.open(.search) } label: { Image(systemName: AppSymbol.search) }
+                .accessibilityLabel(model.t("search"))
+                .accessibilityIdentifier("open_global_search")
+        }
     }
 
     /// Re-selecting a tab runs its "go to now" action.
@@ -82,11 +115,12 @@ struct RootView: View {
             .background(AppBackground())
             .navigationTitle(model.t("app_title"))
             .navigationBarTitleDisplayMode(.inline)
+            .modifier(GlassSystemBarAppearance())
             .toolbar {
                 // A search result opened this tab: go back to its results,
                 // like a back button (the result was not pushed here).
                 if model.searchReturn.showsBack(on: tab) {
-                    ToolbarItem(placement: .topBarLeading) {
+                    AppToolbarItem(placement: .topBarLeading) {
                         Button { model.returnToSearch() } label: {
                             HStack(spacing: 3) {
                                 Image(systemName: AppSymbol.back).fontWeight(.semibold)
@@ -96,15 +130,7 @@ struct RootView: View {
                         .accessibilityIdentifier("search_return")
                     }
                 }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        model.open(.search)
-                    } label: {
-                        Image(systemName: AppSymbol.search)
-                    }
-                    .accessibilityLabel(model.t("search"))
-                    .accessibilityIdentifier("open_global_search")
-                }
+                if tab != .calendar { searchToolbarItem }
             }
         }
     }
@@ -122,5 +148,16 @@ private struct TabBarMinimize: ViewModifier {
         #else
         content
         #endif
+    }
+}
+
+private struct GlassSystemBarAppearance: ViewModifier {
+    @Environment(\.glassLookEnabled) private var enabled
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+    func body(content: Content) -> some View {
+        let active = GlassLookPolicy.isActive(preference: enabled, reduceTransparency: reduceTransparency)
+        // The bottom TabView bar is deliberately identical in both modes.
+        // Only the app-owned navigation surface changes with Glass Look.
+        content.toolbarBackground(active ? .hidden : .automatic, for: .navigationBar)
     }
 }

@@ -37,7 +37,7 @@ struct PanchangKeyDaysView: View {
                 ProgressView().tint(Theme.teal).frame(maxWidth: .infinity, minHeight: 160)
             }
         }
-        .task(id: "\(month.iso)|\(city.id)|\(city.latitude)|\(city.longitude)|\(model.language)") { await load() }
+        .task(id: "\(month.iso)|\(city.id)|\(city.latitude)|\(city.longitude)|\(city.timeZoneId)|\(model.language)") { await load() }
     }
 
     private var chips: some View {
@@ -124,7 +124,9 @@ struct PanchangKeyDaysView: View {
 
     private func load() async {
         days = nil
-        let observances = await model.panchangObservances(year: month.year, city: city)
+        let month = self.month, city = self.city, language = model.language
+        let observances = await model.panchangData.observances(month: month, city: city)
+        guard !Task.isCancelled, month == self.month, city == self.city, language == model.language else { return }
         days = PanchangKeyDays.month(month, observances: observances, ekadashis: model.ekadashis, language: model.language)
     }
 }

@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'glass_look.dart';
+import 'app_icons.dart';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -111,6 +113,9 @@ class GlassPanel extends StatelessWidget {
           child: content,
         ),
       );
+    }
+    if (GlassLook.active(context)) {
+      return ClearGlassSurface(radius: radius, tint: tint, child: content);
     }
     return ClipRRect(
       borderRadius: shape,
@@ -274,10 +279,17 @@ abstract final class IosButtons {
     Color color = IosColors.teal,
   }) => OutlinedButton.styleFrom(
     foregroundColor: color,
-    backgroundColor: color.withValues(alpha: .10),
+    backgroundColor: GlassLook.active(context)
+        ? Colors.white.withValues(alpha: .018)
+        : color.withValues(alpha: .10),
     disabledForegroundColor: IosColors.tertiary(context),
     shape: const StadiumBorder(),
-    side: BorderSide(color: color.withValues(alpha: .28), width: .7),
+    side: BorderSide(
+      color: GlassLook.active(context)
+          ? Colors.white.withValues(alpha: .18)
+          : color.withValues(alpha: .28),
+      width: .7,
+    ),
     padding: EdgeInsets.symmetric(vertical: vertical, horizontal: 18),
   );
 
@@ -332,6 +344,66 @@ class BarTextButton extends StatelessWidget {
   );
 }
 
+/// Matches an iOS toolbar icon's circle, glyph and 44 point touch target.
+/// The semantic role stays explicit: X for Premium, down for Search, back
+/// for pushed pages. Only the glass surface changes with the preference.
+class BarIconButton extends StatelessWidget {
+  const BarIconButton({
+    super.key,
+    required this.icon,
+    required this.onPressed,
+    this.tooltip,
+    this.buttonKey,
+  });
+  final IconData icon;
+  final VoidCallback? onPressed;
+  final String? tooltip;
+  final Key? buttonKey;
+
+  @override
+  Widget build(BuildContext context) => GlassPanel(
+    radius: 999,
+    child: SizedBox.square(
+      dimension: 44,
+      child: IconButton(
+        key: buttonKey,
+        onPressed: onPressed,
+        tooltip: tooltip,
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints.tightFor(width: 44, height: 44),
+        icon: Icon(icon, size: 22, color: IosColors.teal),
+      ),
+    ),
+  );
+}
+
+/// Leading toolbar position shared by modal close and pushed-page back.
+class LeadingBarIcon extends StatelessWidget {
+  const LeadingBarIcon({
+    super.key,
+    this.icon = AppIcons.back,
+    this.onPressed,
+    this.tooltip,
+    this.buttonKey,
+  });
+  final IconData icon;
+  final VoidCallback? onPressed;
+  final String? tooltip;
+  final Key? buttonKey;
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsetsDirectional.only(start: 16, end: 8),
+    child: Center(
+      child: BarIconButton(
+        icon: icon,
+        buttonKey: buttonKey,
+        tooltip: tooltip ?? MaterialLocalizations.of(context).backButtonTooltip,
+        onPressed: onPressed ?? () => Navigator.of(context).maybePop(),
+      ),
+    ),
+  );
+}
+
 /// The bar at the top of a sheet: [leading] (usually Cancel), the inline
 /// title and [trailing] (Done/Save), like a SwiftUI sheet's toolbar.
 class SheetBar extends StatelessWidget {
@@ -345,7 +417,18 @@ class SheetBar extends StatelessWidget {
   Widget build(BuildContext context) => SizedBox(
     height: 56,
     child: NavigationToolbar(
-      leading: leading,
+      leading: leading == null
+          ? null
+          : Padding(
+              padding: const EdgeInsetsDirectional.only(start: 16),
+              child: Center(
+                widthFactor: 1,
+                child: SizedBox(
+                  height: 44,
+                  child: GlassPanel(radius: 999, child: leading!),
+                ),
+              ),
+            ),
       middle: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8),
         child: Text(
@@ -355,7 +438,18 @@ class SheetBar extends StatelessWidget {
           style: iosNavTitle(context),
         ),
       ),
-      trailing: trailing,
+      trailing: trailing == null
+          ? null
+          : Padding(
+              padding: const EdgeInsetsDirectional.only(end: 16),
+              child: Center(
+                widthFactor: 1,
+                child: SizedBox(
+                  height: 44,
+                  child: GlassPanel(radius: 999, child: trailing!),
+                ),
+              ),
+            ),
       middleSpacing: 8,
     ),
   );
@@ -384,7 +478,11 @@ Future<T?> showAppSheet<T>(
     useSafeArea: true,
     showDragHandle: false,
     routeSettings: routeSettings,
-    backgroundColor: IosColors.sheet(context),
+    backgroundColor: GlassLook.active(context)
+        ? (Theme.of(context).brightness == Brightness.dark
+              ? const Color(0xE0121212)
+              : const Color(0xE0F5F5F5))
+        : IosColors.sheet(context),
     clipBehavior: Clip.antiAlias,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -412,11 +510,21 @@ Future<T?> showAppSheet<T>(
                 ),
               ),
             ),
-          if (large) Expanded(child: content) else Flexible(child: content),
+          if (large)
+            Expanded(
+              child: _SheetPullDismiss(enabled: isDismissible, child: content),
+            )
+          else
+            Flexible(
+              child: _SheetPullDismiss(enabled: isDismissible, child: content),
+            ),
         ],
       );
       return BackdropFilter(
-        filter: ui.ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+        filter: ui.ImageFilter.blur(
+          sigmaX: GlassLook.active(context) ? 4 : 30,
+          sigmaY: GlassLook.active(context) ? 4 : 30,
+        ),
         child: large
             ? FractionallySizedBox(heightFactor: 1, child: body)
             : body,
@@ -425,14 +533,107 @@ Future<T?> showAppSheet<T>(
   );
 }
 
+/// At the top of a scroll view, continue a downward drag as a sheet drag.
+/// Inner scroll views and wheel/page controls keep their own gestures.
+class _SheetPullDismiss extends StatefulWidget {
+  const _SheetPullDismiss({required this.enabled, required this.child});
+  final bool enabled;
+  final Widget child;
+  @override
+  State<_SheetPullDismiss> createState() => _SheetPullDismissState();
+}
+
+class _SheetPullDismissState extends State<_SheetPullDismiss> {
+  double _pull = 0;
+  bool _closing = false;
+  AnimationController? get _animation =>
+      context.findAncestorWidgetOfExactType<BottomSheet>()?.animationController;
+  bool _scroll(ScrollNotification notification) {
+    if (!widget.enabled ||
+        _closing ||
+        notification.metrics.axis != Axis.vertical ||
+        notification.metrics is FixedExtentMetrics ||
+        notification.metrics is PageMetrics) {
+      return false;
+    }
+    if (notification.depth > 0) {
+      // A horizontal PageView (Search categories) also adds viewport depth.
+      // Ignore only genuinely nested vertical scrolling, not those pages.
+      var verticalScrollables = 0;
+      notification.context?.visitAncestorElements((element) {
+        if (element.widget case Scrollable(:final axisDirection)) {
+          if (axisDirection == AxisDirection.down ||
+              axisDirection == AxisDirection.up) {
+            verticalScrollables++;
+          }
+        }
+        return verticalScrollables < 2;
+      });
+      if (verticalScrollables > 1) return false;
+    }
+    final animation = _animation;
+    if (animation == null) return false;
+    if (notification is ScrollStartNotification &&
+        notification.dragDetails != null) {
+      _pull = 0;
+    }
+    double delta = 0;
+    if (notification is OverscrollNotification &&
+        notification.dragDetails != null &&
+        notification.metrics.extentBefore <= 0) {
+      delta = -notification.overscroll;
+    }
+    if (notification is ScrollUpdateNotification &&
+        notification.dragDetails != null &&
+        notification.metrics.pixels <= notification.metrics.minScrollExtent) {
+      delta = -(notification.scrollDelta ?? 0);
+    }
+    if (delta != 0 && (_pull > 0 || delta > 0)) {
+      _pull = (_pull + delta).clamp(0, MediaQuery.sizeOf(context).height);
+      animation.value = (1 - _pull / MediaQuery.sizeOf(context).height).clamp(
+        .05,
+        1,
+      );
+    }
+    if (notification is ScrollEndNotification && _pull > 0) {
+      if (_pull >= 100) {
+        _closing = true;
+        Navigator.of(context, rootNavigator: true).pop();
+      } else {
+        animation.forward();
+      }
+      _pull = 0;
+    }
+    return false;
+  }
+
+  @override
+  Widget build(BuildContext context) => ScrollConfiguration(
+    // A short list must still hand a downward pull to the sheet. Keep
+    // explicit wheel/page physics and the platform's normal scrolling.
+    behavior: ScrollConfiguration.of(context).copyWith(
+      physics: AlwaysScrollableScrollPhysics(
+        parent: ScrollConfiguration.of(context).getScrollPhysics(context),
+      ),
+    ),
+    child: NotificationListener<ScrollNotification>(
+      onNotification: _scroll,
+      child: widget.child,
+    ),
+  );
+}
+
 /// The iOS toast (Toast.swift): a glass panel floating above the tab bar,
 /// gone after four seconds; [actionLabel] adds a teal action.
+/// [above] anchors Home feedback above its action row in screen coordinates;
+/// anchored feedback fades in place instead of sliding across those controls.
 void showToast(
   BuildContext context,
   String text, {
   String? actionLabel,
   VoidCallback? onAction,
   Duration duration = const Duration(seconds: 4),
+  double? above,
 }) {
   final overlay = Overlay.maybeOf(context, rootOverlay: true);
   if (overlay == null) return;
@@ -446,6 +647,7 @@ void showToast(
       actionLabel: actionLabel,
       onAction: onAction,
       duration: duration,
+      above: above,
       onDone: () {
         if (entry.mounted) entry.remove();
         if (_ToastHost.current?.entry == entry) _ToastHost.current = null;
@@ -476,6 +678,7 @@ class _ToastView extends StatefulWidget {
     required this.onDone,
     this.actionLabel,
     this.onAction,
+    this.above,
   });
 
   final String text;
@@ -483,6 +686,7 @@ class _ToastView extends StatefulWidget {
   final VoidCallback? onAction;
   final Duration duration;
   final VoidCallback onDone;
+  final double? above;
 
   @override
   State<_ToastView> createState() => _ToastViewState();
@@ -528,12 +732,14 @@ class _ToastViewState extends State<_ToastView>
     return Positioned(
       left: 16,
       right: 16,
-      bottom: 96 + media.padding.bottom,
+      bottom: widget.above == null
+          ? 96 + media.padding.bottom
+          : media.size.height - widget.above! + 12,
       child: FadeTransition(
         opacity: curve,
         child: SlideTransition(
           position: Tween(
-            begin: const Offset(0, .4),
+            begin: widget.above == null ? const Offset(0, .4) : Offset.zero,
             end: Offset.zero,
           ).animate(curve),
           child: Material(

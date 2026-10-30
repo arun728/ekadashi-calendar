@@ -1,4 +1,5 @@
 import 'dart:ui' as ui;
+import 'glass_look.dart';
 import 'package:flutter/material.dart';
 
 abstract final class GlassTubeColors {
@@ -48,6 +49,19 @@ class GlassTube extends StatelessWidget {
     final dark = Theme.of(context).brightness == Brightness.dark;
     final opaque = media.highContrast || media.accessibleNavigation;
     final borderRadius = BorderRadius.circular(radius);
+    if (GlassLook.active(context)) {
+      return KeyedSubtree(
+        key: surfaceKey,
+        child: ClearGlassSurface(
+          radius: radius,
+          padding: padding,
+          child: Theme(
+            data: Theme.of(context).copyWith(canvasColor: Colors.transparent),
+            child: child,
+          ),
+        ),
+      );
+    }
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: borderRadius,

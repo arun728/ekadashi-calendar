@@ -10,6 +10,29 @@ final class PanchangEngineTests: XCTestCase {
     private func names(_ day: PanchangDay) -> [String] { day.observances.map(\.name) }
     private func ids(_ day: PanchangDay) -> [String] { day.observances.map(\.id) }
 
+    func testPanchangLoadPerformanceBaseline() throws {
+        let date = CivilDate(2026, 10, 26), city = PanchangCity.chennai
+        func measure<T>(_ label: String, _ work: () throws -> T) rethrows -> T {
+            let start = Date.timeIntervalSinceReferenceDate
+            let value = try work()
+            print("PANCHANG_BASELINE \(label) \((Date.timeIntervalSinceReferenceDate-start)*1000)ms")
+            return value
+        }
+        for pass in ["cold", "warm"] {
+            _ = measure("\(pass) daily_muhurta_rashi") { engine.calculate(date, city: city) }
+            let year = measure("\(pass) key_days_year") { engine.observanceCalendar(year: date.year, city: city) }
+            let month = measure("\(pass) key_days_month") {
+                (0..<date.daysInMonth).flatMap { engine.observances(on: date.firstOfMonth.adding(days: $0), city: city) }
+            }
+            XCTAssertEqual(month, year.filter { $0.date.month == date.month }.map(\.observance))
+            for tradition in EkadashiTradition.allCases {
+                _ = try measure("\(pass) ekadashi_\(tradition.rawValue)") {
+                    try CalculatedEkadashiEngine().calculate(start: date.firstOfMonth, count: date.daysInMonth, city: city, tradition: tradition)
+                }
+            }
+        }
+    }
+
     // MARK: panchang_engine_test.dart
 
     func testPanchangDayUsesLocalSunriseAndCityCoordinates() throws {

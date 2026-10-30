@@ -4,9 +4,9 @@
     <string name="widget_a_title">ఏకాదశి</string>
     <string name="widget_b_title">నేటి ఏకాదశి</string>
     <string name="widget_c_title">రాబోయే ఏకాదశులు</string>
-    <string name="widget_a_description">ఈరోజు ఏకాదశి, మీ ఉపవాసం పురోగతి, లేదా తదుపరి ఏకాదశి, మిగిలిన రోజులు.</string>
-    <string name="widget_b_description">ఈరోజు ఏకాదశి, మీ ఉపవాసం పురోగతి, లేదా తదుపరి ఏకాదశి, మిగిలిన రోజులు.</string>
-    <string name="widget_c_description">రాబోయే ఏకాదశులు ఒక్క చూపులో.</string>
+    <string name="widget_a_description">ప్రస్తుత ఏకాదశి, ఉపవాస పురోగతి మరియు పారణ, లేదా తదుపరి ఏకాదశి మరియు దాని సమయాలు.</string>
+    <string name="widget_b_description">ప్రస్తుత ఏకాదశి, ఉపవాస పురోగతి మరియు పారణ, లేదా తదుపరి ఏకాదశి మరియు దాని సమయాలు.</string>
+    <string name="widget_c_description">రాబోయే ఐదు ఏకాదశులు. ఏకాదశిని తాకి దాని హోమ్ కార్డును తెరవండి.</string>
     <string name="widget_title">ఏకాదశి క్యాలెండర్</string>
     <string name="widget_next_ekadashi">తదుపరి ఏకాదశి</string>
     <string name="widget_fasting_active">ఉపవాసం కొనసాగుతోంది</string>
@@ -45,4 +45,10 @@
     <string name="widget_am">పూర్వాహ్నం</string>
     <string name="widget_pm">అపరాహ్నం</string>
     <string name="widget_seed_location">భారతదేశం (భారత కాలమానం)</string>
+    <string name="widget_today_is_ekadashi">ఈరోజు ఏకాదశి</string>
+    <string name="widget_tomorrow">రేపు</string>
+    <string name="widget_days_to_go">ఇంకా {value0} రోజులు</string>
+    <string name="widget_remaining">మిగిలింది</string>
+    <string name="widget_no_next">అందుబాటులో ఉన్న పట్టికలో తదుపరి ఏకాదశి లేదు</string>
+    <string name="widget_parana_short">పారణ</string>
 </resources>

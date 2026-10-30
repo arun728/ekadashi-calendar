@@ -40,6 +40,7 @@ public enum AppSymbol {
     public static let edit = "pencil"
     public static let error = "exclamationmark.circle"
     public static let fiveLimbs = "circle.grid.hex"
+    public static let glassLook = "square.on.circle"
     public static let googleAccount = "person.crop.circle"
     public static let googleDisconnect = "person.crop.circle.badge.minus"
     public static let googleMenu = "arrow.triangle.2.circlepath.circle"
@@ -158,6 +159,7 @@ public enum AppSymbol {
         "edit": edit,
         "error": error,
         "five_limbs": fiveLimbs,
+        "glass_look": glassLook,
         "google_account": googleAccount,
         "google_disconnect": googleDisconnect,
         "google_menu": googleMenu,

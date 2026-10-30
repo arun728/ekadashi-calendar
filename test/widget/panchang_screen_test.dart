@@ -491,8 +491,14 @@ void main() {
     addTearDown(premium.dispose);
     await showPanchang(tester, premium: premium, date: DateTime(2026, 10, 8));
     for (final page in ['daily', 'muhurta', 'rashi', 'keydays']) {
+      await tester.ensureVisible(find.byKey(Key('panchang_tab_$page')));
+      await tester.pumpAndSettle();
       await tester.tap(find.byKey(Key('panchang_tab_$page')));
       await tester.pumpAndSettle();
+      expect(
+        tester.getSemantics(find.byKey(Key('panchang_tab_$page'))),
+        containsSemantics(isSelected: true),
+      );
       await tester.drag(scrollable(), const Offset(0, -2000));
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull, reason: page);

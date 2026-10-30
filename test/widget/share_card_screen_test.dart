@@ -116,6 +116,58 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  testWidgets('Share opens as an iOS-style sheet with Cancel and pulls down', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({'language_code': 'en'});
+    await tester.pumpWidget(
+      ChangeNotifierProvider(
+        create: (_) => LanguageService(),
+        child: MaterialApp(
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: TextButton(
+                onPressed: () => openShareCard(context, event),
+                child: const Text('Open share'),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('Open share'));
+    await tester.pumpAndSettle();
+    expect(find.byType(BottomSheet), findsOneWidget);
+    expect(find.text('Cancel'), findsOneWidget);
+    await tester.fling(find.text('Cancel'), const Offset(0, 650), 1200);
+    await tester.pumpAndSettle();
+    expect(find.byType(ShareCardScreen), findsNothing);
+    await tester.tap(find.text('Open share'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+    expect(find.byType(ShareCardScreen), findsNothing);
+    expect(find.text('Open share'), findsOneWidget);
+  });
+
+  testWidgets('Save is left and Share is right in every language', (
+    tester,
+  ) async {
+    await showCard(tester);
+    final lang = tester
+        .element(find.byType(ShareCardScreen))
+        .read<LanguageService>();
+    for (final code in ['en', 'hi', 'ta', 'te', 'gu', 'bn']) {
+      await lang.changeLanguage(code);
+      await tester.pumpAndSettle();
+      final save = tester.getRect(find.byKey(const Key('share_card_save')));
+      final share = tester.getRect(find.byKey(const Key('share_card_share')));
+      expect(save.center.dx, lessThan(share.center.dx), reason: code);
+      expect(save.right, lessThanOrEqualTo(share.left), reason: code);
+      expect(tester.takeException(), isNull, reason: code);
+    }
+  });
+
   testWidgets('the preview shows the card without any location', (
     tester,
   ) async {
@@ -124,7 +176,7 @@ void main() {
     expect(card, findsOneWidget);
     for (final text in [
       'Papankusha Ekadashi',
-      'SMARTA',
+      'VAISHNAVA',
       'Thursday, October 22, 2026',
       'FASTING BEGINS',
       'PARANA WINDOW',

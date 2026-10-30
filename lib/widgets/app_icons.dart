@@ -116,6 +116,9 @@ class AppIcons {
   /// circle.grid.hex
   static const fiveLimbs = CupertinoIcons.circle_grid_hex;
 
+  /// square.on.circle
+  static const glassLook = CupertinoIcons.square_on_circle;
+
   /// person.crop.circle
   static const googleAccount = CupertinoIcons.person_crop_circle;
 
@@ -391,6 +394,7 @@ class AppIcons {
     'edit': edit,
     'error': error,
     'five_limbs': fiveLimbs,
+    'glass_look': glassLook,
     'google_account': googleAccount,
     'google_disconnect': googleDisconnect,
     'google_menu': googleMenu,

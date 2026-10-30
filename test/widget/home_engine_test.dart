@@ -89,14 +89,14 @@ void main() {
     final before = text(tester, 'home_page_indicator');
     await tester.tap(find.byKey(const Key('home_tradition_menu')));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Vaishnava').last);
+    await tester.tap(find.text('Smarta').last);
     await tester.pumpAndSettle();
     // Both traditions share the Ekadashi's identity.
     expect(text(tester, 'home_page_indicator'), before);
     expect(
       find.descendant(
         of: find.byKey(const Key('home_tradition_menu')),
-        matching: find.text('Vaishnava'),
+        matching: find.text('Smarta'),
       ),
       findsOneWidget,
     );
@@ -120,7 +120,10 @@ void main() {
       find.byType(CalendarScreen),
     );
     expect(calendar.selectedYear, 2027);
-    expect(text(tester, 'calendar_ekadashi_source'), 'Smarta • Chennai (IN)');
+    expect(
+      text(tester, 'calendar_ekadashi_source'),
+      'Vaishnava • Chennai (IN)',
+    );
     // Under the date title, inside the month header row (no extra row).
     final header = box(tester, 'calendar_month_tube');
     final source = box(tester, 'calendar_ekadashi_source');

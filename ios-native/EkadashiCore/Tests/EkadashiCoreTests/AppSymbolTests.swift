@@ -21,6 +21,10 @@ final class AppSymbolTests: XCTestCase {
         }
     }
 
+    func testGlassLookUsesTheAppleStyleOverlappingGlassShapes() {
+        XCTAssertEqual(AppSymbol.all["glass_look"], "square.on.circle")
+    }
+
     func testTheTabBar() {
         XCTAssertEqual([AppSymbol.tabHome, AppSymbol.tabCalendar, AppSymbol.tabJourney, AppSymbol.tabPanchang,
                         AppSymbol.tabSettings], ["house.fill", "calendar", "rosette", "sparkles", "gearshape.fill"])

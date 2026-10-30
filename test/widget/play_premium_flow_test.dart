@@ -1,3 +1,4 @@
+import 'package:ekadashi_calendar/services/panchang/observance_calendar_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -38,6 +39,7 @@ void main() {
   final data = EkadashiService();
   late LanguageService lang;
   setUpAll(() async {
+    ObservanceCalendarService.calculateInline = true;
     await data.initializeData();
     await initializeDateFormatting();
   });
@@ -160,22 +162,36 @@ void main() {
     expect(find.text(lang.translate('premium_restored')), findsOneWidget);
   });
 
-  testWidgets('Lifetime members get a thank-you, not a sales page', (
-    tester,
-  ) async {
-    final premium = PremiumService(entitlements: PremiumFixture())
-      ..applyOwned({PremiumService.lifetimeId});
-    addTearDown(premium.dispose);
-    await pumpPaywall(tester, premium);
-    expect(
-      find.text(lang.translate('premium_lifetime_thanks_title')),
-      findsOneWidget,
-    );
-    expect(find.byKey(const Key('premium_plan_monthly')), findsNothing);
-    expect(find.byKey(const Key('premium_buy')), findsNothing);
-    expect(find.text(lang.translate('premium_feature_calendar')), findsNothing);
-    expect(find.byKey(const Key('premium_cancel_subscription')), findsNothing);
-  });
+  testWidgets(
+    'Lifetime members retain the selected owned plan without another charge',
+    (tester) async {
+      final premium = PremiumService(entitlements: PremiumFixture())
+        ..applyOwned({PremiumService.lifetimeId});
+      addTearDown(premium.dispose);
+      await pumpPaywall(tester, premium);
+      expect(
+        find.text(lang.translate('premium_lifetime_thanks_title')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const Key('premium_plan_lifetime')), findsOneWidget);
+      expect(
+        tester
+            .widget<Semantics>(find.byKey(const Key('premium_plan_lifetime')))
+            .properties
+            .selected,
+        isTrue,
+      );
+      expect(find.byKey(const Key('premium_buy')), findsNothing);
+      expect(
+        find.text(lang.translate('premium_feature_calendar')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const Key('premium_cancel_subscription')),
+        findsNothing,
+      );
+    },
+  );
 
   testWidgets('A lifetime member still subscribed is told to cancel in Play', (
     tester,

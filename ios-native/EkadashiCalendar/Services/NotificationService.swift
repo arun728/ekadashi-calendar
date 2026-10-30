@@ -14,6 +14,7 @@ final class NotificationService {
     init(assumeAuthorized: Bool = false) { self.assumeAuthorized = assumeAuthorized }
 
     func requestAuthorization() async -> Bool {
+        guard !DisplayClock.isSimulationSession else { return false }
         if assumeAuthorized { return true }
         return (try? await center.requestAuthorization(options: [.alert, .sound, .badge])) ?? false
     }
@@ -26,6 +27,7 @@ final class NotificationService {
     }
 
     func authorizationStatus() async -> UNAuthorizationStatus {
+        guard !DisplayClock.isSimulationSession else { return .denied }
         if assumeAuthorized { return .authorized }
         return await center.notificationSettings().authorizationStatus
     }
@@ -33,6 +35,7 @@ final class NotificationService {
     /// Replaces this app's pending reminders with [plan] (Ekadashi and
     /// event reminders, docs/ROADMAP.md Phase 7).
     func schedule(_ plan: [PendingNotification]) async {
+        guard !DisplayClock.isSimulationSession else { return }
         await cancelAll()
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(identifier: "UTC")!
@@ -51,11 +54,13 @@ final class NotificationService {
     }
 
     func cancelAll() async {
+        guard !DisplayClock.isSimulationSession else { return }
         let ids = await center.pendingNotificationRequests().map(\.identifier).filter { $0.hasPrefix(Self.prefix) }
         center.removePendingNotificationRequests(withIdentifiers: ids)
     }
 
     func sendTest(title: String, body: String) async {
+        guard !DisplayClock.isSimulationSession else { return }
         let content = UNMutableNotificationContent()
         content.title = title
         content.body = body

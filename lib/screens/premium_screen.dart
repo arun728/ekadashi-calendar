@@ -83,16 +83,32 @@ class _PremiumScreenState extends State<PremiumScreen> {
   );
 
   String? _selected;
+  String? _selectionOwnership;
 
-  /// Yearly first (best value), then the others, skipping plans that cannot
-  /// be bought (for example the subscriber's current plan).
+  /// Suggest the next upgrade after confirmed ownership changes. Retain
+  /// a manual choice otherwise, and keep owned Lifetime selected.
   PremiumPlan? _selectedPlan() {
     final plans = billing.plans;
     if (plans.isEmpty) return null;
+    final ownership =
+        '${premium.subscribed}:${premium.lifetime}:${billing.currentPlanId}';
+    if (_selectionOwnership != ownership) {
+      _selectionOwnership = ownership;
+      _selected = null;
+    }
+    if (premium.lifetime) {
+      for (final plan in plans) {
+        if (plan.id == 'lifetime') return plan;
+      }
+      return null;
+    }
     for (final plan in plans) {
       if (plan.id == _selected) return plan;
     }
-    for (final id in ['yearly', 'monthly', 'lifetime']) {
+    final order = billing.currentPlanId == 'yearly' && premium.subscribed
+        ? ['lifetime', 'monthly', 'yearly']
+        : ['yearly', 'lifetime', 'monthly'];
+    for (final id in order) {
       for (final plan in plans) {
         if (plan.id == id && billing.canBuy(plan)) return plan;
       }
@@ -125,9 +141,10 @@ class _PremiumScreenState extends State<PremiumScreen> {
   /// when selected.
   Widget _planTile(LanguageService lang, PremiumPlan plan, bool selected) {
     final current =
-        premium.subscribed &&
-        !premium.lifetime &&
-        plan.id == billing.currentPlanId;
+        (premium.lifetime && plan.id == 'lifetime') ||
+        (premium.subscribed &&
+            !premium.lifetime &&
+            plan.id == billing.currentPlanId);
     final period = switch (plan.id) {
       'monthly' => lang.translate('premium_per_month'),
       'yearly' => lang.translate('premium_per_year'),
@@ -343,7 +360,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
       animation: Listenable.merge([premium, billing]),
       builder: (context, _) {
         final selected = _selectedPlan();
-        final showPlans = !premium.lifetime && billing.plans.isNotEmpty;
+        final showPlans = billing.plans.isNotEmpty;
         final orange = IosColors.orange(context);
         return AppBackground(
           child: Scaffold(
@@ -356,11 +373,11 @@ class _PremiumScreenState extends State<PremiumScreen> {
                 lang.translate('premium_title'),
                 style: iosNavTitle(context),
               ),
-              leading: IconButton(
-                key: const Key('premium_close'),
+              leadingWidth: 68,
+              leading: LeadingBarIcon(
+                buttonKey: const Key('premium_close'),
                 tooltip: lang.translate('premium_continue_free'),
-                icon: const Icon(AppIcons.close),
-                color: IosColors.teal,
+                icon: AppIcons.close,
                 onPressed: () => Navigator.maybePop(context),
               ),
             ),
@@ -543,7 +560,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        if (showPlans && selected != null)
+                        if (showPlans && !premium.lifetime && selected != null)
                           FilledButton(
                             key: const Key('premium_buy'),
                             style: IosButtons.prominent(vertical: 14),

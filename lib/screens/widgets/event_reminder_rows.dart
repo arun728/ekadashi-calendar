@@ -523,6 +523,8 @@ class _EventReminderPickerState extends State<EventReminderPicker> {
     return Scaffold(
       backgroundColor: _groupedBackground(context),
       appBar: AppBar(
+        leadingWidth: 68,
+        leading: const LeadingBarIcon(),
         backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
         centerTitle: true,

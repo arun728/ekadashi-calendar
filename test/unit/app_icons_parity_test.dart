@@ -116,6 +116,7 @@ const _byName = <String, IconData>{
   'square_arrow_down': CupertinoIcons.square_arrow_down,
   'square_arrow_up': CupertinoIcons.square_arrow_up,
   'square_grid_2x2': CupertinoIcons.square_grid_2x2,
+  'square_on_circle': CupertinoIcons.square_on_circle,
   'star': CupertinoIcons.star,
   'star_circle_fill': CupertinoIcons.star_circle_fill,
   'star_fill': CupertinoIcons.star_fill,
