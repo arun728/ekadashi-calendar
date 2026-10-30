@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ekadashi_calendar/main.dart' as app;
 import 'package:ekadashi_calendar/services/language_service.dart';
+import 'package:ekadashi_calendar/services/theme_service.dart';
 import 'package:ekadashi_calendar/l10n/app_language.dart';
 import 'package:ekadashi_calendar/widgets/ios_style.dart';
 import 'package:ekadashi_calendar/models/vrat_tracker_models.dart';
@@ -207,6 +208,44 @@ void main() {
       await tap('journey_badge_haptics');
       expect(tracker.badgeHaptics, false);
       expect(prefs.getBool('journey_badge_haptics'), false);
+      final theme = context.read<ThemeService>();
+      expect(theme.isGlassLookEnabled, false);
+      await theme.setGlassLook(true);
+      await tester.pumpAndSettle();
+      await tap('glass_tab_2');
+      await scrollTo(find.byKey(const Key('journey_overview_year')));
+      await capture('glass_on_overview_2027');
+      await tap('journey_tab_history');
+      await tap('journey_history_year_menu');
+      await tester.tap(find.text('2026').last);
+      await tester.pumpAndSettle();
+      await capture('glass_on_history_2026');
+      await tap('journey_row_ekadashi:2026:02');
+      expect(
+        tester
+            .widget<GlassChip>(find.byKey(const Key('vrat_method_oneMeal')))
+            .selected,
+        true,
+      );
+      expect(
+        tester
+            .widget<GlassChip>(find.byKey(const Key('vrat_method_fullFast')))
+            .onTap,
+        isNull,
+      );
+      await capture('glass_on_partial_methods');
+      await tap('vrat_record_cancel');
+      await tap('journey_tab_achievements');
+      await tap('journey_achievements_year');
+      await tester.tap(find.text('2027').last);
+      await tester.pumpAndSettle();
+      await tap('journey_badge_filter_annual');
+      expect(
+        find.byKey(const Key('journey_badge_journey_2027_q1')),
+        findsOneWidget,
+      );
+      await capture('glass_on_annual_badges_2027');
+      expect(theme.isGlassLookEnabled, true);
     },
   );
 }

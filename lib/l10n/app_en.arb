@@ -706,5 +706,169 @@
   "widget_no_next": "No upcoming Ekadashi in the available schedule",
   "widget_lock_support": "Lock Screen widgets are available on supported devices. Sizes and placement depend on your device.",
   "glass_look": "Glass Look",
-  "glass_look_desc": "Use clearer, translucent cards and controls."
+  "glass_look_desc": "Use clearer, translucent cards and controls.",
+  "ios_journey_title": "Your {value0} Journey",
+  "@ios_journey_title": {
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "ios_journey_points": "Journey Points",
+  "ios_journey_lifetime": "Lifetime points",
+  "ios_journey_year_points": "{value0} of {value1} possible points",
+  "@ios_journey_year_points": {
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      },
+      "value1": {
+        "type": "String"
+      }
+    }
+  },
+  "ios_journey_summary": "{value0} observed · {value1} partial",
+  "@ios_journey_summary": {
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      },
+      "value1": {
+        "type": "String"
+      }
+    }
+  },
+  "ios_journey_mandala": "Your annual mandala",
+  "ios_journey_quarter": "Chapter {value0} · {value1}",
+  "@ios_journey_quarter": {
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      },
+      "value1": {
+        "type": "String"
+      }
+    }
+  },
+  "ios_journey_quarter_progress": "{value0} of {value1} observed",
+  "@ios_journey_quarter_progress": {
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      },
+      "value1": {
+        "type": "String"
+      }
+    }
+  },
+  "ios_journey_quarter_bonus": "Complete this chapter for +150 points",
+  "ios_journey_bonus_earned": "Chapter complete · +150 points",
+  "ios_journey_annual_bonus": "Year complete · +1,000 points",
+  "ios_journey_scoring": "Observed +100 · Partial +50 · Complete quarter +150 · Complete year +1,000",
+  "ios_journey_personal": "A personal journey, with no monetary rewards.",
+  "ios_journey_remaining": "{value0} more to your next milestone",
+  "@ios_journey_remaining": {
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "ios_journey_badges": "Your badge collection",
+  "ios_journey_progress": "{value0} of {value1}",
+  "@ios_journey_progress": {
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      },
+      "value1": {
+        "type": "String"
+      }
+    }
+  },
+  "ios_journey_earned": "Earned {value0}",
+  "@ios_journey_earned": {
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "ios_journey_view_badge": "View badge",
+  "ios_journey_view_badges": "View badges",
+  "ios_journey_share": "Share your year",
+  "ios_journey_share_preview": "Annual Journey card",
+  "ios_journey_share_badges": "{value0} earned badges",
+  "@ios_journey_share_badges": {
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "ios_journey_share_message": "My {value0} Ekadashi journey · {value1} points",
+  "@ios_journey_share_message": {
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      },
+      "value1": {
+        "type": "String"
+      }
+    }
+  },
+  "ios_journey_premium": "Continue your Journey with Premium",
+  "ios_journey_premium_desc": "Unlimited recording, the complete badge collection and your annual mandala.",
+  "ios_journey_haptics": "Badge celebration haptics",
+  "ios_journey_future": "Upcoming",
+  "ios_journey_mandala_summary": "{value0} occurrences · {value1} observed · {value2} partial",
+  "@ios_journey_mandala_summary": {
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      },
+      "value1": {
+        "type": "String"
+      },
+      "value2": {
+        "type": "String"
+      }
+    }
+  },
+  "ios_journey_badge_first": "First Step",
+  "ios_journey_badge_first_desc": "Fully observe your first Ekadashi.",
+  "ios_journey_badge_root": "Taking Root",
+  "ios_journey_badge_root_desc": "Fully observe 5 Ekadashis across all years.",
+  "ios_journey_badge_bloom": "In Bloom",
+  "ios_journey_badge_bloom_desc": "Fully observe 10 Ekadashis across all years.",
+  "ios_journey_badge_lights": "Twelve Lights",
+  "ios_journey_badge_lights_desc": "Fully observe 12 Ekadashis across all years.",
+  "ios_journey_badge_flame": "Steady Flame",
+  "ios_journey_badge_flame_desc": "Fully observe 3 consecutive Ekadashis.",
+  "ios_journey_badge_rhythm": "Growing Rhythm",
+  "ios_journey_badge_rhythm_desc": "Fully observe 6 consecutive Ekadashis.",
+  "ios_journey_badge_thread": "Unbroken Thread",
+  "ios_journey_badge_thread_desc": "Fully observe 12 consecutive Ekadashis.",
+  "ios_journey_badge_wreath": "Twenty-Four Together",
+  "ios_journey_badge_wreath_desc": "Fully observe 24 consecutive Ekadashis, even across years.",
+  "ios_journey_badge_return": "Welcome Back",
+  "ios_journey_badge_return_desc": "Fully observe an Ekadashi after a missed occurrence.",
+  "ios_journey_badge_effort": "Every Effort Counts",
+  "ios_journey_badge_effort_desc": "Partially observe 3 Ekadashis. Every effort is part of your journey.",
+  "ios_journey_badge_q1": "First Chapter",
+  "ios_journey_badge_q1_desc": "Fully observe every Ekadashi from January to March in this year.",
+  "ios_journey_badge_q2": "Second Chapter",
+  "ios_journey_badge_q2_desc": "Fully observe every Ekadashi from April to June in this year.",
+  "ios_journey_badge_q3": "Third Chapter",
+  "ios_journey_badge_q3_desc": "Fully observe every Ekadashi from July to September in this year.",
+  "ios_journey_badge_q4": "Fourth Chapter",
+  "ios_journey_badge_q4_desc": "Fully observe every Ekadashi from October to December in this year.",
+  "ios_journey_badge_annual": "A Year of Dedication",
+  "ios_journey_badge_annual_desc": "Fully observe every Ekadashi in this calendar year.",
+  "ios_journey_storage_error": "Badges could not be saved. Your observance history is safe.",
+  "ios_journey_collection_milestones": "Milestones",
+  "ios_journey_collection_consistency": "Consistency",
+  "ios_journey_collection_encouragement": "Encouragement",
+  "ios_journey_collection_annual": "Annual collection"
 }

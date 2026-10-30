@@ -1719,4 +1719,239 @@ class AppLocalizationsTe extends AppLocalizations {
   @override
   String get glass_look_desc =>
       'మరింత పారదర్శకంగా కనిపించే కార్డులు, నియంత్రణలను ఉపయోగించండి.';
+
+  @override
+  String ios_journey_title(String value0) {
+    return 'మీ $value0 ప్రయాణం';
+  }
+
+  @override
+  String get ios_journey_points => 'ప్రయాణ పాయింట్లు';
+
+  @override
+  String get ios_journey_lifetime => 'ఇప్పటివరకు మొత్తం పాయింట్లు';
+
+  @override
+  String ios_journey_year_points(String value0, String value1) {
+    return 'సాధ్యమైన $value1 పాయింట్లలో $value0';
+  }
+
+  @override
+  String ios_journey_summary(String value0, String value1) {
+    return '$value0 పూర్తి · $value1 పాక్షికం';
+  }
+
+  @override
+  String get ios_journey_mandala => 'మీ వార్షిక మండలం';
+
+  @override
+  String ios_journey_quarter(String value0, String value1) {
+    return 'అధ్యాయం $value0 · $value1';
+  }
+
+  @override
+  String ios_journey_quarter_progress(String value0, String value1) {
+    return '$value1లో $value0 పూర్తి';
+  }
+
+  @override
+  String get ios_journey_quarter_bonus =>
+      'ఈ అధ్యాయం పూర్తి చేసి 150 అదనపు పాయింట్లు పొందండి';
+
+  @override
+  String get ios_journey_bonus_earned => 'అధ్యాయం పూర్తి · 150 అదనపు పాయింట్లు';
+
+  @override
+  String get ios_journey_annual_bonus =>
+      'సంవత్సరం పూర్తి · 1,000 అదనపు పాయింట్లు';
+
+  @override
+  String get ios_journey_scoring =>
+      'పూర్తి +100 · పాక్షికం +50 · పూర్తి త్రైమాసికం +150 · పూర్తి సంవత్సరం +1,000';
+
+  @override
+  String get ios_journey_personal => 'నగదు బహుమతులు లేని వ్యక్తిగత ప్రయాణం.';
+
+  @override
+  String ios_journey_remaining(String value0) {
+    return 'తదుపరి మైలురాయికి మరో $value0';
+  }
+
+  @override
+  String get ios_journey_badges => 'మీ పతకాల సేకరణ';
+
+  @override
+  String ios_journey_progress(String value0, String value1) {
+    return '$value1లో $value0';
+  }
+
+  @override
+  String ios_journey_earned(String value0) {
+    return '$value0న పొందారు';
+  }
+
+  @override
+  String get ios_journey_view_badge => 'పతకాన్ని చూడండి';
+
+  @override
+  String get ios_journey_view_badges => 'పతకాలను చూడండి';
+
+  @override
+  String get ios_journey_share => 'మీ వార్షిక ప్రయాణాన్ని పంచుకోండి';
+
+  @override
+  String get ios_journey_share_preview => 'వార్షిక ప్రయాణ కార్డు';
+
+  @override
+  String ios_journey_share_badges(String value0) {
+    return 'పొందిన పతకాలు $value0';
+  }
+
+  @override
+  String ios_journey_share_message(String value0, String value1) {
+    return 'నా $value0 ఏకాదశి ప్రయాణం · $value1 పాయింట్లు';
+  }
+
+  @override
+  String get ios_journey_premium => 'ప్రీమియంతో మీ ప్రయాణాన్ని కొనసాగించండి';
+
+  @override
+  String get ios_journey_premium_desc =>
+      'అపరిమిత నమోదులు, పూర్తి పతకాల సేకరణ మరియు మీ వార్షిక మండలం.';
+
+  @override
+  String get ios_journey_haptics => 'పతకం పొందినప్పుడు స్పర్శ స్పందన';
+
+  @override
+  String get ios_journey_future => 'రాబోయేవి';
+
+  @override
+  String ios_journey_mandala_summary(
+    String value0,
+    String value1,
+    String value2,
+  ) {
+    return '$value0 ఏకాదశులు · $value1 పూర్తి · $value2 పాక్షికం';
+  }
+
+  @override
+  String get ios_journey_badge_first => 'తొలి అడుగు';
+
+  @override
+  String get ios_journey_badge_first_desc =>
+      'మీ మొదటి ఏకాదశి వ్రతాన్ని పూర్తిగా ఆచరించండి.';
+
+  @override
+  String get ios_journey_badge_root => 'వేళ్లూనుకోవడం';
+
+  @override
+  String get ios_journey_badge_root_desc =>
+      'అన్ని సంవత్సరాల్లో మొత్తం 5 ఏకాదశి వ్రతాలను పూర్తిగా ఆచరించండి.';
+
+  @override
+  String get ios_journey_badge_bloom => 'వికసించే కమలం';
+
+  @override
+  String get ios_journey_badge_bloom_desc =>
+      'అన్ని సంవత్సరాల్లో మొత్తం 10 ఏకాదశి వ్రతాలను పూర్తిగా ఆచరించండి.';
+
+  @override
+  String get ios_journey_badge_lights => 'పన్నెండు దీపాలు';
+
+  @override
+  String get ios_journey_badge_lights_desc =>
+      'అన్ని సంవత్సరాల్లో మొత్తం 12 ఏకాదశి వ్రతాలను పూర్తిగా ఆచరించండి.';
+
+  @override
+  String get ios_journey_badge_flame => 'స్థిర జ్యోతి';
+
+  @override
+  String get ios_journey_badge_flame_desc =>
+      'వరుసగా 3 ఏకాదశి వ్రతాలను పూర్తిగా ఆచరించండి.';
+
+  @override
+  String get ios_journey_badge_rhythm => 'పెరుగుతున్న లయ';
+
+  @override
+  String get ios_journey_badge_rhythm_desc =>
+      'వరుసగా 6 ఏకాదశి వ్రతాలను పూర్తిగా ఆచరించండి.';
+
+  @override
+  String get ios_journey_badge_thread => 'తెగని దారం';
+
+  @override
+  String get ios_journey_badge_thread_desc =>
+      'వరుసగా 12 ఏకాదశి వ్రతాలను పూర్తిగా ఆచరించండి.';
+
+  @override
+  String get ios_journey_badge_wreath => 'ఇరవై నాలుగు కలయిక';
+
+  @override
+  String get ios_journey_badge_wreath_desc =>
+      'సంవత్సరం మారినా వరుసగా 24 ఏకాదశి వ్రతాలను పూర్తిగా ఆచరించండి.';
+
+  @override
+  String get ios_journey_badge_return => 'తిరిగి స్వాగతం';
+
+  @override
+  String get ios_journey_badge_return_desc =>
+      'ఒక వ్రతం తప్పిన తరువాత వచ్చే ఏకాదశి వ్రతాన్ని పూర్తిగా ఆచరించండి.';
+
+  @override
+  String get ios_journey_badge_effort => 'ప్రతి ప్రయత్నం విలువైనదే';
+
+  @override
+  String get ios_journey_badge_effort_desc =>
+      '3 ఏకాదశి వ్రతాలను పాక్షికంగా ఆచరించండి. ప్రతి ప్రయత్నం మీ ప్రయాణంలో భాగమే.';
+
+  @override
+  String get ios_journey_badge_q1 => 'మొదటి అధ్యాయం';
+
+  @override
+  String get ios_journey_badge_q1_desc =>
+      'ఈ సంవత్సరం జనవరి నుండి మార్చి వరకు ప్రతి ఏకాదశి వ్రతాన్ని పూర్తిగా ఆచరించండి.';
+
+  @override
+  String get ios_journey_badge_q2 => 'రెండవ అధ్యాయం';
+
+  @override
+  String get ios_journey_badge_q2_desc =>
+      'ఈ సంవత్సరం ఏప్రిల్ నుండి జూన్ వరకు ప్రతి ఏకాదశి వ్రతాన్ని పూర్తిగా ఆచరించండి.';
+
+  @override
+  String get ios_journey_badge_q3 => 'మూడవ అధ్యాయం';
+
+  @override
+  String get ios_journey_badge_q3_desc =>
+      'ఈ సంవత్సరం జూలై నుండి సెప్టెంబర్ వరకు ప్రతి ఏకాదశి వ్రతాన్ని పూర్తిగా ఆచరించండి.';
+
+  @override
+  String get ios_journey_badge_q4 => 'నాలుగవ అధ్యాయం';
+
+  @override
+  String get ios_journey_badge_q4_desc =>
+      'ఈ సంవత్సరం అక్టోబర్ నుండి డిసెంబర్ వరకు ప్రతి ఏకాదశి వ్రతాన్ని పూర్తిగా ఆచరించండి.';
+
+  @override
+  String get ios_journey_badge_annual => 'అంకితభావంతో ఒక సంవత్సరం';
+
+  @override
+  String get ios_journey_badge_annual_desc =>
+      'ఈ క్యాలెండర్ సంవత్సరంలోని ప్రతి ఏకాదశి వ్రతాన్ని పూర్తిగా ఆచరించండి.';
+
+  @override
+  String get ios_journey_storage_error =>
+      'పతకాలను భద్రపరచలేకపోయాము. మీ వ్రత చరిత్ర సురక్షితంగా ఉంది.';
+
+  @override
+  String get ios_journey_collection_milestones => 'మైలురాళ్లు';
+
+  @override
+  String get ios_journey_collection_consistency => 'నిరంతరత';
+
+  @override
+  String get ios_journey_collection_encouragement => 'ప్రోత్సాహం';
+
+  @override
+  String get ios_journey_collection_annual => 'వార్షిక సేకరణ';
 }

@@ -1714,4 +1714,239 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get glass_look_desc => 'Use clearer, translucent cards and controls.';
+
+  @override
+  String ios_journey_title(String value0) {
+    return 'Your $value0 Journey';
+  }
+
+  @override
+  String get ios_journey_points => 'Journey Points';
+
+  @override
+  String get ios_journey_lifetime => 'Lifetime points';
+
+  @override
+  String ios_journey_year_points(String value0, String value1) {
+    return '$value0 of $value1 possible points';
+  }
+
+  @override
+  String ios_journey_summary(String value0, String value1) {
+    return '$value0 observed · $value1 partial';
+  }
+
+  @override
+  String get ios_journey_mandala => 'Your annual mandala';
+
+  @override
+  String ios_journey_quarter(String value0, String value1) {
+    return 'Chapter $value0 · $value1';
+  }
+
+  @override
+  String ios_journey_quarter_progress(String value0, String value1) {
+    return '$value0 of $value1 observed';
+  }
+
+  @override
+  String get ios_journey_quarter_bonus =>
+      'Complete this chapter for +150 points';
+
+  @override
+  String get ios_journey_bonus_earned => 'Chapter complete · +150 points';
+
+  @override
+  String get ios_journey_annual_bonus => 'Year complete · +1,000 points';
+
+  @override
+  String get ios_journey_scoring =>
+      'Observed +100 · Partial +50 · Complete quarter +150 · Complete year +1,000';
+
+  @override
+  String get ios_journey_personal =>
+      'A personal journey, with no monetary rewards.';
+
+  @override
+  String ios_journey_remaining(String value0) {
+    return '$value0 more to your next milestone';
+  }
+
+  @override
+  String get ios_journey_badges => 'Your badge collection';
+
+  @override
+  String ios_journey_progress(String value0, String value1) {
+    return '$value0 of $value1';
+  }
+
+  @override
+  String ios_journey_earned(String value0) {
+    return 'Earned $value0';
+  }
+
+  @override
+  String get ios_journey_view_badge => 'View badge';
+
+  @override
+  String get ios_journey_view_badges => 'View badges';
+
+  @override
+  String get ios_journey_share => 'Share your year';
+
+  @override
+  String get ios_journey_share_preview => 'Annual Journey card';
+
+  @override
+  String ios_journey_share_badges(String value0) {
+    return '$value0 earned badges';
+  }
+
+  @override
+  String ios_journey_share_message(String value0, String value1) {
+    return 'My $value0 Ekadashi journey · $value1 points';
+  }
+
+  @override
+  String get ios_journey_premium => 'Continue your Journey with Premium';
+
+  @override
+  String get ios_journey_premium_desc =>
+      'Unlimited recording, the complete badge collection and your annual mandala.';
+
+  @override
+  String get ios_journey_haptics => 'Badge celebration haptics';
+
+  @override
+  String get ios_journey_future => 'Upcoming';
+
+  @override
+  String ios_journey_mandala_summary(
+    String value0,
+    String value1,
+    String value2,
+  ) {
+    return '$value0 occurrences · $value1 observed · $value2 partial';
+  }
+
+  @override
+  String get ios_journey_badge_first => 'First Step';
+
+  @override
+  String get ios_journey_badge_first_desc =>
+      'Fully observe your first Ekadashi.';
+
+  @override
+  String get ios_journey_badge_root => 'Taking Root';
+
+  @override
+  String get ios_journey_badge_root_desc =>
+      'Fully observe 5 Ekadashis across all years.';
+
+  @override
+  String get ios_journey_badge_bloom => 'In Bloom';
+
+  @override
+  String get ios_journey_badge_bloom_desc =>
+      'Fully observe 10 Ekadashis across all years.';
+
+  @override
+  String get ios_journey_badge_lights => 'Twelve Lights';
+
+  @override
+  String get ios_journey_badge_lights_desc =>
+      'Fully observe 12 Ekadashis across all years.';
+
+  @override
+  String get ios_journey_badge_flame => 'Steady Flame';
+
+  @override
+  String get ios_journey_badge_flame_desc =>
+      'Fully observe 3 consecutive Ekadashis.';
+
+  @override
+  String get ios_journey_badge_rhythm => 'Growing Rhythm';
+
+  @override
+  String get ios_journey_badge_rhythm_desc =>
+      'Fully observe 6 consecutive Ekadashis.';
+
+  @override
+  String get ios_journey_badge_thread => 'Unbroken Thread';
+
+  @override
+  String get ios_journey_badge_thread_desc =>
+      'Fully observe 12 consecutive Ekadashis.';
+
+  @override
+  String get ios_journey_badge_wreath => 'Twenty-Four Together';
+
+  @override
+  String get ios_journey_badge_wreath_desc =>
+      'Fully observe 24 consecutive Ekadashis, even across years.';
+
+  @override
+  String get ios_journey_badge_return => 'Welcome Back';
+
+  @override
+  String get ios_journey_badge_return_desc =>
+      'Fully observe an Ekadashi after a missed occurrence.';
+
+  @override
+  String get ios_journey_badge_effort => 'Every Effort Counts';
+
+  @override
+  String get ios_journey_badge_effort_desc =>
+      'Partially observe 3 Ekadashis. Every effort is part of your journey.';
+
+  @override
+  String get ios_journey_badge_q1 => 'First Chapter';
+
+  @override
+  String get ios_journey_badge_q1_desc =>
+      'Fully observe every Ekadashi from January to March in this year.';
+
+  @override
+  String get ios_journey_badge_q2 => 'Second Chapter';
+
+  @override
+  String get ios_journey_badge_q2_desc =>
+      'Fully observe every Ekadashi from April to June in this year.';
+
+  @override
+  String get ios_journey_badge_q3 => 'Third Chapter';
+
+  @override
+  String get ios_journey_badge_q3_desc =>
+      'Fully observe every Ekadashi from July to September in this year.';
+
+  @override
+  String get ios_journey_badge_q4 => 'Fourth Chapter';
+
+  @override
+  String get ios_journey_badge_q4_desc =>
+      'Fully observe every Ekadashi from October to December in this year.';
+
+  @override
+  String get ios_journey_badge_annual => 'A Year of Dedication';
+
+  @override
+  String get ios_journey_badge_annual_desc =>
+      'Fully observe every Ekadashi in this calendar year.';
+
+  @override
+  String get ios_journey_storage_error =>
+      'Badges could not be saved. Your observance history is safe.';
+
+  @override
+  String get ios_journey_collection_milestones => 'Milestones';
+
+  @override
+  String get ios_journey_collection_consistency => 'Consistency';
+
+  @override
+  String get ios_journey_collection_encouragement => 'Encouragement';
+
+  @override
+  String get ios_journey_collection_annual => 'Annual collection';
 }

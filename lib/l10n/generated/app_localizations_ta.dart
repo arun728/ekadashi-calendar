@@ -1727,4 +1727,241 @@ class AppLocalizationsTa extends AppLocalizations {
   @override
   String get glass_look_desc =>
       'தெளிவான, ஒளி ஊடுருவும் அட்டைகளையும் கட்டுப்பாடுகளையும் பயன்படுத்தவும்.';
+
+  @override
+  String ios_journey_title(String value0) {
+    return 'உங்கள் $value0 பயணம்';
+  }
+
+  @override
+  String get ios_journey_points => 'பயணப் புள்ளிகள்';
+
+  @override
+  String get ios_journey_lifetime => 'இதுவரை பெற்ற மொத்தப் புள்ளிகள்';
+
+  @override
+  String ios_journey_year_points(String value0, String value1) {
+    return 'பெறக்கூடிய $value1 புள்ளிகளில் $value0';
+  }
+
+  @override
+  String ios_journey_summary(String value0, String value1) {
+    return '$value0 முழுமை · $value1 பகுதி';
+  }
+
+  @override
+  String get ios_journey_mandala => 'உங்கள் ஆண்டு மண்டலம்';
+
+  @override
+  String ios_journey_quarter(String value0, String value1) {
+    return 'அத்தியாயம் $value0 · $value1';
+  }
+
+  @override
+  String ios_journey_quarter_progress(String value0, String value1) {
+    return '$value1 விரதங்களில் $value0 முழுமை';
+  }
+
+  @override
+  String get ios_journey_quarter_bonus =>
+      'இந்த அத்தியாயத்தை நிறைவு செய்து 150 கூடுதல் புள்ளிகள் பெறுங்கள்';
+
+  @override
+  String get ios_journey_bonus_earned =>
+      'அத்தியாயம் நிறைவு · 150 கூடுதல் புள்ளிகள்';
+
+  @override
+  String get ios_journey_annual_bonus =>
+      'ஆண்டு நிறைவு · 1,000 கூடுதல் புள்ளிகள்';
+
+  @override
+  String get ios_journey_scoring =>
+      'முழுமை +100 · பகுதி +50 · முழுக் காலாண்டு +150 · முழு ஆண்டு +1,000';
+
+  @override
+  String get ios_journey_personal => 'பணப் பரிசுகள் இல்லாத தனிப்பட்ட பயணம்.';
+
+  @override
+  String ios_journey_remaining(String value0) {
+    return 'அடுத்த மைல்கல்லுக்கு இன்னும் $value0';
+  }
+
+  @override
+  String get ios_journey_badges => 'உங்கள் பதக்கத் தொகுப்பு';
+
+  @override
+  String ios_journey_progress(String value0, String value1) {
+    return '$value1 இல் $value0';
+  }
+
+  @override
+  String ios_journey_earned(String value0) {
+    return '$value0 அன்று பெற்றது';
+  }
+
+  @override
+  String get ios_journey_view_badge => 'பதக்கத்தைப் பார்க்க';
+
+  @override
+  String get ios_journey_view_badges => 'பதக்கங்களைப் பார்க்க';
+
+  @override
+  String get ios_journey_share => 'உங்கள் ஆண்டுப் பயணத்தைப் பகிர';
+
+  @override
+  String get ios_journey_share_preview => 'ஆண்டுப் பயண அட்டை';
+
+  @override
+  String ios_journey_share_badges(String value0) {
+    return 'பெற்ற பதக்கங்கள் $value0';
+  }
+
+  @override
+  String ios_journey_share_message(String value0, String value1) {
+    return 'எனது $value0 ஏகாதசிப் பயணம் · $value1 புள்ளிகள்';
+  }
+
+  @override
+  String get ios_journey_premium =>
+      'பிரீமியத்துடன் உங்கள் பயணத்தைத் தொடருங்கள்';
+
+  @override
+  String get ios_journey_premium_desc =>
+      'வரம்பற்ற பதிவுகள், முழுப் பதக்கத் தொகுப்பு மற்றும் உங்கள் ஆண்டு மண்டலம்.';
+
+  @override
+  String get ios_journey_haptics => 'பதக்கக் கொண்டாட்ட அதிர்வு';
+
+  @override
+  String get ios_journey_future => 'வரவிருப்பவை';
+
+  @override
+  String ios_journey_mandala_summary(
+    String value0,
+    String value1,
+    String value2,
+  ) {
+    return '$value0 ஏகாதசிகள் · $value1 முழுமை · $value2 பகுதி';
+  }
+
+  @override
+  String get ios_journey_badge_first => 'முதல் அடி';
+
+  @override
+  String get ios_journey_badge_first_desc =>
+      'உங்கள் முதல் ஏகாதசி விரதத்தை முழுமையாகக் கடைப்பிடியுங்கள்.';
+
+  @override
+  String get ios_journey_badge_root => 'வேரூன்றுதல்';
+
+  @override
+  String get ios_journey_badge_root_desc =>
+      'அனைத்து ஆண்டுகளிலும் மொத்தம் 5 ஏகாதசி விரதங்களை முழுமையாகக் கடைப்பிடியுங்கள்.';
+
+  @override
+  String get ios_journey_badge_bloom => 'மலரும் தாமரை';
+
+  @override
+  String get ios_journey_badge_bloom_desc =>
+      'அனைத்து ஆண்டுகளிலும் மொத்தம் 10 ஏகாதசி விரதங்களை முழுமையாகக் கடைப்பிடியுங்கள்.';
+
+  @override
+  String get ios_journey_badge_lights => 'பன்னிரு விளக்குகள்';
+
+  @override
+  String get ios_journey_badge_lights_desc =>
+      'அனைத்து ஆண்டுகளிலும் மொத்தம் 12 ஏகாதசி விரதங்களை முழுமையாகக் கடைப்பிடியுங்கள்.';
+
+  @override
+  String get ios_journey_badge_flame => 'நிலையான சுடர்';
+
+  @override
+  String get ios_journey_badge_flame_desc =>
+      'தொடர்ந்து 3 ஏகாதசி விரதங்களை முழுமையாகக் கடைப்பிடியுங்கள்.';
+
+  @override
+  String get ios_journey_badge_rhythm => 'வளரும் தாளம்';
+
+  @override
+  String get ios_journey_badge_rhythm_desc =>
+      'தொடர்ந்து 6 ஏகாதசி விரதங்களை முழுமையாகக் கடைப்பிடியுங்கள்.';
+
+  @override
+  String get ios_journey_badge_thread => 'அறுபடாத இழை';
+
+  @override
+  String get ios_journey_badge_thread_desc =>
+      'தொடர்ந்து 12 ஏகாதசி விரதங்களை முழுமையாகக் கடைப்பிடியுங்கள்.';
+
+  @override
+  String get ios_journey_badge_wreath => 'இருபத்திநான்கின் இணைவு';
+
+  @override
+  String get ios_journey_badge_wreath_desc =>
+      'ஆண்டு மாறினாலும் தொடர்ந்து 24 ஏகாதசி விரதங்களை முழுமையாகக் கடைப்பிடியுங்கள்.';
+
+  @override
+  String get ios_journey_badge_return => 'மீண்டும் வரவேற்கிறோம்';
+
+  @override
+  String get ios_journey_badge_return_desc =>
+      'ஒரு விரதம் தவறிய பிறகு அடுத்த ஏகாதசி விரதத்தை முழுமையாகக் கடைப்பிடியுங்கள்.';
+
+  @override
+  String get ios_journey_badge_effort => 'ஒவ்வொரு முயற்சியும் அருமை';
+
+  @override
+  String get ios_journey_badge_effort_desc =>
+      '3 ஏகாதசி விரதங்களைப் பகுதியாகக் கடைப்பிடியுங்கள். ஒவ்வொரு முயற்சியும் உங்கள் பயணத்தின் ஒரு பகுதி.';
+
+  @override
+  String get ios_journey_badge_q1 => 'முதல் அத்தியாயம்';
+
+  @override
+  String get ios_journey_badge_q1_desc =>
+      'இந்த ஆண்டு ஜனவரி முதல் மார்ச் வரையிலான அனைத்து ஏகாதசி விரதங்களையும் முழுமையாகக் கடைப்பிடியுங்கள்.';
+
+  @override
+  String get ios_journey_badge_q2 => 'இரண்டாம் அத்தியாயம்';
+
+  @override
+  String get ios_journey_badge_q2_desc =>
+      'இந்த ஆண்டு ஏப்ரல் முதல் ஜூன் வரையிலான அனைத்து ஏகாதசி விரதங்களையும் முழுமையாகக் கடைப்பிடியுங்கள்.';
+
+  @override
+  String get ios_journey_badge_q3 => 'மூன்றாம் அத்தியாயம்';
+
+  @override
+  String get ios_journey_badge_q3_desc =>
+      'இந்த ஆண்டு ஜூலை முதல் செப்டம்பர் வரையிலான அனைத்து ஏகாதசி விரதங்களையும் முழுமையாகக் கடைப்பிடியுங்கள்.';
+
+  @override
+  String get ios_journey_badge_q4 => 'நான்காம் அத்தியாயம்';
+
+  @override
+  String get ios_journey_badge_q4_desc =>
+      'இந்த ஆண்டு அக்டோபர் முதல் டிசம்பர் வரையிலான அனைத்து ஏகாதசி விரதங்களையும் முழுமையாகக் கடைப்பிடியுங்கள்.';
+
+  @override
+  String get ios_journey_badge_annual => 'அர்ப்பணிப்பின் ஓராண்டு';
+
+  @override
+  String get ios_journey_badge_annual_desc =>
+      'இந்த நாட்காட்டி ஆண்டின் அனைத்து ஏகாதசி விரதங்களையும் முழுமையாகக் கடைப்பிடியுங்கள்.';
+
+  @override
+  String get ios_journey_storage_error =>
+      'பதக்கங்களைச் சேமிக்க முடியவில்லை. உங்கள் விரத வரலாறு பாதுகாப்பாக உள்ளது.';
+
+  @override
+  String get ios_journey_collection_milestones => 'மைல்கற்கள்';
+
+  @override
+  String get ios_journey_collection_consistency => 'தொடர்ச்சி';
+
+  @override
+  String get ios_journey_collection_encouragement => 'ஊக்கம்';
+
+  @override
+  String get ios_journey_collection_annual => 'ஆண்டுத் தொகுப்பு';
 }

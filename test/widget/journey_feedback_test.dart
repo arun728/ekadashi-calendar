@@ -12,6 +12,7 @@ import 'package:ekadashi_calendar/screens/vrat_tracker/journey_rewards_views.dar
 import 'package:ekadashi_calendar/screens/vrat_tracker/record_vrat_dialog.dart';
 import 'package:ekadashi_calendar/screens/vrat_tracker/vrat_tracker_screen.dart';
 import 'package:ekadashi_calendar/widgets/ios_style.dart';
+import 'package:ekadashi_calendar/widgets/glass_look.dart';
 import '../unit/journey_rewards_test.dart' show journeyEvents;
 
 void main() {
@@ -23,6 +24,7 @@ void main() {
     WidgetTester tester,
     Widget child, {
     String code = 'en',
+    bool glass = false,
   }) async {
     final tracker = VratTrackerService();
     await tracker.init();
@@ -34,7 +36,11 @@ void main() {
           ChangeNotifierProvider.value(value: tracker),
           ChangeNotifierProvider.value(value: lang),
         ],
-        child: MaterialApp(home: Scaffold(body: child)),
+        child: MaterialApp(
+          home: Scaffold(
+            body: GlassLook(enabled: glass, child: child),
+          ),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -145,73 +151,82 @@ void main() {
     },
   );
 
-  for (final code in ['en', 'hi', 'ta', 'te', 'gu', 'bn']) {
-    testWidgets('$code status labels fit one row at 320px and large text', (
-      tester,
-    ) async {
-      tester.view.physicalSize = const Size(320, 1100);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-      final event = journeyEvents(2026).first;
-      await host(
-        tester,
-        MediaQuery(
-          data: const MediaQueryData(textScaler: TextScaler.linear(1.4)),
-          child: RecordVratDialog(
-            ekadashi: event,
-            allOccurrences: [event],
-            currentTimezone: 'Asia/Kolkata',
-          ),
-        ),
-        code: code,
+  for (final glass in [false, true]) {
+    for (final code in ['en', 'hi', 'ta', 'te', 'gu', 'bn']) {
+      testWidgets(
+        '$code status labels fit one row at 320px and large text, Glass=$glass',
+        (tester) async {
+          tester.view.physicalSize = const Size(320, 1100);
+          tester.view.devicePixelRatio = 1;
+          addTearDown(tester.view.resetPhysicalSize);
+          addTearDown(tester.view.resetDevicePixelRatio);
+          final event = journeyEvents(2026).first;
+          await host(
+            tester,
+            MediaQuery(
+              data: const MediaQueryData(textScaler: TextScaler.linear(1.4)),
+              child: RecordVratDialog(
+                ekadashi: event,
+                allOccurrences: [event],
+                currentTimezone: 'Asia/Kolkata',
+              ),
+            ),
+            code: code,
+            glass: glass,
+          );
+          final positions = <double>[];
+          for (final status in ['observed', 'partial', 'missed']) {
+            final choice = find.byKey(Key('vrat_status_$status'));
+            positions.add(tester.getCenter(choice).dy);
+            final paragraph = tester.renderObject<RenderParagraph>(
+              find.descendant(of: choice, matching: find.byType(RichText)).last,
+            );
+            expect(paragraph.didExceedMaxLines, isFalse);
+          }
+          expect(positions, everyElement(closeTo(positions.first, 0.001)));
+          expect(
+            tester
+                .widget<GlassChip>(find.byKey(const Key('vrat_method_oneMeal')))
+                .onTap,
+            isNull,
+          );
+          expect(
+            tester
+                .widget<GlassChip>(find.byKey(const Key('vrat_method_other')))
+                .onTap,
+            isNull,
+          );
+          await tester.tap(find.byKey(const Key('vrat_status_partial')));
+          await tester.pumpAndSettle();
+          expect(
+            tester
+                .widget<GlassChip>(find.byKey(const Key('vrat_method_oneMeal')))
+                .onTap,
+            isNotNull,
+          );
+          expect(
+            tester
+                .widget<GlassChip>(find.byKey(const Key('vrat_method_oneMeal')))
+                .selected,
+            isTrue,
+          );
+          for (final method in [
+            'fullFast',
+            'waterOnly',
+            'fruitsMilk',
+            'other',
+          ]) {
+            expect(
+              tester
+                  .widget<GlassChip>(find.byKey(Key('vrat_method_$method')))
+                  .onTap,
+              isNull,
+            );
+          }
+          expect(tester.takeException(), isNull);
+        },
       );
-      final positions = <double>[];
-      for (final status in ['observed', 'partial', 'missed']) {
-        final choice = find.byKey(Key('vrat_status_$status'));
-        positions.add(tester.getCenter(choice).dy);
-        final paragraph = tester.renderObject<RenderParagraph>(
-          find.descendant(of: choice, matching: find.byType(RichText)).last,
-        );
-        expect(paragraph.didExceedMaxLines, isFalse);
-      }
-      expect(positions, everyElement(closeTo(positions.first, 0.001)));
-      expect(
-        tester
-            .widget<GlassChip>(find.byKey(const Key('vrat_method_oneMeal')))
-            .onTap,
-        isNull,
-      );
-      expect(
-        tester
-            .widget<GlassChip>(find.byKey(const Key('vrat_method_other')))
-            .onTap,
-        isNull,
-      );
-      await tester.tap(find.byKey(const Key('vrat_status_partial')));
-      await tester.pumpAndSettle();
-      expect(
-        tester
-            .widget<GlassChip>(find.byKey(const Key('vrat_method_oneMeal')))
-            .onTap,
-        isNotNull,
-      );
-      expect(
-        tester
-            .widget<GlassChip>(find.byKey(const Key('vrat_method_oneMeal')))
-            .selected,
-        isTrue,
-      );
-      for (final method in ['fullFast', 'waterOnly', 'fruitsMilk', 'other']) {
-        expect(
-          tester
-              .widget<GlassChip>(find.byKey(Key('vrat_method_$method')))
-              .onTap,
-          isNull,
-        );
-      }
-      expect(tester.takeException(), isNull);
-    });
+    }
   }
 
   testWidgets('all shared card corners are opaque green pixels', (

@@ -167,7 +167,8 @@ final class LocalizationTests: XCTestCase {
         // (docs/EKADASHI_ENGINE_SCHEDULE.md).
         // Eight shared widget-preview/localization keys were ported from iOS overrides to ARB.
         // Two Android Glass Look preference strings share the approved iOS wording.
-        XCTAssertEqual(english.count, 523)
+        // 63 approved Journey keys are now shared by iOS and Android.
+        XCTAssertEqual(english.count, 586)
         var problems: [String] = []
         for language in ["ta", "hi", "te", "gu", "bn"] {
             for key in english {

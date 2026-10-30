@@ -8,48 +8,48 @@ carry `[skip ci]`. Implement/test/push iOS first, then Android.
 
 ## Complete Journey acceptance checklist
 
-- [ ] Use Home city/tradition engine schedules and stable occurrence identities
+- [x] Use Home city/tradition engine schedules and stable occurrence identities
   for 2026 and 2027. Reference schedules: 24 and 25 occurrences; compute targets
   from actual schedules. Future occurrences cannot earn points.
-- [ ] Observed 100, partial 50, missed/unrecorded 0; complete quarter +150;
+- [x] Observed 100, partial 50, missed/unrecorded 0; complete quarter +150;
   complete calendar year +1000. Reference targets 4000/4100. Annual totals
   separate from lifetime totals; corrections, deletions and duplicate saves
   recalculate rather than accumulate. Cross-year streaks continue.
-- [ ] Preserve the six original achievement identities, earned dates, observance
+- [x] Preserve the six original achievement identities, earned dates, observance
   history, old records and announcement markers. Add milestones 1/5/10/12;
   streaks 3/6/12/24; return-after-missed and three-partial encouragement; four
   quarterly chapters and annual completion per year. Permanent earned badges.
-- [ ] Matching vector badge art and patterned mandalas: filled observed,
+- [x] Matching vector badge art and patterned mandalas: filled observed,
   hatched partial, crossed missed, dashed past unrecorded, outlined future;
   quarter ornaments/year seal; exact unlock requirements/progress and earned dates.
-- [ ] Group simultaneous unlocks once; mark presented only when shown; support
+- [x] Group simultaneous unlocks once; mark presented only when shown; support
   optional persisted haptics and reduced motion. Open badge details from collection
   and celebration. Persist pending awards; corrupt/failed badge storage must
   preserve journal access/data, avoid overwriting corrupt bytes and permit retry.
-- [ ] Preserve three free new records and three free badge unlocks. Existing
+- [x] Preserve three free new records and three free badge unlocks. Existing
   records/history/statistics/streaks/earned badges stay available after expiry.
   Monthly, annual and lifetime receive identical premium access. No paid local
   flag, login, backend, monetary redemption, subscription discounts or later phases.
-- [ ] Four subtabs: Overview, History, Statistics, Achievements. Current available
+- [x] Four subtabs: Overview, History, Statistics, Achievements. Current available
   year default; 2026/2027/All years selector on every subtab. Selection shared.
   All-year Overview shows each annual collection; History combines occurrences;
   Statistics combines counts with weighted completion; Achievements filters
   annual badges while retaining lifetime milestones. Categories remain available.
-- [ ] Overview uses the annual share card's dark teal gradient and readable
+- [x] Overview uses the annual share card's dark teal gradient and readable
   foreground colors. Bright primary Share your year button. Keep lifetime totals,
   next milestone, chapters, scoring explanation and premium messaging.
-- [ ] Share explicitly renders a self-contained annual image with optional earned
+- [x] Share explicitly renders a self-contained annual image with optional earned
   badge selection, no private notes/location. Preserve rounded inner card over
   opaque green export corners (all four pixels tested), consistent light/dark.
-- [ ] History year label fully visible. Statistics removes redundant Year: label.
+- [x] History year label fully visible. Statistics removes redundant Year: label.
   Observed/Partial/Missed labels fully visible on one row with compact gaps.
-- [ ] Observed enables Full Fast/Water Only/Fruits-Milk; Partial enables only
+- [x] Observed enables Full Fast/Water Only/Fruits-Milk; Partial enables only
   One Meal. All other methods remain visibly grey and disabled; incompatible
   choices normalize on load/status changes/save. Preserve Missed behavior.
-- [ ] All six languages exactly retain the approved 63 Journey strings, preserve
+- [x] All six languages exactly retain the approved 63 Journey strings, preserve
   dev widget/Glass wording, keep named-placeholder order (especially Tamil),
   correct scripts/date format, and regenerate all shared resources.
-- [ ] Respect dev's Glass Look controls/sheets in both modes while preserving the
+- [x] Respect dev's Glass Look controls/sheets in both modes while preserving the
   approved fixed Overview/share palette. Verify narrow/large-text layouts,
   accessibility labels, icon registry and optional haptics.
 
@@ -92,7 +92,52 @@ are required for a true v1-to-v2 update.
 
 ## Validation results
 
-Pending implementation and checks. Update the checklist/results from actual evidence.
+Implementation acceptance is complete on both platforms; release-only checks below
+remain explicitly separate. No production signing key or live store purchase was exercised.
+
+| Check | Result |
+|---|---|
+| Full Flutter suite | 929 passed |
+| Full Swift core/resource suite | 324 passed |
+| Kotlin/widget unit suite | 89 passed, 11 suites |
+| iOS app/widget/Glass/Journey UI | 61 checks passed across iOS 26.5 and 18.6; the initially skipped catalog check passes on 18.6 |
+| Final shared-resource iOS render/Glass rerun | 8 passed |
+| Android Pixel 9a full Journey flow | Passed, including persisted One Meal, paywall, all six languages and both Glass modes |
+| Analyzer / formatting / generated resources | Clean |
+| Company app/widget device build | Signed build and codesign verification passed |
+| Built Android identity | com.applausestudios.ekadashi_calendar, versionCode 5, versionName 2.0.0 |
+| Existing dev translations | Every value retained; 63 approved Journey values added per language; 586 shared keys |
+| Evidence | 18 iOS and 27 Android screenshots, both Glass modes, plus test logs in the local evidence directory |
+
+The existing catalog integration check was initially skipped on the iOS 26
+command-line runner, then passed on iOS 18.6 with the local StoreKit catalog
+(1 passed, no skip/failure). Real store purchase/restore, physical background behavior,
+haptics/accessibility, native-speaker wording and a Play-signed installed-v1 upgrade
+remain release validation. Main source is 1.1.1+4; dev remains 2.0.0+5. Production
+Play signing/version-code continuity must also be checked against Play Console.
+
+## Final shared-file scope audit
+
+| File/area | Scoped Journey change; dev foundation retained |
+|---|---|
+| iOS AppModel | Badge haptic state, queue deduplication, schedule zone supplied to Journey. Dev initializer, performance caches, widget navigation, lifecycle and default tradition retained. |
+| iOS RootView | Grouped-award sheet and actual-presentation markers. Dev scenePhase task, tab routing and Glass system-bar policy retained. |
+| Settings on both platforms | One Journey haptic-preference row using dev's existing controls; no existing sections removed. |
+| Android main.dart | Three Journey bridges: premium refresh awards, tracker schedule/zone initialization and grouped awards after Home saves. Dev's Home button/blocked-state toast, timing, lifecycle and navigation retained. |
+| Android ios_style.dart | Opt-in compact chip layout only, default false. Dev's Glass rendering, modal dismissal, toolbar/sheet controls and all other chip users retained. |
+| iOS project/entitlements | Two entitlement strings use APP_GROUP; company team, bundle IDs, URL name and group default stay from dev. |
+| Localization | Add approved Journey keys/metadata to dev ARBs, regenerate; iOS-only override table is byte-identical to dev after moving Journey to shared resources. |
+
+Automated diff audit confirms these production areas remain byte-identical to dev:
+Android native code/build configuration; assets; iOS Shared, Today, Calendar and
+Panchang features; iOS widget code/assets (only the entitlement alias differs);
+Panchang and purchase-verification services; package/dependency configuration.
+Existing dev AppModel/Screenshot/Home parity tests are retained. Only unchanged-from-
+base Journey tests were updated for the new Journey labels and presentation.
+
+Draft replacement PR: #32. PR25 remains unchanged at 7b5d146; dev at ed0fad0 and
+main at e8041e4 are unchanged. No old-branch merge, force-push, CI or dev/main write.
+
 
 ### iOS candidate evidence
 
@@ -109,4 +154,4 @@ Pending implementation and checks. Update the checklist/results from actual evid
   remain unchanged. Scoped shared changes: badge haptic preference, pending
   grouped-award routing, Home timezone supplied to Journey, and a Settings row.
   Dev's scene lifecycle, caches, widget links and default tradition are retained.
-- Android port and final shared-resource regeneration remain pending.
+- Android completion and shared-resource evidence are recorded in the final results above.

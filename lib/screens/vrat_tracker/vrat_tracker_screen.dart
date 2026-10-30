@@ -5,7 +5,8 @@ import 'package:provider/provider.dart';
 
 import '../../l10n/app_language.dart';
 import '../../models/vrat_tracker_models.dart';
-import '../../services/achievement_evaluator.dart';
+import '../../services/journey_rewards.dart';
+import 'journey_rewards_views.dart';
 import '../../services/ekadashi_service.dart';
 import '../../services/language_service.dart';
 import '../../services/premium_service.dart';
@@ -45,6 +46,7 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
   final _pages = PageController();
   var _section = _JourneySection.overview;
   int _selectedYear = DateTime.now().year;
+  bool _allYears = false;
   ObservanceStatus? _historyStatusFilter;
 
   @override
@@ -148,32 +150,73 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
     return availableYears.first;
   }
 
+  String _yearTitle(LanguageService lang, int year) =>
+      _allYears ? lang.translate('search_all_years') : '$year';
+
+  VratYearStats _periodStats(VratTrackerService tracker, int year) {
+    final values = (_allYears ? _years(tracker) : [year]).map(
+      (y) => tracker.getAnnualStats(year: y, occurrences: widget.ekadashiList),
+    );
+    final total = values.fold(0, (sum, s) => sum + s.totalOccurrences);
+    final observed = values.fold(0, (sum, s) => sum + s.observedCount);
+    return VratYearStats(
+      year: year,
+      totalOccurrences: total,
+      observedCount: observed,
+      partialCount: values.fold(0, (sum, s) => sum + s.partialCount),
+      missedCount: values.fold(0, (sum, s) => sum + s.missedCount),
+      unrecordedCount: values.fold(0, (sum, s) => sum + s.unrecordedCount),
+      completionPercentage: total == 0 ? 0 : observed / total * 100,
+    );
+  }
+
   TextStyle _secondary(double size) =>
       TextStyle(fontSize: size, color: IosColors.secondary(context));
 
   // ==================== OVERVIEW ====================
   Widget _buildOverviewTab(LanguageService lang, VratTrackerService tracker) {
-    final currentStreak = tracker.getCurrentStreak(widget.ekadashiList);
-    final longestStreak = tracker.getLongestStreak(widget.ekadashiList);
-    final selectedYear = _coherentSelectedYear(_years(tracker));
-    final yearStats = tracker.getAnnualStats(
-      year: selectedYear,
-      occurrences: widget.ekadashiList,
+    final summary = tracker.journey(
+      widget.ekadashiList,
+      timezone: widget.currentTimezone,
     );
+    final currentStreak = summary.currentStreak;
+    final longestStreak = summary.longestStreak;
+    final selectedYear = _coherentSelectedYear(_years(tracker));
+    final yearStats = _periodStats(tracker, selectedYear);
     final totalObserved = tracker
         .getAllRecords()
         .where((h) => h.status == ObservanceStatus.observed)
         .length;
-    final nextMilestone = AchievementEvaluator.getNextMilestone(
-      userAchievements: tracker.userAchievements,
-      totalObserved: totalObserved,
-      longestStreak: longestStreak,
+    final next = JourneyBadgeCatalog.nextMilestone(
+      summary,
+      tracker.userAchievements,
     );
+    final nextMilestone = next == null
+        ? null
+        : (
+            achievement: next.achievement,
+            currentProgress: next.goalProgress(summary),
+            target: next.target,
+          );
     final unit = lang.translate('ekadashis_unit');
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, _bottomInset),
       children: [
+        Align(
+          alignment: Alignment.centerRight,
+          child: _yearMenu(
+            const Key('journey_overview_year'),
+            _years(tracker),
+            selectedYear,
+          ),
+        ),
+        const SizedBox(height: 12),
+        for (final year
+            in _allYears ? (_years(tracker)..sort()) : [selectedYear]) ...[
+          JourneyOverviewPanel(summary: summary, year: year),
+          const SizedBox(height: 12),
+        ],
         _pair(
           key: const Key('journey_overview_streaks'),
           _MetricCard(
@@ -197,7 +240,8 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
         _pair(
           _MetricCard(
             panelKey: const Key('journey_metric_annual_completion'),
-            title: '$selectedYear ${lang.translate('annual_completion')}',
+            title:
+                '${_yearTitle(lang, selectedYear)} ${lang.translate('annual_completion')}',
             value: '${yearStats.completionPercentage.round()}%',
             subtitle:
                 '${yearStats.observedCount} / ${yearStats.totalOccurrences}',
@@ -290,6 +334,19 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
               color: IosColors.primary(context),
             ),
           ),
+          if (milestone.currentProgress >= milestone.target &&
+              context.watch<PremiumService?>()?.isPremium != true)
+            TextButton(
+              onPressed: () => openPremium(context),
+              child: Text(lang.translate('premium_more_achievements')),
+            )
+          else
+            Text(
+              lang.translateWithArgs('ios_journey_remaining', [
+                '${math.max(0, milestone.target - milestone.currentProgress)}',
+              ]),
+              style: _secondary(12),
+            ),
           ClipRRect(
             borderRadius: BorderRadius.circular(2),
             child: LinearProgressIndicator(
@@ -326,7 +383,7 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
     final availableYears = _years(tracker);
     final selectedYear = _coherentSelectedYear(availableYears);
     final filtered = widget.ekadashiList.where((e) {
-      if (e.date.year != selectedYear) return false;
+      if (!_allYears && e.date.year != selectedYear) return false;
       if (_historyStatusFilter == null) return true;
       final status =
           tracker.getRecordByUid(e.occurrenceUid)?.status ??
@@ -411,8 +468,17 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
         key: key,
         tooltip: '',
         position: PopupMenuPosition.under,
-        onSelected: (y) => setState(() => _selectedYear = y),
+        onSelected: (y) => setState(() {
+          _allYears = y == 0;
+          if (y != 0) _selectedYear = y;
+        }),
         itemBuilder: (_) => [
+          PopupMenuItem(
+            value: 0,
+            child: Text(
+              context.read<LanguageService>().translate('search_all_years'),
+            ),
+          ),
           for (final y in years) PopupMenuItem(value: y, child: Text('$y')),
         ],
         child: GlassPanel(
@@ -425,7 +491,7 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
             children: [
               const Icon(AppIcons.journeyYear, size: 15, color: teal),
               Text(
-                '$selected',
+                _yearTitle(context.read<LanguageService>(), selected),
                 style: const TextStyle(
                   fontSize: IosText.subheadline,
                   fontWeight: FontWeight.w600,
@@ -489,10 +555,14 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
         currentTimezone: widget.currentTimezone,
       );
       if (unlocks != null && unlocks.isNotEmpty && mounted) {
-        for (final u in unlocks) {
-          if (!mounted) return;
-          await AchievementUnlockDialog.show(context, u);
-        }
+        await AchievementUnlockDialog.showGroup(
+          context,
+          unlocks,
+          summary: tracker.journey(
+            widget.ekadashiList,
+            timezone: widget.currentTimezone,
+          ),
+        );
       }
     }
 
@@ -577,12 +647,13 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
   Widget _buildStatisticsTab(LanguageService lang, VratTrackerService tracker) {
     final availableYears = _years(tracker);
     final selectedYear = _coherentSelectedYear(availableYears);
-    final stats = tracker.getAnnualStats(
-      year: selectedYear,
-      occurrences: widget.ekadashiList,
+    final stats = _periodStats(tracker, selectedYear);
+    final summary = tracker.journey(
+      widget.ekadashiList,
+      timezone: widget.currentTimezone,
     );
-    final currentStreak = tracker.getCurrentStreak(widget.ekadashiList);
-    final longestStreak = tracker.getLongestStreak(widget.ekadashiList);
+    final currentStreak = summary.currentStreak;
+    final longestStreak = summary.longestStreak;
     final percent = stats.completionPercentage;
     final headline = TextStyle(
       fontSize: IosText.headline,
@@ -651,9 +722,7 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
       children: [
         Row(
           children: [
-            Expanded(
-              child: Text('${lang.translate('year')}:', style: headline),
-            ),
+            const Spacer(),
             _yearMenu(
               const Key('journey_stats_year_menu'),
               availableYears,
@@ -669,7 +738,7 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
             spacing: 12,
             children: [
               Text(
-                '$selectedYear ${lang.translate('annual_completion')}',
+                '${_yearTitle(lang, selectedYear)} ${lang.translate('annual_completion')}',
                 textAlign: TextAlign.center,
                 style: headline,
               ),
@@ -750,146 +819,32 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
     LanguageService lang,
     VratTrackerService tracker,
   ) {
-    const achievements = AchievementEvaluator.allAchievements;
-    final userMap = tracker.userAchievements;
-    final premium = context.watch<PremiumService?>()?.isPremium == true;
-    final freeUsed = userMap.values.where((a) => a.isUnlocked).length;
-
-    Widget card(Achievement ach) {
-      final unlocked = userMap[ach.id]?.isUnlocked ?? false;
-      final paidLocked =
-          !premium &&
-          !unlocked &&
-          freeUsed >= VratTrackerService.freeAchievementLimit;
-      final gray = IosColors.gray(context);
-      return Container(
-        foregroundDecoration: unlocked
-            ? BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: teal, width: 1.8),
-              )
-            : null,
-        child: GlassPanel(
-          key: Key('journey_achievement_${ach.id}'),
-          radius: 16,
-          tint: unlocked ? teal : null,
-          padding: const EdgeInsets.all(14),
-          child: Column(
-            spacing: 8,
-            children: [
-              Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: unlocked
-                      ? teal.withValues(alpha: 0.15)
-                      : gray.withValues(alpha: 0.08),
-                ),
-                child: Icon(
-                  unlocked ? ach.icon : AppIcons.achievementLocked,
-                  size: 26,
-                  color: unlocked ? teal : gray,
-                ),
-              ),
-              Text(
-                lang.translate(ach.titleKey),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: IosText.footnote,
-                  fontWeight: FontWeight.w700,
-                  color: unlocked
-                      ? IosColors.primary(context)
-                      : IosColors.secondary(context),
-                ),
-              ),
-              Text(
-                lang.translate(ach.descriptionKey),
-                textAlign: TextAlign.center,
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-                style: _secondary(IosText.caption2),
-              ),
-              const Spacer(),
-              Text(
-                unlocked
-                    ? '✓ ${lang.translate('unlocked')}'
-                    : lang.translate(paidLocked ? 'premium_title' : 'locked'),
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: IosText.caption,
-                  fontWeight: FontWeight.w700,
-                  color: unlocked ? teal : IosColors.secondary(context),
-                ),
-              ),
-            ],
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: _yearMenu(
+              const Key('journey_achievements_year'),
+              _years(tracker),
+              _coherentSelectedYear(_years(tracker)),
+            ),
           ),
         ),
-      );
-    }
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        // LazyVGrid(.adaptive(minimum: 150), spacing 12).
-        final width = constraints.maxWidth - 32;
-        final columns = math.max(1, ((width + 12) / (150 + 12)).floor());
-        final rows = <Widget>[];
-        for (var i = 0; i < achievements.length; i += columns) {
-          rows.add(
-            ConstrainedBox(
-              // minHeight 190 inside the 14 padding.
-              constraints: const BoxConstraints(minHeight: 190 + 28),
-              child: IntrinsicHeight(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  spacing: 12,
-                  children: [
-                    for (var c = 0; c < columns; c++)
-                      Expanded(
-                        child: i + c < achievements.length
-                            ? card(achievements[i + c])
-                            : const SizedBox.shrink(),
-                      ),
-                  ],
-                ),
-              ),
+        Expanded(
+          child: JourneyBadgeCollection(
+            selectedYear: _allYears
+                ? null
+                : _coherentSelectedYear(_years(tracker)),
+            years: _years(tracker),
+            summary: tracker.journey(
+              widget.ekadashiList,
+              timezone: widget.currentTimezone,
             ),
-          );
-        }
-        return ListView(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, _bottomInset),
-          children: [
-            Text(
-              lang.translate('premium_free_achievements'),
-              style: TextStyle(
-                fontSize: IosText.subheadline,
-                color: IosColors.primary(context),
-              ),
-            ),
-            if (!premium) ...[
-              const SizedBox(height: 12),
-              Center(
-                child: OutlinedButton(
-                  key: const Key('journey_more_achievements'),
-                  onPressed: () => openPremium(
-                    context,
-                    currentTimezone: widget.currentTimezone,
-                  ),
-                  style: IosButtons.glass(context),
-                  child: Text(
-                    lang.translate('premium_more_achievements'),
-                    textAlign: TextAlign.center,
-                    style: IosButtons.label,
-                  ),
-                ),
-              ),
-            ],
-            for (final row in rows) ...[const SizedBox(height: 12), row],
-          ],
-        );
-      },
+          ),
+        ),
+      ],
     );
   }
 }
