@@ -22,7 +22,7 @@ final class JourneyRewardsTests: XCTestCase {
         JourneyRewards.calculate(occurrences: list, history: rows, completeYears: complete, now: now, zone: zone)
     }
 
-    func testBackfilledMixedHistoryDoesNotReviveCurrentStreakAcrossLaterGaps() {
+    func testBackfilledMixedHistoryEndsAtLatestRecord() {
         let list = events(2026)
         let statuses: [ObservanceStatus] = [.observed, .partial, .partial, .missed,
             .observed, .observed, .observed, .observed, .partial, .observed, .partial, .observed, .observed]
@@ -31,8 +31,10 @@ final class JourneyRewardsTests: XCTestCase {
         XCTAssertEqual(s.year(2026).observed, 8)
         XCTAssertEqual(s.year(2026).partial, 4)
         XCTAssertEqual(s.longestStreak, 9)
+        XCTAssertEqual(s.fullLongestStreak, 4)
+        XCTAssertEqual(s.fullCurrentStreak, 2)
         XCTAssertEqual(s.currentStreak, 9)
-        // Same records before the next occurrence is due retain a current run of two.
+        // Later unrecorded occurrences do not change the run; the strict full run is separate.
         let earlier = JourneyRewards.calculate(occurrences: list, history: zip(list, statuses).map { record($0.0, $0.1) },
             completeYears: [2026], now: ISO8601.instant("2026-07-04T12:00:00Z")!, zone: zone)
         XCTAssertEqual(earlier.currentStreak, 9)
@@ -79,6 +81,36 @@ final class JourneyRewardsTests: XCTestCase {
         let mixed = JourneyBadgeEvaluator.evaluate(summary: partial, current: [:], newUnlockLimit: nil, now: now)
         XCTAssertEqual(partial.currentStreak, 3)
         XCTAssertFalse(mixed.updated["consistent_observance"]!.isUnlocked)
+    }
+
+    func testDeletionRecalculatesStreakAndBadgesAndSurvivesReload() throws {
+        let list = events(2026), store = InMemoryKeyValueStore()
+        let tracker = VratTracker(store: store, premiumAchievements: { true }, now: { self.now })
+        try tracker.load(occurrences: list)
+        for e in list.prefix(3) {
+            try tracker.record(occurrenceId: e.id, occurrenceUid: e.occurrenceUid, date: e.date.iso, name: e.name,
+                               status: .observed, occurrences: list)
+        }
+        XCTAssertEqual(tracker.journey(list, completeYears: [2026]).currentStreak, 3)
+        XCTAssertTrue(tracker.userAchievements["consistent_observance"]!.isUnlocked)
+        try tracker.delete(occurrenceId: list[1].id, occurrences: list)
+        XCTAssertFalse(tracker.userAchievements["consistent_observance"]!.isUnlocked)
+        XCTAssertTrue(tracker.userAchievements["first_vrat"]!.isUnlocked)
+        let restored = VratTracker(store: store, premiumAchievements: { true }, now: { self.now })
+        try restored.load(occurrences: list)
+        XCTAssertEqual(restored.journey(list, completeYears: [2026]).currentStreak, 1)
+        XCTAssertFalse(restored.userAchievements["consistent_observance"]!.isUnlocked)
+        for e in [list[0], list[2]] { try restored.delete(occurrenceId: e.id, occurrences: list) }
+        XCTAssertTrue(restored.userAchievements.values.allSatisfy { !$0.isUnlocked })
+    }
+
+    func testRevocationDoesNotOverrideExplicitZeroUnlockAllowance() {
+        let list = events(2026)
+        let earned = JourneyBadgeEvaluator.evaluate(summary: summary(list, list.map { record($0) }), current: [:], newUnlockLimit: nil, now: now).updated
+        let partial = summary(list, list.prefix(3).map { record($0, .partial) })
+        let result = JourneyBadgeEvaluator.evaluate(summary: partial, current: earned, newUnlockLimit: 0, now: now)
+        XCTAssertFalse(result.updated["every_effort"]!.isUnlocked)
+        XCTAssertTrue(result.newlyUnlocked.isEmpty)
     }
 
     func testStatusPointsAndFutureExclusion() {

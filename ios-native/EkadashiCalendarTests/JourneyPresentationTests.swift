@@ -29,6 +29,14 @@ final class JourneyPresentationTests: XCTestCase {
         XCTAssertEqual(switches(host.view).filter(\.isOn).count, 4)
     }
 
+    func testJourneyMetricTitlesWrapInsteadOfTruncating() throws {
+        func height(_ title: String) throws -> CGFloat {
+            let view = MetricCard(title: title, value: "3", subtitle: "Ekadashis", symbol: AppSymbol.journeyStreak, color: .orange).frame(width: 150)
+            return try XCTUnwrap(ImageRenderer(content: view).uiImage).size.height
+        }
+        XCTAssertGreaterThan(try height("Current consistency streak"), try height("Short"))
+    }
+
     func testEveryBadgeVectorRendersAtSmallAndLargeSizes() throws {
         for badge in JourneyBadgeCatalog.all(years: [2026, 2027]) {
             for size: CGFloat in [48, 160] {
