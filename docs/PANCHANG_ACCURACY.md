@@ -1,5 +1,11 @@
 # Panchang accuracy
 
+For the 24 October 2026 investigation of minute discrepancies and the
+historical/post-2037 timezone coverage defects, see
+[Panchang timing investigation](PANCHANG_TIMING_INVESTIGATION.md). The scores
+below describe their stated samples and tolerances, not exact agreement with
+every displayed Drik minute or full timezone coverage through 2100.
+
 Branch `feature/panchang-accuracy` (from PR #14). The engine was measured
 against independent references, corrected, and measured again. No new
 features were added; existing calculations were made more accurate.
