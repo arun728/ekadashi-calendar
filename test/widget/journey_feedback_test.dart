@@ -104,6 +104,26 @@ void main() {
     });
   }
 
+  testWidgets('Journey metric labels wrap without ellipsis', (tester) async {
+    await host(
+      tester,
+      VratTrackerScreen(
+        ekadashiList: journeyEvents(2026),
+        currentTimezone: 'Asia/Kolkata',
+      ),
+    );
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('journey_metric_current_streak')),
+      300,
+      scrollable: find.byType(Scrollable).last,
+    );
+    final title = tester.widget<Text>(
+      find.text('Current consistency streak').first,
+    );
+    expect(title.maxLines, isNull);
+    expect(title.overflow, isNot(TextOverflow.ellipsis));
+  });
+
   test('method rules and annual filtering mirror iOS', () {
     expect(FastingMethod.allowedFor(ObservanceStatus.observed), [
       FastingMethod.fullFast,

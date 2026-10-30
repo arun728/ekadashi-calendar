@@ -21,6 +21,39 @@ void main() {
   setUpAll(tzdata.initializeTimeZones);
   setUp(() => SharedPreferences.setMockInitialValues({}));
   test(
+    'delete middle record relocks badge and persists after reload',
+    () async {
+      final es = journeyEvents(2026);
+      final tracker = VratTrackerService(now: () => journeyNow);
+      await tracker.init(occurrences: es);
+      for (final e in es.take(3)) {
+        await tracker.recordVrat(
+          ekadashiOccurrenceId: e.id,
+          occurrenceUid: e.occurrenceUid,
+          ekadashiDate: e.date.toIso8601String().substring(0, 10),
+          ekadashiName: e.name,
+          status: ObservanceStatus.observed,
+          occurrences: es,
+        );
+      }
+      expect(tracker.journey(es).currentStreak, 3);
+      await tracker.deleteVrat(ekadashiOccurrenceId: es[1].id, occurrences: es);
+      final restored = VratTrackerService(now: () => journeyNow);
+      await restored.init(occurrences: es);
+      expect(restored.journey(es).currentStreak, 1);
+      expect(
+        restored.userAchievements['consistent_observance']!.isUnlocked,
+        false,
+      );
+      expect(restored.userAchievements['first_vrat']!.isUnlocked, true);
+      for (final e in [es[0], es[2]]) {
+        await restored.deleteVrat(ekadashiOccurrenceId: e.id, occurrences: es);
+      }
+      expect(restored.userAchievements.values.any((a) => a.isUnlocked), false);
+    },
+  );
+
+  test(
     'award write failure preserves history and retries the unpresented award',
     () async {
       final original = SharedPreferencesStorePlatform.instance,

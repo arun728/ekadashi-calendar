@@ -150,13 +150,13 @@ void main() {
     // 5. Verify Dashboard is displayed with metrics
     expect(find.byKey(const Key('journey_year_points')), findsOneWidget);
     await tester.scrollUntilVisible(
-      find.text('Current Streak'),
+      find.text('Current consistency streak'),
       300,
       scrollable: find.byType(Scrollable).last,
     );
     await tester.pumpAndSettle();
-    expect(find.text('Current Streak'), findsOneWidget);
-    expect(find.text('Longest Streak'), findsOneWidget);
+    expect(find.text('Current consistency streak'), findsOneWidget);
+    expect(find.text('Longest consistency streak'), findsOneWidget);
     expect(find.text('Total Observed'), findsOneWidget);
     await tester.scrollUntilVisible(
       find.text('Next Milestone'),
@@ -177,7 +177,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('journey_tab_statistics')));
     await tester.pumpAndSettle();
-    expect(find.text('2026 Annual Completion'), findsOneWidget);
+    expect(find.text('2026 Full-observance completion'), findsOneWidget);
 
     // 8. Switch to Achievements tab
     await tester.ensureVisible(

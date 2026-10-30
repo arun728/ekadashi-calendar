@@ -61,40 +61,99 @@ void main() {
   setUpAll(tzdata.initializeTimeZones);
   setUp(() => SharedPreferences.setMockInitialValues({}));
   test(
-    'backfilled mixed history preserves longest streak but later gaps reset current',
+    'consistency includes partial, ignores trailing empties and breaks on internal gaps or misses',
     () {
       final es = journeyEvents(2026);
-      final statuses = [
-        ObservanceStatus.observed,
-        ObservanceStatus.partial,
-        ObservanceStatus.partial,
-        ObservanceStatus.missed,
-        ObservanceStatus.observed,
-        ObservanceStatus.observed,
-        ObservanceStatus.observed,
-        ObservanceStatus.observed,
-        ObservanceStatus.partial,
-        ObservanceStatus.observed,
-        ObservanceStatus.partial,
-        ObservanceStatus.observed,
-        ObservanceStatus.observed,
-      ];
       final rows = [
-        for (var i = 0; i < statuses.length; i++)
-          journeyRecord(es[i], statuses[i]),
+        journeyRecord(es[0]),
+        journeyRecord(es[1], ObservanceStatus.partial),
+        journeyRecord(es[2]),
       ];
-      final s = summary(es, rows);
-      expect(s.year(2026).points, 1000);
-      expect(s.year(2026).observed, 8);
-      expect(s.year(2026).partial, 4);
-      expect(s.longestStreak, 4);
-      expect(s.currentStreak, 0);
+      expect(summary(es, rows).currentStreak, 3);
+      expect(summary(es, rows).longestStreak, 3);
+      expect(summary(es, [...rows, journeyRecord(es[4])]).currentStreak, 1);
       expect(
-        summary(es, rows, now: DateTime.utc(2026, 7, 4, 12)).currentStreak,
-        2,
+        summary(es, [
+          ...rows,
+          journeyRecord(es[3], ObservanceStatus.missed),
+        ]).currentStreak,
+        0,
       );
+      final earned = JourneyBadgeEvaluator.evaluate(
+        summary: summary(es, rows),
+        current: {},
+        now: journeyNow,
+      );
+      expect(earned.updated['consistent_observance']!.isUnlocked, false);
     },
   );
+  test('reversal is selective and does not bypass zero allowance', () {
+    final es = [...journeyEvents(2026), ...journeyEvents(2027, extra: true)];
+    final all = es.map(journeyRecord).toList();
+    final earned = JourneyBadgeEvaluator.evaluate(
+      summary: summary(es, all),
+      current: {},
+      now: journeyNow,
+    ).updated;
+    final changed = JourneyBadgeEvaluator.evaluate(
+      summary: summary(es, all.skip(1).toList()),
+      current: earned,
+      now: journeyNow,
+    );
+    expect(changed.updated['journey_2026_q1']!.isUnlocked, false);
+    expect(changed.updated['journey_2026_full']!.isUnlocked, false);
+    expect(changed.updated['journey_2027_full']!.isUnlocked, true);
+    expect(changed.updated['vrat_5']!.isUnlocked, true);
+    final partial = summary(
+      es,
+      es
+          .take(3)
+          .map((e) => journeyRecord(e, ObservanceStatus.partial))
+          .toList(),
+    );
+    final zero = JourneyBadgeEvaluator.evaluate(
+      summary: partial,
+      current: earned,
+      newUnlockLimit: 0,
+      now: journeyNow,
+    );
+    expect(zero.updated['every_effort']!.isUnlocked, false);
+    expect(zero.updated.values.any((a) => a.isUnlocked), false);
+    expect(zero.newlyUnlocked, isEmpty);
+  });
+
+  test('backfilled mixed history ends at latest record', () {
+    final es = journeyEvents(2026);
+    final statuses = [
+      ObservanceStatus.observed,
+      ObservanceStatus.partial,
+      ObservanceStatus.partial,
+      ObservanceStatus.missed,
+      ObservanceStatus.observed,
+      ObservanceStatus.observed,
+      ObservanceStatus.observed,
+      ObservanceStatus.observed,
+      ObservanceStatus.partial,
+      ObservanceStatus.observed,
+      ObservanceStatus.partial,
+      ObservanceStatus.observed,
+      ObservanceStatus.observed,
+    ];
+    final rows = [
+      for (var i = 0; i < statuses.length; i++)
+        journeyRecord(es[i], statuses[i]),
+    ];
+    final s = summary(es, rows);
+    expect(s.year(2026).points, 1000);
+    expect(s.year(2026).observed, 8);
+    expect(s.year(2026).partial, 4);
+    expect(s.longestStreak, 9);
+    expect(s.currentStreak, 9);
+    expect(
+      summary(es, rows, now: DateTime.utc(2026, 7, 4, 12)).currentStreak,
+      9,
+    );
+  });
 
   test(
     'status points, future exclusion and derived lifetime points match Swift',
@@ -156,7 +215,7 @@ void main() {
     expect(s.year(2026).basePoints, 2350);
     expect(s.year(2026).annualBonus, 0);
     expect(s.year(2026).quarters.map((q) => q.points), [0, 150, 150, 150]);
-    expect(s.longestStreak, 22);
+    expect(s.longestStreak, 24);
   });
   test(
     'UID dedup, newest corrections, deletion and unknown records match Swift',
@@ -255,14 +314,8 @@ void main() {
       newUnlockLimit: 0,
       now: journeyNow,
     );
-    expect(
-      edited.updated.values.where((a) => a.isUnlocked).length,
-      paid.updated.values.where((a) => a.isUnlocked).length,
-    );
-    expect(
-      edited.updated['first_vrat']?.unlockedAtUTC,
-      paid.updated['first_vrat']?.unlockedAtUTC,
-    );
+    expect(edited.updated.values.where((a) => a.isUnlocked).length, 0);
+    expect(edited.updated['first_vrat']?.unlockedAtUTC, isNull);
   });
   test('encouragement adds no points and is never suggested as a goal', () {
     final es = journeyEvents(2026);
