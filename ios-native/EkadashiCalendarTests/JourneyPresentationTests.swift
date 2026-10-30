@@ -37,6 +37,38 @@ final class JourneyPresentationTests: XCTestCase {
         XCTAssertGreaterThan(try height("Current consistency streak"), try height("Short"))
     }
 
+    func testUniformGridFitsTallContentAndMakesEveryCellTheSameSize() async throws {
+        for width: CGFloat in [320, 430] {
+            for large in [false, true] {
+                var frames: [Int: CGRect] = [:]
+                let titles = ["Current consistency streak", "Longest consistency streak", "2026 Full-observance completion", "Total Observed"]
+                let content = ScrollView {
+                    JourneyUniformGrid(columns: 2) {
+                        ForEach(0..<titles.count, id: \.self) { i in
+                            MetricCard(title: titles[i], value: "20", subtitle: "Ekadashis", symbol: AppSymbol.journeyStreak, color: .orange)
+                                .background(GeometryReader { proxy in Color.clear.preference(key: JourneyCellFrames.self, value: [i: proxy.frame(in: .global)]) })
+                        }
+                    }
+                    .onPreferenceChange(JourneyCellFrames.self) { frames = $0 }
+                }.environment(\.dynamicTypeSize, large ? .accessibility3 : .large)
+                let window = UIWindow(frame: CGRect(x: 0, y: 0, width: width, height: 1200))
+                let host = UIHostingController(rootView: content)
+                window.rootViewController = host; window.makeKeyAndVisible()
+                host.view.layoutIfNeeded()
+                try await Task.sleep(for: .milliseconds(150))
+                XCTAssertEqual(frames.count, 4)
+                let first = try XCTUnwrap(frames[0])
+                for frame in frames.values {
+                    XCTAssertEqual(frame.width, first.width, accuracy: 0.5)
+                    XCTAssertEqual(frame.height, first.height, accuracy: 0.5)
+                }
+                let tallest = try XCTUnwrap(ImageRenderer(content: MetricCard(title: titles[2], value: "20", subtitle: "Ekadashis", symbol: AppSymbol.journeyStreak, color: .orange).frame(width: first.width).environment(\.dynamicTypeSize, large ? .accessibility3 : .large)).uiImage)
+                XCTAssertGreaterThanOrEqual(first.height + 0.5, tallest.size.height)
+                window.isHidden = true
+            }
+        }
+    }
+
     func testEveryBadgeVectorRendersAtSmallAndLargeSizes() throws {
         for badge in JourneyBadgeCatalog.all(years: [2026, 2027]) {
             for size: CGFloat in [48, 160] {
@@ -136,4 +168,9 @@ final class JourneyPresentationTests: XCTestCase {
         XCTAssertFalse(model.badgeHaptics)
         XCTAssertFalse(AppModel().badgeHaptics)
     }
+}
+
+private struct JourneyCellFrames: PreferenceKey {
+    static let defaultValue: [Int: CGRect] = [:]
+    static func reduce(value: inout [Int: CGRect], nextValue: () -> [Int: CGRect]) { value.merge(nextValue(), uniquingKeysWith: { _, new in new }) }
 }

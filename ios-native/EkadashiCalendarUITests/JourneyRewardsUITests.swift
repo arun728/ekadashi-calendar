@@ -122,6 +122,34 @@ final class JourneyRewardsUITests: XCTestCase {
         }
     }
 
+    func testOverviewAndAchievementCardsHaveUniformSizes() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-ui-testing"]
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 40))
+        app.tabBars.buttons.element(boundBy: 2).tap()
+        let metric = app.descendants(matching: .any)["journey_metric_current"].firstMatch
+        for _ in 0..<5 where !metric.isHittable { app.swipeUp() }
+        var sizes: [CGSize] = []
+        for id in ["current", "longest", "completion", "observed"] {
+            let item = app.descendants(matching: .any)["journey_metric_\(id)"].firstMatch
+            XCTAssertTrue(item.exists)
+            sizes.append(item.frame.size)
+        }
+        for size in sizes { XCTAssertEqual(size.height, sizes[0].height, accuracy: 1); XCTAssertEqual(size.width, sizes[0].width, accuracy: 1) }
+        capture(app, "journey-uniform-overview")
+        app.buttons["journey_tab_achievements"].tap()
+        var heights: [CGFloat] = []
+        for _ in 0..<4 {
+            let badges = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'journey_badge_' AND NOT identifier BEGINSWITH 'journey_badge_filter_'"))
+            for badge in badges.allElementsBoundByIndex where badge.isHittable { heights.append(badge.frame.height) }
+            capture(app, "journey-uniform-achievements-\(heights.count)")
+            app.swipeUp()
+        }
+        XCTAssertGreaterThan(heights.count, 4)
+        for height in heights { XCTAssertEqual(height, heights[0], accuracy: 1) }
+    }
+
     func testAnnualSharePreviewIsUserInitiated() {
         let app = XCUIApplication()
         app.launchArguments = ["-ui-testing"]
