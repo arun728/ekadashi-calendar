@@ -124,6 +124,83 @@ void main() {
     expect(title.overflow, isNot(TextOverflow.ellipsis));
   });
 
+  testWidgets(
+    'all Journey metric and achievement cards have uniform dimensions across languages and large text',
+    (tester) async {
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      for (final code in ['en', 'hi', 'ta', 'te', 'gu', 'bn']) {
+        for (final width in [320.0, 430.0]) {
+          await tester.binding.setSurfaceSize(Size(width, 1000));
+          await host(
+            tester,
+            MediaQuery(
+              data: MediaQueryData(
+                size: Size(width, 1000),
+                textScaler: const TextScaler.linear(1.6),
+              ),
+              child: VratTrackerScreen(
+                key: ValueKey('uniform-$code-$width'),
+                ekadashiList: journeyEvents(2026),
+                currentTimezone: 'Asia/Kolkata',
+              ),
+            ),
+            code: code,
+          );
+          await tester.scrollUntilVisible(
+            find.byKey(const Key('journey_metric_current_streak')),
+            300,
+            scrollable: find.byType(Scrollable).last,
+          );
+          await tester.scrollUntilVisible(
+            find.byKey(const Key('journey_metric_total_observed')),
+            150,
+            scrollable: find.byType(Scrollable).last,
+          );
+          final metrics =
+              [
+                    'current_streak',
+                    'longest_streak',
+                    'annual_completion',
+                    'total_observed',
+                  ]
+                  .map(
+                    (id) =>
+                        tester.getSize(find.byKey(Key('journey_metric_$id'))),
+                  )
+                  .toList();
+          for (final size in metrics) {
+            expect(size, metrics.first, reason: '$code $width metrics');
+          }
+          final tab = find.byKey(const Key('journey_tab_achievements'));
+          await tester.ensureVisible(tab);
+          await tester.tap(tab);
+          await tester.pumpAndSettle();
+          final cards = find.byWidgetPredicate(
+            (w) =>
+                w.key is ValueKey<String> &&
+                (w.key! as ValueKey<String>).value.startsWith(
+                  'journey_achievement_',
+                ),
+          );
+          expect(cards, findsWidgets);
+          final sizes = cards
+              .evaluate()
+              .map((e) => (e.renderObject! as RenderBox).size)
+              .toList();
+          expect(sizes.length, greaterThan(5));
+          for (final size in sizes) {
+            expect(size, sizes.first, reason: '$code $width achievements');
+          }
+          expect(
+            tester.takeException(),
+            isNull,
+            reason: '$code $width must not overflow',
+          );
+        }
+      }
+    },
+  );
+
   test('method rules and annual filtering mirror iOS', () {
     expect(FastingMethod.allowedFor(ObservanceStatus.observed), [
       FastingMethod.fullFast,
