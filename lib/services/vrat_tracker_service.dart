@@ -4,14 +4,57 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/vrat_tracker_models.dart';
 import 'ekadashi_service.dart';
 import 'vrat_statistics_service.dart';
-import 'achievement_evaluator.dart';
+import 'journey_rewards.dart';
 import '../data/tracker_history_store.dart';
 
 /// Central service for Vrat Tracking and Achievement management.
 /// Integrates Vrat Tracker, Vrat Statistics, and Achievement System as a single module.
 class VratTrackerService extends ChangeNotifier {
-  VratTrackerService({bool Function()? premiumAchievements})
-    : _premiumAchievements = premiumAchievements ?? (() => false);
+  VratTrackerService({
+    bool Function()? premiumAchievements,
+    DateTime Function()? now,
+  }) : _premiumAchievements = premiumAchievements ?? (() => false),
+       _now = now ?? DateTime.now;
+  final DateTime Function() _now;
+  String journeyTimezone = 'Asia/Kolkata';
+  bool rewardsStorageError = false;
+  bool _rewardsStoreCorrupt = false;
+  bool badgeHaptics = true;
+  final Set<String> _queuedAchievements = {};
+  static const badgeEnvelopeKey = 'journey_badges_v1';
+
+  JourneySummary journey(
+    List<EkadashiDate> events, {
+    Set<int>? completeYears,
+    String? timezone,
+  }) => JourneyRewards.calculate(
+    occurrences: events,
+    history: getAllRecords(),
+    completeYears: completeYears ?? events.map((e) => e.date.year).toSet(),
+    now: _now(),
+    timezone: timezone ?? journeyTimezone,
+  );
+
+  Future<void> setBadgeHaptics(bool enabled) async {
+    badgeHaptics = enabled;
+    await (await SharedPreferences.getInstance()).setBool(
+      'journey_badge_haptics',
+      enabled,
+    );
+    notifyListeners();
+  }
+
+  Future<void> markAnnouncementsPresented(Iterable<String> ids) =>
+      _mutate(() async {
+        final old = {..._notifiedAchievements};
+        _notifiedAchievements.addAll(ids);
+        if (!await _persistAchievements()) {
+          _notifiedAchievements
+            ..clear()
+            ..addAll(old);
+        }
+        notifyListeners();
+      });
   final bool Function() _premiumAchievements;
   static const freeAchievementLimit = 3;
 
@@ -21,9 +64,10 @@ class VratTrackerService extends ChangeNotifier {
     return _mutate(() async {
       if (!_trackerEnabled) return const <Achievement>[];
       final unlocked = _evaluateAchievementsInternal(occurrences);
-      await _persistAchievements();
+      final saved = await _persistAchievements();
+      if (!saved) _queuedAchievements.removeAll(unlocked.map((a) => a.id));
       notifyListeners();
-      return unlocked;
+      return saved ? unlocked : <Achievement>[];
     });
   }
 
@@ -81,25 +125,44 @@ class VratTrackerService extends ChangeNotifier {
       final records = await _historyStore.load(prefs, occurrences ?? const []);
       _historyByUid.addAll({for (final r in records) r.occurrenceUid!: r});
 
-      // 3. Load User Achievements
-      final achievementsJsonStr = prefs.getString(_prefAchievementsKey);
-      if (achievementsJsonStr != null && achievementsJsonStr.isNotEmpty) {
-        final List<dynamic> decodedList = json.decode(achievementsJsonStr);
-        for (final item in decodedList) {
-          if (item is Map<String, dynamic>) {
-            final ua = UserAchievement.fromJson(item);
-            _userAchievements[ua.achievementId] = ua;
+      _userAchievements.clear();
+      _notifiedAchievements
+        ..clear()
+        ..addAll(prefs.getStringList(_prefNotifiedAchievementsKey) ?? []);
+      _queuedAchievements.clear();
+      rewardsStorageError = false;
+      _rewardsStoreCorrupt = false;
+      badgeHaptics = prefs.getBool('journey_badge_haptics') ?? true;
+      final envelope = prefs.getString(badgeEnvelopeKey);
+      final legacy = prefs.getString(_prefAchievementsKey);
+      try {
+        if (envelope != null) {
+          final data = jsonDecode(envelope) as Map<String, dynamic>;
+          final rows = data['achievements'] as List;
+          for (final row in rows) {
+            final a = UserAchievement.fromJson(
+              Map<String, dynamic>.from(row as Map),
+            );
+            _userAchievements[a.achievementId] = a;
+          }
+          _notifiedAchievements
+            ..clear()
+            ..addAll((data['presented'] as List).cast<String>());
+        } else if (legacy != null) {
+          for (final row in jsonDecode(legacy) as List) {
+            final a = UserAchievement.fromJson(
+              Map<String, dynamic>.from(row as Map),
+            );
+            _userAchievements[a.achievementId] = a;
           }
         }
+      } catch (_) {
+        _userAchievements.clear();
+        _rewardsStoreCorrupt = true;
+        rewardsStorageError = true;
       }
 
-      // 4. Load notified achievement IDs
-      final notifiedList = prefs.getStringList(_prefNotifiedAchievementsKey);
-      if (notifiedList != null) {
-        _notifiedAchievements.addAll(notifiedList);
-      }
-
-      _trackingEnabledAt ??= DateTime.now().toUtc();
+      _trackingEnabledAt ??= _now().toUtc();
       if (!prefs.containsKey(_prefEnabledAtKey)) {
         await prefs.setString(
           _prefEnabledAtKey,
@@ -112,6 +175,8 @@ class VratTrackerService extends ChangeNotifier {
       // 5. Evaluate achievements if occurrences provided
       if (occurrences != null && occurrences.isNotEmpty) {
         _evaluateAchievementsInternal(occurrences);
+        _queuedAchievements.clear();
+        await _persistAchievements();
       }
 
       _isInitialized = true;
@@ -177,7 +242,7 @@ class VratTrackerService extends ChangeNotifier {
     // stale routes, accessibility actions, or future callers.
     if (!_trackerEnabled || _isFutureDate(ekadashiDate)) return const [];
 
-    final nowUtc = DateTime.now().toUtc().toIso8601String();
+    final nowUtc = _now().toUtc().toIso8601String();
     occurrenceUid ??=
         occurrences
             ?.where((e) => e.id == ekadashiOccurrenceId)
@@ -189,7 +254,7 @@ class VratTrackerService extends ChangeNotifier {
     final updatedRecord = VratHistory(
       id:
           existing?.id ??
-          'vrat_${ekadashiOccurrenceId}_${DateTime.now().millisecondsSinceEpoch}',
+          'vrat_${ekadashiOccurrenceId}_${_now().millisecondsSinceEpoch}',
       localProfileId: existing?.localProfileId ?? 'default',
       ekadashiOccurrenceId: ekadashiOccurrenceId,
       occurrenceUid: occurrenceUid,
@@ -218,10 +283,10 @@ class VratTrackerService extends ChangeNotifier {
     }
 
     // History is durable before achievements or UI are published.
-    await _persistAchievements();
-
+    final saved = await _persistAchievements();
+    if (!saved) _queuedAchievements.removeAll(newlyUnlocked.map((a) => a.id));
     notifyListeners();
-    return newlyUnlocked;
+    return saved ? newlyUnlocked : <Achievement>[];
   }
 
   /// Delete a Vrat record.
@@ -328,53 +393,80 @@ class VratTrackerService extends ChangeNotifier {
   List<Achievement> _evaluateAchievementsInternal(
     List<EkadashiDate> occurrences,
   ) {
-    final result = AchievementEvaluator.evaluate(
-      history: getAllRecords(),
-      occurrences: occurrences,
-      currentAchievements: _userAchievements,
+    if (_rewardsStoreCorrupt) return [];
+    final summary = journey(occurrences);
+    final qualifiedUnlocked =
+        JourneyBadgeCatalog.all(summary.years.keys.toList())
+            .where(
+              (b) =>
+                  _userAchievements[b.id]?.isUnlocked == true &&
+                  b.progress(summary) == b.target,
+            )
+            .length;
+    final result = JourneyBadgeEvaluator.evaluate(
+      summary: summary,
+      current: _userAchievements,
+      now: _now(),
       newUnlockLimit: _premiumAchievements()
           ? null
-          : (freeAchievementLimit -
-                    _userAchievements.values.where((a) => a.isUnlocked).length)
-                .clamp(0, freeAchievementLimit),
+          : (freeAchievementLimit - qualifiedUnlocked).clamp(
+              0,
+              freeAchievementLimit,
+            ),
     );
-
-    _userAchievements.clear();
-    _userAchievements.addAll(result.updatedAchievements);
-
-    // Filter to achievements that haven't been notified yet
-    final unnotifiedUnlocks = <Achievement>[];
-    for (final ach in result.newlyUnlocked) {
-      if (!_notifiedAchievements.contains(ach.id)) {
-        unnotifiedUnlocks.add(ach);
-        _notifiedAchievements.add(ach.id);
-      }
-    }
-
-    return unnotifiedUnlocks;
+    _userAchievements
+      ..clear()
+      ..addAll(result.updated);
+    final earnedIds = _userAchievements.values
+        .where((a) => a.isUnlocked)
+        .map((a) => a.achievementId)
+        .toSet();
+    _notifiedAchievements.retainAll(earnedIds);
+    _queuedAchievements.retainAll(earnedIds);
+    final pending =
+        JourneyBadgeCatalog.all(occurrences.map((e) => e.date.year).toList())
+            .where(
+              (b) =>
+                  _userAchievements[b.id]?.isUnlocked == true &&
+                  !_notifiedAchievements.contains(b.id) &&
+                  !_queuedAchievements.contains(b.id),
+            )
+            .map((b) => b.achievement)
+            .toList();
+    _queuedAchievements.addAll(pending.map((a) => a.id));
+    return pending;
   }
 
   bool _isFutureDate(String date) {
     final parsed = DateTime.tryParse(date.trim());
     if (parsed == null) return true;
     final eventDay = DateTime(parsed.year, parsed.month, parsed.day);
-    final now = DateTime.now();
+    final now = _now();
     final today = DateTime(now.year, now.month, now.day);
     return eventDay.isAfter(today);
   }
 
-  /// Persist achievements to SharedPreferences
-  Future<void> _persistAchievements() async {
+  /// One local envelope commits badges and presentation markers together.
+  /// Secondary failures never block or overwrite the observance journal.
+  Future<bool> _persistAchievements() async {
+    if (_rewardsStoreCorrupt) return false;
     try {
       final prefs = await SharedPreferences.getInstance();
-      final list = _userAchievements.values.map((a) => a.toJson()).toList();
-      await prefs.setString(_prefAchievementsKey, json.encode(list));
-      await prefs.setStringList(
-        _prefNotifiedAchievementsKey,
-        _notifiedAchievements.toList(),
-      );
-    } catch (e) {
-      debugPrint('⚠️ Error saving achievements: $e');
+      final rows = _userAchievements.values.toList()
+        ..sort((a, b) => a.achievementId.compareTo(b.achievementId));
+      final presented = _notifiedAchievements.toList()..sort();
+      final raw = jsonEncode({
+        'achievements': rows.map((a) => a.toJson()).toList(),
+        'presented': presented,
+      });
+      final saved =
+          await prefs.setString(badgeEnvelopeKey, raw) &&
+          prefs.getString(badgeEnvelopeKey) == raw;
+      rewardsStorageError = !saved;
+      return saved;
+    } catch (_) {
+      rewardsStorageError = true;
+      return false;
     }
   }
 }

@@ -817,19 +817,19 @@ abstract class AppLocalizations {
   /// No description provided for @current_streak.
   ///
   /// In en, this message translates to:
-  /// **'Current Streak'**
+  /// **'Current consistency streak'**
   String get current_streak;
 
   /// No description provided for @longest_streak.
   ///
   /// In en, this message translates to:
-  /// **'Longest Streak'**
+  /// **'Longest consistency streak'**
   String get longest_streak;
 
   /// No description provided for @annual_completion.
   ///
   /// In en, this message translates to:
-  /// **'Annual Completion'**
+  /// **'Full-observance completion'**
   String get annual_completion;
 
   /// No description provided for @total_observed.
@@ -907,7 +907,7 @@ abstract class AppLocalizations {
   /// No description provided for @history.
   ///
   /// In en, this message translates to:
-  /// **'History'**
+  /// **'Record'**
   String get history;
 
   /// No description provided for @statistics.
@@ -3243,6 +3243,388 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Use clearer, translucent cards and controls.'**
   String get glass_look_desc;
+
+  /// No description provided for @ios_journey_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Your {value0} Journey'**
+  String ios_journey_title(String value0);
+
+  /// No description provided for @ios_journey_points.
+  ///
+  /// In en, this message translates to:
+  /// **'Journey Points'**
+  String get ios_journey_points;
+
+  /// No description provided for @ios_journey_lifetime.
+  ///
+  /// In en, this message translates to:
+  /// **'Lifetime points'**
+  String get ios_journey_lifetime;
+
+  /// No description provided for @ios_journey_year_points.
+  ///
+  /// In en, this message translates to:
+  /// **'{value0} of {value1} possible points'**
+  String ios_journey_year_points(String value0, String value1);
+
+  /// No description provided for @ios_journey_summary.
+  ///
+  /// In en, this message translates to:
+  /// **'{value0} observed · {value1} partial'**
+  String ios_journey_summary(String value0, String value1);
+
+  /// No description provided for @ios_journey_mandala.
+  ///
+  /// In en, this message translates to:
+  /// **'Your annual mandala'**
+  String get ios_journey_mandala;
+
+  /// No description provided for @ios_journey_quarter.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapter {value0} · {value1}'**
+  String ios_journey_quarter(String value0, String value1);
+
+  /// No description provided for @ios_journey_quarter_progress.
+  ///
+  /// In en, this message translates to:
+  /// **'{value0} of {value1} observed'**
+  String ios_journey_quarter_progress(String value0, String value1);
+
+  /// No description provided for @ios_journey_quarter_bonus.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete this chapter for +150 points'**
+  String get ios_journey_quarter_bonus;
+
+  /// No description provided for @ios_journey_bonus_earned.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapter complete · +150 points'**
+  String get ios_journey_bonus_earned;
+
+  /// No description provided for @ios_journey_annual_bonus.
+  ///
+  /// In en, this message translates to:
+  /// **'Year complete · +1,000 points'**
+  String get ios_journey_annual_bonus;
+
+  /// No description provided for @ios_journey_scoring.
+  ///
+  /// In en, this message translates to:
+  /// **'Observed +100 · Partial +50 · Complete quarter +150 · Complete year +1,000'**
+  String get ios_journey_scoring;
+
+  /// No description provided for @ios_journey_personal.
+  ///
+  /// In en, this message translates to:
+  /// **'A personal journey, with no monetary rewards.'**
+  String get ios_journey_personal;
+
+  /// No description provided for @ios_journey_remaining.
+  ///
+  /// In en, this message translates to:
+  /// **'{value0} more to your next milestone'**
+  String ios_journey_remaining(String value0);
+
+  /// No description provided for @ios_journey_badges.
+  ///
+  /// In en, this message translates to:
+  /// **'Your badge collection'**
+  String get ios_journey_badges;
+
+  /// No description provided for @ios_journey_progress.
+  ///
+  /// In en, this message translates to:
+  /// **'{value0} of {value1}'**
+  String ios_journey_progress(String value0, String value1);
+
+  /// No description provided for @ios_journey_earned.
+  ///
+  /// In en, this message translates to:
+  /// **'Earned {value0}'**
+  String ios_journey_earned(String value0);
+
+  /// No description provided for @ios_journey_view_badge.
+  ///
+  /// In en, this message translates to:
+  /// **'View badge'**
+  String get ios_journey_view_badge;
+
+  /// No description provided for @ios_journey_view_badges.
+  ///
+  /// In en, this message translates to:
+  /// **'View badges'**
+  String get ios_journey_view_badges;
+
+  /// No description provided for @ios_journey_share.
+  ///
+  /// In en, this message translates to:
+  /// **'Share your year'**
+  String get ios_journey_share;
+
+  /// No description provided for @ios_journey_share_preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Annual Journey card'**
+  String get ios_journey_share_preview;
+
+  /// No description provided for @ios_journey_share_badges.
+  ///
+  /// In en, this message translates to:
+  /// **'{value0} earned badges'**
+  String ios_journey_share_badges(String value0);
+
+  /// No description provided for @ios_journey_share_message.
+  ///
+  /// In en, this message translates to:
+  /// **'My {value0} Ekadashi journey · {value1} points'**
+  String ios_journey_share_message(String value0, String value1);
+
+  /// No description provided for @ios_journey_premium.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue your Journey with Premium'**
+  String get ios_journey_premium;
+
+  /// No description provided for @ios_journey_premium_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlimited recording, the complete badge collection and your annual mandala.'**
+  String get ios_journey_premium_desc;
+
+  /// No description provided for @ios_journey_haptics.
+  ///
+  /// In en, this message translates to:
+  /// **'Badge celebration haptics'**
+  String get ios_journey_haptics;
+
+  /// No description provided for @ios_journey_future.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming'**
+  String get ios_journey_future;
+
+  /// No description provided for @ios_journey_mandala_summary.
+  ///
+  /// In en, this message translates to:
+  /// **'{value0} occurrences · {value1} observed · {value2} partial'**
+  String ios_journey_mandala_summary(
+    String value0,
+    String value1,
+    String value2,
+  );
+
+  /// No description provided for @ios_journey_badge_first.
+  ///
+  /// In en, this message translates to:
+  /// **'First Step'**
+  String get ios_journey_badge_first;
+
+  /// No description provided for @ios_journey_badge_first_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Fully observe your first Ekadashi.'**
+  String get ios_journey_badge_first_desc;
+
+  /// No description provided for @ios_journey_badge_root.
+  ///
+  /// In en, this message translates to:
+  /// **'Taking Root'**
+  String get ios_journey_badge_root;
+
+  /// No description provided for @ios_journey_badge_root_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Fully observe 5 Ekadashis across all years.'**
+  String get ios_journey_badge_root_desc;
+
+  /// No description provided for @ios_journey_badge_bloom.
+  ///
+  /// In en, this message translates to:
+  /// **'In Bloom'**
+  String get ios_journey_badge_bloom;
+
+  /// No description provided for @ios_journey_badge_bloom_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Fully observe 10 Ekadashis across all years.'**
+  String get ios_journey_badge_bloom_desc;
+
+  /// No description provided for @ios_journey_badge_lights.
+  ///
+  /// In en, this message translates to:
+  /// **'Twelve Lights'**
+  String get ios_journey_badge_lights;
+
+  /// No description provided for @ios_journey_badge_lights_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Fully observe 12 Ekadashis across all years.'**
+  String get ios_journey_badge_lights_desc;
+
+  /// No description provided for @ios_journey_badge_flame.
+  ///
+  /// In en, this message translates to:
+  /// **'Steady Flame'**
+  String get ios_journey_badge_flame;
+
+  /// No description provided for @ios_journey_badge_flame_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Fully observe 3 consecutive Ekadashis.'**
+  String get ios_journey_badge_flame_desc;
+
+  /// No description provided for @ios_journey_badge_rhythm.
+  ///
+  /// In en, this message translates to:
+  /// **'Growing Rhythm'**
+  String get ios_journey_badge_rhythm;
+
+  /// No description provided for @ios_journey_badge_rhythm_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Fully observe 6 consecutive Ekadashis.'**
+  String get ios_journey_badge_rhythm_desc;
+
+  /// No description provided for @ios_journey_badge_thread.
+  ///
+  /// In en, this message translates to:
+  /// **'Unbroken Thread'**
+  String get ios_journey_badge_thread;
+
+  /// No description provided for @ios_journey_badge_thread_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Fully observe 12 consecutive Ekadashis.'**
+  String get ios_journey_badge_thread_desc;
+
+  /// No description provided for @ios_journey_badge_wreath.
+  ///
+  /// In en, this message translates to:
+  /// **'Twenty-Four Together'**
+  String get ios_journey_badge_wreath;
+
+  /// No description provided for @ios_journey_badge_wreath_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Fully observe 24 consecutive Ekadashis, even across years.'**
+  String get ios_journey_badge_wreath_desc;
+
+  /// No description provided for @ios_journey_badge_return.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome Back'**
+  String get ios_journey_badge_return;
+
+  /// No description provided for @ios_journey_badge_return_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Fully observe an Ekadashi after a missed occurrence.'**
+  String get ios_journey_badge_return_desc;
+
+  /// No description provided for @ios_journey_badge_effort.
+  ///
+  /// In en, this message translates to:
+  /// **'Every Effort Counts'**
+  String get ios_journey_badge_effort;
+
+  /// No description provided for @ios_journey_badge_effort_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Partially observe 3 Ekadashis. Every effort is part of your journey.'**
+  String get ios_journey_badge_effort_desc;
+
+  /// No description provided for @ios_journey_badge_q1.
+  ///
+  /// In en, this message translates to:
+  /// **'First Chapter'**
+  String get ios_journey_badge_q1;
+
+  /// No description provided for @ios_journey_badge_q1_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Fully observe every Ekadashi from January to March in this year.'**
+  String get ios_journey_badge_q1_desc;
+
+  /// No description provided for @ios_journey_badge_q2.
+  ///
+  /// In en, this message translates to:
+  /// **'Second Chapter'**
+  String get ios_journey_badge_q2;
+
+  /// No description provided for @ios_journey_badge_q2_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Fully observe every Ekadashi from April to June in this year.'**
+  String get ios_journey_badge_q2_desc;
+
+  /// No description provided for @ios_journey_badge_q3.
+  ///
+  /// In en, this message translates to:
+  /// **'Third Chapter'**
+  String get ios_journey_badge_q3;
+
+  /// No description provided for @ios_journey_badge_q3_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Fully observe every Ekadashi from July to September in this year.'**
+  String get ios_journey_badge_q3_desc;
+
+  /// No description provided for @ios_journey_badge_q4.
+  ///
+  /// In en, this message translates to:
+  /// **'Fourth Chapter'**
+  String get ios_journey_badge_q4;
+
+  /// No description provided for @ios_journey_badge_q4_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Fully observe every Ekadashi from October to December in this year.'**
+  String get ios_journey_badge_q4_desc;
+
+  /// No description provided for @ios_journey_badge_annual.
+  ///
+  /// In en, this message translates to:
+  /// **'A Year of Dedication'**
+  String get ios_journey_badge_annual;
+
+  /// No description provided for @ios_journey_badge_annual_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Fully observe every Ekadashi in this calendar year.'**
+  String get ios_journey_badge_annual_desc;
+
+  /// No description provided for @ios_journey_storage_error.
+  ///
+  /// In en, this message translates to:
+  /// **'Badges could not be saved. Your observance history is safe.'**
+  String get ios_journey_storage_error;
+
+  /// No description provided for @ios_journey_collection_milestones.
+  ///
+  /// In en, this message translates to:
+  /// **'Milestones'**
+  String get ios_journey_collection_milestones;
+
+  /// No description provided for @ios_journey_collection_consistency.
+  ///
+  /// In en, this message translates to:
+  /// **'Consistency'**
+  String get ios_journey_collection_consistency;
+
+  /// No description provided for @ios_journey_collection_encouragement.
+  ///
+  /// In en, this message translates to:
+  /// **'Encouragement'**
+  String get ios_journey_collection_encouragement;
+
+  /// No description provided for @ios_journey_collection_annual.
+  ///
+  /// In en, this message translates to:
+  /// **'Annual collection'**
+  String get ios_journey_collection_annual;
 }
 
 class _AppLocalizationsDelegate

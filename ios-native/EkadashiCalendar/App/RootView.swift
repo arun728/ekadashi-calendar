@@ -7,6 +7,7 @@ import EkadashiCore
 struct RootView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.scenePhase) private var scenePhase
+    @State private var presentedBadgeIDs: Set<String> = []
 
     var body: some View {
         @Bindable var model = model
@@ -43,9 +44,13 @@ struct RootView: View {
         }) { request in
             GoogleCalendarPickerView(request: request)
         }
-        .sheet(item: unlockBinding) { achievement in
-            AchievementUnlockView(achievement: achievement)
-                .presentationDetents([.medium])
+        .sheet(item: unlockBinding) { group in
+            AchievementUnlockView(achievements: group.achievements)
+                .presentationDetents([.medium, .large])
+                .onAppear {
+                    presentedBadgeIDs = Set(group.achievements.map(\.id))
+                    model.vrat.markAnnouncementsPresented(Array(presentedBadgeIDs))
+                }
         }
         .toast($model.toast)
         .task(id: "\(scenePhase)-\(model.lifecycleScheduleRevision)") {
@@ -86,9 +91,9 @@ struct RootView: View {
         Binding(get: { model.selectedTab }, set: { model.select($0) })
     }
 
-    private var unlockBinding: Binding<Achievement?> {
-        Binding(get: { model.unlockQueue.first }, set: { value in
-            if value == nil, !model.unlockQueue.isEmpty { model.unlockQueue.removeFirst() }
+    private var unlockBinding: Binding<JourneyUnlockGroup?> {
+        Binding(get: { model.unlockQueue.isEmpty ? nil : JourneyUnlockGroup(achievements: model.unlockQueue) }, set: { value in
+            if value == nil { model.unlockQueue.removeAll { presentedBadgeIDs.contains($0.id) } }
         })
     }
 

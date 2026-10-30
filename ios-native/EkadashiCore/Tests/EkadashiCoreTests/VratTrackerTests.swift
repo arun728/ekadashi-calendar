@@ -207,27 +207,33 @@ final class VratTrackerTests: XCTestCase {
         let service = tracker(store, premium: { premium })
         try service.load(occurrences: events())
         for event in events() {
-            try record(service, event.id, event.date.iso, uid: event.occurrenceUid, occurrences: events())
+            let awards = try record(service, event.id, event.date.iso, uid: event.occurrenceUid, occurrences: events())
+            service.markAnnouncementsPresented(awards.map(\.id))
         }
         XCTAssertEqual(service.userAchievements.values.filter(\.isUnlocked).count, 3)
         premium = true
-        XCTAssertEqual(try service.refreshAchievements(events()).count, 3)
+        let upgradeAwards = try service.refreshAchievements(events())
+        XCTAssertEqual(upgradeAwards.count, 4)
+        service.markAnnouncementsPresented(upgradeAwards.map(\.id))
         XCTAssertTrue(try service.refreshAchievements(events()).isEmpty)
         premium = false
         _ = try service.refreshAchievements(events())
-        XCTAssertEqual(service.userAchievements.values.filter(\.isUnlocked).count, 6)
+        XCTAssertEqual(service.userAchievements.values.filter(\.isUnlocked).count, 7)
         let recreated = tracker(store)
         try recreated.load(occurrences: events())
-        XCTAssertEqual(recreated.userAchievements.values.filter(\.isUnlocked).count, 6)
+        XCTAssertEqual(recreated.userAchievements.values.filter(\.isUnlocked).count, 7)
     }
 
-    func testUnlockDialogsAreShownOnlyOncePerBadge() throws {
+    func testUnlockDialogsRepeatAfterRelockingButNotRepeatedSaves() throws {
         let store = InMemoryKeyValueStore()
         let service = tracker(store)
         try service.load(occurrences: events())
         XCTAssertEqual(try record(service, 1, "2025-01-01", uid: events()[0].occurrenceUid, occurrences: events()).map(\.id),
                        ["first_vrat"])
         try service.delete(occurrenceId: 1, occurrences: events())
+        let reearned = try record(service, 1, "2025-01-01", uid: events()[0].occurrenceUid, occurrences: events())
+        XCTAssertEqual(reearned.map(\.id), ["first_vrat"])
+        service.markAnnouncementsPresented(reearned.map(\.id))
         XCTAssertTrue(try record(service, 1, "2025-01-01", uid: events()[0].occurrenceUid, occurrences: events()).isEmpty)
     }
 }

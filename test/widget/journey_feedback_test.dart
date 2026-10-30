@@ -1,0 +1,610 @@
+import 'package:flutter/material.dart';
+import 'package:ekadashi_calendar/widgets/settings_group.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:ekadashi_calendar/models/vrat_tracker_models.dart';
+import 'package:ekadashi_calendar/services/journey_rewards.dart';
+import 'package:ekadashi_calendar/services/language_service.dart';
+import 'package:ekadashi_calendar/services/vrat_tracker_service.dart';
+import 'package:ekadashi_calendar/screens/vrat_tracker/journey_rewards_views.dart';
+import 'package:ekadashi_calendar/screens/vrat_tracker/record_vrat_dialog.dart';
+import 'package:ekadashi_calendar/screens/vrat_tracker/vrat_tracker_screen.dart';
+import 'package:ekadashi_calendar/widgets/ios_style.dart';
+import 'package:ekadashi_calendar/widgets/glass_look.dart';
+import '../unit/journey_rewards_test.dart' show journeyEvents;
+
+void main() {
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+    tz.initializeTimeZones();
+  });
+  Future<void> host(
+    WidgetTester tester,
+    Widget child, {
+    String code = 'en',
+    bool glass = false,
+  }) async {
+    final tracker = VratTrackerService();
+    await tracker.init();
+    final lang = LanguageService();
+    await lang.changeLanguage(code);
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider.value(value: tracker),
+          ChangeNotifierProvider.value(value: lang),
+        ],
+        child: MaterialApp(
+          home: Scaffold(
+            body: GlassLook(enabled: glass, child: child),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets(
+    'share selects all earned badges and preserves manual deselection',
+    (tester) async {
+      final badges = JourneyBadgeCatalog.all([]).take(5).toList();
+      final progress = JourneyRewards.calculate(
+        occurrences: [],
+        history: [],
+        completeYears: {},
+      ).year(2026);
+      await host(tester, JourneyShareSheet(progress: progress, badges: badges));
+      final switches = tester
+          .widgetList<SettingsSwitchTile>(find.byType(SettingsSwitchTile))
+          .toList();
+      expect(switches.length, 5);
+      expect(switches.where((s) => s.value).length, 5);
+      JourneyAnnualShareCard card() => tester.widget<JourneyAnnualShareCard>(
+        find.byKey(const Key('journey_share_preview')),
+      );
+      expect(card().badges.map((b) => b.id), badges.map((b) => b.id));
+      switches.first.onChanged!(false);
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widgetList<SettingsSwitchTile>(find.byType(SettingsSwitchTile))
+            .where((s) => s.value)
+            .length,
+        4,
+      );
+      expect(card().badges.map((b) => b.id), badges.skip(1).map((b) => b.id));
+    },
+  );
+
+  for (final code in ['en', 'hi', 'ta', 'te', 'gu', 'bn']) {
+    testWidgets('$code overview omits monetary-rewards sentence', (
+      tester,
+    ) async {
+      final summary = JourneyRewards.calculate(
+        occurrences: [],
+        history: [],
+        completeYears: {},
+      );
+      await host(
+        tester,
+        SingleChildScrollView(
+          child: JourneyOverviewPanel(summary: summary, year: 2026),
+        ),
+        code: code,
+      );
+      final context = tester.element(find.byType(JourneyOverviewPanel));
+      final copy = context.read<LanguageService>().translate(
+        'ios_journey_personal',
+      );
+      expect(copy, isNot('ios_journey_personal'));
+      expect(find.text(copy), findsNothing);
+    });
+  }
+
+  testWidgets('Journey metric labels wrap without ellipsis', (tester) async {
+    await host(
+      tester,
+      VratTrackerScreen(
+        ekadashiList: journeyEvents(2026),
+        currentTimezone: 'Asia/Kolkata',
+      ),
+    );
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('journey_metric_current_streak')),
+      300,
+      scrollable: find.byType(Scrollable).last,
+    );
+    final title = tester.widget<Text>(
+      find.text('Current consistency streak').first,
+    );
+    expect(title.maxLines, isNull);
+    expect(title.overflow, isNot(TextOverflow.ellipsis));
+  });
+
+  testWidgets(
+    'all Journey metric and achievement cards have uniform dimensions across languages and large text',
+    (tester) async {
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      for (final code in ['en', 'hi', 'ta', 'te', 'gu', 'bn']) {
+        for (final width in [320.0, 430.0]) {
+          await tester.binding.setSurfaceSize(Size(width, 1000));
+          await host(
+            tester,
+            MediaQuery(
+              data: MediaQueryData(
+                size: Size(width, 1000),
+                textScaler: const TextScaler.linear(1.6),
+              ),
+              child: VratTrackerScreen(
+                key: ValueKey('uniform-$code-$width'),
+                ekadashiList: journeyEvents(2026),
+                currentTimezone: 'Asia/Kolkata',
+              ),
+            ),
+            code: code,
+          );
+          await tester.scrollUntilVisible(
+            find.byKey(const Key('journey_metric_current_streak')),
+            300,
+            scrollable: find.byType(Scrollable).last,
+          );
+          await tester.scrollUntilVisible(
+            find.byKey(const Key('journey_metric_total_observed')),
+            150,
+            scrollable: find.byType(Scrollable).last,
+          );
+          final metrics =
+              [
+                    'current_streak',
+                    'longest_streak',
+                    'annual_completion',
+                    'total_observed',
+                  ]
+                  .map(
+                    (id) =>
+                        tester.getSize(find.byKey(Key('journey_metric_$id'))),
+                  )
+                  .toList();
+          for (final size in metrics) {
+            expect(size, metrics.first, reason: '$code $width metrics');
+          }
+          final tab = find.byKey(const Key('journey_tab_achievements'));
+          await tester.ensureVisible(tab);
+          await tester.tap(tab);
+          await tester.pumpAndSettle();
+          final cards = find.byWidgetPredicate(
+            (w) =>
+                w.key is ValueKey<String> &&
+                (w.key! as ValueKey<String>).value.startsWith(
+                  'journey_achievement_',
+                ),
+          );
+          expect(cards, findsWidgets);
+          final sizes = cards
+              .evaluate()
+              .map((e) => (e.renderObject! as RenderBox).size)
+              .toList();
+          expect(sizes.length, greaterThan(5));
+          for (final size in sizes) {
+            expect(size, sizes.first, reason: '$code $width achievements');
+          }
+          final statisticsTab = find.byKey(const Key('journey_tab_statistics'));
+          await tester.ensureVisible(statisticsTab);
+          await tester.tap(statisticsTab);
+          await tester.pumpAndSettle();
+          await tester.scrollUntilVisible(
+            find.byKey(const Key('journey_stat_longest_streak')),
+            200,
+            scrollable: find.byType(Scrollable).last,
+          );
+          final statisticSizes =
+              [
+                    'observed',
+                    'partial',
+                    'missed',
+                    'unrecorded',
+                    'current_streak',
+                    'longest_streak',
+                  ]
+                  .map(
+                    (id) => tester.getSize(find.byKey(Key('journey_stat_$id'))),
+                  )
+                  .toList();
+          for (final size in statisticSizes) {
+            expect(
+              size,
+              statisticSizes.first,
+              reason: '$code $width Statistics',
+            );
+          }
+          expect(
+            tester.takeException(),
+            isNull,
+            reason: '$code $width must not overflow',
+          );
+        }
+      }
+    },
+  );
+
+  testWidgets(
+    'future year has zero scoped progress, preserves lifetime, and Overview has no recording',
+    (tester) async {
+      final es = [...journeyEvents(2026), ...journeyEvents(2027, extra: true)];
+      final tracker = VratTrackerService(
+        now: () => DateTime.utc(2026, 10, 31, 12),
+      );
+      await tracker.init(occurrences: es);
+      for (final e in es.take(3)) {
+        await tracker.recordVrat(
+          ekadashiOccurrenceId: e.id,
+          occurrenceUid: e.occurrenceUid,
+          ekadashiDate: e.date.toIso8601String().substring(0, 10),
+          ekadashiName: e.name,
+          status: ObservanceStatus.observed,
+          occurrences: es,
+        );
+      }
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider.value(value: tracker),
+            ChangeNotifierProvider(create: (_) => LanguageService()),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: VratTrackerScreen(
+                ekadashiList: es,
+                currentTimezone: 'Asia/Kolkata',
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('journey_overview_year')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('2027').last);
+      await tester.pumpAndSettle();
+      expect(find.text('Current consistency streak · 0'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byKey(const Key('journey_lifetime_points')),
+          matching: find.text('300'),
+        ),
+        findsOneWidget,
+      );
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('journey_metric_total_observed')),
+        300,
+        scrollable: find.byType(Scrollable).last,
+      );
+      for (final id in ['current_streak', 'longest_streak', 'total_observed']) {
+        expect(
+          find.descendant(
+            of: find.byKey(Key('journey_metric_$id')),
+            matching: find.text('0'),
+          ),
+          findsOneWidget,
+        );
+      }
+      await tester.scrollUntilVisible(
+        find.text('First Step'),
+        200,
+        scrollable: find.byType(Scrollable).last,
+      );
+      expect(find.text('First Step'), findsOneWidget);
+      await tester.drag(find.byType(Scrollable).last, const Offset(0, -1800));
+      await tester.pumpAndSettle();
+      expect(find.text('Record Observance'), findsNothing);
+      expect(
+        find.byWidgetPredicate(
+          (w) =>
+              w.key is ValueKey<String> &&
+              (w.key! as ValueKey<String>).value.startsWith('journey_row_'),
+        ),
+        findsNothing,
+      );
+    },
+  );
+
+  testWidgets(
+    'All years shows both panels and uses 20 of 49 in Overview and Statistics',
+    (tester) async {
+      final es = [...journeyEvents(2026), ...journeyEvents(2027, extra: true)];
+      final tracker = VratTrackerService(
+        premiumAchievements: () => true,
+        now: () => DateTime.utc(2026, 10, 31, 12),
+      );
+      await tracker.init(occurrences: es);
+      for (final e in es.take(20)) {
+        await tracker.recordVrat(
+          ekadashiOccurrenceId: e.id,
+          occurrenceUid: e.occurrenceUid,
+          ekadashiDate: e.date.toIso8601String().substring(0, 10),
+          ekadashiName: e.name,
+          status: ObservanceStatus.observed,
+          occurrences: es,
+        );
+      }
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider.value(value: tracker),
+            ChangeNotifierProvider(create: (_) => LanguageService()),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: VratTrackerScreen(
+                ekadashiList: es,
+                currentTimezone: 'Asia/Kolkata',
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('journey_overview_year')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('All years').last);
+      await tester.pumpAndSettle();
+      expect(find.text('Your 2026 Journey'), findsOneWidget);
+      final scroll = find.byType(Scrollable).last;
+      await tester.scrollUntilVisible(
+        find.text('Your 2027 Journey'),
+        400,
+        scrollable: scroll,
+      );
+      expect(find.text('Your 2027 Journey'), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('journey_metric_annual_completion')),
+        400,
+        scrollable: scroll,
+      );
+      final metric = find.byKey(const Key('journey_metric_annual_completion'));
+      expect(
+        find.descendant(of: metric, matching: find.text('41%')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: metric, matching: find.text('20 / 49')),
+        findsOneWidget,
+      );
+      await tester.tap(find.byKey(const Key('journey_tab_statistics')));
+      await tester.pumpAndSettle();
+      expect(find.text('20 of 49 Ekadashis'), findsOneWidget);
+      expect(find.text('41%'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byKey(const Key('journey_stat_unrecorded')),
+          matching: find.text('29'),
+        ),
+        findsOneWidget,
+      );
+    },
+  );
+
+  test('method rules and annual filtering mirror iOS', () {
+    expect(FastingMethod.allowedFor(ObservanceStatus.observed), [
+      FastingMethod.fullFast,
+      FastingMethod.waterOnly,
+      FastingMethod.fruitsMilk,
+    ]);
+    expect(FastingMethod.allowedFor(ObservanceStatus.partial), [
+      FastingMethod.oneMeal,
+    ]);
+    expect(
+      FastingMethod.normalized(
+        FastingMethod.fruitsMilk,
+        ObservanceStatus.partial,
+      ),
+      FastingMethod.oneMeal,
+    );
+    expect(
+      FastingMethod.normalized(
+        FastingMethod.oneMeal,
+        ObservanceStatus.observed,
+      ),
+      FastingMethod.fullFast,
+    );
+    expect(
+      FastingMethod.normalized(FastingMethod.other, ObservanceStatus.missed),
+      isNull,
+    );
+    final badges = JourneyBadgeCatalog.all([2026, 2027]);
+    final selected = badges.where((b) => b.isVisibleInYear(2026));
+    expect(selected.any((b) => b.id == 'first_vrat'), isTrue);
+    expect(selected.any((b) => b.year == 2027), isFalse);
+    expect(badges.where((b) => b.isVisibleInYear(null)).length, badges.length);
+  });
+
+  testWidgets('overview uses the share gradient and bright primary action', (
+    tester,
+  ) async {
+    final summary = JourneyRewards.calculate(
+      occurrences: [],
+      history: [],
+      completeYears: {},
+    );
+    await host(
+      tester,
+      SingleChildScrollView(
+        child: JourneyOverviewPanel(summary: summary, year: 2026),
+      ),
+    );
+    expect(
+      tester.widget(find.byKey(const Key('journey_share_year'))),
+      isA<FilledButton>(),
+    );
+    final surface = tester.widget<Container>(
+      find.byKey(const Key('journey_overview_surface')),
+    );
+    final gradient =
+        (surface.decoration! as BoxDecoration).gradient! as LinearGradient;
+    expect(gradient.colors, const [
+      Color.fromRGBO(5, 46, 46, 1),
+      Color.fromRGBO(8, 20, 33, 1),
+    ]);
+  });
+
+  testWidgets(
+    'year filter applies across tabs and combines all-year statistics',
+    (tester) async {
+      await host(
+        tester,
+        VratTrackerScreen(
+          ekadashiList: [
+            ...journeyEvents(2026),
+            ...journeyEvents(2027, extra: true),
+          ],
+          currentTimezone: 'Asia/Kolkata',
+        ),
+      );
+      await tester.tap(find.byKey(const Key('journey_tab_achievements')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('journey_achievements_year')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('2027').last);
+      await tester.pumpAndSettle();
+      final annual = find.byKey(const Key('journey_badge_filter_annual'));
+      await tester.ensureVisible(annual);
+      await tester.tap(annual);
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const Key('journey_badge_journey_2027_q1')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const Key('journey_badge_journey_2026_q1')),
+        findsNothing,
+      );
+      await tester.tap(find.byKey(const Key('journey_achievements_year')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('All years').last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('journey_tab_statistics')));
+      await tester.pumpAndSettle();
+      expect(find.text('Year:'), findsNothing);
+      expect(find.text('0 of 49 Ekadashis'), findsOneWidget);
+    },
+  );
+
+  for (final glass in [false, true]) {
+    for (final code in ['en', 'hi', 'ta', 'te', 'gu', 'bn']) {
+      testWidgets(
+        '$code status labels fit one row at 320px and large text, Glass=$glass',
+        (tester) async {
+          tester.view.physicalSize = const Size(320, 1100);
+          tester.view.devicePixelRatio = 1;
+          addTearDown(tester.view.resetPhysicalSize);
+          addTearDown(tester.view.resetDevicePixelRatio);
+          final event = journeyEvents(2026).first;
+          await host(
+            tester,
+            MediaQuery(
+              data: const MediaQueryData(textScaler: TextScaler.linear(1.4)),
+              child: RecordVratDialog(
+                ekadashi: event,
+                allOccurrences: [event],
+                currentTimezone: 'Asia/Kolkata',
+              ),
+            ),
+            code: code,
+            glass: glass,
+          );
+          final positions = <double>[];
+          for (final status in ['observed', 'partial', 'missed']) {
+            final choice = find.byKey(Key('vrat_status_$status'));
+            positions.add(tester.getCenter(choice).dy);
+            final paragraph = tester.renderObject<RenderParagraph>(
+              find.descendant(of: choice, matching: find.byType(RichText)).last,
+            );
+            expect(paragraph.didExceedMaxLines, isFalse);
+          }
+          expect(positions, everyElement(closeTo(positions.first, 0.001)));
+          expect(
+            tester
+                .widget<GlassChip>(find.byKey(const Key('vrat_method_oneMeal')))
+                .onTap,
+            isNull,
+          );
+          expect(
+            tester
+                .widget<GlassChip>(find.byKey(const Key('vrat_method_other')))
+                .onTap,
+            isNull,
+          );
+          await tester.tap(find.byKey(const Key('vrat_status_partial')));
+          await tester.pumpAndSettle();
+          expect(
+            tester
+                .widget<GlassChip>(find.byKey(const Key('vrat_method_oneMeal')))
+                .onTap,
+            isNotNull,
+          );
+          expect(
+            tester
+                .widget<GlassChip>(find.byKey(const Key('vrat_method_oneMeal')))
+                .selected,
+            isTrue,
+          );
+          for (final method in [
+            'fullFast',
+            'waterOnly',
+            'fruitsMilk',
+            'other',
+          ]) {
+            expect(
+              tester
+                  .widget<GlassChip>(find.byKey(Key('vrat_method_$method')))
+                  .onTap,
+              isNull,
+            );
+          }
+          expect(tester.takeException(), isNull);
+        },
+      );
+    }
+  }
+
+  testWidgets('all shared card corners are opaque green pixels', (
+    tester,
+  ) async {
+    final boundary = GlobalKey();
+    final p = JourneyRewards.calculate(
+      occurrences: [],
+      history: [],
+      completeYears: {},
+    ).year(2026);
+    await host(
+      tester,
+      Center(
+        child: RepaintBoundary(
+          key: boundary,
+          child: SizedBox(
+            width: 300,
+            child: JourneyAnnualShareCard(progress: p, badges: const []),
+          ),
+        ),
+      ),
+    );
+    final render =
+        boundary.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+    final image = (await tester.runAsync(() => render.toImage()))!;
+    final data = (await tester.runAsync(() => image.toByteData()))!;
+    final bytes = data.buffer.asUint8List();
+    for (final index in [
+      0,
+      image.width - 1,
+      image.width * (image.height - 1),
+      image.width * image.height - 1,
+    ]) {
+      expect(bytes[index * 4 + 3], 255);
+      expect(bytes[index * 4 + 1], greaterThan(bytes[index * 4]));
+    }
+    image.dispose();
+  });
+}

@@ -379,13 +379,13 @@ class AppLocalizationsGu extends AppLocalizations {
   String get delete_record => 'નોંધ કાઢી નાખો';
 
   @override
-  String get current_streak => 'હાલની શ્રેણી';
+  String get current_streak => 'વર્તમાન સતત પાલન ક્રમ';
 
   @override
-  String get longest_streak => 'સૌથી લાંબી શ્રેણી';
+  String get longest_streak => 'સૌથી લાંબો સતત પાલન ક્રમ';
 
   @override
-  String get annual_completion => 'વાર્ષિક પૂર્ણતા';
+  String get annual_completion => 'સંપૂર્ણ પાલનની પ્રગતિ';
 
   @override
   String get total_observed => 'કુલ પાળેલા';
@@ -424,7 +424,7 @@ class AppLocalizationsGu extends AppLocalizations {
   String get notes_hint => 'વૈકલ્પિક વ્યક્તિગત નોંધ ઉમેરો...';
 
   @override
-  String get history => 'ઇતિહાસ';
+  String get history => 'નોંધો';
 
   @override
   String get statistics => 'આંકડા';
@@ -1707,4 +1707,237 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get glass_look_desc => 'વધુ પારદર્શક કાર્ડ અને નિયંત્રણો વાપરો.';
+
+  @override
+  String ios_journey_title(String value0) {
+    return 'તમારી $value0 યાત્રા';
+  }
+
+  @override
+  String get ios_journey_points => 'યાત્રાના ગુણ';
+
+  @override
+  String get ios_journey_lifetime => 'અત્યાર સુધીના કુલ ગુણ';
+
+  @override
+  String ios_journey_year_points(String value0, String value1) {
+    return 'શક્ય $value1 ગુણમાંથી $value0';
+  }
+
+  @override
+  String ios_journey_summary(String value0, String value1) {
+    return '$value0 પૂર્ણ · $value1 આંશિક';
+  }
+
+  @override
+  String get ios_journey_mandala => 'તમારું વાર્ષિક મંડળ';
+
+  @override
+  String ios_journey_quarter(String value0, String value1) {
+    return 'અધ્યાય $value0 · $value1';
+  }
+
+  @override
+  String ios_journey_quarter_progress(String value0, String value1) {
+    return '$value1માંથી $value0 પૂર્ણ';
+  }
+
+  @override
+  String get ios_journey_quarter_bonus =>
+      'આ અધ્યાય પૂર્ણ કરીને 150 વધારાના ગુણ મેળવો';
+
+  @override
+  String get ios_journey_bonus_earned => 'અધ્યાય પૂર્ણ · 150 વધારાના ગુણ';
+
+  @override
+  String get ios_journey_annual_bonus => 'વર્ષ પૂર્ણ · 1,000 વધારાના ગુણ';
+
+  @override
+  String get ios_journey_scoring =>
+      'પૂર્ણ +100 · આંશિક +50 · સંપૂર્ણ ત્રિમાસિક +150 · સંપૂર્ણ વર્ષ +1,000';
+
+  @override
+  String get ios_journey_personal =>
+      'નાણાકીય પુરસ્કારો વગરની વ્યક્તિગત યાત્રા.';
+
+  @override
+  String ios_journey_remaining(String value0) {
+    return 'આગામી પડાવ માટે વધુ $value0';
+  }
+
+  @override
+  String get ios_journey_badges => 'તમારો પદક સંગ્રહ';
+
+  @override
+  String ios_journey_progress(String value0, String value1) {
+    return '$value1માંથી $value0';
+  }
+
+  @override
+  String ios_journey_earned(String value0) {
+    return '$value0ના રોજ મેળવ્યો';
+  }
+
+  @override
+  String get ios_journey_view_badge => 'પદક જુઓ';
+
+  @override
+  String get ios_journey_view_badges => 'પદકો જુઓ';
+
+  @override
+  String get ios_journey_share => 'તમારી વાર્ષિક યાત્રા વહેંચો';
+
+  @override
+  String get ios_journey_share_preview => 'વાર્ષિક યાત્રાનું કાર્ડ';
+
+  @override
+  String ios_journey_share_badges(String value0) {
+    return 'મેળવેલા પદકો $value0';
+  }
+
+  @override
+  String ios_journey_share_message(String value0, String value1) {
+    return 'મારી $value0 એકાદશી યાત્રા · $value1 ગુણ';
+  }
+
+  @override
+  String get ios_journey_premium => 'પ્રીમિયમ સાથે તમારી યાત્રા ચાલુ રાખો';
+
+  @override
+  String get ios_journey_premium_desc =>
+      'અમર્યાદિત નોંધો, સંપૂર્ણ પદક સંગ્રહ અને તમારું વાર્ષિક મંડળ.';
+
+  @override
+  String get ios_journey_haptics => 'પદક મળતાં સ્પર્શ પ્રતિસાદ';
+
+  @override
+  String get ios_journey_future => 'આગામી';
+
+  @override
+  String ios_journey_mandala_summary(
+    String value0,
+    String value1,
+    String value2,
+  ) {
+    return '$value0 એકાદશીઓ · $value1 પૂર્ણ · $value2 આંશિક';
+  }
+
+  @override
+  String get ios_journey_badge_first => 'પહેલું પગલું';
+
+  @override
+  String get ios_journey_badge_first_desc =>
+      'તમારું પહેલું એકાદશી વ્રત સંપૂર્ણ પાળો.';
+
+  @override
+  String get ios_journey_badge_root => 'મૂળિયાં ઊંડાં થાય';
+
+  @override
+  String get ios_journey_badge_root_desc =>
+      'તમામ વર્ષોમાં કુલ 5 એકાદશી વ્રત સંપૂર્ણ પાળો.';
+
+  @override
+  String get ios_journey_badge_bloom => 'ખીલતું કમળ';
+
+  @override
+  String get ios_journey_badge_bloom_desc =>
+      'તમામ વર્ષોમાં કુલ 10 એકાદશી વ્રત સંપૂર્ણ પાળો.';
+
+  @override
+  String get ios_journey_badge_lights => 'બાર દીવા';
+
+  @override
+  String get ios_journey_badge_lights_desc =>
+      'તમામ વર્ષોમાં કુલ 12 એકાદશી વ્રત સંપૂર્ણ પાળો.';
+
+  @override
+  String get ios_journey_badge_flame => 'સ્થિર જ્યોત';
+
+  @override
+  String get ios_journey_badge_flame_desc => 'સતત 3 એકાદશી વ્રત સંપૂર્ણ પાળો.';
+
+  @override
+  String get ios_journey_badge_rhythm => 'વધતી લય';
+
+  @override
+  String get ios_journey_badge_rhythm_desc => 'સતત 6 એકાદશી વ્રત સંપૂર્ણ પાળો.';
+
+  @override
+  String get ios_journey_badge_thread => 'અતૂટ દોરો';
+
+  @override
+  String get ios_journey_badge_thread_desc =>
+      'સતત 12 એકાદશી વ્રત સંપૂર્ણ પાળો.';
+
+  @override
+  String get ios_journey_badge_wreath => 'ચોવીસનો સંગાથ';
+
+  @override
+  String get ios_journey_badge_wreath_desc =>
+      'વર્ષ બદલાય તો પણ સતત 24 એકાદશી વ્રત સંપૂર્ણ પાળો.';
+
+  @override
+  String get ios_journey_badge_return => 'ફરી સ્વાગત છે';
+
+  @override
+  String get ios_journey_badge_return_desc =>
+      'એક વ્રત ચૂકી ગયા પછીનું એકાદશી વ્રત સંપૂર્ણ પાળો.';
+
+  @override
+  String get ios_journey_badge_effort => 'દરેક પ્રયાસ મૂલ્યવાન';
+
+  @override
+  String get ios_journey_badge_effort_desc =>
+      '3 એકાદશી વ્રત આંશિક રીતે પાળો. દરેક પ્રયાસ તમારી યાત્રાનો ભાગ છે.';
+
+  @override
+  String get ios_journey_badge_q1 => 'પહેલો અધ્યાય';
+
+  @override
+  String get ios_journey_badge_q1_desc =>
+      'આ વર્ષે જાન્યુઆરીથી માર્ચની દરેક એકાદશીનું વ્રત સંપૂર્ણ પાળો.';
+
+  @override
+  String get ios_journey_badge_q2 => 'બીજો અધ્યાય';
+
+  @override
+  String get ios_journey_badge_q2_desc =>
+      'આ વર્ષે એપ્રિલથી જૂનની દરેક એકાદશીનું વ્રત સંપૂર્ણ પાળો.';
+
+  @override
+  String get ios_journey_badge_q3 => 'ત્રીજો અધ્યાય';
+
+  @override
+  String get ios_journey_badge_q3_desc =>
+      'આ વર્ષે જુલાઈથી સપ્ટેમ્બરની દરેક એકાદશીનું વ્રત સંપૂર્ણ પાળો.';
+
+  @override
+  String get ios_journey_badge_q4 => 'ચોથો અધ્યાય';
+
+  @override
+  String get ios_journey_badge_q4_desc =>
+      'આ વર્ષે ઑક્ટોબરથી ડિસેમ્બરની દરેક એકાદશીનું વ્રત સંપૂર્ણ પાળો.';
+
+  @override
+  String get ios_journey_badge_annual => 'સમર્પણનું એક વર્ષ';
+
+  @override
+  String get ios_journey_badge_annual_desc =>
+      'આ કૅલેન્ડર વર્ષની દરેક એકાદશીનું વ્રત સંપૂર્ણ પાળો.';
+
+  @override
+  String get ios_journey_storage_error =>
+      'પદકો સાચવી શકાયા નથી. તમારો વ્રત ઇતિહાસ સુરક્ષિત છે.';
+
+  @override
+  String get ios_journey_collection_milestones => 'પડાવ';
+
+  @override
+  String get ios_journey_collection_consistency => 'સાતત્ય';
+
+  @override
+  String get ios_journey_collection_encouragement => 'પ્રોત્સાહન';
+
+  @override
+  String get ios_journey_collection_annual => 'વાર્ષિક સંગ્રહ';
 }

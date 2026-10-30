@@ -15,6 +15,12 @@ final class AppLanguageTests: XCTestCase {
         }
     }
 
+    func testJourneyHistoryTabIsRecordInEveryLanguage() {
+        for (code, expected) in ["en": "Record", "hi": "दर्ज करें", "ta": "பதிவு", "te": "నమోదు", "gu": "નોંધો", "bn": "নথিভুক্ত করুন"] {
+            XCTAssertEqual(Localizer.shared.translate("history", language: code), expected, code)
+        }
+    }
+
     func testLanguagesKeepTheirOrderAndNewOnesAreAppended() {
         // Never reorder: add Bengali, Gujarati, ... after Telugu.
         XCTAssertEqual(Array(AppLanguage.all.map(\.code).prefix(4)), ["en", "hi", "ta", "te"])

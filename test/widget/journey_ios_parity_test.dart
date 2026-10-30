@@ -1,4 +1,6 @@
 import 'package:ekadashi_calendar/widgets/app_icons.dart';
+import 'package:ekadashi_calendar/services/journey_rewards.dart';
+import 'package:ekadashi_calendar/screens/vrat_tracker/journey_artwork.dart';
 import 'dart:async';
 
 import 'package:ekadashi_calendar/models/vrat_tracker_models.dart';
@@ -401,15 +403,17 @@ void main() {
       // Top-aligned content: the badge sits 14 below the card's top.
       final badge = find.descendant(
         of: card,
-        matching: find.byIcon(AppIcons.achievementFirst),
+        matching: find.byType(JourneyBadgeArt),
       );
-      expect(badge, findsOneWidget, reason: 'first_vrat is a leaf, as iOS');
-      final circleTop = tester
-          .getTopLeft(
-            find.ancestor(of: badge, matching: find.byType(Container)).first,
-          )
-          .dy;
-      expect(circleTop - tester.getTopLeft(card).dy, closeTo(14, .5));
+      expect(
+        badge,
+        findsOneWidget,
+        reason: 'first_vrat uses the original lamp artwork, as iOS',
+      );
+      expect(
+        tester.getTopLeft(badge).dy - tester.getTopLeft(card).dy,
+        closeTo(12, .5),
+      );
 
       // No glow.
       final shadows = tester
@@ -639,8 +643,8 @@ void main() {
   });
 
   group('Achievement unlock', () {
-    testWidgets('a bottom sheet with a success haptic, uppercase caption, '
-        'title 22 and a full-width Hari Om button', (tester) async {
+    testWidgets('a grouped bottom sheet with success haptic, caption, '
+        'headline and Hari Om button', (tester) async {
       final haptics = <Object?>[];
       tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
         SystemChannels.platform,
@@ -661,7 +665,7 @@ void main() {
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
-      final achievement = AchievementEvaluator.allAchievements.first;
+      final achievement = JourneyBadgeCatalog.all([]).first.achievement;
       await tester.pumpWidget(
         ChangeNotifierProvider(
           create: (_) => LanguageService(),
@@ -688,18 +692,18 @@ void main() {
       );
       expect(find.byType(Dialog), findsNothing);
       expect(haptics, isNotEmpty, reason: 'success haptic');
-      expect(find.text('ACHIEVEMENT UNLOCKED'), findsOneWidget);
+      expect(find.text('Achievement Unlocked'), findsOneWidget);
       final title = tester.widget<Text>(
         find.text(LanguageService().translate(achievement.titleKey)),
       );
-      expect(title.style?.fontSize, IosText.title2);
-      final ok = find.byKey(const Key('achievement_unlock_ok'));
+      expect(title.style?.fontSize, IosText.headline);
+      final ok = find.byKey(const Key('journey_celebration_close'));
       expect(tester.widget(ok), isA<FilledButton>());
       expect(
         find.descendant(of: ok, matching: find.text('Hari Om 🙏')),
         findsOneWidget,
       );
-      expect(tester.getSize(ok).width, closeTo(393 - 56, 1));
+      expect(tester.getSize(ok).width, greaterThan(100));
       await tester.tap(ok);
       await tester.pumpAndSettle();
       expect(sheet, findsNothing);
@@ -719,6 +723,14 @@ void main() {
       };
       for (final MapEntry(:key, :value) in expected.entries) {
         final card = find.byKey(Key('journey_metric_$key'));
+        if (card.evaluate().isEmpty) {
+          await tester.scrollUntilVisible(
+            card,
+            300,
+            scrollable: find.byType(Scrollable).last,
+          );
+          await tester.pumpAndSettle();
+        }
         expect(card, findsOneWidget, reason: key);
         final panel = tester.widget<GlassPanel>(card);
         expect(panel.tint, value.$1, reason: key);
@@ -787,7 +799,7 @@ void main() {
       );
     });
 
-    testWidgets('recent rows show a grey Not Recorded pill and a green '
+    testWidgets('Record rows show a grey Not Recorded pill and a green '
         'Observed pill, each beside its chevron', (tester) async {
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
@@ -813,6 +825,7 @@ void main() {
         events: recent,
         brightness: Brightness.dark,
       );
+      await openSection(tester, 'history');
       final context = tester.element(find.byType(VratTrackerScreen));
       for (final (event, label, color, icon) in [
         (
@@ -829,6 +842,13 @@ void main() {
         ),
       ]) {
         final row = find.byKey(Key('journey_row_${event.occurrenceUid}'));
+        if (row.evaluate().isEmpty) {
+          await tester.scrollUntilVisible(
+            row,
+            300,
+            scrollable: find.byType(Scrollable).last,
+          );
+        }
         await tester.ensureVisible(row);
         await tester.pumpAndSettle();
         final pill = find.descendant(

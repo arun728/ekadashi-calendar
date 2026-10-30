@@ -78,7 +78,10 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
         (_isFutureEvent
             ? ObservanceStatus.unrecorded
             : ObservanceStatus.observed);
-    _fastingMethod = _existingRecord?.fastingMethod ?? FastingMethod.fullFast;
+    _fastingMethod = FastingMethod.normalized(
+      _existingRecord?.fastingMethod,
+      _status,
+    );
     _otherMethodController = TextEditingController(
       text: _existingRecord?.fastingMethodOther ?? '',
     );
@@ -99,6 +102,7 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
     }
     setState(() {
       _status = newStatus;
+      _fastingMethod = FastingMethod.normalized(_fastingMethod, newStatus);
     });
   }
 
@@ -139,11 +143,7 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
         ekadashiDate: dateStr,
         ekadashiName: widget.ekadashi.name,
         status: _status,
-        fastingMethod:
-            _status == ObservanceStatus.observed ||
-                _status == ObservanceStatus.partial
-            ? _fastingMethod
-            : null,
+        fastingMethod: FastingMethod.normalized(_fastingMethod, _status),
         fastingMethodOther: _fastingMethod == FastingMethod.other
             ? _otherMethodController.text.trim()
             : null,
@@ -315,13 +315,10 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
                       ),
                     ),
                   _label(lang.translate('status_active')),
-                  // Natural-width chips spread across the row, wrapping
-                  // only when they do not fit (large text).
-                  Wrap(
+                  // Three compact, scaling labels stay in one row.
+                  Row(
                     key: const Key('vrat_record_status_tube'),
-                    alignment: WrapAlignment.spaceBetween,
-                    spacing: 8,
-                    runSpacing: 8,
+                    spacing: 4,
                     children: [
                       _buildStatusChip(
                         ObservanceStatus.observed,
@@ -354,12 +351,31 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
                           (FastingMethod.oneMeal, 'method_one_meal'),
                           (FastingMethod.other, 'method_other'),
                         ])
-                          GlassChip(
-                            key: Key('vrat_method_${method.name}'),
-                            label: lang.translate(key),
-                            selected: _fastingMethod == method,
-                            onTap: () =>
-                                setState(() => _fastingMethod = method),
+                          Opacity(
+                            opacity:
+                                FastingMethod.allowedFor(
+                                  _status,
+                                ).contains(method)
+                                ? 1
+                                : .3,
+                            child: Semantics(
+                              enabled: FastingMethod.allowedFor(
+                                _status,
+                              ).contains(method),
+                              child: GlassChip(
+                                key: Key('vrat_method_${method.name}'),
+                                label: lang.translate(key),
+                                selected: _fastingMethod == method,
+                                onTap:
+                                    FastingMethod.allowedFor(
+                                      _status,
+                                    ).contains(method)
+                                    ? () => setState(
+                                        () => _fastingMethod = method,
+                                      )
+                                    : null,
+                              ),
+                            ),
                           ),
                       ],
                     ),
@@ -413,13 +429,16 @@ class _RecordVratDialogState extends State<RecordVratDialog> {
     ObservanceStatus status,
     String label,
     IconData icon,
-  ) => GlassChip(
-    key: Key('vrat_status_${status.name}'),
-    label: label,
-    icon: icon,
-    color: vratStatusColor(context, status),
-    selected: _status == status,
-    onTap: () => _onStatusChanged(status),
+  ) => Expanded(
+    child: GlassChip(
+      key: Key('vrat_status_${status.name}'),
+      compact: true,
+      label: label,
+      icon: icon,
+      color: vratStatusColor(context, status),
+      selected: _status == status,
+      onTap: () => _onStatusChanged(status),
+    ),
   );
 }
 

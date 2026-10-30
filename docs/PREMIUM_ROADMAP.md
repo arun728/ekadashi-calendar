@@ -29,8 +29,10 @@ It supersedes the dormant financial-rewards proposal for this work.
 
 ## Phase 1 — Journey points, badges and annual collection
 
-Status: iOS candidate implemented and local checks passed; ready for review.
-Branch: `feature/premium-journey`. Android awaits iOS approval.
+Status: complete iOS/Android candidate rebuilt on current dev in
+`feature/journey-dev-refresh`, draft PR #32. PR25 is retained as the reference.
+See [JOURNEY_DEV_REFRESH.md](JOURNEY_DEV_REFRESH.md) for the full acceptance
+checklist, scoped integration audit and current validation evidence.
 
 ### Scoring and annual scope
 
@@ -71,7 +73,8 @@ and A Year of Dedication for every fully observed occurrence in that year.
 Create distinct 2026 and 2027 annual identities; preserve the old
 `full_year_observance` identity and any previously earned instance.
 
-Earned badges remain earned after corrections; displayed points/progress
+Badges are recalculated from current history after edits/deletions and relock
+when their original requirements fail; displayed points/progress
 recalculate from current history. Premium expiry does not remove awards.
 Locked badges show exact requirements and progress. Earned badges sort first,
 then upcoming achievements in a deterministic order.
@@ -222,7 +225,8 @@ translations after the configured Claude session could not authenticate.
 Language-key, placeholder and script checks pass; native-speaker wording
 review remains release validation.
 
-The candidate is iOS only. Android feature implementation, real-device
-accessibility/haptics and store purchase/restore testing remain follow-up
-validation. The established StoreKit entitlement flow is unchanged. No
+The current candidate includes both iOS and Android, all approved 30 October
+Journey appearance/method feedback, and dev’s current Glass/localization
+foundation. Real-device accessibility/haptics and store purchase/restore remain
+release validation. The established StoreKit entitlement flow is unchanged. No
 merge, backend, financial reward or later roadmap phase is included.
