@@ -60,7 +60,6 @@ struct JourneyOverviewPanel: View {
                 Text(model.t("ios_journey_annual_bonus")).font(.subheadline.bold()).foregroundStyle(Theme.teal)
             }
             Text(model.t("ios_journey_scoring")).font(.caption2).foregroundStyle(.white.opacity(0.75)).multilineTextAlignment(.center)
-            Text(model.t("ios_journey_personal")).font(.caption2).foregroundStyle(.white.opacity(0.75))
             Button { sharing = true } label: {
                 Label(model.t("ios_journey_share"), systemImage: AppSymbol.share).frame(maxWidth: .infinity)
             }
@@ -272,7 +271,7 @@ struct JourneyShareSheet: View {
         }
         .glassSheetBackground()
         .task {
-            selectedIDs = Set(badges.prefix(3).map(\.id))
+            selectedIDs = Set(badges.map(\.id))
             render()
         }
     }
