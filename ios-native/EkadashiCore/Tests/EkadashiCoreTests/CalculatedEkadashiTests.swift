@@ -155,11 +155,8 @@ final class CalculatedEkadashiEngineTests: XCTestCase {
             if city == .newDelhi {
                 expected.remove("2027-06-14")
                 expected.insert("2027-06-15")
-                // Shravana ends 17 s after sunrise on 13 September in JPL time,
-                // before it in Drik's time base (one Delta T earlier), so there
-                // is no Vijaya Mahadvadashi: Drik's ISKCON list fasts on the 11th.
-                expected.remove("2027-09-12")
-                expected.insert("2027-09-11")
+                // Vijaya Mahadvadashi on 12 September stays, as GCal 11
+                // publishes it (gcal11_ekadashi_2026_2027.json).
             }
             let actual = try engine.calculate(start: CivilDate(2027, 1, 1), count: 365, city: city, tradition: .gaudiya)
             XCTAssertEqual(Set(actual.map(\.date.iso)), expected, city.label)

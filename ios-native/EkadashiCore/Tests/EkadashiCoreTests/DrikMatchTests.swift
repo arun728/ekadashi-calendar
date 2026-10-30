@@ -127,7 +127,8 @@ final class DrikMatchTests: XCTestCase {
             }
         }
         XCTAssertGreaterThanOrEqual(check(rows, city: delhi, knifeEdge: 6), 0.97)
-        XCTAssertGreaterThanOrEqual(rows.count, 194)
+        // Two Vaishnava fasts fall a day after Drik's list (GCal 11, below).
+        XCTAssertGreaterThanOrEqual(rows.count, 192)
     }
 
     func testHeldOut2028TithiBoundariesShowDriksMinute() throws {
@@ -168,21 +169,29 @@ final class DrikMatchTests: XCTestCase {
         XCTAssertEqual(dates.subtracting(found.keys), [], "Drik only")
     }
 
-    func testVaishnavaFastDaysAndParanaMatchDrik() throws {
+    func testVaishnavaFastsFollowGcalWithinMinutesOfDrik() throws {
+        // Vaishnava fasts and Parana follow GCal 11, as ISKCON publishes them
+        // (IskconParityTests). Drik's own ISKCON list differs on two days,
+        // where a Purnima or Shravana boundary sits within 20 seconds of
+        // sunrise, and its Parana is up to 3 minutes apart: Drik rounds and
+        // uses its own astronomy; GCal cuts the minute and uses GCal's.
         let data = try fixture(), delhi = city(data.dict("city")!)
         let found = try delhiFasts(.gaudiya)
         let expected = data.array("vaishnava") as! [[String: Any]]
-        // Includes 25 June 2026 and 11 September 2027, where the Purnima and
-        // Shravana boundaries sit within 20 seconds of sunrise.
-        XCTAssertEqual(Set(found.keys), Set(expected.map { $0.string("date")! }))
-        var rows: [(String, Date?, String)] = []
+        let gcalDays = ["2026-06-25": "2026-06-26", "2027-09-11": "2027-09-12"]
+        XCTAssertEqual(Set(found.keys), Set(expected.map { gcalDays[$0.string("date")!] ?? $0.string("date")! }))
+        var far: [String] = []
         for row in expected {
             guard let fast = found[row.string("date")!] else { continue }
-            rows.append(("\(fast.date) Parana start", fast.paranaStart, row.string("paranaStart")!))
-            if let value = row.string("paranaEnd") { rows.append(("\(fast.date) Parana end", fast.paranaEnd, value)) }
+            for (actual, drik) in [(fast.paranaStart, row.string("paranaStart")), (fast.paranaEnd, row.string("paranaEnd"))] {
+                guard let drik else { continue }
+                guard let actual else { far.append("\(fast.date): none vs \(drik)"); continue }
+                let shown = delhi.displayClock(actual)
+                let minutes = shown.hour * 60 + shown.minute - (Int(drik.prefix(2))! * 60 + Int(drik.suffix(2))!)
+                if abs(minutes) > 3 { far.append("\(fast.date): \(hm(actual, delhi)) vs \(drik)") }
+            }
         }
-        // Most Parana limits are sunrise, which Drik places up to 9 s apart.
-        XCTAssertGreaterThanOrEqual(check(rows, city: delhi, knifeEdge: 9), 0.88)
+        XCTAssertEqual(far, [])
     }
 
     func testSunriseAndSunsetShowDriksMinuteOnAll730Days() throws {

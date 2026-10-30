@@ -79,7 +79,7 @@ DrikMatchTests.swift):
 | Held-out 2028 tithi boundaries | 17/49 | 48/50 |
 | Six other cities, 2026 Smarta tithi times (each) | 16/48 | 47/48 |
 | Six other cities, 2026 Smarta dates | 24/24 | 24/24 |
-| Vaishnava fast dates | 47/49 | 49/49 (25 Jun 2026 and 11 Sep 2027: Purnima/Shravana within 20 s of sunrise) |
+| Vaishnava fast dates | 47/49 | 49/49 (25 Jun 2026 and 11 Sep 2027: Purnima/Shravana within 20 s of sunrise); now GCal 11's, see below |
 | Smarta fast dates | 49/49 | 49/49 |
 | Smarta Parana, Hari Vasara, Dwadashi end | about half | 135/144 |
 | Vaishnava Parana | about half | 88/98 |
@@ -109,6 +109,63 @@ Known limits:
   arcseconds).
 - The Drik values are kept only as a test reference
   (test/fixtures/panchang/drik_reference.json), never shipped.
+
+## ISKCON Vaishnava: GCal 11 (October 2026)
+
+Arun asked for Vaishnava dates and Parana to match ISKCON, which publishes
+them from GCal 11, the GBC Calendar Committee's program; everything else
+follows Drik. JPL-accurate astronomy with GCAL's rules (the section below)
+still missed ISKCON's published calendars: on vaisnavacalendar.info's GCal
+11 files for 67 cities in 2026-2027 (3,283 fasts,
+`test/fixtures/panchang/gcal11_ekadashi_2026_2027.json`), 10 city-years had
+a fast a day off and only 38% of Parana minutes matched, because GCal
+decides with its own low-precision astronomy and shows times cut, not
+rounded.
+
+The Vaishnava path now runs GCal's own calculation (`Gcal` in
+GcalEkadashi.swift and gcal_ekadashi.dart), ported line by line from
+gaurabda 0.8.4 (MIT): its table-based Sun and centre-of-disc sunrise at
+-0.83°, Meeus' 60-term Moon with GCal's short nutation and no Delta T, its
+Lahiri formula, `DayCalc`, `MahadvadasiCalc`, `EkadasiCalc`,
+`CalculateEParana` and the step-halving tithi and nakshatra searches. Two
+deliberate differences: `IsMhd58`'s no-match sentinel is 0 (see below), and
+a longitude across the date line from its time zone (Chatham, 176.6°W at
+UTC+12:45) is moved by 360° so each sunrise keeps its local date. Times are
+shown as ISKCON shows them, cut to the minute. Names, months and the
+Ekadashi tithi times still come from the main engine (Drik).
+
+| Check (GCal 11, 67 cities, 2026-2027) | Before | After |
+|---|---|---|
+| Fast dates (3,283) | 10 city-years with a day off | all match |
+| Parana, shown minute (6,522 limits) | 38.4% | 99.3% (6,478); the other 44 are one minute apart |
+
+GCal compares in its own clock: the offset each file states plus an hour
+where it marks DST. Its summer-time rules are out of date in nine cities
+(Tehran, Moscow, Istanbul, Mexico City, Sao Paulo, Buenos Aires, Santiago,
+Tel Aviv and Vancouver, which IANA 2026b keeps on summer time from November
+2026), so its printed times there are an hour off the legal clock; the app
+shows the legal clock (IANA).
+
+Against Drik's own ISKCON list for New Delhi, two fasts now fall a day
+later, as GCal publishes them (26 June 2026, 12 September 2027: a Purnima
+or Shravana boundary within 20 seconds of sunrise), and Parana is within 3
+minutes of Drik's (44/94 the same minute): Drik rounds and uses its own
+astronomy.
+
+The Vaishnava year is also faster: the Panchang day is calculated only for
+the fast and Parana days, instead of every day of the year.
+
+## Purnima on its fast day (October 2026)
+
+Purnima was listed on the day Purnima held at sunrise, often the day after
+the fast (Sharad Purnima 2026: 26 October instead of 25). It is now listed
+once, on its fast (Upavasa) day, as Drik Panchang, Prokerala and AstroSage
+list it: the first day on which Purnima has begun by the end of Madhyahna
+(three fifths of daylight) and lasts past sunrise; a Purnima touching
+neither keeps the day it begins. This matches all 27 Drik-published Delhi
+fasts of 2025-2027 (`test/fixtures/panchang/purnima_fasts.json`), where
+the moonrise rule missed July 2026 and May 2027 and an Aparahna rule missed
+August 2025.
 
 ## Smarta and Vaishnava (Gaudiya/ISKCON) Ekadashi
 

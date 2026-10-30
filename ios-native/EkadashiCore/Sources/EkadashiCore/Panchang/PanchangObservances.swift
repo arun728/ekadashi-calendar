@@ -1,8 +1,9 @@
 import Foundation
 
 /// Time windows (kala) used by festival rules; fifths of daylight follow the
-/// five-part day (Pratah, Sangava, Madhyahna, Aparahna, Sayahna).
-enum Kala { case sunrise, sunset, moonrise, purvahna, pratah, madhyahna, aparahna, pradosh, nishita, arunodaya, akshaya }
+/// five-part day (Pratah, Sangava, Madhyahna, Aparahna, Sayahna). Upavasa
+/// runs from sunrise to the end of Madhyahna, the window of a Purnima fast.
+enum Kala { case sunrise, sunset, moonrise, purvahna, pratah, madhyahna, aparahna, pradosh, nishita, arunodaya, akshaya, upavasa }
 
 /// When a tithi covers its window on two days: the longer coverage, or the first day.
 enum Tie { case longest, first }
@@ -50,6 +51,7 @@ final class SolarDays {
         case .purvahna: return (a, at(a, dayLength, 0.5))
         case .pratah, .akshaya: return (a, at(a, dayLength, 0.2))
         case .madhyahna: return (at(a, dayLength, 0.4), at(a, dayLength, 0.6))
+        case .upavasa: return (a, at(a, dayLength, 0.6))
         case .aparahna: return (at(a, dayLength, 0.6), at(a, dayLength, 0.8))
         case .pradosh: return (b, at(b, night, 0.2))
         case .nishita: return (at(b, night, 7.0 / 15), at(b, night, 8.0 / 15))
@@ -154,7 +156,9 @@ extension PanchangEngine {
                 note: "Smarta fasting day for this location (Drik rules); Gaudiya days are in the Ekadashi tab.")
         }
         if [12, 27].contains(tithi.index) { add("dwadashi", "Dwadashi") }
-        if observed(15, .sunrise) { add("purnima", "Purnima", major: true) }
+        // Purnima is listed once, on its fast day: the first day it has begun
+        // by the end of Madhyahna (Drik Panchang's Purnima Upavasa).
+        if observed(15, .upavasa, tie: .first) { add("purnima", "Purnima", major: true) }
         if observed(30, .sunrise) { add("amavasya", "Amavasya", major: true) }
         if [8, 23].contains(tithi.index) { add("ashtami", "Ashtami") }
         if [9, 24].contains(tithi.index) { add("navami", "Navami") }

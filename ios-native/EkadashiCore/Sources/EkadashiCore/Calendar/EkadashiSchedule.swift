@@ -70,8 +70,9 @@ public struct EkadashiScheduleKey: Hashable, Sendable {
 public final class EkadashiSchedule: @unchecked Sendable {
     /// Bumped when the cached form changes (3: times rounded to the nearest
     /// minute like the Panchang tab and Drik Panchang; timezone history and
-    /// post-2037 DST coverage of IANA 2026b), so older caches are recalculated.
-    public static let formatVersion = "schedule-3"
+    /// post-2037 DST coverage of IANA 2026b; 4: Vaishnava fasts and Parana
+    /// from GCal 11, as ISKCON publishes them), so older caches are recalculated.
+    public static let formatVersion = "schedule-4"
     private let repository: CalendarRepository
     private let localizer: Localizer
     private let engine: CalculatedEkadashiEngine

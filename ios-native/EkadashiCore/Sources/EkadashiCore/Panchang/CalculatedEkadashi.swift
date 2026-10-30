@@ -150,6 +150,7 @@ public struct CalculatedEkadashiEngine: Sendable {
 
     public func calculate(start: CivilDate, count: Int, city: PanchangCity, tradition: EkadashiTradition) throws -> [CalculatedEkadashi] {
         guard (1...366).contains(count) else { throw CoreError.invalidArgument("Choose 1–366 civil days") }
+        if tradition == .gaudiya { return vaishnava(start: start, count: count, city: city) }
         var days: [EkadashiDay] = []
         var samples: [EkadashiSample] = []
         // Neighbours across month/year boundaries and the next full/new moon are
@@ -182,27 +183,90 @@ public struct CalculatedEkadashiEngine: Sendable {
                   let dwadashiEnd = engine.tithiAt(tithiEnd.adding(1)).endsAt else { continue }
             let tithiStart = engine.tithiStart(probe)
             let hariVasara = tithiEnd.adding(truncatedMicroseconds(dwadashiEnd.timeIntervalSince(tithiEnd), dividedBy: 4))
-            let parana = tradition == .smarta
-                ? smartaParana(next, tithiEnd, dwadashiEnd)
-                : gaudiyaParana(day, next, rule, hariVasara)
-            let arunodaya = sunrise.adding(-96 * 60)
-            func near(_ a: Date, _ b: Date) -> Bool { abs(a.timeIntervalSince(b).rounded(.towardZero)) <= 300 }
-            let nearBoundary = [day.nakshatra, next.nakshatra].contains { limb in
-                guard let end = limb.endsAt else { return false }
-                return near(sunrise, end) || near(nextSunrise, end)
-            } || [sunrise, arunodaya, nextSunrise].contains { instant in
-                [tithiStart, tithiEnd, dwadashiEnd].contains { near(instant, $0) }
-            }
+            let parana = smartaParana(next, tithiEnd, dwadashiEnd)
             var fast = CalculatedEkadashi(
                 date: day.date, name: name(day, bright: ekadashi.paksha == "Shukla"), tradition: tradition, rule: rule,
                 city: city, fastStarts: sunrise, paranaDate: next.date, paranaStart: parana.start, paranaEnd: parana.end,
                 paranaReason: parana.reason, hariVasaraEnd: hariVasara, tithiStart: tithiStart, tithiEnd: tithiEnd,
-                nearBoundary: nearBoundary)
+                nearBoundary: nearBoundary(day, next, sunrise, nextSunrise, [tithiStart, tithiEnd, dwadashiEnd]))
             fast.month = day.amantaMonth
             fast.paranaDaySunset = next.sunset
             result.append(fast)
         }
         return result
+    }
+
+    func nearBoundary(_ day: EkadashiDay, _ next: EkadashiDay, _ sunrise: Date, _ nextSunrise: Date, _ tithiMoments: [Date]) -> Bool {
+        func near(_ a: Date, _ b: Date) -> Bool { abs(a.timeIntervalSince(b).rounded(.towardZero)) <= 300 }
+        return [day.nakshatra, next.nakshatra].contains { limb in
+            guard let end = limb.endsAt else { return false }
+            return near(sunrise, end) || near(nextSunrise, end)
+        } || [sunrise, sunrise.adding(-96 * 60), nextSunrise].contains { instant in tithiMoments.contains { near(instant, $0) } }
+    }
+
+    /// The ISKCON Vaishnava fasts: days and Parana from GCal 11's calculation
+    /// ([Gcal]), shown cut to the minute as ISKCON calendars show them; names,
+    /// months and tithi times from this engine.
+    func vaishnava(start: CivilDate, count: Int, city: PanchangCity) -> [CalculatedEkadashi] {
+        let tzone = Double(min(city.wallClock(city.dateAtHour(CivilDate(start.year, 1, 1), 12)).offsetSeconds,
+                               city.wallClock(city.dateAtHour(CivilDate(start.year, 7, 1), 12)).offsetSeconds)) / 3600
+        func cut(_ instant: Date) -> Date {
+            let offset = Double(city.wallClock(instant).offsetSeconds)
+            return Date(timeIntervalSince1970: ((instant.timeIntervalSince1970 + offset) / 60).rounded(.down) * 60 - offset)
+        }
+        return Gcal.fasts(start: start, count: count, latitude: city.latitude,
+                          longitude: Gcal.longitude(city.longitude, tzone: tzone), tzone: tzone)
+            .compactMap { gcal, paranaDay in
+                guard let parana = paranaDay.parana else { return nil }
+                let day = engine.ekadashiDay(gcal.date, city: city), next = engine.ekadashiDay(paranaDay.date, city: city)
+                let sunrise = cut(Gcal.sunrise(gcal))
+                // The Ekadashi interval: earlier the same day when fasting on Dwadashi.
+                var probe = day.sunrise ?? sunrise
+                var hours = 0
+                while hours < 72 && dartMod(engine.tithiAt(probe).index - 1, 15) + 1 != 11 {
+                    probe = probe.adding(-3600)
+                    hours += 1
+                }
+                let ekadashi = engine.tithiAt(probe)
+                guard dartMod(ekadashi.index - 1, 15) + 1 == 11, let tithiEnd = ekadashi.endsAt,
+                      let dwadashiEnd = engine.tithiAt(tithiEnd.adding(1)).endsAt else { return nil }
+                let tithiStart = engine.tithiStart(probe)
+                let rule = gcal.mhd == .suddha && Gcal.isDvadasi(gcal.tithi)
+                    ? "Viddha / shifted to Dwadashi" : Self.rules[gcal.mhd] ?? "Shuddha Ekadashi"
+                let begin = cut(Gcal.instant(paranaDay.date, parana.begin, tzone))
+                let end = parana.end < 0 ? nil : cut(Gcal.instant(paranaDay.date, parana.end, tzone))
+                let hariVasara = Gcal.isDvadasi(paranaDay.tithi)
+                    ? cut(Gcal.instant(paranaDay.date, parana.quarter, tzone))
+                    : tithiEnd.adding(truncatedMicroseconds(dwadashiEnd.timeIntervalSince(tithiEnd), dividedBy: 4))
+                var fast = CalculatedEkadashi(
+                    date: gcal.date, name: name(day, bright: ekadashi.paksha == "Shukla"), tradition: .gaudiya, rule: rule,
+                    city: city, fastStarts: sunrise, paranaDate: paranaDay.date, paranaStart: begin, paranaEnd: end,
+                    paranaReason: Self.paranaReason(gcal, rule, bounded: end != nil), hariVasaraEnd: hariVasara,
+                    tithiStart: tithiStart, tithiEnd: tithiEnd,
+                    nearBoundary: nearBoundary(day, next, day.sunrise ?? sunrise, next.sunrise ?? begin, [tithiStart, tithiEnd, dwadashiEnd]))
+                fast.month = day.amantaMonth
+                fast.paranaDaySunset = next.sunset
+                return fast
+            }
+    }
+
+    static let rules: [Gcal.Mhd: String] = [
+        .unmilani: "Unmilani", .unmilaniTrisprsa: "Unmilani-Trisprisha", .trisprsa: "Trisprisha", .vyanjuli: "Vyanjuli",
+        .paksavardhini: "Pakshavardhini", .jaya: "Jaya", .jayanti: "Jayanti", .papaNasini: "Papanashini", .vijaya: "Vijaya",
+    ]
+
+    static func paranaReason(_ fast: Gcal.Day, _ rule: String, bounded: Bool) -> String {
+        var reason: String
+        switch fast.mhd {
+        case .trisprsa: reason = "Trisprisha: sunrise to one third of daylight"
+        case .jaya, .jayanti, .papaNasini, .vijaya: reason = "\(rule): nakshatra end, Dwadashi end and morning limit evaluated together"
+        case .unmilani, .vyanjuli: reason = "Sunrise to the earlier of tithi end and one third of daylight"
+        default:
+            reason = Gcal.isDvadasi(fast.tithi)
+                ? "Sunrise to the earlier of tithi end and one third of daylight"
+                : "After sunrise and Hari Vasara; before tithi end or one third of daylight"
+        }
+        return bounded ? reason : "\(reason). No bounded morning window; shown as after-only."
     }
 
     /// Drik Panchang's Smarta Parana: after sunrise and Hari Vasara (the first
@@ -233,43 +297,6 @@ public struct CalculatedEkadashiEngine: Sendable {
         }
         if !(end > begin) { return (begin, nil, "\(reason). No bounded window; shown as after-only.") }
         return (begin, end, reason)
-    }
-
-    func gaudiyaParana(_ fast: EkadashiDay, _ next: EkadashiDay, _ rule: String, _ hariVasara: Date)
-        -> (start: Date?, end: Date?, reason: String) {
-        guard let sunrise = next.sunrise, let sunset = next.sunset, sunset > sunrise else {
-            return (nil, nil, "Solar day unavailable")
-        }
-        let third = sunrise.adding(truncatedMicroseconds(sunset.timeIntervalSince(sunrise), dividedBy: 3))
-        let limb = engine.tithiAt(sunrise)
-        guard let tithiEnd = limb.endsAt else { return (sunrise, nil, "Tithi transition unavailable") }
-        func earlier(_ a: Date, _ b: Date) -> Date { a < b ? a : b }
-        func later(_ a: Date, _ b: Date) -> Date { a > b ? a : b }
-        var begin = sunrise
-        var end: Date? = earlier(tithiEnd, third)
-        var reason = "Sunrise to the earlier of tithi end and one third of daylight"
-        if rule == "Trisprisha" || rule == "Unmilani-Trisprisha" {
-            end = third
-            reason = "Trisprisha: sunrise to one third of daylight"
-        } else if ["Jaya", "Jayanti", "Papanashini", "Vijaya"].contains(rule), let nakEnd = fast.nakshatra.endsAt {
-            if dartMod(limb.index - 1, 15) + 1 == 12 {
-                if nakEnd < tithiEnd {
-                    begin = later(sunrise, nakEnd)
-                    end = nakEnd < third ? earlier(tithiEnd, third) : tithiEnd
-                }
-            } else if rule == "Jayanti" || rule == "Vijaya" {
-                end = earlier(nakEnd, third)
-            } else {
-                begin = later(sunrise, nakEnd)
-                end = nakEnd < third ? third : nil
-            }
-            reason = "\(rule): nakshatra end, Dwadashi end and morning limit evaluated together"
-        } else if rule != "Unmilani" && rule != "Vyanjuli" && dartMod(fast.tithi.index - 1, 15) + 1 != 12 {
-            begin = later(sunrise, hariVasara)
-            reason = "After sunrise and Hari Vasara; before tithi end or one third of daylight"
-        }
-        if let value = end, !(value > begin) { end = nil }
-        return (begin, end, end == nil ? "\(reason). No bounded morning window; shown as after-only." : reason)
     }
 
     static let shuklaNames = ["Kamada", "Mohini", "Nirjala", "Devshayani", "Shravana Putrada", "Parivartini", "Papankusha",
