@@ -51,6 +51,20 @@ final class JourneyPresentationTests: XCTestCase {
         XCTAssertEqual(try render(.light), try render(.dark))
     }
 
+    func testSharedImageHasOpaqueGreenCornersWithRoundedInnerCard() throws {
+        let model = AppModel()
+        let progress = JourneyRewards.calculate(occurrences: [], history: [], completeYears: []).year(2026)
+        let image = try XCTUnwrap(ImageRenderer(content:
+            JourneyAnnualShareCard(progress: progress, badges: []).frame(width: 360).environment(model)).uiImage?.cgImage)
+        var pixel = [UInt8](repeating: 0, count: 4)
+        let context = try XCTUnwrap(CGContext(data: &pixel, width: 1, height: 1, bitsPerComponent: 8,
+            bytesPerRow: 4, space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue))
+        context.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
+        XCTAssertEqual(pixel[3], 255, "Exported corners must be opaque, including after JPEG conversion")
+        XCTAssertGreaterThan(pixel[1], pixel[0], "Corner matte must be green, not white")
+        XCTAssertLessThan(pixel[0], 40)
+    }
+
     func testGroupedAnnouncementsAreDeduplicated() {
         let model = AppModel()
         let badges = Array(JourneyBadgeCatalog.all(years: [2026]).prefix(3).map(\.achievement))

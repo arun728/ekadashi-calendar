@@ -3,6 +3,34 @@ import XCTest
 final class JourneyRewardsUITests: XCTestCase {
     override func setUp() { continueAfterFailure = false }
 
+    func testFeedbackYearFiltersAndFastingMethodAvailability() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-ui-testing"]
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 40))
+        app.tabBars.buttons.element(boundBy: 2).tap()
+        app.buttons["journey_tab_achievements"].tap()
+        let year = app.buttons["journey_achievements_year"]
+        XCTAssertTrue(year.waitForExistence(timeout: 5))
+        year.tap(); app.buttons["2027"].firstMatch.tap()
+        app.buttons["journey_badge_filter_annual"].tap()
+        XCTAssertFalse(app.buttons["journey_badge_year_2026"].exists)
+        year.tap(); app.buttons["All years"].firstMatch.tap()
+        XCTAssertTrue(year.label.contains("All years"))
+        app.buttons["journey_tab_history"].tap()
+        app.buttons["journey_history_year"].tap(); app.buttons["2026"].firstMatch.tap()
+        app.buttons["journey_row_ekadashi:2026:01"].tap()
+        XCTAssertTrue(app.buttons["vrat_method_fullFast"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["vrat_method_fullFast"].isEnabled)
+        XCTAssertFalse(app.buttons["vrat_method_oneMeal"].isEnabled)
+        XCTAssertFalse(app.buttons["vrat_method_other"].isEnabled)
+        app.buttons["vrat_status_partial"].tap()
+        XCTAssertTrue(app.buttons["vrat_method_oneMeal"].isEnabled)
+        for method in ["fullFast", "waterOnly", "fruitsMilk", "other"] {
+            XCTAssertFalse(app.buttons["vrat_method_" + method].isEnabled)
+        }
+    }
+
     func testAnnualPointsMandalaPremiumAndBadgeDetails() {
         let app = XCUIApplication()
         app.launchArguments = ["-ui-testing"]
