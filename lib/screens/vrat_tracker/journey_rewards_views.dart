@@ -248,10 +248,6 @@ class JourneyOverviewPanel extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: _secondaryBright(11),
                 ),
-                Text(
-                  _t(context, 'ios_journey_personal'),
-                  style: _secondaryBright(11),
-                ),
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton(
@@ -669,7 +665,7 @@ class JourneyShareSheet extends StatefulWidget {
 
 class _JourneyShareSheetState extends State<JourneyShareSheet> {
   final boundary = GlobalKey();
-  late final selected = widget.badges.take(3).map((b) => b.id).toSet();
+  late final selected = widget.badges.map((b) => b.id).toSet();
   bool sharing = false;
   Future<void> share() async {
     setState(() => sharing = true);

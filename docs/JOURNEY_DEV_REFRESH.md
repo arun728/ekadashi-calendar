@@ -155,3 +155,14 @@ main at e8041e4 are unchanged. No old-branch merge, force-push, CI or dev/main w
   grouped-award routing, Home timezone supplied to Journey, and a Settings row.
   Dev's scene lifecycle, caches, widget links and default tradition are retained.
 - Android completion and shared-resource evidence are recorded in the final results above.
+
+
+## Follow-up audit and share polish (30 October 2026)
+
+See [JOURNEY_REGRESSION_AUDIT.md](JOURNEY_REGRESSION_AUDIT.md) for the comparison
+against PR25, the existing strict streak/partial semantics, test coverage gaps,
+and red/green evidence. Both platforms now initially include every earned badge
+on the annual share card; users can deselect them. The personal/no-monetary-rewards
+sentence is removed from the visible Overview in every language. Scoring and
+streak policy are unchanged. Full Flutter suite now passes 937 tests and Swift
+core passes 325.
