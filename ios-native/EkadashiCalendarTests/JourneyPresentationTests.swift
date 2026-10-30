@@ -5,6 +5,30 @@ import EkadashiCore
 
 @MainActor
 final class JourneyPresentationTests: XCTestCase {
+    func testShareSelectsEveryEarnedBadgeAndAllowsDeselection() async throws {
+        let model = AppModel()
+        let badges = Array(JourneyBadgeCatalog.all(years: []).prefix(5))
+        let progress = JourneyRewards.calculate(occurrences: [], history: [], completeYears: []).year(2026)
+        let host = UIHostingController(rootView: JourneyShareSheet(progress: progress, badges: badges).environment(model))
+        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 430, height: 2000))
+        window.rootViewController = host
+        window.makeKeyAndVisible()
+        defer { window.isHidden = true }
+        try await Task.sleep(for: .milliseconds(600))
+        host.view.layoutIfNeeded()
+        func switches(_ view: UIView) -> [UISwitch] {
+            (view as? UISwitch).map { [$0] } ?? view.subviews.flatMap { switches($0) }
+        }
+        let controls = switches(host.view)
+        XCTAssertEqual(controls.count, 5)
+        XCTAssertEqual(controls.filter(\.isOn).count, 5, "Every earned badge should be selected, including the fourth and fifth")
+        let control = try XCTUnwrap(controls.first)
+        control.setOn(false, animated: false)
+        control.sendActions(for: .valueChanged)
+        try await Task.sleep(for: .milliseconds(100))
+        XCTAssertEqual(switches(host.view).filter(\.isOn).count, 4)
+    }
+
     func testEveryBadgeVectorRendersAtSmallAndLargeSizes() throws {
         for badge in JourneyBadgeCatalog.all(years: [2026, 2027]) {
             for size: CGFloat in [48, 160] {

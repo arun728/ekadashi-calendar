@@ -22,6 +22,22 @@ final class JourneyRewardsTests: XCTestCase {
         JourneyRewards.calculate(occurrences: list, history: rows, completeYears: complete, now: now, zone: zone)
     }
 
+    func testBackfilledMixedHistoryDoesNotReviveCurrentStreakAcrossLaterGaps() {
+        let list = events(2026)
+        let statuses: [ObservanceStatus] = [.observed, .partial, .partial, .missed,
+            .observed, .observed, .observed, .observed, .partial, .observed, .partial, .observed, .observed]
+        let s = summary(list, zip(list, statuses).map { record($0.0, $0.1) })
+        XCTAssertEqual(s.year(2026).points, 1000)
+        XCTAssertEqual(s.year(2026).observed, 8)
+        XCTAssertEqual(s.year(2026).partial, 4)
+        XCTAssertEqual(s.longestStreak, 4)
+        XCTAssertEqual(s.currentStreak, 0)
+        // Same records before the next occurrence is due retain a current run of two.
+        let earlier = JourneyRewards.calculate(occurrences: list, history: zip(list, statuses).map { record($0.0, $0.1) },
+            completeYears: [2026], now: ISO8601.instant("2026-07-04T12:00:00Z")!, zone: zone)
+        XCTAssertEqual(earlier.currentStreak, 2)
+    }
+
     func testStatusPointsAndFutureExclusion() {
         let list = events(2027)
         let s = summary(list, [record(list[0]), record(list[1], .partial), record(list[2], .missed), record(list[3], .unrecorded)])

@@ -109,6 +109,7 @@ final class JourneyRewardsUITests: XCTestCase {
         let share = app.buttons["journey_share_year"]
         for _ in 0..<4 where !share.isHittable { app.swipeUp() }
         XCTAssertTrue(share.exists)
+        XCTAssertFalse(app.staticTexts["A personal journey, with no monetary rewards."].exists)
         share.tap()
         XCTAssertTrue(app.descendants(matching: .any)["journey_share_preview"].firstMatch.waitForExistence(timeout: 10))
         XCTAssertTrue(app.buttons["journey_share_confirm"].waitForExistence(timeout: 10))
