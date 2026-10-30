@@ -3,6 +3,7 @@ import 'package:ekadashi_calendar/l10n/app_language.dart';
 import 'package:ekadashi_calendar/models/vrat_tracker_models.dart';
 import 'package:ekadashi_calendar/screens/details_screen.dart';
 import 'package:ekadashi_calendar/services/ekadashi_schedule.dart';
+import 'package:ekadashi_calendar/services/ekadashi_settings.dart';
 import 'package:ekadashi_calendar/services/ekadashi_service.dart';
 import 'package:ekadashi_calendar/services/vrat_recording.dart';
 import 'package:ekadashi_calendar/services/vrat_tracker_service.dart';
@@ -40,8 +41,13 @@ void main() {
 
   /// The Ekadashis on Home and the index of the card on screen.
   (List<EkadashiDate>, int) homeCards(WidgetTester tester) {
-    final list = EkadashiService().getEkadashis(
-      timezone: 'IST',
+    final settings = tester
+        .element(find.byKey(const Key('home_ekadashi_card')))
+        .read<EkadashiSettings>();
+    final list = EkadashiService().cachedEngineEkadashis(
+      city: settings.city,
+      tradition: settings.tradition,
+      years: settings.years,
       languageCode: 'en',
     );
     final indicator = tester
