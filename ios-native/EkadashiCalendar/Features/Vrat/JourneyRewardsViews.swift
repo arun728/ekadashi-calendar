@@ -140,7 +140,7 @@ struct JourneyBadgeCollection: View {
                 if !model.premium.isPremium {
                     Button(model.t("premium_more_achievements")) { model.openPaywall() }.secondaryActionStyle()
                 }
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 145), spacing: 12)], spacing: 12) {
+                JourneyUniformGrid {
                     ForEach(definitions) { badge in
                         let earned = model.vrat.userAchievements[badge.id]?.isUnlocked == true
                         Button { selected = badge } label: {
@@ -158,7 +158,7 @@ struct JourneyBadgeCollection: View {
                                     }
                                 }
                             }
-                            .frame(maxWidth: .infinity, minHeight: 210, alignment: .top)
+                            .frame(minWidth: 0, maxWidth: .infinity, minHeight: 210, maxHeight: .infinity, alignment: .top)
                             .padding(12)
                             .glassPanel(cornerRadius: 18, tint: earned ? Theme.teal : nil)
                         }

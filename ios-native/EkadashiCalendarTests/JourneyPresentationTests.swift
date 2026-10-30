@@ -49,21 +49,22 @@ final class JourneyPresentationTests: XCTestCase {
                                 .background(GeometryReader { proxy in Color.clear.preference(key: JourneyCellFrames.self, value: [i: proxy.frame(in: .global)]) })
                         }
                     }
-                    .onPreferenceChange(JourneyCellFrames.self) { frames = $0 }
-                }.environment(\.dynamicTypeSize, large ? .accessibility3 : .large)
+                    MetricCard(title: titles[2], value: "20", subtitle: "Ekadashis", symbol: AppSymbol.journeyStreak, color: .orange)
+                        .frame(width: (width - 12) / 2)
+                        .background(GeometryReader { proxy in Color.clear.preference(key: JourneyCellFrames.self, value: [99: proxy.frame(in: .global)]) })
+                }.onPreferenceChange(JourneyCellFrames.self) { frames = $0 }.environment(\.dynamicTypeSize, large ? .accessibility3 : .large)
                 let window = UIWindow(frame: CGRect(x: 0, y: 0, width: width, height: 1200))
                 let host = UIHostingController(rootView: content)
                 window.rootViewController = host; window.makeKeyAndVisible()
                 host.view.layoutIfNeeded()
                 try await Task.sleep(for: .milliseconds(150))
-                XCTAssertEqual(frames.count, 4)
+                XCTAssertEqual(frames.count, 5)
                 let first = try XCTUnwrap(frames[0])
-                for frame in frames.values {
+                for frame in frames.filter({ $0.key < 4 }).values {
                     XCTAssertEqual(frame.width, first.width, accuracy: 0.5)
                     XCTAssertEqual(frame.height, first.height, accuracy: 0.5)
                 }
-                let tallest = try XCTUnwrap(ImageRenderer(content: MetricCard(title: titles[2], value: "20", subtitle: "Ekadashis", symbol: AppSymbol.journeyStreak, color: .orange).frame(width: first.width).environment(\.dynamicTypeSize, large ? .accessibility3 : .large)).uiImage)
-                XCTAssertGreaterThanOrEqual(first.height + 0.5, tallest.size.height)
+                XCTAssertGreaterThanOrEqual(first.height + 0.5, try XCTUnwrap(frames[99]).height)
                 window.isHidden = true
             }
         }

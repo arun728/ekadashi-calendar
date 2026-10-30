@@ -76,23 +76,24 @@ struct VratView: View {
                 ForEach(allYears ? years.sorted() : [year], id: \.self) { value in
                     JourneyOverviewPanel(summary: journey, year: value)
                 }
-                Grid(horizontalSpacing: 12, verticalSpacing: 12) {
-                    GridRow {
-                        MetricCard(title: model.t("current_streak"), value: "\(journey.currentStreak)",
-                                   subtitle: model.t("ekadashis_unit"), symbol: AppSymbol.journeyStreak, color: .orange)
-                            .accessibilityIdentifier("journey_overview_streaks")
-                        MetricCard(title: model.t("longest_streak"), value: "\(longest)", subtitle: model.t("ekadashis_unit"),
-                                   symbol: AppSymbol.journeyBest, color: Theme.amber)
-                    }
-                    GridRow {
-                        MetricCard(title: "\(yearTitle) \(model.t("annual_completion"))",
-                                   value: "\(Int(stats.completionPercentage.rounded()))%",
-                                   subtitle: "\(stats.observedCount) / \(stats.totalOccurrences)",
-                                   symbol: AppSymbol.journeyRate, color: Theme.teal)
-                        MetricCard(title: model.t("total_observed"), value: "\(totalObserved)", subtitle: model.t("ekadashis_unit"),
-                                   symbol: AppSymbol.journeyObserved, color: Theme.observed)
-                    }
+                JourneyUniformGrid(columns: 2) {
+                    MetricCard(title: model.t("current_streak"), value: "\(journey.currentStreak)",
+                               subtitle: model.t("ekadashis_unit"), symbol: AppSymbol.journeyStreak, color: .orange)
+                        .accessibilityIdentifier("journey_metric_current")
+                    MetricCard(title: model.t("longest_streak"), value: "\(longest)", subtitle: model.t("ekadashis_unit"),
+                               symbol: AppSymbol.journeyBest, color: Theme.amber)
+                        .accessibilityIdentifier("journey_metric_longest")
+                    MetricCard(title: "\(yearTitle) \(model.t("annual_completion"))",
+                               value: "\(Int(stats.completionPercentage.rounded()))%",
+                               subtitle: "\(stats.observedCount) / \(stats.totalOccurrences)",
+                               symbol: AppSymbol.journeyRate, color: Theme.teal)
+                        .accessibilityIdentifier("journey_metric_completion")
+                    MetricCard(title: model.t("total_observed"), value: "\(totalObserved)", subtitle: model.t("ekadashis_unit"),
+                               symbol: AppSymbol.journeyObserved, color: Theme.observed)
+                        .accessibilityIdentifier("journey_metric_observed")
                 }
+                .accessibilityElement(children: .contain)
+                .accessibilityIdentifier("journey_overview_streaks")
                 if let milestone {
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
@@ -318,7 +319,39 @@ struct MetricCard: View {
             Text(subtitle).font(.caption2).foregroundStyle(.secondary)
         }
         .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .glassPanel(cornerRadius: 16, tint: color)
+        .accessibilityElement(children: .combine)
+    }
+}
+
+/// Measures every card at its column width and uses the tallest intrinsic height
+/// throughout the grid. Text and accessibility sizes determine the height.
+struct JourneyUniformGrid: Layout {
+    var columns: Int? = nil
+    var minimumColumnWidth: CGFloat = 145
+    var spacing: CGFloat = 12
+
+    private func dimensions(width: CGFloat, subviews: Subviews) -> (count: Int, cellWidth: CGFloat, cellHeight: CGFloat) {
+        let count = max(1, columns ?? Int((width + spacing) / (minimumColumnWidth + spacing)))
+        let cellWidth = max(0, (width - CGFloat(count - 1) * spacing) / CGFloat(count))
+        let height = subviews.map { $0.sizeThatFits(ProposedViewSize(width: cellWidth, height: nil)).height }.max() ?? 0
+        return (count, cellWidth, height)
+    }
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let width = max(0, proposal.width ?? 320)
+        let d = dimensions(width: width, subviews: subviews)
+        let rows = (subviews.count + d.count - 1) / d.count
+        return CGSize(width: width, height: CGFloat(rows) * d.cellHeight + CGFloat(max(0, rows - 1)) * spacing)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let d = dimensions(width: bounds.width, subviews: subviews)
+        for (i, view) in subviews.enumerated() {
+            view.place(at: CGPoint(x: bounds.minX + CGFloat(i % d.count) * (d.cellWidth + spacing),
+                                   y: bounds.minY + CGFloat(i / d.count) * (d.cellHeight + spacing)),
+                       anchor: .topLeading, proposal: ProposedViewSize(width: d.cellWidth, height: d.cellHeight))
+        }
     }
 }
