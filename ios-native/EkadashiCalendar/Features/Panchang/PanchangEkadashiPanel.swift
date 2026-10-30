@@ -24,8 +24,6 @@ struct PanchangEkadashiPanel: View {
                     }
                 }
             }
-            Text(model.t(tradition == .smarta ? "panchang_smarta_rule" : "panchang_vaishnava_rule"))
-                .font(.subheadline).foregroundStyle(.secondary)
             Group {
                 if failed {
                     VStack(spacing: 8) {
