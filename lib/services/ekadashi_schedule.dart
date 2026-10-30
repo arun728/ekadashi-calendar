@@ -142,7 +142,7 @@ class EkadashiScheduleKey {
 /// tradition, with the published identities (EkadashiSchedule.swift).
 ///
 /// - Dates, fasting start and Parana come from [CalculatedEkadashiEngine] at
-///   the city's sunrise in its own time zone, cut to the minute exactly as
+///   the city's sunrise in its own time zone, rounded to the minute exactly as
 ///   the Panchang tab shows them.
 /// - In a year with a published pack, each fast keeps the identity
 ///   (`occurrence_uid`, notification id) of the published row of the same
@@ -152,8 +152,10 @@ class EkadashiScheduleKey {
 class EkadashiSchedule {
   EkadashiSchedule({required this.publishedRows, this.persist = true});
 
-  /// Bumped when the cached form changes, so older caches are recalculated.
-  static const formatVersion = 'schedule-2';
+  /// Bumped when the cached form changes, so older caches are recalculated
+  /// (4: Vaishnava fasts and Parana from GCal 11, as ISKCON publishes them;
+  /// IANA 2026b time zones for 1900-2100).
+  static const formatVersion = 'schedule-4';
 
   /// The published rows of a year (identities and texts).
   final List<Map<String, dynamic>> Function(int year) publishedRows;
@@ -312,11 +314,12 @@ class EkadashiSchedule {
   static String _isoDate(DateTime d) =>
       '${d.year.toString().padLeft(4, '0')}-${_two(d.month)}-${_two(d.day)}';
 
-  /// Local wall-clock time with its offset, to the minute: the form of the
-  /// published packs ("2026-01-14T06:35:00+05:30"). The seconds are dropped,
-  /// as the Panchang tab shows the same instants, so both read the same.
+  /// Local wall-clock time with its offset, to the nearest minute: the form
+  /// of the published packs ("2026-01-14T06:35:00+05:30"). Rounded as the
+  /// Panchang tab and Drik Panchang show the same instants, so all read the
+  /// same.
   static String iso(DateTime instant, PanchangCity city) {
-    final wall = city.wallClock(instant);
+    final wall = city.displayClock(instant);
     final offset = wall.timeZoneOffset;
     final minutes = offset.inMinutes.abs();
     final sign = offset.isNegative ? '-' : '+';

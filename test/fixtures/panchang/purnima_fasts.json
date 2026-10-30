@@ -1,0 +1,125 @@
+{
+ "_about": "Purnima fast (Upavasa / Vrat) days for New Delhi, the only day the app lists as Purnima. Rule: the day Purnima begins if it has begun by the end of that day's Madhyahna (three fifths of daylight), else the next day. Test reference only.",
+ "sources": [
+  "2025: Drik Panchang posts for New Delhi: Shravana Purnima Upavasa 9 Aug 2025 (Purnima 2:12 PM 8 Aug - 1:24 PM 9 Aug); Ashwina Purnima Upavasa 6 Oct 2025 (begins 12:23 PM 6 Oct).",
+  "2026: Drik Panchang 2026 Purnima Days, New Delhi (via search results), identical to Prokerala Purnima Vrat 2026.",
+  "2027: valkala.com/purnima, each date checked against Drik Panchang and AstroSage for New Delhi; Shravana and Kartika 2027 also list the following day as an alternate."
+ ],
+ "city": {
+  "id": "new-delhi-drik",
+  "label": "New Delhi",
+  "lat": 28.635556,
+  "lon": 77.224444,
+  "tz": "Asia/Kolkata"
+ },
+ "fasts": [
+  {
+   "date": "2025-08-09",
+   "alt": null
+  },
+  {
+   "date": "2025-10-06",
+   "alt": null
+  },
+  {
+   "date": "2026-01-03",
+   "alt": null
+  },
+  {
+   "date": "2026-02-01",
+   "alt": null
+  },
+  {
+   "date": "2026-03-03",
+   "alt": null
+  },
+  {
+   "date": "2026-04-01",
+   "alt": null
+  },
+  {
+   "date": "2026-05-01",
+   "alt": null
+  },
+  {
+   "date": "2026-05-30",
+   "alt": null
+  },
+  {
+   "date": "2026-06-29",
+   "alt": null
+  },
+  {
+   "date": "2026-07-29",
+   "alt": null
+  },
+  {
+   "date": "2026-08-27",
+   "alt": null
+  },
+  {
+   "date": "2026-09-26",
+   "alt": null
+  },
+  {
+   "date": "2026-10-25",
+   "alt": null
+  },
+  {
+   "date": "2026-11-24",
+   "alt": null
+  },
+  {
+   "date": "2026-12-23",
+   "alt": null
+  },
+  {
+   "date": "2027-01-22",
+   "alt": null
+  },
+  {
+   "date": "2027-02-20",
+   "alt": null
+  },
+  {
+   "date": "2027-03-22",
+   "alt": null
+  },
+  {
+   "date": "2027-04-20",
+   "alt": null
+  },
+  {
+   "date": "2027-05-20",
+   "alt": null
+  },
+  {
+   "date": "2027-06-18",
+   "alt": null
+  },
+  {
+   "date": "2027-07-18",
+   "alt": null
+  },
+  {
+   "date": "2027-08-16",
+   "alt": "2027-08-17"
+  },
+  {
+   "date": "2027-09-15",
+   "alt": null
+  },
+  {
+   "date": "2027-10-15",
+   "alt": null
+  },
+  {
+   "date": "2027-11-13",
+   "alt": "2027-11-14"
+  },
+  {
+   "date": "2027-12-13",
+   "alt": null
+  }
+ ]
+}

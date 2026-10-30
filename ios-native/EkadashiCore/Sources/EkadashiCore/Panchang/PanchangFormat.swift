@@ -7,7 +7,7 @@ public enum PanchangFormat {
     /// "6:24 PM", "6:24 PM (next day)", "—" when unavailable.
     public static func time(_ instant: Date?, city: PanchangCity, date: CivilDate, language: String) -> String {
         guard let instant else { return "—" }
-        let local = city.wallClock(instant)
+        let local = city.displayClock(instant)
         var text = Localizer.shared.clock(hour: local.hour, minute: local.minute, language: language)
         let delta = date.days(until: local.date)
         if delta == 1 {

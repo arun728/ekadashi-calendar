@@ -66,7 +66,7 @@
   {
    "query": "amavasya 2027",
    "all_categories": "amavasya",
-   "count": 13,
+   "count": 18,
    "all_in_year": 2027
   },
   {
@@ -154,7 +154,7 @@
   {
    "query": "",
    "category": "festival",
-   "top": "observance:makar-sankranti:2027-01-15",
+   "top": "observance:lohri:2027-01-14",
    "all_categories": "festival",
    "year_filter": 2027,
    "all_in_year": 2027

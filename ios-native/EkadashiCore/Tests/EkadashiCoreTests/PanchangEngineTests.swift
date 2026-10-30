@@ -171,7 +171,10 @@ final class PanchangEngineTests: XCTestCase {
             let city = PanchangCity(id: id, label: id, latitude: row.double("lat")!,
                                     longitude: row.double("lon")!, timeZoneId: zones[id]!)
             let expected = instant(row.string("utc")!)
-            let day = engine.calculate(city.wallClock(expected).date, city: city)
+            // Moon rows name their day: a moonrise after midnight belongs to the
+            // Panchang day that began at the previous sunrise.
+            let day = engine.calculate(row.string("date").flatMap { CivilDate(iso: $0) } ?? city.wallClock(expected).date,
+                                       city: city)
             let actual: Date?
             switch "\(row.string("body")!) \(row.string("event")!)" {
             case "sun rise": actual = day.sunrise

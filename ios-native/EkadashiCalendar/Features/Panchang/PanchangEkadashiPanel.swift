@@ -24,8 +24,6 @@ struct PanchangEkadashiPanel: View {
                     }
                 }
             }
-            Text(model.t(tradition == .smarta ? "panchang_smarta_rule" : "panchang_vaishnava_rule"))
-                .font(.subheadline).foregroundStyle(.secondary)
             Group {
                 if failed {
                     VStack(spacing: 8) {
@@ -43,7 +41,6 @@ struct PanchangEkadashiPanel: View {
                     ProgressView().tint(Theme.teal).frame(maxWidth: .infinity, minHeight: 120)
                 }
             }
-            Text(model.t("panchang_calculated_preview")).font(.caption).foregroundStyle(.secondary)
         }
         .task(id: "\(month.iso)|\(city.id)|\(city.latitude)|\(city.longitude)|\(city.timeZoneId)|\(tradition.rawValue)") { await load() }
     }
@@ -77,14 +74,8 @@ struct PanchangEkadashiPanel: View {
                         detail: model.t("panchang_starts_at", time(fast.fastStarts, fast.date)))
             PanchangRow(label: model.t("panchang_parana"), value: PanchangFormat.date(fast.paranaDate, language: language),
                         detail: parana)
-            if fast.nearBoundary {
-                Label(model.t("panchang_near_boundary"), systemImage: AppSymbol.warning)
-                    .font(.caption).foregroundStyle(.orange)
-            }
-            DisclosureGroup(model.t("panchang_calculation_details")) {
+            DisclosureGroup(model.t("panchang_more_details")) {
                 VStack(alignment: .leading, spacing: 8) {
-                    PanchangRow(label: model.t("panchang_rule"), value: terms.ekadashiNote(fast.rule, language: language))
-                    Text(terms.ekadashiNote(fast.paranaReason, language: language)).font(.caption).foregroundStyle(.secondary)
                     PanchangRow(label: model.t("panchang_tithi"),
                                 value: "\(time(fast.tithiStart, fast.date)) – \(time(fast.tithiEnd, fast.date))")
                     PanchangRow(label: model.t("panchang_hari_vasara_ends"), value: time(fast.hariVasaraEnd, fast.paranaDate))

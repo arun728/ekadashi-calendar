@@ -1,0 +1,398 @@
+{
+ "_about": "Widely searched Hindu festivals added in October 2026 (docs/PANCHANG_ACCURACY.md, 'Widely searched festivals'): the observance day for each city. Drik Panchang's ranking of its top 25 festivals by traffic chose the first set; the rest are other widely followed festivals. Test reference only. heldOut: dates no rule was chosen with.",
+ "sources": {
+  "drik": "Drik Panchang Hindu calendar for New Delhi, 2026 and 2027 (drikpanchang.com/calendars/hindu/hinducalendar.html?year=YYYY, read 30 October 2026); agrees with Prokerala wherever both list a festival, except Rishi Panchami 2027 (Prokerala: 5 September)",
+  "drik-rule": "Drik Panchang: Lohri is the day before Makar Sankranti (14 January 2026, 15 January 2027 in New Delhi)",
+  "prokerala": "Prokerala festival pages (prokerala.com/festivals/<name>.html, Ujjain, read 30 October 2026), for festivals the Drik year calendar does not list"
+ },
+ "cities": {
+  "new-delhi": {
+   "lat": 28.6139,
+   "lon": 77.209,
+   "tz": "Asia/Kolkata"
+  },
+  "ujjain": {
+   "lat": 23.1765,
+   "lon": 75.7885,
+   "tz": "Asia/Kolkata"
+  }
+ },
+ "festivals": [
+  {
+   "id": "lohri",
+   "name": "Lohri",
+   "city": "new-delhi",
+   "dates": [
+    "2026-01-13",
+    "2027-01-14"
+   ],
+   "source": "drik-rule"
+  },
+  {
+   "id": "sakat-chauth",
+   "name": "Sakat Chauth",
+   "city": "new-delhi",
+   "dates": [
+    "2026-01-06",
+    "2027-01-25"
+   ],
+   "source": "drik"
+  },
+  {
+   "id": "mauni-amavasya",
+   "name": "Mauni Amavasya",
+   "city": "new-delhi",
+   "dates": [
+    "2026-01-18",
+    "2027-02-06"
+   ],
+   "source": "drik"
+  },
+  {
+   "id": "ratha-saptami",
+   "name": "Ratha Saptami",
+   "city": "new-delhi",
+   "dates": [
+    "2026-01-25",
+    "2027-02-13"
+   ],
+   "source": "drik"
+  },
+  {
+   "id": "sheetala-ashtami",
+   "name": "Sheetala Ashtami (Basoda)",
+   "city": "new-delhi",
+   "dates": [
+    "2026-03-11",
+    "2027-03-30"
+   ],
+   "source": "drik"
+  },
+  {
+   "id": "gangaur",
+   "name": "Gangaur",
+   "city": "new-delhi",
+   "dates": [
+    "2026-03-21",
+    "2027-04-09"
+   ],
+   "source": "drik"
+  },
+  {
+   "id": "solar-new-year",
+   "name": "Vaisakhi / Solar New Year",
+   "city": "new-delhi",
+   "dates": [
+    "2026-04-14",
+    "2027-04-14"
+   ],
+   "source": "drik"
+  },
+  {
+   "id": "mahavir-jayanti",
+   "name": "Mahavir Jayanti",
+   "city": "ujjain",
+   "dates": [
+    "2027-04-19"
+   ],
+   "source": "prokerala"
+  },
+  {
+   "id": "parashurama-jayanti",
+   "name": "Parashurama Jayanti",
+   "city": "new-delhi",
+   "dates": [
+    "2026-04-19",
+    "2027-05-08"
+   ],
+   "source": "drik"
+  },
+  {
+   "id": "sita-navami",
+   "name": "Sita Navami",
+   "city": "new-delhi",
+   "dates": [
+    "2026-04-25",
+    "2027-05-14"
+   ],
+   "source": "drik"
+  },
+  {
+   "id": "narasimha-jayanti",
+   "name": "Narasimha Jayanti",
+   "city": "new-delhi",
+   "dates": [
+    "2026-04-30",
+    "2027-05-18"
+   ],
+   "source": "drik"
+  },
+  {
+   "id": "buddha-purnima",
+   "name": "Buddha Purnima",
+   "city": "new-delhi",
+   "dates": [
+    "2026-05-01",
+    "2027-05-20"
+   ],
+   "source": "drik"
+  },
+  {
+   "id": "vat-savitri",
+   "name": "Vat Savitri Vrat",
+   "city": "new-delhi",
+   "dates": [
+    "2026-05-16",
+    "2027-06-04"
+   ],
+   "source": "drik"
+  },
+  {
+   "id": "shani-jayanti",
+   "name": "Shani Jayanti",
+   "city": "new-delhi",
+   "dates": [
+    "2026-05-16",
+    "2027-06-04"
+   ],
+   "source": "drik"
+  },
+  {
+   "id": "ganga-dussehra",
+   "name": "Ganga Dussehra",
+   "city": "new-delhi",
+   "dates": [
+    "2026-05-25",
+    "2027-06-13"
+   ],
+   "source": "drik"
+  },
+  {
+   "id": "vat-purnima",
+   "name": "Vat Purnima Vrat",
+   "city": "new-delhi",
+   "dates": [
+    "2026-06-29",
+    "2027-06-18"
+   ],
+   "source": "drik"
+  },
+  {
+   "id": "hariyali-teej",
+   "name": "Hariyali Teej",
+   "city": "new-delhi",
+   "dates": [
+    "2026-08-15",
+    "2027-08-04"
+   ],
+   "source": "drik"
+  },
+  {
+   "id": "kajari-teej",
+   "name": "Kajari Teej",
+   "city": "new-delhi",
+   "dates": [
+    "2026-08-31",
+    "2027-08-20"
+   ],
+   "source": "drik"
+  },
+  {
+   "id": "hartalika-teej",
+   "name": "Hartalika Teej",
+   "city": "new-delhi",
+   "dates": [
+    "2026-09-14",
+    "2027-09-03"
+   ],
+   "source": "drik"
+  },
+  {
+   "id": "rishi-panchami",
+   "name": "Rishi Panchami",
+   "city": "new-delhi",
+   "dates": [
+    "2026-09-15",
+    "2027-09-04"
+   ],
+   "source": "drik"
+  },
+  {
+   "id": "radha-ashtami",
+   "name": "Radha Ashtami",
+   "city": "new-delhi",
+   "dates": [
+    "2026-09-19",
+    "2027-09-08"
+   ],
+   "source": "drik"
+  },
+  {
+   "id": "anant-chaturdashi",
+   "name": "Anant Chaturdashi (Ganesh Visarjan)",
+   "city": "new-delhi",
+   "dates": [
+    "2026-09-25",
+    "2027-09-14"
+   ],
+   "source": "drik"
+  },
+  {
+   "id": "vishwakarma-puja",
+   "name": "Vishwakarma Puja",
+   "city": "new-delhi",
+   "dates": [
+    "2026-09-17",
+    "2027-09-17"
+   ],
+   "source": "drik"
+  },
+  {
+   "id": "sarva-pitru-amavasya",
+   "name": "Sarva Pitru Amavasya (Mahalaya)",
+   "city": "new-delhi",
+   "dates": [
+    "2026-10-10",
+    "2027-09-29"
+   ],
+   "source": "drik"
+  },
+  {
+   "id": "maha-navami",
+   "name": "Maha Navami",
+   "city": "new-delhi",
+   "dates": [
+    "2026-10-19",
+    "2027-10-08"
+   ],
+   "source": "drik"
+  },
+  {
+   "id": "sharad-purnima",
+   "name": "Sharad Purnima (Kojagara)",
+   "city": "new-delhi",
+   "dates": [
+    "2026-10-25",
+    "2027-10-14"
+   ],
+   "source": "drik"
+  },
+  {
+   "id": "ahoi-ashtami",
+   "name": "Ahoi Ashtami",
+   "city": "new-delhi",
+   "dates": [
+    "2026-11-01",
+    "2027-10-22"
+   ],
+   "source": "drik"
+  },
+  {
+   "id": "kali-puja",
+   "name": "Kali Puja",
+   "city": "ujjain",
+   "dates": [
+    "2025-10-20",
+    "2026-11-08"
+   ],
+   "source": "prokerala"
+  },
+  {
+   "id": "tulsi-vivah",
+   "name": "Tulsi Vivah",
+   "city": "new-delhi",
+   "dates": [
+    "2026-11-21",
+    "2027-11-11"
+   ],
+   "source": "drik"
+  },
+  {
+   "id": "kartika-purnima",
+   "name": "Kartika Purnima",
+   "city": "new-delhi",
+   "dates": [
+    "2026-11-24",
+    "2027-11-14"
+   ],
+   "source": "drik"
+  },
+  {
+   "id": "guru-nanak-jayanti",
+   "name": "Guru Nanak Jayanti",
+   "city": "ujjain",
+   "dates": [
+    "2026-11-24"
+   ],
+   "source": "prokerala"
+  },
+  {
+   "id": "vivah-panchami",
+   "name": "Vivah Panchami",
+   "city": "new-delhi",
+   "dates": [
+    "2026-12-14",
+    "2027-12-03"
+   ],
+   "source": "drik"
+  },
+  {
+   "id": "gita-jayanti",
+   "name": "Gita Jayanti",
+   "city": "new-delhi",
+   "dates": [
+    "2026-12-20",
+    "2027-12-09"
+   ],
+   "source": "drik"
+  },
+  {
+   "id": "vaikuntha-ekadashi",
+   "name": "Vaikuntha Ekadashi",
+   "city": "ujjain",
+   "dates": [
+    "2026-12-20"
+   ],
+   "source": "prokerala"
+  },
+  {
+   "id": "dattatreya-jayanti",
+   "name": "Dattatreya Jayanti",
+   "city": "new-delhi",
+   "dates": [
+    "2026-12-23",
+    "2027-12-13"
+   ],
+   "source": "drik"
+  },
+  {
+   "id": "thaipusam",
+   "name": "Thaipusam",
+   "city": "ujjain",
+   "dates": [
+    "2027-01-23"
+   ],
+   "source": "prokerala"
+  }
+ ],
+ "heldOut": [
+  {
+   "id": "sharad-purnima",
+   "city": "ujjain",
+   "date": "2025-10-06",
+   "source": "prokerala"
+  },
+  {
+   "id": "ahoi-ashtami",
+   "city": "ujjain",
+   "date": "2025-10-13",
+   "source": "prokerala"
+  },
+  {
+   "id": "kartika-purnima",
+   "city": "ujjain",
+   "date": "2025-11-05",
+   "source": "prokerala"
+  }
+ ]
+}

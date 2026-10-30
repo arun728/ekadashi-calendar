@@ -283,7 +283,6 @@ struct PanchangDailyView: View {
                 PanchangRow(label: model.t("panchang_special_yogas"),
                             value: day.specialYogas.isEmpty ? model.t("panchang_none")
                                 : day.specialYogas.map { terms.translate($0, .specialYoga, language: language) }.joined(separator: ", "))
-                PanchangRow(label: model.t("panchang_ayanamsa"), value: String(format: "%.4f°", day.ayanamsa))
                 if day.sunrise == nil || day.sunset == nil {
                     Text(model.t("panchang_no_solar_day")).font(.caption).foregroundStyle(.secondary)
                 }
@@ -338,7 +337,6 @@ struct PanchangMuhurtaView: View {
             .accessibilityIdentifier("panchang_day_night")
             let choghadiya = day.choghadiya.filter { $0.name.hasPrefix(night ? "Night" : "Day") }
             PanchangCard(title: model.t("panchang_choghadiya"), symbol: AppSymbol.choghadiya) {
-                Text(model.t("panchang_choghadiya_hint")).font(.caption).foregroundStyle(.secondary)
                 if choghadiya.isEmpty { Text(model.t("panchang_unavailable")).font(.subheadline).foregroundStyle(.secondary) }
                 ForEach(Array(choghadiya.enumerated()), id: \.offset) { _, period in
                     periodRow(String(period.name.split(separator: "·").last ?? "").trimmingCharacters(in: .whitespaces),
@@ -404,8 +402,6 @@ struct PanchangRashiView: View {
                 Divider()
                 PanchangRow(label: model.t("panchang_nakshatra_pada"), value: "\(day.nakshatraPada)", detail: until(day.padaEndsAt))
             }
-            Text(model.t("panchang_rashi_note")).font(.caption).foregroundStyle(.secondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 }
