@@ -14,21 +14,35 @@ final class JourneyRewardsUITests: XCTestCase {
         XCTAssertTrue(year.waitForExistence(timeout: 5))
         year.tap(); app.buttons["2027"].firstMatch.tap()
         app.buttons["journey_badge_filter_annual"].tap()
-        XCTAssertFalse(app.buttons["journey_badge_year_2026"].exists)
+        XCTAssertTrue(app.buttons["journey_badge_journey_2027_q1"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["journey_badge_journey_2026_q1"].exists)
+        capture(app, "journey-feedback-achievements-2027")
         year.tap(); app.buttons["All years"].firstMatch.tap()
         XCTAssertTrue(year.label.contains("All years"))
+        app.buttons["journey_tab_statistics"].tap()
+        XCTAssertTrue(app.staticTexts["0 of 49 Ekadashis"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.staticTexts["Year:"].exists)
+        capture(app, "journey-feedback-statistics-all-years")
         app.buttons["journey_tab_history"].tap()
+        capture(app, "journey-feedback-history-all-years")
         app.buttons["journey_history_year"].tap(); app.buttons["2026"].firstMatch.tap()
         app.buttons["journey_row_ekadashi:2026:01"].tap()
         XCTAssertTrue(app.buttons["vrat_method_fullFast"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.buttons["vrat_method_fullFast"].isEnabled)
         XCTAssertFalse(app.buttons["vrat_method_oneMeal"].isEnabled)
         XCTAssertFalse(app.buttons["vrat_method_other"].isEnabled)
+        capture(app, "journey-feedback-observed-methods")
         app.buttons["vrat_status_partial"].tap()
+        capture(app, "journey-feedback-partial-methods")
         XCTAssertTrue(app.buttons["vrat_method_oneMeal"].isEnabled)
         for method in ["fullFast", "waterOnly", "fruitsMilk", "other"] {
             XCTAssertFalse(app.buttons["vrat_method_" + method].isEnabled)
         }
+    }
+
+    private func capture(_ app: XCUIApplication, _ name: String) {
+        let attachment = XCTAttachment(screenshot: app.screenshot())
+        attachment.name = name; attachment.lifetime = .keepAlways; add(attachment)
     }
 
     func testAnnualPointsMandalaPremiumAndBadgeDetails() {

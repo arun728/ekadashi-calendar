@@ -41,8 +41,8 @@ struct RecordVratSheet: View {
                             .background(Color.orange.opacity(0.1), in: RoundedRectangle(cornerRadius: 8))
                     }
                     label("status_active")
-                    GlassGroup(spacing: 8) {
-                        HStack(spacing: 8) {
+                    GlassGroup(spacing: 4) {
+                        HStack(spacing: 4) {
                             statusChip(.observed, "observed", AppSymbol.statusObserved)
                             statusChip(.partial, "partial", AppSymbol.statusPartial)
                             statusChip(.missed, "missed", AppSymbol.statusMissed)
@@ -55,6 +55,9 @@ struct RecordVratSheet: View {
                         FlowLayout(spacing: 8) {
                             ForEach(FastingMethod.allCases, id: \.self) { item in
                                 GlassChip(title: model.t(item.localizationKey), selected: method == item) { method = item }
+                                    .disabled(!FastingMethod.allowed(for: status).contains(item))
+                                    .opacity(FastingMethod.allowed(for: status).contains(item) ? 1 : 0.3)
+                                    .accessibilityIdentifier("vrat_method_\(item.rawValue)")
                             }
                         }
                         .accessibilityElement(children: .contain)
@@ -120,13 +123,27 @@ struct RecordVratSheet: View {
     }
 
     private func statusChip(_ value: ObservanceStatus, _ key: String, _ symbol: String) -> some View {
-        GlassChip(title: model.t(key), systemImage: symbol, color: VratStatusStyle(value).color, selected: status == value) {
+        Button {
             if isClosed {
                 show("journey_record_after_parana")
             } else {
                 status = value
+                method = FastingMethod.normalized(method, for: value) ?? .fullFast
             }
+        } label: {
+            HStack(spacing: 3) {
+                Image(systemName: symbol).font(.system(size: 12))
+                Text(model.t(key)).font(.subheadline.weight(status == value ? .semibold : .regular))
+                    .lineLimit(1).minimumScaleFactor(0.45).allowsTightening(true)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 6).padding(.vertical, 10)
+            .foregroundStyle(status == value ? VratStatusStyle(value).color : .primary)
+            .glassCapsule(tint: status == value ? VratStatusStyle(value).color : nil)
         }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(status == value ? .isSelected : [])
+        .accessibilityIdentifier("vrat_status_\(value.rawValue)")
         .frame(maxWidth: .infinity)
     }
 
@@ -135,7 +152,7 @@ struct RecordVratSheet: View {
         loaded = true
         existing = model.vrat.record(for: event.occurrenceUid)
         status = existing?.status ?? (isClosed ? .unrecorded : .observed)
-        method = existing?.fastingMethod ?? .fullFast
+        method = FastingMethod.normalized(existing?.fastingMethod, for: status) ?? .fullFast
         methodOther = existing?.fastingMethodOther ?? ""
         note = existing?.note ?? ""
     }
@@ -169,7 +186,7 @@ struct RecordVratSheet: View {
         do {
             let unlocked = try model.vrat.save(
                 event, status: status,
-                method: status == .observed || status == .partial ? method : nil,
+                method: FastingMethod.normalized(method, for: status),
                 methodOther: method == .other ? methodOther.trimmingCharacters(in: .whitespacesAndNewlines) : nil,
                 note: trimmedNote.isEmpty ? nil : trimmedNote,
                 timezone: model.ekadashiCity.timeZoneId, tradition: model.tradition.rawValue, occurrences: model.ekadashis)

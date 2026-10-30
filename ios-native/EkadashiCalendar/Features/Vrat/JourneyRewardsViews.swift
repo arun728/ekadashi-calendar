@@ -21,13 +21,13 @@ struct JourneyOverviewPanel: View {
                     .font(.system(.largeTitle, design: .rounded, weight: .bold)).foregroundStyle(Theme.teal)
                 Text(model.t("ios_journey_points")).font(.subheadline.weight(.medium))
                 Text(model.t("ios_journey_year_points", String(progress.points), String(progress.maximumPoints)))
-                    .font(.caption).foregroundStyle(.secondary)
+                    .font(.caption).foregroundStyle(.white.opacity(0.75))
             }
             .accessibilityElement(children: .combine)
             .accessibilityIdentifier("journey_year_points")
             JourneyMandala(progress: progress).frame(maxWidth: 310)
             Text(model.t("ios_journey_summary", String(progress.observed), String(progress.partial)))
-                .font(.subheadline).foregroundStyle(.secondary)
+                .font(.subheadline).foregroundStyle(.white.opacity(0.75))
             Label("\(model.t("current_streak")) · \(summary.currentStreak)", systemImage: AppSymbol.journeyStreak)
                 .font(.subheadline).foregroundStyle(Theme.teal)
             HStack {
@@ -59,12 +59,12 @@ struct JourneyOverviewPanel: View {
             if progress.annualBonus > 0 {
                 Text(model.t("ios_journey_annual_bonus")).font(.subheadline.bold()).foregroundStyle(Theme.teal)
             }
-            Text(model.t("ios_journey_scoring")).font(.caption2).foregroundStyle(.secondary).multilineTextAlignment(.center)
-            Text(model.t("ios_journey_personal")).font(.caption2).foregroundStyle(.secondary)
+            Text(model.t("ios_journey_scoring")).font(.caption2).foregroundStyle(.white.opacity(0.75)).multilineTextAlignment(.center)
+            Text(model.t("ios_journey_personal")).font(.caption2).foregroundStyle(.white.opacity(0.75))
             Button { sharing = true } label: {
                 Label(model.t("ios_journey_share"), systemImage: AppSymbol.share).frame(maxWidth: .infinity)
             }
-            .secondaryActionStyle()
+            .primaryActionStyle()
             .accessibilityIdentifier("journey_share_year")
             if !model.premium.isPremium {
                 Button { model.openPaywall(reason: "ios_journey_premium_desc") } label: {
@@ -80,7 +80,9 @@ struct JourneyOverviewPanel: View {
         }
         .padding(18)
         .frame(maxWidth: .infinity)
-        .glassPanel(cornerRadius: 24, tint: Theme.teal)
+        .background(JourneyCardPalette.gradient, in: RoundedRectangle(cornerRadius: 24))
+        .foregroundStyle(.white)
+        .environment(\.colorScheme, .dark)
         .sheet(isPresented: $sharing) { JourneyShareSheet(progress: progress, badges: earnedAnnualBadges) }
     }
 
@@ -94,6 +96,7 @@ struct JourneyOverviewPanel: View {
 struct JourneyBadgeCollection: View {
     @Environment(AppModel.self) private var model
     let summary: JourneySummary
+    var selectedYear: Int? = nil
     @State private var selected: JourneyBadgeDefinition?
     @State private var collection: String?
 
@@ -107,7 +110,8 @@ struct JourneyBadgeCollection: View {
     }
 
     private var definitions: [JourneyBadgeDefinition] {
-        JourneyBadgeCatalog.all(years: [2026, 2027])
+        JourneyBadgeCatalog.all(years: model.enabledYears)
+            .filter { $0.isVisible(inYear: selectedYear) }
             .filter { $0.id != "full_year_observance" || model.vrat.userAchievements[$0.id]?.isUnlocked == true }
             .filter { collection == nil || group($0) == collection }
             .sorted {
@@ -305,9 +309,21 @@ struct JourneyAnnualShareCard: View {
         }
         .padding(20)
         .frame(maxWidth: .infinity)
-        .background(LinearGradient(colors: [Color(red: 0.02, green: 0.18, blue: 0.18), Color(red: 0.03, green: 0.08, blue: 0.13)],
-                                   startPoint: .topLeading, endPoint: .bottomTrailing), in: RoundedRectangle(cornerRadius: 24))
+        .background(JourneyCardPalette.gradient, in: RoundedRectangle(cornerRadius: 24))
+        .padding(6)
+        .background(JourneyCardPalette.matte)
         .environment(\.colorScheme, .dark)
     }
 
+}
+
+/// Opaque export canvas prevents receivers from replacing transparent corners
+/// with white. The rounded inner card remains visible against the green matte.
+enum JourneyCardPalette {
+    static let matte = Color(red: 0.02, green: 0.14, blue: 0.14)
+    static var gradient: LinearGradient {
+        LinearGradient(colors: [Color(red: 0.02, green: 0.18, blue: 0.18),
+                                Color(red: 0.03, green: 0.08, blue: 0.13)],
+                       startPoint: .topLeading, endPoint: .bottomTrailing)
+    }
 }

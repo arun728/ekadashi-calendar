@@ -10,6 +10,7 @@ struct VratView: View {
     enum Section: String, CaseIterable { case overview, history, statistics, achievements }
     @State private var section: Section = .overview
     @State private var selectedYear = CivilDate.today().year
+    @State private var allYears = false
     @State private var statusFilter: ObservanceStatus?
     @State private var recording: EkadashiOccurrence?
 
@@ -65,14 +66,16 @@ struct VratView: View {
         let records = model.vrat.allRecords
         let totalObserved = records.filter { $0.status == .observed }.count
         let longest = journey.longestStreak
-        let stats = model.vrat.annualStats(year, events)
+        let stats = periodStats
         let milestone = JourneyBadgeCatalog.nextMilestone(summary: journey, earned: model.vrat.userAchievements)
         let today = CivilDate.today()
         let recent = events.sorted { $0.date < $1.date }.filter { abs(today.days(until: $0.date)) <= 30 }.prefix(4)
         return ScrollView {
             VStack(alignment: .leading, spacing: 12) {
                 HStack { Spacer(); yearMenu.accessibilityIdentifier("journey_overview_year") }
-                JourneyOverviewPanel(summary: journey, year: year)
+                ForEach(allYears ? years.sorted() : [year], id: \.self) { value in
+                    JourneyOverviewPanel(summary: journey, year: value)
+                }
                 Grid(horizontalSpacing: 12, verticalSpacing: 12) {
                     GridRow {
                         MetricCard(title: model.t("current_streak"), value: "\(journey.currentStreak)",
@@ -82,7 +85,7 @@ struct VratView: View {
                                    symbol: AppSymbol.journeyBest, color: Theme.amber)
                     }
                     GridRow {
-                        MetricCard(title: "\(year) \(model.t("annual_completion"))",
+                        MetricCard(title: "\(yearTitle) \(model.t("annual_completion"))",
                                    value: "\(Int(stats.completionPercentage.rounded()))%",
                                    subtitle: "\(stats.observedCount) / \(stats.totalOccurrences)",
                                    symbol: AppSymbol.journeyRate, color: Theme.teal)
@@ -125,7 +128,7 @@ struct VratView: View {
     // MARK: History
 
     private var history: some View {
-        let filtered = events.filter { $0.date.year == year }
+        let filtered = events.filter { allYears || $0.date.year == year }
             .filter { event in
                 guard let statusFilter else { return true }
                 return (model.vrat.record(for: event.occurrenceUid)?.status ?? .unrecorded) == statusFilter
@@ -135,7 +138,7 @@ struct VratView: View {
             ScrollView(.horizontal) {
                 GlassGroup(spacing: 8) {
                     HStack(spacing: 8) {
-                        yearMenu
+                        yearMenu.accessibilityIdentifier("journey_history_year")
                         filterChip(nil, "filter_all")
                         filterChip(.observed, "observed")
                         filterChip(.partial, "partial")
@@ -162,14 +165,29 @@ struct VratView: View {
 
     private var yearMenu: some View {
         Menu {
+            Button(model.t("search_all_years")) { allYears = true }
             ForEach(years, id: \.self) { value in
-                Button(String(value)) { selectedYear = value }
+                Button(String(value)) { selectedYear = value; allYears = false }
             }
         } label: {
-            Label(String(year), systemImage: AppSymbol.journeyYear).font(.subheadline.weight(.semibold))
+            Label(yearTitle, systemImage: AppSymbol.journeyYear).font(.subheadline.weight(.semibold))
                 .padding(.horizontal, 14).padding(.vertical, 8)
                 .glassCapsule(tint: Theme.teal)
+                .fixedSize(horizontal: true, vertical: false)
         }
+        .fixedSize(horizontal: true, vertical: false)
+    }
+
+    private var yearTitle: String { allYears ? model.t("search_all_years") : String(year) }
+
+    private var periodStats: (totalOccurrences: Int, observedCount: Int, partialCount: Int,
+                              missedCount: Int, unrecordedCount: Int, completionPercentage: Double) {
+        let values = (allYears ? years : [year]).map { model.vrat.annualStats($0, events) }
+        let total = values.reduce(0) { $0 + $1.totalOccurrences }
+        let observed = values.reduce(0) { $0 + $1.observedCount }
+        return (total, observed, values.reduce(0) { $0 + $1.partialCount },
+                values.reduce(0) { $0 + $1.missedCount }, values.reduce(0) { $0 + $1.unrecordedCount },
+                total == 0 ? 0 : Double(observed) / Double(total) * 100)
     }
 
     private func filterChip(_ status: ObservanceStatus?, _ key: String) -> some View {
@@ -219,16 +237,15 @@ struct VratView: View {
     // MARK: Statistics
 
     private var statistics: some View {
-        let stats = model.vrat.annualStats(year, events)
+        let stats = periodStats
         return ScrollView {
             VStack(spacing: 16) {
                 HStack {
-                    Text("\(model.t("year")):").font(.headline)
                     Spacer()
-                    yearMenu
+                    yearMenu.accessibilityIdentifier("journey_statistics_year")
                 }
                 VStack(spacing: 12) {
-                    Text("\(year) \(model.t("annual_completion"))").font(.headline)
+                    Text("\(yearTitle) \(model.t("annual_completion"))").font(.headline)
                     ZStack {
                         Circle().stroke(Theme.teal.opacity(0.15), lineWidth: 12)
                         Circle().trim(from: 0, to: stats.completionPercentage / 100)
@@ -275,7 +292,10 @@ struct VratView: View {
     // MARK: Achievements
 
     private var achievements: some View {
-        JourneyBadgeCollection(summary: journey)
+        VStack(spacing: 0) {
+            HStack { Spacer(); yearMenu.accessibilityIdentifier("journey_achievements_year") }.padding(16)
+            JourneyBadgeCollection(summary: journey, selectedYear: allYears ? nil : year)
+        }
     }
 
 }

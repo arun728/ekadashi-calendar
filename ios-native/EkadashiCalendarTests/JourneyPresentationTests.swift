@@ -56,13 +56,35 @@ final class JourneyPresentationTests: XCTestCase {
         let progress = JourneyRewards.calculate(occurrences: [], history: [], completeYears: []).year(2026)
         let image = try XCTUnwrap(ImageRenderer(content:
             JourneyAnnualShareCard(progress: progress, badges: []).frame(width: 360).environment(model)).uiImage?.cgImage)
-        var pixel = [UInt8](repeating: 0, count: 4)
-        let context = try XCTUnwrap(CGContext(data: &pixel, width: 1, height: 1, bitsPerComponent: 8,
+        for point in [CGPoint(x: 0, y: 0), CGPoint(x: image.width - 1, y: 0),
+                      CGPoint(x: 0, y: image.height - 1), CGPoint(x: image.width - 1, y: image.height - 1)] {
+            let pixel = try pixel(image, at: point)
+            XCTAssertEqual(pixel[3], 255, "All exported corners must remain opaque after JPEG conversion")
+            XCTAssertGreaterThan(pixel[1], pixel[0], "Corner matte must be green, not white")
+            XCTAssertLessThan(pixel[0], 40)
+        }
+        let attachment = XCTAttachment(image: UIImage(cgImage: image))
+        attachment.name = "journey-feedback-opaque-export"; attachment.lifetime = .keepAlways; add(attachment)
+    }
+
+    func testOverviewUsesTheDarkSharePalette() throws {
+        let model = AppModel()
+        let summary = JourneyRewards.calculate(occurrences: [], history: [], completeYears: [])
+        let image = try XCTUnwrap(ImageRenderer(content:
+            JourneyOverviewPanel(summary: summary, year: 2026).frame(width: 360).environment(model)).uiImage?.cgImage)
+        let color = try pixel(image, at: CGPoint(x: 12, y: 80))
+        XCTAssertEqual(color[3], 255)
+        XCTAssertGreaterThan(color[1], color[0])
+        XCTAssertLessThan(color[1], 65, "Use the share gradient rather than the washed-out glass tint")
+    }
+
+    private func pixel(_ image: CGImage, at point: CGPoint) throws -> [UInt8] {
+        let crop = try XCTUnwrap(image.cropping(to: CGRect(origin: point, size: CGSize(width: 1, height: 1))))
+        var bytes = [UInt8](repeating: 0, count: 4)
+        let context = try XCTUnwrap(CGContext(data: &bytes, width: 1, height: 1, bitsPerComponent: 8,
             bytesPerRow: 4, space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue))
-        context.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
-        XCTAssertEqual(pixel[3], 255, "Exported corners must be opaque, including after JPEG conversion")
-        XCTAssertGreaterThan(pixel[1], pixel[0], "Corner matte must be green, not white")
-        XCTAssertLessThan(pixel[0], 40)
+        context.draw(crop, in: CGRect(x: 0, y: 0, width: 1, height: 1))
+        return bytes
     }
 
     func testGroupedAnnouncementsAreDeduplicated() {

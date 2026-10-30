@@ -116,6 +116,10 @@ public enum JourneyRewards {
 public struct JourneyBadgeDefinition: Identifiable, Sendable {
     public enum Rule: Equatable, Sendable { case observed(Int), streak(Int), partial(Int), returned, quarter(Int, Int), annual(Int), legacyAnnual }
     public enum Art: String, Sendable { case lamp, leaves, lotus, lights, flame, arcs, thread, wreath, sunrise, petals, quarter, annual }
+    public func isVisible(inYear selectedYear: Int?) -> Bool {
+        selectedYear == nil || year == nil || year == selectedYear
+    }
+
     public let achievement: Achievement
     public let rule: Rule
     public let art: Art
