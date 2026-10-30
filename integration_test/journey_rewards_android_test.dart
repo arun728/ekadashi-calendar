@@ -180,12 +180,12 @@ void main() {
       final screen = tester.widget<VratTrackerScreen>(
         find.byType(VratTrackerScreen),
       );
-      final elapsed = tracker
+      final total = tracker
           .journey(screen.ekadashiList, timezone: screen.currentTimezone)
           .scoped()
-          .eligibleSegments
-          .length;
-      expect(find.text('1 of $elapsed Ekadashis'), findsOneWidget);
+          .totalOccurrences;
+      expect(total, 49);
+      expect(find.text('1 of 49 Ekadashis'), findsOneWidget);
       await capture('05b_statistics_all_years');
       await tap('journey_tab_overview');
       await scrollTo(find.byKey(const Key('journey_overview_year')));

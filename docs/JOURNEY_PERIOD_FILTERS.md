@@ -25,15 +25,15 @@ the session limit and scopes displayed Overview/Statistics progress.
 TDD evidence: core year-isolation/January tests failed before implementation;
 six-language Record-label test failed for all six old History values; native
 Statistics layout test initially required the new uniform count-card component.
-Green iOS: all 334 Swift core tests and native presentation/period UI tests pass.
+Green iOS: all 335 Swift core tests and native presentation/period UI tests pass.
 Android parity is complete on the same branch. Android year-scope tests failed
 before the new summary APIs existed; the Overview widget test reproduced the
 future-year progress leak and recording rows before implementation.
 
 Final local validation:
-- 334 Swift core tests passed, with zero failures.
+- 335 Swift core tests passed, with zero failures.
 - 12 native presentation tests and the selected-year Overview UI flow passed.
-- 946 Flutter tests passed; Flutter analyzer reported no issues.
+- 948 Flutter tests passed; Flutter analyzer reported no issues.
 - Card geometry checks passed for all six languages, narrow/wide screens and
   enlarged accessibility text, including every Statistics tile.
 - Android emulator integration passed both scenarios, covering year filters,

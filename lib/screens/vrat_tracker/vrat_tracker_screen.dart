@@ -157,21 +157,14 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
     final summary = tracker
         .journey(widget.ekadashiList, timezone: widget.currentTimezone)
         .scoped(toYear: _allYears ? null : year);
-    final segments = _allYears ? summary.eligibleSegments : summary.segments;
-    final total = segments.length,
-        observed = summary.observedCount,
-        partial = summary.partialCount;
-    final missed = summary.eligibleSegments
-        .where((e) => e.status == ObservanceStatus.missed)
-        .length;
     return VratYearStats(
       year: year,
-      totalOccurrences: total,
-      observedCount: observed,
-      partialCount: partial,
-      missedCount: missed,
-      unrecordedCount: math.max(0, total - observed - partial - missed),
-      completionPercentage: total == 0 ? 0 : observed / total * 100,
+      totalOccurrences: summary.totalOccurrences,
+      observedCount: summary.observedCount,
+      partialCount: summary.partialCount,
+      missedCount: summary.missedCount,
+      unrecordedCount: summary.unrecordedCount,
+      completionPercentage: summary.completionPercentage,
     );
   }
 

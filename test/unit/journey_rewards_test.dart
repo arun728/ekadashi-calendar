@@ -88,57 +88,69 @@ void main() {
       expect(s.scoped().observedCount, 3);
     },
   );
-  test('All years counts complete calendars: 20 of 49 rounds to 41 percent', () {
-    final a = journeyEvents(2026), b = journeyEvents(2027, extra: true);
-    JourneySummary progress(List<VratHistory> rows) => summary([...a, ...b], rows,
-      now: DateTime.utc(2026, 10, 31, 12)).scoped();
-    final all = progress(a.take(20).map(journeyRecord).toList());
-    expect(all.visibleYears, [2026, 2027]);
-    expect(all.totalOccurrences, 49);
-    expect(all.observedCount, 20);
-    expect(all.unrecordedCount, 29);
-    expect(all.completionPercentage, closeTo(20 / 49 * 100, 0.00001));
-    expect(all.completionPercentage.round(), 41);
-    final mixed = progress([
-      ...a.take(18).map(journeyRecord),
-      journeyRecord(a[18], ObservanceStatus.partial),
-      journeyRecord(a[19], ObservanceStatus.missed),
-    ]);
-    expect(mixed.partialCount, 1);
-    expect(mixed.missedCount, 1);
-    expect(mixed.unrecordedCount, 29);
-    expect(mixed.observedCount + mixed.partialCount + mixed.missedCount + mixed.unrecordedCount, 49);
-    expect(mixed.completionPercentage, closeTo(18 / 49 * 100, 0.00001));
-    final future = all.scoped(toYear: 2027);
-    expect(future.totalOccurrences, 25);
-    expect(future.unrecordedCount, 25);
-    expect(future.completionPercentage, 0);
-    expect(all.scoped(toYear: 2026).totalOccurrences, 24);
-    final perfect = summary([...a, ...b], [...a, ...b].map(journeyRecord).toList()).scoped();
-    expect(perfect.completionPercentage, 100);
-    expect(perfect.unrecordedCount, 0);
-  });
-
   test(
-    'January rollover puts current year first with complete calendars',
+    'All years counts complete calendars: 20 of 49 rounds to 41 percent',
     () {
-      final a = journeyEvents(2026),
-          b = journeyEvents(2027, extra: true),
-          es = [...a, ...b];
-      final s = summary(es, [
-        journeyRecord(a[a.length - 2]),
-        journeyRecord(a.last),
-        journeyRecord(b.first, ObservanceStatus.partial),
-      ], now: DateTime.utc(2027, 1, 5, 12));
-      expect(s.visibleYears, [2027, 2026]);
-      expect(s.scoped().currentStreak, 3);
-      expect(s.scoped(toYear: 2026).currentStreak, 2);
-      expect(s.scoped(toYear: 2027).currentStreak, 1);
-      expect(s.scoped(toYear: 2027).observedCount, 0);
-      expect(s.scoped(toYear: 2027).partialCount, 1);
-      expect(s.scoped().eligibleSegments.length, 25);
+      final a = journeyEvents(2026), b = journeyEvents(2027, extra: true);
+      JourneySummary progress(List<VratHistory> rows) => summary(
+        [...a, ...b],
+        rows,
+        now: DateTime.utc(2026, 10, 31, 12),
+      ).scoped();
+      final all = progress(a.take(20).map(journeyRecord).toList());
+      expect(all.visibleYears, [2026, 2027]);
+      expect(all.totalOccurrences, 49);
+      expect(all.observedCount, 20);
+      expect(all.unrecordedCount, 29);
+      expect(all.completionPercentage, closeTo(20 / 49 * 100, 0.00001));
+      expect(all.completionPercentage.round(), 41);
+      final mixed = progress([
+        ...a.take(18).map(journeyRecord),
+        journeyRecord(a[18], ObservanceStatus.partial),
+        journeyRecord(a[19], ObservanceStatus.missed),
+      ]);
+      expect(mixed.partialCount, 1);
+      expect(mixed.missedCount, 1);
+      expect(mixed.unrecordedCount, 29);
+      expect(
+        mixed.observedCount +
+            mixed.partialCount +
+            mixed.missedCount +
+            mixed.unrecordedCount,
+        49,
+      );
+      expect(mixed.completionPercentage, closeTo(18 / 49 * 100, 0.00001));
+      final future = all.scoped(toYear: 2027);
+      expect(future.totalOccurrences, 25);
+      expect(future.unrecordedCount, 25);
+      expect(future.completionPercentage, 0);
+      expect(all.scoped(toYear: 2026).totalOccurrences, 24);
+      final perfect = summary([
+        ...a,
+        ...b,
+      ], [...a, ...b].map(journeyRecord).toList()).scoped();
+      expect(perfect.completionPercentage, 100);
+      expect(perfect.unrecordedCount, 0);
     },
   );
+
+  test('January rollover puts current year first with complete calendars', () {
+    final a = journeyEvents(2026),
+        b = journeyEvents(2027, extra: true),
+        es = [...a, ...b];
+    final s = summary(es, [
+      journeyRecord(a[a.length - 2]),
+      journeyRecord(a.last),
+      journeyRecord(b.first, ObservanceStatus.partial),
+    ], now: DateTime.utc(2027, 1, 5, 12));
+    expect(s.visibleYears, [2027, 2026]);
+    expect(s.scoped().currentStreak, 3);
+    expect(s.scoped(toYear: 2026).currentStreak, 2);
+    expect(s.scoped(toYear: 2027).currentStreak, 1);
+    expect(s.scoped(toYear: 2027).observedCount, 0);
+    expect(s.scoped(toYear: 2027).partialCount, 1);
+    expect(s.scoped().eligibleSegments.length, 25);
+  });
 
   test(
     'consistency includes partial, ignores trailing empties and breaks on internal gaps or misses',

@@ -311,39 +311,81 @@ void main() {
     },
   );
 
-  testWidgets('All years shows both panels and uses 20 of 49 in Overview and Statistics', (tester) async {
-    final es = [...journeyEvents(2026), ...journeyEvents(2027, extra: true)];
-    final tracker = VratTrackerService(premiumAchievements: () => true,
-      now: () => DateTime.utc(2026, 10, 31, 12));
-    await tracker.init(occurrences: es);
-    for (final e in es.take(20)) {
-      await tracker.recordVrat(ekadashiOccurrenceId: e.id, occurrenceUid: e.occurrenceUid,
-        ekadashiDate: e.date.toIso8601String().substring(0, 10), ekadashiName: e.name,
-        status: ObservanceStatus.observed, occurrences: es);
-    }
-    await tester.pumpWidget(MultiProvider(providers: [
-      ChangeNotifierProvider.value(value: tracker),
-      ChangeNotifierProvider(create: (_) => LanguageService()),
-    ], child: MaterialApp(home: Scaffold(body: VratTrackerScreen(ekadashiList: es, currentTimezone: 'Asia/Kolkata')))));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('journey_overview_year')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('All years').last);
-    await tester.pumpAndSettle();
-    expect(find.text('Your 2026 Journey'), findsOneWidget);
-    final scroll = find.byType(Scrollable).last;
-    await tester.scrollUntilVisible(find.text('Your 2027 Journey'), 400, scrollable: scroll);
-    expect(find.text('Your 2027 Journey'), findsOneWidget);
-    await tester.scrollUntilVisible(find.byKey(const Key('journey_metric_annual_completion')), 400, scrollable: scroll);
-    final metric = find.byKey(const Key('journey_metric_annual_completion'));
-    expect(find.descendant(of: metric, matching: find.text('41%')), findsOneWidget);
-    expect(find.descendant(of: metric, matching: find.text('20 / 49')), findsOneWidget);
-    await tester.tap(find.byKey(const Key('journey_tab_statistics')));
-    await tester.pumpAndSettle();
-    expect(find.text('20 of 49 Ekadashis'), findsOneWidget);
-    expect(find.text('41%'), findsOneWidget);
-    expect(find.descendant(of: find.byKey(const Key('journey_stat_unrecorded')), matching: find.text('29')), findsOneWidget);
-  });
+  testWidgets(
+    'All years shows both panels and uses 20 of 49 in Overview and Statistics',
+    (tester) async {
+      final es = [...journeyEvents(2026), ...journeyEvents(2027, extra: true)];
+      final tracker = VratTrackerService(
+        premiumAchievements: () => true,
+        now: () => DateTime.utc(2026, 10, 31, 12),
+      );
+      await tracker.init(occurrences: es);
+      for (final e in es.take(20)) {
+        await tracker.recordVrat(
+          ekadashiOccurrenceId: e.id,
+          occurrenceUid: e.occurrenceUid,
+          ekadashiDate: e.date.toIso8601String().substring(0, 10),
+          ekadashiName: e.name,
+          status: ObservanceStatus.observed,
+          occurrences: es,
+        );
+      }
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider.value(value: tracker),
+            ChangeNotifierProvider(create: (_) => LanguageService()),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: VratTrackerScreen(
+                ekadashiList: es,
+                currentTimezone: 'Asia/Kolkata',
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('journey_overview_year')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('All years').last);
+      await tester.pumpAndSettle();
+      expect(find.text('Your 2026 Journey'), findsOneWidget);
+      final scroll = find.byType(Scrollable).last;
+      await tester.scrollUntilVisible(
+        find.text('Your 2027 Journey'),
+        400,
+        scrollable: scroll,
+      );
+      expect(find.text('Your 2027 Journey'), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('journey_metric_annual_completion')),
+        400,
+        scrollable: scroll,
+      );
+      final metric = find.byKey(const Key('journey_metric_annual_completion'));
+      expect(
+        find.descendant(of: metric, matching: find.text('41%')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: metric, matching: find.text('20 / 49')),
+        findsOneWidget,
+      );
+      await tester.tap(find.byKey(const Key('journey_tab_statistics')));
+      await tester.pumpAndSettle();
+      expect(find.text('20 of 49 Ekadashis'), findsOneWidget);
+      expect(find.text('41%'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byKey(const Key('journey_stat_unrecorded')),
+          matching: find.text('29'),
+        ),
+        findsOneWidget,
+      );
+    },
+  );
 
   test('method rules and annual filtering mirror iOS', () {
     expect(FastingMethod.allowedFor(ObservanceStatus.observed), [

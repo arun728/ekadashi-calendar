@@ -86,16 +86,26 @@ class JourneySummary {
   List<JourneySegment> get eligibleSegments =>
       segments.where((e) => !e.isFuture).toList();
   List<int> get visibleYears =>
-      years.keys
-          .where((y) => y >= 2026 && y <= (asOf ?? DateTime.now()).year)
-          .toList()
-        ..sort((a, b) => b.compareTo(a));
+      years.keys.where((y) => y >= 2026).toList()..sort((a, b) {
+        final current = (asOf ?? DateTime.now()).year;
+        if (a == b) return 0;
+        if (a == current) return -1;
+        if (b == current) return 1;
+        return b.compareTo(a);
+      });
+  int get totalOccurrences => segments.length;
+  int get missedCount =>
+      eligibleSegments.where((e) => e.status == ObservanceStatus.missed).length;
+  int get unrecordedCount => math.max(
+    0,
+    totalOccurrences - observedCount - partialCount - missedCount,
+  );
+  double get completionPercentage =>
+      totalOccurrences == 0 ? 0 : observedCount / totalOccurrences * 100;
   JourneySummary scoped({int? toYear}) {
     final selected = Map<int, JourneyYear>.fromEntries(
       years.entries.where(
-        (e) => toYear != null
-            ? e.key == toYear
-            : e.key >= 2026 && e.key <= (asOf ?? DateTime.now()).year,
+        (e) => toYear != null ? e.key == toYear : e.key >= 2026,
       ),
     );
     final ordered = (selected.keys.toList()..sort())
