@@ -314,7 +314,7 @@ struct MetricCard: View {
                 Spacer()
                 Text(value).font(.title2.bold()).foregroundStyle(color)
             }
-            Text(title).font(.caption.weight(.medium)).lineLimit(1).padding(.top, 6)
+            Text(title).font(.caption.weight(.medium)).fixedSize(horizontal: false, vertical: true).padding(.top, 6)
             Text(subtitle).font(.caption2).foregroundStyle(.secondary)
         }
         .padding(16)

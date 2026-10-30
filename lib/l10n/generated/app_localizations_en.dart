@@ -381,13 +381,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get delete_record => 'Delete Record';
 
   @override
-  String get current_streak => 'Current Streak';
+  String get current_streak => 'Current consistency streak';
 
   @override
-  String get longest_streak => 'Longest Streak';
+  String get longest_streak => 'Longest consistency streak';
 
   @override
-  String get annual_completion => 'Annual Completion';
+  String get annual_completion => 'Full-observance completion';
 
   @override
   String get total_observed => 'Total Observed';

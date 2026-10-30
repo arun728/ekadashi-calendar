@@ -383,13 +383,13 @@ class AppLocalizationsTe extends AppLocalizations {
   String get delete_record => 'నమోదు తొలగించండి';
 
   @override
-  String get current_streak => 'ప్రస్తుత వరుస ఆచరణ';
+  String get current_streak => 'ప్రస్తుత ఆచరణ పరంపర';
 
   @override
-  String get longest_streak => 'అత్యధిక వరుస ఆచరణ';
+  String get longest_streak => 'అత్యధిక ఆచరణ పరంపర';
 
   @override
-  String get annual_completion => 'వార్షిక పూర్తి శాతం';
+  String get annual_completion => 'పూర్తి ఆచరణ పురోగతి';
 
   @override
   String get total_observed => 'మొత్తం ఆచరించినవి';

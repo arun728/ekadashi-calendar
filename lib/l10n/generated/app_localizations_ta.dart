@@ -382,13 +382,13 @@ class AppLocalizationsTa extends AppLocalizations {
   String get delete_record => 'பதிவை நீக்கு';
 
   @override
-  String get current_streak => 'தற்போதைய தொடர்';
+  String get current_streak => 'தற்போதைய தொடர்ச்சியான அனுசரிப்பு';
 
   @override
-  String get longest_streak => 'நீண்ட தொடர்';
+  String get longest_streak => 'நீண்ட தொடர்ச்சியான அனுசரிப்பு';
 
   @override
-  String get annual_completion => 'ஆண்டு நிறைவு';
+  String get annual_completion => 'முழுமையான அனுசரிப்பு நிறைவு';
 
   @override
   String get total_observed => 'மொத்த அனுஷ்டானங்கள்';

@@ -36,6 +36,8 @@ public struct JourneySummary: Sendable {
     public let partialCount: Int
     public let currentStreak: Int
     public let longestStreak: Int
+    public let fullCurrentStreak: Int
+    public let fullLongestStreak: Int
     public let hasReturned: Bool
     private let lifetimeBasePoints: Int
     public var lifetimePoints: Int { lifetimeBasePoints + years.values.reduce(0) { $0 + $1.points - $1.basePoints } }
@@ -47,9 +49,10 @@ public struct JourneySummary: Sendable {
     }
 
     init(years: [Int: JourneyYear], observedCount: Int, partialCount: Int, currentStreak: Int,
-         longestStreak: Int, hasReturned: Bool, lifetimeBasePoints: Int) {
+         longestStreak: Int, hasReturned: Bool, lifetimeBasePoints: Int, fullCurrentStreak: Int = 0, fullLongestStreak: Int = 0) {
         self.years = years; self.observedCount = observedCount; self.partialCount = partialCount
         self.currentStreak = currentStreak; self.longestStreak = longestStreak
+        self.fullCurrentStreak = fullCurrentStreak; self.fullLongestStreak = fullLongestStreak
         self.hasReturned = hasReturned; self.lifetimeBasePoints = lifetimeBasePoints
     }
 }
@@ -99,17 +102,23 @@ public enum JourneyRewards {
             years[year] = JourneyYear(year: year, segments: list, quarters: quarters, scheduleComplete: complete)
         }
         var run = 0, longest = 0, returned = false
+        var fullRun = 0, fullLongest = 0
+        let eligible = segments.filter { !$0.isFuture }
+        let lastRecorded = eligible.lastIndex { $0.status != .unrecorded }
         var previous: JourneySegment?
-        for segment in segments where !segment.isFuture {
+        for segment in lastRecorded.map({ Array(eligible[...$0]) }) ?? [] {
             if segment.status == .observed {
-                run += 1; longest = max(longest, run)
+                fullRun += 1; fullLongest = max(fullLongest, fullRun)
                 if previous?.status == .missed { returned = true }
+            } else { fullRun = 0 }
+            if segment.status == .observed || segment.status == .partial {
+                run += 1; longest = max(longest, run)
             } else { run = 0 }
             previous = segment
         }
         return JourneySummary(years: years, observedCount: lifetimeObserved, partialCount: lifetimePartial,
                               currentStreak: run, longestStreak: longest, hasReturned: returned,
-                              lifetimeBasePoints: lifetimeObserved * 100 + lifetimePartial * 50)
+                              lifetimeBasePoints: lifetimeObserved * 100 + lifetimePartial * 50, fullCurrentStreak: fullRun, fullLongestStreak: fullLongest)
     }
 }
 
@@ -131,7 +140,7 @@ public struct JourneyBadgeDefinition: Identifiable, Sendable {
     /// A new streak must be built from the current run; its historical best
     /// remains visible in the badge collection but is not "one more" after a gap.
     public func goalProgress(in summary: JourneySummary) -> Int {
-        if case .streak = rule { return min(target, summary.currentStreak) }
+        if case .streak = rule { return min(target, summary.fullCurrentStreak) }
         return progress(in: summary)
     }
 
@@ -139,7 +148,7 @@ public struct JourneyBadgeDefinition: Identifiable, Sendable {
         let value: Int
         switch rule {
         case .observed: value = summary.observedCount
-        case .streak: value = summary.longestStreak
+        case .streak: value = summary.fullLongestStreak
         case .partial: value = summary.partialCount
         case .returned: value = summary.hasReturned ? 1 : 0
         case .quarter(let year, let quarter):
@@ -211,14 +220,15 @@ public enum JourneyBadgeEvaluator {
     public static func evaluate(summary: JourneySummary, current: [String: UserAchievement], newUnlockLimit: Int?, now: Date)
         -> (updated: [String: UserAchievement], newlyUnlocked: [Achievement]) {
         var updated = current, newly: [Achievement] = [], remaining = max(0, newUnlockLimit ?? Int.max)
+        let definitions = JourneyBadgeCatalog.all(years: Array(summary.years.keys))
         let stamp = ISO8601.string(now)
         for definition in JourneyBadgeCatalog.all(years: Array(summary.years.keys)) {
             let existing = current[definition.id], wasUnlocked = existing?.isUnlocked ?? false
             let progress = definition.progress(in: summary)
-            let unlocked = wasUnlocked || (progress == definition.target && remaining > 0)
+            let unlocked = progress == definition.target && (wasUnlocked || remaining > 0)
             if unlocked && !wasUnlocked { remaining -= 1; newly.append(definition.achievement) }
             updated[definition.id] = UserAchievement(id: existing?.id ?? "ua_\(definition.id)", achievementId: definition.id,
-                progressValue: progress, isUnlocked: unlocked, unlockedAtUTC: wasUnlocked ? existing?.unlockedAtUTC : unlocked ? stamp : nil,
+                progressValue: progress, isUnlocked: unlocked, unlockedAtUTC: unlocked ? (wasUnlocked ? existing?.unlockedAtUTC : stamp) : nil,
                 lastEvaluatedAtUTC: stamp)
         }
         return (updated, newly)

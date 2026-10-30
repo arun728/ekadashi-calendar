@@ -73,7 +73,8 @@ and A Year of Dedication for every fully observed occurrence in that year.
 Create distinct 2026 and 2027 annual identities; preserve the old
 `full_year_observance` identity and any previously earned instance.
 
-Earned badges remain earned after corrections; displayed points/progress
+Badges are recalculated from current history after edits/deletions and relock
+when their original requirements fail; displayed points/progress
 recalculate from current history. Premium expiry does not remove awards.
 Locked badges show exact requirements and progress. Earned badges sort first,
 then upcoming achievements in a deterministic order.

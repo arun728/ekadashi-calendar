@@ -381,13 +381,13 @@ class AppLocalizationsHi extends AppLocalizations {
   String get delete_record => 'रिकॉर्ड हटाएं';
 
   @override
-  String get current_streak => 'वर्तमान लड़ी';
+  String get current_streak => 'वर्तमान निरंतरता क्रम';
 
   @override
-  String get longest_streak => 'सर्वश्रेष्ठ लड़ी';
+  String get longest_streak => 'सबसे लंबा निरंतरता क्रम';
 
   @override
-  String get annual_completion => 'वार्षिक पूर्णता';
+  String get annual_completion => 'पूर्ण पालन की प्रगति';
 
   @override
   String get total_observed => 'कुल संपन्न';

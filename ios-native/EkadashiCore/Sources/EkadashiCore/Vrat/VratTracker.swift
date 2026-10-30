@@ -204,9 +204,11 @@ public final class VratTracker {
 
     private func evaluate(_ occurrences: [EkadashiOccurrence]) -> [Achievement] {
         guard !rewardsStoreCorrupt else { return [] }
-        let unlockedCount = userAchievements.values.filter(\.isUnlocked).count
-        let limit = premiumAchievements() ? nil : max(0, Self.freeAchievementLimit - unlockedCount)
         let summary = journey(occurrences, completeYears: Set(occurrences.map(\.date.year)))
+        let unlockedCount = JourneyBadgeCatalog.all(years: Array(summary.years.keys)).filter {
+            userAchievements[$0.id]?.isUnlocked == true && $0.progress(in: summary) == $0.target
+        }.count
+        let limit = premiumAchievements() ? nil : max(0, Self.freeAchievementLimit - unlockedCount)
         let result = JourneyBadgeEvaluator.evaluate(summary: summary, current: userAchievements, newUnlockLimit: limit, now: now())
         userAchievements = result.updated
         let pending = JourneyBadgeCatalog.all(years: Array(summary.years.keys)).filter {

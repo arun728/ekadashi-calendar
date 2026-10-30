@@ -384,13 +384,13 @@ class AppLocalizationsBn extends AppLocalizations {
   String get delete_record => 'রেকর্ড মুছুন';
 
   @override
-  String get current_streak => 'বর্তমান ধারাবাহিকতা';
+  String get current_streak => 'বর্তমান ধারাবাহিক পালনের ধারা';
 
   @override
-  String get longest_streak => 'দীর্ঘতম ধারাবাহিকতা';
+  String get longest_streak => 'দীর্ঘতম ধারাবাহিক পালনের ধারা';
 
   @override
-  String get annual_completion => 'বার্ষিক সম্পূর্ণতা';
+  String get annual_completion => 'সম্পূর্ণ পালনের অগ্রগতি';
 
   @override
   String get total_observed => 'মোট পালিত';

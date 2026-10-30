@@ -153,8 +153,22 @@ final class JourneyRewardsUITests: XCTestCase {
         XCTAssertTrue(points.waitForExistence(timeout: 5))
         XCTAssertTrue(points.label.contains("300"), points.label)
         XCTAssertTrue(app.staticTexts["Current consistency streak · 3"].exists)
+        capture(app, "journey-consistency-three-records")
         app.buttons["journey_tab_statistics"].tap()
         XCTAssertTrue(app.staticTexts["2026 Full-observance completion"].exists)
+        app.buttons["journey_tab_history"].tap()
+        app.buttons["journey_row_ekadashi:2026:02"].tap()
+        app.buttons["Delete Record"].tap()
+        app.alerts.buttons["Delete Record"].tap()
+        app.buttons["journey_tab_overview"].tap()
+        XCTAssertTrue(app.staticTexts["Current consistency streak · 1"].waitForExistence(timeout: 5))
+        capture(app, "journey-consistency-after-deletion")
+        app.buttons["journey_tab_achievements"].tap()
+        app.buttons["journey_badge_filter_consistency"].tap()
+        app.buttons["journey_badge_consistent_observance"].tap()
+        XCTAssertTrue(app.staticTexts["Locked"].waitForExistence(timeout: 5))
+        capture(app, "journey-consistency-badge-relocked")
+
 
     }
 

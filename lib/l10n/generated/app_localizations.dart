@@ -817,19 +817,19 @@ abstract class AppLocalizations {
   /// No description provided for @current_streak.
   ///
   /// In en, this message translates to:
-  /// **'Current Streak'**
+  /// **'Current consistency streak'**
   String get current_streak;
 
   /// No description provided for @longest_streak.
   ///
   /// In en, this message translates to:
-  /// **'Longest Streak'**
+  /// **'Longest consistency streak'**
   String get longest_streak;
 
   /// No description provided for @annual_completion.
   ///
   /// In en, this message translates to:
-  /// **'Annual Completion'**
+  /// **'Full-observance completion'**
   String get annual_completion;
 
   /// No description provided for @total_observed.

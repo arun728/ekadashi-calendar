@@ -379,13 +379,13 @@ class AppLocalizationsGu extends AppLocalizations {
   String get delete_record => 'નોંધ કાઢી નાખો';
 
   @override
-  String get current_streak => 'હાલની શ્રેણી';
+  String get current_streak => 'વર્તમાન સતત પાલન ક્રમ';
 
   @override
-  String get longest_streak => 'સૌથી લાંબી શ્રેણી';
+  String get longest_streak => 'સૌથી લાંબો સતત પાલન ક્રમ';
 
   @override
-  String get annual_completion => 'વાર્ષિક પૂર્ણતા';
+  String get annual_completion => 'સંપૂર્ણ પાલનની પ્રગતિ';
 
   @override
   String get total_observed => 'કુલ પાળેલા';
