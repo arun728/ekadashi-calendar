@@ -153,8 +153,37 @@ final class JourneyRewardsTests: XCTestCase {
         XCTAssertEqual(future.year(2027).maximumPoints, 4100)
         XCTAssertEqual(future.nextMilestone(earned: earned)?.id, "first_vrat")
         XCTAssertEqual(all.lifetimePoints, 300)
-        XCTAssertEqual(all.visibleYears, [2026])
+        XCTAssertEqual(all.visibleYears, [2026, 2027])
         XCTAssertEqual(all.scoped(toYear: nil).observedCount, 3)
+    }
+
+    func testAllYearsUsesCompleteCalendarsIncludingFutureYear() {
+        let a = events(2026), b = events(2027, extra: true)
+        let instant = ISO8601.instant("2026-10-31T12:00:00Z")!
+        func progress(_ rows: [VratRecord]) -> JourneySummary {
+            JourneyRewards.calculate(occurrences: a + b, history: rows, completeYears: [2026, 2027], now: instant, zone: zone).scoped(toYear: nil)
+        }
+        let all = progress(a.prefix(20).map { record($0) })
+        XCTAssertEqual(all.visibleYears, [2026, 2027])
+        XCTAssertEqual(all.totalOccurrences, 49)
+        XCTAssertEqual(all.observedCount, 20)
+        XCTAssertEqual(all.unrecordedCount, 29)
+        XCTAssertEqual(all.completionPercentage, 20.0 / 49 * 100, accuracy: 0.00001)
+        XCTAssertEqual(all.completionPercentage.rounded(), 41)
+        let mixed = progress(a.prefix(18).map { record($0) } + [record(a[18], .partial), record(a[19], .missed)])
+        XCTAssertEqual(mixed.partialCount, 1)
+        XCTAssertEqual(mixed.missedCount, 1)
+        XCTAssertEqual(mixed.unrecordedCount, 29)
+        XCTAssertEqual(mixed.observedCount + mixed.partialCount + mixed.missedCount + mixed.unrecordedCount, 49)
+        XCTAssertEqual(mixed.completionPercentage, 18.0 / 49 * 100, accuracy: 0.00001)
+        let future = all.scoped(toYear: 2027)
+        XCTAssertEqual(future.totalOccurrences, 25)
+        XCTAssertEqual(future.unrecordedCount, 25)
+        XCTAssertEqual(future.completionPercentage, 0)
+        XCTAssertEqual(all.scoped(toYear: 2026).totalOccurrences, 24)
+        let perfect = summary(a + b, (a + b).map { record($0) }).scoped(toYear: nil)
+        XCTAssertEqual(perfect.completionPercentage, 100)
+        XCTAssertEqual(perfect.unrecordedCount, 0)
     }
 
     func testAllYearsOrderAndCrossYearStreakAtJanuaryRollover() {
