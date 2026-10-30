@@ -1081,10 +1081,6 @@ class PanchangDailyView extends StatelessWidget {
                       )
                       .join(', '),
           ),
-          PanchangValueRow(
-            label: _t(context, 'panchang_ayanamsa'),
-            value: '${day.ayanamsa.toStringAsFixed(4)}°',
-          ),
           if (day.sunriseUtc == null || day.sunsetUtc == null)
             Text(
               _t(context, 'panchang_no_solar_day'),
@@ -1219,10 +1215,6 @@ class _PanchangMuhurtaViewState extends State<PanchangMuhurtaView> {
           title: _t(context, 'panchang_choghadiya'),
           icon: const Icon(AppIcons.choghadiya, key: Key('panchang_dot_grid')),
           children: [
-            Text(
-              _t(context, 'panchang_choghadiya_hint'),
-              style: _secondary(context, IosText.caption),
-            ),
             if (choghadiya.isEmpty) unavailable(),
             for (final p in choghadiya)
               row(
@@ -1322,10 +1314,6 @@ class PanchangRashiView extends StatelessWidget {
               detail: until(day.padaEndsAtUtc),
             ),
           ],
-        ),
-        Text(
-          _t(context, 'panchang_rashi_note'),
-          style: _secondary(context, IosText.caption),
         ),
       ], 16),
     );
@@ -1467,10 +1455,6 @@ class _PanchangEkadashiViewState extends State<PanchangEkadashiView> {
           )
         else
           for (final fast in fasts) _card(context, fast, language),
-        Text(
-          _t(context, 'panchang_calculated_preview'),
-          style: _secondary(context, IosText.caption),
-        ),
       ], 12),
     );
   }
@@ -1486,7 +1470,6 @@ class _PanchangEkadashiViewState extends State<PanchangEkadashiView> {
             time(fast.paranaStartUtc, fast.paranaDate),
           ])
         : '${time(fast.paranaStartUtc, fast.paranaDate)} – ${time(fast.paranaEndUtc, fast.paranaDate)}';
-    final orange = IosColors.orange(context);
     return KeyedSubtree(
       key: ValueKey('fast_${fast.date}_${fast.name}'),
       child: GlassPanel(
@@ -1520,41 +1503,17 @@ class _PanchangEkadashiViewState extends State<PanchangEkadashiView> {
               value: PanchangFormat.date(fast.paranaDate, language),
               detail: parana,
             ),
-            if (fast.nearBoundary)
-              Row(
-                children: [
-                  Icon(AppIcons.warning, size: 14, color: orange),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      _t(context, 'panchang_near_boundary'),
-                      style: TextStyle(
-                        fontSize: IosText.caption,
-                        color: orange,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
             _Disclosure(
               spacing: 8,
               topPadding: 6,
               label: Text(
-                _t(context, 'panchang_calculation_details'),
+                _t(context, 'panchang_more_details'),
                 style: TextStyle(
                   fontSize: IosText.subheadline,
                   color: IosColors.primary(context),
                 ),
               ),
               children: [
-                PanchangValueRow(
-                  label: _t(context, 'panchang_rule'),
-                  value: terms.ekadashiNote(fast.rule, language),
-                ),
-                Text(
-                  terms.ekadashiNote(fast.paranaReason, language),
-                  style: _secondary(context, IosText.caption),
-                ),
                 PanchangValueRow(
                   label: _t(context, 'panchang_tithi'),
                   value:

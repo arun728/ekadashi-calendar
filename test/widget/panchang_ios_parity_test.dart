@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:ekadashi_calendar/l10n/app_language.dart';
 import 'package:ekadashi_calendar/widgets/app_icons.dart';
 import 'package:ekadashi_calendar/screens/panchang_pages.dart';
 import 'package:ekadashi_calendar/screens/panchang_screen.dart';
@@ -168,6 +171,78 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('panchang_notes')), findsNothing);
       expect(find.byKey(const Key('panchang_notes_sheet')), findsNothing);
+    }
+  });
+
+  testWidgets(
+    'no Panchang section shows a note, warning or calculation method',
+    (tester) async {
+      final premium = await premiumService(true);
+      addTearDown(premium.dispose);
+      // 22 October 2026 is a Vaishnava fast in Delhi.
+      await show(tester, premium: premium, date: DateTime(2026, 10, 22));
+      tester.view.physicalSize = const Size(390, 9000); // every row is built
+      await tester.pumpAndSettle();
+      const removed = [
+        'panchang_near_boundary',
+        'panchang_calculated_preview',
+        'panchang_rashi_note',
+        'panchang_choghadiya_hint',
+        'panchang_rule',
+        'panchang_calculation_details',
+        'panchang_ayanamsa',
+      ];
+      for (final page in PanchangPage.values) {
+        await tester.tap(find.byKey(Key('panchang_tab_${page.raw}')));
+        await tester.pumpAndSettle();
+        // Open every disclosure so its rows are built.
+        for (final key in [
+          'panchang_more_details',
+          'panchang_calculation_details',
+        ]) {
+          final label = inPage(find.text(AppStrings.translate(key, 'en')));
+          final count = label.evaluate().length;
+          for (var i = 0; i < count; i++) {
+            await tester.tap(label.at(i));
+            await tester.pumpAndSettle();
+          }
+        }
+        for (final key in removed) {
+          expect(
+            find.text(AppStrings.translate(key, 'en')),
+            findsNothing,
+            reason: '${page.raw}: $key',
+          );
+        }
+        for (final method in [
+          'one third of daylight',
+          'Pratahkala',
+          'Hari Vasara outlasts',
+          'evaluated together',
+        ]) {
+          expect(
+            find.textContaining(method),
+            findsNothing,
+            reason: '${page.raw}: $method',
+          );
+        }
+      }
+    },
+  );
+
+  test('the Panchang screens no longer reference the removed notes', () {
+    final source = File('lib/screens/panchang_pages.dart').readAsStringSync();
+    for (final text in [
+      'panchang_near_boundary',
+      'panchang_calculated_preview',
+      'panchang_rashi_note',
+      'panchang_choghadiya_hint',
+      "'panchang_rule'",
+      'panchang_calculation_details',
+      'panchang_ayanamsa',
+      'paranaReason',
+    ]) {
+      expect(source.contains(text), isFalse, reason: text);
     }
   });
 
