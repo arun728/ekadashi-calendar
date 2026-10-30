@@ -21,6 +21,52 @@ void main() {
   setUpAll(tzdata.initializeTimeZones);
   setUp(() => SharedPreferences.setMockInitialValues({}));
   test(
+    'relocked badges celebrate again, including queued, legacy and reload cases',
+    () async {
+      for (final presented in [false, true]) {
+        for (final reload in [false, true]) {
+          SharedPreferences.setMockInitialValues({});
+          final es = journeyEvents(2026), e = es.first;
+          var tracker = VratTrackerService(now: () => journeyNow);
+          await tracker.init(occurrences: es);
+          Future<List<Achievement>> save(VratTrackerService t) => t.recordVrat(
+            ekadashiOccurrenceId: e.id,
+            occurrenceUid: e.occurrenceUid,
+            ekadashiDate: e.date.toIso8601String().substring(0, 10),
+            ekadashiName: e.name,
+            status: ObservanceStatus.observed,
+            occurrences: es,
+          );
+          expect((await save(tracker)).map((a) => a.id), ['first_vrat']);
+          await (await SharedPreferences.getInstance()).setStringList(
+            'vrat_tracker_notified_achievements',
+            ['first_vrat'],
+          );
+          if (presented)
+            await tracker.markAnnouncementsPresented(['first_vrat']);
+          await tracker.deleteVrat(ekadashiOccurrenceId: e.id, occurrences: es);
+          if (reload) {
+            tracker = VratTrackerService(now: () => journeyNow);
+            await tracker.init(occurrences: es);
+          }
+          expect(
+            (await save(tracker)).map((a) => a.id),
+            ['first_vrat'],
+            reason: 'presented=$presented, reload=$reload',
+          );
+          final pending = VratTrackerService(now: () => journeyNow);
+          await pending.init(occurrences: es);
+          expect((await pending.refreshAchievements(es)).map((a) => a.id), [
+            'first_vrat',
+          ]);
+          await tracker.markAnnouncementsPresented(['first_vrat']);
+          expect(await save(tracker), isEmpty);
+        }
+      }
+    },
+  );
+
+  test(
     'delete middle record relocks badge and persists after reload',
     () async {
       final es = journeyEvents(2026);
