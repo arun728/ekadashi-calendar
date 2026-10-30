@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ekadashi_calendar/widgets/settings_group.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
@@ -44,6 +45,63 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+  }
+
+  testWidgets(
+    'share selects all earned badges and preserves manual deselection',
+    (tester) async {
+      final badges = JourneyBadgeCatalog.all([]).take(5).toList();
+      final progress = JourneyRewards.calculate(
+        occurrences: [],
+        history: [],
+        completeYears: {},
+      ).year(2026);
+      await host(tester, JourneyShareSheet(progress: progress, badges: badges));
+      final switches = tester
+          .widgetList<SettingsSwitchTile>(find.byType(SettingsSwitchTile))
+          .toList();
+      expect(switches.length, 5);
+      expect(switches.where((s) => s.value).length, 5);
+      JourneyAnnualShareCard card() => tester.widget<JourneyAnnualShareCard>(
+        find.byKey(const Key('journey_share_preview')),
+      );
+      expect(card().badges.map((b) => b.id), badges.map((b) => b.id));
+      switches.first.onChanged!(false);
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widgetList<SettingsSwitchTile>(find.byType(SettingsSwitchTile))
+            .where((s) => s.value)
+            .length,
+        4,
+      );
+      expect(card().badges.map((b) => b.id), badges.skip(1).map((b) => b.id));
+    },
+  );
+
+  for (final code in ['en', 'hi', 'ta', 'te', 'gu', 'bn']) {
+    testWidgets('$code overview omits monetary-rewards sentence', (
+      tester,
+    ) async {
+      final summary = JourneyRewards.calculate(
+        occurrences: [],
+        history: [],
+        completeYears: {},
+      );
+      await host(
+        tester,
+        SingleChildScrollView(
+          child: JourneyOverviewPanel(summary: summary, year: 2026),
+        ),
+        code: code,
+      );
+      final context = tester.element(find.byType(JourneyOverviewPanel));
+      final copy = context.read<LanguageService>().translate(
+        'ios_journey_personal',
+      );
+      expect(copy, isNot('ios_journey_personal'));
+      expect(find.text(copy), findsNothing);
+    });
   }
 
   test('method rules and annual filtering mirror iOS', () {

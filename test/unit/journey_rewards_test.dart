@@ -61,6 +61,42 @@ void main() {
   setUpAll(tzdata.initializeTimeZones);
   setUp(() => SharedPreferences.setMockInitialValues({}));
   test(
+    'backfilled mixed history preserves longest streak but later gaps reset current',
+    () {
+      final es = journeyEvents(2026);
+      final statuses = [
+        ObservanceStatus.observed,
+        ObservanceStatus.partial,
+        ObservanceStatus.partial,
+        ObservanceStatus.missed,
+        ObservanceStatus.observed,
+        ObservanceStatus.observed,
+        ObservanceStatus.observed,
+        ObservanceStatus.observed,
+        ObservanceStatus.partial,
+        ObservanceStatus.observed,
+        ObservanceStatus.partial,
+        ObservanceStatus.observed,
+        ObservanceStatus.observed,
+      ];
+      final rows = [
+        for (var i = 0; i < statuses.length; i++)
+          journeyRecord(es[i], statuses[i]),
+      ];
+      final s = summary(es, rows);
+      expect(s.year(2026).points, 1000);
+      expect(s.year(2026).observed, 8);
+      expect(s.year(2026).partial, 4);
+      expect(s.longestStreak, 4);
+      expect(s.currentStreak, 0);
+      expect(
+        summary(es, rows, now: DateTime.utc(2026, 7, 4, 12)).currentStreak,
+        2,
+      );
+    },
+  );
+
+  test(
     'status points, future exclusion and derived lifetime points match Swift',
     () {
       final es = journeyEvents(2027);
