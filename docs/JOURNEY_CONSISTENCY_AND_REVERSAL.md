@@ -21,8 +21,9 @@ previous latest-eligible-date current-streak policy.
 - Existing premium entitlement and three-free-entry/three-free-badge rules remain.
   Expiring premium does not revoke a still-qualified earned badge. A zero new-
   unlock allowance must never be bypassed when other badges are revoked.
-- Once-presented celebration markers remain once-only; requalifying a previously
-  presented badge does not repeatedly celebrate farming the same records.
+- Celebration markers clear when a badge relocks. Earning it again celebrates
+  again; repeated saves while it remains earned do not. The migrated badge
+  envelope is authoritative over stale legacy presentation markers.
 
 ## Reproduction
 

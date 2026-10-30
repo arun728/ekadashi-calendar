@@ -85,7 +85,7 @@ public final class VratTracker {
             if let raw = store.string(forKey: Self.badgeEnvelopeKey) {
                 if let envelope = try? JSONDecoder().decode(BadgeEnvelope.self, from: Data(raw.utf8)) {
                     userAchievements = Dictionary(envelope.achievements.map { ($0.achievementId, $0) }, uniquingKeysWith: { a, _ in a })
-                    notified.formUnion(envelope.presented)
+                    notified = Set(envelope.presented)
                 } else {
                     rewardsStoreCorrupt = true
                     rewardsStorageError = true
@@ -211,6 +211,9 @@ public final class VratTracker {
         let limit = premiumAchievements() ? nil : max(0, Self.freeAchievementLimit - unlockedCount)
         let result = JourneyBadgeEvaluator.evaluate(summary: summary, current: userAchievements, newUnlockLimit: limit, now: now())
         userAchievements = result.updated
+        let earnedIDs = Set(userAchievements.values.filter(\.isUnlocked).map(\.achievementId))
+        notified.formIntersection(earnedIDs)
+        queued.formIntersection(earnedIDs)
         let pending = JourneyBadgeCatalog.all(years: Array(summary.years.keys)).filter {
             userAchievements[$0.id]?.isUnlocked == true && !notified.contains($0.id) && !queued.contains($0.id)
         }.map(\.achievement)
