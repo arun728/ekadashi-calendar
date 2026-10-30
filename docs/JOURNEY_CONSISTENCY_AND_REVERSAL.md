@@ -81,3 +81,27 @@ consistency label. Green runs and final cross-platform/device evidence follow.
 - Screenshot evidence: `/Users/kumarm/Documents/Codex/journey-consistency-evidence`.
   Physical-device updates are performed in place, never by uninstalling/resetting.
 - No dev/main changes, merges or CI runs. All work remains on PR32.
+
+
+## Re-earned celebration correction
+
+A badge relocked on deletion, but its presented/queued IDs survived. Re-earning
+therefore produced no celebration. Both trackers now intersect those marker sets
+with the currently earned badge IDs after evaluation. An earned badge retains
+its markers; a relocked badge loses them. Re-earning celebrates once again.
+A valid migrated envelope replaces legacy presentation IDs instead of unioning
+stale IDs back into it. Presentation markers remain durable across relaunches.
+
+Test-first evidence: native core and actual simulator flow failed before the fix
+(`95ff53d`); Android storage test also failed before the port (`1fbfd0a`). The
+existing lifetime-only test was updated to the new once-per-earned-period rule.
+Tests cover presented and queued awards, deletion, reload, legacy migration,
+pending awards surviving restart and duplicate suppression on repeated saves.
+
+
+Re-earned-celebration validation: **331 Swift core tests passed**, **942 Flutter
+tests passed**, analyzer and formatting clean. Native presentation tests plus the
+actual iOS delete/re-add UI flow passed. Android full emulator flow passed with
+`badge_reearned_after_delete_all`, including both Glass settings and six languages.
+The first Android UI attempt needed a test-only scroll-to-top after deleting the
+last entries; the corrected flow passed. No scoring or entitlement changes.

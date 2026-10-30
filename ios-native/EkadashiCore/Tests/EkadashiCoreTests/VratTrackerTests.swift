@@ -224,13 +224,16 @@ final class VratTrackerTests: XCTestCase {
         XCTAssertEqual(recreated.userAchievements.values.filter(\.isUnlocked).count, 7)
     }
 
-    func testUnlockDialogsAreShownOnlyOncePerBadge() throws {
+    func testUnlockDialogsRepeatAfterRelockingButNotRepeatedSaves() throws {
         let store = InMemoryKeyValueStore()
         let service = tracker(store)
         try service.load(occurrences: events())
         XCTAssertEqual(try record(service, 1, "2025-01-01", uid: events()[0].occurrenceUid, occurrences: events()).map(\.id),
                        ["first_vrat"])
         try service.delete(occurrenceId: 1, occurrences: events())
+        let reearned = try record(service, 1, "2025-01-01", uid: events()[0].occurrenceUid, occurrences: events())
+        XCTAssertEqual(reearned.map(\.id), ["first_vrat"])
+        service.markAnnouncementsPresented(reearned.map(\.id))
         XCTAssertTrue(try record(service, 1, "2025-01-01", uid: events()[0].occurrenceUid, occurrences: events()).isEmpty)
     }
 }

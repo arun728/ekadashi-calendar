@@ -145,9 +145,9 @@ class VratTrackerService extends ChangeNotifier {
             );
             _userAchievements[a.achievementId] = a;
           }
-          _notifiedAchievements.addAll(
-            (data['presented'] as List).cast<String>(),
-          );
+          _notifiedAchievements
+            ..clear()
+            ..addAll((data['presented'] as List).cast<String>());
         } else if (legacy != null) {
           for (final row in jsonDecode(legacy) as List) {
             final a = UserAchievement.fromJson(
@@ -417,6 +417,12 @@ class VratTrackerService extends ChangeNotifier {
     _userAchievements
       ..clear()
       ..addAll(result.updated);
+    final earnedIds = _userAchievements.values
+        .where((a) => a.isUnlocked)
+        .map((a) => a.achievementId)
+        .toSet();
+    _notifiedAchievements.retainAll(earnedIds);
+    _queuedAchievements.retainAll(earnedIds);
     final pending =
         JourneyBadgeCatalog.all(occurrences.map((e) => e.date.year).toList())
             .where(

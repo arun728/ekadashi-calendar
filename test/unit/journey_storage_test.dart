@@ -42,8 +42,9 @@ void main() {
             'vrat_tracker_notified_achievements',
             ['first_vrat'],
           );
-          if (presented)
+          if (presented) {
             await tracker.markAnnouncementsPresented(['first_vrat']);
+          }
           await tracker.deleteVrat(ekadashiOccurrenceId: e.id, occurrences: es);
           if (reload) {
             tracker = VratTrackerService(now: () => journeyNow);

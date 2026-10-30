@@ -302,6 +302,24 @@ void main() {
         restored.userAchievements['consistent_observance']!.isUnlocked,
         false,
       );
+      await tester.tap(find.text('Got it').first);
+      await tester.pumpAndSettle();
+      await tap('journey_tab_history');
+      for (final uid in ['01', '03']) {
+        await tap('journey_row_ekadashi:2026:$uid');
+        await tap('vrat_record_delete');
+        await tester.tap(find.text('Delete Record').last);
+        await tester.pumpAndSettle();
+      }
+      expect(tracker.recordedEntryCount, 0);
+      await tester.drag(find.byType(Scrollable).last, const Offset(0, 2400));
+      await tester.pumpAndSettle();
+      await tap('journey_row_ekadashi:2026:01');
+      await tap('vrat_record_save');
+      await ready(find.byKey(const Key('journey_celebration_close')));
+      expect(find.text('First Step'), findsWidgets);
+      await capture('badge_reearned_after_delete_all');
+      await tap('journey_celebration_close');
     },
   );
 }
