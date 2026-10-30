@@ -152,6 +152,10 @@ final class JourneyRewardsUITests: XCTestCase {
         let points = app.descendants(matching: .any)["journey_year_points"].firstMatch
         XCTAssertTrue(points.waitForExistence(timeout: 5))
         XCTAssertTrue(points.label.contains("300"), points.label)
+        XCTAssertTrue(app.staticTexts["Current consistency streak · 3"].exists)
+        app.buttons["journey_tab_statistics"].tap()
+        XCTAssertTrue(app.staticTexts["2026 Full-observance completion"].exists)
+
     }
 
 }

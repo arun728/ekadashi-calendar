@@ -64,6 +64,23 @@ final class JourneyRewardsTests: XCTestCase {
         XCTAssertTrue(reversed.updated.values.allSatisfy { !$0.isUnlocked })
     }
 
+    func testCorrectionsRelockOnlyBadgesWhoseRulesFail() {
+        let list = events(2026) + events(2027, extra: true)
+        let rows = list.map { record($0) }
+        let earned = JourneyBadgeEvaluator.evaluate(summary: summary(list, rows), current: [:], newUnlockLimit: nil, now: now).updated
+        let changed = summary(list, Array(rows.dropFirst()))
+        let result = JourneyBadgeEvaluator.evaluate(summary: changed, current: earned, newUnlockLimit: nil, now: now)
+        XCTAssertFalse(result.updated["journey_2026_q1"]!.isUnlocked)
+        XCTAssertFalse(result.updated["journey_2026_full"]!.isUnlocked)
+        XCTAssertTrue(result.updated["journey_2027_full"]!.isUnlocked)
+        XCTAssertTrue(result.updated["vrat_5"]!.isUnlocked)
+        XCTAssertTrue(result.updated["streak_24"]!.isUnlocked)
+        let partial = summary(events(2026), [record(list[0]), record(list[1], .partial), record(list[2])])
+        let mixed = JourneyBadgeEvaluator.evaluate(summary: partial, current: [:], newUnlockLimit: nil, now: now)
+        XCTAssertEqual(partial.currentStreak, 3)
+        XCTAssertFalse(mixed.updated["consistent_observance"]!.isUnlocked)
+    }
+
     func testStatusPointsAndFutureExclusion() {
         let list = events(2027)
         let s = summary(list, [record(list[0]), record(list[1], .partial), record(list[2], .missed), record(list[3], .unrecorded)])
