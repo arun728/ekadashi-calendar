@@ -215,6 +215,31 @@ Ganga Dussehra stays in the Adhika month when Jyeshtha repeats, as Drik
 keeps it (25 May 2026). Regional variants (Vishu and Pohela Boishakh can
 fall a day after Mesha Sankranti) are search aliases of the solar New Year.
 
+## Speed (October 2026)
+
+The Drik time base made each Sun and Moon position a little dearer, and the
+36 festivals added checks, so the Panchang tab first got slower than on
+`dev`. Two searches were rebuilt (BoundarySearchTests, RiseSetSearchTests
+and their Dart twins check both against the old searches and the speed-up):
+
+- Tithi, nakshatra, yoga, karana and rashi ends: the angle always grows, so
+  a probe measures its rate, one jump brackets the end and regula falsi
+  closes it to a millisecond (the angles' own resolution). About 10
+  evaluations instead of about 70 (a 10-minute scan then bisection).
+- Sunrise, sunset, moonrise and moonset: altitude changes by at most 0.3° a
+  minute, so the 5-minute scan skips ahead while the body is far from the
+  horizon. The same instants, to under a millisecond.
+
+Flutter VM, New Delhi, same machine (`dev` → this branch):
+
+| Work | dev | Branch |
+|---|---|---|
+| One Panchang day (`calculate`) | 13.4 ms | 4.3 ms |
+| A day's festivals (`observancesOn`) | 7.3 ms | 2.7 ms |
+| A year of festivals (finder, key days) | 3.1 s | 1.1 s |
+| A year of Smarta fasts | 593 ms | 258 ms |
+| A year of Vaishnava fasts | 598 ms | 18 ms |
+
 ## Smarta and Vaishnava (Gaudiya/ISKCON) Ekadashi
 
 Both traditions were measured with the same harness, before and after,

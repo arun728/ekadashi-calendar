@@ -178,45 +178,93 @@ public struct PanchangEngine: Sendable {
 
     public func tithiStart(_ instant: Date) -> Date { previousBoundary(instant, 12, elongation) }
 
+    /// The start of the limb (of [width] degrees) current at [instant]: the
+    /// first moment at which the angle is back in this limb.
     func previousBoundary(_ instant: Date, _ width: Double, _ angleAt: (Date) -> Double) -> Date {
-        let index = Int(floor(angleAt(instant) / width))
-        var right = instant
-        for i in 1...48 {
-            var left = instant.adding(-Double(i) * 3600)
-            if Int(floor(angleAt(left) / width)) == index { continue }
-            for _ in 0..<24 {
-                let middle = left.adding(truncatedMicroseconds(right.timeIntervalSince(left), dividedBy: 2))
-                if Int(floor(angleAt(middle) / width)) == index { right = middle } else { left = middle }
-            }
-            return right
-        }
-        // Unreachable for the Moon and Sun (every limb is shorter than 48 hours).
-        return instant.adding(-48 * 3600)
+        let angle = angleAt(instant)
+        let elapsed = angle - floor(angle / width) * width
+        // Degrees since the boundary, going back: positive inside the limb.
+        let inside: (Date) -> Double = { elapsed - AstronomyCalculator.normalize(angle - angleAt($0)) }
+        return Self.firstAtOrAfter(from: instant, value: elapsed, direction: -1, limit: 48 * 3600, inside)
+            ?? instant.adding(-48 * 3600)
     }
 
+    /// The end of the limb current at [start] (angle [startAngle]), searched
+    /// up to 40 hours ahead (35 days for 30° signs).
     func nextBoundary(_ start: Date, _ startAngle: Double, _ width: Double, _ angleAt: (Date) -> Double) -> Date? {
-        let startIndex = floor(startAngle / width)
-        let remainder = startAngle - startIndex * width
-        let distance = width - remainder
-        let limit = start.adding(Double(width >= 30 ? 35 * 24 : 40) * 3600)
-        let step = 600.0
-        var low = start
-        var high: Date?
-        var probe = start.adding(step)
-        while probe <= limit {
-            if AstronomyCalculator.normalize(angleAt(probe) - startAngle) >= distance {
-                high = probe
+        let distance = width - (startAngle - floor(startAngle / width) * width)
+        let progress: (Date) -> Double = { AstronomyCalculator.normalize(angleAt($0) - startAngle) - distance }
+        return Self.firstAtOrAfter(from: start, value: -distance, direction: 1,
+                                   limit: Double(width >= 30 ? 35 * 24 : 40) * 3600, progress)
+    }
+
+    /// The first instant, to a millisecond (the angles' own resolution), at
+    /// which a monotonic angle [f] reaches zero, searching from [from]
+    /// ([value] = f there) in [direction] (1 forward, -1 back, where f grows
+    /// going back). A 10-minute probe measures the rate and a jump lands just
+    /// past the crossing; regula falsi (Illinois) then closes the bracket, and
+    /// a near-exact hit is confirmed one millisecond away. Returns the side
+    /// where f >= 0 going forward, as the old 10-minute scan with bisection
+    /// did, in about a tenth of the evaluations.
+    static func firstAtOrAfter(from: Date, value: Double, direction: Double, limit: TimeInterval,
+                               _ f: (Date) -> Double) -> Date? {
+        let tolerance = 0.001
+        if value >= 0 && direction > 0 { return from }
+        // Bracket: [near] on the starting side, [far] across the crossing.
+        var near = from, nearValue = value
+        var step = 600.0
+        var far: Date?, farValue = 0.0
+        while abs(near.timeIntervalSince(from)) < limit {
+            step = min(step, limit - abs(near.timeIntervalSince(from)))
+            let probe = near.adding(direction * step)
+            let probeValue = f(probe)
+            if direction > 0 ? probeValue >= 0 : probeValue < 0 {
+                far = probe
+                farValue = probeValue
                 break
             }
-            low = probe
-            probe = probe.adding(step)
+            // Aim just past the crossing at the rate measured so far.
+            let rate = abs(probeValue - nearValue) / step
+            near = probe
+            nearValue = probeValue
+            let remaining = abs(probeValue)
+            step = rate > 0 ? min(max(remaining / rate * 1.02 + 120, 60), 30 * 3600) : 3600
         }
-        guard var right = high else { return nil }
-        for _ in 0..<22 {
-            let middle = low.adding(truncatedMicroseconds(right.timeIntervalSince(low), dividedBy: 2))
-            if AstronomyCalculator.normalize(angleAt(middle) - startAngle) >= distance { right = middle } else { low = middle }
+        guard let farEnd = far else { return nil }
+        // [low] before the crossing (f < 0), [high] at or after it (f >= 0), in time order.
+        var (low, lowValue, high, highValue) = direction > 0
+            ? (near, nearValue, farEnd, farValue) : (farEnd, farValue, near, nearValue)
+        var side = 0
+        for _ in 0..<60 {
+            let span = high.timeIntervalSince(low)
+            if span <= tolerance { break }
+            let slope = (highValue - lowValue) / span
+            var t = span * (-lowValue) / (highValue - lowValue)
+            if !(t > 0 && t < span) { t = span / 2 }
+            let middle = low.adding(t)
+            let middleValue = f(middle)
+            if middleValue >= 0 {
+                high = middle
+                highValue = middleValue
+                if side == 1 { lowValue /= 2 }
+                side = 1
+                // A hit within half a millisecond: confirm just before it.
+                if middleValue / slope < tolerance / 2, middle.adding(-tolerance) > low {
+                    let probe = middle.adding(-tolerance), probeValue = f(probe)
+                    if probeValue < 0 { low = probe; lowValue = probeValue } else { high = probe; highValue = probeValue }
+                }
+            } else {
+                low = middle
+                lowValue = middleValue
+                if side == -1 { highValue /= 2 }
+                side = -1
+                if -middleValue / slope < tolerance / 2, middle.adding(tolerance) < high {
+                    let probe = middle.adding(tolerance), probeValue = f(probe)
+                    if probeValue >= 0 { high = probe; highValue = probeValue } else { low = probe; lowValue = probeValue }
+                }
+            }
         }
-        return right
+        return high
     }
 
     func elongation(_ instant: Date) -> Double {
@@ -287,9 +335,12 @@ public struct PanchangEngine: Sendable {
             return moon ? altitude
                 : altitude + AstronomyCalculator.horizonRefraction + AstronomyCalculator.semidiameterDegrees(instant, moon: false)
         }
+        // Altitude changes by at most 0.3° a minute, so where the body is far
+        // from the horizon the scan can skip ahead without missing a crossing.
+        func next(_ instant: Date, _ value: Double) -> Date { instant.adding(max(step, abs(value) / 0.005)) }
         var low = start
         var lowValue = difference(low)
-        var high = start.adding(step)
+        var high = next(start, lowValue)
         // The last step stops at the end, so an event just before it (a moonset
         // minutes before the next sunrise) is found too.
         while low < end {
@@ -308,7 +359,7 @@ public struct PanchangEngine: Sendable {
             }
             low = high
             lowValue = highValue
-            high = high.adding(step)
+            high = next(high, highValue)
         }
         return nil
     }
