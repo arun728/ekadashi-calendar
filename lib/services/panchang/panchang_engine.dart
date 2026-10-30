@@ -511,27 +511,126 @@ class PanchangEngine {
   PanchangLimb nakshatraAt(DateTime utc) => _nakshatraAt(utc.toUtc());
   DateTime tithiStart(DateTime utc) => _previousBoundary(utc, 12, _elongation);
 
+  /// The start of the limb (of [width] degrees) current at [utc]: the first
+  /// moment at which the angle is back in this limb.
   DateTime _previousBoundary(
     DateTime utc,
     double width,
     double Function(DateTime) angleAt,
   ) {
-    final index = (angleAt(utc) / width).floor();
-    var right = utc;
-    for (var i = 1; i <= 48; i++) {
-      var left = utc.subtract(Duration(hours: i));
-      if ((angleAt(left) / width).floor() == index) continue;
-      for (var k = 0; k < 24; k++) {
-        final middle = left.add(right.difference(left) ~/ 2);
-        if ((angleAt(middle) / width).floor() == index) {
-          right = middle;
-        } else {
-          left = middle;
+    final angle = angleAt(utc);
+    final elapsed = angle - (angle / width).floor() * width;
+    // Degrees since the boundary, going back: positive inside the limb.
+    double inside(DateTime t) =>
+        elapsed - AstronomyCalculator.normalize(angle - angleAt(t));
+    return firstAtOrAfter(
+          from: utc,
+          value: elapsed,
+          direction: -1,
+          limit: const Duration(hours: 48),
+          f: inside,
+        ) ??
+        utc.subtract(const Duration(hours: 48));
+  }
+
+  /// The first instant, to a millisecond (the angles' own resolution), at
+  /// which a monotonic angle [f] reaches zero, searching from [from] ([value]
+  /// = f there) in [direction] (1 forward, -1 back, where f grows going
+  /// back). A 10-minute probe measures the rate and a jump lands just past
+  /// the crossing; regula falsi (Illinois) then closes the bracket, and a
+  /// near-exact hit is confirmed one millisecond away. Returns the side where
+  /// f >= 0 going forward, as the old 10-minute scan with bisection did, in
+  /// about a tenth of the evaluations (PanchangEngine.firstAtOrAfter in
+  /// Swift).
+  static DateTime? firstAtOrAfter({
+    required DateTime from,
+    required double value,
+    required int direction,
+    required Duration limit,
+    required double Function(DateTime) f,
+  }) {
+    const tolerance = 1000; // microseconds
+    if (value >= 0 && direction > 0) return from;
+    DateTime shift(DateTime t, double seconds) =>
+        t.add(Duration(microseconds: (seconds * 1e6).round()));
+    double seconds(DateTime a, DateTime b) =>
+        a.difference(b).inMicroseconds / 1e6;
+    final limitSeconds = limit.inMicroseconds / 1e6;
+    // Bracket: [near] on the starting side, [far] across the crossing.
+    var near = from, nearValue = value;
+    var step = 600.0;
+    DateTime? far;
+    var farValue = 0.0;
+    while (seconds(near, from).abs() < limitSeconds) {
+      step = step < limitSeconds - seconds(near, from).abs()
+          ? step
+          : limitSeconds - seconds(near, from).abs();
+      final probe = shift(near, direction * step);
+      final probeValue = f(probe);
+      if (direction > 0 ? probeValue >= 0 : probeValue < 0) {
+        far = probe;
+        farValue = probeValue;
+        break;
+      }
+      // Aim just past the crossing at the rate measured so far.
+      final rate = (probeValue - nearValue).abs() / step;
+      near = probe;
+      nearValue = probeValue;
+      step = rate > 0
+          ? (probeValue.abs() / rate * 1.02 + 120).clamp(60, 30 * 3600)
+          : 3600;
+    }
+    if (far == null) return null;
+    // [low] before the crossing (f < 0), [high] at or after it, in time order.
+    var low = direction > 0 ? near : far;
+    var lowValue = direction > 0 ? nearValue : farValue;
+    var high = direction > 0 ? far : near;
+    var highValue = direction > 0 ? farValue : nearValue;
+    var side = 0;
+    for (var i = 0; i < 60; i++) {
+      final span = high.difference(low).inMicroseconds;
+      if (span <= tolerance) break;
+      final slope = (highValue - lowValue) / (span / 1e6);
+      var t = span / 1e6 * (-lowValue) / (highValue - lowValue);
+      if (!(t > 0 && t < span / 1e6)) t = span / 2e6;
+      final middle = shift(low, t);
+      final middleValue = f(middle);
+      if (middleValue >= 0) {
+        high = middle;
+        highValue = middleValue;
+        if (side == 1) lowValue /= 2;
+        side = 1;
+        // A hit within half a millisecond: confirm just before it.
+        final probe = middle.subtract(const Duration(microseconds: tolerance));
+        if (middleValue / slope < tolerance / 2e6 && probe.isAfter(low)) {
+          final probeValue = f(probe);
+          if (probeValue < 0) {
+            low = probe;
+            lowValue = probeValue;
+          } else {
+            high = probe;
+            highValue = probeValue;
+          }
+        }
+      } else {
+        low = middle;
+        lowValue = middleValue;
+        if (side == -1) highValue /= 2;
+        side = -1;
+        final probe = middle.add(const Duration(microseconds: tolerance));
+        if (-middleValue / slope < tolerance / 2e6 && probe.isBefore(high)) {
+          final probeValue = f(probe);
+          if (probeValue >= 0) {
+            high = probe;
+            highValue = probeValue;
+          } else {
+            low = probe;
+            lowValue = probeValue;
+          }
         }
       }
-      return right;
     }
-    throw StateError('Unable to bracket angular boundary');
+    return high;
   }
 
   String _anandadi(DateTime instant, int weekday) {
@@ -891,53 +990,57 @@ class PanchangEngine {
     );
   }
 
+  /// The end of the limb current at [start] (angle [startAngle]), searched
+  /// up to 40 hours ahead (35 days for 30° signs).
   DateTime? _nextBoundary(
     DateTime start,
     double startAngle,
     double width,
     double Function(DateTime) angleAt,
   ) {
-    final startIndex = (startAngle / width).floor();
-    final remainder = startAngle - startIndex * width;
-    final distance = width - remainder;
-    final limit = start.add(Duration(hours: width >= 30 ? 35 * 24 : 40));
-    const step = Duration(minutes: 10);
-    var low = start;
-    DateTime? high;
-    for (
-      var probe = start.add(step);
-      !probe.isAfter(limit);
-      probe = probe.add(step)
-    ) {
-      final progress = AstronomyCalculator.normalize(
-        angleAt(probe) - startAngle,
-      );
-      if (progress >= distance) {
-        high = probe;
-        break;
-      }
-      low = probe;
-    }
-    if (high == null) return null;
-    var right = high;
-    for (var i = 0; i < 22; i++) {
-      final middle = low.add(right.difference(low) ~/ 2);
-      final progress = AstronomyCalculator.normalize(
-        angleAt(middle) - startAngle,
-      );
-      if (progress >= distance) {
-        right = middle;
-      } else {
-        low = middle;
-      }
-    }
-    return right;
+    final distance =
+        width - (startAngle - (startAngle / width).floor() * width);
+    return firstAtOrAfter(
+      from: start,
+      value: -distance,
+      direction: 1,
+      limit: Duration(hours: width >= 30 ? 35 * 24 : 40),
+      f: (t) =>
+          AstronomyCalculator.normalize(angleAt(t) - startAngle) - distance,
+    );
   }
 
   double _elongation(DateTime utc) => AstronomyCalculator.normalize(
     AstronomyCalculator.drikMoonLongitude(utc) -
         AstronomyCalculator.drikSunLongitude(utc),
   );
+
+  /// Sunrise, sunset, moonrise or moonset between [start] and [end], for
+  /// RiseSetSearch tests.
+  DateTime? findCrossing(
+    DateTime start,
+    DateTime end,
+    PanchangCity city, {
+    required bool moon,
+    required bool rising,
+  }) => _findCrossing(start, end, city, moon: moon, rising: rising);
+
+  /// The angles and boundary searches, for BoundarySearch tests.
+  double elongation(DateTime utc) => _elongation(utc);
+  double siderealSun(DateTime utc) => _siderealSun(utc);
+  double siderealMoon(DateTime utc) => _siderealMoon(utc);
+  double yogaAngle(DateTime utc) => _yogaAngle(utc);
+  DateTime? nextBoundary(
+    DateTime start,
+    double startAngle,
+    double width,
+    double Function(DateTime) angleAt,
+  ) => _nextBoundary(start, startAngle, width, angleAt);
+  DateTime previousBoundary(
+    DateTime utc,
+    double width,
+    double Function(DateTime) angleAt,
+  ) => _previousBoundary(utc, width, angleAt);
 
   double _siderealSun(DateTime utc) => AstronomyCalculator.normalize(
     AstronomyCalculator.drikSunLongitude(utc) -
@@ -1033,11 +1136,22 @@ class PanchangEngine {
                 AstronomyCalculator.semidiameterDegrees(instant, moon: false);
     }
 
+    // Altitude changes by at most 0.3° a minute, so where the body is far
+    // from the horizon the scan can skip ahead without missing a crossing.
+    DateTime ahead(DateTime instant, double value) {
+      final skip = Duration(microseconds: (value.abs() / 0.005 * 1e6).round());
+      return instant.add(skip > step ? skip : step);
+    }
+
     var low = start;
     var lowValue = difference(low);
     // The last step stops at the end, so an event just before it (a moonset
     // minutes before the next sunrise) is found too.
-    for (var next = start.add(step); low.isBefore(end); next = next.add(step)) {
+    for (
+      var next = ahead(start, lowValue);
+      low.isBefore(end);
+      next = ahead(next, lowValue)
+    ) {
       final high = next.isAfter(end) ? end : next;
       final highValue = difference(high);
       final crossed = rising
