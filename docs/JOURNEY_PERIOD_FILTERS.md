@@ -7,10 +7,11 @@ the session limit and scopes displayed Overview/Statistics progress.
   year's canonical occurrences. A future year therefore has no earned progress.
 - Annual capacities remain visible (2027: 25 occurrences, 4,100 maximum points).
   Lifetime Points always uses the original all-history summary.
-- All years consolidates 2026 through the calculation's Home-zone current day.
-  Future years are excluded; completion totals use eligible occurrences through
-  today. Annual cards retain full-year targets and appear newest year first.
-- January rollover shows 2027 above 2026. A single-year streak does not carry
+- All years includes every supported calendar from 2026, including future years.
+  Completion uses complete-calendar capacity: 24 + 25 = 49 for 2026/2027.
+  Only eligible records earn progress; future occurrences remain unrecorded.
+  The current year's card appears first, then other years in descending order.
+- In 2026 the cards show 2026 then 2027; January rollover shows 2027 above 2026. A single-year streak does not carry
   another year's run; All years retains cross-year consistency where continuous.
 - Next milestone is selected using the scoped progress and applicable existing
   earned state. No persisted award state, history or premium limits are changed.
@@ -41,3 +42,19 @@ Final local validation:
 - Signed iPhone Debug build succeeded. Physical installation preserves app data.
 
 No CI was triggered and neither dev nor main was changed.
+
+## Correction and calculation audit — 31 October 2026
+
+The previous elapsed-only All-years denominator and exclusion of future-year
+cards were incorrect. The regression test now explicitly checks 20 observed
+out of 49 = 40.8163265%, displayed as 41%, with 29 unrecorded. Empty history is
+0/49; perfect completed history is 49/49. Partial and missed records do not
+increase full-observance completion. Counts always partition total capacity.
+Overview and Statistics consume the same summary calculation rather than
+maintaining separate denominator arithmetic.
+
+Audit scope includes Record's year/status filters and future recording guard,
+annual versus lifetime points, partial consistency versus strict badge streaks,
+quarter/annual bonuses, duplicate identity handling, edited/deleted records,
+badge revocation and repeat celebrations, and share-card annual values.
+Existing dedicated tests cover these rules alongside the new capacity tests.

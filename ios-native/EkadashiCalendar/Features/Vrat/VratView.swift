@@ -181,11 +181,8 @@ struct VratView: View {
     private var periodStats: (totalOccurrences: Int, observedCount: Int, partialCount: Int,
                               missedCount: Int, unrecordedCount: Int, completionPercentage: Double) {
         let summary = periodJourney
-        let segments = allYears ? summary.eligibleSegments : summary.segments
-        let total = segments.count, observed = summary.observedCount, partial = summary.partialCount
-        let missed = summary.eligibleSegments.filter { $0.status == .missed }.count
-        return (total, observed, partial, missed, max(0, total - observed - partial - missed),
-                total == 0 ? 0 : Double(observed) / Double(total) * 100)
+        return (summary.totalOccurrences, summary.observedCount, summary.partialCount,
+                summary.missedCount, summary.unrecordedCount, summary.completionPercentage)
     }
 
     private func filterChip(_ status: ObservanceStatus?, _ key: String) -> some View {

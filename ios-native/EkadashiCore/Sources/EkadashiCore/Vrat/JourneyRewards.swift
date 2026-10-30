@@ -45,11 +45,24 @@ public struct JourneySummary: Sendable {
 
     public var segments: [JourneySegment] { years.keys.sorted().flatMap { years[$0]!.segments } }
     public var eligibleSegments: [JourneySegment] { segments.filter { !$0.isFuture } }
-    public var visibleYears: [Int] { years.keys.filter { $0 >= 2026 && $0 <= asOf.year }.sorted(by: >) }
+    /// Current year first, followed by the other supported calendars (including future years).
+    public var visibleYears: [Int] {
+        years.keys.filter { $0 >= 2026 }.sorted {
+            if $0 == asOf.year { return true }
+            if $1 == asOf.year { return false }
+            return $0 > $1
+        }
+    }
+    public var totalOccurrences: Int { segments.count }
+    public var missedCount: Int { eligibleSegments.filter { $0.status == .missed }.count }
+    public var unrecordedCount: Int { max(0, totalOccurrences - observedCount - partialCount - missedCount) }
+    public var completionPercentage: Double {
+        totalOccurrences == 0 ? 0 : Double(observedCount) / Double(totalOccurrences) * 100
+    }
 
     /// Presentation-only scope. Persisted awards and lifetime points use the original summary.
     public func scoped(toYear year: Int?) -> JourneySummary {
-        let selected = years.filter { key, _ in year.map { key == $0 } ?? (key >= 2026 && key <= asOf.year) }
+        let selected = years.filter { key, _ in year.map { key == $0 } ?? (key >= 2026) }
         let ordered = selected.keys.sorted().flatMap { selected[$0]!.segments }
         let eligible = ordered.filter { !$0.isFuture }
         let observed = eligible.filter { $0.status == .observed }.count

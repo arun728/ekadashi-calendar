@@ -174,6 +174,22 @@ final class JourneyRewardsUITests: XCTestCase {
         XCTAssertEqual(app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'journey_row_' ")).count, 0)
     }
 
+    func testAllYearsIncludesBothCalendarsAndFullCapacity() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-ui-testing"]
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 40))
+        app.tabBars.buttons.element(boundBy: 2).tap()
+        app.buttons["journey_overview_year"].tap()
+        app.buttons["All years"].firstMatch.tap()
+        let futureChapter = app.descendants(matching: .any)["journey_quarter_2027_1"].firstMatch
+        for _ in 0..<12 where !futureChapter.isHittable { app.swipeUp() }
+        XCTAssertTrue(futureChapter.exists, "All years must include the future 2027 calendar")
+        app.buttons["journey_tab_statistics"].tap()
+        XCTAssertTrue(app.staticTexts["0 of 49 Ekadashis"].exists)
+        XCTAssertTrue(app.staticTexts["0%"].exists)
+    }
+
     func testAnnualSharePreviewIsUserInitiated() {
         let app = XCUIApplication()
         app.launchArguments = ["-ui-testing"]
