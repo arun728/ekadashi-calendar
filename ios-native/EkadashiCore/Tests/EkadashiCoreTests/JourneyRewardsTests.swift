@@ -113,6 +113,33 @@ final class JourneyRewardsTests: XCTestCase {
         XCTAssertTrue(result.newlyUnlocked.isEmpty)
     }
 
+    func testRelockedBadgeCanCelebrateAgainWithOrWithoutReload() throws {
+        for presented in [false, true] {
+            for reload in [false, true] {
+                let list = events(2026), e = list[0], store = InMemoryKeyValueStore(["vrat_tracker_notified_achievements": ["first_vrat"]])
+                var tracker = VratTracker(store: store, premiumAchievements: { true }, now: { self.now })
+                try tracker.load(occurrences: list)
+                func save() throws -> [Achievement] {
+                    try tracker.record(occurrenceId: e.id, occurrenceUid: e.occurrenceUid, date: e.date.iso,
+                                       name: e.name, status: .observed, occurrences: list)
+                }
+                XCTAssertEqual(try save().map(\.id), ["first_vrat"])
+                if presented { tracker.markAnnouncementsPresented(["first_vrat"]) }
+                try tracker.delete(occurrenceId: e.id, occurrences: list)
+                if reload {
+                    tracker = VratTracker(store: store, premiumAchievements: { true }, now: { self.now })
+                    try tracker.load(occurrences: list)
+                }
+                XCTAssertEqual(try save().map(\.id), ["first_vrat"], "presented=\(presented), reload=\(reload)")
+                let pending = VratTracker(store: store, premiumAchievements: { true }, now: { self.now })
+                try pending.load(occurrences: list)
+                XCTAssertEqual(try pending.refreshAchievements(list).map(\.id), ["first_vrat"])
+                tracker.markAnnouncementsPresented(["first_vrat"])
+                XCTAssertTrue(try save().isEmpty)
+            }
+        }
+    }
+
     func testStatusPointsAndFutureExclusion() {
         let list = events(2027)
         let s = summary(list, [record(list[0]), record(list[1], .partial), record(list[2], .missed), record(list[3], .unrecorded)])

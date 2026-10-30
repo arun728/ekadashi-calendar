@@ -100,6 +100,28 @@ final class JourneyRewardsUITests: XCTestCase {
         premium.tap()
         XCTAssertTrue(app.buttons["premium_close"].waitForExistence(timeout: 10))
     }
+    func testBadgeCelebratesAgainAfterDeletingAllRecords() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-ui-testing"]
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 40))
+        app.tabBars.buttons.element(boundBy: 2).tap()
+        app.buttons["journey_tab_history"].tap()
+        for cycle in 0..<2 {
+            app.buttons["journey_row_ekadashi:2026:01"].tap()
+            app.buttons["vrat_record_save"].tap()
+            let close = app.buttons["journey_celebration_close"]
+            XCTAssertTrue(close.waitForExistence(timeout: 10), "Cycle \(cycle) must celebrate")
+            capture(app, "journey-reearned-badge-\(cycle)")
+            close.tap()
+            if cycle == 0 {
+                app.buttons["journey_row_ekadashi:2026:01"].tap()
+                app.buttons["Delete Record"].tap()
+                app.alerts.buttons["Delete Record"].tap()
+            }
+        }
+    }
+
     func testAnnualSharePreviewIsUserInitiated() {
         let app = XCUIApplication()
         app.launchArguments = ["-ui-testing"]
