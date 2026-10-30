@@ -262,3 +262,32 @@ merge, backend, financial reward or later roadmap phase is included.
   `outputs/premium-journey/android-*`; PNGs under
   `build/ui-screenshots/android/journey_*.png`. Store billing is unchanged;
   emulator tests do not claim a real Google Play purchase or physical haptic.
+
+
+### Journey feedback implementation (30 October 2026)
+
+- iOS first (`aadd601`), then matching Android work on PR #25. Overview uses
+  the share card's dark teal gradient and a primary Share your year action.
+  The exported card keeps a rounded inner surface over an opaque green matte;
+  all four corners are tested so receivers cannot replace transparency with white.
+- All four Journey subtabs share the year selection, defaulting to the current
+  available year. All years combines History and Statistics and shows each
+  annual Overview collection separately. Achievements shows the selected year's
+  annual badges alongside lifetime milestones, or every year when All years
+  is selected. History's year control resists compression; Statistics drops Year:.
+- Observed, Partial and Missed remain on one row with compact scaling labels.
+  Observed enables Full Fast, Water Only and Fruits/Milk; Partial enables only
+  One Meal. Incompatible choices reset when status changes. Disabled methods
+  stay visible and grey. Missed behavior and premium limits are preserved.
+- TDD evidence: `d426294` adds the iOS policy/year tests; the native export
+  pixel test fails on transparent corners before the opaque matte fix.
+  `fa66724` adds Android parity tests before implementation, including all six
+  languages at 320px and 1.4x text size. The focused Android run passes 26 tests.
+- Local regression checks: 275 Swift core tests and 765 Flutter tests pass;
+  all 13 native app tests and all five Journey UI flows pass, including the
+  strengthened year/method test. Analyzer and generated-file checks are clean.
+  The final Pixel 9a emulator flow passes, capturing 23 refreshed Android
+  screenshots; iOS feedback screenshots and the opaque export are saved too.
+- No merge from dev or conflict resolution was attempted. Each conflict still
+  requires Arun's review and approval; dev wins outside Journey, while shared
+  and Journey sections require individual decisions.

@@ -46,6 +46,7 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
   final _pages = PageController();
   var _section = _JourneySection.overview;
   int _selectedYear = DateTime.now().year;
+  bool _allYears = false;
   ObservanceStatus? _historyStatusFilter;
 
   @override
@@ -149,6 +150,26 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
     return availableYears.first;
   }
 
+  String _yearTitle(LanguageService lang, int year) =>
+      _allYears ? lang.translate('search_all_years') : '$year';
+
+  VratYearStats _periodStats(VratTrackerService tracker, int year) {
+    final values = (_allYears ? _years(tracker) : [year]).map(
+      (y) => tracker.getAnnualStats(year: y, occurrences: widget.ekadashiList),
+    );
+    final total = values.fold(0, (sum, s) => sum + s.totalOccurrences);
+    final observed = values.fold(0, (sum, s) => sum + s.observedCount);
+    return VratYearStats(
+      year: year,
+      totalOccurrences: total,
+      observedCount: observed,
+      partialCount: values.fold(0, (sum, s) => sum + s.partialCount),
+      missedCount: values.fold(0, (sum, s) => sum + s.missedCount),
+      unrecordedCount: values.fold(0, (sum, s) => sum + s.unrecordedCount),
+      completionPercentage: total == 0 ? 0 : observed / total * 100,
+    );
+  }
+
   TextStyle _secondary(double size) =>
       TextStyle(fontSize: size, color: IosColors.secondary(context));
 
@@ -161,10 +182,7 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
     final currentStreak = summary.currentStreak;
     final longestStreak = summary.longestStreak;
     final selectedYear = _coherentSelectedYear(_years(tracker));
-    final yearStats = tracker.getAnnualStats(
-      year: selectedYear,
-      occurrences: widget.ekadashiList,
-    );
+    final yearStats = _periodStats(tracker, selectedYear);
     final totalObserved = tracker
         .getAllRecords()
         .where((h) => h.status == ObservanceStatus.observed)
@@ -194,8 +212,11 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
           ),
         ),
         const SizedBox(height: 12),
-        JourneyOverviewPanel(summary: summary, year: selectedYear),
-        const SizedBox(height: 12),
+        for (final year
+            in _allYears ? (_years(tracker)..sort()) : [selectedYear]) ...[
+          JourneyOverviewPanel(summary: summary, year: year),
+          const SizedBox(height: 12),
+        ],
         _pair(
           key: const Key('journey_overview_streaks'),
           _MetricCard(
@@ -219,7 +240,8 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
         _pair(
           _MetricCard(
             panelKey: const Key('journey_metric_annual_completion'),
-            title: '$selectedYear ${lang.translate('annual_completion')}',
+            title:
+                '${_yearTitle(lang, selectedYear)} ${lang.translate('annual_completion')}',
             value: '${yearStats.completionPercentage.round()}%',
             subtitle:
                 '${yearStats.observedCount} / ${yearStats.totalOccurrences}',
@@ -361,7 +383,7 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
     final availableYears = _years(tracker);
     final selectedYear = _coherentSelectedYear(availableYears);
     final filtered = widget.ekadashiList.where((e) {
-      if (e.date.year != selectedYear) return false;
+      if (!_allYears && e.date.year != selectedYear) return false;
       if (_historyStatusFilter == null) return true;
       final status =
           tracker.getRecordByUid(e.occurrenceUid)?.status ??
@@ -446,8 +468,17 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
         key: key,
         tooltip: '',
         position: PopupMenuPosition.under,
-        onSelected: (y) => setState(() => _selectedYear = y),
+        onSelected: (y) => setState(() {
+          _allYears = y == 0;
+          if (y != 0) _selectedYear = y;
+        }),
         itemBuilder: (_) => [
+          PopupMenuItem(
+            value: 0,
+            child: Text(
+              context.read<LanguageService>().translate('search_all_years'),
+            ),
+          ),
           for (final y in years) PopupMenuItem(value: y, child: Text('$y')),
         ],
         child: GlassPanel(
@@ -460,7 +491,7 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
             children: [
               const Icon(AppIcons.journeyYear, size: 15, color: teal),
               Text(
-                '$selected',
+                _yearTitle(context.read<LanguageService>(), selected),
                 style: const TextStyle(
                   fontSize: IosText.subheadline,
                   fontWeight: FontWeight.w600,
@@ -616,10 +647,7 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
   Widget _buildStatisticsTab(LanguageService lang, VratTrackerService tracker) {
     final availableYears = _years(tracker);
     final selectedYear = _coherentSelectedYear(availableYears);
-    final stats = tracker.getAnnualStats(
-      year: selectedYear,
-      occurrences: widget.ekadashiList,
-    );
+    final stats = _periodStats(tracker, selectedYear);
     final summary = tracker.journey(
       widget.ekadashiList,
       timezone: widget.currentTimezone,
@@ -694,9 +722,7 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
       children: [
         Row(
           children: [
-            Expanded(
-              child: Text('${lang.translate('year')}:', style: headline),
-            ),
+            const Spacer(),
             _yearMenu(
               const Key('journey_stats_year_menu'),
               availableYears,
@@ -712,7 +738,7 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
             spacing: 12,
             children: [
               Text(
-                '$selectedYear ${lang.translate('annual_completion')}',
+                '${_yearTitle(lang, selectedYear)} ${lang.translate('annual_completion')}',
                 textAlign: TextAlign.center,
                 style: headline,
               ),
@@ -793,11 +819,32 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
     LanguageService lang,
     VratTrackerService tracker,
   ) {
-    return JourneyBadgeCollection(
-      summary: tracker.journey(
-        widget.ekadashiList,
-        timezone: widget.currentTimezone,
-      ),
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: _yearMenu(
+              const Key('journey_achievements_year'),
+              _years(tracker),
+              _coherentSelectedYear(_years(tracker)),
+            ),
+          ),
+        ),
+        Expanded(
+          child: JourneyBadgeCollection(
+            selectedYear: _allYears
+                ? null
+                : _coherentSelectedYear(_years(tracker)),
+            years: _years(tracker),
+            summary: tracker.journey(
+              widget.ekadashiList,
+              timezone: widget.currentTimezone,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

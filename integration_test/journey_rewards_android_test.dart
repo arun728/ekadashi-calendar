@@ -7,6 +7,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ekadashi_calendar/main.dart' as app;
 import 'package:ekadashi_calendar/services/language_service.dart';
 import 'package:ekadashi_calendar/l10n/app_language.dart';
+import 'package:ekadashi_calendar/widgets/ios_style.dart';
+import 'package:ekadashi_calendar/models/vrat_tracker_models.dart';
 import 'package:ekadashi_calendar/services/vrat_tracker_service.dart';
 import 'package:ekadashi_calendar/screens/settings_screen.dart';
 
@@ -83,6 +85,14 @@ void main() {
       await tester.pump();
       await tap('journey_tab_history');
       await tap('journey_row_ekadashi:2026:01');
+      for (final method in ['oneMeal', 'other']) {
+        expect(
+          tester
+              .widget<GlassChip>(find.byKey(Key('vrat_method_$method')))
+              .onTap,
+          isNull,
+        );
+      }
       await capture('04_record_observance');
       await tap('vrat_record_save');
       await ready(find.byKey(const Key('journey_celebration_close')));
@@ -90,6 +100,21 @@ void main() {
       await tap('journey_celebration_close');
       await tap('journey_row_ekadashi:2026:02');
       await tap('vrat_status_partial');
+      expect(
+        tester
+            .widget<GlassChip>(find.byKey(const Key('vrat_method_oneMeal')))
+            .selected,
+        true,
+      );
+      for (final method in ['fullFast', 'waterOnly', 'fruitsMilk', 'other']) {
+        expect(
+          tester
+              .widget<GlassChip>(find.byKey(Key('vrat_method_$method')))
+              .onTap,
+          isNull,
+        );
+      }
+      await capture('04b_partial_methods');
       await tap('vrat_record_save');
       await tap('journey_row_ekadashi:2026:03');
       await tap('vrat_status_missed');
@@ -104,6 +129,10 @@ void main() {
       final context = tester.element(find.byType(app.MainScreen));
       final tracker = context.read<VratTrackerService>();
       expect(tracker.recordedEntryCount, 3);
+      expect(
+        tracker.getRecordByUid('ekadashi:2026:02')!.fastingMethod,
+        FastingMethod.oneMeal,
+      );
       expect(tracker.getRecordByUid('ekadashi:2026:04'), isNull);
       await tap('journey_tab_statistics');
       await capture('05_statistics');
@@ -127,8 +156,27 @@ void main() {
       await capture('07_consistency');
       await tap('journey_badge_filter_encouragement');
       await capture('08_encouragement');
+      await tap('journey_achievements_year');
+      await tester.tap(find.text('2027').last);
+      await tester.pumpAndSettle();
       await tap('journey_badge_filter_annual');
+      expect(
+        find.byKey(const Key('journey_badge_journey_2027_q1')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const Key('journey_badge_journey_2026_q1')),
+        findsNothing,
+      );
       await capture('08b_annual_badges');
+      await tap('journey_achievements_year');
+      await tester.tap(find.text('All years').last);
+      await tester.pumpAndSettle();
+      await capture('08c_all_years');
+      await tap('journey_tab_statistics');
+      expect(find.text('Year:'), findsNothing);
+      expect(find.text('1 of 49 Ekadashis'), findsOneWidget);
+      await capture('05b_statistics_all_years');
       await tap('journey_tab_overview');
       await scrollTo(find.byKey(const Key('journey_overview_year')));
       await tap('journey_overview_year');

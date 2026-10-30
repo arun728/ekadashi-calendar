@@ -231,6 +231,8 @@ class JourneyBadgeDefinition {
   final JourneyRule rule;
   final JourneyArt art;
   final int? year, quarter;
+  bool isVisibleInYear(int? selectedYear) =>
+      selectedYear == null || year == null || year == selectedYear;
   String get id => achievement.id;
   int get target => achievement.targetValue;
   int progress(JourneySummary s) {

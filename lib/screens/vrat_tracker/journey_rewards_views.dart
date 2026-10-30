@@ -18,6 +18,15 @@ import '../../widgets/app_background.dart';
 import '../premium_screen.dart';
 import 'journey_artwork.dart';
 
+const journeyCardGradient = LinearGradient(
+  begin: Alignment.topLeft,
+  end: Alignment.bottomRight,
+  colors: [Color.fromRGBO(5, 46, 46, 1), Color.fromRGBO(8, 20, 33, 1)],
+);
+const journeyCardMatte = Color.fromRGBO(5, 36, 36, 1);
+TextStyle _secondaryBright(double size) =>
+    TextStyle(fontSize: size, color: const Color(0xBFFFFFFF));
+
 String _t(BuildContext c, String key, [List<String> args = const []]) =>
     AppStrings.translateWithArgs(
       key,
@@ -60,236 +69,247 @@ class JourneyOverviewPanel extends StatelessWidget {
               (b.year == null || b.year == year),
         )
         .toList();
-    return DefaultTextStyle.merge(
-      style: TextStyle(color: IosColors.primary(context)),
-      child: GlassPanel(
-        radius: 24,
-        tint: IosColors.teal,
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          spacing: 14,
-          children: [
-            if (tracker.rewardsStorageError)
-              Text(
-                _t(context, 'ios_journey_storage_error'),
-                style: const TextStyle(fontSize: 12, color: Colors.orange),
-              ),
-            Semantics(
-              key: const Key('journey_year_points'),
-              container: true,
-              child: Column(
-                spacing: 6,
-                children: [
-                  Text(
-                    _t(context, 'ios_journey_title', ['$year']),
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Text(
-                    NumberFormat.decimalPattern(
-                      lang.currentLocale.languageCode,
-                    ).format(p.points),
-                    style: const TextStyle(
-                      fontSize: 34,
-                      fontWeight: FontWeight.bold,
-                      color: IosColors.teal,
-                    ),
-                  ),
-                  Text(
-                    _t(context, 'ios_journey_points'),
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  Text(
-                    _t(context, 'ios_journey_year_points', [
-                      '${p.points}',
-                      '${p.maximumPoints}',
-                    ]),
-                    style: _secondary(context),
-                  ),
-                ],
-              ),
+    return Theme(
+      data: ThemeData(brightness: Brightness.dark),
+      child: Builder(
+        builder: (context) => DefaultTextStyle.merge(
+          style: const TextStyle(color: Colors.white),
+          child: Container(
+            key: const Key('journey_overview_surface'),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              gradient: journeyCardGradient,
             ),
-            ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 310),
-              child: JourneyMandala(progress: p),
-            ),
-            Text(
-              _t(context, 'ios_journey_summary', [
-                '${p.observed}',
-                '${p.partial}',
-              ]),
-              style: _secondary(context, 15),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            padding: const EdgeInsets.all(18),
+            child: Column(
+              spacing: 14,
               children: [
-                const Icon(
-                  AppIcons.journeyStreak,
-                  size: 17,
-                  color: IosColors.teal,
-                ),
-                const SizedBox(width: 6),
-                Flexible(
-                  child: Text(
-                    '${_t(context, 'current_streak')} · ${summary.currentStreak}',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 15, color: IosColors.teal),
+                if (tracker.rewardsStorageError)
+                  Text(
+                    _t(context, 'ios_journey_storage_error'),
+                    style: const TextStyle(fontSize: 12, color: Colors.orange),
                   ),
-                ),
-              ],
-            ),
-            Row(
-              key: const Key('journey_lifetime_points'),
-              children: [
-                Expanded(
-                  child: Text(
-                    _t(context, 'ios_journey_lifetime'),
-                    style: const TextStyle(fontSize: 15),
-                  ),
-                ),
-                Text(
-                  NumberFormat.decimalPattern(
-                    lang.currentLocale.languageCode,
-                  ).format(summary.lifetimePoints),
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-            const Divider(),
-            for (final q in p.quarters)
-              MergeSemantics(
-                key: Key('journey_quarter_${year}_${q.id}'),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  spacing: 5,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            _t(context, 'ios_journey_quarter', [
-                              '${q.id}',
-                              '$year',
-                            ]),
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                        Flexible(
-                          child: Text(
-                            _t(context, 'ios_journey_quarter_progress', [
-                              '${q.observed}',
-                              '${q.total}',
-                            ]),
-                            textAlign: TextAlign.end,
-                            style: const TextStyle(fontSize: 12),
-                          ),
-                        ),
-                      ],
-                    ),
-                    _progress(q.observed, q.total),
-                    if (q.completed || q.id == currentQuarter)
-                      Text(
-                        _t(
-                          context,
-                          q.completed
-                              ? 'ios_journey_bonus_earned'
-                              : 'ios_journey_quarter_bonus',
-                        ),
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: q.completed
-                              ? IosColors.teal
-                              : IosColors.secondary(context),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            if (p.annualBonus > 0)
-              Text(
-                _t(context, 'ios_journey_annual_bonus'),
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                  color: IosColors.teal,
-                ),
-              ),
-            Text(
-              _t(context, 'ios_journey_scoring'),
-              textAlign: TextAlign.center,
-              style: _secondary(context, 11),
-            ),
-            Text(
-              _t(context, 'ios_journey_personal'),
-              style: _secondary(context, 11),
-            ),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                key: const Key('journey_share_year'),
-                style: IosButtons.glass(context),
-                onPressed: () => showAppSheet<void>(
-                  context,
-                  builder: (_) =>
-                      JourneyShareSheet(progress: p, badges: badges),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(AppIcons.share, size: 17),
-                    const SizedBox(width: 8),
-                    Flexible(
-                      child: Text(
-                        _t(context, 'ios_journey_share'),
-                        style: IosButtons.label,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            if (!premium)
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  key: const Key('journey_rewards_premium'),
-                  style: IosButtons.prominent(),
-                  onPressed: () => openPremium(
-                    context,
-                    reasonKey: 'ios_journey_premium_desc',
-                  ),
+                Semantics(
+                  key: const Key('journey_year_points'),
+                  container: true,
                   child: Column(
-                    spacing: 4,
+                    spacing: 6,
                     children: [
                       Text(
-                        _t(context, 'ios_journey_premium'),
+                        _t(context, 'ios_journey_title', ['$year']),
                         style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
                         ),
-                        textAlign: TextAlign.center,
                       ),
                       Text(
-                        _t(context, 'ios_journey_premium_desc'),
-                        style: const TextStyle(fontSize: 12),
-                        textAlign: TextAlign.center,
+                        NumberFormat.decimalPattern(
+                          lang.currentLocale.languageCode,
+                        ).format(p.points),
+                        style: const TextStyle(
+                          fontSize: 34,
+                          fontWeight: FontWeight.bold,
+                          color: IosColors.teal,
+                        ),
+                      ),
+                      Text(
+                        _t(context, 'ios_journey_points'),
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      Text(
+                        _t(context, 'ios_journey_year_points', [
+                          '${p.points}',
+                          '${p.maximumPoints}',
+                        ]),
+                        style: _secondary(context),
                       ),
                     ],
                   ),
                 ),
-              ),
-          ],
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 310),
+                  child: JourneyMandala(progress: p),
+                ),
+                Text(
+                  _t(context, 'ios_journey_summary', [
+                    '${p.observed}',
+                    '${p.partial}',
+                  ]),
+                  style: _secondaryBright(15),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      AppIcons.journeyStreak,
+                      size: 17,
+                      color: IosColors.teal,
+                    ),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        '${_t(context, 'current_streak')} · ${summary.currentStreak}',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          color: IosColors.teal,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  key: const Key('journey_lifetime_points'),
+                  children: [
+                    Expanded(
+                      child: Text(
+                        _t(context, 'ios_journey_lifetime'),
+                        style: const TextStyle(fontSize: 15),
+                      ),
+                    ),
+                    Text(
+                      NumberFormat.decimalPattern(
+                        lang.currentLocale.languageCode,
+                      ).format(summary.lifetimePoints),
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+                const Divider(),
+                for (final q in p.quarters)
+                  MergeSemantics(
+                    key: Key('journey_quarter_${year}_${q.id}'),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      spacing: 5,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                _t(context, 'ios_journey_quarter', [
+                                  '${q.id}',
+                                  '$year',
+                                ]),
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            Flexible(
+                              child: Text(
+                                _t(context, 'ios_journey_quarter_progress', [
+                                  '${q.observed}',
+                                  '${q.total}',
+                                ]),
+                                textAlign: TextAlign.end,
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                            ),
+                          ],
+                        ),
+                        _progress(q.observed, q.total),
+                        if (q.completed || q.id == currentQuarter)
+                          Text(
+                            _t(
+                              context,
+                              q.completed
+                                  ? 'ios_journey_bonus_earned'
+                                  : 'ios_journey_quarter_bonus',
+                            ),
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: q.completed
+                                  ? IosColors.teal
+                                  : const Color(0xBFFFFFFF),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                if (p.annualBonus > 0)
+                  Text(
+                    _t(context, 'ios_journey_annual_bonus'),
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: IosColors.teal,
+                    ),
+                  ),
+                Text(
+                  _t(context, 'ios_journey_scoring'),
+                  textAlign: TextAlign.center,
+                  style: _secondaryBright(11),
+                ),
+                Text(
+                  _t(context, 'ios_journey_personal'),
+                  style: _secondaryBright(11),
+                ),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    key: const Key('journey_share_year'),
+                    style: IosButtons.prominent(),
+                    onPressed: () => showAppSheet<void>(
+                      context,
+                      builder: (_) =>
+                          JourneyShareSheet(progress: p, badges: badges),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(AppIcons.share, size: 17),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            _t(context, 'ios_journey_share'),
+                            style: IosButtons.label,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                if (!premium)
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      key: const Key('journey_rewards_premium'),
+                      style: IosButtons.prominent(),
+                      onPressed: () => openPremium(
+                        context,
+                        reasonKey: 'ios_journey_premium_desc',
+                      ),
+                      child: Column(
+                        spacing: 4,
+                        children: [
+                          Text(
+                            _t(context, 'ios_journey_premium'),
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          Text(
+                            _t(context, 'ios_journey_premium_desc'),
+                            style: const TextStyle(fontSize: 12),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -297,7 +317,14 @@ class JourneyOverviewPanel extends StatelessWidget {
 }
 
 class JourneyBadgeCollection extends StatefulWidget {
-  const JourneyBadgeCollection({super.key, required this.summary});
+  const JourneyBadgeCollection({
+    super.key,
+    required this.summary,
+    this.selectedYear,
+    this.years = const [2026, 2027],
+  });
+  final int? selectedYear;
+  final List<int> years;
   final JourneySummary summary;
   @override
   State<JourneyBadgeCollection> createState() => _JourneyBadgeCollectionState();
@@ -318,9 +345,10 @@ class _JourneyBadgeCollectionState extends State<JourneyBadgeCollection> {
         premium = context.watch<PremiumService?>()?.isPremium == true,
         earned = tracker.userAchievements;
     final definitions =
-        JourneyBadgeCatalog.all([2026, 2027])
+        JourneyBadgeCatalog.all(widget.years)
             .where(
               (b) =>
+                  b.isVisibleInYear(widget.selectedYear) &&
                   (b.id != 'full_year_observance' ||
                       earned[b.id]?.isUnlocked == true) &&
                   (collection == null || group(b) == collection),
@@ -754,58 +782,72 @@ class JourneyAnnualShareCard extends StatelessWidget {
   final JourneyYear progress;
   final List<JourneyBadgeDefinition> badges;
   @override
-  Widget build(BuildContext context) => Theme(
-    data: ThemeData(brightness: Brightness.dark),
-    child: DefaultTextStyle(
-      style: const TextStyle(color: Colors.white, fontSize: 15),
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(24),
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color.fromRGBO(5, 46, 46, 1),
-              Color.fromRGBO(8, 20, 33, 1),
-            ],
+  Widget build(BuildContext context) => ColoredBox(
+    color: journeyCardMatte,
+    child: Padding(
+      padding: const EdgeInsets.all(6),
+      child: Theme(
+        data: ThemeData(brightness: Brightness.dark),
+        child: DefaultTextStyle(
+          style: const TextStyle(color: Colors.white, fontSize: 15),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              gradient: journeyCardGradient,
+            ),
+            child: Column(
+              spacing: 12,
+              children: [
+                Text(
+                  _t(context, 'ios_journey_title', ['${progress.year}']),
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(
+                  height: 260,
+                  child: JourneyMandala(progress: progress),
+                ),
+                Text(
+                  '${NumberFormat.decimalPattern(context.read<LanguageService>().currentLocale.languageCode).format(progress.points)} ${_t(context, 'ios_journey_points')}',
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  _t(context, 'ios_journey_summary', [
+                    '${progress.observed}',
+                    '${progress.partial}',
+                  ]),
+                  style: const TextStyle(
+                    fontSize: 15,
+                    color: Color(0xD9FFFFFF),
+                  ),
+                ),
+                SizedBox(
+                  width: double.infinity,
+                  child: Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: [
+                      for (final b in badges)
+                        JourneyBadgeArt(definition: b, size: 46),
+                    ],
+                  ),
+                ),
+                Text(
+                  _t(context, 'app_title'),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xB3FFFFFF),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-        child: Column(
-          spacing: 12,
-          children: [
-            Text(
-              _t(context, 'ios_journey_title', ['${progress.year}']),
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 260, child: JourneyMandala(progress: progress)),
-            Text(
-              '${NumberFormat.decimalPattern(context.read<LanguageService>().currentLocale.languageCode).format(progress.points)} ${_t(context, 'ios_journey_points')}',
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              _t(context, 'ios_journey_summary', [
-                '${progress.observed}',
-                '${progress.partial}',
-              ]),
-              style: const TextStyle(fontSize: 15, color: Color(0xD9FFFFFF)),
-            ),
-            SizedBox(
-              width: double.infinity,
-              child: Wrap(
-                spacing: 6,
-                runSpacing: 6,
-                children: [
-                  for (final b in badges)
-                    JourneyBadgeArt(definition: b, size: 46),
-                ],
-              ),
-            ),
-            Text(
-              _t(context, 'app_title'),
-              style: const TextStyle(fontSize: 12, color: Color(0xB3FFFFFF)),
-            ),
-          ],
         ),
       ),
     ),

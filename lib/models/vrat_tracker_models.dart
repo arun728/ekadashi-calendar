@@ -26,6 +26,21 @@ enum FastingMethod {
   oneMeal,
   other;
 
+  static List<FastingMethod> allowedFor(ObservanceStatus status) =>
+      switch (status) {
+        ObservanceStatus.observed => [fullFast, waterOnly, fruitsMilk],
+        ObservanceStatus.partial => [oneMeal],
+        _ => [],
+      };
+
+  static FastingMethod? normalized(
+    FastingMethod? method,
+    ObservanceStatus status,
+  ) {
+    final allowed = allowedFor(status);
+    return allowed.contains(method) ? method : allowed.firstOrNull;
+  }
+
   String get key => name;
 
   static FastingMethod? fromString(String? value) {

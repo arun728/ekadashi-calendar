@@ -175,7 +175,7 @@ void main() {
         );
         expect(paragraph.didExceedMaxLines, isFalse);
       }
-      expect(positions.toSet(), hasLength(1));
+      expect(positions, everyElement(closeTo(positions.first, 0.001)));
       expect(
         tester
             .widget<GlassChip>(find.byKey(const Key('vrat_method_oneMeal')))

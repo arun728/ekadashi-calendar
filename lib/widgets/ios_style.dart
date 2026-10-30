@@ -163,9 +163,11 @@ class GlassChip extends StatelessWidget {
     required this.selected,
     required this.onTap,
     this.icon,
+    this.compact = false,
     this.color = IosColors.teal,
   });
 
+  final bool compact;
   final String label;
   final bool selected;
   final VoidCallback? onTap;
@@ -182,25 +184,46 @@ class GlassChip extends StatelessWidget {
         radius: 999,
         tint: selected ? color : null,
         onTap: onTap,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        padding: EdgeInsets.symmetric(
+          horizontal: compact ? 6 : 14,
+          vertical: compact ? 10 : 8,
+        ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             if (icon != null) ...[
-              Icon(icon, size: 15, color: foreground),
-              const SizedBox(width: 6),
+              Icon(icon, size: compact ? 12 : 15, color: foreground),
+              SizedBox(width: compact ? 3 : 6),
             ],
             Flexible(
-              child: Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: IosText.subheadline,
-                  fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-                  color: foreground,
-                ),
-              ),
+              child: compact
+                  ? FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        label,
+                        maxLines: 1,
+                        softWrap: false,
+                        style: TextStyle(
+                          fontSize: IosText.subheadline,
+                          fontWeight: selected
+                              ? FontWeight.w600
+                              : FontWeight.w400,
+                          color: foreground,
+                        ),
+                      ),
+                    )
+                  : Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: IosText.subheadline,
+                        fontWeight: selected
+                            ? FontWeight.w600
+                            : FontWeight.w400,
+                        color: foreground,
+                      ),
+                    ),
             ),
           ],
         ),
