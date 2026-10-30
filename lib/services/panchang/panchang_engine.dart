@@ -1104,7 +1104,11 @@ class PanchangEngine {
     for (final index in const [12, 27]) {
       if (tithi.index == index) add('dwadashi', 'Dwadashi');
     }
-    if (observed(15, _Kala.sunrise)) add('purnima', 'Purnima', major: true);
+    // Purnima is listed once, on its fast day: the first day it has begun by
+    // the end of Madhyahna (Drik Panchang's Purnima Upavasa).
+    if (observed(15, _Kala.upavasa, tie: _Tie.first)) {
+      add('purnima', 'Purnima', major: true);
+    }
     if (observed(30, _Kala.sunrise)) add('amavasya', 'Amavasya', major: true);
     for (final index in const [8, 23]) {
       if (tithi.index == index) add('ashtami', 'Ashtami');
@@ -1724,7 +1728,8 @@ class PanchangEngine {
 }
 
 /// Time windows (kala) used by festival rules; fifths of daylight follow the
-/// five-part day (Pratah, Sangava, Madhyahna, Aparahna, Sayahna).
+/// five-part day (Pratah, Sangava, Madhyahna, Aparahna, Sayahna). Upavasa
+/// runs from sunrise to the end of Madhyahna, the window of a Purnima fast.
 enum _Kala {
   sunrise,
   sunset,
@@ -1737,6 +1742,7 @@ enum _Kala {
   nishita,
   arunodaya,
   akshaya,
+  upavasa,
 }
 
 /// When a tithi covers its window on two days: the longer coverage, or the
@@ -1825,6 +1831,7 @@ class _SolarDays {
       _Kala.purvahna => (a, at(a, dayLength, .5)),
       _Kala.pratah || _Kala.akshaya => (a, at(a, dayLength, .2)),
       _Kala.madhyahna => (at(a, dayLength, .4), at(a, dayLength, .6)),
+      _Kala.upavasa => (a, at(a, dayLength, .6)),
       _Kala.aparahna => (at(a, dayLength, .6), at(a, dayLength, .8)),
       _Kala.pradosh => (b, at(b, night, .2)),
       _Kala.nishita => (at(b, night, 7 / 15), at(b, night, 8 / 15)),

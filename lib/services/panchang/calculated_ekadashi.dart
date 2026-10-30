@@ -1,3 +1,4 @@
+import 'gcal_ekadashi.dart';
 import 'panchang_city.dart';
 import 'panchang_engine.dart';
 
@@ -190,6 +191,9 @@ class CalculatedEkadashiEngine {
       throw ArgumentError('Choose 1–366 civil days');
     }
     final first = DateTime.utc(start.year, start.month, start.day);
+    if (tradition == EkadashiTradition.gaudiya) {
+      return _vaishnava(first, count, city);
+    }
     final days = <EkadashiDay>[];
     final samples = <EkadashiSample>[];
     // Neighbours across month/year boundaries and the next full/new moon are
@@ -244,25 +248,12 @@ class CalculatedEkadashiEngine {
       final dwadashi = engine.tithiAt(tithiEnd.add(const Duration(seconds: 1)));
       final dwadashiEnd = dwadashi.endsAtUtc!;
       final hariVasara = tithiEnd.add(dwadashiEnd.difference(tithiEnd) ~/ 4);
-      final parana = tradition == EkadashiTradition.smarta
-          ? _smartaParana(next, tithiEnd, dwadashiEnd)
-          : _parana(day, next, tradition, rule, hariVasara);
-      final arunodaya = sunrise.subtract(const Duration(minutes: 96));
-      final nearBoundary =
-          [day.nakshatra, next.nakshatra].any(
-            (limb) =>
-                limb.endsAtUtc != null &&
-                [sunrise, next.sunriseUtc!].any(
-                  (instant) =>
-                      instant.difference(limb.endsAtUtc!).inSeconds.abs() <=
-                      300,
-                ),
-          ) ||
-          [sunrise, arunodaya, next.sunriseUtc!].any(
-            (instant) => [tithiStart, tithiEnd, dwadashiEnd].any(
-              (boundary) => instant.difference(boundary).inSeconds.abs() <= 300,
-            ),
-          );
+      final parana = _smartaParana(next, tithiEnd, dwadashiEnd);
+      final nearBoundary = _nearBoundary(day, next, sunrise, next.sunriseUtc!, [
+        tithiStart,
+        tithiEnd,
+        dwadashiEnd,
+      ]);
       result.add(
         CalculatedEkadashi(
           date: day.date,
@@ -286,6 +277,153 @@ class CalculatedEkadashiEngine {
       );
     }
     return List.unmodifiable(result);
+  }
+
+  bool _nearBoundary(
+    EkadashiDay day,
+    EkadashiDay next,
+    DateTime sunrise,
+    DateTime nextSunrise,
+    List<DateTime> tithiMoments,
+  ) {
+    bool near(DateTime a, DateTime b) => a.difference(b).inSeconds.abs() <= 300;
+    return [day.nakshatra, next.nakshatra].any(
+          (limb) =>
+              limb.endsAtUtc != null &&
+              [sunrise, nextSunrise].any((i) => near(i, limb.endsAtUtc!)),
+        ) ||
+        [
+          sunrise,
+          sunrise.subtract(const Duration(minutes: 96)),
+          nextSunrise,
+        ].any((i) => tithiMoments.any((m) => near(i, m)));
+  }
+
+  /// The ISKCON Vaishnava fasts: days and Parana from GCal 11's calculation
+  /// ([Gcal]), shown cut to the minute as ISKCON calendars show them; names,
+  /// months and tithi times from this engine.
+  List<CalculatedEkadashi> _vaishnava(
+    DateTime first,
+    int count,
+    PanchangCity city,
+  ) {
+    int offset(int month) => city
+        .wallClock(city.dateAtHour(DateTime.utc(first.year, month), 12))
+        .timeZoneOffset
+        .inSeconds;
+    final tzone = (offset(1) < offset(7) ? offset(1) : offset(7)) / 3600;
+    DateTime cut(DateTime instant) {
+      final local = city.wallClock(instant);
+      return instant.subtract(
+        Duration(
+          microseconds:
+              (local.second * 1000 + local.millisecond) * 1000 +
+              local.microsecond,
+        ),
+      );
+    }
+
+    final result = <CalculatedEkadashi>[];
+    for (final (gcal, paranaDay) in Gcal.fasts(
+      first,
+      count,
+      city.latitude,
+      Gcal.longitude(city.longitude, tzone),
+      tzone,
+    )) {
+      final parana = paranaDay.parana;
+      if (parana == null) continue;
+      final day = engine.ekadashiDay(gcal.date, city: city);
+      final next = engine.ekadashiDay(paranaDay.date, city: city);
+      final sunrise = cut(Gcal.sunrise(gcal));
+      // The Ekadashi interval: earlier the same day when fasting on Dwadashi.
+      var probe = day.sunriseUtc ?? sunrise;
+      for (
+        var hours = 0;
+        hours < 72 && (engine.tithiAt(probe).index - 1) % 15 + 1 != 11;
+        hours++
+      ) {
+        probe = probe.subtract(const Duration(hours: 1));
+      }
+      final ekadashi = engine.tithiAt(probe);
+      if ((ekadashi.index - 1) % 15 + 1 != 11) continue;
+      final tithiEnd = ekadashi.endsAtUtc!;
+      final dwadashiEnd = engine
+          .tithiAt(tithiEnd.add(const Duration(seconds: 1)))
+          .endsAtUtc!;
+      final tithiStart = engine.tithiStart(probe);
+      final rule = gcal.mhd == GcalMhd.suddha && Gcal.isDvadasi(gcal.tithi)
+          ? 'Viddha / shifted to Dwadashi'
+          : _rules[gcal.mhd] ?? 'Shuddha Ekadashi';
+      final begin = cut(Gcal.instant(paranaDay.date, parana.begin, tzone));
+      final end = parana.end < 0
+          ? null
+          : cut(Gcal.instant(paranaDay.date, parana.end, tzone));
+      final hariVasara = Gcal.isDvadasi(paranaDay.tithi)
+          ? cut(Gcal.instant(paranaDay.date, parana.quarter, tzone))
+          : tithiEnd.add(dwadashiEnd.difference(tithiEnd) ~/ 4);
+      result.add(
+        CalculatedEkadashi(
+          date: gcal.date,
+          name: _name(day, ekadashi.paksha == 'Shukla'),
+          tradition: EkadashiTradition.gaudiya,
+          rule: rule,
+          city: city,
+          fastStartsUtc: sunrise,
+          paranaDate: paranaDay.date,
+          paranaStartUtc: begin,
+          paranaEndUtc: end,
+          paranaReason: _paranaReason(gcal, rule, bounded: end != null),
+          hariVasaraEndUtc: hariVasara,
+          tithiStartUtc: tithiStart,
+          tithiEndUtc: tithiEnd,
+          nearBoundary: _nearBoundary(
+            day,
+            next,
+            day.sunriseUtc ?? sunrise,
+            next.sunriseUtc ?? begin,
+            [tithiStart, tithiEnd, dwadashiEnd],
+          ),
+          month: day.amantaMonth,
+          isShukla: ekadashi.paksha == 'Shukla',
+          paranaDaySunsetUtc: next.sunsetUtc,
+        ),
+      );
+    }
+    return List.unmodifiable(result);
+  }
+
+  static const _rules = {
+    GcalMhd.unmilani: 'Unmilani',
+    GcalMhd.unmilaniTrisprsa: 'Unmilani-Trisprisha',
+    GcalMhd.trisprsa: 'Trisprisha',
+    GcalMhd.vyanjuli: 'Vyanjuli',
+    GcalMhd.paksavardhini: 'Pakshavardhini',
+    GcalMhd.jaya: 'Jaya',
+    GcalMhd.jayanti: 'Jayanti',
+    GcalMhd.papaNasini: 'Papanashini',
+    GcalMhd.vijaya: 'Vijaya',
+  };
+
+  static String _paranaReason(
+    GcalDay fast,
+    String rule, {
+    required bool bounded,
+  }) {
+    final reason = switch (fast.mhd) {
+      GcalMhd.trisprsa => 'Trisprisha: sunrise to one third of daylight',
+      GcalMhd.jaya || GcalMhd.jayanti || GcalMhd.papaNasini || GcalMhd.vijaya =>
+        '$rule: nakshatra end, Dwadashi end and morning limit evaluated together',
+      GcalMhd.unmilani || GcalMhd.vyanjuli =>
+        'Sunrise to the earlier of tithi end and one third of daylight',
+      _ when Gcal.isDvadasi(fast.tithi) =>
+        'Sunrise to the earlier of tithi end and one third of daylight',
+      _ =>
+        'After sunrise and Hari Vasara; before tithi end or one third of daylight',
+    };
+    return bounded
+        ? reason
+        : '$reason. No bounded morning window; shown as after-only.';
   }
 
   /// Drik Panchang's Smarta Parana: after sunrise and Hari Vasara (the first
@@ -326,68 +464,6 @@ class CalculatedEkadashiEngine {
       return (begin, null, '$reason. No bounded window; shown as after-only.');
     }
     return (begin, end, reason);
-  }
-
-  (DateTime?, DateTime?, String) _parana(
-    EkadashiDay fast,
-    EkadashiDay next,
-    EkadashiTradition tradition,
-    String rule,
-    DateTime hariVasara,
-  ) {
-    final sunrise = next.sunriseUtc, sunset = next.sunsetUtc;
-    if (sunrise == null || sunset == null || !sunset.isAfter(sunrise)) {
-      return (null, null, 'Solar day unavailable');
-    }
-    final third = sunrise.add(sunset.difference(sunrise) ~/ 3);
-    final limb = engine.tithiAt(sunrise);
-    final tithiEnd = limb.endsAtUtc!;
-    DateTime earlier(DateTime a, DateTime b) => a.isBefore(b) ? a : b;
-    DateTime later(DateTime a, DateTime b) => a.isAfter(b) ? a : b;
-    var begin = sunrise;
-    DateTime? end = earlier(tithiEnd, third);
-    var reason =
-        'Sunrise to the earlier of tithi end and one third of daylight';
-    if (tradition == EkadashiTradition.smarta) {
-      begin = later(sunrise, hariVasara);
-      end = (limb.index - 1) % 15 + 1 <= 12
-          ? earlier(engine.tithiAt(hariVasara).endsAtUtc!, third)
-          : third;
-      reason =
-          'After sunrise and Hari Vasara (first quarter of Dwadashi); before Dwadashi ends and within the morning where possible';
-    } else if (rule == 'Trisprisha' || rule == 'Unmilani-Trisprisha') {
-      end = third;
-      reason = 'Trisprisha: sunrise to one third of daylight';
-    } else if (['Jaya', 'Jayanti', 'Papanashini', 'Vijaya'].contains(rule)) {
-      final nakEnd = fast.nakshatra.endsAtUtc!;
-      if ((limb.index - 1) % 15 + 1 == 12) {
-        if (nakEnd.isBefore(tithiEnd)) {
-          begin = later(sunrise, nakEnd);
-          end = nakEnd.isBefore(third) ? earlier(tithiEnd, third) : tithiEnd;
-        }
-      } else if (rule == 'Jayanti' || rule == 'Vijaya') {
-        end = earlier(nakEnd, third);
-      } else {
-        begin = later(sunrise, nakEnd);
-        end = nakEnd.isBefore(third) ? third : null;
-      }
-      reason =
-          '$rule: nakshatra end, Dwadashi end and morning limit evaluated together';
-    } else if (rule != 'Unmilani' &&
-        rule != 'Vyanjuli' &&
-        (fast.tithi.index - 1) % 15 + 1 != 12) {
-      begin = later(sunrise, hariVasara);
-      reason =
-          'After sunrise and Hari Vasara; before tithi end or one third of daylight';
-    }
-    if (end != null && !end.isAfter(begin)) end = null;
-    return (
-      begin,
-      end,
-      end == null
-          ? '$reason. No bounded morning window; shown as after-only.'
-          : reason,
-    );
   }
 
   String _name(EkadashiDay day, bool bright) {

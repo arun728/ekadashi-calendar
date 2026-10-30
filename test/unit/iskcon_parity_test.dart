@@ -10,7 +10,10 @@ import 'package:ekadashi_calendar/services/time_zone_data.dart';
 /// Committee's program that ISKCON calendars are made with, as published by
 /// vaisnavacalendar.info for 67 cities worldwide in 2026 and 2027
 /// (test/fixtures/panchang/gcal11_ekadashi_2026_2027.json,
-/// IskconParityTests.swift). GCal shows times cut to the minute in local time.
+/// IskconParityTests.swift). GCal shows times cut to the minute in its own
+/// clock: the offset it states for the year, plus an hour where it marks DST. Its
+/// summer-time rules are out of date in some cities (Tehran, Moscow,
+/// Istanbul, Mexico City, ...), so times are compared in that clock.
 void main() {
   setUpAll(initializeTimeZoneData);
 
@@ -42,10 +45,18 @@ void main() {
   };
 
   String two(int v) => v.toString().padLeft(2, '0');
-  String? shown(DateTime? instant, PanchangCity place) {
+
+  /// The engine's shown minute, moved from the city's clock to GCal's.
+  String? shown(DateTime? instant, PanchangCity place, int gcalOffsetMinutes) {
     if (instant == null) return null;
     final wall = place.displayClock(instant);
-    return '${two(wall.hour)}:${two(wall.minute)}';
+    final minutes =
+        (wall.hour * 60 +
+            wall.minute +
+            gcalOffsetMinutes -
+            wall.timeZoneOffset.inMinutes) %
+        1440;
+    return '${two(minutes ~/ 60)}:${two(minutes % 60)}';
   }
 
   int minutes(String? text) => text == null
@@ -94,7 +105,11 @@ void main() {
           ]) {
             if (want == null) continue;
             total++;
-            final got = shown(actual, place);
+            final got = shown(
+              actual,
+              place,
+              gcal['gcalUtcOffsetMinutes'] as int,
+            );
             if (got == want) {
               matched++;
             } else if ((minutes(got) - minutes(want)).abs() > 1) {

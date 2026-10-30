@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:timezone/timezone.dart' as tz;
 import 'package:ekadashi_calendar/services/ekadashi_schedule.dart';
 import 'package:ekadashi_calendar/services/panchang/calculated_ekadashi.dart';
 import 'package:ekadashi_calendar/services/panchang/panchang_city.dart';
@@ -67,16 +68,13 @@ void main() {
     var failures = 0;
     final examples = <String>[];
     (fixture['offsetSecondsByZone'] as Map).forEach((zone, offsets) {
-      final city = PanchangCity(
-        id: zone as String,
-        label: zone,
-        latitude: 0,
-        longitude: 0,
-        timeZoneId: zone,
-      );
+      // The database itself, as TimeZoneCoverageTests reads it: the fixture
+      // also lists zones such as EST and CET that cities never use.
+      final location = tz.getLocation(zone as String);
       final list = (offsets as List).cast<int>();
       for (var i = 0; i < dates.length; i++) {
-        final actual = city.wallClock(dates[i]).timeZoneOffset.inSeconds;
+        final actual =
+            location.timeZone(dates[i].millisecondsSinceEpoch).offset ~/ 1000;
         if (actual != list[i]) {
           failures++;
           if (examples.length < 12) {

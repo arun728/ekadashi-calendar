@@ -152,8 +152,10 @@ class EkadashiScheduleKey {
 class EkadashiSchedule {
   EkadashiSchedule({required this.publishedRows, this.persist = true});
 
-  /// Bumped when the cached form changes, so older caches are recalculated.
-  static const formatVersion = 'schedule-3';
+  /// Bumped when the cached form changes, so older caches are recalculated
+  /// (4: Vaishnava fasts and Parana from GCal 11, as ISKCON publishes them;
+  /// IANA 2026b time zones for 1900-2100).
+  static const formatVersion = 'schedule-4';
 
   /// The published rows of a year (identities and texts).
   final List<Map<String, dynamic>> Function(int year) publishedRows;

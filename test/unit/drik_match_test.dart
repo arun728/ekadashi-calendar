@@ -222,7 +222,8 @@ void main() {
       }
     }
     expect(check(rows, knifeEdge: 6), greaterThanOrEqualTo(0.97));
-    expect(rows.length, greaterThanOrEqualTo(194));
+    // Two Vaishnava fasts fall a day after Drik's list (GCal 11, below).
+    expect(rows.length, greaterThanOrEqualTo(192));
   });
 
   test('held-out 2028 tithi boundaries show Drik\'s minute', () {
@@ -300,31 +301,43 @@ void main() {
     expect(dates.difference(found), isEmpty, reason: 'Drik only');
   });
 
-  test('Vaishnava (ISKCON) fast days and Parana match Drik', () {
-    final rows = <(String, DateTime?, String)>[];
-    final dates = {
-      for (final row in fixture['vaishnava'] as List) row['date'] as String,
-    };
-    // Includes 25 June 2026 and 11 September 2027, where the Purnima and
-    // Shravana boundaries sit within 20 seconds of sunrise.
-    expect(fasts[EkadashiTradition.gaudiya]!.keys.toSet(), dates);
+  test('Vaishnava fasts follow GCal 11, within minutes of Drik', () {
+    // Vaishnava fasts and Parana follow GCal 11, as ISKCON publishes them
+    // (iskcon_parity_test.dart). Drik's own ISKCON list differs on two days,
+    // where a Purnima or Shravana boundary sits within 20 seconds of sunrise,
+    // and its Parana is up to 3 minutes apart: Drik rounds and uses its own
+    // astronomy; GCal cuts the minute and uses GCal's.
+    const gcalDays = {'2026-06-25': '2026-06-26', '2027-09-11': '2027-09-12'};
+    final found = fasts[EkadashiTradition.gaudiya]!;
+    expect(found.keys.toSet(), {
+      for (final row in fixture['vaishnava'] as List)
+        gcalDays[row['date']] ?? row['date'] as String,
+    });
+    final far = <String>[];
     for (final row in fixture['vaishnava'] as List) {
-      final fast = fasts[EkadashiTradition.gaudiya]![row['date']]!;
-      rows.add((
-        '${row['date']} Parana start',
-        fast.paranaStartUtc,
-        row['paranaStart'] as String,
-      ));
-      if (row['paranaEnd'] != null) {
-        rows.add((
-          '${row['date']} Parana end',
-          fast.paranaEndUtc,
-          row['paranaEnd'] as String,
-        ));
+      final fast = found[row['date']];
+      if (fast == null) continue;
+      for (final (actual, drik) in [
+        (fast.paranaStartUtc, row['paranaStart'] as String?),
+        (fast.paranaEndUtc, row['paranaEnd'] as String?),
+      ]) {
+        if (drik == null) continue;
+        if (actual == null) {
+          far.add('${row['date']}: none vs $drik');
+          continue;
+        }
+        final shown = delhi.displayClock(actual);
+        final minutes =
+            shown.hour * 60 +
+            shown.minute -
+            (int.parse(drik.substring(0, 2)) * 60 +
+                int.parse(drik.substring(3, 5)));
+        if (minutes.abs() > 3) {
+          far.add('${row['date']}: ${hm(actual)} vs $drik');
+        }
       }
     }
-    // Most Parana limits are sunrise, which Drik places up to 9 s apart.
-    expect(check(rows, knifeEdge: 9), greaterThanOrEqualTo(0.88));
+    expect(far, isEmpty);
   });
 
   test('sunrise and sunset show Drik\'s minute on all 730 days', () {
