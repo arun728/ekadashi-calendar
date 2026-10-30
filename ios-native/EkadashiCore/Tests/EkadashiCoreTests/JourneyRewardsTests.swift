@@ -30,12 +30,38 @@ final class JourneyRewardsTests: XCTestCase {
         XCTAssertEqual(s.year(2026).points, 1000)
         XCTAssertEqual(s.year(2026).observed, 8)
         XCTAssertEqual(s.year(2026).partial, 4)
-        XCTAssertEqual(s.longestStreak, 4)
-        XCTAssertEqual(s.currentStreak, 0)
+        XCTAssertEqual(s.longestStreak, 9)
+        XCTAssertEqual(s.currentStreak, 9)
         // Same records before the next occurrence is due retain a current run of two.
         let earlier = JourneyRewards.calculate(occurrences: list, history: zip(list, statuses).map { record($0.0, $0.1) },
             completeYears: [2026], now: ISO8601.instant("2026-07-04T12:00:00Z")!, zone: zone)
-        XCTAssertEqual(earlier.currentStreak, 2)
+        XCTAssertEqual(earlier.currentStreak, 9)
+    }
+
+    func testConsistencyUsesObservedAndPartialEndingAtLatestRecordWithInternalGaps() {
+        let list = events(2026)
+        let rows = [record(list[0]), record(list[1], .partial), record(list[2])]
+        XCTAssertEqual(summary(list, rows).currentStreak, 3)
+        XCTAssertEqual(summary(list, rows).longestStreak, 3)
+        XCTAssertEqual(summary(list, rows + [record(list[4])]).currentStreak, 1)
+        XCTAssertEqual(summary(list, rows + [record(list[3], .missed)]).currentStreak, 0)
+        XCTAssertEqual(summary(list, rows).year(2026).observed, 2)
+        XCTAssertEqual(summary(list, rows).year(2026).annualBonus, 0)
+    }
+
+    func testEveryBadgeRelocksWhenItsQualifyingHistoryIsRemoved() {
+        let list = events(2026) + events(2027, extra: true)
+        let full = summary(list, list.map { record($0) })
+        let unlocked = JourneyBadgeEvaluator.evaluate(summary: full, current: [:], newUnlockLimit: nil, now: now).updated
+        XCTAssertTrue(unlocked.values.contains(where: \.isUnlocked))
+        let empty = JourneyBadgeEvaluator.evaluate(summary: summary(list, []), current: unlocked, newUnlockLimit: 0, now: now)
+        XCTAssertTrue(empty.updated.values.allSatisfy { !$0.isUnlocked && $0.unlockedAtUTC == nil })
+        XCTAssertTrue(empty.newlyUnlocked.isEmpty)
+        let encouragement = summary(list, [record(list[0], .missed), record(list[1]), record(list[2], .partial), record(list[3], .partial), record(list[4], .partial)])
+        let earned = JourneyBadgeEvaluator.evaluate(summary: encouragement, current: [:], newUnlockLimit: nil, now: now).updated
+        XCTAssertEqual(earned["welcome_back"]?.isUnlocked, true)
+        let reversed = JourneyBadgeEvaluator.evaluate(summary: summary(list, []), current: earned, newUnlockLimit: nil, now: now)
+        XCTAssertTrue(reversed.updated.values.allSatisfy { !$0.isUnlocked })
     }
 
     func testStatusPointsAndFutureExclusion() {
@@ -79,7 +105,7 @@ final class JourneyRewardsTests: XCTestCase {
         XCTAssertEqual(s.year(2026).basePoints, 2350)
         XCTAssertEqual(s.year(2026).annualBonus, 0)
         XCTAssertEqual(s.year(2026).quarters.map(\.points), [0, 150, 150, 150])
-        XCTAssertEqual(s.longestStreak, 22)
+        XCTAssertEqual(s.longestStreak, 24)
     }
 
     func testDuplicateSchedulesAndRecordsDoNotMultiplyPoints() {
@@ -154,9 +180,9 @@ final class JourneyRewardsTests: XCTestCase {
         let paid = JourneyBadgeEvaluator.evaluate(summary: s, current: free.updated, newUnlockLimit: nil, now: now)
         XCTAssertGreaterThan(paid.newlyUnlocked.count, 3)
         let corrected = JourneyBadgeEvaluator.evaluate(summary: summary(list, []), current: paid.updated, newUnlockLimit: 0, now: now)
-        XCTAssertEqual(corrected.updated.values.filter(\.isUnlocked).count, paid.updated.values.filter(\.isUnlocked).count)
+        XCTAssertEqual(corrected.updated.values.filter(\.isUnlocked).count, 0)
         XCTAssertTrue(corrected.newlyUnlocked.isEmpty)
-        XCTAssertEqual(corrected.updated["first_vrat"]?.unlockedAtUTC, paid.updated["first_vrat"]?.unlockedAtUTC)
+        XCTAssertNil(corrected.updated["first_vrat"]?.unlockedAtUTC)
     }
 
     func testTrackerReloadAndRepeatedSavesDoNotRepeatCelebrations() throws {
