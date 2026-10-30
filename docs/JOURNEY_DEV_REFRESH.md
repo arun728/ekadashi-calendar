@@ -93,3 +93,20 @@ are required for a true v1-to-v2 update.
 ## Validation results
 
 Pending implementation and checks. Update the checklist/results from actual evidence.
+
+### iOS candidate evidence
+
+- Test-first commit `8e93412`; initial compile fails because JourneySummary and
+  method/filter APIs are absent. Platform red run then catches missing Journey
+  translations and literal entitlement groups before their fixes.
+- 324 Swift core tests pass. Dev's full Flutter baseline passes 887 tests,
+  analyzer clean. Native app/widget/Glass unit tests plus all six Journey UI
+  flows pass: 60 passed, one existing StoreKit catalog check skipped because
+  this command-line iOS 26 runner does not provision its local catalog.
+- Both Glass modes have Journey screenshots. Device build succeeds and codesign
+  verifies company team, both bundle IDs and matching runtime/signed App Group.
+- Dev Home/Calendar/Panchang/widget code, assets and Android implementation/IDs
+  remain unchanged. Scoped shared changes: badge haptic preference, pending
+  grouped-award routing, Home timezone supplied to Journey, and a Settings row.
+  Dev's scene lifecycle, caches, widget links and default tradition are retained.
+- Android port and final shared-resource regeneration remain pending.

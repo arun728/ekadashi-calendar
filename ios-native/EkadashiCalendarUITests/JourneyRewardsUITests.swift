@@ -3,12 +3,25 @@ import XCTest
 final class JourneyRewardsUITests: XCTestCase {
     override func setUp() { continueAfterFailure = false }
 
-    func testFeedbackYearFiltersAndFastingMethodAvailability() {
+    private var glassSuffix = ""
+
+    func testFeedbackYearFiltersAndFastingMethodAvailability() { feedback(glass: false) }
+    func testFeedbackYearFiltersAndFastingMethodAvailabilityWithGlassLook() { feedback(glass: true) }
+
+    private func feedback(glass: Bool) {
+        glassSuffix = glass ? "-glass-on" : "-glass-off"
         let app = XCUIApplication()
         app.launchArguments = ["-ui-testing"]
         app.launch()
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 40))
+        if glass {
+            app.tabBars.buttons.element(boundBy: 4).tap()
+            let toggle = app.switches["settings_glass_look"].firstMatch
+            XCTAssertTrue(toggle.waitForExistence(timeout: 10))
+            toggle.tap()
+        }
         app.tabBars.buttons.element(boundBy: 2).tap()
+        capture(app, "journey-overview")
         app.buttons["journey_tab_achievements"].tap()
         let year = app.buttons["journey_achievements_year"]
         XCTAssertTrue(year.waitForExistence(timeout: 5))
@@ -42,7 +55,7 @@ final class JourneyRewardsUITests: XCTestCase {
 
     private func capture(_ app: XCUIApplication, _ name: String) {
         let attachment = XCTAttachment(screenshot: app.screenshot())
-        attachment.name = name; attachment.lifetime = .keepAlways; add(attachment)
+        attachment.name = name + glassSuffix; attachment.lifetime = .keepAlways; add(attachment)
     }
 
     func testAnnualPointsMandalaPremiumAndBadgeDetails() {

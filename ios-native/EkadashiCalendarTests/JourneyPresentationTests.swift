@@ -43,12 +43,13 @@ final class JourneyPresentationTests: XCTestCase {
         let model = AppModel()
         let progress = JourneyRewards.calculate(occurrences: [], history: [], completeYears: []).year(2027)
         let badge = try XCTUnwrap(JourneyBadgeCatalog.definition("first_vrat"))
-        func render(_ scheme: ColorScheme) throws -> Data {
+        func render(_ scheme: ColorScheme, glass: Bool = false) throws -> Data {
             let view = JourneyAnnualShareCard(progress: progress, badges: [badge]).frame(width: 360)
-                .environment(model).environment(\.colorScheme, scheme)
+                .environment(model).environment(\.colorScheme, scheme).environment(\.glassLookEnabled, glass)
             return try XCTUnwrap(ImageRenderer(content: view).uiImage?.pngData())
         }
         XCTAssertEqual(try render(.light), try render(.dark))
+        XCTAssertEqual(try render(.light), try render(.dark, glass: true))
     }
 
     func testSharedImageHasOpaqueGreenCornersWithRoundedInnerCard() throws {

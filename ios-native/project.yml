@@ -67,7 +67,7 @@ targets:
     entitlements:
       path: EkadashiCalendar/EkadashiCalendar.entitlements
       properties:
-        com.apple.security.application-groups: [group.com.apptinel.ekadashi-calendar]
+        com.apple.security.application-groups: [$(APP_GROUP)]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.apptinel.ekadashi-calendar
@@ -95,7 +95,7 @@ targets:
     entitlements:
       path: EkadashiWidgets/EkadashiWidgets.entitlements
       properties:
-        com.apple.security.application-groups: [group.com.apptinel.ekadashi-calendar]
+        com.apple.security.application-groups: [$(APP_GROUP)]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.apptinel.ekadashi-calendar.widgets
