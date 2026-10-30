@@ -8,6 +8,10 @@ import 'panchang_models.dart';
 class PanchangEngine {
   const PanchangEngine();
 
+  /// Widely searched festivals added in October 2026
+  /// (docs/PANCHANG_ACCURACY.md).
+  static const searchedFestivalIds = <String>{};
+
   static const _tithis = [
     'Pratipada',
     'Dvitiya',

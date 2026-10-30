@@ -23,6 +23,8 @@ public struct PanchangEngine: Sendable {
     public static let phase3FestivalIds: Set<String> = [
         "raksha-bandhan", "nag-panchami", "ratha-yatra", "durga-ashtami", "varalakshmi-vratam", "onam", "karthigai-deepam",
     ]
+    /// Widely searched festivals added in October 2026 (docs/PANCHANG_ACCURACY.md).
+    public static let searchedFestivalIds: Set<String> = []
     static let karanaFixed = ["Kimstughna", "Shakuni", "Chatushpada", "Naga"]
     static let ritus = ["Vasanta", "Grishma", "Varsha", "Sharad", "Hemanta", "Shishira"]
     static let ayanas = ["Uttarayana (tropical)", "Dakshinayana (tropical)"]
