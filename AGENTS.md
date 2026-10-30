@@ -368,3 +368,15 @@ shown; raw rise/set and positions stay exact. Keep
 `test/fixtures/panchang/drik_reference.json` (displayed Drik values, a test
 reference only, never shipped).
 
+
+Round 2 (30 October 2026, same branch, draft PR to `dev`): Arun agreed that
+Vaishnava (ISKCON) fasts and Parana follow GCal 11, the program ISKCON
+publishes with (`Gcal` in GcalEkadashi.swift / gcal_ekadashi.dart, a port of
+gaurabda), shown cut to the minute as ISKCON shows them; everything else
+follows Drik, rounded. Keep `IskconParityTests`/`iskcon_parity_test.dart`
+(67 cities, GCal 11) green. Purnima is listed once, on its fast day.
+The Panchang tab shows no warnings, notes or calculation methods
+(`PanchangNotesRemovedTests`). The 36 widely searched festivals in
+`searchedFestivalIds` keep Drik's dates (`searched_festivals.json`). The
+Panchang tab must stay faster than on `dev`: keep `BoundarySearchTests` and
+`RiseSetSearchTests` (and their Dart twins) green.
