@@ -1223,6 +1223,841 @@
     "thiruvannamalai deepam",
     "karthigai deepam"
    ]
+  },
+  {
+   "key": "lohri",
+   "engine": {
+    "id": "lohri"
+   },
+   "categories": [
+    "festival"
+   ],
+   "names": {
+    "en": "Lohri",
+    "hi": "लोहड़ी",
+    "ta": "லோஹ்ரி",
+    "te": "లోహ్రీ",
+    "gu": "લોહરી",
+    "bn": "লোহরি"
+   },
+   "aliases": [
+    "lohdi",
+    "lodi"
+   ]
+  },
+  {
+   "key": "sakat-chauth",
+   "engine": {
+    "id": "sakat-chauth"
+   },
+   "categories": [
+    "festival",
+    "chaturthi"
+   ],
+   "names": {
+    "en": "Sakat Chauth",
+    "hi": "सकट चौथ",
+    "ta": "சகட் சௌத்",
+    "te": "సకట్ చౌత్",
+    "gu": "સકટ ચોથ",
+    "bn": "সকট চৌথ"
+   },
+   "aliases": [
+    "sakat chaturthi",
+    "tilkuta chauth",
+    "sankat chauth",
+    "तिलकुटा चौथ"
+   ]
+  },
+  {
+   "key": "mauni-amavasya",
+   "engine": {
+    "id": "mauni-amavasya"
+   },
+   "categories": [
+    "festival",
+    "amavasya"
+   ],
+   "names": {
+    "en": "Mauni Amavasya",
+    "hi": "मौनी अमावस्या",
+    "ta": "மௌனி அமாவாசை",
+    "te": "మౌని అమావాస్య",
+    "gu": "મૌની અમાસ",
+    "bn": "মৌনী অমাবস্যা"
+   },
+   "aliases": [
+    "mauni amavas",
+    "magha amavasya"
+   ]
+  },
+  {
+   "key": "ratha-saptami",
+   "engine": {
+    "id": "ratha-saptami"
+   },
+   "categories": [
+    "festival"
+   ],
+   "names": {
+    "en": "Ratha Saptami",
+    "hi": "रथ सप्तमी",
+    "ta": "ரத சப்தமி",
+    "te": "రథ సప్తమి",
+    "gu": "રથ સપ્તમી",
+    "bn": "রথ সপ্তমী"
+   },
+   "aliases": [
+    "rath saptami",
+    "surya jayanti",
+    "achala saptami",
+    "அச்சலா சப்தமி"
+   ]
+  },
+  {
+   "key": "sheetala-ashtami",
+   "engine": {
+    "id": "sheetala-ashtami"
+   },
+   "categories": [
+    "festival"
+   ],
+   "names": {
+    "en": "Sheetala Ashtami (Basoda)",
+    "hi": "शीतला अष्टमी (बसौड़ा)",
+    "ta": "சீதளா அஷ்டமி",
+    "te": "శీతల అష్టమి",
+    "gu": "શીતળા આઠમ",
+    "bn": "শীতলা অষ্টমী"
+   },
+   "aliases": [
+    "sheetla ashtami",
+    "shitala ashtami",
+    "basoda",
+    "बसौड़ा"
+   ]
+  },
+  {
+   "key": "gangaur",
+   "engine": {
+    "id": "gangaur"
+   },
+   "categories": [
+    "festival"
+   ],
+   "names": {
+    "en": "Gangaur",
+    "hi": "गणगौर",
+    "ta": "கங்கௌர்",
+    "te": "గణగౌర్",
+    "gu": "ગણગૌર",
+    "bn": "গণগৌর"
+   },
+   "aliases": [
+    "gauri puja",
+    "gangaur puja"
+   ]
+  },
+  {
+   "key": "solar-new-year",
+   "engine": {
+    "id": "solar-new-year"
+   },
+   "categories": [
+    "festival",
+    "sankranti"
+   ],
+   "names": {
+    "en": "Vaisakhi / Solar New Year",
+    "hi": "वैसाखी / सौर नव वर्ष",
+    "ta": "வைசாகி / சித்திரைப் புத்தாண்டு",
+    "te": "వైశాఖి / సౌర నూతన సంవత్సరం",
+    "gu": "વૈશાખી / સૌર નવું વર્ષ",
+    "bn": "বৈশাখী / সৌর নববর্ষ"
+   },
+   "aliases": [
+    "baisakhi",
+    "vaisakhi",
+    "vaishakhi",
+    "puthandu",
+    "tamil new year",
+    "bihu",
+    "rongali bihu",
+    "bohag bihu",
+    "pohela boishakh",
+    "bengali new year",
+    "odia new year",
+    "pana sankranti",
+    "solar new year",
+    "बैसाखी",
+    "புத்தாண்டு",
+    "தமிழ்ப் புத்தாண்டு",
+    "বিহু",
+    "পয়লা বৈশাখ",
+    "নববর্ষ"
+   ]
+  },
+  {
+   "key": "mahavir-jayanti",
+   "engine": {
+    "id": "mahavir-jayanti"
+   },
+   "categories": [
+    "festival",
+    "jayanti"
+   ],
+   "names": {
+    "en": "Mahavir Jayanti",
+    "hi": "महावीर जयंती",
+    "ta": "மகாவீர் ஜெயந்தி",
+    "te": "మహావీర్ జయంతి",
+    "gu": "મહાવીર જયંતી",
+    "bn": "মহাবীর জয়ন্তী"
+   },
+   "aliases": [
+    "mahaveer jayanti",
+    "mahavir janma kalyanak"
+   ]
+  },
+  {
+   "key": "parashurama-jayanti",
+   "engine": {
+    "id": "parashurama-jayanti"
+   },
+   "categories": [
+    "festival",
+    "jayanti"
+   ],
+   "names": {
+    "en": "Parashurama Jayanti",
+    "hi": "परशुराम जयंती",
+    "ta": "பரசுராம ஜெயந்தி",
+    "te": "పరశురామ జయంతి",
+    "gu": "પરશુરામ જયંતી",
+    "bn": "পরশুরাম জয়ন্তী"
+   },
+   "aliases": [
+    "parshuram jayanti",
+    "parasurama jayanti"
+   ]
+  },
+  {
+   "key": "sita-navami",
+   "engine": {
+    "id": "sita-navami"
+   },
+   "categories": [
+    "festival",
+    "jayanti"
+   ],
+   "names": {
+    "en": "Sita Navami",
+    "hi": "सीता नवमी",
+    "ta": "சீதா நவமி",
+    "te": "సీతా నవమి",
+    "gu": "સીતા નવમી",
+    "bn": "সীতা নবমী"
+   },
+   "aliases": [
+    "janaki navami",
+    "sita jayanti",
+    "जानकी नवमी"
+   ]
+  },
+  {
+   "key": "narasimha-jayanti",
+   "engine": {
+    "id": "narasimha-jayanti"
+   },
+   "categories": [
+    "festival",
+    "jayanti"
+   ],
+   "names": {
+    "en": "Narasimha Jayanti",
+    "hi": "नृसिंह जयंती",
+    "ta": "நரசிம்ம ஜெயந்தி",
+    "te": "నృసింహ జయంతి",
+    "gu": "નૃસિંહ જયંતી",
+    "bn": "নৃসিংহ জয়ন্তী"
+   },
+   "aliases": [
+    "narsimha jayanti",
+    "nrusimha jayanti",
+    "nrisimha chaturdashi"
+   ]
+  },
+  {
+   "key": "buddha-purnima",
+   "engine": {
+    "id": "buddha-purnima"
+   },
+   "categories": [
+    "festival",
+    "purnima",
+    "jayanti"
+   ],
+   "names": {
+    "en": "Buddha Purnima",
+    "hi": "बुद्ध पूर्णिमा",
+    "ta": "புத்த பூர்ணிமா",
+    "te": "బుద్ధ పూర్ణిమ",
+    "gu": "બુદ્ધ પૂર્ણિમા",
+    "bn": "বুদ্ধ পূর্ণিমা"
+   },
+   "aliases": [
+    "buddha jayanti",
+    "vesak",
+    "vaishakha purnima",
+    "बुद्ध जयंती"
+   ]
+  },
+  {
+   "key": "vat-savitri",
+   "engine": {
+    "id": "vat-savitri"
+   },
+   "categories": [
+    "festival",
+    "amavasya"
+   ],
+   "names": {
+    "en": "Vat Savitri Vrat",
+    "hi": "वट सावित्री व्रत",
+    "ta": "வட சாவித்ரி விரதம்",
+    "te": "వట సావిత్రి వ్రతం",
+    "gu": "વટ સાવિત્રી વ્રત",
+    "bn": "বট সাবিত্রী ব্রত"
+   },
+   "aliases": [
+    "vat savitri",
+    "savitri vrat",
+    "bargad amavasya",
+    "वट अमावस्या"
+   ]
+  },
+  {
+   "key": "shani-jayanti",
+   "engine": {
+    "id": "shani-jayanti"
+   },
+   "categories": [
+    "festival",
+    "jayanti",
+    "amavasya"
+   ],
+   "names": {
+    "en": "Shani Jayanti",
+    "hi": "शनि जयंती",
+    "ta": "சனி ஜெயந்தி",
+    "te": "శని జయంతి",
+    "gu": "શનિ જયંતી",
+    "bn": "শনি জয়ন্তী"
+   },
+   "aliases": [
+    "shani amavasya",
+    "shanidev jayanti"
+   ]
+  },
+  {
+   "key": "ganga-dussehra",
+   "engine": {
+    "id": "ganga-dussehra"
+   },
+   "categories": [
+    "festival"
+   ],
+   "names": {
+    "en": "Ganga Dussehra",
+    "hi": "गंगा दशहरा",
+    "ta": "கங்கா தசரா",
+    "te": "గంగా దసరా",
+    "gu": "ગંગા દશહરા",
+    "bn": "গঙ্গা দশহরা"
+   },
+   "aliases": [
+    "ganga dashahara",
+    "gangavataran"
+   ]
+  },
+  {
+   "key": "vat-purnima",
+   "engine": {
+    "id": "vat-purnima"
+   },
+   "categories": [
+    "festival",
+    "purnima"
+   ],
+   "names": {
+    "en": "Vat Purnima Vrat",
+    "hi": "वट पूर्णिमा व्रत",
+    "ta": "வட பூர்ணிமா விரதம்",
+    "te": "వట పూర్ణిమ వ్రతం",
+    "gu": "વટ પૂર્ણિમા વ્રત",
+    "bn": "বট পূর্ণিমা ব্রত"
+   },
+   "aliases": [
+    "vat purnima",
+    "jyeshtha purnima",
+    "वट सावित्री पूर्णिमा"
+   ]
+  },
+  {
+   "key": "hariyali-teej",
+   "engine": {
+    "id": "hariyali-teej"
+   },
+   "categories": [
+    "festival"
+   ],
+   "names": {
+    "en": "Hariyali Teej",
+    "hi": "हरियाली तीज",
+    "ta": "ஹரியாலி தீஜ்",
+    "te": "హరియాలీ తీజ్",
+    "gu": "હરિયાળી તીજ",
+    "bn": "হরিয়ালি তীজ"
+   },
+   "aliases": [
+    "shravani teej",
+    "sindhara teej",
+    "teej"
+   ]
+  },
+  {
+   "key": "kajari-teej",
+   "engine": {
+    "id": "kajari-teej"
+   },
+   "categories": [
+    "festival"
+   ],
+   "names": {
+    "en": "Kajari Teej",
+    "hi": "कजरी तीज",
+    "ta": "கஜரி தீஜ்",
+    "te": "కజరీ తీజ్",
+    "gu": "કજરી તીજ",
+    "bn": "কাজরি তীজ"
+   },
+   "aliases": [
+    "kajli teej",
+    "badi teej",
+    "satudi teej",
+    "teej"
+   ]
+  },
+  {
+   "key": "hartalika-teej",
+   "engine": {
+    "id": "hartalika-teej"
+   },
+   "categories": [
+    "festival"
+   ],
+   "names": {
+    "en": "Hartalika Teej",
+    "hi": "हरतालिका तीज",
+    "ta": "ஹர்தாலிகா தீஜ்",
+    "te": "హర్తాళికా తీజ్",
+    "gu": "હરતાલિકા તીજ",
+    "bn": "হরতালিকা তীজ"
+   },
+   "aliases": [
+    "hartalika",
+    "gowri habba",
+    "teej"
+   ]
+  },
+  {
+   "key": "rishi-panchami",
+   "engine": {
+    "id": "rishi-panchami"
+   },
+   "categories": [
+    "festival"
+   ],
+   "names": {
+    "en": "Rishi Panchami",
+    "hi": "ऋषि पंचमी",
+    "ta": "ரிஷி பஞ்சமி",
+    "te": "ఋషి పంచమి",
+    "gu": "ઋષિ પંચમી",
+    "bn": "ঋষি পঞ্চমী"
+   },
+   "aliases": [
+    "rishi panchmi"
+   ]
+  },
+  {
+   "key": "radha-ashtami",
+   "engine": {
+    "id": "radha-ashtami"
+   },
+   "categories": [
+    "festival",
+    "jayanti"
+   ],
+   "names": {
+    "en": "Radha Ashtami",
+    "hi": "राधा अष्टमी",
+    "ta": "ராதா அஷ்டமி",
+    "te": "రాధాష్టమి",
+    "gu": "રાધા અષ્ટમી",
+    "bn": "রাধাষ্টমী"
+   },
+   "aliases": [
+    "radhashtami",
+    "radha jayanti"
+   ]
+  },
+  {
+   "key": "anant-chaturdashi",
+   "engine": {
+    "id": "anant-chaturdashi"
+   },
+   "categories": [
+    "festival"
+   ],
+   "names": {
+    "en": "Anant Chaturdashi (Ganesh Visarjan)",
+    "hi": "अनंत चतुर्दशी (गणेश विसर्जन)",
+    "ta": "அனந்த சதுர்த்தசி (விநாயகர் விசர்ஜனம்)",
+    "te": "అనంత చతుర్దశి (గణేశ నిమజ్జనం)",
+    "gu": "અનંત ચતુર્દશી (ગણેશ વિસર્જન)",
+    "bn": "অনন্ত চতুর্দশী (গণেশ বিসর্জন)"
+   },
+   "aliases": [
+    "ganesh visarjan",
+    "anant chaudas",
+    "ganpati visarjan",
+    "गणपति विसर्जन"
+   ]
+  },
+  {
+   "key": "vishwakarma-puja",
+   "engine": {
+    "id": "vishwakarma-puja"
+   },
+   "categories": [
+    "festival",
+    "sankranti"
+   ],
+   "names": {
+    "en": "Vishwakarma Puja",
+    "hi": "विश्वकर्मा पूजा",
+    "ta": "விஸ்வகர்மா பூஜை",
+    "te": "విశ్వకర్మ పూజ",
+    "gu": "વિશ્વકર્મા પૂજા",
+    "bn": "বিশ্বকর্মা পূজা"
+   },
+   "aliases": [
+    "vishwakarma jayanti",
+    "biswakarma puja"
+   ]
+  },
+  {
+   "key": "sarva-pitru-amavasya",
+   "engine": {
+    "id": "sarva-pitru-amavasya"
+   },
+   "categories": [
+    "festival",
+    "amavasya"
+   ],
+   "names": {
+    "en": "Sarva Pitru Amavasya (Mahalaya)",
+    "hi": "सर्व पितृ अमावस्या (महालय)",
+    "ta": "மஹாளய அமாவாசை",
+    "te": "మహాలయ అమావాస్య",
+    "gu": "સર્વ પિતૃ અમાસ (મહાલય)",
+    "bn": "মহালয়া অমাবস্যা"
+   },
+   "aliases": [
+    "mahalaya",
+    "mahalaya amavasya",
+    "pitru amavasya",
+    "pitru paksha",
+    "shraddh",
+    "महालय",
+    "মহালয়া"
+   ]
+  },
+  {
+   "key": "maha-navami",
+   "engine": {
+    "id": "maha-navami"
+   },
+   "categories": [
+    "festival",
+    "navaratri"
+   ],
+   "names": {
+    "en": "Maha Navami",
+    "hi": "महानवमी",
+    "ta": "மகா நவமி",
+    "te": "మహా నవమి",
+    "gu": "મહાનવમી",
+    "bn": "মহানবমী"
+   },
+   "aliases": [
+    "durga navami",
+    "ayudha puja",
+    "ஆயுத பூஜை",
+    "ఆయుధ పూజ"
+   ]
+  },
+  {
+   "key": "sharad-purnima",
+   "engine": {
+    "id": "sharad-purnima"
+   },
+   "categories": [
+    "festival",
+    "purnima"
+   ],
+   "names": {
+    "en": "Sharad Purnima (Kojagara)",
+    "hi": "शरद पूर्णिमा (कोजागर)",
+    "ta": "சரத் பூர்ணிமா (கோஜாகர)",
+    "te": "శరత్ పూర్ణిమ (కోజాగరి)",
+    "gu": "શરદ પૂનમ (કોજાગરી)",
+    "bn": "কোজাগরী লক্ষ্মী পূর্ণিমা"
+   },
+   "aliases": [
+    "kojagara",
+    "kojagiri purnima",
+    "kojagari lakshmi puja",
+    "sharad poornima",
+    "कोजागरी"
+   ]
+  },
+  {
+   "key": "ahoi-ashtami",
+   "engine": {
+    "id": "ahoi-ashtami"
+   },
+   "categories": [
+    "festival"
+   ],
+   "names": {
+    "en": "Ahoi Ashtami",
+    "hi": "अहोई अष्टमी",
+    "ta": "அஹோயி அஷ்டமி",
+    "te": "అహోయీ అష్టమి",
+    "gu": "અહોઈ આઠમ",
+    "bn": "অহোই অষ্টমী"
+   },
+   "aliases": [
+    "ahoi aathe",
+    "ahoi vrat"
+   ]
+  },
+  {
+   "key": "kali-puja",
+   "engine": {
+    "id": "kali-puja"
+   },
+   "categories": [
+    "festival",
+    "amavasya"
+   ],
+   "names": {
+    "en": "Kali Puja",
+    "hi": "काली पूजा",
+    "ta": "காளி பூஜை",
+    "te": "కాళీ పూజ",
+    "gu": "કાલી પૂજા",
+    "bn": "কালীপূজা"
+   },
+   "aliases": [
+    "shyama puja",
+    "kali pujo",
+    "শ্যামা পূজা"
+   ]
+  },
+  {
+   "key": "tulsi-vivah",
+   "engine": {
+    "id": "tulsi-vivah"
+   },
+   "categories": [
+    "festival"
+   ],
+   "names": {
+    "en": "Tulsi Vivah",
+    "hi": "तुलसी विवाह",
+    "ta": "துளசி விவாஹம்",
+    "te": "తులసి వివాహం",
+    "gu": "તુલસી વિવાહ",
+    "bn": "তুলসী বিবাহ"
+   },
+   "aliases": [
+    "tulasi vivah",
+    "tulsi vivah puja",
+    "tulasi kalyanam"
+   ]
+  },
+  {
+   "key": "kartika-purnima",
+   "engine": {
+    "id": "kartika-purnima"
+   },
+   "categories": [
+    "festival",
+    "purnima"
+   ],
+   "names": {
+    "en": "Kartika Purnima",
+    "hi": "कार्तिक पूर्णिमा",
+    "ta": "கார்த்திகை பௌர்ணமி",
+    "te": "కార్తీక పౌర్ణమి",
+    "gu": "કાર્તિક પૂર્ણિમા",
+    "bn": "কার্তিক পূর্ণিমা"
+   },
+   "aliases": [
+    "kartik purnima",
+    "kartik poornima",
+    "tripuri purnima",
+    "dev deepawali",
+    "dev diwali",
+    "देव दीपावली"
+   ]
+  },
+  {
+   "key": "guru-nanak-jayanti",
+   "engine": {
+    "id": "guru-nanak-jayanti"
+   },
+   "categories": [
+    "festival",
+    "jayanti"
+   ],
+   "names": {
+    "en": "Guru Nanak Jayanti",
+    "hi": "गुरु नानक जयंती",
+    "ta": "குரு நானக் ஜெயந்தி",
+    "te": "గురు నానక్ జయంతి",
+    "gu": "ગુરુ નાનક જયંતી",
+    "bn": "গুরু নানক জয়ন্তী"
+   },
+   "aliases": [
+    "gurpurab",
+    "guru nanak gurpurab",
+    "prakash parv",
+    "गुरुपर्व"
+   ]
+  },
+  {
+   "key": "vivah-panchami",
+   "engine": {
+    "id": "vivah-panchami"
+   },
+   "categories": [
+    "festival"
+   ],
+   "names": {
+    "en": "Vivah Panchami",
+    "hi": "विवाह पंचमी",
+    "ta": "விவாஹ பஞ்சமி",
+    "te": "వివాహ పంచమి",
+    "gu": "વિવાહ પંચમી",
+    "bn": "বিবাহ পঞ্চমী"
+   },
+   "aliases": [
+    "ram vivah",
+    "sita ram vivah"
+   ]
+  },
+  {
+   "key": "gita-jayanti",
+   "engine": {
+    "id": "gita-jayanti"
+   },
+   "categories": [
+    "festival",
+    "jayanti"
+   ],
+   "names": {
+    "en": "Gita Jayanti",
+    "hi": "गीता जयंती",
+    "ta": "கீதா ஜெயந்தி",
+    "te": "గీతా జయంతి",
+    "gu": "ગીતા જયંતી",
+    "bn": "গীতা জয়ন্তী"
+   },
+   "aliases": [
+    "geeta jayanti",
+    "bhagavad gita jayanti"
+   ]
+  },
+  {
+   "key": "vaikuntha-ekadashi",
+   "engine": {
+    "id": "vaikuntha-ekadashi"
+   },
+   "categories": [
+    "festival"
+   ],
+   "names": {
+    "en": "Vaikuntha Ekadashi",
+    "hi": "वैकुंठ एकादशी",
+    "ta": "வைகுண்ட ஏகாதசி",
+    "te": "వైకుంఠ ఏకాదశి",
+    "gu": "વૈકુંઠ એકાદશી",
+    "bn": "বৈকুণ্ঠ একাদশী"
+   },
+   "aliases": [
+    "vaikunta ekadasi",
+    "mukkoti ekadashi",
+    "ముక్కోటి ఏకాదశి",
+    "சொர்க்க வாசல்"
+   ]
+  },
+  {
+   "key": "dattatreya-jayanti",
+   "engine": {
+    "id": "dattatreya-jayanti"
+   },
+   "categories": [
+    "festival",
+    "jayanti",
+    "purnima"
+   ],
+   "names": {
+    "en": "Dattatreya Jayanti",
+    "hi": "दत्तात्रेय जयंती",
+    "ta": "தத்தாத்ரேய ஜெயந்தி",
+    "te": "దత్తాత్రేయ జయంతి",
+    "gu": "દત્તાત્રેય જયંતી",
+    "bn": "দত্তাত্রেয় জয়ন্তী"
+   },
+   "aliases": [
+    "datta jayanti",
+    "dattatreya jayanthi"
+   ]
+  },
+  {
+   "key": "thaipusam",
+   "engine": {
+    "id": "thaipusam"
+   },
+   "categories": [
+    "festival"
+   ],
+   "names": {
+    "en": "Thaipusam",
+    "hi": "थाईपूसम",
+    "ta": "தைப்பூசம்",
+    "te": "తైపూసం",
+    "gu": "થાઈપૂસમ",
+    "bn": "থাইপুসম"
+   },
+   "aliases": [
+    "thai pusam",
+    "thaipoosam"
+   ]
   }
  ],
  "screens": [

@@ -41,17 +41,35 @@ final class SearchedFestivalTests: XCTestCase {
         XCTAssertEqual(failures, [])
     }
 
+    func testHeldOutDates() throws {
+        for case let row as [String: Any] in try fixture().array("heldOut")! {
+            let date = CivilDate(iso: row.string("date")!)!
+            let found = calendar(try city(row.string("city")!), date.year).filter { $0.observance.id == row.string("id")! }
+            XCTAssertEqual(found.map(\.date), [date], row.string("id")!)
+        }
+    }
+
     func testTheEngineListsExactlyTheFixtureFestivals() throws {
         XCTAssertEqual(PanchangEngine.searchedFestivalIds, Set(try festivals().map { $0.string("id")! }))
     }
 
     func testEachHappensOnceAYearAndIsMajor() throws {
+        // Festivals of a solar month can fall twice in a calendar year, or
+        // not at all (no Vaikuntha Ekadashi in 2027).
+        let solarMonth: Set<String> = ["vaikuntha-ekadashi", "thaipusam"]
         for id in PanchangEngine.searchedFestivalIds {
+            var total = 0
             for year in [2026, 2027] {
                 let found = calendar(.newDelhi, year).filter { $0.observance.id == id }
-                XCTAssertEqual(found.count, 1, "\(id) \(year)")
-                XCTAssertEqual(found.first?.observance.isMajor, true, id)
+                total += found.count
+                if solarMonth.contains(id) {
+                    XCTAssertLessThanOrEqual(found.count, 2, "\(id) \(year)")
+                } else {
+                    XCTAssertEqual(found.count, 1, "\(id) \(year)")
+                }
+                XCTAssertTrue(found.allSatisfy(\.observance.isMajor), id)
             }
+            XCTAssertGreaterThan(total, 0, id)
         }
     }
 

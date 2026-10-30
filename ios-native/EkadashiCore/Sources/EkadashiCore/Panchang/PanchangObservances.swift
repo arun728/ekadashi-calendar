@@ -241,6 +241,58 @@ extension PanchangEngine {
                 note: "Krittika nakshatra during Pradosh in the solar month of Vrischika (Karthigai).")
         }
 
+        // Widely searched festivals (searchedFestivalIds). Months are Amanta,
+        // so a Krishna paksha festival keeps the Amanta month of its fortnight.
+        if makarSankrantiDay(date.adding(days: 1), city, days) { add("lohri", "Lohri", major: true) }
+        if observed(19, .moonrise, month: "Pausha", tie: .first) { add("sakat-chauth", "Sakat Chauth", major: true) }
+        if observed(30, .sunrise, month: "Pausha") { add("mauni-amavasya", "Mauni Amavasya", major: true) }
+        if observed(7, .sunrise, month: "Magha") { add("ratha-saptami", "Ratha Saptami", major: true) }
+        if observed(23, .sunrise, month: "Phalguna") { add("sheetala-ashtami", "Sheetala Ashtami (Basoda)", major: true) }
+        if observed(3, .sunrise, month: "Chaitra") { add("gangaur", "Gangaur", major: true) }
+        if observed(13, .sunrise, month: "Chaitra") { add("mahavir-jayanti", "Mahavir Jayanti", major: true) }
+        if observed(3, .pradosh, month: "Vaishakha") { add("parashurama-jayanti", "Parashurama Jayanti", major: true) }
+        if observed(9, .madhyahna, month: "Vaishakha") { add("sita-navami", "Sita Navami", major: true) }
+        if observed(14, .sunset, month: "Vaishakha", tie: .first) { add("narasimha-jayanti", "Narasimha Jayanti", major: true) }
+        if observed(15, .upavasa, month: "Vaishakha", tie: .first) { add("buddha-purnima", "Buddha Purnima", major: true) }
+        if observed(30, .sunrise, month: "Vaishakha") {
+            add("vat-savitri", "Vat Savitri Vrat", major: true)
+            add("shani-jayanti", "Shani Jayanti", major: true)
+        }
+        if let dashami = occurrence(10), gangaDussehraMonth(dashami), dashami.observedOn(.sunrise, .longest, days, city) == date {
+            add("ganga-dussehra", "Ganga Dussehra", major: true)
+        }
+        if observed(15, .upavasa, month: "Jyeshtha", tie: .first) { add("vat-purnima", "Vat Purnima Vrat", major: true) }
+        if observed(3, .sunrise, month: "Shravana") { add("hariyali-teej", "Hariyali Teej", major: true) }
+        if observed(18, .sunrise, month: "Shravana") { add("kajari-teej", "Kajari Teej", major: true) }
+        if observed(3, .sunrise, month: "Bhadrapada") { add("hartalika-teej", "Hartalika Teej", major: true) }
+        if observed(5, .madhyahna, month: "Bhadrapada") { add("rishi-panchami", "Rishi Panchami", major: true) }
+        if observed(8, .sunrise, month: "Bhadrapada") { add("radha-ashtami", "Radha Ashtami", major: true) }
+        if observed(14, .sunrise, month: "Bhadrapada") {
+            add("anant-chaturdashi", "Anant Chaturdashi (Ganesh Visarjan)", major: true)
+        }
+        if observed(30, .aparahna, month: "Bhadrapada") {
+            add("sarva-pitru-amavasya", "Sarva Pitru Amavasya (Mahalaya)", major: true)
+        }
+        if observed(9, .aparahna, month: "Ashvina") { add("maha-navami", "Maha Navami", major: true) }
+        if observed(15, .pradosh, month: "Ashvina") { add("sharad-purnima", "Sharad Purnima (Kojagara)", major: true) }
+        if observed(23, .pradosh, month: "Ashvina", tie: .first) { add("ahoi-ashtami", "Ahoi Ashtami", major: true) }
+        if observed(30, .nishita, month: "Ashvina") { add("kali-puja", "Kali Puja", major: true) }
+        if observed(12, .sunrise, month: "Kartika") { add("tulsi-vivah", "Tulsi Vivah", major: true) }
+        if observed(15, .sunrise, month: "Kartika") {
+            add("kartika-purnima", "Kartika Purnima", major: true)
+            add("guru-nanak-jayanti", "Guru Nanak Jayanti", major: true)
+        }
+        if observed(5, .sunrise, month: "Margashirsha") { add("vivah-panchami", "Vivah Panchami", major: true) }
+        if smartaEkadashi(date, days), let ekadashi = occurrence(11) {
+            if ekadashi.month == "Margashirsha" { add("gita-jayanti", "Gita Jayanti", major: true) }
+            if siderealSign(sunrise) == 8 { add("vaikuntha-ekadashi", "Vaikuntha Ekadashi", major: true) }
+        }
+        if observed(15, .pradosh, month: "Margashirsha") { add("dattatreya-jayanti", "Dattatreya Jayanti", major: true) }
+        if nakshatraAt(sunrise).index == 8, siderealSign(sunrise) == 9,
+           !(days.of(date.adding(days: -1)).sunrise.map { nakshatraAt($0).index == 8 } ?? false) {
+            add("thaipusam", "Thaipusam", major: true)
+        }
+
         addSankranti(add, city, date, sunset, days)
 
         return items.enumerated().sorted { a, b in
@@ -315,6 +367,8 @@ extension PanchangEngine {
             if sign != 9 {
                 add("sankranti-\(sign)", sign == 0 ? "Mesha Sankranti" : "\(Self.signs[sign]) Sankranti", true,
                     "Sidereal solar ingress at \(formatPanchangTime(ingress, city: city, date: date)).")
+                if sign == 0 { add("solar-new-year", "Vaisakhi / Solar New Year", true, "") }
+                if sign == 5 { add("vishwakarma-puja", "Vishwakarma Puja", true, "") }
             } else if sunset == nil || ingress < sunset! {
                 addMakar(add, ingress, city, date)
             }
@@ -324,6 +378,22 @@ extension PanchangEngine {
            siderealSign(yesterdayIngress) == 9, let previousSunset = days.of(previous).sunset, !(yesterdayIngress < previousSunset) {
             addMakar(add, yesterdayIngress, city, date)
         }
+    }
+
+    /// Whether Makar Sankranti is observed on [date] (Lohri is its eve).
+    func makarSankrantiDay(_ date: CivilDate, _ city: PanchangCity, _ days: SolarDays) -> Bool {
+        var found = false
+        addSankranti({ id, _, _, _ in if id == "sankranti-9" { found = true } }, city, date, days.of(date).sunset, days)
+        return found
+    }
+
+    /// Ganga Dussehra keeps Jyeshtha Shukla Dashami, in the Adhika month when
+    /// there is one (Drik: 25 May 2026), so not again in the Nija month.
+    func gangaDussehraMonth(_ dashami: Occurrence) -> Bool {
+        if dashami.month == "Adhika Jyeshtha" { return true }
+        guard dashami.month == "Jyeshtha" else { return false }
+        let month = monthFor(dashami.start.adding(-29 * 86400))
+        return !(month.adhika && Self.lunarMonths[month.index] == "Jyeshtha")
     }
 
     func addMakar(_ add: (String, String, Bool, String) -> Void, _ ingress: Date, _ city: PanchangCity, _ date: CivilDate) {

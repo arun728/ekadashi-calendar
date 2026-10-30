@@ -1,5 +1,5 @@
 {
- "_about": "Widely searched Hindu festivals added in October 2026 (docs/PANCHANG_ACCURACY.md, 'Widely searched festivals'): the observance day for each city. Drik Panchang's ranking of its top 25 festivals by traffic chose the first set; the rest are other widely followed festivals. Test reference only.",
+ "_about": "Widely searched Hindu festivals added in October 2026 (docs/PANCHANG_ACCURACY.md, 'Widely searched festivals'): the observance day for each city. Drik Panchang's ranking of its top 25 festivals by traffic chose the first set; the rest are other widely followed festivals. Test reference only. heldOut: dates no rule was chosen with.",
  "sources": {
   "drik": "Drik Panchang Hindu calendar for New Delhi, 2026 and 2027 (drikpanchang.com/calendars/hindu/hinducalendar.html?year=YYYY, read 30 October 2026); agrees with Prokerala wherever both list a festival, except Rishi Panchami 2027 (Prokerala: 5 September)",
   "drik-rule": "Drik Panchang: Lohri is the day before Makar Sankranti (14 January 2026, 15 January 2027 in New Delhi)",
@@ -372,6 +372,26 @@
    "dates": [
     "2027-01-23"
    ],
+   "source": "prokerala"
+  }
+ ],
+ "heldOut": [
+  {
+   "id": "sharad-purnima",
+   "city": "ujjain",
+   "date": "2025-10-06",
+   "source": "prokerala"
+  },
+  {
+   "id": "ahoi-ashtami",
+   "city": "ujjain",
+   "date": "2025-10-13",
+   "source": "prokerala"
+  },
+  {
+   "id": "kartika-purnima",
+   "city": "ujjain",
+   "date": "2025-11-05",
    "source": "prokerala"
   }
  ]

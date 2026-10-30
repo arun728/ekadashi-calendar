@@ -167,6 +167,54 @@ fasts of 2025-2027 (`test/fixtures/panchang/purnima_fasts.json`), where
 the moonrise rule missed July 2026 and May 2027 and an Aparahna rule missed
 August 2025.
 
+## Widely searched festivals (October 2026)
+
+Arun asked for the festivals people search for most. Google publishes no
+worldwide ranking of Hindu festivals (its Year in Search covers India and
+general topics), so the set starts from Drik Panchang's top 25 festivals by
+its own traffic: the ones the engine lacked were Maha Navami (Durga Puja),
+Vat Savitri and Vat Purnima, Kojagara (Sharad Purnima) and the solar New
+Year (Vaisakhi, Puthandu, Bihu, Pohela Boishakh). Other widely followed
+festivals complete it: Lohri, Sakat Chauth, Mauni Amavasya, Ratha Saptami,
+Sheetala Ashtami, Gangaur, Mahavir, Parashurama and Narasimha Jayanti,
+Sita Navami, Buddha Purnima, Shani Jayanti, Ganga Dussehra, Hariyali,
+Kajari and Hartalika Teej, Rishi Panchami, Radha Ashtami, Anant
+Chaturdashi (Ganesh Visarjan), Vishwakarma Puja, Sarva Pitru Amavasya
+(Mahalaya), Ahoi Ashtami, Kali Puja, Tulsi Vivah, Kartika Purnima, Guru
+Nanak Jayanti, Vivah Panchami, Gita Jayanti, Vaikuntha Ekadashi,
+Dattatreya Jayanti and Thaipusam: 36 in all (`searchedFestivalIds`).
+
+Each is named in all six languages in the search catalogue, with search
+aliases (Baisakhi, Puthandu, Ganesh Visarjan, Mahalaya, Kojagiri, ...).
+Dates were checked against Drik's New Delhi calendar for 2026 and 2027
+and, where Drik's year calendar lists none (Kali Puja, Mahavir Jayanti,
+Guru Nanak Jayanti, Vaikuntha Ekadashi, Thaipusam), Prokerala's pages for
+Ujjain (`test/fixtures/panchang/searched_festivals.json`). Drik and
+Prokerala agree wherever both list a festival, except Rishi Panchami 2027
+(Drik 4 September, Prokerala 5 September; the app follows Drik).
+
+| Check | Result |
+|---|---|
+| Published dates (68 festival-years) | 68/68 |
+| Held out: Prokerala 2025, Ujjain (Sharad Purnima, Ahoi Ashtami, Kartika Purnima) | 3/3 |
+
+Rules (Amanta months; the tithi's window decides the day):
+sunrise for Mauni Amavasya, Ratha Saptami, Sheetala Ashtami, Gangaur,
+Mahavir Jayanti, Vat Savitri and Shani Jayanti, Ganga Dussehra, the three
+Teej, Radha Ashtami, Anant Chaturdashi, Tulsi Vivah, Kartika Purnima and
+Guru Nanak Jayanti, Vivah Panchami; Madhyahna for Sita Navami and Rishi
+Panchami; Aparahna for Sarva Pitru Amavasya and Maha Navami; Pradosh for
+Parashurama Jayanti, Sharad Purnima, Ahoi Ashtami and Dattatreya Jayanti;
+sunset for Narasimha Jayanti; Nishita for Kali Puja; moonrise for Sakat
+Chauth; the Purnima fast day for Buddha Purnima and Vat Purnima. Lohri is
+the eve of Makar Sankranti; the solar New Year and Vishwakarma Puja fall on
+Mesha and Kanya Sankranti; Gita Jayanti is the Smarta Margashirsha Shukla
+Ekadashi and Vaikuntha Ekadashi the Smarta Shukla Ekadashi in solar Dhanu
+(none in 2027); Thaipusam is the first sunrise in Pushya in solar Makara.
+Ganga Dussehra stays in the Adhika month when Jyeshtha repeats, as Drik
+keeps it (25 May 2026). Regional variants (Vishu and Pohela Boishakh can
+fall a day after Mesha Sankranti) are search aliases of the solar New Year.
+
 ## Smarta and Vaishnava (Gaudiya/ISKCON) Ekadashi
 
 Both traditions were measured with the same harness, before and after,

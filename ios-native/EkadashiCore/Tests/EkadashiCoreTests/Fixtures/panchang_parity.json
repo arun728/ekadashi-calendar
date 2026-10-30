@@ -6303,7 +6303,14 @@
      }
     ]
    },
-   "observances": [],
+   "observances": [
+    {
+     "id": "rishi-panchami",
+     "name": "Rishi Panchami",
+     "description": "",
+     "major": true
+    }
+   ],
    "formattedSunrise": "6:00 AM IST (UTC+05:30)"
   },
   {
@@ -12614,7 +12621,14 @@
      }
     ]
    },
-   "observances": [],
+   "observances": [
+    {
+     "id": "rishi-panchami",
+     "name": "Rishi Panchami",
+     "description": "",
+     "major": true
+    }
+   ],
    "formattedSunrise": "5:58 AM IST (UTC+05:30)"
   },
   {
@@ -18895,7 +18909,14 @@
      }
     ]
    },
-   "observances": [],
+   "observances": [
+    {
+     "id": "rishi-panchami",
+     "name": "Rishi Panchami",
+     "description": "",
+     "major": true
+    }
+   ],
    "formattedSunrise": "6:15 AM BST (UTC+01:00)"
   },
   {
@@ -31461,7 +31482,14 @@
      }
     ]
    },
-   "observances": [],
+   "observances": [
+    {
+     "id": "rishi-panchami",
+     "name": "Rishi Panchami",
+     "description": "",
+     "major": true
+    }
+   ],
    "formattedSunrise": "6:13 AM AEST (UTC+10:00)"
   },
   {
@@ -37738,7 +37766,14 @@
      }
     ]
    },
-   "observances": [],
+   "observances": [
+    {
+     "id": "rishi-panchami",
+     "name": "Rishi Panchami",
+     "description": "",
+     "major": true
+    }
+   ],
    "formattedSunrise": "6:13 AM GMT (UTC+00:00)"
   },
   {
@@ -40808,7 +40843,14 @@
      }
     ]
    },
-   "observances": [],
+   "observances": [
+    {
+     "id": "rishi-panchami",
+     "name": "Rishi Panchami",
+     "description": "",
+     "major": true
+    }
+   ],
    "formattedSunrise": "3:46 AM CEST (UTC+02:00)"
   },
   {
@@ -47090,7 +47132,14 @@
      }
     ]
    },
-   "observances": [],
+   "observances": [
+    {
+     "id": "rishi-panchami",
+     "name": "Rishi Panchami",
+     "description": "",
+     "major": true
+    }
+   ],
    "formattedSunrise": "6:58 AM +1245 (UTC+12:45)"
   }
  ],
