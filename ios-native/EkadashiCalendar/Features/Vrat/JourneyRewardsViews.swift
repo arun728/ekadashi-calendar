@@ -28,7 +28,7 @@ struct JourneyOverviewPanel: View {
             JourneyMandala(progress: progress).frame(maxWidth: 310)
             Text(model.t("ios_journey_summary", String(progress.observed), String(progress.partial)))
                 .font(.subheadline).foregroundStyle(.white.opacity(0.75))
-            Label("\(model.t("current_streak")) · \(summary.currentStreak)", systemImage: AppSymbol.journeyStreak)
+            Label("\(model.t("current_streak")) · \(summary.scoped(toYear: year).currentStreak)", systemImage: AppSymbol.journeyStreak)
                 .font(.subheadline).foregroundStyle(Theme.teal)
             HStack {
                 Text(model.t("ios_journey_lifetime"))
@@ -36,6 +36,7 @@ struct JourneyOverviewPanel: View {
                 Text(summary.lifetimePoints.formatted(.number.locale(model.locale))).fontWeight(.semibold)
             }
             .font(.subheadline)
+            .accessibilityElement(children: .combine)
             .accessibilityIdentifier("journey_lifetime_points")
             Divider()
             ForEach(progress.quarters) { quarter in
@@ -142,25 +143,8 @@ struct JourneyBadgeCollection: View {
                 }
                 JourneyUniformGrid {
                     ForEach(definitions) { badge in
-                        let earned = model.vrat.userAchievements[badge.id]?.isUnlocked == true
                         Button { selected = badge } label: {
-                            VStack(spacing: 8) {
-                                JourneyBadgeArt(definition: badge, earned: earned).frame(width: 82, height: 82)
-                                Text(model.t(badge.achievement.titleKey)).font(.subheadline.weight(.semibold)).multilineTextAlignment(.center)
-                                if let year = badge.year { Text(String(year)).font(.caption).foregroundStyle(Theme.teal) }
-                                Text(model.t(badge.achievement.descriptionKey)).font(.caption).foregroundStyle(.secondary).multilineTextAlignment(.center)
-                                if earned {
-                                    Text(model.t("unlocked")).font(.caption.bold()).foregroundStyle(Theme.teal)
-                                } else {
-                                    badgeProgress(badge)
-                                    if !model.premium.isPremium && model.vrat.userAchievements.values.filter(\.isUnlocked).count >= VratTracker.freeAchievementLimit {
-                                        Text(model.t("premium_title")).font(.caption2.bold()).foregroundStyle(.secondary)
-                                    }
-                                }
-                            }
-                            .frame(minWidth: 0, maxWidth: .infinity, minHeight: 210, maxHeight: .infinity, alignment: .top)
-                            .padding(12)
-                            .glassPanel(cornerRadius: 18, tint: earned ? Theme.teal : nil)
+                            JourneyAchievementCard(definition: badge, summary: summary)
                         }
                         .buttonStyle(.plain)
                         .accessibilityIdentifier("journey_badge_\(badge.id)")
@@ -172,6 +156,33 @@ struct JourneyBadgeCollection: View {
         .sheet(item: $selected) { JourneyBadgeDetail(definition: $0, summary: summary) }
     }
 
+
+}
+
+struct JourneyAchievementCard: View {
+    @Environment(AppModel.self) private var model
+    let definition: JourneyBadgeDefinition
+    let summary: JourneySummary
+    private var earned: Bool { model.vrat.userAchievements[definition.id]?.isUnlocked == true }
+    var body: some View {
+        VStack(spacing: 8) {
+            JourneyBadgeArt(definition: definition, earned: earned).frame(width: 82, height: 82)
+            Text(model.t(definition.achievement.titleKey)).font(.subheadline.weight(.semibold)).multilineTextAlignment(.center)
+            if let year = definition.year { Text(String(year)).font(.caption).foregroundStyle(Theme.teal) }
+            Text(model.t(definition.achievement.descriptionKey)).font(.caption).foregroundStyle(.secondary).multilineTextAlignment(.center)
+            if earned {
+                Text(model.t("unlocked")).font(.caption.bold()).foregroundStyle(Theme.teal)
+            } else {
+                badgeProgress(definition)
+                if !model.premium.isPremium && model.vrat.userAchievements.values.filter(\.isUnlocked).count >= VratTracker.freeAchievementLimit {
+                    Text(model.t("premium_title")).font(.caption2.bold()).foregroundStyle(.secondary)
+                }
+            }
+        }
+        .frame(minWidth: 0, maxWidth: .infinity, minHeight: 210, maxHeight: .infinity, alignment: .top)
+        .padding(12)
+        .glassPanel(cornerRadius: 18, tint: earned ? Theme.teal : nil)
+    }
     @ViewBuilder private func badgeProgress(_ badge: JourneyBadgeDefinition) -> some View {
         let progress = badge.progress(in: summary)
         if case .quarter(let year, let q) = badge.rule {

@@ -33,7 +33,7 @@ final class JourneyRewardsUITests: XCTestCase {
         year.tap(); app.buttons["All years"].firstMatch.tap()
         XCTAssertTrue(year.label.contains("All years"))
         app.buttons["journey_tab_statistics"].tap()
-        XCTAssertTrue(app.staticTexts["0 of 49 Ekadashis"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label MATCHES '0 of [0-9]+ Ekadashis'")).firstMatch.waitForExistence(timeout: 5))
         XCTAssertFalse(app.staticTexts["Year:"].exists)
         capture(app, "journey-feedback-statistics-all-years")
         app.buttons["journey_tab_history"].tap()

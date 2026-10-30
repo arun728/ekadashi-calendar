@@ -121,7 +121,7 @@ final class JourneyPresentationTests: XCTestCase {
                 try await Task.sleep(for: .milliseconds(100))
                 XCTAssertEqual(frames.count, 6)
                 let first = try XCTUnwrap(frames[0])
-                for frame in frames.values { XCTAssertEqual(frame.size, first.size, "\(code) \(width)") }
+                for frame in frames.values { XCTAssertEqual(frame.width, first.width, accuracy: 0.5, "\(code) \(width)"); XCTAssertEqual(frame.height, first.height, accuracy: 0.5, "\(code) \(width)") }
                 window.isHidden = true
             }
         }

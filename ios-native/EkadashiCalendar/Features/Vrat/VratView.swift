@@ -18,6 +18,8 @@ struct VratView: View {
         model.vrat.journey(events, completeYears: Set(model.enabledYears), zone: model.scheduleZone)
     }
 
+    private var periodJourney: JourneySummary { journey.scoped(toYear: allYears ? nil : year) }
+
     private var events: [EkadashiOccurrence] { model.ekadashis }
     private var years: [Int] { model.vrat.years(events) }
 
@@ -63,21 +65,19 @@ struct VratView: View {
     // MARK: Overview
 
     private var overview: some View {
-        let records = model.vrat.allRecords
-        let totalObserved = records.filter { $0.status == .observed }.count
-        let longest = journey.longestStreak
+        let progress = periodJourney
+        let totalObserved = progress.observedCount
+        let longest = progress.longestStreak
         let stats = periodStats
-        let milestone = JourneyBadgeCatalog.nextMilestone(summary: journey, earned: model.vrat.userAchievements)
-        let today = CivilDate.today()
-        let recent = events.sorted { $0.date < $1.date }.filter { abs(today.days(until: $0.date)) <= 30 }.prefix(4)
+        let milestone = progress.nextMilestone(earned: model.vrat.userAchievements)
         return ScrollView {
             VStack(alignment: .leading, spacing: 12) {
                 HStack { Spacer(); yearMenu.accessibilityIdentifier("journey_overview_year") }
-                ForEach(allYears ? years.sorted() : [year], id: \.self) { value in
+                ForEach(allYears ? journey.visibleYears : [year], id: \.self) { value in
                     JourneyOverviewPanel(summary: journey, year: value)
                 }
                 JourneyUniformGrid(columns: 2) {
-                    MetricCard(title: model.t("current_streak"), value: "\(journey.currentStreak)",
+                    MetricCard(title: model.t("current_streak"), value: "\(progress.currentStreak)",
                                subtitle: model.t("ekadashis_unit"), symbol: AppSymbol.journeyStreak, color: .orange)
                         .accessibilityIdentifier("journey_metric_current")
                     MetricCard(title: model.t("longest_streak"), value: "\(longest)", subtitle: model.t("ekadashis_unit"),
@@ -99,28 +99,25 @@ struct VratView: View {
                         HStack {
                             Label(model.t("next_milestone"), systemImage: AppSymbol.journeyMilestone)
                             Spacer()
-                            Text("\(milestone.goalProgress(in: journey)) / \(milestone.target)")
+                            Text("\(milestone.goalProgress(in: progress)) / \(milestone.target)")
                         }
                         .font(.caption.bold())
                         .foregroundStyle(Theme.teal)
                         Text(model.t(milestone.achievement.titleKey)).font(.headline)
-                        if milestone.goalProgress(in: journey) >= milestone.target && !model.premium.isPremium {
+                        if milestone.goalProgress(in: progress) >= milestone.target && !model.premium.isPremium {
                             Button(model.t("premium_more_achievements")) { model.openPaywall() }
                                 .font(.caption.bold())
                         } else {
-                            Text(model.t("ios_journey_remaining", String(max(0, milestone.target - milestone.goalProgress(in: journey)))))
+                            Text(model.t("ios_journey_remaining", String(max(0, milestone.target - milestone.goalProgress(in: progress)))))
                                 .font(.caption).foregroundStyle(.secondary)
                         }
-                        ProgressView(value: Double(milestone.goalProgress(in: journey)), total: Double(max(milestone.target, 1)))
+                        ProgressView(value: Double(milestone.goalProgress(in: progress)), total: Double(max(milestone.target, 1)))
                             .tint(Theme.teal)
                     }
                     .padding(16)
                     .glassPanel(cornerRadius: 16, tint: Theme.teal)
                     .padding(.top, 8)
                 }
-                Text(model.t("record_observance")).font(.headline).foregroundStyle(Theme.teal).padding(.top, 8)
-                Text(model.t("tap_to_record_instruction")).font(.caption).foregroundStyle(.secondary)
-                ForEach(Array(recent)) { row($0) }
             }
             .padding(16)
         }
@@ -183,11 +180,11 @@ struct VratView: View {
 
     private var periodStats: (totalOccurrences: Int, observedCount: Int, partialCount: Int,
                               missedCount: Int, unrecordedCount: Int, completionPercentage: Double) {
-        let values = (allYears ? years : [year]).map { model.vrat.annualStats($0, events) }
-        let total = values.reduce(0) { $0 + $1.totalOccurrences }
-        let observed = values.reduce(0) { $0 + $1.observedCount }
-        return (total, observed, values.reduce(0) { $0 + $1.partialCount },
-                values.reduce(0) { $0 + $1.missedCount }, values.reduce(0) { $0 + $1.unrecordedCount },
+        let summary = periodJourney
+        let segments = allYears ? summary.eligibleSegments : summary.segments
+        let total = segments.count, observed = summary.observedCount, partial = summary.partialCount
+        let missed = summary.eligibleSegments.filter { $0.status == .missed }.count
+        return (total, observed, partial, missed, max(0, total - observed - partial - missed),
                 total == 0 ? 0 : Double(observed) / Double(total) * 100)
     }
 
@@ -261,19 +258,13 @@ struct VratView: View {
                 .frame(maxWidth: .infinity)
                 .padding(20)
                 .glassPanel(cornerRadius: 16)
-                Grid(horizontalSpacing: 12, verticalSpacing: 12) {
-                    GridRow {
+                JourneyUniformGrid(columns: 2) {
                         countCard("observed", stats.observedCount, Theme.observed)
                         countCard("partial", stats.partialCount, Theme.partial)
-                    }
-                    GridRow {
                         countCard("missed", stats.missedCount, Theme.missed)
                         countCard("unrecorded", stats.unrecordedCount, .gray)
-                    }
-                    GridRow {
-                        countCard("current_streak", journey.currentStreak, .orange)
-                        countCard("longest_streak", journey.longestStreak, Theme.amber)
-                    }
+                        countCard("current_streak", periodJourney.currentStreak, .orange)
+                        countCard("longest_streak", periodJourney.longestStreak, Theme.amber)
                 }
             }
             .padding(16)
@@ -281,13 +272,8 @@ struct VratView: View {
     }
 
     private func countCard(_ key: String, _ value: Int, _ color: Color) -> some View {
-        VStack(spacing: 6) {
-            Text("\(value)").font(.title3.bold()).foregroundStyle(color)
-            Text(model.t(key)).font(.caption).multilineTextAlignment(.center)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(14)
-        .glassPanel(cornerRadius: 14, tint: color)
+        JourneyCountCard(title: model.t(key), value: value, color: color)
+            .accessibilityIdentifier("journey_stat_\(key)")
     }
 
     // MARK: Achievements
@@ -353,5 +339,20 @@ struct JourneyUniformGrid: Layout {
                                    y: bounds.minY + CGFloat(i / d.count) * (d.cellHeight + spacing)),
                        anchor: .topLeading, proposal: ProposedViewSize(width: d.cellWidth, height: d.cellHeight))
         }
+    }
+}
+
+struct JourneyCountCard: View {
+    let title: String
+    let value: Int
+    let color: Color
+    var body: some View {
+        VStack(spacing: 6) {
+            Text("\(value)").font(.title3.bold()).foregroundStyle(color)
+            Text(title).font(.caption).multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(14)
+        .glassPanel(cornerRadius: 14, tint: color)
     }
 }

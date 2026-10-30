@@ -426,7 +426,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get notes_hint => 'वैकल्पिक टिप्पणी लिखें...';
 
   @override
-  String get history => 'इतिहास';
+  String get history => 'दर्ज करें';
 
   @override
   String get statistics => 'आंकड़े';

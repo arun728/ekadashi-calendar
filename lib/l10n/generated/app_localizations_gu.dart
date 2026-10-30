@@ -424,7 +424,7 @@ class AppLocalizationsGu extends AppLocalizations {
   String get notes_hint => 'વૈકલ્પિક વ્યક્તિગત નોંધ ઉમેરો...';
 
   @override
-  String get history => 'ઇતિહાસ';
+  String get history => 'નોંધો';
 
   @override
   String get statistics => 'આંકડા';

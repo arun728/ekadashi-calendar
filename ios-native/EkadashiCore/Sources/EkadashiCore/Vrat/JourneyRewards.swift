@@ -32,6 +32,7 @@ public struct JourneyYear: Equatable, Sendable {
 
 public struct JourneySummary: Sendable {
     public let years: [Int: JourneyYear]
+    public let asOf: CivilDate
     public let observedCount: Int
     public let partialCount: Int
     public let currentStreak: Int
@@ -42,6 +43,32 @@ public struct JourneySummary: Sendable {
     private let lifetimeBasePoints: Int
     public var lifetimePoints: Int { lifetimeBasePoints + years.values.reduce(0) { $0 + $1.points - $1.basePoints } }
 
+    public var segments: [JourneySegment] { years.keys.sorted().flatMap { years[$0]!.segments } }
+    public var eligibleSegments: [JourneySegment] { segments.filter { !$0.isFuture } }
+    public var visibleYears: [Int] { years.keys.filter { $0 >= 2026 && $0 <= asOf.year }.sorted(by: >) }
+
+    /// Presentation-only scope. Persisted awards and lifetime points use the original summary.
+    public func scoped(toYear year: Int?) -> JourneySummary {
+        let selected = years.filter { key, _ in year.map { key == $0 } ?? (key >= 2026 && key <= asOf.year) }
+        let ordered = selected.keys.sorted().flatMap { selected[$0]!.segments }
+        let eligible = ordered.filter { !$0.isFuture }
+        let observed = eligible.filter { $0.status == .observed }.count
+        let partial = eligible.filter { $0.status == .partial }.count
+        let streak = JourneyRewards.streaks(ordered)
+        return JourneySummary(years: selected, observedCount: observed, partialCount: partial,
+            currentStreak: streak.current, longestStreak: streak.longest, hasReturned: streak.returned,
+            lifetimeBasePoints: observed * 100 + partial * 50, fullCurrentStreak: streak.fullCurrent,
+            fullLongestStreak: streak.fullLongest, asOf: asOf)
+    }
+
+    public func nextMilestone(earned: [String: UserAchievement]) -> JourneyBadgeDefinition? {
+        var periodEarned: [String: UserAchievement] = [:]
+        for badge in JourneyBadgeCatalog.all(years: Array(years.keys)) where badge.progress(in: self) >= badge.target {
+            if let state = earned[badge.id], state.isUnlocked { periodEarned[badge.id] = state }
+        }
+        return JourneyBadgeCatalog.nextMilestone(summary: self, earned: periodEarned)
+    }
+
     public func year(_ year: Int) -> JourneyYear {
         years[year] ?? JourneyYear(year: year, segments: [], quarters: (1...4).map {
             JourneyQuarter(id: $0, total: 0, observed: 0, completed: false)
@@ -49,7 +76,8 @@ public struct JourneySummary: Sendable {
     }
 
     init(years: [Int: JourneyYear], observedCount: Int, partialCount: Int, currentStreak: Int,
-         longestStreak: Int, hasReturned: Bool, lifetimeBasePoints: Int, fullCurrentStreak: Int = 0, fullLongestStreak: Int = 0) {
+         longestStreak: Int, hasReturned: Bool, lifetimeBasePoints: Int, fullCurrentStreak: Int = 0, fullLongestStreak: Int = 0, asOf: CivilDate = CivilDate.today()) {
+        self.asOf = asOf
         self.years = years; self.observedCount = observedCount; self.partialCount = partialCount
         self.currentStreak = currentStreak; self.longestStreak = longestStreak
         self.fullCurrentStreak = fullCurrentStreak; self.fullLongestStreak = fullLongestStreak
@@ -101,6 +129,12 @@ public enum JourneyRewards {
             }
             years[year] = JourneyYear(year: year, segments: list, quarters: quarters, scheduleComplete: complete)
         }
+        let streak = Self.streaks(segments)
+        return JourneySummary(years: years, observedCount: lifetimeObserved, partialCount: lifetimePartial,
+                              currentStreak: streak.current, longestStreak: streak.longest, hasReturned: streak.returned,
+                              lifetimeBasePoints: lifetimeObserved * 100 + lifetimePartial * 50, fullCurrentStreak: streak.fullCurrent, fullLongestStreak: streak.fullLongest, asOf: today)
+    }
+    fileprivate static func streaks(_ segments: [JourneySegment]) -> (current: Int, longest: Int, fullCurrent: Int, fullLongest: Int, returned: Bool) {
         var run = 0, longest = 0, returned = false
         var fullRun = 0, fullLongest = 0
         let eligible = segments.filter { !$0.isFuture }
@@ -116,10 +150,9 @@ public enum JourneyRewards {
             } else { run = 0 }
             previous = segment
         }
-        return JourneySummary(years: years, observedCount: lifetimeObserved, partialCount: lifetimePartial,
-                              currentStreak: run, longestStreak: longest, hasReturned: returned,
-                              lifetimeBasePoints: lifetimeObserved * 100 + lifetimePartial * 50, fullCurrentStreak: fullRun, fullLongestStreak: fullLongest)
+        return (run, longest, fullRun, fullLongest, returned)
     }
+
 }
 
 public struct JourneyBadgeDefinition: Identifiable, Sendable {
@@ -222,7 +255,7 @@ public enum JourneyBadgeEvaluator {
         var updated = current, newly: [Achievement] = [], remaining = max(0, newUnlockLimit ?? Int.max)
         let definitions = JourneyBadgeCatalog.all(years: Array(summary.years.keys))
         let stamp = ISO8601.string(now)
-        for definition in JourneyBadgeCatalog.all(years: Array(summary.years.keys)) {
+        for definition in definitions {
             let existing = current[definition.id], wasUnlocked = existing?.isUnlocked ?? false
             let progress = definition.progress(in: summary)
             let unlocked = progress == definition.target && (wasUnlocked || remaining > 0)

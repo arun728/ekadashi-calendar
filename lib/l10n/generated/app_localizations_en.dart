@@ -426,7 +426,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notes_hint => 'Add an optional personal note...';
 
   @override
-  String get history => 'History';
+  String get history => 'Record';
 
   @override
   String get statistics => 'Statistics';

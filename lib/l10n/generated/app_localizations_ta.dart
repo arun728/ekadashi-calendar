@@ -427,7 +427,7 @@ class AppLocalizationsTa extends AppLocalizations {
   String get notes_hint => 'விருப்பப்பட்டால் குறிப்பை சேர்க்கவும்...';
 
   @override
-  String get history => 'வரலாறு';
+  String get history => 'பதிவு';
 
   @override
   String get statistics => 'புள்ளிவிவரங்கள்';

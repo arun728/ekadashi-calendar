@@ -429,7 +429,7 @@ class AppLocalizationsBn extends AppLocalizations {
   String get notes_hint => 'ঐচ্ছিক ব্যক্তিগত নোট যোগ করুন...';
 
   @override
-  String get history => 'ইতিহাস';
+  String get history => 'নথিভুক্ত করুন';
 
   @override
   String get statistics => 'পরিসংখ্যান';

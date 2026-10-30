@@ -907,7 +907,7 @@ abstract class AppLocalizations {
   /// No description provided for @history.
   ///
   /// In en, this message translates to:
-  /// **'History'**
+  /// **'Record'**
   String get history;
 
   /// No description provided for @statistics.

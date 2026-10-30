@@ -428,7 +428,7 @@ class AppLocalizationsTe extends AppLocalizations {
   String get notes_hint => 'ఐచ్ఛిక వ్యక్తిగత గమనిక చేర్చండి...';
 
   @override
-  String get history => 'చరిత్ర';
+  String get history => 'నమోదు';
 
   @override
   String get statistics => 'గణాంకాలు';
