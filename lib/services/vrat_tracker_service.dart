@@ -394,15 +394,25 @@ class VratTrackerService extends ChangeNotifier {
     List<EkadashiDate> occurrences,
   ) {
     if (_rewardsStoreCorrupt) return [];
+    final summary = journey(occurrences);
+    final qualifiedUnlocked =
+        JourneyBadgeCatalog.all(summary.years.keys.toList())
+            .where(
+              (b) =>
+                  _userAchievements[b.id]?.isUnlocked == true &&
+                  b.progress(summary) == b.target,
+            )
+            .length;
     final result = JourneyBadgeEvaluator.evaluate(
-      summary: journey(occurrences),
+      summary: summary,
       current: _userAchievements,
       now: _now(),
       newUnlockLimit: _premiumAchievements()
           ? null
-          : (freeAchievementLimit -
-                    _userAchievements.values.where((a) => a.isUnlocked).length)
-                .clamp(0, freeAchievementLimit),
+          : (freeAchievementLimit - qualifiedUnlocked).clamp(
+              0,
+              freeAchievementLimit,
+            ),
     );
     _userAchievements
       ..clear()

@@ -1,5 +1,8 @@
 # Journey regression audit — 30 October 2026
 
+This is the historical comparison at `5a2da32`. The subsequently approved streak
+and badge policy changes are documented in [JOURNEY_CONSISTENCY_AND_REVERSAL.md](JOURNEY_CONSISTENCY_AND_REVERSAL.md).
+
 ## References and scope
 
 Compared PR25 `feature/premium-journey` at `7b5d146` with PR32

@@ -246,6 +246,62 @@ void main() {
       );
       await capture('glass_on_annual_badges_2027');
       expect(theme.isGlassLookEnabled, true);
+      await tap('journey_tab_history');
+      await tap('journey_history_year_menu');
+      await tester.tap(find.text('2026').last);
+      await tester.pumpAndSettle();
+      await tap('journey_row_ekadashi:2026:03');
+      await tap('vrat_status_observed');
+      await tap('vrat_record_save');
+      await tap('journey_tab_overview');
+      expect(find.text('Current consistency streak · 3'), findsOneWidget);
+      await capture('consistency_mixed_three');
+      await tap('journey_tab_history');
+      await tap('journey_row_ekadashi:2026:02');
+      await tap('vrat_status_observed');
+      await tap('vrat_record_save');
+      await tester.pump(const Duration(seconds: 1));
+      if (find
+          .byKey(const Key('journey_celebration_close'))
+          .evaluate()
+          .isNotEmpty) {
+        await tap('journey_celebration_close');
+      }
+      expect(
+        tracker.userAchievements['consistent_observance']!.isUnlocked,
+        true,
+      );
+      await tap('journey_tab_overview');
+      expect(find.text('Current consistency streak · 3'), findsOneWidget);
+      expect(find.text('300'), findsWidgets);
+      await capture('consistency_fully_observed_three');
+      await tap('journey_tab_statistics');
+      expect(find.text('2026 Full-observance completion'), findsOneWidget);
+      await capture('consistency_statistics_three');
+      await tap('journey_tab_history');
+      await tap('journey_row_ekadashi:2026:02');
+      await tap('vrat_record_delete');
+      await tester.tap(find.text('Delete Record').last);
+      await tester.pumpAndSettle();
+      expect(
+        tracker.userAchievements['consistent_observance']!.isUnlocked,
+        false,
+      );
+      await tap('journey_tab_overview');
+      expect(find.text('Current consistency streak · 1'), findsOneWidget);
+      await capture('consistency_after_middle_deletion');
+      await tap('journey_tab_achievements');
+      await tap('journey_badge_filter_consistency');
+      await tap('journey_badge_consistent_observance');
+      expect(find.text('Locked'), findsWidgets);
+      await capture('consistency_badge_relocked');
+      final restored = VratTrackerService();
+      await restored.init();
+      expect(restored.recordedEntryCount, 2);
+      expect(
+        restored.userAchievements['consistent_observance']!.isUnlocked,
+        false,
+      );
     },
   );
 }

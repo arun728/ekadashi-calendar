@@ -166,3 +166,16 @@ on the annual share card; users can deselect them. The personal/no-monetary-rewa
 sentence is removed from the visible Overview in every language. Scoring and
 streak policy are unchanged. Full Flutter suite now passes 937 tests and Swift
 core passes 325.
+
+
+## Approved consistency/reversal update (30 October 2026)
+
+The latest user-approved policy supersedes the original strict-current-streak
+and permanent-badge rules. See [JOURNEY_CONSISTENCY_AND_REVERSAL.md](JOURNEY_CONSISTENCY_AND_REVERSAL.md).
+Current consistency ends at the latest recorded event and counts full or partial
+observances, with internal gaps/misses breaking it. Full-observance streak badges
+and annual completion remain strict. Editing/deleting history relocks badges
+whose original requirements no longer hold. iOS first, then Android; simulator
+flows prove three entries -> streak three -> delete middle -> streak one and
+badge locked. Final gates: 941 Flutter, 330 Swift core, 89 Kotlin, 62 native passed
+(one known catalog skip), analyzer and generated files clean.

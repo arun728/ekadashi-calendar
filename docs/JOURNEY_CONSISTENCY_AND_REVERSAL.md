@@ -57,3 +57,26 @@ consistency label. Green runs and final cross-platform/device evidence follow.
 - A supplementary simulator deletion/relocked-badge UI flow and Android parity
   validation are recorded below when complete. The signed iPhone build succeeded;
   it is staged for installation after cross-platform validation.
+
+
+## Final cross-platform validation
+
+- iOS simulator UI: three observed entries show current consistency three;
+  deleting the middle entry shows one, and the full-observance three-fast badge
+  is Locked. Screenshots exported from `/tmp/journey-consistency-delete-ui.xcresult`.
+- Android red run reproduced old streak, sticky-badge and title-truncation issues
+  (`8fea6d4`). All 43 focused parity tests passed after porting.
+- Full Flutter suite: **941 passed**; analyzer clean; generated-file check and
+  formatting clean. Swift core: **330 passed**; focused final Journey rerun:
+  **26 passed**. Unique native checks: **62 passed**, one known StoreKit catalog
+  command-line runner skip. Kotlin/widget tests: **89 passed**, 11 suites.
+- Full Android emulator flow passed in both Glass settings and six languages,
+  including mixed/full consistency three, deletion to one, badge relocking and
+  persisted reload state. Five new flow screenshots join the previous screen set.
+- Regular Android release build succeeds after refreshing generated Flutter
+  plugin metadata left by the integration runner; no build-script workaround or
+  application/signing configuration change was needed. Its release certificate
+  matches the installed Samsung M52. iPhone company-signed device build succeeds.
+- Screenshot evidence: `/Users/kumarm/Documents/Codex/journey-consistency-evidence`.
+  Physical-device updates are performed in place, never by uninstalling/resetting.
+- No dev/main changes, merges or CI runs. All work remains on PR32.

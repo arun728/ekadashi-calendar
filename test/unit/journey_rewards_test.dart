@@ -207,16 +207,20 @@ void main() {
       0,
     );
   });
-  test('partial breaks streak and quarter/year bonus, retains base points', () {
-    final es = journeyEvents(2026),
-        rows = journeyEvents(2026).map(journeyRecord).toList();
-    rows[1] = journeyRecord(es[1], ObservanceStatus.partial);
-    final s = summary(es, rows);
-    expect(s.year(2026).basePoints, 2350);
-    expect(s.year(2026).annualBonus, 0);
-    expect(s.year(2026).quarters.map((q) => q.points), [0, 150, 150, 150]);
-    expect(s.longestStreak, 24);
-  });
+  test(
+    'partial breaks full-observance streak and bonuses, retains base points',
+    () {
+      final es = journeyEvents(2026),
+          rows = journeyEvents(2026).map(journeyRecord).toList();
+      rows[1] = journeyRecord(es[1], ObservanceStatus.partial);
+      final s = summary(es, rows);
+      expect(s.year(2026).basePoints, 2350);
+      expect(s.year(2026).annualBonus, 0);
+      expect(s.year(2026).quarters.map((q) => q.points), [0, 150, 150, 150]);
+      expect(s.longestStreak, 24);
+      expect(s.fullLongestStreak, 22);
+    },
+  );
   test(
     'UID dedup, newest corrections, deletion and unknown records match Swift',
     () {

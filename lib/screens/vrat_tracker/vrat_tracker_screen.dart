@@ -900,8 +900,6 @@ class _MetricCard extends StatelessWidget {
         const SizedBox(height: 10),
         Text(
           title,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
           style: TextStyle(
             fontSize: IosText.caption,
             fontWeight: FontWeight.w500,

@@ -67,11 +67,14 @@ class JourneySummary {
     this.partialCount,
     this.currentStreak,
     this.longestStreak,
-    this.hasReturned,
-  );
+    this.hasReturned, {
+    this.fullCurrentStreak = 0,
+    this.fullLongestStreak = 0,
+  });
   final Map<int, JourneyYear> years;
   final int observedCount, partialCount, currentStreak, longestStreak;
   final bool hasReturned;
+  final int fullCurrentStreak, fullLongestStreak;
   int get lifetimePoints =>
       observedCount * 100 +
       partialCount * 50 +
@@ -179,18 +182,39 @@ abstract final class JourneyRewards {
       ], complete);
     }
     var run = 0, longest = 0, returned = false;
+    var fullRun = 0, fullLongest = 0;
+    final eligible = segments.where((e) => !e.isFuture).toList();
+    final lastRecorded = eligible.lastIndexWhere(
+      (e) => e.status != ObservanceStatus.unrecorded,
+    );
     JourneySegment? previous;
-    for (final e in segments.where((e) => !e.isFuture)) {
+    for (final e in eligible.take(lastRecorded + 1)) {
       if (e.status == ObservanceStatus.observed) {
+        fullRun++;
+        fullLongest = math.max(fullLongest, fullRun);
+        if (previous?.status == ObservanceStatus.missed) returned = true;
+      } else {
+        fullRun = 0;
+      }
+      if (e.status == ObservanceStatus.observed ||
+          e.status == ObservanceStatus.partial) {
         run++;
         longest = math.max(longest, run);
-        if (previous?.status == ObservanceStatus.missed) returned = true;
       } else {
         run = 0;
       }
       previous = e;
     }
-    return JourneySummary(years, observed, partial, run, longest, returned);
+    return JourneySummary(
+      years,
+      observed,
+      partial,
+      run,
+      longest,
+      returned,
+      fullCurrentStreak: fullRun,
+      fullLongestStreak: fullLongest,
+    );
   }
 }
 
@@ -238,7 +262,7 @@ class JourneyBadgeDefinition {
   int progress(JourneySummary s) {
     final value = switch (rule) {
       JourneyRule.observed => s.observedCount,
-      JourneyRule.streak => s.longestStreak,
+      JourneyRule.streak => s.fullLongestStreak,
       JourneyRule.partial => s.partialCount,
       JourneyRule.returned => s.hasReturned ? 1 : 0,
       JourneyRule.quarter =>
@@ -251,7 +275,7 @@ class JourneyBadgeDefinition {
   }
 
   int goalProgress(JourneySummary s) => rule == JourneyRule.streak
-      ? math.min(target, s.currentStreak)
+      ? math.min(target, s.fullCurrentStreak)
       : progress(s);
 }
 
@@ -383,7 +407,7 @@ abstract final class JourneyBadgeEvaluator {
       final previous = current[b.id],
           was = previous?.isUnlocked ?? false,
           progress = b.progress(summary);
-      final unlocked = was || (progress == b.target && remaining > 0);
+      final unlocked = progress == b.target && (was || remaining > 0);
       if (unlocked && !was) {
         remaining--;
         newly.add(b.achievement);
@@ -393,10 +417,8 @@ abstract final class JourneyBadgeEvaluator {
         achievementId: b.id,
         progressValue: progress,
         isUnlocked: unlocked,
-        unlockedAtUTC: was
-            ? previous?.unlockedAtUTC
-            : unlocked
-            ? stamp
+        unlockedAtUTC: unlocked
+            ? (was ? previous?.unlockedAtUTC : stamp)
             : null,
         lastEvaluatedAtUTC: stamp,
       );

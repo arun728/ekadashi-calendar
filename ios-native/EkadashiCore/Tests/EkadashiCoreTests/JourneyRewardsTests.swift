@@ -155,6 +155,7 @@ final class JourneyRewardsTests: XCTestCase {
         XCTAssertEqual(s.year(2026).annualBonus, 0)
         XCTAssertEqual(s.year(2026).quarters.map(\.points), [0, 150, 150, 150])
         XCTAssertEqual(s.longestStreak, 24)
+        XCTAssertEqual(s.fullLongestStreak, 22)
     }
 
     func testDuplicateSchedulesAndRecordsDoNotMultiplyPoints() {
