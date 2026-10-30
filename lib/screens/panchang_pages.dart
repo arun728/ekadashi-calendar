@@ -1413,16 +1413,6 @@ class _PanchangEkadashiViewState extends State<PanchangEkadashiView> {
               ),
           ],
         ),
-        Text(
-          _t(
-            context,
-            widget.tradition == EkadashiTradition.smarta
-                ? 'panchang_smarta_rule'
-                : 'panchang_vaishnava_rule',
-          ),
-          key: const Key('panchang_tradition_rule'),
-          style: _secondary(context, IosText.subheadline),
-        ),
         if (_failed)
           Column(
             children: [

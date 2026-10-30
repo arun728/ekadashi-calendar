@@ -191,6 +191,8 @@ void main() {
         'panchang_rule',
         'panchang_calculation_details',
         'panchang_ayanamsa',
+        'panchang_smarta_rule',
+        'panchang_vaishnava_rule',
       ];
       for (final page in PanchangPage.values) {
         await tester.tap(find.byKey(Key('panchang_tab_${page.raw}')));
@@ -241,6 +243,8 @@ void main() {
       'panchang_calculation_details',
       'panchang_ayanamsa',
       'paranaReason',
+      'panchang_smarta_rule',
+      'panchang_vaishnava_rule',
     ]) {
       expect(source.contains(text), isFalse, reason: text);
     }
@@ -630,7 +634,7 @@ void main() {
     );
   });
 
-  testWidgets('Ekadashi: glass tradition chips, rule 15, cards radius 18', (
+  testWidgets('Ekadashi: glass tradition chips, no rule note, cards radius 18', (
     tester,
   ) async {
     final premium = await premiumService(false);
@@ -649,8 +653,7 @@ void main() {
     await tester.tap(chip);
     await tester.pumpAndSettle();
     expect(tester.widget<GlassChip>(chip).selected, isTrue);
-    final rule = find.byKey(const Key('panchang_tradition_rule'));
-    expect(styleOf(tester, rule).fontSize, IosText.subheadline);
+    expect(find.byKey(const Key('panchang_tradition_rule')), findsNothing);
   });
 }
 
