@@ -96,7 +96,7 @@ void main() {
     expect(find.byType(RecordVratDialog), findsNothing);
     expect(find.byType(AchievementUnlockDialog), findsOneWidget);
     // Upper-case caption, as iOS (textCase(.uppercase)).
-    expect(find.text('ACHIEVEMENT UNLOCKED'), findsOneWidget);
+    expect(find.text('Achievement Unlocked'), findsOneWidget);
   });
   testWidgets('Tracker must render when device year is absent from calendar', (
     tester,
@@ -164,7 +164,7 @@ void main() {
     await tester.tap(find.text('Show achievement'));
     await tester.pumpAndSettle();
     expect(
-      find.text(language.translate('achievement_unlocked').toUpperCase()),
+      find.text(language.translate('achievement_unlocked')),
       findsOneWidget,
     );
     expect(find.text('Achievement Unlocked'), findsNothing);

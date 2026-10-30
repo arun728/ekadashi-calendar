@@ -148,9 +148,21 @@ void main() {
     expect(find.text('Disable Vrat Tracker'), findsNothing);
 
     // 5. Verify Dashboard is displayed with metrics
+    expect(find.byKey(const Key('journey_year_points')), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Current Streak'),
+      300,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.pumpAndSettle();
     expect(find.text('Current Streak'), findsOneWidget);
     expect(find.text('Longest Streak'), findsOneWidget);
     expect(find.text('Total Observed'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Next Milestone'),
+      200,
+      scrollable: find.byType(Scrollable).last,
+    );
     expect(find.text('Next Milestone'), findsOneWidget);
 
     // 6. Switch to History tab
@@ -174,22 +186,25 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('journey_tab_achievements')));
     await tester.pumpAndSettle();
-    expect(find.text('First Vrat'), findsOneWidget);
-    expect(find.text('5 Ekadashis'), findsOneWidget);
+    expect(find.text('First Step'), findsOneWidget);
+    expect(find.text('Taking Root'), findsOneWidget);
 
     // The intro, Premium button and grid scroll together (iOS).
     await tester.scrollUntilVisible(
-      find.text('Consistent Observance'),
+      find.text('Steady Flame'),
       160,
       scrollable: find
           .ancestor(
-            of: find.text('First Vrat'),
+            of: find.text('First Step'),
             matching: find.byType(Scrollable),
           )
           .first,
     );
     await tester.pumpAndSettle();
-    expect(find.text('Consistent Observance'), findsOneWidget);
-    expect(find.text('Full-Year Observance'), findsOneWidget);
+    expect(find.text('Steady Flame'), findsOneWidget);
+    expect(
+      find.byKey(const Key('journey_badge_filter_annual')),
+      findsOneWidget,
+    );
   });
 }
