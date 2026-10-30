@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 
 import '../../l10n/app_language.dart';
 import '../../models/vrat_tracker_models.dart';
-import '../../services/journey_rewards.dart';
 import 'journey_rewards_views.dart';
 import '../../services/ekadashi_service.dart';
 import '../../services/language_service.dart';
@@ -15,6 +14,7 @@ import '../../services/vrat_statistics_service.dart';
 import '../../services/vrat_tracker_service.dart';
 import '../../widgets/ios_style.dart';
 import '../../widgets/section_pager.dart';
+import '../../widgets/journey_uniform_grid.dart';
 import '../premium_screen.dart';
 import 'achievement_unlock_dialog.dart';
 import 'record_vrat_dialog.dart';
@@ -154,18 +154,23 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
       _allYears ? lang.translate('search_all_years') : '$year';
 
   VratYearStats _periodStats(VratTrackerService tracker, int year) {
-    final values = (_allYears ? _years(tracker) : [year]).map(
-      (y) => tracker.getAnnualStats(year: y, occurrences: widget.ekadashiList),
-    );
-    final total = values.fold(0, (sum, s) => sum + s.totalOccurrences);
-    final observed = values.fold(0, (sum, s) => sum + s.observedCount);
+    final summary = tracker
+        .journey(widget.ekadashiList, timezone: widget.currentTimezone)
+        .scoped(toYear: _allYears ? null : year);
+    final segments = _allYears ? summary.eligibleSegments : summary.segments;
+    final total = segments.length,
+        observed = summary.observedCount,
+        partial = summary.partialCount;
+    final missed = summary.eligibleSegments
+        .where((e) => e.status == ObservanceStatus.missed)
+        .length;
     return VratYearStats(
       year: year,
       totalOccurrences: total,
       observedCount: observed,
-      partialCount: values.fold(0, (sum, s) => sum + s.partialCount),
-      missedCount: values.fold(0, (sum, s) => sum + s.missedCount),
-      unrecordedCount: values.fold(0, (sum, s) => sum + s.unrecordedCount),
+      partialCount: partial,
+      missedCount: missed,
+      unrecordedCount: math.max(0, total - observed - partial - missed),
       completionPercentage: total == 0 ? 0 : observed / total * 100,
     );
   }
@@ -175,22 +180,17 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
 
   // ==================== OVERVIEW ====================
   Widget _buildOverviewTab(LanguageService lang, VratTrackerService tracker) {
-    final summary = tracker.journey(
+    final fullSummary = tracker.journey(
       widget.ekadashiList,
       timezone: widget.currentTimezone,
     );
-    final currentStreak = summary.currentStreak;
-    final longestStreak = summary.longestStreak;
     final selectedYear = _coherentSelectedYear(_years(tracker));
+    final summary = fullSummary.scoped(toYear: _allYears ? null : selectedYear);
+    final currentStreak = summary.currentStreak,
+        longestStreak = summary.longestStreak;
     final yearStats = _periodStats(tracker, selectedYear);
-    final totalObserved = tracker
-        .getAllRecords()
-        .where((h) => h.status == ObservanceStatus.observed)
-        .length;
-    final next = JourneyBadgeCatalog.nextMilestone(
-      summary,
-      tracker.userAchievements,
-    );
+    final totalObserved = summary.observedCount;
+    final next = summary.nextMilestone(tracker.userAchievements);
     final nextMilestone = next == null
         ? null
         : (
@@ -213,69 +213,54 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
         ),
         const SizedBox(height: 12),
         for (final year
-            in _allYears ? (_years(tracker)..sort()) : [selectedYear]) ...[
-          JourneyOverviewPanel(summary: summary, year: year),
+            in _allYears ? fullSummary.visibleYears : [selectedYear]) ...[
+          JourneyOverviewPanel(summary: fullSummary, year: year),
           const SizedBox(height: 12),
         ],
-        _pair(
+        JourneyUniformGrid(
           key: const Key('journey_overview_streaks'),
-          _MetricCard(
-            panelKey: const Key('journey_metric_current_streak'),
-            title: lang.translate('current_streak'),
-            value: '$currentStreak',
-            subtitle: unit,
-            icon: AppIcons.journeyStreak,
-            color: IosColors.orange(context),
-          ),
-          _MetricCard(
-            panelKey: const Key('journey_metric_longest_streak'),
-            title: lang.translate('longest_streak'),
-            value: '$longestStreak',
-            subtitle: unit,
-            icon: AppIcons.journeyBest,
-            color: IosColors.amber,
-          ),
-        ),
-        const SizedBox(height: 12),
-        _pair(
-          _MetricCard(
-            panelKey: const Key('journey_metric_annual_completion'),
-            title:
-                '${_yearTitle(lang, selectedYear)} ${lang.translate('annual_completion')}',
-            value: '${yearStats.completionPercentage.round()}%',
-            subtitle:
-                '${yearStats.observedCount} / ${yearStats.totalOccurrences}',
-            icon: AppIcons.journeyRate,
-            color: teal,
-          ),
-          _MetricCard(
-            panelKey: const Key('journey_metric_total_observed'),
-            title: lang.translate('total_observed'),
-            value: '$totalObserved',
-            subtitle: unit,
-            icon: AppIcons.journeyObserved,
-            color: IosColors.green(context),
-          ),
+          columns: 2,
+          children: [
+            _MetricCard(
+              panelKey: const Key('journey_metric_current_streak'),
+              title: lang.translate('current_streak'),
+              value: '$currentStreak',
+              subtitle: unit,
+              icon: AppIcons.journeyStreak,
+              color: IosColors.orange(context),
+            ),
+            _MetricCard(
+              panelKey: const Key('journey_metric_longest_streak'),
+              title: lang.translate('longest_streak'),
+              value: '$longestStreak',
+              subtitle: unit,
+              icon: AppIcons.journeyBest,
+              color: IosColors.amber,
+            ),
+            _MetricCard(
+              panelKey: const Key('journey_metric_annual_completion'),
+              title:
+                  '${_yearTitle(lang, selectedYear)} ${lang.translate('annual_completion')}',
+              value: '${yearStats.completionPercentage.round()}%',
+              subtitle:
+                  '${yearStats.observedCount} / ${yearStats.totalOccurrences}',
+              icon: AppIcons.journeyRate,
+              color: teal,
+            ),
+            _MetricCard(
+              panelKey: const Key('journey_metric_total_observed'),
+              title: lang.translate('total_observed'),
+              value: '$totalObserved',
+              subtitle: unit,
+              icon: AppIcons.journeyObserved,
+              color: IosColors.green(context),
+            ),
+          ],
         ),
         if (nextMilestone != null) ...[
           const SizedBox(height: 20),
           _buildNextMilestoneCard(lang, nextMilestone),
         ],
-        const SizedBox(height: 20),
-        Text(
-          lang.translate('record_observance'),
-          style: const TextStyle(
-            fontSize: IosText.headline,
-            fontWeight: FontWeight.w600,
-            color: teal,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Text(
-          lang.translate('tap_to_record_instruction'),
-          style: _secondary(IosText.caption),
-        ),
-        ..._recentRows(lang, tracker),
       ],
     );
   }
@@ -359,23 +344,6 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
         ],
       ),
     );
-  }
-
-  /// Up to four Ekadashis within 30 days of today.
-  List<Widget> _recentRows(LanguageService lang, VratTrackerService tracker) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final recent =
-        (List<EkadashiDate>.from(widget.ekadashiList)
-              ..sort((a, b) => a.date.compareTo(b.date)))
-            .where((e) => e.date.difference(today).inDays.abs() <= 30)
-            .take(4);
-    return [
-      for (final e in recent) ...[
-        const SizedBox(height: 12),
-        _buildEkadashiRow(lang, tracker, e),
-      ],
-    ];
   }
 
   // ==================== HISTORY ====================
@@ -648,10 +616,9 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
     final availableYears = _years(tracker);
     final selectedYear = _coherentSelectedYear(availableYears);
     final stats = _periodStats(tracker, selectedYear);
-    final summary = tracker.journey(
-      widget.ekadashiList,
-      timezone: widget.currentTimezone,
-    );
+    final summary = tracker
+        .journey(widget.ekadashiList, timezone: widget.currentTimezone)
+        .scoped(toYear: _allYears ? null : selectedYear);
     final currentStreak = summary.currentStreak;
     final longestStreak = summary.longestStreak;
     final percent = stats.completionPercentage;

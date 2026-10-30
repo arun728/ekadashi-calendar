@@ -14,7 +14,7 @@ import 'package:ekadashi_calendar/screens/vrat_tracker/record_vrat_dialog.dart';
 import 'package:ekadashi_calendar/screens/vrat_tracker/vrat_tracker_screen.dart';
 import 'package:ekadashi_calendar/widgets/ios_style.dart';
 import 'package:ekadashi_calendar/widgets/glass_look.dart';
-import '../unit/journey_rewards_test.dart' show journeyEvents, journeyRecord;
+import '../unit/journey_rewards_test.dart' show journeyEvents;
 
 void main() {
   setUp(() {
@@ -190,6 +190,35 @@ void main() {
           expect(sizes.length, greaterThan(5));
           for (final size in sizes) {
             expect(size, sizes.first, reason: '$code $width achievements');
+          }
+          final statisticsTab = find.byKey(const Key('journey_tab_statistics'));
+          await tester.ensureVisible(statisticsTab);
+          await tester.tap(statisticsTab);
+          await tester.pumpAndSettle();
+          await tester.scrollUntilVisible(
+            find.byKey(const Key('journey_stat_longest_streak')),
+            200,
+            scrollable: find.byType(Scrollable).last,
+          );
+          final statisticSizes =
+              [
+                    'observed',
+                    'partial',
+                    'missed',
+                    'unrecorded',
+                    'current_streak',
+                    'longest_streak',
+                  ]
+                  .map(
+                    (id) => tester.getSize(find.byKey(Key('journey_stat_$id'))),
+                  )
+                  .toList();
+          for (final size in statisticSizes) {
+            expect(
+              size,
+              statisticSizes.first,
+              reason: '$code $width Statistics',
+            );
           }
           expect(
             tester.takeException(),
@@ -383,7 +412,14 @@ void main() {
       await tester.tap(find.byKey(const Key('journey_tab_statistics')));
       await tester.pumpAndSettle();
       expect(find.text('Year:'), findsNothing);
-      expect(find.text('0 of 49 Ekadashis'), findsOneWidget);
+      expect(
+        find.byWidgetPredicate(
+          (w) =>
+              w is Text &&
+              RegExp(r'^0 of [0-9]+ Ekadashis$').hasMatch(w.data ?? ''),
+        ),
+        findsOneWidget,
+      );
     },
   );
 

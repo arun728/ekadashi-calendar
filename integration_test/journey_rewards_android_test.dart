@@ -12,6 +12,7 @@ import 'package:ekadashi_calendar/widgets/ios_style.dart';
 import 'package:ekadashi_calendar/models/vrat_tracker_models.dart';
 import 'package:ekadashi_calendar/services/vrat_tracker_service.dart';
 import 'package:ekadashi_calendar/screens/settings_screen.dart';
+import 'package:ekadashi_calendar/screens/vrat_tracker/vrat_tracker_screen.dart';
 
 void main() {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -176,7 +177,15 @@ void main() {
       await capture('08c_all_years');
       await tap('journey_tab_statistics');
       expect(find.text('Year:'), findsNothing);
-      expect(find.text('1 of 49 Ekadashis'), findsOneWidget);
+      final screen = tester.widget<VratTrackerScreen>(
+        find.byType(VratTrackerScreen),
+      );
+      final elapsed = tracker
+          .journey(screen.ekadashiList, timezone: screen.currentTimezone)
+          .scoped()
+          .eligibleSegments
+          .length;
+      expect(find.text('1 of $elapsed Ekadashis'), findsOneWidget);
       await capture('05b_statistics_all_years');
       await tap('journey_tab_overview');
       await scrollTo(find.byKey(const Key('journey_overview_year')));
@@ -184,6 +193,25 @@ void main() {
       await tester.tap(find.text('2027').last);
       await tester.pumpAndSettle();
       await capture('01b_overview_2027');
+      expect(find.text('Current consistency streak · 0'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byKey(const Key('journey_lifetime_points')),
+          matching: find.text('150'),
+        ),
+        findsOneWidget,
+      );
+      await scrollTo(find.byKey(const Key('journey_metric_total_observed')));
+      expect(
+        find.descendant(
+          of: find.byKey(const Key('journey_metric_total_observed')),
+          matching: find.text('0'),
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Record Observance'), findsNothing);
+      await tester.drag(find.byType(Scrollable).last, const Offset(0, 2400));
+      await tester.pumpAndSettle();
       final lang = context.read<LanguageService>();
       for (final code in ['hi', 'ta', 'te', 'gu', 'bn']) {
         await lang.changeLanguage(code);

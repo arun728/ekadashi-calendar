@@ -70,8 +70,10 @@ class JourneySummary {
     this.hasReturned, {
     this.fullCurrentStreak = 0,
     this.fullLongestStreak = 0,
+    this.asOf,
   });
   final Map<int, JourneyYear> years;
+  final DateTime? asOf;
   final int observedCount, partialCount, currentStreak, longestStreak;
   final bool hasReturned;
   final int fullCurrentStreak, fullLongestStreak;
@@ -79,6 +81,58 @@ class JourneySummary {
       observedCount * 100 +
       partialCount * 50 +
       years.values.fold<int>(0, (s, y) => s + y.points - y.basePoints);
+  List<JourneySegment> get segments =>
+      (years.keys.toList()..sort()).expand((y) => years[y]!.segments).toList();
+  List<JourneySegment> get eligibleSegments =>
+      segments.where((e) => !e.isFuture).toList();
+  List<int> get visibleYears =>
+      years.keys
+          .where((y) => y >= 2026 && y <= (asOf ?? DateTime.now()).year)
+          .toList()
+        ..sort((a, b) => b.compareTo(a));
+  JourneySummary scoped({int? toYear}) {
+    final selected = Map<int, JourneyYear>.fromEntries(
+      years.entries.where(
+        (e) => toYear != null
+            ? e.key == toYear
+            : e.key >= 2026 && e.key <= (asOf ?? DateTime.now()).year,
+      ),
+    );
+    final ordered = (selected.keys.toList()..sort())
+        .expand((y) => selected[y]!.segments)
+        .toList();
+    final eligible = ordered.where((e) => !e.isFuture);
+    final observed = eligible
+        .where((e) => e.status == ObservanceStatus.observed)
+        .length;
+    final partial = eligible
+        .where((e) => e.status == ObservanceStatus.partial)
+        .length;
+    final streak = JourneyRewards._streaks(ordered);
+    return JourneySummary(
+      selected,
+      observed,
+      partial,
+      streak.current,
+      streak.longest,
+      streak.returned,
+      fullCurrentStreak: streak.fullCurrent,
+      fullLongestStreak: streak.fullLongest,
+      asOf: asOf,
+    );
+  }
+
+  JourneyBadgeDefinition? nextMilestone(Map<String, UserAchievement> earned) {
+    final periodEarned = <String, UserAchievement>{};
+    for (final badge in JourneyBadgeCatalog.all(years.keys.toList())) {
+      if (badge.progress(this) >= badge.target &&
+          earned[badge.id]?.isUnlocked == true) {
+        periodEarned[badge.id] = earned[badge.id]!;
+      }
+    }
+    return JourneyBadgeCatalog.nextMilestone(this, periodEarned);
+  }
+
   JourneyYear year(int y) =>
       years[y] ??
       JourneyYear(y, [], [
@@ -181,6 +235,28 @@ abstract final class JourneyRewards {
           ),
       ], complete);
     }
+    final streak = _streaks(segments);
+    return JourneySummary(
+      years,
+      observed,
+      partial,
+      streak.current,
+      streak.longest,
+      streak.returned,
+      fullCurrentStreak: streak.fullCurrent,
+      fullLongestStreak: streak.fullLongest,
+      asOf: today,
+    );
+  }
+
+  static ({
+    int current,
+    int longest,
+    int fullCurrent,
+    int fullLongest,
+    bool returned,
+  })
+  _streaks(List<JourneySegment> segments) {
     var run = 0, longest = 0, returned = false;
     var fullRun = 0, fullLongest = 0;
     final eligible = segments.where((e) => !e.isFuture).toList();
@@ -205,15 +281,12 @@ abstract final class JourneyRewards {
       }
       previous = e;
     }
-    return JourneySummary(
-      years,
-      observed,
-      partial,
-      run,
-      longest,
-      returned,
-      fullCurrentStreak: fullRun,
-      fullLongestStreak: fullLongest,
+    return (
+      current: run,
+      longest: longest,
+      fullCurrent: fullRun,
+      fullLongest: fullLongest,
+      returned: returned,
     );
   }
 }

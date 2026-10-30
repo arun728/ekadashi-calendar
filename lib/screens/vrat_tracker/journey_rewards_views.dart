@@ -14,6 +14,7 @@ import '../../services/premium_service.dart';
 import '../../widgets/ios_style.dart';
 import '../../widgets/app_icons.dart';
 import '../../widgets/settings_group.dart';
+import '../../widgets/journey_uniform_grid.dart';
 import '../../widgets/app_background.dart';
 import '../premium_screen.dart';
 import 'journey_artwork.dart';
@@ -151,7 +152,7 @@ class JourneyOverviewPanel extends StatelessWidget {
                     const SizedBox(width: 6),
                     Flexible(
                       child: Text(
-                        '${_t(context, 'current_streak')} · ${summary.currentStreak}',
+                        '${_t(context, 'current_streak')} · ${summary.scoped(toYear: year).currentStreak}',
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                           fontSize: 15,
@@ -485,30 +486,8 @@ class _JourneyBadgeCollectionState extends State<JourneyBadgeCollection> {
                   style: IosButtons.label,
                 ),
               ),
-            LayoutBuilder(
-              builder: (context, c) {
-                final columns = math.max(1, ((c.maxWidth + 12) / 157).floor());
-                return Column(
-                  spacing: 12,
-                  children: [
-                    for (var i = 0; i < definitions.length; i += columns)
-                      IntrinsicHeight(
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          spacing: 12,
-                          children: [
-                            for (var j = 0; j < columns; j++)
-                              Expanded(
-                                child: i + j < definitions.length
-                                    ? card(definitions[i + j])
-                                    : const SizedBox(),
-                              ),
-                          ],
-                        ),
-                      ),
-                  ],
-                );
-              },
+            JourneyUniformGrid(
+              children: [for (final b in definitions) card(b)],
             ),
           ],
         ),

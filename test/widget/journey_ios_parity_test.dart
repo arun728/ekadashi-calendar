@@ -799,7 +799,7 @@ void main() {
       );
     });
 
-    testWidgets('recent rows show a grey Not Recorded pill and a green '
+    testWidgets('Record rows show a grey Not Recorded pill and a green '
         'Observed pill, each beside its chevron', (tester) async {
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
@@ -825,6 +825,7 @@ void main() {
         events: recent,
         brightness: Brightness.dark,
       );
+      await openSection(tester, 'history');
       final context = tester.element(find.byType(VratTrackerScreen));
       for (final (event, label, color, icon) in [
         (
