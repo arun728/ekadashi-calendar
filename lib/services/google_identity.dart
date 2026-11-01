@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
 
@@ -12,5 +13,10 @@ class AppGoogleIdentity {
   static final GoogleSignIn signIn = GoogleSignIn(
     scopes: scopes,
     serverClientId: serverClientId.isEmpty ? null : serverClientId,
+    clientId: kIsWeb
+        ? (const String.fromEnvironment('GOOGLE_CLIENT_ID').isNotEmpty
+            ? const String.fromEnvironment('GOOGLE_CLIENT_ID')
+            : 'dummy-client-id.apps.googleusercontent.com')
+        : null,
   );
 }

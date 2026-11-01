@@ -17,6 +17,7 @@ import '../../widgets/section_pager.dart';
 import '../premium_screen.dart';
 import 'achievement_unlock_dialog.dart';
 import 'record_vrat_dialog.dart';
+import 'wisdom_question_card.dart';
 import '../../widgets/app_icons.dart';
 
 /// The Journey (Vrat) tab: Overview, History, Statistics and Achievements
@@ -861,6 +862,8 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
         return ListView(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, _bottomInset),
           children: [
+            const WisdomQuestionCard(),
+            const SizedBox(height: 20),
             Text(
               lang.translate('premium_free_achievements'),
               style: TextStyle(

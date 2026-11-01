@@ -1,5 +1,6 @@
 import 'dart:isolate';
 import 'dart:convert';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../l10n/place_names.dart';
@@ -124,6 +125,9 @@ class PanchangLocationStore {
   static Future<CitySearchIndex> _buildIndex(String language) async {
     final all = await cities();
     await PlaceNames.load();
+    if (kIsWeb) {
+      return CitySearchIndex(all, language, popularIds: popularIds);
+    }
     final table = PlaceNames.snapshot();
     return Isolate.run(() {
       PlaceNames.use(table);

@@ -1727,4 +1727,74 @@ class AppLocalizationsTa extends AppLocalizations {
   @override
   String get glass_look_desc =>
       'தெளிவான, ஒளி ஊடுருவும் அட்டைகளையும் கட்டுப்பாடுகளையும் பயன்படுத்தவும்.';
+
+  @override
+  String get question_of_the_day => 'இன்றைய கேள்வி';
+
+  @override
+  String get wisdom_challenge => 'ஞான சவால்';
+
+  @override
+  String get submit_answer => 'பதிலைச் சமர்ப்பிக்கவும்';
+
+  @override
+  String get continue_learning => 'கற்றலைத் தொடரவும்';
+
+  @override
+  String get finish_for_today => 'இன்றைக்கு முடிக்கவும்';
+
+  @override
+  String get answer_correct => 'சரி!';
+
+  @override
+  String get answer_incorrect => 'தவறு';
+
+  @override
+  String points_earned(String value0) {
+    return '+$value0 புள்ளிகள்';
+  }
+
+  @override
+  String get total_points => 'மொத்தப் புள்ளிகள்';
+
+  @override
+  String get questions_answered => 'பதிலளிக்கப்பட்ட கேள்விகள்';
+
+  @override
+  String get correct_answers => 'சரியான பதில்கள்';
+
+  @override
+  String get category_progress => 'பிரிவுவாரி முன்னேற்றம்';
+
+  @override
+  String get notify_daily_question => 'இன்றைய கேள்வி நினைவூட்டல்';
+
+  @override
+  String get daily_question_notif_title => 'இன்றைய கேள்வி';
+
+  @override
+  String get daily_question_notif_body =>
+      'இன்றைய உங்கள் ஆன்மீக ஞானக் கேள்வி தயாராக உள்ளது!';
+
+  @override
+  String get already_completed_today =>
+      'இன்றைய கேள்விக்கு நீங்கள் பதிலளித்துவிட்டீர்கள்!';
+
+  @override
+  String get category_bhagavad_gita => 'பகவத் கீதை';
+
+  @override
+  String get category_mahabharata => 'மகாபாரதம்';
+
+  @override
+  String get category_ramayana => 'ராமாயணம்';
+
+  @override
+  String get difficulty_easy => 'எளிது';
+
+  @override
+  String get difficulty_medium => 'நடுத்தரம்';
+
+  @override
+  String get difficulty_hard => 'கடினம்';
 }

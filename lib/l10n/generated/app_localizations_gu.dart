@@ -1707,4 +1707,73 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get glass_look_desc => 'વધુ પારદર્શક કાર્ડ અને નિયંત્રણો વાપરો.';
+
+  @override
+  String get question_of_the_day => 'આજનો પ્રશ્ન';
+
+  @override
+  String get wisdom_challenge => 'જ્ઞાન પડકાર';
+
+  @override
+  String get submit_answer => 'જવાબ સબમિટ કરો';
+
+  @override
+  String get continue_learning => 'શીખવાનું ચાલુ રાખો';
+
+  @override
+  String get finish_for_today => 'આજના માટે સમાપ્ત';
+
+  @override
+  String get answer_correct => 'સાચું!';
+
+  @override
+  String get answer_incorrect => 'ખોટું';
+
+  @override
+  String points_earned(String value0) {
+    return '+$value0 પોઇન્ટ્સ';
+  }
+
+  @override
+  String get total_points => 'કુલ પોઇન્ટ્સ';
+
+  @override
+  String get questions_answered => 'જવાબ આપેલા પ્રશ્નો';
+
+  @override
+  String get correct_answers => 'સાચા જવાબો';
+
+  @override
+  String get category_progress => 'શ્રેણી મુજબ પ્રગતિ';
+
+  @override
+  String get notify_daily_question => 'આજનો પ્રશ્ન રિમાઇન્ડર';
+
+  @override
+  String get daily_question_notif_title => 'આજનો પ્રશ્ન';
+
+  @override
+  String get daily_question_notif_body =>
+      'આજનો તમારો આધ્યાત્મિક જ્ઞાન પ્રશ્ન તૈયાર છે!';
+
+  @override
+  String get already_completed_today => 'તમે આજના પ્રશ્નનો જવાબ આપી દીધો છે!';
+
+  @override
+  String get category_bhagavad_gita => 'ભગવદ્ગીતા';
+
+  @override
+  String get category_mahabharata => 'મહાભારત';
+
+  @override
+  String get category_ramayana => 'રામાયણ';
+
+  @override
+  String get difficulty_easy => 'સરળ';
+
+  @override
+  String get difficulty_medium => 'મધ્યમ';
+
+  @override
+  String get difficulty_hard => 'મુશ્કેલ';
 }

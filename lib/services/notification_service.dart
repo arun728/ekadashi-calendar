@@ -110,7 +110,7 @@ class NotificationService {
   }
 
   Future<bool> hasNotificationPermission() async {
-    if (Platform.isAndroid) {
+    if (!kIsWeb && Platform.isAndroid) {
       final android = flutterLocalNotificationsPlugin
           .resolvePlatformSpecificImplementation<
             fln.AndroidFlutterLocalNotificationsPlugin
@@ -123,7 +123,7 @@ class NotificationService {
   /// Check if app has exact alarm permission using native Android code.
   /// Uses AppOpsManager for reliable detection across all devices including Samsung.
   Future<bool> hasExactAlarmPermission() async {
-    if (Platform.isAndroid) {
+    if (!kIsWeb && Platform.isAndroid) {
       try {
         // Use native method channel for reliable permission check
         // This uses AppOpsManager which is more reliable than the flutter plugin
@@ -154,14 +154,14 @@ class NotificationService {
   }
 
   Future<bool> requestNotificationPermission() async {
-    if (Platform.isIOS) {
+    if (!kIsWeb && Platform.isIOS) {
       final result = await flutterLocalNotificationsPlugin
           .resolvePlatformSpecificImplementation<
             fln.IOSFlutterLocalNotificationsPlugin
           >()
           ?.requestPermissions(alert: true, badge: true, sound: true);
       return result ?? false;
-    } else if (Platform.isAndroid) {
+    } else if (!kIsWeb && Platform.isAndroid) {
       final android = flutterLocalNotificationsPlugin
           .resolvePlatformSpecificImplementation<
             fln.AndroidFlutterLocalNotificationsPlugin
@@ -174,7 +174,7 @@ class NotificationService {
   /// Opens the system's Alarms & Reminders settings page.
   /// Uses native Android code for reliable cross-device compatibility.
   Future<bool> openExactAlarmSettings() async {
-    if (Platform.isAndroid) {
+    if (!kIsWeb && Platform.isAndroid) {
       try {
         // Use native method channel for reliable intent handling
         final bool result = await _permissionChannel.invokeMethod(
@@ -261,7 +261,7 @@ class NotificationService {
 
     if (!remind1Day && !remind2Days && !remindOnDay) return;
 
-    if (Platform.isAndroid) {
+    if (!kIsWeb && Platform.isAndroid) {
       if (!await hasNotificationPermission() ||
           !await hasExactAlarmPermission()) {
         return;
@@ -381,6 +381,68 @@ class NotificationService {
       );
     } catch (e) {
       debugPrint('Error scheduling #$id: $e');
+    }
+  }
+
+  static const int dailyQuestionNotificationId = 99999;
+
+  /// Schedule a daily recurring reminder for the Question of the Day.
+  Future<void> scheduleDailyQuestionReminder({
+    required String title,
+    required String body,
+    int hour = 8,
+    int minute = 0,
+  }) async {
+    try {
+      final now = tz.TZDateTime.now(tz.local);
+      var scheduled = tz.TZDateTime(
+        tz.local,
+        now.year,
+        now.month,
+        now.day,
+        hour,
+        minute,
+      );
+      if (scheduled.isBefore(now)) {
+        scheduled = scheduled.add(const Duration(days: 1));
+      }
+
+      final androidDetails = _getAndroidNotificationDetails(
+        channelId: 'wisdom_daily_question',
+        channelName: 'Daily Question',
+      );
+
+      await flutterLocalNotificationsPlugin.zonedSchedule(
+        dailyQuestionNotificationId,
+        title,
+        body,
+        scheduled,
+        fln.NotificationDetails(
+          android: androidDetails,
+          iOS: const fln.DarwinNotificationDetails(
+            presentAlert: true,
+            presentBadge: true,
+            presentSound: true,
+          ),
+        ),
+        androidScheduleMode: fln.AndroidScheduleMode.exactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            fln.UILocalNotificationDateInterpretation.absoluteTime,
+        matchDateTimeComponents: fln.DateTimeComponents.time,
+      );
+      debugPrint('Scheduled Daily Question Reminder at $hour:$minute');
+    } catch (e) {
+      debugPrint('Error scheduling Daily Question Reminder: $e');
+    }
+  }
+
+  /// Cancel the daily question reminder.
+  Future<void> cancelDailyQuestionReminder() async {
+    try {
+      await flutterLocalNotificationsPlugin.cancel(dailyQuestionNotificationId);
+      debugPrint('Cancelled Daily Question Reminder');
+    } catch (e) {
+      debugPrint('Error cancelling Daily Question Reminder: $e');
     }
   }
 

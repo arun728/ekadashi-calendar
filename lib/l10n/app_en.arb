@@ -706,5 +706,34 @@
   "widget_no_next": "No upcoming Ekadashi in the available schedule",
   "widget_lock_support": "Lock Screen widgets are available on supported devices. Sizes and placement depend on your device.",
   "glass_look": "Glass Look",
-  "glass_look_desc": "Use clearer, translucent cards and controls."
+  "glass_look_desc": "Use clearer, translucent cards and controls.",
+"question_of_the_day": "Question of the Day",
+  "wisdom_challenge": "Wisdom Challenge",
+  "submit_answer": "Submit Answer",
+  "continue_learning": "Continue Learning",
+  "finish_for_today": "Finish for Today",
+  "answer_correct": "Correct!",
+  "answer_incorrect": "Incorrect",
+  "points_earned": "+{value0} Points",
+  "@points_earned": {
+    "placeholders": {
+      "value0": {
+        "type": "String"
+      }
+    }
+  },
+  "total_points": "Total Points",
+  "questions_answered": "Questions Answered",
+  "correct_answers": "Correct Answers",
+  "category_progress": "Category Progress",
+  "notify_daily_question": "Question of the Day Reminder",
+  "daily_question_notif_title": "Question of the Day",
+  "daily_question_notif_body": "Your spiritual wisdom question for today is ready!",
+  "already_completed_today": "You've answered today's question!",
+  "category_bhagavad_gita": "Bhagavad Gita",
+  "category_mahabharata": "Mahabharata",
+  "category_ramayana": "Ramayana",
+  "difficulty_easy": "Easy",
+  "difficulty_medium": "Medium",
+  "difficulty_hard": "Hard"
 }

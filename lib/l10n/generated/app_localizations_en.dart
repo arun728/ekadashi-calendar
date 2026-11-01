@@ -1714,4 +1714,73 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get glass_look_desc => 'Use clearer, translucent cards and controls.';
+
+  @override
+  String get question_of_the_day => 'Question of the Day';
+
+  @override
+  String get wisdom_challenge => 'Wisdom Challenge';
+
+  @override
+  String get submit_answer => 'Submit Answer';
+
+  @override
+  String get continue_learning => 'Continue Learning';
+
+  @override
+  String get finish_for_today => 'Finish for Today';
+
+  @override
+  String get answer_correct => 'Correct!';
+
+  @override
+  String get answer_incorrect => 'Incorrect';
+
+  @override
+  String points_earned(String value0) {
+    return '+$value0 Points';
+  }
+
+  @override
+  String get total_points => 'Total Points';
+
+  @override
+  String get questions_answered => 'Questions Answered';
+
+  @override
+  String get correct_answers => 'Correct Answers';
+
+  @override
+  String get category_progress => 'Category Progress';
+
+  @override
+  String get notify_daily_question => 'Question of the Day Reminder';
+
+  @override
+  String get daily_question_notif_title => 'Question of the Day';
+
+  @override
+  String get daily_question_notif_body =>
+      'Your spiritual wisdom question for today is ready!';
+
+  @override
+  String get already_completed_today => 'You\'ve answered today\'s question!';
+
+  @override
+  String get category_bhagavad_gita => 'Bhagavad Gita';
+
+  @override
+  String get category_mahabharata => 'Mahabharata';
+
+  @override
+  String get category_ramayana => 'Ramayana';
+
+  @override
+  String get difficulty_easy => 'Easy';
+
+  @override
+  String get difficulty_medium => 'Medium';
+
+  @override
+  String get difficulty_hard => 'Hard';
 }
