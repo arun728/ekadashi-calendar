@@ -19,6 +19,52 @@ final class ScreenshotTests: XCTestCase {
     }
 
     @MainActor
+    func testCalendarLastWeekStaysAboveSelectedEntryAcrossIpadRotations() throws {
+        guard UIDevice.current.userInterfaceIdiom == .pad else {
+            throw XCTSkip("Regression for iPad calendar rotation")
+        }
+        app.terminate()
+        app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = "2026-11-03T12:00:00+05:30"
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        // iPad's top tab strip is not exposed as an XCUI tabBar.
+        let calendar = app.descendants(matching: .any).matching(identifier: "calendar").firstMatch
+        XCTAssertTrue(calendar.waitForExistence(timeout: 5))
+        calendar.tap()
+        let fast = app.buttons["Thu, 5 Nov 2026"].firstMatch
+        XCTAssertTrue(fast.waitForExistence(timeout: 5))
+        fast.tap()
+        defer { XCUIDevice.shared.orientation = .portrait }
+        let orientations: [(UIDeviceOrientation, String)] = [
+            (.portrait, "portrait"), (.landscapeLeft, "landscape-left"),
+            (.portraitUpsideDown, "upside-down"), (.landscapeRight, "landscape-right"),
+            (.portrait, "portrait-return"),
+        ]
+        for (orientation, name) in orientations {
+            XCUIDevice.shared.orientation = orientation
+            let lastDay = app.buttons["Mon, 30 Nov 2026"].firstMatch
+            let title = app.staticTexts["Rama Ekadashi"].firstMatch
+            XCTAssertTrue(lastDay.waitForExistence(timeout: 5))
+            XCTAssertTrue(title.waitForExistence(timeout: 5))
+            var previous: [CGRect] = []
+            let settled = NSPredicate { _, _ in
+                let frames = [lastDay.frame, title.frame]
+                defer { previous = frames }
+                return previous == frames && frames.allSatisfy { !$0.isEmpty }
+            }
+            XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: settled, object: nil)],
+                                        timeout: 8), .completed)
+            snap("ipad-calendar-last-row-\(name)")
+            // The card title has 16pt internal padding. Its surface must
+            // leave the last 48pt day cell and the 12pt stack gap unobscured.
+            let gap = title.frame.minY - 16 - lastDay.frame.maxY
+            print("IPAD_CALENDAR \(name) lastDay=\(lastDay.frame) title=\(title.frame) gap=\(gap)")
+            XCTAssertGreaterThanOrEqual(gap, 11, "Selected-day card overlaps the final week after \(name)")
+            XCTAssertTrue(lastDay.isHittable, "The last day must remain tappable")
+        }
+    }
+
+    @MainActor
     func testPanchangPerformanceAcrossAllSections() throws {
         #if !targetEnvironment(simulator)
         throw XCTSkip("Only isolated Simulator StoreKit accounts may be reset")
