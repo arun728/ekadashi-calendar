@@ -62,6 +62,15 @@ starts for any file change on those branches; its existing file filters are
 unchanged. The `main` and `dev` entries on the Builds page are build-history
 groups from this one workflow, not duplicate workflows.
 
+`EkadashiCore/Package.swift` copies the five data subdirectories individually.
+Keep them as byte copies, preserving their directory structure, without a
+top-level `Resources` directory in the flat iOS resource bundle. That layout
+caused build 8 to fail with `bundle format unrecognized, invalid, or unsuitable`
+during signing. `CoreResources` already supports the direct subdirectory paths.
+On macOS, `python3 test/tool/test_ios_resource_bundle_signing.py` stages the
+evaluated SwiftPM copy rules, checks data preservation, and signs/verifies a
+temporary bundle with an ad hoc signature; it needs no signing credentials.
+
 To check the bootstrap locally, including from an unrelated working directory:
 
 ```sh

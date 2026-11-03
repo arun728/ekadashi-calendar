@@ -11,7 +11,15 @@ let package = Package(
     platforms: [.iOS(.v17), .macOS(.v14)],
     products: [.library(name: "EkadashiCore", targets: ["EkadashiCore"])],
     targets: [
-        .target(name: "EkadashiCore", resources: [.copy("Resources")]),
+        // Copy each data directory without placing a reserved Resources/
+        // directory at the flat iOS bundle root, which codesign rejects.
+        .target(name: "EkadashiCore", resources: [
+            .copy("Resources/calendar"),
+            .copy("Resources/l10n"),
+            .copy("Resources/panchang"),
+            .copy("Resources/search"),
+            .copy("Resources/tz"),
+        ]),
         .testTarget(name: "EkadashiCoreTests", dependencies: ["EkadashiCore"]),
     ]
 )
