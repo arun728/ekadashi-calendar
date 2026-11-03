@@ -79,6 +79,16 @@ App Store Connect rejected its portrait-only iPad metadata with ITMS-90474.
 and checks both Debug and Release target device families against the generated
 orientation metadata.
 
+The Calendar lays out its complete month eagerly (at most six week rows), so
+rotation cannot leave a lazy grid's estimated height covering the final week.
+`CalendarLayoutTests` renders every enabled month at seven widths, including
+320 and 375 points, with two text sizes. The Calendar UI tests check all
+2026–2027 months and the gap above selected-day details on iPad and small
+iPhone; iPad also exercises all four supported orientations. Android's
+`calendar_ios_parity_test.dart` covers five sizes, and
+`integration_test/calendar_layout_android_test.dart` checks all 24 months on a
+compact emulator with a screenshot for each month. iPhone remains portrait-only.
+
 To check the bootstrap locally, including from an unrelated working directory:
 
 ```sh

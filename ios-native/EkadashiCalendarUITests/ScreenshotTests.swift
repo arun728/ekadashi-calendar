@@ -19,27 +19,27 @@ final class ScreenshotTests: XCTestCase {
     }
 
     @MainActor
-    func testCalendarLastWeekStaysAboveSelectedEntryAcrossIpadRotations() throws {
-        guard UIDevice.current.userInterfaceIdiom == .pad else {
-            throw XCTSkip("Regression for iPad calendar rotation")
-        }
+    func testCalendarLastWeekStaysAboveSelectedEntryAcrossDeviceRotations() throws {
         app.terminate()
         app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = "2026-11-03T12:00:00+05:30"
         app.launch()
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
         // iPad's top tab strip is not exposed as an XCUI tabBar.
-        let calendar = app.descendants(matching: .any).matching(identifier: "calendar").firstMatch
+        let calendar = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier == %@ OR label == %@", "calendar", "Calendar")).firstMatch
         XCTAssertTrue(calendar.waitForExistence(timeout: 5))
         calendar.tap()
         let fast = app.buttons["Thu, 5 Nov 2026"].firstMatch
         XCTAssertTrue(fast.waitForExistence(timeout: 5))
         fast.tap()
         defer { XCUIDevice.shared.orientation = .portrait }
-        let orientations: [(UIDeviceOrientation, String)] = [
+        // iPhone is intentionally portrait-only. Exercise all supported
+        // rotations on iPad without forcing unsupported phone orientations.
+        let orientations: [(UIDeviceOrientation, String)] = UIDevice.current.userInterfaceIdiom == .pad ? [
             (.portrait, "portrait"), (.landscapeLeft, "landscape-left"),
             (.portraitUpsideDown, "upside-down"), (.landscapeRight, "landscape-right"),
             (.portrait, "portrait-return"),
-        ]
+        ] : [(.portrait, "portrait")]
         for (orientation, name) in orientations {
             XCUIDevice.shared.orientation = orientation
             let lastDay = app.buttons["Mon, 30 Nov 2026"].firstMatch
@@ -61,6 +61,42 @@ final class ScreenshotTests: XCTestCase {
             print("IPAD_CALENDAR \(name) lastDay=\(lastDay.frame) title=\(title.frame) gap=\(gap)")
             XCTAssertGreaterThanOrEqual(gap, 11, "Selected-day card overlaps the final week after \(name)")
             XCTAssertTrue(lastDay.isHittable, "The last day must remain tappable")
+        }
+    }
+
+    @MainActor
+    func testEveryEnabledCalendarMonthKeepsLastWeekAboveDayDetails() {
+        app.terminate()
+        app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = "2026-01-03T12:00:00+05:30"
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        let calendarTab = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier == %@ OR label == %@", "calendar", "Calendar")).firstMatch
+        XCTAssertTrue(calendarTab.waitForExistence(timeout: 5))
+        calendarTab.tap()
+        let calendar = Calendar(identifier: .gregorian)
+        let formatter = DateFormatter()
+        formatter.calendar = calendar
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "EEE, d MMM yyyy"
+        for year in 2026...2027 {
+            for month in 1...12 {
+                let end = calendar.date(from: DateComponents(year: year, month: month + 1, day: 0))!
+                let lastDay = app.buttons[formatter.string(from: end)].firstMatch
+                XCTAssertTrue(lastDay.waitForExistence(timeout: 8), "\(year)-\(month)")
+                let grid = app.descendants(matching: .any)["calendar_month_grid"].firstMatch
+                let details = app.descendants(matching: .any)["calendar_day_details"].firstMatch
+                XCTAssertTrue(grid.exists)
+                XCTAssertTrue(details.exists)
+                XCTAssertGreaterThanOrEqual(grid.frame.maxY, lastDay.frame.maxY - 0.5,
+                                            "\(year)-\(month): grid must reserve its entire final row")
+                XCTAssertGreaterThanOrEqual(details.frame.minY - grid.frame.maxY, 11,
+                                            "\(year)-\(month): selected-day content must stay below the month")
+                snap("calendar-all-months-\(year)-\(month)")
+                if year != 2027 || month != 12 {
+                    app.buttons["calendar_next_month"].firstMatch.tap()
+                }
+            }
         }
     }
 
