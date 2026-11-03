@@ -40,6 +40,7 @@ jobs:
           path: |
             coverage/
             build/ui-screenshots/offscreen/
+            test/**/failures/
   android-tests:
     needs: [flutter-tests]
     # Keep collecting native/UI evidence while required Flutter gates are red.
