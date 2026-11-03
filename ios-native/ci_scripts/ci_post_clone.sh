@@ -11,6 +11,11 @@ if [ ! -f "$ios_dir/project.yml" ]; then
     exit 1
 fi
 
+if [ ! -f "$ios_dir/Package.resolved" ]; then
+    echo "Xcode Cloud bootstrap: missing $ios_dir/Package.resolved" >&2
+    exit 1
+fi
+
 if ! command -v xcodegen >/dev/null 2>&1; then
     if ! command -v brew >/dev/null 2>&1; then
         echo "Xcode Cloud bootstrap: install XcodeGen or provide Homebrew." >&2
@@ -31,3 +36,9 @@ do
         exit 1
     fi
 done
+
+# Xcode Cloud resolves only committed package versions. Keep the lockfile
+# outside the ignored/generated project, then restore its expected location.
+package_dir=EkadashiCalendar.xcodeproj/project.xcworkspace/xcshareddata/swiftpm
+mkdir -p "$package_dir"
+cp Package.resolved "$package_dir/Package.resolved"

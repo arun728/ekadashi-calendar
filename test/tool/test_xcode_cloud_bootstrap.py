@@ -22,6 +22,8 @@ class XcodeCloudBootstrapTests(unittest.TestCase):
         self.ios = self.checkout / "ios-native"
         self.ios.mkdir(parents=True)
         (self.ios / "project.yml").write_text("name: EkadashiCalendar\n")
+        self.lockfile = self.ios / "Package.resolved"
+        self.lockfile.write_text('{"version":3,"pins":[]}\n')
         self.bin = self.base / "bin"
         self.bin.mkdir()
         self.log = self.base / "commands.jsonl"
@@ -135,6 +137,22 @@ class XcodeCloudBootstrapTests(unittest.TestCase):
         result = self.run_hook()
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("Homebrew", result.stderr)
+
+    def test_restores_tracked_lockfile_in_the_generated_workspace(self):
+        self.install_generator()
+        result = self.run_hook()
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        restored = self.ios / "EkadashiCalendar.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
+        self.assertTrue(restored.is_file())
+        self.assertEqual(restored.read_bytes(), self.lockfile.read_bytes())
+
+    def test_missing_tracked_lockfile_fails_before_generation(self):
+        self.install_generator()
+        self.lockfile.unlink()
+        result = self.run_hook()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Package.resolved", result.stderr)
+        self.assertFalse(self.log.exists())
 
 
 if __name__ == "__main__":
