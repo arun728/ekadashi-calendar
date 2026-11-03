@@ -37,6 +37,34 @@ open EkadashiCalendar.xcodeproj
 
 The scheme runs with `EkadashiCalendar/Resources/Products.storekit`, so the paywall shows local test products (₹99, ₹499 and ₹999) in the simulator without App Store Connect.
 
+### Xcode Cloud
+
+The `Ekadashi iOS` workflow uses the project path
+`ios-native/EkadashiCalendar.xcodeproj` and the shared `EkadashiCalendar` scheme.
+The project stays generated and ignored by Git. Xcode Cloud runs the executable
+`ios-native/ci_scripts/ci_post_clone.sh` after checkout: the hook installs
+XcodeGen through Homebrew if needed, generates the project from `project.yml`,
+and checks that the project and shared scheme exist before the archive action.
+This follows [Apple's post-clone script convention](https://developer.apple.com/documentation/xcode/writing-custom-build-scripts).
+
+The workflow's branch condition includes `dev` and the `devready` prefix.
+Keep `main` excluded while it has no native iOS app. The workflow currently
+starts for any file change on those branches; its existing file filters are
+unchanged. The `main` and `dev` entries on the Builds page are build-history
+groups from this one workflow, not duplicate workflows.
+
+To check the bootstrap locally, including from an unrelated working directory:
+
+```sh
+./ios-native/ci_scripts/ci_post_clone.sh
+python3 -m unittest discover -s test/tool -p test_xcode_cloud_bootstrap.py
+```
+
+Passing local generation/build checks does not certify a successful Xcode Cloud
+archive. Verify the next approved cloud build after this hook reaches a branch
+selected by the workflow. Existing failed build history and commit statuses
+remain until superseded; changing branch filters does not erase them.
+
 Tests:
 
 ```sh

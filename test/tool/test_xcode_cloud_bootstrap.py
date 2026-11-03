@@ -69,7 +69,7 @@ class XcodeCloudBootstrapTests(unittest.TestCase):
         result = self.run_hook()
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         command, = self.commands()
-        self.assertEqual(command["cwd"], str(self.ios))
+        self.assertEqual(Path(command["cwd"]).resolve(), self.ios.resolve())
         self.assertEqual(command["args"], ["generate", "--spec", "project.yml"])
         self.assertTrue((self.ios / "EkadashiCalendar.xcodeproj/project.pbxproj").is_file())
         self.assertTrue((self.ios / "EkadashiCalendar.xcodeproj/xcshareddata/xcschemes/EkadashiCalendar.xcscheme").is_file())
@@ -102,7 +102,7 @@ class XcodeCloudBootstrapTests(unittest.TestCase):
             text=True, capture_output=True, check=False,
         )
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        self.assertEqual(self.commands()[0]["cwd"], str(self.ios))
+        self.assertEqual(Path(self.commands()[0]["cwd"]).resolve(), self.ios.resolve())
 
     def test_generator_failure_stops_the_hook(self):
         self.install_generator()
