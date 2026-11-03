@@ -47,6 +47,15 @@ XcodeGen through Homebrew if needed, generates the project from `project.yml`,
 and checks that the project and shared scheme exist before the archive action.
 This follows [Apple's post-clone script convention](https://developer.apple.com/documentation/xcode/writing-custom-build-scripts).
 
+The tracked `ios-native/Package.resolved` pins the app's public Swift package
+dependencies. The hook copies it into the generated project's shared SwiftPM
+workspace before Xcode Cloud's strict package-resolution step. Keep this file
+updated when intentionally changing dependencies; do not enable automatic
+dependency upgrades in the Cloud workflow. After an intentional local resolve,
+copy `EkadashiCalendar.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved`
+back to `ios-native/Package.resolved` and review/commit its changes. See
+[Apple's CI dependency guidance](https://developer.apple.com/documentation/xcode/building-swift-packages-or-apps-that-use-them-in-continuous-integration-workflows).
+
 The workflow's branch condition includes `dev` and the `devready` prefix.
 Keep `main` excluded while it has no native iOS app. The workflow currently
 starts for any file change on those branches; its existing file filters are
