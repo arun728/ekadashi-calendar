@@ -116,6 +116,57 @@ void main() {
   Finder inGrid(String text) =>
       find.descendant(of: grid, matching: find.text(text));
 
+  testWidgets(
+    'every enabled month keeps all rows above details at small sizes',
+    (tester) async {
+      await open(tester);
+      final years = ekadashis().map((event) => event.date.year).toSet().toList()
+        ..sort();
+      expect(years, containsAll([2026, 2027]));
+      for (final size in const [
+        Size(320, 568),
+        Size(360, 640),
+        Size(375, 667),
+        Size(393, 852),
+        Size(667, 375),
+      ]) {
+        tester.view.physicalSize = size;
+        await tester.pumpAndSettle();
+        for (final year in years) {
+          for (var month = 1; month <= 12; month++) {
+            final last = DateTime(year, month + 1, 0);
+            await select(tester, last);
+            final calendar = tester.widget<TableCalendar>(grid);
+            expect(calendar.focusedDay.year, year);
+            expect(calendar.focusedDay.month, month);
+            expect(calendar.selectedDayPredicate!(last), isTrue);
+            final weeks = ((DateTime(year, month).weekday % 7 + last.day) / 7)
+                .ceil();
+            final gridBounds = tester.getRect(grid);
+            final details = tester.getRect(
+              find.byKey(const Key('calendar_day_details')),
+            );
+            expect(
+              gridBounds.height,
+              closeTo(28 + weeks * 48, 0.5),
+              reason: '$year-$month at $size must reserve every week row',
+            );
+            expect(
+              details.top - gridBounds.bottom,
+              greaterThanOrEqualTo(11),
+              reason: '$year-$month at $size must not cover the last dates',
+            );
+            expect(
+              tester.takeException(),
+              isNull,
+              reason: '$year-$month at $size',
+            );
+          }
+        }
+      }
+    },
+  );
+
   testWidgets('an Ekadashi day never says "No entries for this day", in '
       'any year or language', (tester) async {
     await open(tester);
