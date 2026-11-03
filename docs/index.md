@@ -4,7 +4,7 @@
 
 🕉️ Get precise Ekadashi dates, fasting times, and spiritual guidance for 2026.
 
-[Download on Google Play Store](https://play.google.com/store/apps/details?id=com.applausestudios.ekadashi_calendar) *(Coming Soon)*
+[Download on Google Play Store](https://play.google.com/store/apps/details?id=com.applausestudios.ekadashi_calendar)
 
 ---
 
