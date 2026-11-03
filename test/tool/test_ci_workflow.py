@@ -60,6 +60,12 @@ class WorkflowTests(unittest.TestCase):
     def test_android_lint_runs(self):
         self.assertIn("lintDebug", job("android-tests"))
 
+    def test_failed_golden_comparisons_keep_their_visual_evidence(self):
+        flutter = job("flutter-tests")
+        upload = flutter[flutter.index("- uses: actions/upload-artifact@v4") :]
+        self.assertIn("if: always()", upload)
+        self.assertIn("test/**/failures/", upload)
+
 
 class DeviceTestDiscoveryTests(unittest.TestCase):
     def test_every_android_device_test_is_run_and_none_is_missing(self):
