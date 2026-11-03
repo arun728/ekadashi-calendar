@@ -1,9 +1,19 @@
+import 'dart:ffi' show Abi;
+
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import '../support/app_harness.dart';
 
 void main() {
+  // Blur edges and font antialiasing differ between the host software
+  // renderers. Keep exact pixel comparisons for each Linux architecture;
+  // the original references are the macOS captures.
+  final renderer = switch (Abi.current()) {
+    Abi.linuxX64 => 'linux-x64/',
+    Abi.linuxArm64 => 'linux-arm64/',
+    _ => '',
+  };
   for (final dark in [true, false]) {
     testWidgets(
       'Glass Off Home visual baseline with outlined actions dark=$dark',
@@ -31,7 +41,7 @@ void main() {
             await expectLater(
               find.byKey(const Key('baseline_image')),
               matchesGoldenFile(
-                'goldens/android_glass_off_${dark ? 'dark' : 'light'}.png',
+                'goldens/${renderer}android_glass_off_${dark ? 'dark' : 'light'}.png',
               ),
             );
             await tester.pumpWidget(const SizedBox());
