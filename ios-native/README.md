@@ -71,6 +71,14 @@ On macOS, `python3 test/tool/test_ios_resource_bundle_signing.py` stages the
 evaluated SwiftPM copy rules, checks data preservation, and signs/verifies a
 temporary bundle with an ad hoc signature; it needs no signing credentials.
 
+The app supports iPhone and iPad (`TARGETED_DEVICE_FAMILY = 1,2`). iPhone stays
+portrait; `UISupportedInterfaceOrientations~ipad` declares all four orientations
+required for iPad multitasking. Build 9 archived and exported successfully but
+App Store Connect rejected its portrait-only iPad metadata with ITMS-90474.
+`python3 test/tool/test_ios_device_configuration.py` generates an isolated project
+and checks both Debug and Release target device families against the generated
+orientation metadata.
+
 To check the bootstrap locally, including from an unrelated working directory:
 
 ```sh
