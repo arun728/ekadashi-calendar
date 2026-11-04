@@ -539,15 +539,22 @@ final class ScreenshotTests: XCTestCase {
         // Apple's remote controller does not expose its labels to XCUITest
         // on every OS. Read the actual visible screenshot with Vision rather
         // than passing an assertion against a missing accessibility element.
+        var text: [String] = []
+        let expectedNames = ["Ekadashi Premium", "Ekadashi Premium (1 month)", "Ekadashi Premium (1 year)"]
         let shown = expectation(for: NSPredicate { _, _ in
-            (try? self.visibleStoreText().contains { $0.hasPrefix("Edit Subscription") }) == true
+            text = (try? self.visibleStoreText()) ?? []
+            // Wait for the content this test verifies, rather than the
+            // system-owned title. Vision's cold start and title recognition
+            // vary across hosted macOS/iOS versions.
+            return text.contains { $0.localizedCaseInsensitiveContains("Cancel Subscription") }
+                && expectedNames.allSatisfy { text.contains($0) }
         }, evaluatedWith: nil)
-        await fulfillment(of: [shown], timeout: 15)
-        let text = try visibleStoreText()
+        await fulfillment(of: [shown], timeout: 30)
         snap("store-managed-subscription-correct-name")
         XCTAssertFalse(text.contains { $0.contains("ekadashi_premium") })
-        XCTAssertGreaterThanOrEqual(text.filter { $0.hasPrefix("Ekadashi Premium") }.count, 3,
-            "The current subscription and both plan options must show the customer-facing name: \(text)")
+        for name in expectedNames {
+            XCTAssertTrue(text.contains(name), "The current subscription and each plan option need their customer-facing names: \(text)")
+        }
         #endif
     }
 
@@ -1178,17 +1185,29 @@ final class ScreenshotTests: XCTestCase {
             ("বাংলা", "পাপাঙ্কুশা একাদশী", "পারণ শুরু হলে আপনি এই উপবাস নথিভুক্ত করতে পারবেন")]
         for (language, name, message) in cases {
             if language != "English" {
-                element("language_menu").tap()
-                app.buttons[language].tap()
+                let menu = app.buttons["language_menu"].firstMatch
+                for _ in 0..<2 {
+                    menu.tap()
+                    let option = app.buttons[language].firstMatch
+                    XCTAssertTrue(option.waitForExistence(timeout: 5))
+                    option.tap()
+                    let selected = expectation(for: NSPredicate(format: "label == %@", language), evaluatedWith: menu)
+                    if XCTWaiter.wait(for: [selected], timeout: 3) == .completed { break }
+                }
+                XCTAssertEqual(menu.label, language, "Confirm the language changed before measuring feedback")
             }
             XCTAssertTrue(app.staticTexts[name].firstMatch.waitForExistence(timeout: 10), language)
             let record = app.buttons["home_record_vrat"].firstMatch
             XCTAssertTrue(record.isEnabled)
-            record.tap()
-            XCTAssertTrue(app.staticTexts[message].waitForExistence(timeout: 3), language)
             let actionTop = ["view_details", "home_share_card", "home_record_vrat"]
                 .map { app.buttons[$0].firstMatch.frame.minY }.min()!
-            XCTAssertLessThanOrEqual(app.staticTexts[message].frame.maxY + 14, actionTop - 8, language)
+            let feedback = app.staticTexts[message].firstMatch
+            record.tap()
+            XCTAssertTrue(feedback.waitForExistence(timeout: 3), language)
+            // Read the transient message immediately. Resolving three other
+            // controls first consumed its four-second lifetime on CI.
+            let feedbackFrame = feedback.frame
+            XCTAssertLessThanOrEqual(feedbackFrame.maxY + 14, actionTop - 8, language)
             snap("home-parana-feedback-\(language)")
             tab(1)
             let parana = app.staticTexts["calendar_break_fasting"].firstMatch

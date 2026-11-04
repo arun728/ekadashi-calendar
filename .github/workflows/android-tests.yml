@@ -146,6 +146,11 @@ jobs:
         run: cd ios-native/EkadashiCore && swift test -c release
       - name: Generate the Xcode project
         run: brew install xcodegen && cd ios-native && xcodegen generate
+      - name: iOS resource, orientation and signing guards
+        # The Linux tooling job skips these platform-specific checks.
+        run: |
+          python3 -m unittest discover -s test/tool -p 'test_ios_*.py'
+          python3 tool/ios/test_signing_configuration.py
       - name: Build and test the app, widgets and UI screenshots
         run: |
           UDID=$(xcrun simctl list devices available -j | python3 tool/ios/pick_simulator.py)

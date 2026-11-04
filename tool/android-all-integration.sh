@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Collect every present candidate's evidence; preserve any failed release gate.
-# Every integration_test/*_android_test.dart runs in granted mode, so a new
+# Every integration_test/*_test.dart runs in granted mode, so a new
 # device test cannot be forgotten. --list prints them without running.
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -10,9 +10,9 @@ targets() {
   for name in "${first[@]}"; do
     [[ -f "integration_test/${name}_android_test.dart" ]] && echo "integration_test/${name}_android_test.dart"
   done
-  for target in integration_test/*_android_test.dart; do
+  for target in integration_test/*_test.dart; do
     name=$(basename "$target" _android_test.dart)
-    [[ "$name" == android_app || " ${first[*]} " == *" $name "* ]] || echo "$target"
+    [[ "$target" == integration_test/android_app_test.dart || " ${first[*]} " == *" $name "* ]] || echo "$target"
   done | sort
 }
 if [[ "${1:-}" == --list ]]; then
@@ -32,7 +32,7 @@ if [[ "$mode" == granted ]]; then
   mapfile -t all < <(targets)
   for target in "${all[@]}"; do
     if bash "$feature_runner" "$target"; then
-      if [[ "$target" == integration_test/multi_year_android_test.dart ]]; then
+      if [[ "$target" == integration_test/android_widget_parity_test.dart ]]; then
         bash "$widget_runner" || result=$?
       fi
     else
