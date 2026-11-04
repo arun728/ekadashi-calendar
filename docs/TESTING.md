@@ -80,6 +80,18 @@ integration. Screenshots/logs are collected under `build/ui-screenshots/`,
 
 ## Release/device boundaries
 
+Home's Glass Off golden tests use exact pixel comparisons with Flutter 3.38.5.
+The original `test/widget/goldens/` images are macOS captures; `linux-x64/`
+matches the GitHub runner and `linux-arm64/` supports Linux reproduction on
+Apple silicon. The host software renderers differ in blur-edge and font
+antialiasing pixels even when the app layout is identical. Do not replace this
+with a percentage tolerance or automatically regenerate baselines in CI.
+When a deliberate UI change needs new references, run
+`flutter test test/widget/android_glass_baseline_test.dart --update-goldens`
+on each applicable renderer, inspect the images, then rerun without that flag.
+CI retains `test/**/failures/` with the expected, actual and difference images
+alongside its other Flutter artifacts.
+
 The local emulator is API 24, 320×640 dp, software-rendered without KVM. Timings
 and frame-rate logs do not represent hardware performance. Robolectric covers
 SDK 28/35 widget behavior. CI adds real API 33/35 emulator and denied/GPS-off
