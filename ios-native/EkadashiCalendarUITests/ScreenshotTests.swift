@@ -750,9 +750,9 @@ final class ScreenshotTests: XCTestCase {
         let badge = app.staticTexts["home_day_badge"].firstMatch
         let first = badge.label
         XCTAssertTrue(first.hasPrefix("00:00:"), first)
-        snap("lifecycle-running-countdown")
         let changed = NSPredicate(format: "label != %@", first)
         XCTAssertEqual(XCTWaiter.wait(for: [expectation(for: changed, evaluatedWith: badge)], timeout: 3), .completed)
+        snap("lifecycle-running-countdown")
         let started = NSPredicate(format: "label == 'Now'")
         XCTAssertEqual(XCTWaiter.wait(for: [expectation(for: started, evaluatedWith: badge)], timeout: 35), .completed)
         let ring = app.descendants(matching: .any)["home_remaining_ring"].firstMatch
@@ -1157,13 +1157,17 @@ final class ScreenshotTests: XCTestCase {
                 let actionsTop = ["view_details", "home_share_card", "home_record_vrat"]
                     .map { app.buttons[$0].firstMatch.frame.minY }.min()!
                 let text = app.staticTexts[message].firstMatch
+                let appFrame = app.frame
                 record.tap()
                 // Query promptly: this deliberately short-lived message must
                 // not be consumed by unrelated toolbar accessibility queries.
-                if !text.exists { record.tap() }
-                XCTAssertTrue(text.waitForExistence(timeout: 1))
-                XCTAssertLessThanOrEqual(text.frame.maxY + 14, actionsTop - 8)
-                XCTAssertTrue(app.frame.contains(text.frame))
+                if !text.exists {
+                    record.tap()
+                    XCTAssertTrue(text.waitForExistence(timeout: 1))
+                }
+                let feedbackFrame = text.frame
+                XCTAssertLessThanOrEqual(feedbackFrame.maxY + 14, actionsTop - 8)
+                XCTAssertTrue(appFrame.contains(feedbackFrame))
                 snap("ios-record-toast-glass-\(enabled)-\(language)")
                 XCTAssertEqual(XCTWaiter.wait(for: [expectation(for: NSPredicate(format: "exists == false"), evaluatedWith: text)], timeout: 6), .completed)
             }

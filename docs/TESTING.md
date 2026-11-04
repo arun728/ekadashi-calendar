@@ -132,6 +132,11 @@ PR cancels the older run.
   widget-parity entrypoint has written its six-language payload fixtures.
   Runner regressions deliberately fail the app, feature and widget phases to
   prove later successes cannot hide a failed gate.
+  The expanded Android job has a 90-minute budget; API 33 exceeded the former
+  60-minute limit. Live-device lifecycle fixtures install the debug-only
+  `DisplayClock` override and reset it in teardown: a zone-local `withClock`
+  alone does not control every platform-dispatched frame. Home follow-up and
+  Glass Look are separate discovered entrypoints, without duplicate registration.
 - **ios-tests** (macOS 15, Xcode 26): `swift test` for EkadashiCore (the
   Swift half of the parity fixtures), the macOS-only resource-bundle signing
   and device-orientation guards (`test/tool/test_ios_*.py`), generated bundle
