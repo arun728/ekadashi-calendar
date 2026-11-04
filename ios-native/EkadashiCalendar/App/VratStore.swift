@@ -16,10 +16,21 @@ final class VratStore {
     var isEnabled: Bool { _ = revision; return tracker.isEnabled }
     var storageError: String? { _ = revision; return tracker.storageError }
     var userAchievements: [String: UserAchievement] { _ = revision; return tracker.userAchievements }
+    var rewardsStorageError: Bool { _ = revision; return tracker.rewardsStorageError }
     var allRecords: [VratRecord] { _ = revision; return tracker.allRecords }
 
     func load(_ occurrences: [EkadashiOccurrence]) {
         try? tracker.load(occurrences: occurrences)
+        revision += 1
+    }
+
+    func journey(_ events: [EkadashiOccurrence], completeYears: Set<Int>, zone: TzLocation) -> JourneySummary {
+        _ = revision
+        return tracker.journey(events, completeYears: completeYears, zone: zone)
+    }
+
+    func markAnnouncementsPresented(_ ids: [String]) {
+        tracker.markAnnouncementsPresented(ids)
         revision += 1
     }
 

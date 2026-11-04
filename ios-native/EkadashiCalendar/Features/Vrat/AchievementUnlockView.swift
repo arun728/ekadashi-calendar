@@ -1,32 +1,59 @@
 import SwiftUI
 import EkadashiCore
 
-/// "Achievement unlocked" (achievement_unlock_dialog.dart).
+/// One celebration for every badge earned by the same update.
 struct AchievementUnlockView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
-    let achievement: Achievement
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    let achievements: [Achievement]
+    @State private var selected: JourneyBadgeDefinition?
+    @State private var appeared = false
+
+    private var summary: JourneySummary {
+        model.vrat.journey(model.ekadashis, completeYears: Set(model.enabledYears), zone: model.scheduleZone)
+    }
 
     var body: some View {
-        VStack(spacing: 16) {
-            Image(systemName: achievement.symbol)
-                .font(.system(size: 40))
-                .foregroundStyle(Theme.teal)
-                .frame(width: 88, height: 88)
-                .glassPanel(cornerRadius: 44, tint: Theme.teal)
-                .symbolEffect(.bounce, value: achievement.id)
-            Text(model.t("achievement_unlocked")).font(.caption.weight(.bold)).foregroundStyle(Theme.teal).textCase(.uppercase)
-            Text(model.t(achievement.titleKey)).font(.title2.bold()).multilineTextAlignment(.center)
-            Text(model.t(achievement.descriptionKey)).font(.callout).foregroundStyle(.secondary).multilineTextAlignment(.center)
-            Button {
-                dismiss()
-            } label: {
-                Text(model.t("hari_om")).font(.headline).frame(maxWidth: .infinity).padding(.vertical, 6)
+        ScrollView {
+            VStack(spacing: 18) {
+                Text(model.t("achievement_unlocked")).font(.caption.bold()).foregroundStyle(Theme.teal)
+                ForEach(achievements) { achievement in
+                    Button {
+                        selected = JourneyBadgeCatalog.definition(achievement.id)
+                    } label: {
+                        HStack(spacing: 14) {
+                            if let badge = JourneyBadgeCatalog.definition(achievement.id) {
+                                JourneyBadgeArt(definition: badge).frame(width: 78, height: 78)
+                            }
+                            VStack(alignment: .leading, spacing: 5) {
+                                Text(model.t(achievement.titleKey)).font(.headline)
+                                Text(model.t(achievement.descriptionKey)).font(.caption).foregroundStyle(.secondary)
+                                Text(model.t("ios_journey_view_badge")).font(.caption.bold()).foregroundStyle(Theme.teal)
+                            }
+                            Spacer(minLength: 0)
+                        }
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                }
+                Button(model.t("hari_om")) { dismiss() }.primaryActionStyle()
+                    .accessibilityIdentifier("journey_celebration_close")
             }
-            .primaryActionStyle()
+            .padding(24)
+            .opacity(appeared ? 1 : 0)
+            .scaleEffect(reduceMotion || appeared ? 1 : 0.96)
+            .animation(reduceMotion ? nil : .easeOut(duration: 0.25), value: appeared)
         }
-        .padding(28)
         .glassSheetBackground()
-        .sensoryFeedback(.success, trigger: achievement.id)
+        .accessibilityIdentifier("journey_badge_celebration")
+        .onAppear { appeared = true }
+        .sensoryFeedback(.success, trigger: appeared) { _, new in new && model.badgeHaptics && !reduceMotion }
+        .sheet(item: $selected) { JourneyBadgeDetail(definition: $0, summary: summary) }
     }
+}
+
+struct JourneyUnlockGroup: Identifiable {
+    let achievements: [Achievement]
+    var id: String { achievements.first?.id ?? "" }
 }

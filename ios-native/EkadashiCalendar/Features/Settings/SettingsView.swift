@@ -147,6 +147,13 @@ struct SettingsView: View {
             }
             .glassListRows()
             .accessibilityIdentifier("settings_about_tube")
+
+            Section(model.t("journey_tab")) {
+                Toggle(model.t("ios_journey_haptics"), isOn: Binding(get: { model.badgeHaptics }, set: { model.setBadgeHaptics($0) }))
+                    .tint(Theme.teal)
+                    .accessibilityIdentifier("journey_badge_haptics")
+            }
+            .glassListRows()
         }
         .scrollContentBackground(.hidden)
         .contentMargins(.bottom, 80, for: .scrollContent)

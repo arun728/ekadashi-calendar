@@ -384,13 +384,13 @@ class AppLocalizationsBn extends AppLocalizations {
   String get delete_record => 'রেকর্ড মুছুন';
 
   @override
-  String get current_streak => 'বর্তমান ধারাবাহিকতা';
+  String get current_streak => 'বর্তমান ধারাবাহিক পালনের ধারা';
 
   @override
-  String get longest_streak => 'দীর্ঘতম ধারাবাহিকতা';
+  String get longest_streak => 'দীর্ঘতম ধারাবাহিক পালনের ধারা';
 
   @override
-  String get annual_completion => 'বার্ষিক সম্পূর্ণতা';
+  String get annual_completion => 'সম্পূর্ণ পালনের অগ্রগতি';
 
   @override
   String get total_observed => 'মোট পালিত';
@@ -429,7 +429,7 @@ class AppLocalizationsBn extends AppLocalizations {
   String get notes_hint => 'ঐচ্ছিক ব্যক্তিগত নোট যোগ করুন...';
 
   @override
-  String get history => 'ইতিহাস';
+  String get history => 'নথিভুক্ত করুন';
 
   @override
   String get statistics => 'পরিসংখ্যান';
@@ -1717,4 +1717,242 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get glass_look_desc => 'আরও স্বচ্ছ কার্ড ও নিয়ন্ত্রণ ব্যবহার করুন।';
+
+  @override
+  String ios_journey_title(String value0) {
+    return 'আপনার $value0 যাত্রা';
+  }
+
+  @override
+  String get ios_journey_points => 'যাত্রার পয়েন্ট';
+
+  @override
+  String get ios_journey_lifetime => 'এখন পর্যন্ত মোট পয়েন্ট';
+
+  @override
+  String ios_journey_year_points(String value0, String value1) {
+    return 'সম্ভাব্য $value1 পয়েন্টের মধ্যে $value0';
+  }
+
+  @override
+  String ios_journey_summary(String value0, String value1) {
+    return '$value0 পূর্ণ · $value1 আংশিক';
+  }
+
+  @override
+  String get ios_journey_mandala => 'আপনার বার্ষিক মণ্ডল';
+
+  @override
+  String ios_journey_quarter(String value0, String value1) {
+    return 'অধ্যায় $value0 · $value1';
+  }
+
+  @override
+  String ios_journey_quarter_progress(String value0, String value1) {
+    return '$value1টির মধ্যে $value0টি পূর্ণ';
+  }
+
+  @override
+  String get ios_journey_quarter_bonus =>
+      'এই অধ্যায় সম্পূর্ণ করে 150 অতিরিক্ত পয়েন্ট পান';
+
+  @override
+  String get ios_journey_bonus_earned =>
+      'অধ্যায় সম্পূর্ণ · 150 অতিরিক্ত পয়েন্ট';
+
+  @override
+  String get ios_journey_annual_bonus =>
+      'বছর সম্পূর্ণ · 1,000 অতিরিক্ত পয়েন্ট';
+
+  @override
+  String get ios_journey_scoring =>
+      'পূর্ণ +100 · আংশিক +50 · সম্পূর্ণ ত্রৈমাসিক +150 · সম্পূর্ণ বছর +1,000';
+
+  @override
+  String get ios_journey_personal =>
+      'আর্থিক পুরস্কার ছাড়া একটি ব্যক্তিগত যাত্রা।';
+
+  @override
+  String ios_journey_remaining(String value0) {
+    return 'পরের মাইলফলকে পৌঁছাতে আরও $value0';
+  }
+
+  @override
+  String get ios_journey_badges => 'আপনার পদক সংগ্রহ';
+
+  @override
+  String ios_journey_progress(String value0, String value1) {
+    return '$value1টির মধ্যে $value0টি';
+  }
+
+  @override
+  String ios_journey_earned(String value0) {
+    return '$value0 তারিখে অর্জিত';
+  }
+
+  @override
+  String get ios_journey_view_badge => 'পদক দেখুন';
+
+  @override
+  String get ios_journey_view_badges => 'পদকগুলি দেখুন';
+
+  @override
+  String get ios_journey_share => 'আপনার বার্ষিক যাত্রা ভাগ করুন';
+
+  @override
+  String get ios_journey_share_preview => 'বার্ষিক যাত্রার কার্ড';
+
+  @override
+  String ios_journey_share_badges(String value0) {
+    return 'অর্জিত পদক $value0টি';
+  }
+
+  @override
+  String ios_journey_share_message(String value0, String value1) {
+    return 'আমার $value0 একাদশী যাত্রা · $value1 পয়েন্ট';
+  }
+
+  @override
+  String get ios_journey_premium =>
+      'প্রিমিয়ামের সঙ্গে আপনার যাত্রা এগিয়ে নিন';
+
+  @override
+  String get ios_journey_premium_desc =>
+      'সীমাহীন নথিভুক্তি, সম্পূর্ণ পদক সংগ্রহ ও আপনার বার্ষিক মণ্ডল।';
+
+  @override
+  String get ios_journey_haptics => 'পদক উদ্‌যাপনে স্পর্শ প্রতিক্রিয়া';
+
+  @override
+  String get ios_journey_future => 'আসন্ন';
+
+  @override
+  String ios_journey_mandala_summary(
+    String value0,
+    String value1,
+    String value2,
+  ) {
+    return '$value0টি একাদশী · $value1 পূর্ণ · $value2 আংশিক';
+  }
+
+  @override
+  String get ios_journey_badge_first => 'প্রথম পদক্ষেপ';
+
+  @override
+  String get ios_journey_badge_first_desc =>
+      'আপনার প্রথম একাদশী ব্রত সম্পূর্ণ পালন করুন।';
+
+  @override
+  String get ios_journey_badge_root => 'শিকড়ের বিস্তার';
+
+  @override
+  String get ios_journey_badge_root_desc =>
+      'সব বছর মিলিয়ে মোট 5টি একাদশী ব্রত সম্পূর্ণ পালন করুন।';
+
+  @override
+  String get ios_journey_badge_bloom => 'প্রস্ফুটিত পদ্ম';
+
+  @override
+  String get ios_journey_badge_bloom_desc =>
+      'সব বছর মিলিয়ে মোট 10টি একাদশী ব্রত সম্পূর্ণ পালন করুন।';
+
+  @override
+  String get ios_journey_badge_lights => 'বারোটি প্রদীপ';
+
+  @override
+  String get ios_journey_badge_lights_desc =>
+      'সব বছর মিলিয়ে মোট 12টি একাদশী ব্রত সম্পূর্ণ পালন করুন।';
+
+  @override
+  String get ios_journey_badge_flame => 'স্থির শিখা';
+
+  @override
+  String get ios_journey_badge_flame_desc =>
+      'পরপর 3টি একাদশী ব্রত সম্পূর্ণ পালন করুন।';
+
+  @override
+  String get ios_journey_badge_rhythm => 'বাড়তে থাকা ছন্দ';
+
+  @override
+  String get ios_journey_badge_rhythm_desc =>
+      'পরপর 6টি একাদশী ব্রত সম্পূর্ণ পালন করুন।';
+
+  @override
+  String get ios_journey_badge_thread => 'অটুট সূত্র';
+
+  @override
+  String get ios_journey_badge_thread_desc =>
+      'পরপর 12টি একাদশী ব্রত সম্পূর্ণ পালন করুন।';
+
+  @override
+  String get ios_journey_badge_wreath => 'চব্বিশের বন্ধন';
+
+  @override
+  String get ios_journey_badge_wreath_desc =>
+      'বছর পেরিয়েও পরপর 24টি একাদশী ব্রত সম্পূর্ণ পালন করুন।';
+
+  @override
+  String get ios_journey_badge_return => 'ফিরে আসায় স্বাগত';
+
+  @override
+  String get ios_journey_badge_return_desc =>
+      'একটি ব্রত বাদ যাওয়ার পরে পরের একাদশী ব্রত সম্পূর্ণ পালন করুন।';
+
+  @override
+  String get ios_journey_badge_effort => 'প্রতিটি প্রচেষ্টা মূল্যবান';
+
+  @override
+  String get ios_journey_badge_effort_desc =>
+      '3টি একাদশী ব্রত আংশিক পালন করুন। প্রতিটি প্রচেষ্টা আপনার যাত্রার অংশ।';
+
+  @override
+  String get ios_journey_badge_q1 => 'প্রথম অধ্যায়';
+
+  @override
+  String get ios_journey_badge_q1_desc =>
+      'এই বছরের জানুয়ারি থেকে মার্চের প্রতিটি একাদশী ব্রত সম্পূর্ণ পালন করুন।';
+
+  @override
+  String get ios_journey_badge_q2 => 'দ্বিতীয় অধ্যায়';
+
+  @override
+  String get ios_journey_badge_q2_desc =>
+      'এই বছরের এপ্রিল থেকে জুনের প্রতিটি একাদশী ব্রত সম্পূর্ণ পালন করুন।';
+
+  @override
+  String get ios_journey_badge_q3 => 'তৃতীয় অধ্যায়';
+
+  @override
+  String get ios_journey_badge_q3_desc =>
+      'এই বছরের জুলাই থেকে সেপ্টেম্বরের প্রতিটি একাদশী ব্রত সম্পূর্ণ পালন করুন।';
+
+  @override
+  String get ios_journey_badge_q4 => 'চতুর্থ অধ্যায়';
+
+  @override
+  String get ios_journey_badge_q4_desc =>
+      'এই বছরের অক্টোবর থেকে ডিসেম্বরের প্রতিটি একাদশী ব্রত সম্পূর্ণ পালন করুন।';
+
+  @override
+  String get ios_journey_badge_annual => 'নিষ্ঠার একটি বছর';
+
+  @override
+  String get ios_journey_badge_annual_desc =>
+      'এই পঞ্জিকা বছরের প্রতিটি একাদশী ব্রত সম্পূর্ণ পালন করুন।';
+
+  @override
+  String get ios_journey_storage_error =>
+      'পদক সংরক্ষণ করা যায়নি। আপনার ব্রতের ইতিহাস সুরক্ষিত আছে।';
+
+  @override
+  String get ios_journey_collection_milestones => 'মাইলফলক';
+
+  @override
+  String get ios_journey_collection_consistency => 'ধারাবাহিকতা';
+
+  @override
+  String get ios_journey_collection_encouragement => 'উৎসাহ';
+
+  @override
+  String get ios_journey_collection_annual => 'বার্ষিক সংগ্রহ';
 }

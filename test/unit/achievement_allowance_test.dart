@@ -83,7 +83,7 @@ void main() {
       final tracker = VratTrackerService(premiumAchievements: () => premium);
       await tracker.init(occurrences: events());
       for (final event in events()) {
-        await tracker.recordVrat(
+        final awards = await tracker.recordVrat(
           ekadashiOccurrenceId: event.id,
           occurrenceUid: event.occurrenceUid,
           ekadashiDate: event.date.toIso8601String().substring(0, 10),
@@ -91,6 +91,7 @@ void main() {
           status: ObservanceStatus.observed,
           occurrences: events(),
         );
+        await tracker.markAnnouncementsPresented(awards.map((a) => a.id));
       }
       expect(
         tracker.userAchievements.values.where((a) => a.isUnlocked).length,
@@ -98,19 +99,20 @@ void main() {
       );
       premium = true;
       final unlocked = await tracker.refreshAchievements(events());
-      expect(unlocked, hasLength(3));
+      expect(unlocked, hasLength(4));
+      await tracker.markAnnouncementsPresented(unlocked.map((a) => a.id));
       expect(await tracker.refreshAchievements(events()), isEmpty);
       premium = false;
       await tracker.refreshAchievements(events());
       expect(
         tracker.userAchievements.values.where((a) => a.isUnlocked).length,
-        6,
+        7,
       );
       final recreated = VratTrackerService();
       await recreated.init(occurrences: events());
       expect(
         recreated.userAchievements.values.where((a) => a.isUnlocked).length,
-        6,
+        7,
       );
     },
   );

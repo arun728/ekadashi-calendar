@@ -189,6 +189,7 @@ void main() {
         occurrences: events(),
       );
       expect(firstUnlocks.map((achievement) => achievement.id), ['first_vrat']);
+      await first.markAnnouncementsPresented(firstUnlocks.map((a) => a.id));
       final recreated = VratTrackerService();
       await recreated.init(occurrences: events());
       expect(recreated.getRecord(1)!.note, 'Private');

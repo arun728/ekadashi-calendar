@@ -17,6 +17,19 @@ public enum FastingMethod: String, Codable, CaseIterable, Sendable {
         self = FastingMethod.allCases.first { $0.rawValue.lowercased() == value.lowercased() } ?? .other
     }
 
+    public static func allowed(for status: ObservanceStatus) -> [FastingMethod] {
+        switch status {
+        case .observed: return [.fullFast, .waterOnly, .fruitsMilk]
+        case .partial: return [.oneMeal]
+        case .missed, .unrecorded: return []
+        }
+    }
+
+    public static func normalized(_ method: FastingMethod?, for status: ObservanceStatus) -> FastingMethod? {
+        let options = allowed(for: status)
+        return method.flatMap { options.contains($0) ? $0 : nil } ?? options.first
+    }
+
     /// Translation key, e.g. `method_full_fast`.
     public var localizationKey: String {
         switch self {

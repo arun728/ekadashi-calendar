@@ -172,10 +172,12 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         _achievementTracker!
             .refreshAchievements(_allEkadashis)
             .then((unlocked) async {
-              for (final achievement in unlocked) {
-                if (!mounted) return;
-                await AchievementUnlockDialog.show(context, achievement);
-              }
+              if (!mounted) return;
+              await AchievementUnlockDialog.showGroup(
+                context,
+                unlocked,
+                summary: _achievementTracker!.journey(_allEkadashis),
+              );
             })
             .catchError((_) {});
       }
@@ -736,11 +738,18 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         _isCalculating = false;
       });
 
-      // Initialize Vrat Tracker with loaded occurrences
-      Provider.of<VratTrackerService>(
-        context,
-        listen: false,
-      ).init(occurrences: ekadashis);
+      // Home's zone and full engine schedule are Journey's award source.
+      final tracker = context.read<VratTrackerService>();
+      tracker.journeyTimezone = city.timeZoneId;
+      await tracker.init(occurrences: ekadashis);
+      final pending = await tracker.refreshAchievements(ekadashis);
+      if (mounted && pending.isNotEmpty) {
+        await AchievementUnlockDialog.showGroup(
+          context,
+          pending,
+          summary: tracker.journey(ekadashis),
+        );
+      }
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
@@ -1771,9 +1780,11 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             currentTimezone: _currentTimezone,
           );
           if (unlocks != null && unlocks.isNotEmpty && mounted) {
-            for (final u in unlocks) {
-              await AchievementUnlockDialog.show(context, u);
-            }
+            await AchievementUnlockDialog.showGroup(
+              context,
+              unlocks,
+              summary: tracker.journey(_allEkadashis),
+            );
           }
         },
         // A round glass button, neutral grey while recording is closed.

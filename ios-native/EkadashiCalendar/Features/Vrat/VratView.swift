@@ -2,16 +2,23 @@ import SwiftUI
 import EkadashiCore
 
 /// Vrat tracker: overview, history, statistics and achievements
-/// (vrat_tracker_screen.dart). Recording, history, streaks and statistics
-/// are free; three entries and three badges are free, more need Premium.
+/// (vrat_tracker_screen.dart). History, editing, streaks and statistics stay
+/// free; three entries and three badges are free, more need Premium.
 /// The sections are glass chips, as in Panchang, and change with a swipe.
 struct VratView: View {
     @Environment(AppModel.self) private var model
     enum Section: String, CaseIterable { case overview, history, statistics, achievements }
     @State private var section: Section = .overview
     @State private var selectedYear = CivilDate.today().year
+    @State private var allYears = false
     @State private var statusFilter: ObservanceStatus?
     @State private var recording: EkadashiOccurrence?
+
+    private var journey: JourneySummary {
+        model.vrat.journey(events, completeYears: Set(model.enabledYears), zone: model.scheduleZone)
+    }
+
+    private var periodJourney: JourneySummary { journey.scoped(toYear: allYears ? nil : year) }
 
     private var events: [EkadashiOccurrence] { model.ekadashis }
     private var years: [Int] { model.vrat.years(events) }
@@ -58,53 +65,59 @@ struct VratView: View {
     // MARK: Overview
 
     private var overview: some View {
-        let records = model.vrat.allRecords
-        let totalObserved = records.filter { $0.status == .observed }.count
-        let longest = model.vrat.longestStreak(events)
-        let stats = model.vrat.annualStats(year, events)
-        let milestone = AchievementEvaluator.nextMilestone(userAchievements: model.vrat.userAchievements,
-                                                           totalObserved: totalObserved, longestStreak: longest)
-        let today = CivilDate.today()
-        let recent = events.sorted { $0.date < $1.date }.filter { abs(today.days(until: $0.date)) <= 30 }.prefix(4)
+        let progress = periodJourney
+        let totalObserved = progress.observedCount
+        let longest = progress.longestStreak
+        let stats = periodStats
+        let milestone = progress.nextMilestone(earned: model.vrat.userAchievements)
         return ScrollView {
             VStack(alignment: .leading, spacing: 12) {
-                Grid(horizontalSpacing: 12, verticalSpacing: 12) {
-                    GridRow {
-                        MetricCard(title: model.t("current_streak"), value: "\(model.vrat.currentStreak(events))",
-                                   subtitle: model.t("ekadashis_unit"), symbol: AppSymbol.journeyStreak, color: .orange)
-                            .accessibilityIdentifier("journey_overview_streaks")
-                        MetricCard(title: model.t("longest_streak"), value: "\(longest)", subtitle: model.t("ekadashis_unit"),
-                                   symbol: AppSymbol.journeyBest, color: Theme.amber)
-                    }
-                    GridRow {
-                        MetricCard(title: "\(year) \(model.t("annual_completion"))",
-                                   value: "\(Int(stats.completionPercentage.rounded()))%",
-                                   subtitle: "\(stats.observedCount) / \(stats.totalOccurrences)",
-                                   symbol: AppSymbol.journeyRate, color: Theme.teal)
-                        MetricCard(title: model.t("total_observed"), value: "\(totalObserved)", subtitle: model.t("ekadashis_unit"),
-                                   symbol: AppSymbol.journeyObserved, color: Theme.observed)
-                    }
+                HStack { Spacer(); yearMenu.accessibilityIdentifier("journey_overview_year") }
+                ForEach(allYears ? journey.visibleYears : [year], id: \.self) { value in
+                    JourneyOverviewPanel(summary: journey, year: value)
                 }
+                JourneyUniformGrid(columns: 2) {
+                    MetricCard(title: model.t("current_streak"), value: "\(progress.currentStreak)",
+                               subtitle: model.t("ekadashis_unit"), symbol: AppSymbol.journeyStreak, color: .orange)
+                        .accessibilityIdentifier("journey_metric_current")
+                    MetricCard(title: model.t("longest_streak"), value: "\(longest)", subtitle: model.t("ekadashis_unit"),
+                               symbol: AppSymbol.journeyBest, color: Theme.amber)
+                        .accessibilityIdentifier("journey_metric_longest")
+                    MetricCard(title: "\(yearTitle) \(model.t("annual_completion"))",
+                               value: "\(Int(stats.completionPercentage.rounded()))%",
+                               subtitle: "\(stats.observedCount) / \(stats.totalOccurrences)",
+                               symbol: AppSymbol.journeyRate, color: Theme.teal)
+                        .accessibilityIdentifier("journey_metric_completion")
+                    MetricCard(title: model.t("total_observed"), value: "\(totalObserved)", subtitle: model.t("ekadashis_unit"),
+                               symbol: AppSymbol.journeyObserved, color: Theme.observed)
+                        .accessibilityIdentifier("journey_metric_observed")
+                }
+                .accessibilityElement(children: .contain)
+                .accessibilityIdentifier("journey_overview_streaks")
                 if let milestone {
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
                             Label(model.t("next_milestone"), systemImage: AppSymbol.journeyMilestone)
                             Spacer()
-                            Text("\(milestone.currentProgress) / \(milestone.target)")
+                            Text("\(milestone.goalProgress(in: progress)) / \(milestone.target)")
                         }
                         .font(.caption.bold())
                         .foregroundStyle(Theme.teal)
                         Text(model.t(milestone.achievement.titleKey)).font(.headline)
-                        ProgressView(value: Double(milestone.currentProgress), total: Double(max(milestone.target, 1)))
+                        if milestone.goalProgress(in: progress) >= milestone.target && !model.premium.isPremium {
+                            Button(model.t("premium_more_achievements")) { model.openPaywall() }
+                                .font(.caption.bold())
+                        } else {
+                            Text(model.t("ios_journey_remaining", String(max(0, milestone.target - milestone.goalProgress(in: progress)))))
+                                .font(.caption).foregroundStyle(.secondary)
+                        }
+                        ProgressView(value: Double(milestone.goalProgress(in: progress)), total: Double(max(milestone.target, 1)))
                             .tint(Theme.teal)
                     }
                     .padding(16)
                     .glassPanel(cornerRadius: 16, tint: Theme.teal)
                     .padding(.top, 8)
                 }
-                Text(model.t("record_observance")).font(.headline).foregroundStyle(Theme.teal).padding(.top, 8)
-                Text(model.t("tap_to_record_instruction")).font(.caption).foregroundStyle(.secondary)
-                ForEach(Array(recent)) { row($0) }
             }
             .padding(16)
         }
@@ -113,7 +126,7 @@ struct VratView: View {
     // MARK: History
 
     private var history: some View {
-        let filtered = events.filter { $0.date.year == year }
+        let filtered = events.filter { allYears || $0.date.year == year }
             .filter { event in
                 guard let statusFilter else { return true }
                 return (model.vrat.record(for: event.occurrenceUid)?.status ?? .unrecorded) == statusFilter
@@ -123,7 +136,7 @@ struct VratView: View {
             ScrollView(.horizontal) {
                 GlassGroup(spacing: 8) {
                     HStack(spacing: 8) {
-                        yearMenu
+                        yearMenu.accessibilityIdentifier("journey_history_year")
                         filterChip(nil, "filter_all")
                         filterChip(.observed, "observed")
                         filterChip(.partial, "partial")
@@ -150,14 +163,26 @@ struct VratView: View {
 
     private var yearMenu: some View {
         Menu {
+            Button(model.t("search_all_years")) { allYears = true }
             ForEach(years, id: \.self) { value in
-                Button(String(value)) { selectedYear = value }
+                Button(String(value)) { selectedYear = value; allYears = false }
             }
         } label: {
-            Label(String(year), systemImage: AppSymbol.journeyYear).font(.subheadline.weight(.semibold))
+            Label(yearTitle, systemImage: AppSymbol.journeyYear).font(.subheadline.weight(.semibold))
                 .padding(.horizontal, 14).padding(.vertical, 8)
                 .glassCapsule(tint: Theme.teal)
+                .fixedSize(horizontal: true, vertical: false)
         }
+        .fixedSize(horizontal: true, vertical: false)
+    }
+
+    private var yearTitle: String { allYears ? model.t("search_all_years") : String(year) }
+
+    private var periodStats: (totalOccurrences: Int, observedCount: Int, partialCount: Int,
+                              missedCount: Int, unrecordedCount: Int, completionPercentage: Double) {
+        let summary = periodJourney
+        return (summary.totalOccurrences, summary.observedCount, summary.partialCount,
+                summary.missedCount, summary.unrecordedCount, summary.completionPercentage)
     }
 
     private func filterChip(_ status: ObservanceStatus?, _ key: String) -> some View {
@@ -201,21 +226,21 @@ struct VratView: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(event.name), \(date), \(model.t(style.listKey)). \(model.t("tap_to_record_semantics"))")
         .accessibilityAddTraits(.isButton)
+        .accessibilityIdentifier("journey_row_\(event.occurrenceUid)")
     }
 
     // MARK: Statistics
 
     private var statistics: some View {
-        let stats = model.vrat.annualStats(year, events)
+        let stats = periodStats
         return ScrollView {
             VStack(spacing: 16) {
                 HStack {
-                    Text("\(model.t("year")):").font(.headline)
                     Spacer()
-                    yearMenu
+                    yearMenu.accessibilityIdentifier("journey_statistics_year")
                 }
                 VStack(spacing: 12) {
-                    Text("\(year) \(model.t("annual_completion"))").font(.headline)
+                    Text("\(yearTitle) \(model.t("annual_completion"))").font(.headline)
                     ZStack {
                         Circle().stroke(Theme.teal.opacity(0.15), lineWidth: 12)
                         Circle().trim(from: 0, to: stats.completionPercentage / 100)
@@ -230,19 +255,13 @@ struct VratView: View {
                 .frame(maxWidth: .infinity)
                 .padding(20)
                 .glassPanel(cornerRadius: 16)
-                Grid(horizontalSpacing: 12, verticalSpacing: 12) {
-                    GridRow {
+                JourneyUniformGrid(columns: 2) {
                         countCard("observed", stats.observedCount, Theme.observed)
                         countCard("partial", stats.partialCount, Theme.partial)
-                    }
-                    GridRow {
                         countCard("missed", stats.missedCount, Theme.missed)
                         countCard("unrecorded", stats.unrecordedCount, .gray)
-                    }
-                    GridRow {
-                        countCard("current_streak", model.vrat.currentStreak(events), .orange)
-                        countCard("longest_streak", model.vrat.longestStreak(events), Theme.amber)
-                    }
+                        countCard("current_streak", periodJourney.currentStreak, .orange)
+                        countCard("longest_streak", periodJourney.longestStreak, Theme.amber)
                 }
             }
             .padding(16)
@@ -250,57 +269,19 @@ struct VratView: View {
     }
 
     private func countCard(_ key: String, _ value: Int, _ color: Color) -> some View {
-        VStack(spacing: 6) {
-            Text("\(value)").font(.title3.bold()).foregroundStyle(color)
-            Text(model.t(key)).font(.caption).multilineTextAlignment(.center)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(14)
-        .glassPanel(cornerRadius: 14, tint: color)
+        JourneyCountCard(title: model.t(key), value: value, color: color)
+            .accessibilityIdentifier("journey_stat_\(key)")
     }
 
     // MARK: Achievements
 
     private var achievements: some View {
-        let users = model.vrat.userAchievements
-        let premium = model.premium.isPremium
-        let freeUsed = users.values.filter(\.isUnlocked).count
-        return ScrollView {
-            VStack(spacing: 12) {
-                Text(model.t("premium_free_achievements")).font(.subheadline).frame(maxWidth: .infinity, alignment: .leading)
-                if !premium {
-                    Button(model.t("premium_more_achievements")) { model.openPaywall() }
-                        .secondaryActionStyle()
-                }
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 12)], spacing: 12) {
-                    ForEach(AchievementEvaluator.all) { achievement in
-                        let unlocked = users[achievement.id]?.isUnlocked ?? false
-                        let paidLocked = !premium && !unlocked && freeUsed >= VratTracker.freeAchievementLimit
-                        VStack(spacing: 8) {
-                            Image(systemName: unlocked ? achievement.symbol : AppSymbol.achievementLocked)
-                                .font(.title2)
-                                .foregroundStyle(unlocked ? Theme.teal : .gray)
-                                .frame(width: 52, height: 52)
-                                .background((unlocked ? Theme.teal.opacity(0.15) : Color.gray.opacity(0.08)), in: Circle())
-                            Text(model.t(achievement.titleKey)).font(.footnote.bold()).multilineTextAlignment(.center)
-                                .foregroundStyle(unlocked ? .primary : .secondary).lineLimit(2)
-                            Text(model.t(achievement.descriptionKey)).font(.caption2).multilineTextAlignment(.center)
-                                .foregroundStyle(.secondary).lineLimit(3)
-                            Spacer(minLength: 0)
-                            Text(unlocked ? "✓ \(model.t("unlocked"))" : model.t(paidLocked ? "premium_title" : "locked"))
-                                .font(.caption.bold())
-                                .foregroundStyle(unlocked ? Theme.teal : .secondary)
-                        }
-                        .frame(maxWidth: .infinity, minHeight: 190)
-                        .padding(14)
-                        .glassPanel(cornerRadius: 16, tint: unlocked ? Theme.teal : nil)
-                        .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(unlocked ? Theme.teal : .clear, lineWidth: 1.8))
-                    }
-                }
-            }
-            .padding(16)
+        VStack(spacing: 0) {
+            HStack { Spacer(); yearMenu.accessibilityIdentifier("journey_achievements_year") }.padding(16)
+            JourneyBadgeCollection(summary: journey, selectedYear: allYears ? nil : year)
         }
     }
+
 }
 
 struct MetricCard: View {
@@ -317,11 +298,58 @@ struct MetricCard: View {
                 Spacer()
                 Text(value).font(.title2.bold()).foregroundStyle(color)
             }
-            Text(title).font(.caption.weight(.medium)).lineLimit(1).padding(.top, 6)
+            Text(title).font(.caption.weight(.medium)).fixedSize(horizontal: false, vertical: true).padding(.top, 6)
             Text(subtitle).font(.caption2).foregroundStyle(.secondary)
         }
         .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .glassPanel(cornerRadius: 16, tint: color)
+        .accessibilityElement(children: .combine)
+    }
+}
+
+/// Measures every card at its column width and uses the tallest intrinsic height
+/// throughout the grid. Text and accessibility sizes determine the height.
+struct JourneyUniformGrid: Layout {
+    var columns: Int? = nil
+    var minimumColumnWidth: CGFloat = 145
+    var spacing: CGFloat = 12
+
+    private func dimensions(width: CGFloat, subviews: Subviews) -> (count: Int, cellWidth: CGFloat, cellHeight: CGFloat) {
+        let count = max(1, columns ?? Int((width + spacing) / (minimumColumnWidth + spacing)))
+        let cellWidth = max(0, (width - CGFloat(count - 1) * spacing) / CGFloat(count))
+        let height = subviews.map { $0.sizeThatFits(ProposedViewSize(width: cellWidth, height: nil)).height }.max() ?? 0
+        return (count, cellWidth, height)
+    }
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let width = max(0, proposal.width ?? 320)
+        let d = dimensions(width: width, subviews: subviews)
+        let rows = (subviews.count + d.count - 1) / d.count
+        return CGSize(width: width, height: CGFloat(rows) * d.cellHeight + CGFloat(max(0, rows - 1)) * spacing)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let d = dimensions(width: bounds.width, subviews: subviews)
+        for (i, view) in subviews.enumerated() {
+            view.place(at: CGPoint(x: bounds.minX + CGFloat(i % d.count) * (d.cellWidth + spacing),
+                                   y: bounds.minY + CGFloat(i / d.count) * (d.cellHeight + spacing)),
+                       anchor: .topLeading, proposal: ProposedViewSize(width: d.cellWidth, height: d.cellHeight))
+        }
+    }
+}
+
+struct JourneyCountCard: View {
+    let title: String
+    let value: Int
+    let color: Color
+    var body: some View {
+        VStack(spacing: 6) {
+            Text("\(value)").font(.title3.bold()).foregroundStyle(color)
+            Text(title).font(.caption).multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(14)
+        .glassPanel(cornerRadius: 14, tint: color)
     }
 }

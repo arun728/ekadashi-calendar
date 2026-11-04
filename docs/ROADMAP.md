@@ -3,6 +3,14 @@
 This file tracks the phased plan agreed with Arun on 8 October 2026. Update the
 status table as each phase moves forward.
 
+## Offline Journey extension
+
+The complete 2026/2027 Journey candidate is on `feature/journey-dev-refresh`
+(draft PR #32), rebuilt from current dev with iOS tested/pushed before Android.
+PR25 is retained for reference. See [JOURNEY_DEV_REFRESH.md](JOURNEY_DEV_REFRESH.md)
+and [PREMIUM_ROADMAP.md](PREMIUM_ROADMAP.md). Birth profiles, family birthdays,
+My Panchang and daily Rasi Palan are not included in this Journey delivery.
+
 ## Working rules
 
 - **iOS first, then Android.** Each phase is built and tested in `ios-native/`
