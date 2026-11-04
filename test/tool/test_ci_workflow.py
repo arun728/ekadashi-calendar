@@ -60,6 +60,17 @@ class WorkflowTests(unittest.TestCase):
     def test_android_lint_runs(self):
         self.assertIn("lintDebug", job("android-tests"))
 
+    def test_mac_only_ios_guards_run_on_the_mac_job(self):
+        ios = job("ios-tests")
+        generated = ios.index("xcodegen generate")
+        guards = ios.index("python3 -m unittest discover -s test/tool -p 'test_ios_*.py'")
+        app = ios.index("xcodebuild test")
+        self.assertLess(generated, guards)
+        self.assertLess(guards, app)
+        self.assertIn("python3 tool/ios/test_signing_configuration.py", ios)
+        self.assertNotIn("-only-testing:", ios)
+        self.assertNotIn("-skip-testing:", ios)
+
     def test_failed_golden_comparisons_keep_their_visual_evidence(self):
         flutter = job("flutter-tests")
         upload = flutter[flutter.index("- uses: actions/upload-artifact@v4") :]
