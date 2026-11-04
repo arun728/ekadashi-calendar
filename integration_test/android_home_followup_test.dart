@@ -10,6 +10,7 @@ import 'package:ekadashi_calendar/main.dart' as app;
 import 'package:ekadashi_calendar/l10n/app_language.dart';
 import 'package:ekadashi_calendar/services/language_service.dart';
 import 'package:ekadashi_calendar/services/ekadashi_settings.dart';
+import 'package:ekadashi_calendar/services/display_clock.dart';
 import 'package:ekadashi_calendar/services/panchang/calculated_ekadashi.dart';
 import 'package:ekadashi_calendar/screens/calendar_screen.dart';
 
@@ -23,6 +24,10 @@ void main() {
       await prefs.setString('language_code', 'en');
       await prefs.remove(EkadashiSettings.traditionKey);
       await prefs.setInt(EkadashiSettings.yearKey, 2026);
+      // Live device frames can be dispatched outside withClock's zone.
+      // Match the lifecycle integration fixture so every render uses this date.
+      DisplayClock.setTestClock(() => DateTime.utc(2026, 10, 22, 7, 15));
+      addTearDown(() => DisplayClock.setTestClock(null));
       await withClock(Clock.fixed(DateTime.utc(2026, 10, 22, 7, 15)), () async {
         await tester.pumpWidget(const app.MyApp());
         Future<void> frames([int count = 8]) async {

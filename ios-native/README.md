@@ -62,6 +62,33 @@ starts for any file change on those branches; its existing file filters are
 unchanged. The `main` and `dev` entries on the Builds page are build-history
 groups from this one workflow, not duplicate workflows.
 
+`EkadashiCore/Package.swift` copies the five data subdirectories individually.
+Keep them as byte copies, preserving their directory structure, without a
+top-level `Resources` directory in the flat iOS resource bundle. That layout
+caused build 8 to fail with `bundle format unrecognized, invalid, or unsuitable`
+during signing. `CoreResources` already supports the direct subdirectory paths.
+On macOS, `python3 test/tool/test_ios_resource_bundle_signing.py` stages the
+evaluated SwiftPM copy rules, checks data preservation, and signs/verifies a
+temporary bundle with an ad hoc signature; it needs no signing credentials.
+
+The app supports iPhone and iPad (`TARGETED_DEVICE_FAMILY = 1,2`). iPhone stays
+portrait; `UISupportedInterfaceOrientations~ipad` declares all four orientations
+required for iPad multitasking. Build 9 archived and exported successfully but
+App Store Connect rejected its portrait-only iPad metadata with ITMS-90474.
+`python3 test/tool/test_ios_device_configuration.py` generates an isolated project
+and checks both Debug and Release target device families against the generated
+orientation metadata.
+
+The Calendar lays out its complete month eagerly (at most six week rows), so
+rotation cannot leave a lazy grid's estimated height covering the final week.
+`CalendarLayoutTests` renders every enabled month at seven widths, including
+320 and 375 points, with two text sizes. The Calendar UI tests check all
+2026–2027 months and the gap above selected-day details on iPad and small
+iPhone; iPad also exercises all four supported orientations. Android's
+`calendar_ios_parity_test.dart` covers five sizes, and
+`integration_test/calendar_layout_android_test.dart` checks all 24 months on a
+compact emulator with a screenshot for each month. iPhone remains portrait-only.
+
 To check the bootstrap locally, including from an unrelated working directory:
 
 ```sh

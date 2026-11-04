@@ -40,14 +40,15 @@ jobs:
           path: |
             coverage/
             build/ui-screenshots/offscreen/
+            test/**/failures/
   android-tests:
     needs: [flutter-tests]
     # Keep collecting native/UI evidence while required Flutter gates are red.
     if: always() && !cancelled()
     runs-on: ubuntu-latest
-    # A cold Gradle build has taken over 30 minutes on a slow runner, which
-    # left too little time for the emulator suites within 45 minutes.
-    timeout-minutes: 60
+    # All ten feature entrypoints now run. The API 33 runner reached 60
+    # minutes while still collecting this expanded suite's evidence.
+    timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
@@ -102,6 +103,9 @@ jobs:
         run: cd android && ./gradlew app:lintDebug
       - name: Enable KVM
         run: sudo chmod 666 /dev/kvm
+      - name: Reserve space for emulator images and userdata
+        # API 24 failed allocation with 2.7 GB free and 7.4 GB required.
+        run: bash tool/android-runner-space.sh
       - uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ matrix.api }}
@@ -130,7 +134,8 @@ jobs:
     # Native iOS app (ios-native/): EkadashiCore package tests, then the app,
     # widgets, unit and UI screenshot tests on the newest iPhone simulator.
     runs-on: macos-15
-    timeout-minutes: 75
+    # The complete multilingual UI suite exceeded 75 minutes on hosted Macs.
+    timeout-minutes: 150
     steps:
       - uses: actions/checkout@v4
       - name: Select Xcode 26 (iOS 26 SDK, Liquid Glass)
@@ -144,6 +149,11 @@ jobs:
         run: cd ios-native/EkadashiCore && swift test -c release
       - name: Generate the Xcode project
         run: brew install xcodegen && cd ios-native && xcodegen generate
+      - name: iOS resource, orientation and signing guards
+        # The Linux tooling job skips these platform-specific checks.
+        run: |
+          python3 -m unittest discover -s test/tool -p 'test_ios_*.py'
+          python3 tool/ios/test_signing_configuration.py
       - name: Build and test the app, widgets and UI screenshots
         run: |
           UDID=$(xcrun simctl list devices available -j | python3 tool/ios/pick_simulator.py)

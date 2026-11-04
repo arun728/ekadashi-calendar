@@ -80,6 +80,18 @@ integration. Screenshots/logs are collected under `build/ui-screenshots/`,
 
 ## Release/device boundaries
 
+Home's Glass Off golden tests use exact pixel comparisons with Flutter 3.38.5.
+The original `test/widget/goldens/` images are macOS captures; `linux-x64/`
+matches the GitHub runner and `linux-arm64/` supports Linux reproduction on
+Apple silicon. The host software renderers differ in blur-edge and font
+antialiasing pixels even when the app layout is identical. Do not replace this
+with a percentage tolerance or automatically regenerate baselines in CI.
+When a deliberate UI change needs new references, run
+`flutter test test/widget/android_glass_baseline_test.dart --update-goldens`
+on each applicable renderer, inspect the images, then rerun without that flag.
+CI retains `test/**/failures/` with the expected, actual and difference images
+alongside its other Flutter artifacts.
+
 The local emulator is API 24, 320×640 dp, software-rendered without KVM. Timings
 and frame-rate logs do not represent hardware performance. Robolectric covers
 SDK 28/35 widget behavior. CI adds real API 33/35 emulator and denied/GPS-off
@@ -94,9 +106,10 @@ background two-way sync.
 Samsung M52 and Z Flip 5 checks remain for OEM launcher rendering, Doze/battery
 restrictions, long background refresh, GPS/travel/folding and a release-signed
 upgrade from Play Store v1. Linguistic quality requires native-speaker review.
-No iOS build/widget result is claimed. Main needs separate release approval.
+These Android results do not establish iOS build/widget coverage; the native
+iOS gates are listed below. Main needs separate release approval.
 
-## What CI runs (October 2026)
+## What CI runs (updated November 2026)
 
 `.github/workflows/android-tests.yml` runs on pull requests to `dev` and
 `main` (not for changes to `docs/` or Markdown only); a newer push to the same
@@ -113,11 +126,29 @@ PR cancels the older run.
   API 35 GPS off): debug APK, native JVM tests, Android lint (API 35 granted
   only; `android/app/lint-baseline.xml` lists issues that predate it, new
   ones fail), `integration_test/android_app_test.dart` in every mode and, in
-  granted mode, every other `integration_test/*_android_test.dart` (found
-  automatically; `--list` prints them) plus the launcher widget tests.
+  granted mode, every other `integration_test/*_test.dart` (found
+  automatically; `--list` prints them), including both `android_*_test.dart`
+  and `*_android_test.dart` names. Launcher widget tests run after the dedicated
+  widget-parity entrypoint has written its six-language payload fixtures.
+  Runner regressions deliberately fail the app, feature and widget phases to
+  prove later successes cannot hide a failed gate.
+  The expanded Android job has a 90-minute budget; API 33 exceeded the former
+  60-minute limit. Live-device lifecycle fixtures install the debug-only
+  `DisplayClock` override and reset it in teardown: a zone-local `withClock`
+  alone does not control every platform-dispatched frame. Home follow-up and
+  Glass Look are separate discovered entrypoints, without duplicate registration.
+  Premium dismissal waits for the route's exit animation before checking that
+  it is absent. Widget regressions verify the actual modal inherits Glass,
+  cover both available and unavailable catalogs, and reopen after switching modes.
 - **ios-tests** (macOS 15, Xcode 26): `swift test` for EkadashiCore (the
-  Swift half of the parity fixtures), then the app, widgets, unit and UI
-  screenshot tests on a simulator.
+  Swift half of the parity fixtures), the macOS-only resource-bundle signing
+  and device-orientation guards (`test/tool/test_ios_*.py`), generated bundle
+  identity and App Group checks (`tool/ios/test_signing_configuration.py`),
+  then the app, widgets, unit and UI
+  screenshot tests on the newest available iPhone simulator. The shared scheme
+  includes both native test targets without a test-name filter. iPad rotations
+  and small-device UI checks are additional local validation; this hosted job
+  alone does not establish device-size or physical-device coverage.
 
 `.github/workflows/backend-tests.yml` runs the dormant billing backend's tests
 only when `backend/` changes.

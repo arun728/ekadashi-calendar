@@ -121,6 +121,7 @@ struct CalendarView: View {
         .onChange(of: month) { _, value in model.calendarShowsYear(value.year) }
         .onChange(of: model.calendarFocus) { _, date in
             guard let date else { return }
+            hasFocused = true
             focus(date)
             model.calendarFocus = nil
         }
@@ -226,12 +227,20 @@ struct CalendarView: View {
         }
         .padding(.horizontal, 16)
         .padding(.top, 4)
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("calendar_day_details")
     }
 
     // MARK: Navigation
 
     /// Opens on the year chosen on Home: today in this year, else its January.
     private func focusInitial() {
+        if let pending = model.calendarFocus {
+            hasFocused = true
+            focus(pending)
+            model.calendarFocus = nil
+            return
+        }
         guard !hasFocused || month.year != model.selectedYear else { return }
         hasFocused = true
         let today = model.today
@@ -325,17 +334,32 @@ struct MonthGrid: View {
     var body: some View {
         // CivilDate.weekday is Dart's (Monday 1 ... Sunday 7).
         let leading = month.weekday % 7
-        let days = (0..<month.daysInMonth).map { month.adding(days: $0) }
-        let cells: [CivilDate?] = Array(repeating: nil, count: leading) + days
-        let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
-        LazyVGrid(columns: columns, spacing: 0) {
-            ForEach(Array(weekdays.enumerated()), id: \.offset) { _, symbol in
-                Text(symbol).font(.subheadline.weight(.medium)).frame(height: 28)
+        let weeks = stride(from: -leading, to: month.daysInMonth, by: 7)
+            .map { month.adding(days: $0) }
+        // A month has at most six weeks. Lay out every row eagerly so a
+        // lazy grid's estimated height cannot cover the last week on resize.
+        VStack(spacing: 0) {
+            HStack(spacing: 0) {
+                ForEach(0..<7, id: \.self) { column in
+                    Text(weekdays[column]).font(.subheadline.weight(.medium))
+                        .frame(maxWidth: .infinity).frame(height: 28)
+                }
             }
-            ForEach(Array(cells.enumerated()), id: \.offset) { _, day in
-                if let day { cell(day) } else { Color.clear.frame(height: 48) }
+            ForEach(weeks, id: \.self) { start in
+                HStack(spacing: 0) {
+                    ForEach(0..<7, id: \.self) { column in
+                        let day = start.adding(days: column)
+                        if day.firstOfMonth == month {
+                            cell(day).frame(maxWidth: .infinity)
+                        } else {
+                            Color.clear.frame(maxWidth: .infinity).frame(height: 48)
+                        }
+                    }
+                }
             }
         }
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("calendar_month_grid")
     }
 
     private func cell(_ day: CivilDate) -> some View {

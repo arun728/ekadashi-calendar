@@ -19,6 +19,88 @@ final class ScreenshotTests: XCTestCase {
     }
 
     @MainActor
+    func testCalendarLastWeekStaysAboveSelectedEntryAcrossDeviceRotations() throws {
+        app.terminate()
+        app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = "2026-11-03T12:00:00+05:30"
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        // iPad's top tab strip is not exposed as an XCUI tabBar.
+        let calendar = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier == %@ OR label == %@", "calendar", "Calendar")).firstMatch
+        XCTAssertTrue(calendar.waitForExistence(timeout: 5))
+        calendar.tap()
+        let fast = app.buttons["Thu, 5 Nov 2026"].firstMatch
+        XCTAssertTrue(fast.waitForExistence(timeout: 5))
+        fast.tap()
+        defer { XCUIDevice.shared.orientation = .portrait }
+        // iPhone is intentionally portrait-only. Exercise all supported
+        // rotations on iPad without forcing unsupported phone orientations.
+        let orientations: [(UIDeviceOrientation, String)] = UIDevice.current.userInterfaceIdiom == .pad ? [
+            (.portrait, "portrait"), (.landscapeLeft, "landscape-left"),
+            (.portraitUpsideDown, "upside-down"), (.landscapeRight, "landscape-right"),
+            (.portrait, "portrait-return"),
+        ] : [(.portrait, "portrait")]
+        for (orientation, name) in orientations {
+            XCUIDevice.shared.orientation = orientation
+            let lastDay = app.buttons["Mon, 30 Nov 2026"].firstMatch
+            let title = app.staticTexts["Rama Ekadashi"].firstMatch
+            XCTAssertTrue(lastDay.waitForExistence(timeout: 5))
+            XCTAssertTrue(title.waitForExistence(timeout: 5))
+            var previous: [CGRect] = []
+            let settled = NSPredicate { _, _ in
+                let frames = [lastDay.frame, title.frame]
+                defer { previous = frames }
+                return previous == frames && frames.allSatisfy { !$0.isEmpty }
+            }
+            XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: settled, object: nil)],
+                                        timeout: 8), .completed)
+            snap("ipad-calendar-last-row-\(name)")
+            // The card title has 16pt internal padding. Its surface must
+            // leave the last 48pt day cell and the 12pt stack gap unobscured.
+            let gap = title.frame.minY - 16 - lastDay.frame.maxY
+            print("IPAD_CALENDAR \(name) lastDay=\(lastDay.frame) title=\(title.frame) gap=\(gap)")
+            XCTAssertGreaterThanOrEqual(gap, 11, "Selected-day card overlaps the final week after \(name)")
+            XCTAssertTrue(lastDay.isHittable, "The last day must remain tappable")
+        }
+    }
+
+    @MainActor
+    func testEveryEnabledCalendarMonthKeepsLastWeekAboveDayDetails() {
+        app.terminate()
+        app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = "2026-01-03T12:00:00+05:30"
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        let calendarTab = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier == %@ OR label == %@", "calendar", "Calendar")).firstMatch
+        XCTAssertTrue(calendarTab.waitForExistence(timeout: 5))
+        calendarTab.tap()
+        let calendar = Calendar(identifier: .gregorian)
+        let formatter = DateFormatter()
+        formatter.calendar = calendar
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "EEE, d MMM yyyy"
+        for year in 2026...2027 {
+            for month in 1...12 {
+                let end = calendar.date(from: DateComponents(year: year, month: month + 1, day: 0))!
+                let lastDay = app.buttons[formatter.string(from: end)].firstMatch
+                XCTAssertTrue(lastDay.waitForExistence(timeout: 8), "\(year)-\(month)")
+                let grid = app.descendants(matching: .any)["calendar_month_grid"].firstMatch
+                let details = app.descendants(matching: .any)["calendar_day_details"].firstMatch
+                XCTAssertTrue(grid.exists)
+                XCTAssertTrue(details.exists)
+                XCTAssertGreaterThanOrEqual(grid.frame.maxY, lastDay.frame.maxY - 0.5,
+                                            "\(year)-\(month): grid must reserve its entire final row")
+                XCTAssertGreaterThanOrEqual(details.frame.minY - grid.frame.maxY, 11,
+                                            "\(year)-\(month): selected-day content must stay below the month")
+                snap("calendar-all-months-\(year)-\(month)")
+                if year != 2027 || month != 12 {
+                    app.buttons["calendar_next_month"].firstMatch.tap()
+                }
+            }
+        }
+    }
+
+    @MainActor
     func testPanchangPerformanceAcrossAllSections() throws {
         #if !targetEnvironment(simulator)
         throw XCTSkip("Only isolated Simulator StoreKit accounts may be reset")
@@ -221,14 +303,24 @@ final class ScreenshotTests: XCTestCase {
             app.buttons["calendar_google_menu"].firstMatch.tap()
             app.buttons["import_google_year"].firstMatch.tap()
             let prompt = app.alerts.firstMatch
-            if prompt.waitForExistence(timeout: 8), prompt.buttons["Cancel"].exists {
+            let failure = app.staticTexts["Google sign-in failed. Check your connection and try again."].firstMatch
+            let authentication = XCUIApplication(bundleIdentifier: "com.apple.SafariViewService")
+            let response = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+                prompt.exists || failure.exists || self.app.buttons["Cancel"].firstMatch.exists
+                    || authentication.buttons["Cancel"].firstMatch.exists
+            }, object: nil)
+            XCTAssertEqual(XCTWaiter.wait(for: [response], timeout: 15), .completed)
+            if prompt.exists, prompt.buttons["Cancel"].exists {
                 prompt.buttons["Cancel"].tap()
             } else if app.buttons["Cancel"].firstMatch.exists {
                 app.buttons["Cancel"].firstMatch.tap()
+            } else if failure.exists {
+                // Builds without OAuth credentials must report a recoverable
+                // sync failure instead of entering the SDK or crashing.
+                XCTAssertTrue(app.buttons["calendar_google_menu"].firstMatch.exists)
             } else {
                 // ASWebAuthenticationSession is hosted by SafariViewService,
                 // so its Cancel control is outside our app's AX tree.
-                let authentication = XCUIApplication(bundleIdentifier: "com.apple.SafariViewService")
                 let cancel = authentication.buttons["Cancel"].firstMatch
                 XCTAssertTrue(cancel.waitForExistence(timeout: 10))
                 cancel.tap()
@@ -447,15 +539,22 @@ final class ScreenshotTests: XCTestCase {
         // Apple's remote controller does not expose its labels to XCUITest
         // on every OS. Read the actual visible screenshot with Vision rather
         // than passing an assertion against a missing accessibility element.
+        var text: [String] = []
+        let expectedNames = ["Ekadashi Premium", "Ekadashi Premium (1 month)", "Ekadashi Premium (1 year)"]
         let shown = expectation(for: NSPredicate { _, _ in
-            (try? self.visibleStoreText().contains { $0.hasPrefix("Edit Subscription") }) == true
+            text = (try? self.visibleStoreText()) ?? []
+            // Wait for the content this test verifies, rather than the
+            // system-owned title. Vision's cold start and title recognition
+            // vary across hosted macOS/iOS versions.
+            return text.contains { $0.localizedCaseInsensitiveContains("Cancel Subscription") }
+                && expectedNames.allSatisfy { text.contains($0) }
         }, evaluatedWith: nil)
-        await fulfillment(of: [shown], timeout: 15)
-        let text = try visibleStoreText()
+        await fulfillment(of: [shown], timeout: 30)
         snap("store-managed-subscription-correct-name")
         XCTAssertFalse(text.contains { $0.contains("ekadashi_premium") })
-        XCTAssertGreaterThanOrEqual(text.filter { $0.hasPrefix("Ekadashi Premium") }.count, 3,
-            "The current subscription and both plan options must show the customer-facing name: \(text)")
+        for name in expectedNames {
+            XCTAssertTrue(text.contains(name), "The current subscription and each plan option need their customer-facing names: \(text)")
+        }
         #endif
     }
 
@@ -651,9 +750,9 @@ final class ScreenshotTests: XCTestCase {
         let badge = app.staticTexts["home_day_badge"].firstMatch
         let first = badge.label
         XCTAssertTrue(first.hasPrefix("00:00:"), first)
-        snap("lifecycle-running-countdown")
         let changed = NSPredicate(format: "label != %@", first)
         XCTAssertEqual(XCTWaiter.wait(for: [expectation(for: changed, evaluatedWith: badge)], timeout: 3), .completed)
+        snap("lifecycle-running-countdown")
         let started = NSPredicate(format: "label == 'Now'")
         XCTAssertEqual(XCTWaiter.wait(for: [expectation(for: started, evaluatedWith: badge)], timeout: 35), .completed)
         let ring = app.descendants(matching: .any)["home_remaining_ring"].firstMatch
@@ -1058,13 +1157,17 @@ final class ScreenshotTests: XCTestCase {
                 let actionsTop = ["view_details", "home_share_card", "home_record_vrat"]
                     .map { app.buttons[$0].firstMatch.frame.minY }.min()!
                 let text = app.staticTexts[message].firstMatch
+                let appFrame = app.frame
                 record.tap()
                 // Query promptly: this deliberately short-lived message must
                 // not be consumed by unrelated toolbar accessibility queries.
-                if !text.exists { record.tap() }
-                XCTAssertTrue(text.waitForExistence(timeout: 1))
-                XCTAssertLessThanOrEqual(text.frame.maxY + 14, actionsTop - 8)
-                XCTAssertTrue(app.frame.contains(text.frame))
+                if !text.exists {
+                    record.tap()
+                    XCTAssertTrue(text.waitForExistence(timeout: 1))
+                }
+                let feedbackFrame = text.frame
+                XCTAssertLessThanOrEqual(feedbackFrame.maxY + 14, actionsTop - 8)
+                XCTAssertTrue(appFrame.contains(feedbackFrame))
                 snap("ios-record-toast-glass-\(enabled)-\(language)")
                 XCTAssertEqual(XCTWaiter.wait(for: [expectation(for: NSPredicate(format: "exists == false"), evaluatedWith: text)], timeout: 6), .completed)
             }
@@ -1086,17 +1189,29 @@ final class ScreenshotTests: XCTestCase {
             ("বাংলা", "পাপাঙ্কুশা একাদশী", "পারণ শুরু হলে আপনি এই উপবাস নথিভুক্ত করতে পারবেন")]
         for (language, name, message) in cases {
             if language != "English" {
-                element("language_menu").tap()
-                app.buttons[language].tap()
+                let menu = app.buttons["language_menu"].firstMatch
+                for _ in 0..<2 {
+                    menu.tap()
+                    let option = app.buttons[language].firstMatch
+                    XCTAssertTrue(option.waitForExistence(timeout: 5))
+                    option.tap()
+                    let selected = expectation(for: NSPredicate(format: "label == %@", language), evaluatedWith: menu)
+                    if XCTWaiter.wait(for: [selected], timeout: 3) == .completed { break }
+                }
+                XCTAssertEqual(menu.label, language, "Confirm the language changed before measuring feedback")
             }
             XCTAssertTrue(app.staticTexts[name].firstMatch.waitForExistence(timeout: 10), language)
             let record = app.buttons["home_record_vrat"].firstMatch
             XCTAssertTrue(record.isEnabled)
-            record.tap()
-            XCTAssertTrue(app.staticTexts[message].waitForExistence(timeout: 3), language)
             let actionTop = ["view_details", "home_share_card", "home_record_vrat"]
                 .map { app.buttons[$0].firstMatch.frame.minY }.min()!
-            XCTAssertLessThanOrEqual(app.staticTexts[message].frame.maxY + 14, actionTop - 8, language)
+            let feedback = app.staticTexts[message].firstMatch
+            record.tap()
+            XCTAssertTrue(feedback.waitForExistence(timeout: 3), language)
+            // Read the transient message immediately. Resolving three other
+            // controls first consumed its four-second lifetime on CI.
+            let feedbackFrame = feedback.frame
+            XCTAssertLessThanOrEqual(feedbackFrame.maxY + 14, actionTop - 8, language)
             snap("home-parana-feedback-\(language)")
             tab(1)
             let parana = app.staticTexts["calendar_break_fasting"].firstMatch
@@ -1506,7 +1621,11 @@ final class ScreenshotTests: XCTestCase {
         let london = app.buttons["ekadashi_city_geonames-2643743"]
         XCTAssertTrue(reveal(london), "London is offered")
         snap("14a-home-city-shortlist")
-        XCTAssertTrue(reveal(search, upwards: true), "search field")
+        // Pulling a sheet downward to reveal its header dismisses it on iOS 26.
+        // Reopen it at the top before testing the independent search flow.
+        app.buttons["Cancel"].firstMatch.tap()
+        element("home_location").tap()
+        XCTAssertTrue(search.waitForExistence(timeout: 5))
         search.tap()
         search.typeText("Mumbai")
         let mumbai = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Mumbai'")).firstMatch
@@ -1757,25 +1876,29 @@ final class ScreenshotTests: XCTestCase {
     func testEkadashiRemindersFollowTheMasterSwitch() {
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 20))
         tab(4)
-        let master = element("notifications_master")
-        // Small steps: a full-screen swipe scrolls past the row and the lazy
-        // list drops it.
-        for _ in 0..<12 where !(master.exists && master.isHittable) {
-            app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7))
-                .press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.4)))
+        let master = app.switches["notifications_master"].firstMatch
+        XCTAssertTrue(reveal(master))
+        let initiallyOn = expectation(for: NSPredicate(format: "value == '1'"), evaluatedWith: master)
+        XCTAssertEqual(XCTWaiter.wait(for: [initiallyOn], timeout: 10), .completed,
+                       "The authorized fixture must start with notifications enabled")
+        // The SwiftUI row and its UIKit thumb can both be exposed as switches.
+        // Reveal the actual thumb and tap its center, avoiding XCTest's implicit
+        // auto-scroll/hit-point selection for the nested switch.
+        let thumb = master.switches.firstMatch.exists ? master.switches.firstMatch : master
+        XCTAssertTrue(reveal(thumb))
+        thumb.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        let masterOff = expectation(for: NSPredicate(format: "value == '0'"), evaluatedWith: master)
+        XCTAssertEqual(XCTWaiter.wait(for: [masterOff], timeout: 10), .completed,
+                       "The master switch must actually turn off")
+        for key in ["notify_2day", "notify_1day", "notify_start", "notify_parana"] {
+            let reminder = app.switches["notify_toggle_\(key)"].firstMatch
+            // Native lists create rows lazily; expose each row before checking
+            // its value and disabled state, including on short iPhones.
+            XCTAssertTrue(reveal(reminder), key)
+            let off = expectation(for: NSPredicate(format: "value == '0' AND isEnabled == false"), evaluatedWith: reminder)
+            XCTAssertEqual(XCTWaiter.wait(for: [off], timeout: 10), .completed,
+                           "\(key) must be off and greyed out")
         }
-        XCTAssertTrue(master.waitForExistence(timeout: 5))
-        if (master.value as? String) == "1" { master.switches.firstMatch.exists ? master.switches.firstMatch.tap() : master.tap() }
-        let reminder = element("notify_toggle_notify_2day")
-        // The native List creates the next section lazily. Expose the actual
-        // reminder row before asserting its disabled state on short screens.
-        for _ in 0..<6 where !(reminder.exists && reminder.isHittable) {
-            app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7))
-                .press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)))
-        }
-        XCTAssertTrue(reminder.waitForExistence(timeout: 5))
-        let off = expectation(for: NSPredicate(format: "value == '0' AND isEnabled == false"), evaluatedWith: reminder)
-        XCTAssertEqual(XCTWaiter.wait(for: [off], timeout: 10), .completed, "off and greyed out")
         snap("18-reminders-off")
     }
 

@@ -60,6 +60,23 @@ class WorkflowTests(unittest.TestCase):
     def test_android_lint_runs(self):
         self.assertIn("lintDebug", job("android-tests"))
 
+    def test_mac_only_ios_guards_run_on_the_mac_job(self):
+        ios = job("ios-tests")
+        generated = ios.index("xcodegen generate")
+        guards = ios.index("python3 -m unittest discover -s test/tool -p 'test_ios_*.py'")
+        app = ios.index("xcodebuild test")
+        self.assertLess(generated, guards)
+        self.assertLess(guards, app)
+        self.assertIn("python3 tool/ios/test_signing_configuration.py", ios)
+        self.assertNotIn("-only-testing:", ios)
+        self.assertNotIn("-skip-testing:", ios)
+
+    def test_failed_golden_comparisons_keep_their_visual_evidence(self):
+        flutter = job("flutter-tests")
+        upload = flutter[flutter.index("- uses: actions/upload-artifact@v4") :]
+        self.assertIn("if: always()", upload)
+        self.assertIn("test/**/failures/", upload)
+
 
 class DeviceTestDiscoveryTests(unittest.TestCase):
     def test_every_android_device_test_is_run_and_none_is_missing(self):
@@ -72,7 +89,7 @@ class DeviceTestDiscoveryTests(unittest.TestCase):
         ).stdout.split()
         expected = sorted(
             str(path.relative_to(ROOT))
-            for path in (ROOT / "integration_test").glob("*_android_test.dart")
+            for path in (ROOT / "integration_test").glob("*_test.dart")
             if path.name != "android_app_test.dart"
         )
         self.assertEqual(sorted(listed), expected)
@@ -83,6 +100,48 @@ class DeviceTestDiscoveryTests(unittest.TestCase):
 
 
 class DeviceTestRunTests(unittest.TestCase):
+    def test_launcher_widgets_use_the_dedicated_widget_parity_fixture(self):
+        with tempfile.TemporaryDirectory() as folder:
+            log = Path(folder) / "runs"
+            feature = Path(folder) / "feature.sh"
+            feature.write_text(f'echo "$*" >> "{log}"\n')
+            widget = Path(folder) / "widget.sh"
+            widget.write_text(
+                f'[[ $(tail -1 "{log}") == integration_test/android_widget_parity_test.dart ]]\n'
+            )
+            env = dict(os.environ, ANDROID_APP_RUNNER=str(feature),
+                       ANDROID_FEATURE_RUNNER=str(feature), ANDROID_WIDGET_RUNNER=str(widget))
+            subprocess.run(
+                ["bash", "tool/android-all-integration.sh", "granted"], cwd=ROOT,
+                env=env, check=True, capture_output=True, text=True, timeout=60,
+            )
+
+    def test_app_feature_and_widget_failures_cannot_be_hidden_by_later_success(self):
+        for phase in ["app", "feature", "widget"]:
+            with self.subTest(phase=phase), tempfile.TemporaryDirectory() as folder:
+                log = Path(folder) / "runs"
+                env = dict(os.environ)
+                for runner, key in [("app", "ANDROID_APP_RUNNER"),
+                                    ("feature", "ANDROID_FEATURE_RUNNER"),
+                                    ("widget", "ANDROID_WIDGET_RUNNER")]:
+                    fake = Path(folder) / f"{runner}.sh"
+                    fake.write_text(
+                        f'echo "{runner} $*" >> "{log}"\n'
+                        + ("exit 7\n" if runner == phase else "exit 0\n")
+                    )
+                    env[key] = str(fake)
+                run = subprocess.run(
+                    ["bash", "tool/android-all-integration.sh", "granted"], cwd=ROOT,
+                    env=env, capture_output=True, text=True, timeout=60,
+                )
+                self.assertEqual(run.returncode, 7, run.stderr)
+                # Keep collecting later feature evidence, while preserving red.
+                lines = log.read_text().splitlines()
+                self.assertTrue(any(line.startswith("app ") for line in lines))
+                for target in (ROOT / "integration_test").glob("*_test.dart"):
+                    if target.name != "android_app_test.dart":
+                        self.assertIn(f"feature integration_test/{target.name}", lines)
+
     def test_every_device_test_runs_even_when_the_runner_reads_stdin(self):
         """adb and flutter read stdin; that must not swallow the next targets."""
         with tempfile.TemporaryDirectory() as folder:

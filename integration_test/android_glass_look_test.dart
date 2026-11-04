@@ -8,10 +8,8 @@ import 'package:ekadashi_calendar/l10n/app_language.dart';
 import 'package:ekadashi_calendar/services/language_service.dart';
 import 'package:ekadashi_calendar/services/theme_service.dart';
 import 'package:ekadashi_calendar/screens/calendar_screen.dart';
-import 'android_home_followup_test.dart' as followup;
 
 void main() {
-  followup.main();
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
   testWidgets(
     'Android Glass Look in every language and theme without moving tabs',

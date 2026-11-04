@@ -37,7 +37,8 @@ elif [[ "$mode" != granted ]]; then
 fi
 adb logcat -c
 # Always capture diagnostics, including when assertions fail.
-trap 'adb logcat -d > "$output_dir/logcat.txt"; adb exec-out screencap -p > "$output_dir/final-screen.png"; adb shell dumpsys package "$package_name" > "$output_dir/package.txt"; adb shell getprop > "$output_dir/device.txt"' EXIT
+source tool/android-evidence.sh
+trap 'capture_android_evidence "$?" "$output_dir" "$package_name"' EXIT
 bash tool/android-drive-installed.sh integration_test/android_app_test.dart "$output_dir"
 # Return from the actual Android launcher, then capture the restored activity.
 adb shell input keyevent KEYCODE_HOME
