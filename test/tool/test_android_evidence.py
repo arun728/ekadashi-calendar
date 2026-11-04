@@ -61,7 +61,7 @@ elif args[:2] == ['shell', 'pidof']:
                 text=True, start_new_session=True,
             )
             try:
-                stdout, stderr = process.communicate(timeout=5)
+                stdout, stderr = process.communicate(timeout=8)
             except subprocess.TimeoutExpired:
                 os.killpg(process.pid, signal.SIGKILL)
                 process.communicate(timeout=2)
@@ -93,11 +93,13 @@ elif args[:2] == ['shell', 'pidof']:
                 self.assertNotEqual(result, 0)
 
     def test_zero_timeout_cannot_disable_the_capture_deadline(self):
-        result, _, output = self.run_fixture(
-            "android-feature-integration.sh", diagnostic="offline", deadline="0",
-        )
-        self.assertEqual(result, 7)
-        self.assertIn("capture timeout", output)
+        for deadline in ["0", "08", "31"]:
+            with self.subTest(deadline=deadline):
+                result, _, output = self.run_fixture(
+                    "android-feature-integration.sh", diagnostic="offline", deadline=deadline,
+                )
+                self.assertEqual(result, 7)
+                self.assertIn("capture timeout", output)
 
 
 if __name__ == "__main__":

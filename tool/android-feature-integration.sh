@@ -18,7 +18,8 @@ fi
 adb shell settings put secure location_mode 3
 adb emu geo fix 80.2707 13.0827
 adb logcat -c
-trap 'adb logcat -d > "$output_dir/logcat.txt"; adb exec-out screencap -p > "$output_dir/final-screen.png"; adb shell getprop > "$output_dir/device.txt"; adb shell dumpsys package "$package_name" > "$output_dir/package.txt"' EXIT
+source tool/android-evidence.sh
+trap 'capture_android_evidence "$?" "$output_dir" "$package_name"' EXIT
 # Attach to the exact pre-granted binary without a second streamed install.
 # Retries clear app data and restore the grants above (see the drive script).
 ANDROID_FRESH_RETRY=granted bash tool/android-drive-installed.sh "$test_target" "$output_dir"

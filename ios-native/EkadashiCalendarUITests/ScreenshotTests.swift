@@ -1881,9 +1881,12 @@ final class ScreenshotTests: XCTestCase {
         let initiallyOn = expectation(for: NSPredicate(format: "value == '1'"), evaluatedWith: master)
         XCTAssertEqual(XCTWaiter.wait(for: [initiallyOn], timeout: 10), .completed,
                        "The authorized fixture must start with notifications enabled")
-        // Activate the identified SwiftUI toggle itself. Its nested UIKit
-        // switch can auto-scroll and miss the control on hosted iOS 26.
-        master.tap()
+        // The SwiftUI row and its UIKit thumb can both be exposed as switches.
+        // Reveal the actual thumb and tap its center, avoiding XCTest's implicit
+        // auto-scroll/hit-point selection for the nested switch.
+        let thumb = master.switches.firstMatch.exists ? master.switches.firstMatch : master
+        XCTAssertTrue(reveal(thumb))
+        thumb.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
         let masterOff = expectation(for: NSPredicate(format: "value == '0'"), evaluatedWith: master)
         XCTAssertEqual(XCTWaiter.wait(for: [masterOff], timeout: 10), .completed,
                        "The master switch must actually turn off")
