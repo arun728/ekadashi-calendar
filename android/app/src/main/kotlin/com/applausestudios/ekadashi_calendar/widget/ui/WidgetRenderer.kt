@@ -184,6 +184,7 @@ object WidgetRenderer {
     // =========================================================================
     private fun buildMediumWidget(context: Context, payload: WidgetPayload, headline: WidgetHeadline?, now: Instant): RemoteViews {
         val views = RemoteViews(context.packageName, R.layout.widget_medium)
+        views.setViewVisibility(R.id.widget_medium_badge, View.VISIBLE)
         views.setTextViewText(R.id.widget_medium_fasting_label, payload.localized("widget.fasting_starts", "Fasting Start"))
         views.setTextViewText(R.id.widget_medium_parana_label, payload.localized("widget.parana_window", "Parana Window"))
 
@@ -205,8 +206,7 @@ object WidgetRenderer {
                     views.setTextViewText(R.id.widget_medium_badge, payload.localized("widget.parana", "Parana"))
                 }
                 else -> {
-                    views.setTextColor(R.id.widget_medium_badge, context.getColor(R.color.widget_gold))
-                    views.setTextViewText(R.id.widget_medium_badge, (headline as? WidgetHeadline.Next)?.let { it.startCountdown() ?: payload.daysToGo(it.days) } ?: "")
+                    views.setViewVisibility(R.id.widget_medium_badge, View.GONE)
                 }
             }
             val (label, value) = countdown(payload, headline)

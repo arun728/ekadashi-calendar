@@ -87,6 +87,42 @@ class WidgetPresentationTest {
             }
         }
     }
+    @Test fun upcomingMediumKeepsOnlyTheLiveBottomCountdown() {
+        for (language in listOf("en", "hi", "ta", "te", "gu", "bn")) {
+            val p = payload(language)
+            for (daysBefore in listOf(0L, 1L, 14L)) {
+                val clock = now.minusSeconds(7 * 3600 + daysBefore * 86400)
+                val expectedBase = android.os.SystemClock.elapsedRealtime() +
+                    java.time.Duration.between(clock, p.nextEkadashi!!.fastingStartInstant).toMillis()
+                val view = WidgetRenderer.single(context, p, 320, 240, clock)
+                    .apply(context, android.widget.FrameLayout(context))
+                assertEquals("$language $daysBefore: no duplicate top countdown", View.GONE,
+                    view.findViewById<View>(R.id.widget_medium_badge).visibility)
+                val countdown = view.findViewById<android.widget.Chronometer>(R.id.widget_medium_countdown_value)
+                assertEquals(View.VISIBLE, countdown.visibility)
+                if (daysBefore == 0L) {
+                    assertTrue("The bottom countdown must keep ticking toward fasting start", countdown.isCountDown)
+                    assertEquals(expectedBase, countdown.base)
+                } else assertTrue("Keep the existing days-until-start text", countdown.text.isNotBlank())
+            }
+        }
+    }
+    @Test fun mediumRetainsTheFastingAndParanaStatusBadges() {
+        val p = payload()
+        val view = WidgetRenderer.single(context, p, 320, 240, now.minusSeconds(7 * 3600))
+            .apply(context, android.widget.FrameLayout(context))
+        for (clock in listOf(now, now.plusSeconds(19 * 3600))) {
+            WidgetRenderer.single(context, p, 320, 240, clock).reapply(context, view)
+            val badge = view.findViewById<TextView>(R.id.widget_medium_badge)
+            assertEquals(View.VISIBLE, badge.visibility)
+            if (clock == now) assertEquals("25%", badge.text.toString().trim())
+            else assertEquals(p.localized("widget.parana", "Parana"), badge.text.toString())
+        }
+        WidgetRenderer.single(context, p, 320, 240, now.minusSeconds(7 * 3600)).reapply(context, view)
+        val empty = p.copy(nextEkadashi = null, schedule = emptyList(), upcomingEkadashis = emptyList())
+        WidgetRenderer.single(context, empty, 320, 240, now).reapply(context, view)
+        assertEquals(View.VISIBLE, view.findViewById<View>(R.id.widget_medium_badge).visibility)
+    }
     @Test fun smallCountdownKeepsItsFullLocalizedDaysAndRemainingText() {
         for (language in listOf("en", "hi", "ta", "te", "gu", "bn")) for (fontScale in listOf(1f, 1.3f)) {
             val config = Configuration(context.resources.configuration).apply { this.fontScale = fontScale }
