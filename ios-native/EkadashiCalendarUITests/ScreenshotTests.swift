@@ -1876,25 +1876,26 @@ final class ScreenshotTests: XCTestCase {
     func testEkadashiRemindersFollowTheMasterSwitch() {
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 20))
         tab(4)
-        let master = element("notifications_master")
-        // Small steps: a full-screen swipe scrolls past the row and the lazy
-        // list drops it.
-        for _ in 0..<12 where !(master.exists && master.isHittable) {
-            app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7))
-                .press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.4)))
+        let master = app.switches["notifications_master"].firstMatch
+        XCTAssertTrue(reveal(master))
+        let initiallyOn = expectation(for: NSPredicate(format: "value == '1'"), evaluatedWith: master)
+        XCTAssertEqual(XCTWaiter.wait(for: [initiallyOn], timeout: 10), .completed,
+                       "The authorized fixture must start with notifications enabled")
+        // Activate the identified SwiftUI toggle itself. Its nested UIKit
+        // switch can auto-scroll and miss the control on hosted iOS 26.
+        master.tap()
+        let masterOff = expectation(for: NSPredicate(format: "value == '0'"), evaluatedWith: master)
+        XCTAssertEqual(XCTWaiter.wait(for: [masterOff], timeout: 10), .completed,
+                       "The master switch must actually turn off")
+        for key in ["notify_2day", "notify_1day", "notify_start", "notify_parana"] {
+            let reminder = app.switches["notify_toggle_\(key)"].firstMatch
+            // Native lists create rows lazily; expose each row before checking
+            // its value and disabled state, including on short iPhones.
+            XCTAssertTrue(reveal(reminder), key)
+            let off = expectation(for: NSPredicate(format: "value == '0' AND isEnabled == false"), evaluatedWith: reminder)
+            XCTAssertEqual(XCTWaiter.wait(for: [off], timeout: 10), .completed,
+                           "\(key) must be off and greyed out")
         }
-        XCTAssertTrue(master.waitForExistence(timeout: 5))
-        if (master.value as? String) == "1" { master.switches.firstMatch.exists ? master.switches.firstMatch.tap() : master.tap() }
-        let reminder = element("notify_toggle_notify_2day")
-        // The native List creates the next section lazily. Expose the actual
-        // reminder row before asserting its disabled state on short screens.
-        for _ in 0..<6 where !(reminder.exists && reminder.isHittable) {
-            app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7))
-                .press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)))
-        }
-        XCTAssertTrue(reminder.waitForExistence(timeout: 5))
-        let off = expectation(for: NSPredicate(format: "value == '0' AND isEnabled == false"), evaluatedWith: reminder)
-        XCTAssertEqual(XCTWaiter.wait(for: [off], timeout: 10), .completed, "off and greyed out")
         snap("18-reminders-off")
     }
 
