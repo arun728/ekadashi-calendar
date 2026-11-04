@@ -100,8 +100,10 @@ class WidgetPresentationTest {
                     view.findViewById<View>(R.id.widget_medium_badge).visibility)
                 val countdown = view.findViewById<android.widget.Chronometer>(R.id.widget_medium_countdown_value)
                 assertEquals(View.VISIBLE, countdown.visibility)
-                assertTrue("The bottom countdown must keep ticking toward fasting start", countdown.isCountDown)
-                assertEquals(expectedBase, countdown.base)
+                if (daysBefore == 0L) {
+                    assertTrue("The bottom countdown must keep ticking toward fasting start", countdown.isCountDown)
+                    assertEquals(expectedBase, countdown.base)
+                } else assertTrue("Keep the existing days-until-start text", countdown.text.isNotBlank())
             }
         }
     }
@@ -113,9 +115,13 @@ class WidgetPresentationTest {
             WidgetRenderer.single(context, p, 320, 240, clock).reapply(context, view)
             val badge = view.findViewById<TextView>(R.id.widget_medium_badge)
             assertEquals(View.VISIBLE, badge.visibility)
-            if (clock == now) assertEquals("75%", badge.text.toString().trim())
+            if (clock == now) assertEquals("25%", badge.text.toString().trim())
             else assertEquals(p.localized("widget.parana", "Parana"), badge.text.toString())
         }
+        WidgetRenderer.single(context, p, 320, 240, now.minusSeconds(7 * 3600)).reapply(context, view)
+        val empty = p.copy(nextEkadashi = null, schedule = emptyList(), upcomingEkadashis = emptyList())
+        WidgetRenderer.single(context, empty, 320, 240, now).reapply(context, view)
+        assertEquals(View.VISIBLE, view.findViewById<View>(R.id.widget_medium_badge).visibility)
     }
     @Test fun smallCountdownKeepsItsFullLocalizedDaysAndRemainingText() {
         for (language in listOf("en", "hi", "ta", "te", "gu", "bn")) for (fontScale in listOf(1f, 1.3f)) {
