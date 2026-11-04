@@ -48,6 +48,8 @@ import 'services/language_service.dart';
 import 'services/vrat_recording.dart';
 import 'screens/calendar_screen.dart';
 import 'screens/settings_screen.dart';
+import 'services/wisdom_progress_store.dart';
+import 'services/wisdom_question_service.dart';
 import 'screens/details_screen.dart';
 import 'screens/splash_screen.dart';
 import 'services/vrat_tracker_service.dart';
@@ -85,13 +87,17 @@ class MyApp extends StatelessWidget {
         // Home's city, tradition and year for every Ekadashi in the app.
         ChangeNotifierProvider(create: (_) => EkadashiSettings()),
         ChangeNotifierProvider(
-          create: (_) => PremiumService(entitlements: PlayStoreEntitlements()),
+          create: (_) => PremiumService(
+            entitlements: kIsWeb
+                ? _NoOpEntitlements()
+                : PlayStoreEntitlements(),
+          ),
         ),
         ChangeNotifierProvider(
-          lazy: false,
+          lazy: kIsWeb,
           create: (ctx) {
             final billing = PlayBillingService(ctx.read<PremiumService>());
-            if (Platform.isAndroid) Future.microtask(billing.initialize);
+            if (!kIsWeb && Platform.isAndroid) Future.microtask(billing.initialize);
             return billing;
           },
         ),
@@ -99,6 +105,12 @@ class MyApp extends StatelessWidget {
           create: (ctx) => VratTrackerService(
             premiumAchievements: () => ctx.read<PremiumService>().isPremium,
           ),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => WisdomProgressStore()..load(),
+        ),
+        Provider(
+          create: (_) => WisdomQuestionService()..load(),
         ),
       ],
       child: Consumer2<ThemeService, LanguageService>(
@@ -290,7 +302,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     if (!_premiumSessionStarted && _premium != null) {
       _premiumSessionStarted = true;
       // Premium is read from Google Play's owned purchases (Android only).
-      if (Platform.isAndroid) {
+      if (!kIsWeb && Platform.isAndroid) {
         Future.microtask(() => _premium?.refresh());
         _startPremiumRecheck();
       }
@@ -395,7 +407,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       _homeClockActive = true;
       refreshLifecycle();
       // Pick up renewals, cancellations and refunds made in Google Play.
-      if (Platform.isAndroid) {
+      if (!kIsWeb && Platform.isAndroid) {
         _premium?.refresh();
         _startPremiumRecheck();
       }
@@ -1803,4 +1815,11 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       ),
     );
   }
+}
+
+/// No-op entitlement source for platforms where Google Play Billing is
+/// unavailable (e.g. web). Always reports no owned products.
+class _NoOpEntitlements extends PlayEntitlementSource {
+  @override
+  Future<Map<String, DateTime?>> ownedProducts() async => const {};
 }

@@ -1707,4 +1707,74 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get glass_look_desc => 'अधिक पारदर्शी कार्ड और नियंत्रण दिखाएँ।';
+
+  @override
+  String get question_of_the_day => 'आज का प्रश्न';
+
+  @override
+  String get wisdom_challenge => 'ज्ञान चुनौती';
+
+  @override
+  String get submit_answer => 'उत्तर जमा करें';
+
+  @override
+  String get continue_learning => 'सीखना जारी रखें';
+
+  @override
+  String get finish_for_today => 'आज के लिए समाप्त';
+
+  @override
+  String get answer_correct => 'सही!';
+
+  @override
+  String get answer_incorrect => 'गलत';
+
+  @override
+  String points_earned(String value0) {
+    return '+$value0 अंक';
+  }
+
+  @override
+  String get total_points => 'कुल अंक';
+
+  @override
+  String get questions_answered => 'उत्तर दिए गए प्रश्न';
+
+  @override
+  String get correct_answers => 'सही उत्तर';
+
+  @override
+  String get category_progress => 'श्रेणीवार प्रगति';
+
+  @override
+  String get notify_daily_question => 'आज का प्रश्न अनुस्मारक';
+
+  @override
+  String get daily_question_notif_title => 'आज का प्रश्न';
+
+  @override
+  String get daily_question_notif_body =>
+      'आज का आपका आध्यात्मिक ज्ञान प्रश्न तैयार है!';
+
+  @override
+  String get already_completed_today =>
+      'आपने आज के प्रश्न का उत्तर दे दिया है!';
+
+  @override
+  String get category_bhagavad_gita => 'भगवद्गीता';
+
+  @override
+  String get category_mahabharata => 'महाभारत';
+
+  @override
+  String get category_ramayana => 'रामायण';
+
+  @override
+  String get difficulty_easy => 'आसान';
+
+  @override
+  String get difficulty_medium => 'मध्यम';
+
+  @override
+  String get difficulty_hard => 'कठिन';
 }

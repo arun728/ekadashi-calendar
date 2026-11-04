@@ -1717,4 +1717,73 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get glass_look_desc => 'আরও স্বচ্ছ কার্ড ও নিয়ন্ত্রণ ব্যবহার করুন।';
+
+  @override
+  String get question_of_the_day => 'আজকের প্রশ্ন';
+
+  @override
+  String get wisdom_challenge => 'জ্ঞান চ্যালেঞ্জ';
+
+  @override
+  String get submit_answer => 'উত্তর জমা দিন';
+
+  @override
+  String get continue_learning => 'শেখা চালিয়ে যান';
+
+  @override
+  String get finish_for_today => 'আজকের মতো সমাপ্ত';
+
+  @override
+  String get answer_correct => 'সঠিক!';
+
+  @override
+  String get answer_incorrect => 'ভুল';
+
+  @override
+  String points_earned(String value0) {
+    return '+$value0 পয়েন্ট';
+  }
+
+  @override
+  String get total_points => 'মোট পয়েন্ট';
+
+  @override
+  String get questions_answered => 'উত্তর দেওয়া প্রশ্ন';
+
+  @override
+  String get correct_answers => 'সঠিক উত্তর';
+
+  @override
+  String get category_progress => 'বিভাগভিত্তিক অগ্রগতি';
+
+  @override
+  String get notify_daily_question => 'আজকের প্রশ্ন রিমাইন্ডার';
+
+  @override
+  String get daily_question_notif_title => 'আজকের প্রশ্ন';
+
+  @override
+  String get daily_question_notif_body =>
+      'আজকের আপনার আধ্যাত্মিক জ্ঞান প্রশ্ন প্রস্তুত!';
+
+  @override
+  String get already_completed_today => 'আপনি আজকের প্রশ্নের উত্তর দিয়েছেন!';
+
+  @override
+  String get category_bhagavad_gita => 'ভগবদ্গীতা';
+
+  @override
+  String get category_mahabharata => 'মহাভারত';
+
+  @override
+  String get category_ramayana => 'রামায়ণ';
+
+  @override
+  String get difficulty_easy => 'সহজ';
+
+  @override
+  String get difficulty_medium => 'মধ্যম';
+
+  @override
+  String get difficulty_hard => 'কঠিন';
 }

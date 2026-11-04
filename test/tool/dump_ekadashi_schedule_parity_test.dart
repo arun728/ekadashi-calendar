@@ -92,8 +92,8 @@ void main() {
       file.writeAsStringSync(text);
     }
     expect(
-      file.readAsStringSync(),
-      text,
+      file.readAsStringSync().replaceAll('\r\n', '\n'),
+      text.replaceAll('\r\n', '\n'),
       reason:
           'The iOS fixture is out of date. Run: UPDATE_IOS_FIXTURES=1 '
           'flutter test test/tool/dump_ekadashi_schedule_parity_test.dart',

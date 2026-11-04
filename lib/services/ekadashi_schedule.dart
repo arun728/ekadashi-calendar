@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:isolate';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -213,7 +214,7 @@ class EkadashiSchedule {
       }
     }
     final rows = publishedRows(key.year);
-    final list = calculateInline
+    final list = (calculateInline || kIsWeb)
         ? calculate(key, rows)
         : await Isolate.run(() => calculate(key, rows));
     _memory[id] = list;

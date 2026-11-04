@@ -22,6 +22,8 @@ import '../services/native_notification_service.dart'
         NotificationSettings;
 import '../widgets/app_icons.dart';
 import '../services/place_name_resolver.dart';
+import '../services/notification_service.dart';
+import '../services/wisdom_progress_store.dart';
 
 /// Settings Screen - Updated to use native Kotlin services for:
 /// - Permission handling (no freeze on return from system settings)
@@ -108,6 +110,7 @@ class _SettingsScreenState extends State<SettingsScreen>
     try {
       // Get all settings at once (more efficient)
       final allSettings = await _settingsService.getAllSettings();
+      await WisdomProgressStore.instance.load();
 
       if (mounted) {
         setState(() {
@@ -262,6 +265,24 @@ class _SettingsScreenState extends State<SettingsScreen>
     setState(() => _notificationSettings = newSettings);
     await _settingsService.updateNotificationSettings(newSettings);
     _rescheduleNotifications();
+  }
+
+  Future<void> _toggleWisdomReminder(bool value) async {
+    final langService = Provider.of<LanguageService>(context, listen: false);
+    if (value && !_permissionStatus.hasNotificationPermission) {
+      await _settingsService.openNotificationSettings();
+      return;
+    }
+    await WisdomProgressStore.instance.setReminderEnabled(value);
+    if (mounted) setState(() {});
+    if (value) {
+      await NotificationService().scheduleDailyQuestionReminder(
+        title: langService.translate('daily_question_notif_title'),
+        body: langService.translate('daily_question_notif_body'),
+      );
+    } else {
+      await NotificationService().cancelDailyQuestionReminder();
+    }
   }
 
   Future<void> _toggleRemindOnParana(bool value) async {
@@ -509,6 +530,27 @@ class _SettingsScreenState extends State<SettingsScreen>
                 ? 'notifications_events_desc'
                 : 'notifications_premium_events',
           ),
+        ),
+
+        header('wisdom_challenge'),
+        SettingsCard(
+          key: const Key('settings_notifications_wisdom_tube'),
+          children: [
+            SettingsSwitchTile(
+              key: const Key('settings_reminder_daily_question'),
+              title: Text(lang.translate('notify_daily_question')),
+              subtitle: Text(
+                lang.translate(
+                  togglesEnabled && WisdomProgressStore.instance.reminderEnabled
+                      ? 'status_active'
+                      : 'status_disabled',
+                ),
+                style: TextStyle(fontSize: 12, color: secondary),
+              ),
+              value: togglesEnabled && WisdomProgressStore.instance.reminderEnabled,
+              onChanged: togglesEnabled ? _toggleWisdomReminder : null,
+            ),
+          ],
         ),
 
         // ==================== PERMISSIONS ====================

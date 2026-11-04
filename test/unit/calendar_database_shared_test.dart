@@ -20,7 +20,11 @@ void main() {
   setUp(() async {
     dir = await Directory.systemTemp.createTemp('entries_db');
   });
-  tearDown(() => dir.delete(recursive: true));
+  tearDown(() async {
+    try {
+      await dir.delete(recursive: true);
+    } catch (_) {}
+  });
 
   CalendarEntry entry(String id) => CalendarEntry(
     id: id,
@@ -41,6 +45,7 @@ void main() {
     await old.close();
     await current.upsert(entry('e1'));
     expect((await current.getAll()).map((e) => e.id), ['e1']);
+    await current.close();
   });
 
   test('a database closed elsewhere is opened again on the next use', () async {
@@ -50,5 +55,6 @@ void main() {
     await (await databaseFactory.openDatabase(path)).close();
     await repo.upsert(entry('e2'));
     expect((await repo.getAll()).map((e) => e.id), ['e2']);
+    await repo.close();
   });
 }

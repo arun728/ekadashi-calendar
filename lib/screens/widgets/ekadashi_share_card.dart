@@ -75,7 +75,11 @@ class ShareCardContent {
   /// 20, 2026") in the app language.
   static String longDate(DateTime date, String language) {
     try {
-      return DateFormat.yMMMMEEEEd(language).format(date);
+      final formatted = DateFormat.yMMMMEEEEd(language).format(date);
+      if (language == 'hi') {
+        return formatted.replaceAll('अक्टूबर', 'अक्तूबर');
+      }
+      return formatted;
     } catch (_) {
       return DateFormat.yMMMMEEEEd('en').format(date);
     }

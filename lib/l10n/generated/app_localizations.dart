@@ -3243,6 +3243,138 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Use clearer, translucent cards and controls.'**
   String get glass_look_desc;
+
+  /// No description provided for @question_of_the_day.
+  ///
+  /// In en, this message translates to:
+  /// **'Question of the Day'**
+  String get question_of_the_day;
+
+  /// No description provided for @wisdom_challenge.
+  ///
+  /// In en, this message translates to:
+  /// **'Wisdom Challenge'**
+  String get wisdom_challenge;
+
+  /// No description provided for @submit_answer.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit Answer'**
+  String get submit_answer;
+
+  /// No description provided for @continue_learning.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue Learning'**
+  String get continue_learning;
+
+  /// No description provided for @finish_for_today.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish for Today'**
+  String get finish_for_today;
+
+  /// No description provided for @answer_correct.
+  ///
+  /// In en, this message translates to:
+  /// **'Correct!'**
+  String get answer_correct;
+
+  /// No description provided for @answer_incorrect.
+  ///
+  /// In en, this message translates to:
+  /// **'Incorrect'**
+  String get answer_incorrect;
+
+  /// No description provided for @points_earned.
+  ///
+  /// In en, this message translates to:
+  /// **'+{value0} Points'**
+  String points_earned(String value0);
+
+  /// No description provided for @total_points.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Points'**
+  String get total_points;
+
+  /// No description provided for @questions_answered.
+  ///
+  /// In en, this message translates to:
+  /// **'Questions Answered'**
+  String get questions_answered;
+
+  /// No description provided for @correct_answers.
+  ///
+  /// In en, this message translates to:
+  /// **'Correct Answers'**
+  String get correct_answers;
+
+  /// No description provided for @category_progress.
+  ///
+  /// In en, this message translates to:
+  /// **'Category Progress'**
+  String get category_progress;
+
+  /// No description provided for @notify_daily_question.
+  ///
+  /// In en, this message translates to:
+  /// **'Question of the Day Reminder'**
+  String get notify_daily_question;
+
+  /// No description provided for @daily_question_notif_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Question of the Day'**
+  String get daily_question_notif_title;
+
+  /// No description provided for @daily_question_notif_body.
+  ///
+  /// In en, this message translates to:
+  /// **'Your spiritual wisdom question for today is ready!'**
+  String get daily_question_notif_body;
+
+  /// No description provided for @already_completed_today.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve answered today\'s question!'**
+  String get already_completed_today;
+
+  /// No description provided for @category_bhagavad_gita.
+  ///
+  /// In en, this message translates to:
+  /// **'Bhagavad Gita'**
+  String get category_bhagavad_gita;
+
+  /// No description provided for @category_mahabharata.
+  ///
+  /// In en, this message translates to:
+  /// **'Mahabharata'**
+  String get category_mahabharata;
+
+  /// No description provided for @category_ramayana.
+  ///
+  /// In en, this message translates to:
+  /// **'Ramayana'**
+  String get category_ramayana;
+
+  /// No description provided for @difficulty_easy.
+  ///
+  /// In en, this message translates to:
+  /// **'Easy'**
+  String get difficulty_easy;
+
+  /// No description provided for @difficulty_medium.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get difficulty_medium;
+
+  /// No description provided for @difficulty_hard.
+  ///
+  /// In en, this message translates to:
+  /// **'Hard'**
+  String get difficulty_hard;
 }
 
 class _AppLocalizationsDelegate

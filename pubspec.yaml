@@ -79,6 +79,7 @@ flutter:
     - assets/ekadashi_data.json
     - assets/images/
     - assets/calendar/
+    - assets/wisdom/
     - assets/app_icon.png
 
 flutter_launcher_icons:
