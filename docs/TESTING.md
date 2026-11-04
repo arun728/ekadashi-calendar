@@ -137,6 +137,9 @@ PR cancels the older run.
   `DisplayClock` override and reset it in teardown: a zone-local `withClock`
   alone does not control every platform-dispatched frame. Home follow-up and
   Glass Look are separate discovered entrypoints, without duplicate registration.
+  Premium dismissal waits for the route's exit animation before checking that
+  it is absent. Widget regressions verify the actual modal inherits Glass,
+  cover both available and unavailable catalogs, and reopen after switching modes.
 - **ios-tests** (macOS 15, Xcode 26): `swift test` for EkadashiCore (the
   Swift half of the parity fixtures), the macOS-only resource-bundle signing
   and device-orientation guards (`test/tool/test_ios_*.py`), generated bundle

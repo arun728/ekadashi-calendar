@@ -145,7 +145,13 @@ void main() {
           const Offset(0, 650),
           1200,
         );
-        await frames();
+        // Wait for the route's exit animation, rather than sampling its
+        // widget tree after a fixed number of live-device frames.
+        await tester.pumpAndSettle(
+          const Duration(milliseconds: 100),
+          EnginePhase.sendSemanticsUpdate,
+          const Duration(seconds: 10),
+        );
         expect(find.byType(PremiumScreen), findsNothing);
         final toggle = find.byKey(const Key('settings_glass_look'));
         await tester.scrollUntilVisible(
