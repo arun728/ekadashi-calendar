@@ -9,6 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../support/premium_fixture.dart';
+import '../support/sheet_gestures.dart';
 
 class _UnavailableBilling extends FixtureBilling {
   _UnavailableBilling(super.premium);
@@ -106,10 +107,9 @@ void main() {
                 enabled ? findsWidgets : findsNothing,
               );
               binding.delayNextGestureFrame = slowFrame;
-              await tester.fling(
+              await flingSheetDown(
+                tester,
                 find.byKey(const Key('premium_close')),
-                const Offset(0, 650),
-                1200,
               );
               for (var frame = 0; frame < 8; frame++) {
                 await tester.pump(const Duration(milliseconds: 200));

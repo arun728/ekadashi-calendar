@@ -11,10 +11,10 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 class AndroidRunnerSpaceTests(unittest.TestCase):
-    def run_cleanup(self, *, hosted=True, recovered=True):
+    def run_cleanup(self, *, hosted=True, recovered=True, available_kib="2724660"):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
-            (root / "available").write_text("2724660")
+            (root / "available").write_text(available_kib)
             binaries = root / "bin"
             binaries.mkdir()
             df = binaries / "df"
@@ -67,6 +67,11 @@ class AndroidRunnerSpaceTests(unittest.TestCase):
         result, removed = self.run_cleanup(hosted=False)
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("github-hosted Linux runner", result.stderr)
+        self.assertEqual(removed, [])
+
+    def test_sufficient_capacity_does_not_remove_any_tools(self):
+        result, removed = self.run_cleanup(available_kib="12582912")
+        self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(removed, [])
 
     def test_insufficient_capacity_fails_before_emulator_boot(self):

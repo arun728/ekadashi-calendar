@@ -103,6 +103,9 @@ jobs:
         run: cd android && ./gradlew app:lintDebug
       - name: Enable KVM
         run: sudo chmod 666 /dev/kvm
+      - name: Reserve space for emulator images and userdata
+        # API 24 failed allocation with 2.7 GB free and 7.4 GB required.
+        run: bash tool/android-runner-space.sh
       - uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ matrix.api }}

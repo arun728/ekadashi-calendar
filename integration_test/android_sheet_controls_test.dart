@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:provider/provider.dart';
@@ -9,6 +10,7 @@ import 'package:ekadashi_calendar/screens/premium_screen.dart';
 import 'package:ekadashi_calendar/screens/global_search_screen.dart';
 import 'package:ekadashi_calendar/screens/settings_screen.dart';
 import 'package:ekadashi_calendar/widgets/app_icons.dart';
+import '../test/support/sheet_gestures.dart';
 
 void main() {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -140,17 +142,32 @@ void main() {
         await frames();
         expect(find.byKey(const Key('premium_close')), findsOneWidget);
         await snap('premium-close-glass-$enabled');
-        await tester.fling(
-          find.byKey(const Key('premium_close')),
-          const Offset(0, 650),
-          1200,
+        final sheet = tester.widget<BottomSheet>(find.byType(BottomSheet).last);
+        debugPrint(
+          'Premium drag before: glass=$enabled '
+          'rect=${tester.getRect(find.byKey(const Key('premium_close')))} '
+          'animation=${sheet.animationController?.value} '
+          'status=${sheet.animationController?.status}',
         );
+        final previousDiagnostics = debugPrintGestureArenaDiagnostics;
+        debugPrintGestureArenaDiagnostics = true;
+        try {
+          await flingSheetDown(tester, find.byKey(const Key('premium_close')));
+        } finally {
+          debugPrintGestureArenaDiagnostics = previousDiagnostics;
+        }
         // Wait for the route's exit animation, rather than sampling its
         // widget tree after a fixed number of live-device frames.
         await tester.pumpAndSettle(
           const Duration(milliseconds: 100),
           EnginePhase.sendSemanticsUpdate,
           const Duration(seconds: 10),
+        );
+        debugPrint(
+          'Premium drag after: glass=$enabled '
+          'animation=${sheet.animationController?.value} '
+          'status=${sheet.animationController?.status} '
+          'remaining=${find.byType(PremiumScreen).evaluate().length}',
         );
         expect(find.byType(PremiumScreen), findsNothing);
         final toggle = find.byKey(const Key('settings_glass_look'));
