@@ -47,6 +47,16 @@ private final class GoogleSignInClient {
     }
 
     func signIn() async throws -> Bool {
+        // The SDK raises an Objective-C exception for an absent client ID;
+        // Swift's catch cannot recover from it (including unsigned CI builds).
+        let clientID = (Bundle.main.object(forInfoDictionaryKey: "GIDClientID") as? String ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let types = Bundle.main.object(forInfoDictionaryKey: "CFBundleURLTypes") as? [[String: Any]] ?? []
+        let schemes = types.flatMap { $0["CFBundleURLSchemes"] as? [String] ?? [] }
+        let reversed = clientID.split(separator: ".").reversed().joined(separator: ".")
+        guard !clientID.isEmpty, !clientID.contains("$("), schemes.contains(reversed) else {
+            throw CoreError.invalidArgument("Google sign-in is not configured")
+        }
         guard let presenter = UIApplication.shared.topViewController else { return false }
         do {
             if let user = await restore() {

@@ -121,6 +121,7 @@ struct CalendarView: View {
         .onChange(of: month) { _, value in model.calendarShowsYear(value.year) }
         .onChange(of: model.calendarFocus) { _, date in
             guard let date else { return }
+            hasFocused = true
             focus(date)
             model.calendarFocus = nil
         }
@@ -234,6 +235,12 @@ struct CalendarView: View {
 
     /// Opens on the year chosen on Home: today in this year, else its January.
     private func focusInitial() {
+        if let pending = model.calendarFocus {
+            hasFocused = true
+            focus(pending)
+            model.calendarFocus = nil
+            return
+        }
         guard !hasFocused || month.year != model.selectedYear else { return }
         hasFocused = true
         let today = model.today

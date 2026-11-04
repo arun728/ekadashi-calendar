@@ -303,14 +303,24 @@ final class ScreenshotTests: XCTestCase {
             app.buttons["calendar_google_menu"].firstMatch.tap()
             app.buttons["import_google_year"].firstMatch.tap()
             let prompt = app.alerts.firstMatch
-            if prompt.waitForExistence(timeout: 8), prompt.buttons["Cancel"].exists {
+            let failure = app.staticTexts["Google sign-in failed. Check your connection and try again."].firstMatch
+            let authentication = XCUIApplication(bundleIdentifier: "com.apple.SafariViewService")
+            let response = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+                prompt.exists || failure.exists || self.app.buttons["Cancel"].firstMatch.exists
+                    || authentication.buttons["Cancel"].firstMatch.exists
+            }, object: nil)
+            XCTAssertEqual(XCTWaiter.wait(for: [response], timeout: 15), .completed)
+            if prompt.exists, prompt.buttons["Cancel"].exists {
                 prompt.buttons["Cancel"].tap()
             } else if app.buttons["Cancel"].firstMatch.exists {
                 app.buttons["Cancel"].firstMatch.tap()
+            } else if failure.exists {
+                // Builds without OAuth credentials must report a recoverable
+                // sync failure instead of entering the SDK or crashing.
+                XCTAssertTrue(app.buttons["calendar_google_menu"].firstMatch.exists)
             } else {
                 // ASWebAuthenticationSession is hosted by SafariViewService,
                 // so its Cancel control is outside our app's AX tree.
-                let authentication = XCUIApplication(bundleIdentifier: "com.apple.SafariViewService")
                 let cancel = authentication.buttons["Cancel"].firstMatch
                 XCTAssertTrue(cancel.waitForExistence(timeout: 10))
                 cancel.tap()
@@ -1588,7 +1598,11 @@ final class ScreenshotTests: XCTestCase {
         let london = app.buttons["ekadashi_city_geonames-2643743"]
         XCTAssertTrue(reveal(london), "London is offered")
         snap("14a-home-city-shortlist")
-        XCTAssertTrue(reveal(search, upwards: true), "search field")
+        // Pulling a sheet downward to reveal its header dismisses it on iOS 26.
+        // Reopen it at the top before testing the independent search flow.
+        app.buttons["Cancel"].firstMatch.tap()
+        element("home_location").tap()
+        XCTAssertTrue(search.waitForExistence(timeout: 5))
         search.tap()
         search.typeText("Mumbai")
         let mumbai = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Mumbai'")).firstMatch
