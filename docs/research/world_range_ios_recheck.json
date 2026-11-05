@@ -1,0 +1,49 @@
+{
+  "sampleDays": 62,
+  "cities": 52,
+  "metrics": {
+    "sunrise": {
+      "n": 56,
+      "meanSeconds": 0.022249035714285714,
+      "maxSeconds": 0.134579
+    },
+    "sunset": {
+      "n": 56,
+      "meanSeconds": 0.021676857142857144,
+      "maxSeconds": 0.126852
+    },
+    "moonrise": {
+      "n": 33,
+      "meanSeconds": 0.04911815151515152,
+      "maxSeconds": 0.249325
+    },
+    "moonset": {
+      "n": 56,
+      "meanSeconds": 0.048013035714285716,
+      "maxSeconds": 0.25952
+    },
+    "tithi": {
+      "n": 62,
+      "meanSeconds": 0.48220812903225807,
+      "maxSeconds": 0.626713
+    },
+    "nakshatra": {
+      "n": 62,
+      "meanSeconds": 0.20037083870967742,
+      "maxSeconds": 0.500863
+    },
+    "yoga": {
+      "n": 62,
+      "meanSeconds": 0.43072093548387097,
+      "maxSeconds": 0.871921
+    },
+    "karana": {
+      "n": 62,
+      "meanSeconds": 0.4871559677419355,
+      "maxSeconds": 0.627871
+    }
+  },
+  "availabilityMismatches": [],
+  "indexMismatches": [],
+  "overFiveSeconds": []
+}

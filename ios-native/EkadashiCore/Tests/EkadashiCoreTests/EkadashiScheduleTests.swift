@@ -30,7 +30,8 @@ final class EkadashiScheduleTests: XCTestCase {
     /// Home (and everything that follows it) shows exactly what the Panchang
     /// tab's Ekadashi sub-tab shows: same dates, and the same hour and minute
     /// for the fast start and the Parana window, which the sub-tab reads
-    /// from the engine's instants month by month without rounding.
+    /// from the engine's instants month by month, rounded to the nearest
+    /// minute as Drik Panchang shows them.
     func testHomeTimesMatchThePanchangEkadashiSubTabWorldwide() throws {
         let ids = ["1264527", "1261481", "1275339", "5128581", "5368361", "2643743", "2925533", "2147714", "1880252", "292223"]
         let all = try PanchangCityCatalog.shared.cities()
@@ -52,7 +53,7 @@ final class EkadashiScheduleTests: XCTestCase {
                     }
                     func same(_ iso: String, _ instant: Date?, _ what: String, _ fast: CalculatedEkadashi) {
                         guard let instant else { return }
-                        let wall = city.wallClock(instant)
+                        let wall = city.displayClock(instant)
                         let shown = ISO8601.wallClockTime(iso)
                         if shown?.hour != wall.hour || shown?.minute != wall.minute || !iso.hasPrefix(wall.date.iso) {
                             mismatches.append("\(city.label) \(tradition) \(fast.date.iso) \(what): home \(iso) panchang \(wall.date.iso) \(wall.hour):\(wall.minute)")

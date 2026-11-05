@@ -230,4 +230,33 @@ void main() {
     await capture(tester, boundaryKey, 'location_coordinates');
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('Delhi Daily and Ekadashi sub-tabs render Drik comparison '
+      'screenshots', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final backend = PremiumFixture()..premium = true;
+    final premium = PremiumService(entitlements: backend);
+    addTearDown(premium.dispose);
+    await premium.refresh();
+    final boundaryKey = GlobalKey();
+    // Drik Panchang's New Delhi coordinates, Prabodhini Ekadashi 2026.
+    const delhi = PanchangCity(
+      id: 'new-delhi-drik',
+      label: 'New Delhi',
+      latitude: 28.635556,
+      longitude: 77.224444,
+    );
+    await tester.pumpWidget(
+      app(boundaryKey, premium, date: DateTime.utc(2026, 11, 20), city: delhi),
+    );
+    await tester.pumpAndSettle();
+    for (final page in ['daily', 'ekadashi']) {
+      await tester.tap(find.byKey(Key('panchang_tab_$page')));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      await capture(tester, boundaryKey, 'drik_delhi_$page');
+    }
+  });
 }

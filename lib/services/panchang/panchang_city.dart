@@ -62,6 +62,22 @@ class PanchangCity {
 
   DateTime wallClock(DateTime instant) =>
       tz.TZDateTime.from(instant.toUtc(), zone);
+
+  /// The wall clock shown for [instant]: rounded to the nearest minute (half
+  /// a minute rounds up), as Drik Panchang shows times. The local time is
+  /// rounded, so offsets with seconds (Madras time, +5:21:10) work too.
+  DateTime displayClock(DateTime instant) {
+    final local = wallClock(instant);
+    final intoMinute = Duration(
+      microseconds:
+          (local.second * 1000 + local.millisecond) * 1000 + local.microsecond,
+    );
+    final shift = intoMinute >= const Duration(seconds: 30)
+        ? const Duration(minutes: 1) - intoMinute
+        : -intoMinute;
+    return wallClock(instant.add(shift));
+  }
+
   DateTime midnight(DateTime date, {int dayOffset = 0}) =>
       tz.TZDateTime(zone, date.year, date.month, date.day + dayOffset).toUtc();
   DateTime dateAtHour(DateTime date, int hour) =>

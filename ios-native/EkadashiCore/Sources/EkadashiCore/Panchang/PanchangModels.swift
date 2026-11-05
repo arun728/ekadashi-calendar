@@ -82,7 +82,7 @@ public struct PanchangDay: Sendable {
 /// (`formatPanchangTime` in panchang_models.dart).
 public func formatPanchangTime(_ instant: Date?, city: PanchangCity, date: CivilDate) -> String {
     guard let instant else { return "—" }
-    let local = city.wallClock(instant)
+    let local = city.displayClock(instant)
     let delta = date.days(until: local.date)
     let suffix = delta == 0 ? "" : " (\(delta > 0 ? "+" : "")\(delta) day)"
     let hour = local.hour % 12 == 0 ? 12 : local.hour % 12

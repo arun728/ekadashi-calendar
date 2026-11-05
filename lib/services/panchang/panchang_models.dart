@@ -183,7 +183,7 @@ class PanchangDay {
 /// abbreviation/offset so repeated DST wall times remain distinguishable.
 String formatPanchangTime(DateTime? instant, PanchangCity city, DateTime date) {
   if (instant == null) return '—';
-  final local = city.wallClock(instant);
+  final local = city.displayClock(instant);
   final day = DateTime.utc(local.year, local.month, local.day);
   final selected = DateTime.utc(date.year, date.month, date.day);
   final delta = day.difference(selected).inDays;

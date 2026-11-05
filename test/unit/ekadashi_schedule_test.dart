@@ -169,7 +169,7 @@ void main() {
         for (var i = 0; i < home.length; i++) {
           void same(String iso, DateTime? instant, String what) {
             if (instant == null) return;
-            final wall = city.wallClock(instant);
+            final wall = city.displayClock(instant);
             final shown = DateTime.parse(iso.substring(0, 16));
             if (shown.year != wall.year ||
                 shown.month != wall.month ||

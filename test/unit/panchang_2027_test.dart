@@ -29,6 +29,8 @@ void main() {
         if (city == PanchangCity.newDelhi) {
           expected.remove('2027-06-14');
           expected.add('2027-06-15');
+          // Vijaya Mahadvadashi on 12 September stays, as GCal 11 publishes
+          // it (gcal11_ekadashi_2026_2027.json).
         }
         final actual = const CalculatedEkadashiEngine().calculate(
           DateTime.utc(2027),

@@ -44,10 +44,11 @@ void main() {
     expect(minutes(day.sunriseUtc!), closeTo(6 * 60 + 56, 4));
     expect(minutes(day.sunsetUtc!), closeTo(18 * 60 + 33, 4));
     expect(minutes(day.moonsetUtc!), closeTo(15 * 60 + 30, 5));
-    expect(
-      day.moonriseUtc,
-      isNull,
-    ); // The Moon does not rise on every civil day.
+    // No moonrise on the civil day (USNO); Drik's Panchang day runs to the
+    // next sunrise, so the moonrise after midnight belongs to it.
+    final moonrise = ny.wallClock(day.moonriseUtc!);
+    expect(moonrise.day, 5);
+    expect(day.moonriseUtc!.isBefore(day.nextSunriseUtc!), isTrue);
   });
   test('invalid coordinates and timezone rejected', () {
     for (final lat in [91.0, double.nan, double.infinity]) {

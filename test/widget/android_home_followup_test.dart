@@ -9,6 +9,7 @@ import 'package:ekadashi_calendar/l10n/app_language.dart';
 import 'package:ekadashi_calendar/services/ekadashi_settings.dart';
 import 'package:ekadashi_calendar/services/language_service.dart';
 import 'package:ekadashi_calendar/services/panchang/calculated_ekadashi.dart';
+import 'package:ekadashi_calendar/services/panchang/panchang_city.dart';
 import 'package:ekadashi_calendar/widgets/ios_style.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -288,12 +289,22 @@ void main() {
     final harness = AppHarness();
     await tester.runAsync(harness.install);
     addTearDown(harness.uninstall);
-    var now = DateTime.utc(2026, 10, 23, 4, 24, 59);
+    // Papankusha's Vaishnava Parana in Chennai, from the engine (23 October).
+    final papankusha = const CalculatedEkadashiEngine()
+        .calculate(
+          DateTime.utc(2026, 10, 21),
+          3,
+          PanchangCity.chennai,
+          EkadashiTradition.gaudiya,
+        )
+        .single;
+    final end = papankusha.paranaEndUtc!;
+    var now = end.subtract(const Duration(seconds: 1));
     await withClock(Clock(() => now), () async {
       await tester.pumpWidget(harness.app());
       await tester.pumpAndSettle();
       expect(find.text('Parana'), findsOneWidget);
-      now = DateTime.utc(2026, 10, 23, 4, 25);
+      now = end;
       await tester.pump(const Duration(seconds: 1));
       await tester.pumpAndSettle();
       expect(find.text('Rama Ekadashi'), findsOneWidget);

@@ -16,7 +16,7 @@ curl -sSfL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x7E3792A9D8AC
 gpg --verify tzdata.tar.gz.asc tzdata.tar.gz   # Paul Eggert, tz coordinator
 mkdir src && tar -xzf tzdata.tar.gz -C src
 make -C src rearguard.zi >/dev/null
-mkdir zoneinfo && zic -d zoneinfo -b fat src/rearguard.zi
+bash "$root/tool/time_zones/compile.sh" src/rearguard.zi zoneinfo
 package=$(cd "$root" && dart pub deps --json | python3 -c "import json,sys; d=json.load(sys.stdin); print([p for p in d['packages'] if p['name']=='timezone'][0]['version'])")
 cp -r "$HOME/.pub-cache/hosted/pub.dev/timezone-$package" pkg
 (cd pkg && dart pub get >/dev/null && dart tool/encode_tzf.dart --zoneinfo "$work/zoneinfo" >/dev/null)

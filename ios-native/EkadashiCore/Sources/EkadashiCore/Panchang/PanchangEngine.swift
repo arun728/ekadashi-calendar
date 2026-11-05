@@ -23,6 +23,15 @@ public struct PanchangEngine: Sendable {
     public static let phase3FestivalIds: Set<String> = [
         "raksha-bandhan", "nag-panchami", "ratha-yatra", "durga-ashtami", "varalakshmi-vratam", "onam", "karthigai-deepam",
     ]
+    /// Widely searched festivals added in October 2026 (docs/PANCHANG_ACCURACY.md).
+    public static let searchedFestivalIds: Set<String> = [
+        "lohri", "sakat-chauth", "mauni-amavasya", "ratha-saptami", "sheetala-ashtami", "gangaur", "solar-new-year",
+        "mahavir-jayanti", "parashurama-jayanti", "sita-navami", "narasimha-jayanti", "buddha-purnima", "vat-savitri",
+        "shani-jayanti", "ganga-dussehra", "vat-purnima", "hariyali-teej", "kajari-teej", "hartalika-teej",
+        "rishi-panchami", "radha-ashtami", "anant-chaturdashi", "vishwakarma-puja", "sarva-pitru-amavasya",
+        "maha-navami", "sharad-purnima", "ahoi-ashtami", "kali-puja", "tulsi-vivah", "kartika-purnima",
+        "guru-nanak-jayanti", "vivah-panchami", "gita-jayanti", "vaikuntha-ekadashi", "dattatreya-jayanti", "thaipusam",
+    ]
     static let karanaFixed = ["Kimstughna", "Shakuni", "Chatushpada", "Naga"]
     static let ritus = ["Vasanta", "Grishma", "Varsha", "Sharad", "Hemanta", "Shishira"]
     static let ayanas = ["Uttarayana (tropical)", "Dakshinayana (tropical)"]
@@ -54,14 +63,19 @@ public struct PanchangEngine: Sendable {
         if let sunrise, sunset == nil || sunset! < sunrise {
             sunset = findCrossing(sunrise, city.midnight(date, dayOffset: 2), city, moon: false, rising: false)
         }
-        let moonrise = findCrossing(startUtc, endUtc, city, moon: true, rising: true)
-        let moonset = findCrossing(startUtc, endUtc, city, moon: true, rising: false)
         let hasSolarDay = sunrise != nil && sunset != nil && sunset! > sunrise!
         let localSunrise = sunrise ?? city.dateAtHour(date, 6)
         let localSunset = sunset ?? city.dateAtHour(date, 18)
         let dayLength = localSunset.timeIntervalSince(localSunrise)
         let madhyahna = localSunrise.adding(truncatedMicroseconds(dayLength, dividedBy: 2))
         let nightEnd = findCrossing(localSunset, city.midnight(date, dayOffset: 2), city, moon: false, rising: true)
+        // Drik Panchang's day runs from sunrise to the next sunrise, and it
+        // shows the first moonrise and moonset in it; the civil day without
+        // a sunrise.
+        let moonStart = sunrise ?? startUtc
+        let moonEnd = sunrise == nil ? endUtc : nightEnd ?? moonStart.adding(86400)
+        let moonrise = findCrossing(moonStart, moonEnd, city, moon: true, rising: true)
+        let moonset = findCrossing(moonStart, moonEnd, city, moon: true, rising: false)
 
         let tithi = tithiAt(localSunrise)
         let nakshatra = nakshatraAt(localSunrise)
@@ -79,7 +93,7 @@ public struct PanchangEngine: Sendable {
             ? sankrantiOnly(city, date, sunset)
             : observances(city: city, date: date, sunrise: localSunrise, sunset: localSunset, tithi: tithi)
         let fullNight = hasSolarDay && nightEnd != nil
-        let sunLongitude = AstronomyCalculator.sunLongitude(localSunrise)
+        let sunLongitude = AstronomyCalculator.drikSunLongitude(localSunrise)
         let shakaOffset = date.month <= 4 && month.index >= 9 ? 1 : 0
         let timelineEnd = nightEnd ?? endUtc
         let thirtieth = truncatedMicroseconds(dayLength, dividedBy: 30)
@@ -100,10 +114,10 @@ public struct PanchangEngine: Sendable {
             lagna: !fullNight || abs(city.latitude) >= 66 ? [] : lagna(localSunrise, nightEnd!, city),
             specialYogas: specialYogas(localSunrise, weekday),
             nakshatraPada: Int(floor(dartMod(siderealMoon(localSunrise), 360.0 / 27) / (360.0 / 108))) + 1,
-            ayanamsa: AstronomyCalculator.lahiriAyanamsa(localSunrise),
+            ayanamsa: AstronomyCalculator.drikLahiriAyanamsa(localSunrise),
             ritu: Self.ritus[month.index / 2],
             ayana: Self.ayanas[sunLongitude >= 270 || sunLongitude < 90 ? 0 : 1],
-            sunRashi: Self.rashi(AstronomyCalculator.normalize(sunLongitude - AstronomyCalculator.apparentLahiriAyanamsa(localSunrise))),
+            sunRashi: Self.rashi(siderealSun(localSunrise)),
             moonRashi: Self.rashi(siderealMoon(localSunrise)),
             sunRashiEndsAt: nextBoundary(localSunrise, siderealSun(localSunrise), 30, siderealSun),
             moonRashiEndsAt: nextBoundary(localSunrise, siderealMoon(localSunrise), 30, siderealMoon),
@@ -164,62 +178,110 @@ public struct PanchangEngine: Sendable {
 
     public func tithiStart(_ instant: Date) -> Date { previousBoundary(instant, 12, elongation) }
 
+    /// The start of the limb (of [width] degrees) current at [instant]: the
+    /// first moment at which the angle is back in this limb.
     func previousBoundary(_ instant: Date, _ width: Double, _ angleAt: (Date) -> Double) -> Date {
-        let index = Int(floor(angleAt(instant) / width))
-        var right = instant
-        for i in 1...48 {
-            var left = instant.adding(-Double(i) * 3600)
-            if Int(floor(angleAt(left) / width)) == index { continue }
-            for _ in 0..<24 {
-                let middle = left.adding(truncatedMicroseconds(right.timeIntervalSince(left), dividedBy: 2))
-                if Int(floor(angleAt(middle) / width)) == index { right = middle } else { left = middle }
-            }
-            return right
-        }
-        // Unreachable for the Moon and Sun (every limb is shorter than 48 hours).
-        return instant.adding(-48 * 3600)
+        let angle = angleAt(instant)
+        let elapsed = angle - floor(angle / width) * width
+        // Degrees since the boundary, going back: positive inside the limb.
+        let inside: (Date) -> Double = { elapsed - AstronomyCalculator.normalize(angle - angleAt($0)) }
+        return Self.firstAtOrAfter(from: instant, value: elapsed, direction: -1, limit: 48 * 3600, inside)
+            ?? instant.adding(-48 * 3600)
     }
 
+    /// The end of the limb current at [start] (angle [startAngle]), searched
+    /// up to 40 hours ahead (35 days for 30° signs).
     func nextBoundary(_ start: Date, _ startAngle: Double, _ width: Double, _ angleAt: (Date) -> Double) -> Date? {
-        let startIndex = floor(startAngle / width)
-        let remainder = startAngle - startIndex * width
-        let distance = width - remainder
-        let limit = start.adding(Double(width >= 30 ? 35 * 24 : 40) * 3600)
-        let step = 600.0
-        var low = start
-        var high: Date?
-        var probe = start.adding(step)
-        while probe <= limit {
-            if AstronomyCalculator.normalize(angleAt(probe) - startAngle) >= distance {
-                high = probe
+        let distance = width - (startAngle - floor(startAngle / width) * width)
+        let progress: (Date) -> Double = { AstronomyCalculator.normalize(angleAt($0) - startAngle) - distance }
+        return Self.firstAtOrAfter(from: start, value: -distance, direction: 1,
+                                   limit: Double(width >= 30 ? 35 * 24 : 40) * 3600, progress)
+    }
+
+    /// The first instant, to a millisecond (the angles' own resolution), at
+    /// which a monotonic angle [f] reaches zero, searching from [from]
+    /// ([value] = f there) in [direction] (1 forward, -1 back, where f grows
+    /// going back). A 10-minute probe measures the rate and a jump lands just
+    /// past the crossing; regula falsi (Illinois) then closes the bracket, and
+    /// a near-exact hit is confirmed one millisecond away. Returns the side
+    /// where f >= 0 going forward, as the old 10-minute scan with bisection
+    /// did, in about a tenth of the evaluations.
+    static func firstAtOrAfter(from: Date, value: Double, direction: Double, limit: TimeInterval,
+                               _ f: (Date) -> Double) -> Date? {
+        let tolerance = 0.001
+        if value >= 0 && direction > 0 { return from }
+        // Bracket: [near] on the starting side, [far] across the crossing.
+        var near = from, nearValue = value
+        var step = 600.0
+        var far: Date?, farValue = 0.0
+        while abs(near.timeIntervalSince(from)) < limit {
+            step = min(step, limit - abs(near.timeIntervalSince(from)))
+            let probe = near.adding(direction * step)
+            let probeValue = f(probe)
+            if direction > 0 ? probeValue >= 0 : probeValue < 0 {
+                far = probe
+                farValue = probeValue
                 break
             }
-            low = probe
-            probe = probe.adding(step)
+            // Aim just past the crossing at the rate measured so far.
+            let rate = abs(probeValue - nearValue) / step
+            near = probe
+            nearValue = probeValue
+            let remaining = abs(probeValue)
+            step = rate > 0 ? min(max(remaining / rate * 1.02 + 120, 60), 30 * 3600) : 3600
         }
-        guard var right = high else { return nil }
-        for _ in 0..<22 {
-            let middle = low.adding(truncatedMicroseconds(right.timeIntervalSince(low), dividedBy: 2))
-            if AstronomyCalculator.normalize(angleAt(middle) - startAngle) >= distance { right = middle } else { low = middle }
+        guard let farEnd = far else { return nil }
+        // [low] before the crossing (f < 0), [high] at or after it (f >= 0), in time order.
+        var (low, lowValue, high, highValue) = direction > 0
+            ? (near, nearValue, farEnd, farValue) : (farEnd, farValue, near, nearValue)
+        var side = 0
+        for _ in 0..<60 {
+            let span = high.timeIntervalSince(low)
+            if span <= tolerance { break }
+            let slope = (highValue - lowValue) / span
+            var t = span * (-lowValue) / (highValue - lowValue)
+            if !(t > 0 && t < span) { t = span / 2 }
+            let middle = low.adding(t)
+            let middleValue = f(middle)
+            if middleValue >= 0 {
+                high = middle
+                highValue = middleValue
+                if side == 1 { lowValue /= 2 }
+                side = 1
+                // A hit within half a millisecond: confirm just before it.
+                if middleValue / slope < tolerance / 2, middle.adding(-tolerance) > low {
+                    let probe = middle.adding(-tolerance), probeValue = f(probe)
+                    if probeValue < 0 { low = probe; lowValue = probeValue } else { high = probe; highValue = probeValue }
+                }
+            } else {
+                low = middle
+                lowValue = middleValue
+                if side == -1 { highValue /= 2 }
+                side = -1
+                if -middleValue / slope < tolerance / 2, middle.adding(tolerance) < high {
+                    let probe = middle.adding(tolerance), probeValue = f(probe)
+                    if probeValue >= 0 { high = probe; highValue = probeValue } else { low = probe; lowValue = probeValue }
+                }
+            }
         }
-        return right
+        return high
     }
 
     func elongation(_ instant: Date) -> Double {
-        AstronomyCalculator.normalize(AstronomyCalculator.moonLongitude(instant) - AstronomyCalculator.sunLongitude(instant))
+        AstronomyCalculator.normalize(AstronomyCalculator.drikMoonLongitude(instant) - AstronomyCalculator.drikSunLongitude(instant))
     }
 
     func siderealSun(_ instant: Date) -> Double {
-        AstronomyCalculator.normalize(AstronomyCalculator.sunLongitude(instant) - AstronomyCalculator.apparentLahiriAyanamsa(instant))
+        AstronomyCalculator.normalize(AstronomyCalculator.drikSunLongitude(instant) - AstronomyCalculator.drikLahiriAyanamsa(instant))
     }
 
     func siderealMoon(_ instant: Date) -> Double {
-        AstronomyCalculator.normalize(AstronomyCalculator.moonLongitude(instant) - AstronomyCalculator.apparentLahiriAyanamsa(instant))
+        AstronomyCalculator.normalize(AstronomyCalculator.drikMoonLongitude(instant) - AstronomyCalculator.drikLahiriAyanamsa(instant))
     }
 
     func yogaAngle(_ instant: Date) -> Double {
-        AstronomyCalculator.normalize(AstronomyCalculator.moonLongitude(instant) + AstronomyCalculator.sunLongitude(instant)
-            - 2 * AstronomyCalculator.apparentLahiriAyanamsa(instant))
+        AstronomyCalculator.normalize(AstronomyCalculator.drikMoonLongitude(instant) + AstronomyCalculator.drikSunLongitude(instant)
+            - 2 * AstronomyCalculator.drikLahiriAyanamsa(instant))
     }
 
     static func rashi(_ angle: Double) -> String { signs[dartMod(Int(floor(angle / 30)), 12)] }
@@ -264,15 +326,25 @@ public struct PanchangEngine: Sendable {
 
     func findCrossing(_ start: Date, _ end: Date, _ city: PanchangCity, moon: Bool, rising: Bool) -> Date? {
         let step = 300.0
-        // Apparent upper limb on a sea-level horizon.
+        // The Sun: apparent upper limb on a sea-level horizon. The Moon: the
+        // centre of the disc without refraction, as Drik Panchang shows it
+        // (docs/PANCHANG_ACCURACY.md, "Drik time base").
         func difference(_ instant: Date) -> Double {
-            AstronomyCalculator.altitudeDegrees(instant: instant, latitude: city.latitude, longitude: city.longitude, moon: moon)
-                + AstronomyCalculator.horizonRefraction + AstronomyCalculator.semidiameterDegrees(instant, moon: moon)
+            let altitude = AstronomyCalculator.altitudeDegrees(instant: instant, latitude: city.latitude,
+                                                               longitude: city.longitude, moon: moon)
+            return moon ? altitude
+                : altitude + AstronomyCalculator.horizonRefraction + AstronomyCalculator.semidiameterDegrees(instant, moon: false)
         }
+        // Altitude changes by at most 0.3° a minute, so where the body is far
+        // from the horizon the scan can skip ahead without missing a crossing.
+        func next(_ instant: Date, _ value: Double) -> Date { instant.adding(max(step, abs(value) / 0.005)) }
         var low = start
         var lowValue = difference(low)
-        var high = start.adding(step)
-        while high <= end {
+        var high = next(start, lowValue)
+        // The last step stops at the end, so an event just before it (a moonset
+        // minutes before the next sunrise) is found too.
+        while low < end {
+            if high > end { high = end }
             let highValue = difference(high)
             let crossed = rising ? lowValue <= 0 && highValue > 0 : lowValue >= 0 && highValue < 0
             if crossed {
@@ -287,7 +359,7 @@ public struct PanchangEngine: Sendable {
             }
             low = high
             lowValue = highValue
-            high = high.adding(step)
+            high = next(high, highValue)
         }
         return nil
     }
@@ -424,7 +496,7 @@ public struct PanchangEngine: Sendable {
         func angle(_ instant: Date) -> Double {
             AstronomyCalculator.normalize(AstronomyCalculator.ascendantLongitude(instant, latitude: city.latitude,
                                                                                  longitude: city.longitude)
-                - AstronomyCalculator.lahiriAyanamsa(instant))
+                - AstronomyCalculator.drikLahiriAyanamsa(instant))
         }
         var result: [PanchangPeriod] = []
         var cursor = start

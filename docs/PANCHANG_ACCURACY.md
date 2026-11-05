@@ -1,5 +1,11 @@
 # Panchang accuracy
 
+For the 24 October 2026 investigation of minute discrepancies and the
+historical/post-2037 timezone coverage defects, see
+[Panchang timing investigation](PANCHANG_TIMING_INVESTIGATION.md). The scores
+below describe their stated samples and tolerances, not exact agreement with
+every displayed Drik minute or full timezone coverage through 2100.
+
 Branch `feature/panchang-accuracy` (from PR #14). The engine was measured
 against independent references, corrected, and measured again. No new
 features were added; existing calculations were made more accurate.
@@ -45,6 +51,194 @@ python gcal_reference.py cities.json 2026,2027 /tmp/gcal.json
 SE_EPHE_PATH=EPHE_DIR python compare.py /tmp/engine.json /tmp/reference.json /tmp/gcal.json /tmp/score.json
 python check_positions.py EPHE_DIR /tmp/positions   # compiled positions.dart
 ```
+
+## Drik time base (October 2026)
+
+Arun asked why Panchang times were a minute off drikpanchang.com and for an
+exact match, in every location and time zone. Drik's published New Delhi
+pages (default settings: upper-limb sunrise, elevation off) for 2026-2027
+were compared second by second with the engine and with Swiss Ephemeris;
+2028 was held out, and the 2026 Smarta lists of Chennai, Kathmandu
+(UTC+5:45), London, New York, Los Angeles and Sydney checked every other
+kind of zone. The engine already matched Swiss Ephemeris/JPL to about a
+second. Drik differs from both in four ways, and the app now follows Drik:
+
+| Cause | Measured | Fix |
+|---|---|---|
+| Drik rounds times to the nearest minute; the app cut them | sunrise showed Drik's minute 55% of the time (cut), 92% (rounded) | `displayClock` rounds the local wall time, on every screen, widget, reminder and the Home schedule |
+| Drik's Sun and Moon are the JPL positions one Delta T later (its tithi, nakshatra, yoga and karana moments come one Delta T, about 69 s in 2026, before the astronomical ones) | Drik's displayed positions: Sun +2.4″, Moon +32-44″ (57-74 s of motion); tithi times fit true − 68.5 s (ΔT 68.8-69.0 s) | `AstronomyCalculator.drikSunLongitude/drikMoonLongitude` evaluate at t + ΔT for every Panchang angle |
+| Drik's Lahiri ayanamsa is the mean value (no nutation) plus 24.2″ | 13 dated position pages: 24.2″ ± 0.6″ | `drikLahiriAyanamsa` |
+| Drik's moonrise/moonset is the centre of the disc without refraction, the first after sunrise (its day runs sunrise to sunrise) | 22/23 each; 0/23 for every other convention | `findCrossing` for the Moon, searched from sunrise to the next sunrise |
+
+Results at Drik's New Delhi coordinates (test/unit/drik_match_test.dart,
+DrikMatchTests.swift):
+
+| Check | Before (cut) | After |
+|---|---|---|
+| Smarta + Vaishnava Ekadashi begins/ends, 2026-2027 | 75/196 | 192/196 |
+| Held-out 2028 tithi boundaries | 17/49 | 48/50 |
+| Six other cities, 2026 Smarta tithi times (each) | 16/48 | 47/48 |
+| Six other cities, 2026 Smarta dates | 24/24 | 24/24 |
+| Vaishnava fast dates | 47/49 | 49/49 (25 Jun 2026 and 11 Sep 2027: Purnima/Shravana within 20 s of sunrise); now GCal 11's, see below |
+| Smarta fast dates | 49/49 | 49/49 |
+| Smarta Parana, Hari Vasara, Dwadashi end | about half | 135/144 |
+| Vaishnava Parana | about half | 88/98 |
+| Sunrise / sunset (730 days) | 399 / 306 | 673 / 685 |
+| Nakshatra ends (701) | 542 | 650 |
+| Moonrise / moonset (23 each) | 0 / 0 | 22 / 22 |
+
+Every remaining difference is a value within 9 s of a half minute (6 s for
+tithi times), which rounds either way depending on Drik's own clock.
+
+Known limits:
+
+- Drik's sunrise wobbles about ±5 s around the exact upper-limb sunrise
+  with a half-yearly pattern (earlier around March-April and
+  August-October, later in December-January). No refraction constant,
+  disc convention or frozen-position method reproduces it, so a sunrise
+  within a few seconds of a half minute can show a minute apart, and
+  Parana limits taken from sunrise with it. The engine keeps the exact
+  sunrise rather than fitting one city.
+- The Delta T time base was measured in 2026-2028 only. Drik serves other
+  years behind a reCAPTCHA, which was not bypassed, so for 1900-2100 the
+  engine assumes the same mechanism (positions at t + ΔT with its yearly
+  ΔT table). If Drik instead uses a fixed offset, years far from 2026 would
+  differ by up to ΔT − 69 s (about −72 s in 1900, +24 s in 2100).
+- Nakshatra ends keep about 7% one-minute differences that no single
+  offset removes (Drik's lunar theory or interpolation differs by a few
+  arcseconds).
+- The Drik values are kept only as a test reference
+  (test/fixtures/panchang/drik_reference.json), never shipped.
+
+## ISKCON Vaishnava: GCal 11 (October 2026)
+
+Arun asked for Vaishnava dates and Parana to match ISKCON, which publishes
+them from GCal 11, the GBC Calendar Committee's program; everything else
+follows Drik. JPL-accurate astronomy with GCAL's rules (the section below)
+still missed ISKCON's published calendars: on vaisnavacalendar.info's GCal
+11 files for 67 cities in 2026-2027 (3,283 fasts,
+`test/fixtures/panchang/gcal11_ekadashi_2026_2027.json`), 10 city-years had
+a fast a day off and only 38% of Parana minutes matched, because GCal
+decides with its own low-precision astronomy and shows times cut, not
+rounded.
+
+The Vaishnava path now runs GCal's own calculation (`Gcal` in
+GcalEkadashi.swift and gcal_ekadashi.dart), ported line by line from
+gaurabda 0.8.4 (MIT): its table-based Sun and centre-of-disc sunrise at
+-0.83°, Meeus' 60-term Moon with GCal's short nutation and no Delta T, its
+Lahiri formula, `DayCalc`, `MahadvadasiCalc`, `EkadasiCalc`,
+`CalculateEParana` and the step-halving tithi and nakshatra searches. Two
+deliberate differences: `IsMhd58`'s no-match sentinel is 0 (see below), and
+a longitude across the date line from its time zone (Chatham, 176.6°W at
+UTC+12:45) is moved by 360° so each sunrise keeps its local date. Times are
+shown as ISKCON shows them, cut to the minute. Names, months and the
+Ekadashi tithi times still come from the main engine (Drik).
+
+| Check (GCal 11, 67 cities, 2026-2027) | Before | After |
+|---|---|---|
+| Fast dates (3,283) | 10 city-years with a day off | all match |
+| Parana, shown minute (6,522 limits) | 38.4% | 99.3% (6,478); the other 44 are one minute apart |
+
+GCal compares in its own clock: the offset each file states plus an hour
+where it marks DST. Its summer-time rules are out of date in nine cities
+(Tehran, Moscow, Istanbul, Mexico City, Sao Paulo, Buenos Aires, Santiago,
+Tel Aviv and Vancouver, which IANA 2026b keeps on summer time from November
+2026), so its printed times there are an hour off the legal clock; the app
+shows the legal clock (IANA).
+
+Against Drik's own ISKCON list for New Delhi, two fasts now fall a day
+later, as GCal publishes them (26 June 2026, 12 September 2027: a Purnima
+or Shravana boundary within 20 seconds of sunrise), and Parana is within 3
+minutes of Drik's (44/94 the same minute): Drik rounds and uses its own
+astronomy.
+
+The Vaishnava year is also faster: the Panchang day is calculated only for
+the fast and Parana days, instead of every day of the year.
+
+## Purnima on its fast day (October 2026)
+
+Purnima was listed on the day Purnima held at sunrise, often the day after
+the fast (Sharad Purnima 2026: 26 October instead of 25). It is now listed
+once, on its fast (Upavasa) day, as Drik Panchang, Prokerala and AstroSage
+list it: the first day on which Purnima has begun by the end of Madhyahna
+(three fifths of daylight) and lasts past sunrise; a Purnima touching
+neither keeps the day it begins. This matches all 27 Drik-published Delhi
+fasts of 2025-2027 (`test/fixtures/panchang/purnima_fasts.json`), where
+the moonrise rule missed July 2026 and May 2027 and an Aparahna rule missed
+August 2025.
+
+## Widely searched festivals (October 2026)
+
+Arun asked for the festivals people search for most. Google publishes no
+worldwide ranking of Hindu festivals (its Year in Search covers India and
+general topics), so the set starts from Drik Panchang's top 25 festivals by
+its own traffic: the ones the engine lacked were Maha Navami (Durga Puja),
+Vat Savitri and Vat Purnima, Kojagara (Sharad Purnima) and the solar New
+Year (Vaisakhi, Puthandu, Bihu, Pohela Boishakh). Other widely followed
+festivals complete it: Lohri, Sakat Chauth, Mauni Amavasya, Ratha Saptami,
+Sheetala Ashtami, Gangaur, Mahavir, Parashurama and Narasimha Jayanti,
+Sita Navami, Buddha Purnima, Shani Jayanti, Ganga Dussehra, Hariyali,
+Kajari and Hartalika Teej, Rishi Panchami, Radha Ashtami, Anant
+Chaturdashi (Ganesh Visarjan), Vishwakarma Puja, Sarva Pitru Amavasya
+(Mahalaya), Ahoi Ashtami, Kali Puja, Tulsi Vivah, Kartika Purnima, Guru
+Nanak Jayanti, Vivah Panchami, Gita Jayanti, Vaikuntha Ekadashi,
+Dattatreya Jayanti and Thaipusam: 36 in all (`searchedFestivalIds`).
+
+Each is named in all six languages in the search catalogue, with search
+aliases (Baisakhi, Puthandu, Ganesh Visarjan, Mahalaya, Kojagiri, ...).
+Dates were checked against Drik's New Delhi calendar for 2026 and 2027
+and, where Drik's year calendar lists none (Kali Puja, Mahavir Jayanti,
+Guru Nanak Jayanti, Vaikuntha Ekadashi, Thaipusam), Prokerala's pages for
+Ujjain (`test/fixtures/panchang/searched_festivals.json`). Drik and
+Prokerala agree wherever both list a festival, except Rishi Panchami 2027
+(Drik 4 September, Prokerala 5 September; the app follows Drik).
+
+| Check | Result |
+|---|---|
+| Published dates (68 festival-years) | 68/68 |
+| Held out: Prokerala 2025, Ujjain (Sharad Purnima, Ahoi Ashtami, Kartika Purnima) | 3/3 |
+
+Rules (Amanta months; the tithi's window decides the day):
+sunrise for Mauni Amavasya, Ratha Saptami, Sheetala Ashtami, Gangaur,
+Mahavir Jayanti, Vat Savitri and Shani Jayanti, Ganga Dussehra, the three
+Teej, Radha Ashtami, Anant Chaturdashi, Tulsi Vivah, Kartika Purnima and
+Guru Nanak Jayanti, Vivah Panchami; Madhyahna for Sita Navami and Rishi
+Panchami; Aparahna for Sarva Pitru Amavasya and Maha Navami; Pradosh for
+Parashurama Jayanti, Sharad Purnima, Ahoi Ashtami and Dattatreya Jayanti;
+sunset for Narasimha Jayanti; Nishita for Kali Puja; moonrise for Sakat
+Chauth; the Purnima fast day for Buddha Purnima and Vat Purnima. Lohri is
+the eve of Makar Sankranti; the solar New Year and Vishwakarma Puja fall on
+Mesha and Kanya Sankranti; Gita Jayanti is the Smarta Margashirsha Shukla
+Ekadashi and Vaikuntha Ekadashi the Smarta Shukla Ekadashi in solar Dhanu
+(none in 2027); Thaipusam is the first sunrise in Pushya in solar Makara.
+Ganga Dussehra stays in the Adhika month when Jyeshtha repeats, as Drik
+keeps it (25 May 2026). Regional variants (Vishu and Pohela Boishakh can
+fall a day after Mesha Sankranti) are search aliases of the solar New Year.
+
+## Speed (October 2026)
+
+The Drik time base made each Sun and Moon position a little dearer, and the
+36 festivals added checks, so the Panchang tab first got slower than on
+`dev`. Two searches were rebuilt (BoundarySearchTests, RiseSetSearchTests
+and their Dart twins check both against the old searches and the speed-up):
+
+- Tithi, nakshatra, yoga, karana and rashi ends: the angle always grows, so
+  a probe measures its rate, one jump brackets the end and regula falsi
+  closes it to a millisecond (the angles' own resolution). About 10
+  evaluations instead of about 70 (a 10-minute scan then bisection).
+- Sunrise, sunset, moonrise and moonset: altitude changes by at most 0.3° a
+  minute, so the 5-minute scan skips ahead while the body is far from the
+  horizon. The same instants, to under a millisecond.
+
+Flutter VM, New Delhi, same machine (`dev` → this branch):
+
+| Work | dev | Branch |
+|---|---|---|
+| One Panchang day (`calculate`) | 13.4 ms | 4.3 ms |
+| A day's festivals (`observancesOn`) | 7.3 ms | 2.7 ms |
+| A year of festivals (finder, key days) | 3.1 s | 1.1 s |
+| A year of Smarta fasts | 593 ms | 258 ms |
+| A year of Vaishnava fasts | 598 ms | 18 ms |
 
 ## Smarta and Vaishnava (Gaudiya/ISKCON) Ekadashi
 

@@ -78,8 +78,9 @@ a day between cities, which is why the schedule is per city, not per time zone.
 - `CalculatedEkadashiEngine` reads a lightweight day (`EkadashiDay`: sunrise,
   sunset, tithi, nakshatra, month) instead of the full Panchang day. The
   Dart-parity tests prove the fasts are unchanged.
-- Times are the engine's instants cut to the minute (06:04:52 → 06:04), exactly
-  as the Panchang tab's Ekadashi sub-tab shows them, so Home, Calendar,
+- Times are the engine's instants rounded to the nearest minute (06:04:52 →
+  06:05), as Drik Panchang and the Panchang tab's Ekadashi sub-tab show them
+  (docs/PANCHANG_ACCURACY.md, "Drik time base"), so Home, Calendar,
   reminders, widgets and the share card read the same as that sub-tab
   (`testHomeTimesMatchThePanchangEkadashiSubTabWorldwide`: 10 cities in India,
   the US, Europe, Australia, Singapore and Dubai, both traditions, 2026–2027).
@@ -99,7 +100,7 @@ The Flutter app follows the iOS design file by file:
 
 - `lib/services/ekadashi_schedule.dart` (`EkadashiSchedule`,
   `EkadashiYears`, `ScheduledEkadashi`): the same calculation, identities,
-  minute truncation, sunset fallback and `schedule-2` cache key, calculated
+  minute rounding, sunset fallback and `schedule-3` cache key, calculated
   in an isolate and cached in memory and in shared preferences. Two screens
   asking for the same city and year share one calculation.
 - `lib/services/ekadashi_settings.dart` (`EkadashiSettings`, a provider):

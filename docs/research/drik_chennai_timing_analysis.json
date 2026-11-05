@@ -1,0 +1,1996 @@
+{
+  "observations": [
+    {
+      "date": "2026-01-14",
+      "field": "tithi_start_local",
+      "drikLocal": "2026-01-13T15:17:00+05:30",
+      "engineLocal": "2026-01-13T15:18:26.270309+05:30",
+      "engineMinusPublishedSeconds": 86.270309,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-01-13T09:48:26.144929+00:00",
+      "engineMinusSwissSeconds": 0.12538
+    },
+    {
+      "date": "2026-01-14",
+      "field": "tithi_end_local",
+      "drikLocal": "2026-01-14T17:52:00+05:30",
+      "engineLocal": "2026-01-14T17:53:15.946022+05:30",
+      "engineMinusPublishedSeconds": 75.946022,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-01-14T12:23:15.930429+00:00",
+      "engineMinusSwissSeconds": 0.015593
+    },
+    {
+      "date": "2026-01-14",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2026-01-15T06:35:00+05:30",
+      "engineLocal": "2026-01-15T06:35:06.078242+05:30",
+      "engineMinusPublishedSeconds": 6.078242,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2026-01-14",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2026-01-15T10:24:00+05:30",
+      "engineLocal": "2026-01-15T10:23:51.951902+05:30",
+      "engineMinusPublishedSeconds": -8.048098,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2026-01-29",
+      "field": "tithi_start_local",
+      "drikLocal": "2026-01-28T16:35:00+05:30",
+      "engineLocal": "2026-01-28T16:36:33.611953+05:30",
+      "engineMinusPublishedSeconds": 93.611953,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-01-28T11:06:33.628295+00:00",
+      "engineMinusSwissSeconds": -0.016342
+    },
+    {
+      "date": "2026-01-29",
+      "field": "tithi_end_local",
+      "drikLocal": "2026-01-29T13:55:00+05:30",
+      "engineLocal": "2026-01-29T13:55:39.024063+05:30",
+      "engineMinusPublishedSeconds": 39.024063,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-01-29T08:25:38.920614+00:00",
+      "engineMinusSwissSeconds": 0.103449
+    },
+    {
+      "date": "2026-01-29",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2026-01-30T06:36:00+05:30",
+      "engineLocal": "2026-01-30T06:35:30.871008+05:30",
+      "engineMinusPublishedSeconds": -29.128992,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2026-01-29",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2026-01-30T10:27:00+05:30",
+      "engineLocal": "2026-01-30T10:26:37.273729+05:30",
+      "engineMinusPublishedSeconds": -22.726271,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2026-02-13",
+      "field": "tithi_start_local",
+      "drikLocal": "2026-02-12T12:22:00+05:30",
+      "engineLocal": "2026-02-12T12:22:40.509750+05:30",
+      "engineMinusPublishedSeconds": 40.50975,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-02-12T06:52:40.418706+00:00",
+      "engineMinusSwissSeconds": 0.091044
+    },
+    {
+      "date": "2026-02-13",
+      "field": "tithi_end_local",
+      "drikLocal": "2026-02-13T14:25:00+05:30",
+      "engineLocal": "2026-02-13T14:26:25.583063+05:30",
+      "engineMinusPublishedSeconds": 85.583063,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-02-13T08:56:25.666864+00:00",
+      "engineMinusSwissSeconds": -0.083801
+    },
+    {
+      "date": "2026-02-13",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2026-02-14T06:32:00+05:30",
+      "engineLocal": "2026-02-14T06:31:54.441203+05:30",
+      "engineMinusPublishedSeconds": -5.558797,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2026-02-13",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2026-02-14T10:26:00+05:30",
+      "engineLocal": "2026-02-14T10:26:01.732195+05:30",
+      "engineMinusPublishedSeconds": 1.732195,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2026-02-27",
+      "field": "tithi_start_local",
+      "drikLocal": "2026-02-27T00:33:00+05:30",
+      "engineLocal": "2026-02-27T00:33:56.851069+05:30",
+      "engineMinusPublishedSeconds": 56.851069,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-02-26T19:03:56.880295+00:00",
+      "engineMinusSwissSeconds": -0.029226
+    },
+    {
+      "date": "2026-02-27",
+      "field": "tithi_end_local",
+      "drikLocal": "2026-02-27T22:32:00+05:30",
+      "engineLocal": "2026-02-27T22:33:18.939082+05:30",
+      "engineMinusPublishedSeconds": 78.939082,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-02-27T17:03:18.979260+00:00",
+      "engineMinusSwissSeconds": -0.040178
+    },
+    {
+      "date": "2026-02-27",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2026-02-28T06:25:00+05:30",
+      "engineLocal": "2026-02-28T06:25:32.678030+05:30",
+      "engineMinusPublishedSeconds": 32.67803,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false
+    },
+    {
+      "date": "2026-02-27",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2026-02-28T10:23:00+05:30",
+      "engineLocal": "2026-02-28T10:22:50.811079+05:30",
+      "engineMinusPublishedSeconds": -9.188921,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2026-03-15",
+      "field": "tithi_start_local",
+      "drikLocal": "2026-03-14T08:10:00+05:30",
+      "engineLocal": "2026-03-14T08:11:27.004777+05:30",
+      "engineMinusPublishedSeconds": 87.004777,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-03-14T02:41:27.210864+00:00",
+      "engineMinusSwissSeconds": -0.206087
+    },
+    {
+      "date": "2026-03-15",
+      "field": "tithi_end_local",
+      "drikLocal": "2026-03-15T09:16:00+05:30",
+      "engineLocal": "2026-03-15T09:17:01.019121+05:30",
+      "engineMinusPublishedSeconds": 61.019121,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-03-15T03:47:01.289907+00:00",
+      "engineMinusSwissSeconds": -0.270786
+    },
+    {
+      "date": "2026-03-15",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2026-03-16T06:16:00+05:30",
+      "engineLocal": "2026-03-16T06:15:54.415224+05:30",
+      "engineMinusPublishedSeconds": -5.584776,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2026-03-15",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2026-03-16T09:40:00+05:30",
+      "engineLocal": "2026-03-16T09:41:20.694003+05:30",
+      "engineMinusPublishedSeconds": 80.694003,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false
+    },
+    {
+      "date": "2026-03-29",
+      "field": "tithi_start_local",
+      "drikLocal": "2026-03-28T08:45:00+05:30",
+      "engineLocal": "2026-03-28T08:46:14.954935+05:30",
+      "engineMinusPublishedSeconds": 74.954935,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-03-28T03:16:14.874012+00:00",
+      "engineMinusSwissSeconds": 0.080923
+    },
+    {
+      "date": "2026-03-29",
+      "field": "tithi_end_local",
+      "drikLocal": "2026-03-29T07:46:00+05:30",
+      "engineLocal": "2026-03-29T07:46:56.997095+05:30",
+      "engineMinusPublishedSeconds": 56.997095,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-03-29T02:16:56.999164+00:00",
+      "engineMinusSwissSeconds": -0.002069
+    },
+    {
+      "date": "2026-03-29",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2026-03-30T06:07:00+05:30",
+      "engineLocal": "2026-03-30T06:06:37.626112+05:30",
+      "engineMinusPublishedSeconds": -22.373888,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2026-03-29",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2026-03-30T07:09:00+05:30",
+      "engineLocal": "2026-03-30T07:10:07.922025+05:30",
+      "engineMinusPublishedSeconds": 67.922025,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false
+    },
+    {
+      "date": "2026-04-13",
+      "field": "tithi_start_local",
+      "drikLocal": "2026-04-13T01:16:00+05:30",
+      "engineLocal": "2026-04-13T01:17:25.131537+05:30",
+      "engineMinusPublishedSeconds": 85.131537,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-04-12T19:47:25.593444+00:00",
+      "engineMinusSwissSeconds": -0.461907
+    },
+    {
+      "date": "2026-04-13",
+      "field": "tithi_end_local",
+      "drikLocal": "2026-04-14T01:08:00+05:30",
+      "engineLocal": "2026-04-14T01:09:11.182077+05:30",
+      "engineMinusPublishedSeconds": 71.182077,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-04-13T19:39:11.971780+00:00",
+      "engineMinusSwissSeconds": -0.789703
+    },
+    {
+      "date": "2026-04-13",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2026-04-14T06:54:00+05:30",
+      "engineLocal": "2026-04-14T06:55:06.073073+05:30",
+      "engineMinusPublishedSeconds": 66.073073,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false
+    },
+    {
+      "date": "2026-04-13",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2026-04-14T10:05:00+05:30",
+      "engineLocal": "2026-04-14T10:05:12.315176+05:30",
+      "engineMinusPublishedSeconds": 12.315176,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2026-04-27",
+      "field": "tithi_start_local",
+      "drikLocal": "2026-04-26T18:06:00+05:30",
+      "engineLocal": "2026-04-26T18:07:28.806092+05:30",
+      "engineMinusPublishedSeconds": 88.806092,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-04-26T12:37:28.462437+00:00",
+      "engineMinusSwissSeconds": 0.343655
+    },
+    {
+      "date": "2026-04-27",
+      "field": "tithi_end_local",
+      "drikLocal": "2026-04-27T18:15:00+05:30",
+      "engineLocal": "2026-04-27T18:16:28.387010+05:30",
+      "engineMinusPublishedSeconds": 88.38701,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-04-27T12:46:28.101152+00:00",
+      "engineMinusSwissSeconds": 0.285858
+    },
+    {
+      "date": "2026-04-27",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2026-04-28T05:50:00+05:30",
+      "engineLocal": "2026-04-28T05:49:33.643111+05:30",
+      "engineMinusPublishedSeconds": -26.356889,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2026-04-27",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2026-04-28T10:01:00+05:30",
+      "engineLocal": "2026-04-28T10:00:50.292776+05:30",
+      "engineMinusPublishedSeconds": -9.707224,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2026-05-13",
+      "field": "tithi_start_local",
+      "drikLocal": "2026-05-12T14:52:00+05:30",
+      "engineLocal": "2026-05-12T14:52:55.246234+05:30",
+      "engineMinusPublishedSeconds": 55.246234,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-05-12T09:22:56.162240+00:00",
+      "engineMinusSwissSeconds": -0.916006
+    },
+    {
+      "date": "2026-05-13",
+      "field": "tithi_end_local",
+      "drikLocal": "2026-05-13T13:29:00+05:30",
+      "engineLocal": "2026-05-13T13:30:21.859069+05:30",
+      "engineMinusPublishedSeconds": 81.859069,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-05-13T08:00:22.791079+00:00",
+      "engineMinusSwissSeconds": -0.93201
+    },
+    {
+      "date": "2026-05-13",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2026-05-14T05:44:00+05:30",
+      "engineLocal": "2026-05-14T05:43:42.582148+05:30",
+      "engineMinusPublishedSeconds": -17.417852,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2026-05-13",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2026-05-14T09:58:00+05:30",
+      "engineLocal": "2026-05-14T09:58:05.380838+05:30",
+      "engineMinusPublishedSeconds": 5.380838,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2026-05-27",
+      "field": "tithi_start_local",
+      "drikLocal": "2026-05-26T05:10:00+05:30",
+      "engineLocal": "2026-05-26T05:11:25.780402+05:30",
+      "engineMinusPublishedSeconds": 85.780402,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-05-25T23:41:25.538694+00:00",
+      "engineMinusSwissSeconds": 0.241708
+    },
+    {
+      "date": "2026-05-27",
+      "field": "tithi_end_local",
+      "drikLocal": "2026-05-27T06:21:00+05:30",
+      "engineLocal": "2026-05-27T06:22:17.220093+05:30",
+      "engineMinusPublishedSeconds": 77.220093,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-05-27T00:52:16.908433+00:00",
+      "engineMinusSwissSeconds": 0.31166
+    },
+    {
+      "date": "2026-05-27",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2026-05-28T05:42:00+05:30",
+      "engineLocal": "2026-05-28T05:41:31.681193+05:30",
+      "engineMinusPublishedSeconds": -28.318807,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2026-05-27",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2026-05-28T07:56:00+05:30",
+      "engineLocal": "2026-05-28T07:57:30.182101+05:30",
+      "engineMinusPublishedSeconds": 90.182101,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false
+    },
+    {
+      "date": "2026-06-11",
+      "field": "tithi_start_local",
+      "drikLocal": "2026-06-11T00:57:00+05:30",
+      "engineLocal": "2026-06-11T00:58:17.524450+05:30",
+      "engineMinusPublishedSeconds": 77.52445,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-06-10T19:28:17.943422+00:00",
+      "engineMinusSwissSeconds": -0.418972
+    },
+    {
+      "date": "2026-06-11",
+      "field": "tithi_end_local",
+      "drikLocal": "2026-06-11T22:36:00+05:30",
+      "engineLocal": "2026-06-11T22:36:44.730031+05:30",
+      "engineMinusPublishedSeconds": 44.730031,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-06-11T17:06:45.064000+00:00",
+      "engineMinusSwissSeconds": -0.333969
+    },
+    {
+      "date": "2026-06-11",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2026-06-12T05:42:00+05:30",
+      "engineLocal": "2026-06-12T05:42:09.656122+05:30",
+      "engineMinusPublishedSeconds": 9.656122,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2026-06-11",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2026-06-12T10:00:00+05:30",
+      "engineLocal": "2026-06-12T09:59:52.201422+05:30",
+      "engineMinusPublishedSeconds": -7.798578,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2026-06-25",
+      "field": "tithi_start_local",
+      "drikLocal": "2026-06-24T18:12:00+05:30",
+      "engineLocal": "2026-06-24T18:12:50.325275+05:30",
+      "engineMinusPublishedSeconds": 50.325275,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-06-24T12:42:50.025609+00:00",
+      "engineMinusSwissSeconds": 0.299666
+    },
+    {
+      "date": "2026-06-25",
+      "field": "tithi_end_local",
+      "drikLocal": "2026-06-25T20:09:00+05:30",
+      "engineLocal": "2026-06-25T20:09:53.472000+05:30",
+      "engineMinusPublishedSeconds": 53.472,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-06-25T14:39:53.158507+00:00",
+      "engineMinusSwissSeconds": 0.313493
+    },
+    {
+      "date": "2026-06-25",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2026-06-26T05:45:00+05:30",
+      "engineLocal": "2026-06-26T05:44:55.734213+05:30",
+      "engineMinusPublishedSeconds": -4.265787,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2026-06-25",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2026-06-26T10:03:00+05:30",
+      "engineLocal": "2026-06-26T10:02:47.322157+05:30",
+      "engineMinusPublishedSeconds": -12.677843,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2026-07-11",
+      "field": "tithi_start_local",
+      "drikLocal": "2026-07-10T08:16:00+05:30",
+      "engineLocal": "2026-07-10T08:16:51.921640+05:30",
+      "engineMinusPublishedSeconds": 51.92164,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-07-10T02:46:51.973335+00:00",
+      "engineMinusSwissSeconds": -0.051695
+    },
+    {
+      "date": "2026-07-11",
+      "field": "tithi_end_local",
+      "drikLocal": "2026-07-11T05:22:00+05:30",
+      "engineLocal": "2026-07-11T05:23:12.126128+05:30",
+      "engineMinusPublishedSeconds": 72.126128,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-07-10T23:53:12.147937+00:00",
+      "engineMinusSwissSeconds": -0.021809
+    },
+    {
+      "date": "2026-07-11",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2026-07-12T05:49:00+05:30",
+      "engineLocal": "2026-07-12T05:49:17.750128+05:30",
+      "engineMinusPublishedSeconds": 17.750128,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2026-07-11",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2026-07-12T10:06:00+05:30",
+      "engineLocal": "2026-07-12T10:06:05.407179+05:30",
+      "engineMinusPublishedSeconds": 5.407179,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2026-07-25",
+      "field": "tithi_start_local",
+      "drikLocal": "2026-07-24T09:12:00+05:30",
+      "engineLocal": "2026-07-24T09:13:16.796033+05:30",
+      "engineMinusPublishedSeconds": 76.796033,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-07-24T03:43:16.709552+00:00",
+      "engineMinusSwissSeconds": 0.086481
+    },
+    {
+      "date": "2026-07-25",
+      "field": "tithi_end_local",
+      "drikLocal": "2026-07-25T11:34:00+05:30",
+      "engineLocal": "2026-07-25T11:34:48.753029+05:30",
+      "engineMinusPublishedSeconds": 48.753029,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-07-25T06:04:48.579284+00:00",
+      "engineMinusSwissSeconds": 0.173745
+    },
+    {
+      "date": "2026-07-25",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2026-07-26T05:53:00+05:30",
+      "engineLocal": "2026-07-26T05:53:00.477046+05:30",
+      "engineMinusPublishedSeconds": 0.477046,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2026-07-25",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2026-07-26T10:08:00+05:30",
+      "engineLocal": "2026-07-26T10:07:55.700377+05:30",
+      "engineMinusPublishedSeconds": -4.299623,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2026-08-09",
+      "field": "tithi_start_local",
+      "drikLocal": "2026-08-08T13:59:00+05:30",
+      "engineLocal": "2026-08-08T13:59:47.285325+05:30",
+      "engineMinusPublishedSeconds": 47.285325,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-08-08T08:29:47.221862+00:00",
+      "engineMinusSwissSeconds": 0.063463
+    },
+    {
+      "date": "2026-08-09",
+      "field": "tithi_end_local",
+      "drikLocal": "2026-08-09T11:04:00+05:30",
+      "engineLocal": "2026-08-09T11:05:32.974001+05:30",
+      "engineMinusPublishedSeconds": 92.974001,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-08-09T05:35:32.834110+00:00",
+      "engineMinusSwissSeconds": 0.139891
+    },
+    {
+      "date": "2026-08-09",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2026-08-10T05:56:00+05:30",
+      "engineLocal": "2026-08-10T05:55:56.031131+05:30",
+      "engineMinusPublishedSeconds": -3.968869,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2026-08-09",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2026-08-10T08:00:00+05:30",
+      "engineLocal": "2026-08-10T08:01:22.346102+05:30",
+      "engineMinusPublishedSeconds": 82.346102,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false
+    },
+    {
+      "date": "2026-08-24",
+      "field": "tithi_start_local",
+      "drikLocal": "2026-08-23T02:00:00+05:30",
+      "engineLocal": "2026-08-23T02:00:52.235411+05:30",
+      "engineMinusPublishedSeconds": 52.235411,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-08-22T20:30:52.278399+00:00",
+      "engineMinusSwissSeconds": -0.042988
+    },
+    {
+      "date": "2026-08-24",
+      "field": "tithi_end_local",
+      "drikLocal": "2026-08-24T04:18:00+05:30",
+      "engineLocal": "2026-08-24T04:19:13.632114+05:30",
+      "engineMinusPublishedSeconds": 73.632114,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-08-23T22:49:13.682095+00:00",
+      "engineMinusSwissSeconds": -0.049981
+    },
+    {
+      "date": "2026-08-24",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2026-08-25T05:57:00+05:30",
+      "engineLocal": "2026-08-25T05:57:30.517271+05:30",
+      "engineMinusPublishedSeconds": 30.517271,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false
+    },
+    {
+      "date": "2026-08-24",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2026-08-25T06:20:00+05:30",
+      "engineLocal": "2026-08-25T06:21:21.944128+05:30",
+      "engineMinusPublishedSeconds": 81.944128,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false
+    },
+    {
+      "date": "2026-09-07",
+      "field": "tithi_start_local",
+      "drikLocal": "2026-09-06T19:29:00+05:30",
+      "engineLocal": "2026-09-06T19:29:44.947297+05:30",
+      "engineMinusPublishedSeconds": 44.947297,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-09-06T13:59:44.808102+00:00",
+      "engineMinusSwissSeconds": 0.139195
+    },
+    {
+      "date": "2026-09-07",
+      "field": "tithi_end_local",
+      "drikLocal": "2026-09-07T17:03:00+05:30",
+      "engineLocal": "2026-09-07T17:04:40.005023+05:30",
+      "engineMinusPublishedSeconds": 100.005023,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-09-07T11:34:39.951717+00:00",
+      "engineMinusSwissSeconds": 0.053306
+    },
+    {
+      "date": "2026-09-07",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2026-09-08T05:58:00+05:30",
+      "engineLocal": "2026-09-08T05:57:57.805136+05:30",
+      "engineMinusPublishedSeconds": -2.194864,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2026-09-07",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2026-09-08T10:04:00+05:30",
+      "engineLocal": "2026-09-08T10:03:41.279810+05:30",
+      "engineMinusPublishedSeconds": -18.72019,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2026-09-22",
+      "field": "tithi_start_local",
+      "drikLocal": "2026-09-21T20:00:00+05:30",
+      "engineLocal": "2026-09-21T20:01:23.836552+05:30",
+      "engineMinusPublishedSeconds": 83.836552,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-09-21T14:31:23.742803+00:00",
+      "engineMinusSwissSeconds": 0.093749
+    },
+    {
+      "date": "2026-09-22",
+      "field": "tithi_end_local",
+      "drikLocal": "2026-09-22T21:43:00+05:30",
+      "engineLocal": "2026-09-22T21:43:47.564046+05:30",
+      "engineMinusPublishedSeconds": 47.564046,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-09-22T16:13:47.545890+00:00",
+      "engineMinusSwissSeconds": 0.018156
+    },
+    {
+      "date": "2026-09-22",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2026-09-23T05:58:00+05:30",
+      "engineLocal": "2026-09-23T05:58:03.188151+05:30",
+      "engineMinusPublishedSeconds": 3.188151,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2026-09-22",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2026-09-23T10:00:00+05:30",
+      "engineLocal": "2026-09-23T10:00:10.963152+05:30",
+      "engineMinusPublishedSeconds": 10.963152,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2026-10-06",
+      "field": "tithi_start_local",
+      "drikLocal": "2026-10-06T02:07:00+05:30",
+      "engineLocal": "2026-10-06T02:08:02.431122+05:30",
+      "engineMinusPublishedSeconds": 62.431122,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-10-05T20:38:02.238610+00:00",
+      "engineMinusSwissSeconds": 0.192512
+    },
+    {
+      "date": "2026-10-06",
+      "field": "tithi_end_local",
+      "drikLocal": "2026-10-07T00:34:00+05:30",
+      "engineLocal": "2026-10-07T00:35:02.608106+05:30",
+      "engineMinusPublishedSeconds": 62.608106,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-10-06T19:05:02.523834+00:00",
+      "engineMinusSwissSeconds": 0.084272
+    },
+    {
+      "date": "2026-10-06",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2026-10-07T06:14:00+05:30",
+      "engineLocal": "2026-10-07T06:15:33.150831+05:30",
+      "engineMinusPublishedSeconds": 93.150831,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false
+    },
+    {
+      "date": "2026-10-06",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2026-10-07T09:57:00+05:30",
+      "engineLocal": "2026-10-07T09:57:17.706564+05:30",
+      "engineMinusPublishedSeconds": 17.706564,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2026-10-22",
+      "field": "tithi_start_local",
+      "drikLocal": "2026-10-21T14:11:00+05:30",
+      "engineLocal": "2026-10-21T14:12:23.041131+05:30",
+      "engineMinusPublishedSeconds": 83.041131,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-10-21T08:42:23.183282+00:00",
+      "engineMinusSwissSeconds": -0.142151
+    },
+    {
+      "date": "2026-10-22",
+      "field": "tithi_end_local",
+      "drikLocal": "2026-10-22T14:47:00+05:30",
+      "engineLocal": "2026-10-22T14:48:35.446041+05:30",
+      "engineMinusPublishedSeconds": 95.446041,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-10-22T09:18:35.746714+00:00",
+      "engineMinusSwissSeconds": -0.300673
+    },
+    {
+      "date": "2026-10-22",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2026-10-23T06:00:00+05:30",
+      "engineLocal": "2026-10-23T06:00:30.823228+05:30",
+      "engineMinusPublishedSeconds": 30.823228,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false
+    },
+    {
+      "date": "2026-10-22",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2026-10-23T09:56:00+05:30",
+      "engineLocal": "2026-10-23T09:55:37.038514+05:30",
+      "engineMinusPublishedSeconds": -22.961486,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2026-11-05",
+      "field": "tithi_start_local",
+      "drikLocal": "2026-11-04T11:03:00+05:30",
+      "engineLocal": "2026-11-04T11:03:47.459903+05:30",
+      "engineMinusPublishedSeconds": 47.459903,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-11-04T05:33:47.409375+00:00",
+      "engineMinusSwissSeconds": 0.050528
+    },
+    {
+      "date": "2026-11-05",
+      "field": "tithi_end_local",
+      "drikLocal": "2026-11-05T10:35:00+05:30",
+      "engineLocal": "2026-11-05T10:36:09.608112+05:30",
+      "engineMinusPublishedSeconds": 69.608112,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-11-05T05:06:09.385417+00:00",
+      "engineMinusSwissSeconds": 0.222695
+    },
+    {
+      "date": "2026-11-05",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2026-11-06T06:04:00+05:30",
+      "engineLocal": "2026-11-06T06:04:09.976157+05:30",
+      "engineMinusPublishedSeconds": 9.976157,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2026-11-05",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2026-11-06T09:56:00+05:30",
+      "engineLocal": "2026-11-06T09:56:20.434511+05:30",
+      "engineMinusPublishedSeconds": 20.434511,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2026-11-21",
+      "field": "tithi_start_local",
+      "drikLocal": "2026-11-20T07:15:00+05:30",
+      "engineLocal": "2026-11-20T07:16:10.343324+05:30",
+      "engineMinusPublishedSeconds": 70.343324,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-11-20T01:46:10.776147+00:00",
+      "engineMinusSwissSeconds": -0.432823
+    },
+    {
+      "date": "2026-11-21",
+      "field": "tithi_end_local",
+      "drikLocal": "2026-11-21T06:31:00+05:30",
+      "engineLocal": "2026-11-21T06:32:01.513078+05:30",
+      "engineMinusPublishedSeconds": 61.513078,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-11-21T01:02:01.901679+00:00",
+      "engineMinusSwissSeconds": -0.388601
+    },
+    {
+      "date": "2026-11-21",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2026-11-22T06:11:00+05:30",
+      "engineLocal": "2026-11-22T06:10:45.866202+05:30",
+      "engineMinusPublishedSeconds": -14.133798,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2026-11-21",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2026-11-22T10:00:00+05:30",
+      "engineLocal": "2026-11-22T10:00:10.977171+05:30",
+      "engineMinusPublishedSeconds": 10.977171,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2026-12-05",
+      "field": "tithi_start_local",
+      "drikLocal": "2026-12-03T23:03:00+05:30",
+      "engineLocal": "2026-12-03T23:04:02.147538+05:30",
+      "engineMinusPublishedSeconds": 62.147538,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-12-03T17:34:01.749671+00:00",
+      "engineMinusSwissSeconds": 0.397867
+    },
+    {
+      "date": "2026-12-05",
+      "field": "tithi_end_local",
+      "drikLocal": "2026-12-04T23:44:00+05:30",
+      "engineLocal": "2026-12-04T23:45:14.769026+05:30",
+      "engineMinusPublishedSeconds": 74.769026,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-12-04T18:15:14.245413+00:00",
+      "engineMinusSwissSeconds": 0.523613
+    },
+    {
+      "date": "2026-12-05",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2026-12-06T06:18:00+05:30",
+      "engineLocal": "2026-12-06T06:18:04.344004+05:30",
+      "engineMinusPublishedSeconds": 4.344004,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2026-12-05",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2026-12-06T10:06:00+05:30",
+      "engineLocal": "2026-12-06T10:05:52.179048+05:30",
+      "engineMinusPublishedSeconds": -7.820952,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2026-12-20",
+      "field": "tithi_start_local",
+      "drikLocal": "2026-12-19T22:09:00+05:30",
+      "engineLocal": "2026-12-19T22:09:52.691585+05:30",
+      "engineMinusPublishedSeconds": 52.691585,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-12-19T16:39:52.795175+00:00",
+      "engineMinusSwissSeconds": -0.10359
+    },
+    {
+      "date": "2026-12-20",
+      "field": "tithi_end_local",
+      "drikLocal": "2026-12-20T20:14:00+05:30",
+      "engineLocal": "2026-12-20T20:15:05.321070+05:30",
+      "engineMinusPublishedSeconds": 65.32107,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2026-12-20T14:45:05.248024+00:00",
+      "engineMinusSwissSeconds": 0.073046
+    },
+    {
+      "date": "2026-12-20",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2026-12-21T06:26:00+05:30",
+      "engineLocal": "2026-12-21T06:26:08.000220+05:30",
+      "engineMinusPublishedSeconds": 8.00022,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2026-12-20",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2026-12-21T10:13:00+05:30",
+      "engineLocal": "2026-12-21T10:13:16.204184+05:30",
+      "engineMinusPublishedSeconds": 16.204184,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2027-01-03",
+      "field": "tithi_start_local",
+      "drikLocal": "2027-01-02T14:24:00+05:30",
+      "engineLocal": "2027-01-02T14:24:41.003735+05:30",
+      "engineMinusPublishedSeconds": 41.003735,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-01-02T08:54:40.724162+00:00",
+      "engineMinusSwissSeconds": 0.279573
+    },
+    {
+      "date": "2027-01-03",
+      "field": "tithi_end_local",
+      "drikLocal": "2027-01-03T16:08:00+05:30",
+      "engineLocal": "2027-01-03T16:08:50.569121+05:30",
+      "engineMinusPublishedSeconds": 50.569121,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-01-03T10:38:50.524541+00:00",
+      "engineMinusSwissSeconds": 0.04458
+    },
+    {
+      "date": "2027-01-03",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2027-01-04T06:32:00+05:30",
+      "engineLocal": "2027-01-04T06:32:11.727217+05:30",
+      "engineMinusPublishedSeconds": 11.727217,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2027-01-03",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2027-01-04T10:20:00+05:30",
+      "engineLocal": "2027-01-04T10:19:49.674852+05:30",
+      "engineMinusPublishedSeconds": -10.325148,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2027-01-19",
+      "field": "tithi_start_local",
+      "drikLocal": "2027-01-18T10:26:00+05:30",
+      "engineLocal": "2027-01-18T10:27:33.968164+05:30",
+      "engineMinusPublishedSeconds": 93.968164,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-01-18T04:57:34.078576+00:00",
+      "engineMinusSwissSeconds": -0.110412
+    },
+    {
+      "date": "2027-01-19",
+      "field": "tithi_end_local",
+      "drikLocal": "2027-01-19T07:49:00+05:30",
+      "engineLocal": "2027-01-19T07:49:59.804018+05:30",
+      "engineMinusPublishedSeconds": 59.804018,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-01-19T02:19:59.933557+00:00",
+      "engineMinusSwissSeconds": -0.129539
+    },
+    {
+      "date": "2027-01-19",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2027-01-20T06:36:00+05:30",
+      "engineLocal": "2027-01-20T06:35:41.277121+05:30",
+      "engineMinusPublishedSeconds": -18.722879,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2027-01-19",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2027-01-20T10:25:00+05:30",
+      "engineLocal": "2027-01-20T10:25:06.285475+05:30",
+      "engineMinusPublishedSeconds": 6.285475,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2027-02-02",
+      "field": "tithi_start_local",
+      "drikLocal": "2027-02-01T08:41:00+05:30",
+      "engineLocal": "2027-02-01T08:41:45.448005+05:30",
+      "engineMinusPublishedSeconds": 45.448005,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-02-01T03:11:45.327858+00:00",
+      "engineMinusSwissSeconds": 0.120147
+    },
+    {
+      "date": "2027-02-02",
+      "field": "tithi_end_local",
+      "drikLocal": "2027-02-02T11:10:00+05:30",
+      "engineLocal": "2027-02-02T11:10:47.239062+05:30",
+      "engineMinusPublishedSeconds": 47.239062,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-02-02T05:40:47.131178+00:00",
+      "engineMinusSwissSeconds": 0.107884
+    },
+    {
+      "date": "2027-02-02",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2027-02-03T06:35:00+05:30",
+      "engineLocal": "2027-02-03T06:34:58.263071+05:30",
+      "engineMinusPublishedSeconds": -1.736929,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2027-02-02",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2027-02-03T10:27:00+05:30",
+      "engineLocal": "2027-02-03T10:26:46.940458+05:30",
+      "engineMinusPublishedSeconds": -13.059542,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2027-02-17",
+      "field": "tithi_start_local",
+      "drikLocal": "2027-02-16T20:19:00+05:30",
+      "engineLocal": "2027-02-16T20:19:55.844290+05:30",
+      "engineMinusPublishedSeconds": 55.84429,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-02-16T14:49:56.232927+00:00",
+      "engineMinusSwissSeconds": -0.388637
+    },
+    {
+      "date": "2027-02-17",
+      "field": "tithi_end_local",
+      "drikLocal": "2027-02-17T17:31:00+05:30",
+      "engineLocal": "2027-02-17T17:32:21.559122+05:30",
+      "engineMinusPublishedSeconds": 81.559122,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-02-17T12:02:21.879858+00:00",
+      "engineMinusSwissSeconds": -0.320736
+    },
+    {
+      "date": "2027-02-17",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2027-02-18T06:30:00+05:30",
+      "engineLocal": "2027-02-18T06:30:27.889250+05:30",
+      "engineMinusPublishedSeconds": 27.88925,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2027-02-17",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2027-02-18T10:25:00+05:30",
+      "engineLocal": "2027-02-18T10:25:24.912260+05:30",
+      "engineMinusPublishedSeconds": 24.91226,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2027-03-04",
+      "field": "tithi_start_local",
+      "drikLocal": "2027-03-03T04:44:00+05:30",
+      "engineLocal": "2027-03-03T04:44:50.091274+05:30",
+      "engineMinusPublishedSeconds": 50.091274,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-03-02T23:14:49.800578+00:00",
+      "engineMinusSwissSeconds": 0.290696
+    },
+    {
+      "date": "2027-03-04",
+      "field": "tithi_end_local",
+      "drikLocal": "2027-03-04T07:24:00+05:30",
+      "engineLocal": "2027-03-04T07:24:42.085129+05:30",
+      "engineMinusPublishedSeconds": 42.085129,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-03-04T01:54:41.886189+00:00",
+      "engineMinusSwissSeconds": 0.19894
+    },
+    {
+      "date": "2027-03-04",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2027-03-05T06:23:00+05:30",
+      "engineLocal": "2027-03-05T06:22:53.147105+05:30",
+      "engineMinusPublishedSeconds": -6.852895,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2027-03-04",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2027-03-05T09:53:00+05:30",
+      "engineLocal": "2027-03-05T09:54:26.521021+05:30",
+      "engineMinusPublishedSeconds": 86.521021,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false
+    },
+    {
+      "date": "2027-03-18",
+      "field": "tithi_start_local",
+      "drikLocal": "2027-03-18T04:21:00+05:30",
+      "engineLocal": "2027-03-18T04:21:53.891027+05:30",
+      "engineMinusPublishedSeconds": 53.891027,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-03-17T22:51:54.328055+00:00",
+      "engineMinusSwissSeconds": -0.437028
+    },
+    {
+      "date": "2027-03-18",
+      "field": "tithi_end_local",
+      "drikLocal": "2027-03-19T01:51:00+05:30",
+      "engineLocal": "2027-03-19T01:51:40.238081+05:30",
+      "engineMinusPublishedSeconds": 40.238081,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-03-18T20:21:40.637175+00:00",
+      "engineMinusSwissSeconds": -0.399094
+    },
+    {
+      "date": "2027-03-18",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2027-03-19T07:12:00+05:30",
+      "engineLocal": "2027-03-19T07:13:12.417826+05:30",
+      "engineMinusPublishedSeconds": 72.417826,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false
+    },
+    {
+      "date": "2027-03-18",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2027-03-19T10:16:00+05:30",
+      "engineLocal": "2027-03-19T10:15:57.173917+05:30",
+      "engineMinusPublishedSeconds": -2.826083,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2027-04-02",
+      "field": "tithi_start_local",
+      "drikLocal": "2027-04-02T00:45:00+05:30",
+      "engineLocal": "2027-04-02T00:45:39.385696+05:30",
+      "engineMinusPublishedSeconds": 39.385696,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-04-01T19:15:39.340134+00:00",
+      "engineMinusSwissSeconds": 0.045562
+    },
+    {
+      "date": "2027-04-02",
+      "field": "tithi_end_local",
+      "drikLocal": "2027-04-03T02:51:00+05:30",
+      "engineLocal": "2027-04-03T02:52:28.205133+05:30",
+      "engineMinusPublishedSeconds": 88.205133,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-04-02T21:22:28.232639+00:00",
+      "engineMinusSwissSeconds": -0.027506
+    },
+    {
+      "date": "2027-04-02",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2027-04-03T09:15:00+05:30",
+      "engineLocal": "2027-04-03T09:16:06.889371+05:30",
+      "engineMinusPublishedSeconds": 66.889371,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false
+    },
+    {
+      "date": "2027-04-02",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2027-04-03T10:10:00+05:30",
+      "engineLocal": "2027-04-03T10:09:38.232095+05:30",
+      "engineMinusPublishedSeconds": -21.767905,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2027-04-17",
+      "field": "tithi_start_local",
+      "drikLocal": "2027-04-16T11:21:00+05:30",
+      "engineLocal": "2027-04-16T11:22:08.510569+05:30",
+      "engineMinusPublishedSeconds": 68.510569,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-04-16T05:52:08.678074+00:00",
+      "engineMinusSwissSeconds": -0.167505
+    },
+    {
+      "date": "2027-04-17",
+      "field": "tithi_end_local",
+      "drikLocal": "2027-04-17T09:27:00+05:30",
+      "engineLocal": "2027-04-17T09:28:19.737022+05:30",
+      "engineMinusPublishedSeconds": 79.737022,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-04-17T03:58:20.027767+00:00",
+      "engineMinusSwissSeconds": -0.290745
+    },
+    {
+      "date": "2027-04-17",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2027-04-18T05:55:00+05:30",
+      "engineLocal": "2027-04-18T05:54:53.924044+05:30",
+      "engineMinusPublishedSeconds": -6.075956,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2027-04-17",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2027-04-18T07:42:00+05:30",
+      "engineLocal": "2027-04-18T07:42:39.106060+05:30",
+      "engineMinusPublishedSeconds": 39.10606,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false
+    },
+    {
+      "date": "2027-05-02",
+      "field": "tithi_start_local",
+      "drikLocal": "2027-05-01T18:53:00+05:30",
+      "engineLocal": "2027-05-01T18:54:08.388788+05:30",
+      "engineMinusPublishedSeconds": 68.388788,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-05-01T13:24:08.535562+00:00",
+      "engineMinusSwissSeconds": -0.146774
+    },
+    {
+      "date": "2027-05-02",
+      "field": "tithi_end_local",
+      "drikLocal": "2027-05-02T19:51:00+05:30",
+      "engineLocal": "2027-05-02T19:52:23.445107+05:30",
+      "engineMinusPublishedSeconds": 83.445107,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-05-02T14:22:23.663858+00:00",
+      "engineMinusSwissSeconds": -0.218751
+    },
+    {
+      "date": "2027-05-02",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2027-05-03T05:47:00+05:30",
+      "engineLocal": "2027-05-03T05:47:29.601171+05:30",
+      "engineMinusPublishedSeconds": 29.601171,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2027-05-02",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2027-05-03T10:00:00+05:30",
+      "engineLocal": "2027-05-03T09:59:45.577486+05:30",
+      "engineMinusPublishedSeconds": -14.422514,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2027-05-16",
+      "field": "tithi_start_local",
+      "drikLocal": "2027-05-15T18:17:00+05:30",
+      "engineLocal": "2027-05-15T18:18:00.180355+05:30",
+      "engineMinusPublishedSeconds": 60.180355,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-05-15T12:47:59.956859+00:00",
+      "engineMinusSwissSeconds": 0.223496
+    },
+    {
+      "date": "2027-05-16",
+      "field": "tithi_end_local",
+      "drikLocal": "2027-05-16T17:13:00+05:30",
+      "engineLocal": "2027-05-16T17:13:56.152122+05:30",
+      "engineMinusPublishedSeconds": 56.152122,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-05-16T11:43:55.911325+00:00",
+      "engineMinusSwissSeconds": 0.240797
+    },
+    {
+      "date": "2027-05-16",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2027-05-17T05:43:00+05:30",
+      "engineLocal": "2027-05-17T05:43:05.209178+05:30",
+      "engineMinusPublishedSeconds": 5.209178,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2027-05-16",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2027-05-17T09:58:00+05:30",
+      "engineLocal": "2027-05-17T09:57:55.767802+05:30",
+      "engineMinusPublishedSeconds": -4.232198,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2027-06-01",
+      "field": "tithi_start_local",
+      "drikLocal": "2027-05-31T10:02:00+05:30",
+      "engineLocal": "2027-05-31T10:02:58.498646+05:30",
+      "engineMinusPublishedSeconds": 58.498646,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-05-31T04:32:58.644937+00:00",
+      "engineMinusSwissSeconds": -0.146291
+    },
+    {
+      "date": "2027-06-01",
+      "field": "tithi_end_local",
+      "drikLocal": "2027-06-01T09:39:00+05:30",
+      "engineLocal": "2027-06-01T09:40:18.541142+05:30",
+      "engineMinusPublishedSeconds": 78.541142,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-06-01T04:10:18.803751+00:00",
+      "engineMinusSwissSeconds": -0.262609
+    },
+    {
+      "date": "2027-06-01",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2027-06-02T05:41:00+05:30",
+      "engineLocal": "2027-06-02T05:41:25.737132+05:30",
+      "engineMinusPublishedSeconds": 25.737132,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2027-06-01",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2027-06-02T08:28:00+05:30",
+      "engineLocal": "2027-06-02T08:29:11.733109+05:30",
+      "engineMinusPublishedSeconds": 71.733109,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false
+    },
+    {
+      "date": "2027-06-15",
+      "field": "tithi_start_local",
+      "drikLocal": "2027-06-14T02:11:00+05:30",
+      "engineLocal": "2027-06-14T02:12:36.154344+05:30",
+      "engineMinusPublishedSeconds": 96.154344,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-06-13T20:42:35.686252+00:00",
+      "engineMinusSwissSeconds": 0.468092
+    },
+    {
+      "date": "2027-06-15",
+      "field": "tithi_end_local",
+      "drikLocal": "2027-06-15T02:07:00+05:30",
+      "engineLocal": "2027-06-15T02:08:29.832141+05:30",
+      "engineMinusPublishedSeconds": 89.832141,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-06-14T20:38:29.475195+00:00",
+      "engineMinusSwissSeconds": 0.356946
+    },
+    {
+      "date": "2027-06-15",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2027-06-16T05:43:00+05:30",
+      "engineLocal": "2027-06-16T05:42:45.693281+05:30",
+      "engineMinusPublishedSeconds": -14.306719,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2027-06-15",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2027-06-16T10:01:00+05:30",
+      "engineLocal": "2027-06-16T10:00:36.705587+05:30",
+      "engineMinusPublishedSeconds": -23.294413,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2027-06-30",
+      "field": "tithi_start_local",
+      "drikLocal": "2027-06-29T22:03:00+05:30",
+      "engineLocal": "2027-06-29T22:04:34.368092+05:30",
+      "engineMinusPublishedSeconds": 94.368092,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-06-29T16:34:34.520861+00:00",
+      "engineMinusSwissSeconds": -0.152769
+    },
+    {
+      "date": "2027-06-30",
+      "field": "tithi_end_local",
+      "drikLocal": "2027-06-30T20:30:00+05:30",
+      "engineLocal": "2027-06-30T20:31:16.242110+05:30",
+      "engineMinusPublishedSeconds": 76.24211,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-06-30T15:01:16.411615+00:00",
+      "engineMinusSwissSeconds": -0.169505
+    },
+    {
+      "date": "2027-06-30",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2027-07-01T05:46:00+05:30",
+      "engineLocal": "2027-07-01T05:46:09.722270+05:30",
+      "engineMinusPublishedSeconds": 9.72227,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2027-06-30",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2027-07-01T10:04:00+05:30",
+      "engineLocal": "2027-07-01T10:03:50.292605+05:30",
+      "engineMinusPublishedSeconds": -9.707395,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2027-07-14",
+      "field": "tithi_start_local",
+      "drikLocal": "2027-07-13T12:08:00+05:30",
+      "engineLocal": "2027-07-13T12:09:16.273123+05:30",
+      "engineMinusPublishedSeconds": 76.273123,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-07-13T06:39:15.864067+00:00",
+      "engineMinusSwissSeconds": 0.409056
+    },
+    {
+      "date": "2027-07-14",
+      "field": "tithi_end_local",
+      "drikLocal": "2027-07-14T13:10:00+05:30",
+      "engineLocal": "2027-07-14T13:10:38.611075+05:30",
+      "engineMinusPublishedSeconds": 38.611075,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-07-14T07:40:38.216092+00:00",
+      "engineMinusSwissSeconds": 0.394983
+    },
+    {
+      "date": "2027-07-14",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2027-07-15T05:50:00+05:30",
+      "engineLocal": "2027-07-15T05:50:04.921244+05:30",
+      "engineMinusPublishedSeconds": 4.921244,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2027-07-14",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2027-07-15T10:07:00+05:30",
+      "engineLocal": "2027-07-15T10:06:34.099234+05:30",
+      "engineMinusPublishedSeconds": -25.900766,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2027-07-30",
+      "field": "tithi_start_local",
+      "drikLocal": "2027-07-29T07:33:00+05:30",
+      "engineLocal": "2027-07-29T07:34:37.385041+05:30",
+      "engineMinusPublishedSeconds": 97.385041,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-07-29T02:04:37.397624+00:00",
+      "engineMinusSwissSeconds": -0.012583
+    },
+    {
+      "date": "2027-07-30",
+      "field": "tithi_end_local",
+      "drikLocal": "2027-07-30T05:12:00+05:30",
+      "engineLocal": "2027-07-30T05:13:30.502048+05:30",
+      "engineMinusPublishedSeconds": 90.502048,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-07-29T23:43:30.556845+00:00",
+      "engineMinusSwissSeconds": -0.054797
+    },
+    {
+      "date": "2027-07-30",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2027-07-31T05:54:00+05:30",
+      "engineLocal": "2027-07-31T05:54:04.165132+05:30",
+      "engineMinusPublishedSeconds": 4.165132,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2027-07-30",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2027-07-31T10:08:00+05:30",
+      "engineLocal": "2027-07-31T10:08:11.561124+05:30",
+      "engineMinusPublishedSeconds": 11.561124,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2027-08-12",
+      "field": "tithi_start_local",
+      "drikLocal": "2027-08-12T00:58:00+05:30",
+      "engineLocal": "2027-08-12T00:59:09.309536+05:30",
+      "engineMinusPublishedSeconds": 69.309536,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-08-11T19:29:08.976660+00:00",
+      "engineMinusSwissSeconds": 0.332876
+    },
+    {
+      "date": "2027-08-12",
+      "field": "tithi_end_local",
+      "drikLocal": "2027-08-13T02:59:00+05:30",
+      "engineLocal": "2027-08-13T03:00:05.852076+05:30",
+      "engineMinusPublishedSeconds": 65.852076,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-08-12T21:30:05.342129+00:00",
+      "engineMinusSwissSeconds": 0.509947
+    },
+    {
+      "date": "2027-08-12",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2027-08-13T09:34:00+05:30",
+      "engineLocal": "2027-08-13T09:35:28.960576+05:30",
+      "engineMinusPublishedSeconds": 88.960576,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false
+    },
+    {
+      "date": "2027-08-12",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2027-08-13T10:08:00+05:30",
+      "engineLocal": "2027-08-13T10:07:57.277754+05:30",
+      "engineMinusPublishedSeconds": -2.722246,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2027-08-28",
+      "field": "tithi_start_local",
+      "drikLocal": "2027-08-27T15:25:00+05:30",
+      "engineLocal": "2027-08-27T15:25:53.345270+05:30",
+      "engineMinusPublishedSeconds": 53.34527,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-08-27T09:55:53.395893+00:00",
+      "engineMinusSwissSeconds": -0.050623
+    },
+    {
+      "date": "2027-08-28",
+      "field": "tithi_end_local",
+      "drikLocal": "2027-08-28T12:42:00+05:30",
+      "engineLocal": "2027-08-28T12:42:42.817093+05:30",
+      "engineMinusPublishedSeconds": 42.817093,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-08-28T07:12:42.930751+00:00",
+      "engineMinusSwissSeconds": -0.113658
+    },
+    {
+      "date": "2027-08-28",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2027-08-29T05:58:00+05:30",
+      "engineLocal": "2027-08-29T05:57:41.314200+05:30",
+      "engineMinusPublishedSeconds": -18.6858,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2027-08-28",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2027-08-29T09:35:00+05:30",
+      "engineLocal": "2027-08-29T09:36:03.591096+05:30",
+      "engineMinusPublishedSeconds": 63.591096,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false
+    },
+    {
+      "date": "2027-09-12",
+      "field": "tithi_start_local",
+      "drikLocal": "2027-09-10T17:00:00+05:30",
+      "engineLocal": "2027-09-10T17:00:57.392975+05:30",
+      "engineMinusPublishedSeconds": 57.392975,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-09-10T11:30:57.134016+00:00",
+      "engineMinusSwissSeconds": 0.258959
+    },
+    {
+      "date": "2027-09-12",
+      "field": "tithi_end_local",
+      "drikLocal": "2027-09-11T19:35:00+05:30",
+      "engineLocal": "2027-09-11T19:36:36.597000+05:30",
+      "engineMinusPublishedSeconds": 96.597,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-09-11T14:06:36.293096+00:00",
+      "engineMinusSwissSeconds": 0.303904
+    },
+    {
+      "date": "2027-09-12",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2027-09-13T05:58:00+05:30",
+      "engineLocal": "2027-09-13T05:57:59.554080+05:30",
+      "engineMinusPublishedSeconds": -0.44592,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2027-09-12",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2027-09-13T06:04:00+05:30",
+      "engineLocal": "2027-09-13T06:05:09.097047+05:30",
+      "engineMinusPublishedSeconds": 69.097047,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false
+    },
+    {
+      "date": "2027-09-26",
+      "field": "tithi_start_local",
+      "drikLocal": "2027-09-25T22:30:00+05:30",
+      "engineLocal": "2027-09-25T22:31:19.681487+05:30",
+      "engineMinusPublishedSeconds": 79.681487,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-09-25T17:01:19.873851+00:00",
+      "engineMinusSwissSeconds": -0.192364
+    },
+    {
+      "date": "2027-09-26",
+      "field": "tithi_end_local",
+      "drikLocal": "2027-09-26T19:49:00+05:30",
+      "engineLocal": "2027-09-26T19:49:55.313068+05:30",
+      "engineMinusPublishedSeconds": 55.313068,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-09-26T14:19:55.454684+00:00",
+      "engineMinusSwissSeconds": -0.141616
+    },
+    {
+      "date": "2027-09-26",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2027-09-27T05:58:00+05:30",
+      "engineLocal": "2027-09-27T05:58:05.077284+05:30",
+      "engineMinusPublishedSeconds": 5.077284,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2027-09-26",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2027-09-27T09:59:00+05:30",
+      "engineLocal": "2027-09-27T09:59:18.717916+05:30",
+      "engineMinusPublishedSeconds": 18.717916,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2027-10-11",
+      "field": "tithi_start_local",
+      "drikLocal": "2027-10-10T11:40:00+05:30",
+      "engineLocal": "2027-10-10T11:41:09.433233+05:30",
+      "engineMinusPublishedSeconds": 69.433233,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-10-10T06:11:09.071567+00:00",
+      "engineMinusSwissSeconds": 0.361666
+    },
+    {
+      "date": "2027-10-11",
+      "field": "tithi_end_local",
+      "drikLocal": "2027-10-11T14:08:00+05:30",
+      "engineLocal": "2027-10-11T14:09:06.110055+05:30",
+      "engineMinusPublishedSeconds": 66.110055,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-10-11T08:39:05.802779+00:00",
+      "engineMinusSwissSeconds": 0.307276
+    },
+    {
+      "date": "2027-10-11",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2027-10-12T05:59:00+05:30",
+      "engineLocal": "2027-10-12T05:58:53.890055+05:30",
+      "engineMinusPublishedSeconds": -6.109945,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2027-10-11",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2027-10-12T09:56:00+05:30",
+      "engineLocal": "2027-10-12T09:56:33.764112+05:30",
+      "engineMinusPublishedSeconds": 33.764112,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false
+    },
+    {
+      "date": "2027-10-26",
+      "field": "tithi_start_local",
+      "drikLocal": "2027-10-25T05:40:00+05:30",
+      "engineLocal": "2027-10-25T05:40:39.420744+05:30",
+      "engineMinusPublishedSeconds": 39.420744,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-10-25T00:10:39.523467+00:00",
+      "engineMinusSwissSeconds": -0.102723
+    },
+    {
+      "date": "2027-10-26",
+      "field": "tithi_end_local",
+      "drikLocal": "2027-10-26T03:22:00+05:30",
+      "engineLocal": "2027-10-26T03:22:38.925100+05:30",
+      "engineMinusPublishedSeconds": 38.9251,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-10-25T21:52:39.028450+00:00",
+      "engineMinusSwissSeconds": -0.10335
+    },
+    {
+      "date": "2027-10-26",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2027-10-27T06:01:00+05:30",
+      "engineLocal": "2027-10-27T06:01:17.008150+05:30",
+      "engineMinusPublishedSeconds": 17.00815,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2027-10-26",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2027-10-27T09:56:00+05:30",
+      "engineLocal": "2027-10-27T09:55:34.054468+05:30",
+      "engineMinusPublishedSeconds": -25.945532,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2027-11-10",
+      "field": "tithi_start_local",
+      "drikLocal": "2027-11-09T07:34:00+05:30",
+      "engineLocal": "2027-11-09T07:35:04.966017+05:30",
+      "engineMinusPublishedSeconds": 64.966017,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-11-09T02:05:04.863136+00:00",
+      "engineMinusSwissSeconds": 0.102881
+    },
+    {
+      "date": "2027-11-10",
+      "field": "tithi_end_local",
+      "drikLocal": "2027-11-10T09:11:00+05:30",
+      "engineLocal": "2027-11-10T09:11:44.955050+05:30",
+      "engineMinusPublishedSeconds": 44.95505,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-11-10T03:41:44.989631+00:00",
+      "engineMinusSwissSeconds": -0.034581
+    },
+    {
+      "date": "2027-11-10",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2027-11-11T06:06:00+05:30",
+      "engineLocal": "2027-11-11T06:05:52.238272+05:30",
+      "engineMinusPublishedSeconds": -7.761728,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2027-11-10",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2027-11-11T09:57:00+05:30",
+      "engineLocal": "2027-11-11T09:57:08.727911+05:30",
+      "engineMinusPublishedSeconds": 8.727911,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2027-11-24",
+      "field": "tithi_start_local",
+      "drikLocal": "2027-11-23T13:44:00+05:30",
+      "engineLocal": "2027-11-23T13:45:21.483275+05:30",
+      "engineMinusPublishedSeconds": 81.483275,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-11-23T08:15:21.363191+00:00",
+      "engineMinusSwissSeconds": 0.120084
+    },
+    {
+      "date": "2027-11-24",
+      "field": "tithi_end_local",
+      "drikLocal": "2027-11-24T12:11:00+05:30",
+      "engineLocal": "2027-11-24T12:11:51.405084+05:30",
+      "engineMinusPublishedSeconds": 51.405084,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-11-24T06:41:51.285996+00:00",
+      "engineMinusSwissSeconds": 0.119088
+    },
+    {
+      "date": "2027-11-24",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2027-11-25T06:12:00+05:30",
+      "engineLocal": "2027-11-25T06:12:06.465223+05:30",
+      "engineMinusPublishedSeconds": 6.465223,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2027-11-24",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2027-11-25T10:01:00+05:30",
+      "engineLocal": "2027-11-25T10:01:08.448827+05:30",
+      "engineMinusPublishedSeconds": 8.448827,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2027-12-09",
+      "field": "tithi_start_local",
+      "drikLocal": "2027-12-09T02:58:00+05:30",
+      "engineLocal": "2027-12-09T02:59:25.624805+05:30",
+      "engineMinusPublishedSeconds": 85.624805,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-12-08T21:29:25.663084+00:00",
+      "engineMinusSwissSeconds": -0.038279
+    },
+    {
+      "date": "2027-12-09",
+      "field": "tithi_end_local",
+      "drikLocal": "2027-12-10T03:19:00+05:30",
+      "engineLocal": "2027-12-10T03:20:24.332138+05:30",
+      "engineMinusPublishedSeconds": 84.332138,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-12-09T21:50:24.320993+00:00",
+      "engineMinusSwissSeconds": 0.011145
+    },
+    {
+      "date": "2027-12-09",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2027-12-10T09:13:00+05:30",
+      "engineLocal": "2027-12-10T09:13:44.699356+05:30",
+      "engineMinusPublishedSeconds": 44.699356,
+      "truncatedMinuteMatches": true,
+      "nearestMinuteMatches": false
+    },
+    {
+      "date": "2027-12-09",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2027-12-10T10:08:00+05:30",
+      "engineLocal": "2027-12-10T10:07:39.729478+05:30",
+      "engineMinusPublishedSeconds": -20.270522,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": true
+    },
+    {
+      "date": "2027-12-23",
+      "field": "tithi_start_local",
+      "drikLocal": "2027-12-22T23:40:00+05:30",
+      "engineLocal": "2027-12-22T23:41:15.016447+05:30",
+      "engineMinusPublishedSeconds": 75.016447,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-12-22T18:11:14.905090+00:00",
+      "engineMinusSwissSeconds": 0.111357
+    },
+    {
+      "date": "2027-12-23",
+      "field": "tithi_end_local",
+      "drikLocal": "2027-12-23T23:11:00+05:30",
+      "engineLocal": "2027-12-23T23:12:11.944081+05:30",
+      "engineMinusPublishedSeconds": 71.944081,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false,
+      "swissUtc": "2027-12-23T17:42:12.003942+00:00",
+      "engineMinusSwissSeconds": -0.059861
+    },
+    {
+      "date": "2027-12-23",
+      "field": "gaudiya_parana_start_local",
+      "drikLocal": "2027-12-24T06:28:00+05:30",
+      "engineLocal": "2027-12-24T06:27:28.661040+05:30",
+      "engineMinusPublishedSeconds": -31.33896,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": false
+    },
+    {
+      "date": "2027-12-23",
+      "field": "gaudiya_parana_end_local",
+      "drikLocal": "2027-12-24T10:15:00+05:30",
+      "engineLocal": "2027-12-24T10:14:37.652739+05:30",
+      "engineMinusPublishedSeconds": -22.347261,
+      "truncatedMinuteMatches": false,
+      "nearestMinuteMatches": true
+    }
+  ],
+  "summary": {
+    "engineMinusSwissSeconds": {
+      "n": 98,
+      "meanSeconds": -0.0006410204081632655,
+      "minSeconds": -0.93201,
+      "maxSeconds": 0.523613
+    },
+    "tithi_start_local": {
+      "n": 49,
+      "meanSeconds": 67.18813432653062,
+      "minSeconds": 39.385696,
+      "maxSeconds": 97.385041
+    },
+    "tithi_end_local": {
+      "n": 49,
+      "meanSeconds": 67.34064648979592,
+      "minSeconds": 38.611075,
+      "maxSeconds": 100.005023
+    },
+    "gaudiya_parana_start_local": {
+      "n": 49,
+      "meanSeconds": 9.425751693877551,
+      "minSeconds": -31.33896,
+      "maxSeconds": 93.150831
+    },
+    "gaudiya_parana_end_local": {
+      "n": 49,
+      "meanSeconds": 12.773562775510204,
+      "minSeconds": -25.945532,
+      "maxSeconds": 90.182101
+    }
+  }
+}

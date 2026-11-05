@@ -1,0 +1,8 @@
+{
+  "zones": 598,
+  "transitionBoundaryChecks": 131760,
+  "failures": 0,
+  "examples": [],
+  "range": "1900-01-01 through 2101-12-31; one second before and at every compiled transition",
+  "source": "Pinned IANA 2026b TZif versus corrected iOS TZF"
+}
