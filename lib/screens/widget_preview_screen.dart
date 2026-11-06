@@ -57,7 +57,7 @@ class _WidgetPreviewScreenState extends State<WidgetPreviewScreen>
     if (!mounted ||
         widget.now != null ||
         !_active ||
-        !TickerMode.of(context) ||
+        !TickerMode.valuesOf(context).enabled ||
         ModalRoute.of(context)?.isCurrent == false) {
       return;
     }

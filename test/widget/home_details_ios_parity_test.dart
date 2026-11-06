@@ -269,11 +269,11 @@ void main() {
       // Arrows are read out as the Ekadashi they go to.
       expect(
         tester.getSemantics(find.byKey(const Key('home_next'))),
-        containsSemantics(label: list[index + 1].name),
+        isSemantics(label: list[index + 1].name),
       );
       expect(
         tester.getSemantics(find.byKey(const Key('home_previous'))),
-        containsSemantics(label: list[index - 1].name),
+        isSemantics(label: list[index - 1].name),
       );
     });
 
@@ -333,7 +333,7 @@ void main() {
       );
       expect(
         tester.getSemantics(record),
-        containsSemantics(hint: 'You can record this fast once Parana begins'),
+        isSemantics(hint: 'You can record this fast once Parana begins'),
       );
       // Two cards back is a passed Ekadashi: open.
       await tester.tap(find.byKey(const Key('home_previous')));

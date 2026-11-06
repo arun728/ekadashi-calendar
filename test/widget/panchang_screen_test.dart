@@ -497,7 +497,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(
         tester.getSemantics(find.byKey(Key('panchang_tab_$page'))),
-        containsSemantics(isSelected: true),
+        isSemantics(isSelected: true),
       );
       await tester.drag(scrollable(), const Offset(0, -2000));
       await tester.pumpAndSettle();

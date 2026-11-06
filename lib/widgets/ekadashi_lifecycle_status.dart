@@ -47,7 +47,7 @@ class _LifecycleBuilderState extends State<LifecycleBuilder>
   void schedule() {
     timer?.cancel();
     if (!active ||
-        !TickerMode.of(context) ||
+        !TickerMode.valuesOf(context).enabled ||
         (ModalRoute.of(context)?.isCurrent == false)) {
       return;
     }
