@@ -523,7 +523,7 @@
   "widget_lock_support": "લૉક સ્ક્રીન વિજેટ સમર્થિત ઉપકરણો પર ઉપલબ્ધ છે. કદ અને સ્થાન તમારા ઉપકરણ પર આધાર રાખે છે.",
   "glass_look": "કાચ જેવો દેખાવ",
   "glass_look_desc": "વધુ પારદર્શક કાર્ડ અને નિયંત્રણો વાપરો.",
-"question_of_the_day": "આજનો પ્રશ્ન",
+  "question_of_the_day": "આજનો પ્રશ્ન",
   "wisdom_challenge": "જ્ઞાન પડકાર",
   "submit_answer": "જવાબ સબમિટ કરો",
   "continue_learning": "શીખવાનું ચાલુ રાખો",
@@ -544,5 +544,9 @@
   "category_ramayana": "રામાયણ",
   "difficulty_easy": "સરળ",
   "difficulty_medium": "મધ્યમ",
-  "difficulty_hard": "મુશ્કેલ"
+  "difficulty_hard": "મુશ્કેલ",
+  "wisdom": "જ્ઞાન",
+  "todays_wisdom": "આજનું જ્ઞાન",
+  "wisdom_reminder": "જ્ઞાન રિમાઇન્ડર",
+  "wisdom_reminder_desc": "દૈનિક પ્રશ્ન માટે સૂચના મેળવો"
 }

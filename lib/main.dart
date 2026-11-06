@@ -235,6 +235,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   final PageController _pageController = PageController(viewportFraction: 1.0);
   final GlobalKey<CalendarScreenState> _calendarKey = GlobalKey();
   final GlobalKey<PanchangScreenState> _panchangKey = GlobalKey();
+  final GlobalKey<VratTrackerScreenState> _vratKey = GlobalKey();
   bool _panchangOpened = false;
 
   /// One navigation stack per tab (iOS NavigationStack per tab): pages a
@@ -278,6 +279,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     _startHomeClock();
     NativeWidgetService().initializeDeepLinkListener(handleDeepLink);
+    NotificationService().onNotificationTap = handleDeepLink;
     EventReminderService.instance.attach(_scheduleEventReminders);
     // City and country names in the app language.
     PlaceNames.load().then((_) {
@@ -289,6 +291,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeApp();
       NativeWidgetService().getInitialDeepLink().then((uri) {
+        if (uri != null && mounted) handleDeepLink(uri);
+      });
+      NotificationService().getLaunchUri().then((uri) {
         if (uri != null && mounted) handleDeepLink(uri);
       });
     });
@@ -896,6 +901,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       'parana': 0,
       'calendar': 1,
       'vrat': 2,
+      'journey': 2,
+      'wisdom': 2,
       'panchang': 3,
       // PR #12's More tab now lives inside Panchang.
       'more': 3,
@@ -917,7 +924,59 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       if (tab == 1 && date != null) _calendarKey.currentState?.selectDate(date);
       // Event reminders open their day in Panchang.
       if (tab == 3 && date != null) _panchangKey.currentState?.showDate(date);
+      if ((uri.host == 'wisdom' || uri.path.contains('wisdom')) && tab == 2) {
+        _vratKey.currentState?.openWisdom();
+      }
     });
+  }
+
+  Widget _buildWisdomTeaserCard(LanguageService lang, String code) {
+    return InkWell(
+      key: const Key('home_wisdom_teaser'),
+      onTap: () => handleDeepLink(Uri.parse('ekadashi://journey/wisdom')),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: IosColors.teal.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: IosColors.teal.withValues(alpha: 0.25),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            const Icon(AppIcons.categoryFestival, size: 20, color: IosColors.teal),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    lang.translate('todays_wisdom'),
+                    style: TextStyle(
+                      fontSize: IosText.subheadline,
+                      fontWeight: FontWeight.w700,
+                      color: IosColors.primary(context),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    lang.translate('wisdom_challenge'),
+                    style: TextStyle(
+                      fontSize: IosText.caption2,
+                      color: IosColors.secondary(context),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(AppIcons.next, size: 16, color: IosColors.teal),
+          ],
+        ),
+      ),
+    );
   }
 
   bool _selectWidgetOccurrence() {
@@ -1316,6 +1375,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       2 => SafeArea(
         top: false,
         child: VratTrackerScreen(
+          key: _vratKey,
           ekadashiList: _allEkadashis,
           currentTimezone: _currentTimezone,
         ),
@@ -1660,6 +1720,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                     ),
                     textAlign: TextAlign.center,
                   ),
+                  const SizedBox(height: 16),
+                  _buildWisdomTeaserCard(lang, code),
                 ],
               ),
             ),

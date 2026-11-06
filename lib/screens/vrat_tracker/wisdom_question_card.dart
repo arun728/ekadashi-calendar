@@ -1,3 +1,5 @@
+library;
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -8,19 +10,22 @@ import '../../services/wisdom_question_service.dart';
 import '../../widgets/app_icons.dart';
 import '../../widgets/ios_style.dart';
 
-/// Question of the Day and Wisdom Challenge card displayed inside the
-/// Achievement module (Journey tab).
+/// Question of the Day and Wisdom Challenge card supporting both Classic
+/// and KBC quiz layouts, localized option labels, skipping, review mode,
+/// preview indicators, and exhaustion states.
 class WisdomQuestionCard extends StatefulWidget {
   const WisdomQuestionCard({
     super.key,
     this.questionService,
     this.progressStore,
     this.currentDate,
+    this.isReviewMode = false,
   });
 
   final WisdomQuestionService? questionService;
   final WisdomProgressStore? progressStore;
   final DateTime? currentDate;
+  final bool isReviewMode;
 
   @override
   State<WisdomQuestionCard> createState() => _WisdomQuestionCardState();
@@ -40,10 +45,14 @@ class _WisdomQuestionCardState extends State<WisdomQuestionCard> {
   bool _submitted = false;
   bool _isChallengeMode = false;
   bool _finishedForToday = false;
+  bool _inReviewMode = false;
+  int _reviewIndex = 0;
+  List<String> _reviewQueue = [];
 
   @override
   void initState() {
     super.initState();
+    _inReviewMode = widget.isReviewMode;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _store.load().then((_) {
@@ -61,8 +70,12 @@ class _WisdomQuestionCardState extends State<WisdomQuestionCard> {
   }
 
   void _initializeDailyQuestion() {
+    if (_inReviewMode) {
+      _startReviewMode();
+      return;
+    }
+
     final date = widget.currentDate ?? DateTime.now();
-    // Check if daily question is already assigned for today.
     var qId = _store.dailyQuestionIdFor(date);
     if (qId == null) {
       qId = _service.dailyQuestionId(
@@ -75,11 +88,26 @@ class _WisdomQuestionCardState extends State<WisdomQuestionCard> {
     }
 
     _activeQuestionId = qId;
-    if (_activeQuestionId != null &&
-        _store.isAnswered(_activeQuestionId!)) {
+    if (_activeQuestionId != null && _store.isAnswered(_activeQuestionId!)) {
       final attempt = _store.getAttempt(_activeQuestionId!);
       _selectedOption = attempt?.selectedOption;
       _submitted = true;
+    }
+  }
+
+  void _startReviewMode() {
+    _inReviewMode = true;
+    final incorrect = _store.incorrectQuestionIds;
+    final skipped = _store.skippedQuestionIds;
+    _reviewQueue = {...incorrect, ...skipped, ..._store.answeredIds}.toList();
+    _reviewIndex = 0;
+    if (_reviewQueue.isNotEmpty) {
+      _activeQuestionId = _reviewQueue[_reviewIndex];
+      final attempt = _store.getAttempt(_activeQuestionId!);
+      _selectedOption = attempt?.selectedOption;
+      _submitted = true;
+    } else {
+      _activeQuestionId = null;
     }
   }
 
@@ -91,6 +119,8 @@ class _WisdomQuestionCardState extends State<WisdomQuestionCard> {
       questionId: question.questionId,
       selectedOption: _selectedOption!,
       isCorrect: isCorrect,
+      isReview: _inReviewMode,
+      isProductionEligible: question.publishable,
     );
 
     if (mounted) {
@@ -100,11 +130,39 @@ class _WisdomQuestionCardState extends State<WisdomQuestionCard> {
     }
   }
 
+  Future<void> _skipQuestion(WisdomQuestion question) async {
+    await _store.recordAttempt(
+      questionId: question.questionId,
+      selectedOption: '',
+      isCorrect: false,
+      isSkipped: true,
+      isReview: _inReviewMode,
+      isProductionEligible: question.publishable,
+    );
+
+    _continueLearning();
+  }
+
   void _continueLearning() {
-    if (_activeQuestionId == null) return;
+    if (_inReviewMode) {
+      setState(() {
+        if (_reviewIndex < _reviewQueue.length - 1) {
+          _reviewIndex++;
+          _activeQuestionId = _reviewQueue[_reviewIndex];
+          final attempt = _store.getAttempt(_activeQuestionId!);
+          _selectedOption = attempt?.selectedOption;
+          _submitted = true;
+        } else {
+          _inReviewMode = false;
+          _finishedForToday = true;
+        }
+      });
+      return;
+    }
+
     final nextId = _service.nextQuestion(
       answeredIds: _store.answeredIds,
-      excludeQuestionId: _activeQuestionId!,
+      excludeQuestionId: _activeQuestionId ?? '',
     );
 
     setState(() {
@@ -121,6 +179,8 @@ class _WisdomQuestionCardState extends State<WisdomQuestionCard> {
   }
 
   void _finishForToday() {
+    final date = widget.currentDate ?? DateTime.now();
+    _store.finishForToday(date);
     setState(() {
       _finishedForToday = true;
     });
@@ -144,64 +204,22 @@ class _WisdomQuestionCardState extends State<WisdomQuestionCard> {
 
   Widget _buildQuestionCard(LanguageService lang, String langCode) {
     if (_activeQuestionId == null) {
-      return GlassPanel(
-        radius: 16,
-        padding: const EdgeInsets.all(16),
-        child: Text(
-          lang.translate('no_ekadashi'),
-          textAlign: TextAlign.center,
-          style: TextStyle(color: IosColors.secondary(context)),
-        ),
-      );
+      return _buildExhaustionCard(lang);
     }
 
     if (_finishedForToday) {
-      return GlassPanel(
-        radius: 16,
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            const Icon(AppIcons.journeyBest, size: 40, color: teal),
-            const SizedBox(height: 12),
-            Text(
-              lang.translate('already_completed_today'),
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: IosText.headline,
-                fontWeight: FontWeight.w600,
-                color: IosColors.primary(context),
-              ),
-            ),
-            const SizedBox(height: 12),
-            OutlinedButton(
-              onPressed: () {
-                setState(() {
-                  _finishedForToday = false;
-                  _initializeDailyQuestion();
-                });
-              },
-              style: IosButtons.glass(context),
-              child: Text(
-                lang.translate('wisdom_challenge'),
-                style: IosButtons.label,
-              ),
-            ),
-          ],
-        ),
-      );
+      return _buildCompletedTodayCard(lang);
     }
 
-    final question = _service.getQuestion(
-      _activeQuestionId!,
-      langCode,
-    );
-    if (question == null) return const SizedBox.shrink();
+    final question = _service.getQuestion(_activeQuestionId!, langCode);
+    if (question == null) return _buildExhaustionCard(lang);
 
     final attempt = _store.getAttempt(question.questionId);
     final isAnswered = _submitted || attempt != null;
     final selectedOpt = _selectedOption ?? attempt?.selectedOption;
     final isCorrect = attempt?.isCorrect ??
         (selectedOpt != null && question.isCorrect(selectedOpt));
+    final isPreview = !question.publishable || _store.previewMode;
 
     return GlassPanel(
       radius: 16,
@@ -216,9 +234,15 @@ class _WisdomQuestionCardState extends State<WisdomQuestionCard> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  lang.translate(
-                    _isChallengeMode ? 'wisdom_challenge' : 'question_of_the_day',
-                  ),
+                  _inReviewMode
+                      ? _service.getUIString('review', langCode, fallback: 'Review')
+                      : _service.getUIString(
+                          _isChallengeMode ? 'continue_learning' : 'todays_wisdom',
+                          langCode,
+                          fallback: _isChallengeMode
+                              ? lang.translate('wisdom_challenge')
+                              : lang.translate('question_of_the_day'),
+                        ),
                   style: TextStyle(
                     fontSize: IosText.headline,
                     fontWeight: FontWeight.w700,
@@ -226,7 +250,29 @@ class _WisdomQuestionCardState extends State<WisdomQuestionCard> {
                   ),
                 ),
               ),
-              // Category Pill
+              if (isPreview) ...[
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                  margin: const EdgeInsets.only(right: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.orange.withValues(alpha: 0.5)),
+                  ),
+                  child: Text(
+                    langCode == 'ta'
+                        ? 'முன்னோட்டம்'
+                        : langCode == 'hi'
+                            ? 'पूर्वावलोकन'
+                            : 'Preview',
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.orange,
+                    ),
+                  ),
+                ),
+              ],
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
@@ -246,6 +292,40 @@ class _WisdomQuestionCardState extends State<WisdomQuestionCard> {
           ),
           const SizedBox(height: 12),
 
+          // KBC Scenario / Context Box (if available)
+          if (question.format == WisdomFormat.kbc &&
+              question.context != null &&
+              question.context!.trim().isNotEmpty) ...[
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(10),
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                color: teal.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: teal.withValues(alpha: 0.25)),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(AppIcons.info, size: 16, color: teal),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      question.context!,
+                      style: TextStyle(
+                        fontSize: IosText.caption,
+                        fontStyle: FontStyle.italic,
+                        color: IosColors.secondary(context),
+                        height: 1.3,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+
           // Question Text
           Text(
             question.question,
@@ -258,12 +338,13 @@ class _WisdomQuestionCardState extends State<WisdomQuestionCard> {
           ),
           const SizedBox(height: 16),
 
-          // Options A, B, C, D
+          // Options A, B, C, D with Localized Option Keys
           for (final optKey in ['A', 'B', 'C', 'D'])
             if (question.options.containsKey(optKey)) ...[
               _buildOptionRow(
                 context,
                 optKey: optKey,
+                displayKey: question.localizedOptionKey(optKey),
                 optText: question.options[optKey]!,
                 isSelected: selectedOpt == optKey,
                 isAnswered: isAnswered,
@@ -275,37 +356,55 @@ class _WisdomQuestionCardState extends State<WisdomQuestionCard> {
               const SizedBox(height: 8),
             ],
 
-          // Submit Button (when not yet answered)
+          // Submit & Skip Buttons (when not yet answered)
           if (!isAnswered) ...[
             const SizedBox(height: 8),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                key: const Key('wisdom_submit_button'),
-                onPressed: _selectedOption != null
-                    ? () => _submitAnswer(question)
-                    : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: teal,
-                  foregroundColor: Colors.white,
-                  disabledBackgroundColor: teal.withValues(alpha: 0.3),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+            Row(
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: ElevatedButton(
+                    key: const Key('wisdom_submit_button'),
+                    onPressed: _selectedOption != null
+                        ? () => _submitAnswer(question)
+                        : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: teal,
+                      foregroundColor: Colors.white,
+                      disabledBackgroundColor: teal.withValues(alpha: 0.3),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: Text(
+                      _service.getUIString('submit', langCode,
+                          fallback: lang.translate('submit_answer')),
+                      style: const TextStyle(
+                        fontSize: IosText.subheadline,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
-                child: Text(
-                  lang.translate('submit_answer'),
-                  style: const TextStyle(
-                    fontSize: IosText.subheadline,
-                    fontWeight: FontWeight.w700,
+                const SizedBox(width: 8),
+                Expanded(
+                  flex: 2,
+                  child: OutlinedButton(
+                    key: const Key('wisdom_skip_button'),
+                    onPressed: () => _skipQuestion(question),
+                    style: IosButtons.glass(context),
+                    child: Text(
+                      _service.getUIString('skip', langCode, fallback: 'Skip'),
+                      style: IosButtons.label,
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
           ],
 
-          // Post-Answer Results & Actions
+          // Post-Answer Results, Explanations & Insights
           if (isAnswered) ...[
             const SizedBox(height: 12),
             Container(
@@ -326,7 +425,7 @@ class _WisdomQuestionCardState extends State<WisdomQuestionCard> {
                   Row(
                     children: [
                       Icon(
-                        isCorrect ? Icons.check_circle : Icons.cancel,
+                        isCorrect ? AppIcons.checkmark : AppIcons.close,
                         color: isCorrect ? Colors.green : Colors.redAccent,
                         size: 20,
                       ),
@@ -349,11 +448,31 @@ class _WisdomQuestionCardState extends State<WisdomQuestionCard> {
                         style: TextStyle(
                           fontSize: IosText.caption,
                           fontWeight: FontWeight.w700,
-                          color: isCorrect ? Colors.green : IosColors.secondary(context),
+                          color: isCorrect
+                              ? Colors.green
+                              : IosColors.secondary(context),
                         ),
                       ),
                     ],
                   ),
+
+                  // Option feedback for incorrect answer (KBC)
+                  if (!isCorrect &&
+                      selectedOpt != null &&
+                      question.optionFeedback != null &&
+                      question.optionFeedback!.containsKey(selectedOpt)) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      question.optionFeedback![selectedOpt]!,
+                      style: const TextStyle(
+                        fontSize: IosText.caption,
+                        color: Colors.redAccent,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+
+                  // Explanation of correct answer
                   const SizedBox(height: 8),
                   Text(
                     question.explanation,
@@ -362,6 +481,36 @@ class _WisdomQuestionCardState extends State<WisdomQuestionCard> {
                       color: IosColors.primary(context),
                     ),
                   ),
+
+                  // Insight takeaway (KBC)
+                  if (question.insight != null &&
+                      question.insight!.trim().isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: teal.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(AppIcons.info, size: 16, color: teal),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              question.insight!,
+                              style: TextStyle(
+                                fontSize: IosText.caption2,
+                                fontWeight: FontWeight.w600,
+                                color: IosColors.primary(context),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -374,7 +523,8 @@ class _WisdomQuestionCardState extends State<WisdomQuestionCard> {
                     onPressed: _continueLearning,
                     style: IosButtons.glass(context),
                     child: Text(
-                      lang.translate('continue_learning'),
+                      _service.getUIString('continue_learning', langCode,
+                          fallback: lang.translate('continue_learning')),
                       style: IosButtons.label,
                     ),
                   ),
@@ -386,7 +536,8 @@ class _WisdomQuestionCardState extends State<WisdomQuestionCard> {
                     onPressed: _finishForToday,
                     style: IosButtons.glass(context),
                     child: Text(
-                      lang.translate('finish_for_today'),
+                      _service.getUIString('finish_for_today', langCode,
+                          fallback: lang.translate('finish_for_today')),
                       style: IosButtons.label,
                     ),
                   ),
@@ -402,6 +553,7 @@ class _WisdomQuestionCardState extends State<WisdomQuestionCard> {
   Widget _buildOptionRow(
     BuildContext context, {
     required String optKey,
+    required String displayKey,
     required String optText,
     required bool isSelected,
     required bool isAnswered,
@@ -441,36 +593,154 @@ class _WisdomQuestionCardState extends State<WisdomQuestionCard> {
         child: Row(
           children: [
             Container(
-              width: 24,
-              height: 24,
+              width: 26,
+              height: 26,
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: isSelected
                     ? teal
-                    : IosColors.gray(context).withValues(alpha: 0.15),
+                    : (isAnswered && isCorrectOption
+                        ? Colors.green
+                        : IosColors.gray(context).withValues(alpha: 0.15)),
               ),
               child: Text(
-                optKey,
+                displayKey,
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: IosText.caption,
                   fontWeight: FontWeight.w700,
-                  color: isSelected ? Colors.white : IosColors.primary(context),
+                  color: isSelected || (isAnswered && isCorrectOption)
+                      ? Colors.white
+                      : IosColors.primary(context),
                 ),
               ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 12),
             Expanded(
               child: Text(
                 optText,
                 style: TextStyle(
-                  fontSize: IosText.subheadline,
+                  fontSize: IosText.body,
                   color: IosColors.primary(context),
                 ),
               ),
             ),
+            if (isAnswered && isCorrectOption) ...[
+              const Icon(AppIcons.checkmark, size: 18, color: Colors.green),
+            ] else if (isAnswered && isSelected && !isCorrectOption) ...[
+              const Icon(AppIcons.close, size: 18, color: Colors.redAccent),
+            ],
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildCompletedTodayCard(LanguageService lang) {
+    final langCode = lang.currentLocale.languageCode;
+    return GlassPanel(
+      radius: 16,
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          const Icon(AppIcons.journeyBest, size: 40, color: teal),
+          const SizedBox(height: 12),
+          Text(
+            _service.getUIString('completed_today', langCode,
+                fallback: lang.translate('already_completed_today')),
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: IosText.headline,
+              fontWeight: FontWeight.w600,
+              color: IosColors.primary(context),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () {
+                    setState(() {
+                      _finishedForToday = false;
+                      _continueLearning();
+                    });
+                  },
+                  style: IosButtons.glass(context),
+                  child: Text(
+                    _service.getUIString('continue_learning', langCode,
+                        fallback: lang.translate('wisdom_challenge')),
+                    style: IosButtons.label,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () {
+                    setState(() {
+                      _finishedForToday = false;
+                      _startReviewMode();
+                    });
+                  },
+                  style: IosButtons.glass(context),
+                  child: Text(
+                    _service.getUIString('review', langCode, fallback: 'Review'),
+                    style: IosButtons.label,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildExhaustionCard(LanguageService lang) {
+    final langCode = lang.currentLocale.languageCode;
+    final stats = _store.stats;
+
+    return GlassPanel(
+      radius: 16,
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          const Icon(AppIcons.journeyMilestone, size: 40, color: teal),
+          const SizedBox(height: 12),
+          Text(
+            _service.getUIString('completed_today', langCode,
+                fallback: 'All questions completed!'),
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: IosText.headline,
+              fontWeight: FontWeight.w700,
+              color: IosColors.primary(context),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '${stats.totalCorrect}/${stats.totalAnswered} • ${stats.accuracyPercentage.toStringAsFixed(0)}%',
+            style: TextStyle(
+              fontSize: IosText.subheadline,
+              color: IosColors.secondary(context),
+            ),
+          ),
+          const SizedBox(height: 12),
+          OutlinedButton(
+            onPressed: () {
+              setState(() {
+                _finishedForToday = false;
+                _startReviewMode();
+              });
+            },
+            style: IosButtons.glass(context),
+            child: Text(
+              _service.getUIString('review', langCode, fallback: 'Review'),
+              style: IosButtons.label,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -491,12 +761,14 @@ class _WisdomQuestionCardState extends State<WisdomQuestionCard> {
             children: [
               const Icon(AppIcons.journeyMilestone, size: 20, color: teal),
               const SizedBox(width: 8),
-              Text(
-                lang.translate('wisdom_challenge'),
-                style: TextStyle(
-                  fontSize: IosText.headline,
-                  fontWeight: FontWeight.w700,
-                  color: IosColors.primary(context),
+              Expanded(
+                child: Text(
+                  lang.translate('wisdom_progress_title'),
+                  style: TextStyle(
+                    fontSize: IosText.headline,
+                    fontWeight: FontWeight.w700,
+                    color: IosColors.primary(context),
+                  ),
                 ),
               ),
             ],
@@ -504,147 +776,76 @@ class _WisdomQuestionCardState extends State<WisdomQuestionCard> {
           const SizedBox(height: 12),
           Row(
             children: [
-              _metricTile(
-                context,
-                title: lang.translate('total_points'),
-                value: '${stats.totalPoints}',
-                color: teal,
+              Expanded(
+                child: _buildStatTile(
+                  context,
+                  title: lang.translate('total_answered'),
+                  value: '${stats.totalAnswered}',
+                  icon: AppIcons.cardObserved,
+                ),
               ),
               const SizedBox(width: 8),
-              _metricTile(
-                context,
-                title: lang.translate('questions_answered'),
-                value: '${stats.totalAnswered}',
-                color: Colors.orange,
+              Expanded(
+                child: _buildStatTile(
+                  context,
+                  title: lang.translate('accuracy_rate'),
+                  value: '${stats.accuracyPercentage.toStringAsFixed(0)}%',
+                  icon: AppIcons.journeyStreak,
+                ),
               ),
               const SizedBox(width: 8),
-              _metricTile(
-                context,
-                title: lang.translate('correct_answers'),
-                value: '${stats.totalCorrect}',
-                color: Colors.green,
+              Expanded(
+                child: _buildStatTile(
+                  context,
+                  title: lang.translate('total_points'),
+                  value: '${stats.totalPoints}',
+                  icon: AppIcons.achievementStreak,
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          Text(
-            lang.translate('category_progress'),
-            style: TextStyle(
-              fontSize: IosText.subheadline,
-              fontWeight: FontWeight.w600,
-              color: IosColors.secondary(context),
-            ),
-          ),
-          const SizedBox(height: 8),
-          _categoryProgressRow(lang, 'ekadashi', 'category_ekadashi'),
-          const SizedBox(height: 6),
-          _categoryProgressRow(lang, 'bhagavad_gita', 'category_bhagavad_gita'),
-          const SizedBox(height: 6),
-          _categoryProgressRow(lang, 'mahabharata', 'category_mahabharata'),
-          const SizedBox(height: 6),
-          _categoryProgressRow(lang, 'ramayana', 'category_ramayana'),
         ],
       ),
     );
   }
 
-  Widget _metricTile(
+  Widget _buildStatTile(
     BuildContext context, {
     required String title,
     required String value,
-    required Color color,
+    required IconData icon,
   }) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withValues(alpha: 0.2)),
-        ),
-        child: Column(
-          children: [
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-                color: color,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              style: TextStyle(
-                fontSize: IosText.caption2,
-                color: IosColors.secondary(context),
-              ),
-            ),
-          ],
-        ),
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: IosColors.gray(context).withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(10),
       ),
-    );
-  }
-
-  Widget _categoryProgressRow(
-    LanguageService lang,
-    String categoryKey,
-    String labelKey,
-  ) {
-    // Count questions for category.
-    final total = _service.allQuestionIds.where((id) {
-      final q = _service.getQuestion(id, 'en');
-      return q?.category == categoryKey;
-    }).length;
-
-    var answered = 0;
-    var correct = 0;
-    for (final attempt in _store.attempts.values) {
-      final q = _service.getQuestion(attempt.questionId, 'en');
-      if (q?.category == categoryKey) {
-        answered++;
-        if (attempt.isCorrect) correct++;
-      }
-    }
-
-    final pct = total > 0 ? (answered / total).clamp(0.0, 1.0) : 0.0;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              lang.translate(labelKey),
-              style: TextStyle(
-                fontSize: IosText.caption,
-                fontWeight: FontWeight.w600,
-                color: IosColors.primary(context),
-              ),
+      child: Column(
+        children: [
+          Icon(icon, size: 18, color: teal),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: IosText.headline,
+              fontWeight: FontWeight.w700,
+              color: IosColors.primary(context),
             ),
-            Text(
-              '$answered/$total ($correct ✓)',
-              style: TextStyle(
-                fontSize: IosText.caption2,
-                color: IosColors.secondary(context),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 4),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(4),
-          child: LinearProgressIndicator(
-            value: pct,
-            minHeight: 6,
-            backgroundColor: IosColors.gray(context).withValues(alpha: 0.2),
-            valueColor: const AlwaysStoppedAnimation<Color>(teal),
           ),
-        ),
-      ],
+          const SizedBox(height: 2),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: IosText.caption2,
+              color: IosColors.secondary(context),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

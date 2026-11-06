@@ -551,7 +551,7 @@
   "widget_lock_support": "लॉक स्क्रीन विजेट समर्थित उपकरणों पर उपलब्ध हैं। आकार और स्थान आपके उपकरण पर निर्भर करते हैं।",
   "glass_look": "काँच जैसा रूप",
   "glass_look_desc": "अधिक पारदर्शी कार्ड और नियंत्रण दिखाएँ।",
-"question_of_the_day": "आज का प्रश्न",
+  "question_of_the_day": "आज का प्रश्न",
   "wisdom_challenge": "ज्ञान चुनौती",
   "submit_answer": "उत्तर जमा करें",
   "continue_learning": "सीखना जारी रखें",
@@ -572,5 +572,9 @@
   "category_ramayana": "रामायण",
   "difficulty_easy": "आसान",
   "difficulty_medium": "मध्यम",
-  "difficulty_hard": "कठिन"
+  "difficulty_hard": "कठिन",
+  "wisdom": "प्रज्ञा",
+  "todays_wisdom": "आज की प्रज्ञा",
+  "wisdom_reminder": "प्रज्ञा अनुस्मारक",
+  "wisdom_reminder_desc": "दैनिक प्रश्न की अधिसूचना प्राप्त करें"
 }

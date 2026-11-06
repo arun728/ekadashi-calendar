@@ -551,7 +551,7 @@
   "widget_lock_support": "பூட்டுத் திரை விட்ஜெட்கள் ஆதரிக்கும் சாதனங்களில் கிடைக்கும். அளவும் இடமும் உங்கள் சாதனத்தைப் பொறுத்தது.",
   "glass_look": "கண்ணாடித் தோற்றம்",
   "glass_look_desc": "தெளிவான, ஒளி ஊடுருவும் அட்டைகளையும் கட்டுப்பாடுகளையும் பயன்படுத்தவும்.",
-"question_of_the_day": "இன்றைய கேள்வி",
+  "question_of_the_day": "இன்றைய கேள்வி",
   "wisdom_challenge": "ஞான சவால்",
   "submit_answer": "பதிலைச் சமர்ப்பிக்கவும்",
   "continue_learning": "கற்றலைத் தொடரவும்",
@@ -572,5 +572,9 @@
   "category_ramayana": "ராமாயணம்",
   "difficulty_easy": "எளிது",
   "difficulty_medium": "நடுத்தரம்",
-  "difficulty_hard": "கடினம்"
+  "difficulty_hard": "கடினம்",
+  "wisdom": "ஞானம்",
+  "todays_wisdom": "இன்றைய ஞானம்",
+  "wisdom_reminder": "ஞான நினைவூட்டல்",
+  "wisdom_reminder_desc": "தினசரி கேள்விக்கான அறிவிப்பைப் பெறவும்"
 }

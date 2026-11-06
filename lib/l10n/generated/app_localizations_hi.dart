@@ -1777,4 +1777,16 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get difficulty_hard => 'कठिन';
+
+  @override
+  String get wisdom => 'प्रज्ञा';
+
+  @override
+  String get todays_wisdom => 'आज की प्रज्ञा';
+
+  @override
+  String get wisdom_reminder => 'प्रज्ञा अनुस्मारक';
+
+  @override
+  String get wisdom_reminder_desc => 'दैनिक प्रश्न की अधिसूचना प्राप्त करें';
 }

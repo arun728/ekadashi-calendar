@@ -1797,4 +1797,16 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get difficulty_hard => 'கடினம்';
+
+  @override
+  String get wisdom => 'ஞானம்';
+
+  @override
+  String get todays_wisdom => 'இன்றைய ஞானம்';
+
+  @override
+  String get wisdom_reminder => 'ஞான நினைவூட்டல்';
+
+  @override
+  String get wisdom_reminder_desc => 'தினசரி கேள்விக்கான அறிவிப்பைப் பெறவும்';
 }

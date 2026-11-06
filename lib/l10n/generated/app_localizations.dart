@@ -3375,6 +3375,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Hard'**
   String get difficulty_hard;
+
+  /// No description provided for @wisdom.
+  ///
+  /// In en, this message translates to:
+  /// **'Wisdom'**
+  String get wisdom;
+
+  /// No description provided for @todays_wisdom.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s Wisdom'**
+  String get todays_wisdom;
+
+  /// No description provided for @wisdom_reminder.
+  ///
+  /// In en, this message translates to:
+  /// **'Wisdom Reminder'**
+  String get wisdom_reminder;
+
+  /// No description provided for @wisdom_reminder_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Receive a daily question notification'**
+  String get wisdom_reminder_desc;
 }
 
 class _AppLocalizationsDelegate

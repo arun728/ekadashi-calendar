@@ -23,6 +23,21 @@ class NotificationService {
   );
 
   String _currentTimeZone = 'UTC';
+  ValueChanged<Uri>? onNotificationTap;
+
+  Future<Uri?> getLaunchUri() async {
+    try {
+      final details =
+          await flutterLocalNotificationsPlugin.getNotificationAppLaunchDetails();
+      if (details?.didNotificationLaunchApp ?? false) {
+        final payload = details?.notificationResponse?.payload;
+        if (payload != null && payload.isNotEmpty) {
+          return Uri.tryParse(payload);
+        }
+      }
+    } catch (_) {}
+    return null;
+  }
 
   Future<void> init() async {
     // Bundled IANA database (see time_zone_data.dart), shared with Panchang.
@@ -73,6 +88,15 @@ class NotificationService {
           android: androidSettings,
           iOS: iosSettings,
         ),
+        onDidReceiveNotificationResponse: (response) {
+          final payload = response.payload;
+          if (payload != null && payload.isNotEmpty) {
+            final uri = Uri.tryParse(payload);
+            if (uri != null) {
+              onNotificationTap?.call(uri);
+            }
+          }
+        },
       );
       debugPrint('✅ Notification service initialized (TZ: $_currentTimeZone)');
     } catch (e) {
@@ -425,6 +449,7 @@ class NotificationService {
             presentSound: true,
           ),
         ),
+        payload: 'ekadashi://journey/wisdom',
         androidScheduleMode: fln.AndroidScheduleMode.exactAllowWhileIdle,
         uiLocalNotificationDateInterpretation:
             fln.UILocalNotificationDateInterpretation.absoluteTime,

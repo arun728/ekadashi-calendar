@@ -1788,4 +1788,16 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get difficulty_hard => 'కఠినం';
+
+  @override
+  String get wisdom => 'జ్ఞానం';
+
+  @override
+  String get todays_wisdom => 'నేటి జ్ఞానం';
+
+  @override
+  String get wisdom_reminder => 'జ్ఞాన రిమైండర్';
+
+  @override
+  String get wisdom_reminder_desc => 'రోజువారీ ప్రశ్న నోటిఫికేషన్ పొందండి';
 }

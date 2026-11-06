@@ -523,7 +523,7 @@
   "widget_lock_support": "সমর্থিত যন্ত্রে লক স্ক্রিন উইজেট পাওয়া যায়। আকার ও অবস্থান আপনার যন্ত্রের উপর নির্ভর করে।",
   "glass_look": "কাচের মতো চেহারা",
   "glass_look_desc": "আরও স্বচ্ছ কার্ড ও নিয়ন্ত্রণ ব্যবহার করুন।",
-"question_of_the_day": "আজকের প্রশ্ন",
+  "question_of_the_day": "আজকের প্রশ্ন",
   "wisdom_challenge": "জ্ঞান চ্যালেঞ্জ",
   "submit_answer": "উত্তর জমা দিন",
   "continue_learning": "শেখা চালিয়ে যান",
@@ -544,5 +544,9 @@
   "category_ramayana": "রামায়ণ",
   "difficulty_easy": "সহজ",
   "difficulty_medium": "মধ্যম",
-  "difficulty_hard": "কঠিন"
+  "difficulty_hard": "কঠিন",
+  "wisdom": "প্রজ্ঞা",
+  "todays_wisdom": "আজকের প্রজ্ঞা",
+  "wisdom_reminder": "প্রজ্ঞা অনুস্মারক",
+  "wisdom_reminder_desc": "দৈনিক প্রশ্নের বিজ্ঞপ্তি পান"
 }

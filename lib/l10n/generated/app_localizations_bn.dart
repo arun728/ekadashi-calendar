@@ -1786,4 +1786,16 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get difficulty_hard => 'কঠিন';
+
+  @override
+  String get wisdom => 'প্রজ্ঞা';
+
+  @override
+  String get todays_wisdom => 'আজকের প্রজ্ঞা';
+
+  @override
+  String get wisdom_reminder => 'প্রজ্ঞা অনুস্মারক';
+
+  @override
+  String get wisdom_reminder_desc => 'দৈনিক প্রশ্নের বিজ্ঞপ্তি পান';
 }

@@ -26,21 +26,30 @@ import '../../widgets/app_icons.dart';
 class VratTrackerScreen extends StatefulWidget {
   final List<EkadashiDate> ekadashiList;
   final String currentTimezone;
+  final String? initialSection;
 
   const VratTrackerScreen({
     super.key,
     required this.ekadashiList,
     required this.currentTimezone,
+    this.initialSection,
   });
 
   @override
-  State<VratTrackerScreen> createState() => _VratTrackerScreenState();
+  State<VratTrackerScreen> createState() => VratTrackerScreenState();
 }
 
 /// Journey's sections; each name is also its label key.
-enum _JourneySection { overview, history, statistics, achievements }
+enum _JourneySection { overview, history, statistics, achievements, wisdom }
 
-class _VratTrackerScreenState extends State<VratTrackerScreen> {
+class VratTrackerScreenState extends State<VratTrackerScreen> {
+  void openWisdom() {
+    setState(() => _section = _JourneySection.wisdom);
+    if (_pages.hasClients) {
+      _pages.jumpToPage(_JourneySection.wisdom.index);
+    }
+  }
+
   static const teal = IosColors.teal;
 
   final _pages = PageController();
@@ -51,6 +60,14 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
   @override
   void initState() {
     super.initState();
+    if (widget.initialSection == 'wisdom') {
+      _section = _JourneySection.wisdom;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_pages.hasClients) {
+          _pages.jumpToPage(_JourneySection.wisdom.index);
+        }
+      });
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final tracker = Provider.of<VratTrackerService>(context, listen: false);
       if (!tracker.isInitialized) {
@@ -123,6 +140,7 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
                     lang,
                     tracker,
                   ),
+                  _JourneySection.wisdom => _buildWisdomTab(lang),
                 },
               ),
             ),
@@ -746,6 +764,14 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
     );
   }
 
+  // ==================== WISDOM ====================
+  Widget _buildWisdomTab(LanguageService lang) {
+    return const SingleChildScrollView(
+      padding: EdgeInsets.fromLTRB(16, 16, 16, _bottomInset),
+      child: WisdomQuestionCard(),
+    );
+  }
+
   // ==================== ACHIEVEMENTS ====================
   Widget _buildAchievementsTab(
     LanguageService lang,
@@ -862,8 +888,6 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
         return ListView(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, _bottomInset),
           children: [
-            const WisdomQuestionCard(),
-            const SizedBox(height: 20),
             Text(
               lang.translate('premium_free_achievements'),
               style: TextStyle(

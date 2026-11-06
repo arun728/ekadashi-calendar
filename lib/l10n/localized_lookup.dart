@@ -546,6 +546,10 @@ Map<String, String> localizedLookup(AppLocalizations l) => {
   'difficulty_easy': l.difficulty_easy,
   'difficulty_medium': l.difficulty_medium,
   'difficulty_hard': l.difficulty_hard,
+  'wisdom': l.wisdom,
+  'todays_wisdom': l.todays_wisdom,
+  'wisdom_reminder': l.wisdom_reminder,
+  'wisdom_reminder_desc': l.wisdom_reminder_desc,
 };
 Map<String, String> localizedTemplates(AppLocalizations l) => {
   'app_title': l.app_title,
@@ -1093,4 +1097,8 @@ Map<String, String> localizedTemplates(AppLocalizations l) => {
   'difficulty_easy': l.difficulty_easy,
   'difficulty_medium': l.difficulty_medium,
   'difficulty_hard': l.difficulty_hard,
+  'wisdom': l.wisdom,
+  'todays_wisdom': l.todays_wisdom,
+  'wisdom_reminder': l.wisdom_reminder,
+  'wisdom_reminder_desc': l.wisdom_reminder_desc,
 };

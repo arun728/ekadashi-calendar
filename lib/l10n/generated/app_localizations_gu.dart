@@ -1776,4 +1776,16 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get difficulty_hard => 'મુશ્કેલ';
+
+  @override
+  String get wisdom => 'જ્ઞાન';
+
+  @override
+  String get todays_wisdom => 'આજનું જ્ઞાન';
+
+  @override
+  String get wisdom_reminder => 'જ્ઞાન રિમાઇન્ડર';
+
+  @override
+  String get wisdom_reminder_desc => 'દૈનિક પ્રશ્ન માટે સૂચના મેળવો';
 }

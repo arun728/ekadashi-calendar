@@ -1783,4 +1783,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get difficulty_hard => 'Hard';
+
+  @override
+  String get wisdom => 'Wisdom';
+
+  @override
+  String get todays_wisdom => 'Today\'s Wisdom';
+
+  @override
+  String get wisdom_reminder => 'Wisdom Reminder';
+
+  @override
+  String get wisdom_reminder_desc => 'Receive a daily question notification';
 }

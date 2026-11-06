@@ -35,7 +35,7 @@ List<Map<String, dynamic>> _testQuestions() => [
       },
     },
     'translation_status': {'en': 'source', 'hi': 'ai_draft_needs_native_review'},
-    'publishable': false,
+    'publishable': true,
   },
   {
     'question_id': 'BGQ0001',
@@ -61,7 +61,7 @@ List<Map<String, dynamic>> _testQuestions() => [
       },
     },
     'translation_status': {'en': 'source', 'hi': 'ai_draft_needs_native_review'},
-    'publishable': false,
+    'publishable': true,
   },
 ];
 
