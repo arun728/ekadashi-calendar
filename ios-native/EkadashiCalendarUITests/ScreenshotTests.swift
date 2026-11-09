@@ -1525,6 +1525,28 @@ final class ScreenshotTests: XCTestCase {
         snap("11-search-type-word")
     }
 
+    func testLunarSearchUsesStartDatesAndExclusiveCategories() {
+        app.terminate()
+        app.launchArguments += ["-lifecycle-testing"]
+        app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = "2026-11-07T12:00:00+05:30"
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        app.buttons["open_global_search"].firstMatch.tap()
+        XCTAssertTrue(app.searchFields.firstMatch.waitForExistence(timeout: 5))
+        replaceSearch(with: "amavasya 2026")
+        XCTAssertTrue(result("search_result_observance:amavasya:2026-11-08").waitForExistence(timeout: 60))
+        XCTAssertFalse(result("search_result_observance:amavasya:2026-11-09").exists)
+        replaceSearch(with: "guru purnima 2027")
+        XCTAssertTrue(result("search_result_observance:guru-purnima:").waitForExistence(timeout: 10))
+        replaceSearch(with: "purnima 2027")
+        XCTAssertTrue(result("search_result_observance:purnima:").waitForExistence(timeout: 10))
+        XCTAssertFalse(result("search_result_observance:guru-purnima:").exists)
+        replaceSearch(with: "monthly vinayaka chaturthi 2027")
+        XCTAssertTrue(app.staticTexts["Monthly Vinayaka Chaturthi"].firstMatch.waitForExistence(timeout: 10))
+        XCTAssertFalse(result("search_result_observance:ganesh-chaturthi:").exists)
+        snap("lunar-start-dates-and-monthly-vinayaka")
+    }
+
     /// The four Home menus line up: location over tradition (same left and
     /// right edges), language over year (same width), all the same height and
     /// inside the screen, in English and in a longer script (Tamil).

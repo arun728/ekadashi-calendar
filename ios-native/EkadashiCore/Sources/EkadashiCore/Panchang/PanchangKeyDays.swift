@@ -39,6 +39,6 @@ public enum PanchangKeyDays {
 
     public static func filter(_ days: [KeyDay], category: SearchCategory?) -> [KeyDay] {
         guard let category else { return days }
-        return days.filter { $0.categories.contains(category) }
+        return days.filter { category.includes($0.categories) }
     }
 }

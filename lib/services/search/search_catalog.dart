@@ -35,6 +35,12 @@ enum SearchCategory {
 
   String get localizationKey => 'search_filter_$raw';
 
+  /// Festival classification wins over related lunar/monthly tags.
+  bool includes(List<SearchCategory> categories) =>
+      categories.contains(SearchCategory.festival)
+      ? this == SearchCategory.festival
+      : categories.contains(this);
+
   static SearchCategory? parse(String raw) {
     for (final c in values) {
       if (c.raw == raw) return c;

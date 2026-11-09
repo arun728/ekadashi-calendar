@@ -100,5 +100,5 @@ class PanchangKeyDays {
   static List<KeyDay> filter(List<KeyDay> days, SearchCategory? category) =>
       category == null
       ? days
-      : days.where((d) => d.categories.contains(category)).toList();
+      : days.where((d) => category.includes(d.categories)).toList();
 }

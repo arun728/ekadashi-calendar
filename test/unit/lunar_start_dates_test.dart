@@ -40,18 +40,14 @@ void main() {
     );
     for (final year in [2026, 2027]) {
       test(
-        'local lunar start dates without end-day duplicates: ' +
-            city.id +
-            ' ' +
-            year.toString(),
+        'local lunar start dates without end-day duplicates: ${city.id} $year',
         () {
           final expected = <String>[];
           for (final interval in fixture['intervals'] as List) {
             final local = city.wallClock(DateTime.parse(interval['start']));
             if (local.year == year) {
               expected.add(
-                (interval['tithi'] == 15 ? 'purnima:' : 'amavasya:') +
-                    iso(DateTime.utc(local.year, local.month, local.day)),
+                "${interval['tithi'] == 15 ? 'purnima' : 'amavasya'}:${iso(DateTime.utc(local.year, local.month, local.day))}",
               );
             }
           }
@@ -60,7 +56,7 @@ void main() {
               engine
                   .observanceCalendar(year, city: city)
                   .where((x) => lunarIds.contains(x.observance.id))
-                  .map((x) => x.observance.id + ':' + iso(x.date))
+                  .map((x) => '${x.observance.id}:${iso(x.date)}')
                   .toList()
                 ..sort();
           expect(actual, expected);

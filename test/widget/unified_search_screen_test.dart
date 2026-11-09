@@ -98,4 +98,35 @@ void main() {
     expect(result('ekadashi:'), findsWidgets);
     expect(result('observance:'), findsNothing);
   });
+
+  testWidgets(
+    'lunar starts, exclusive categories and monthly naming reach Search',
+    (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2.6;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(app());
+      await tester.pumpAndSettle();
+      await search(tester, 'amavasya 2026');
+      expect(result('observance:amavasya:2026-11-08'), findsOneWidget);
+      expect(result('observance:amavasya:2026-11-09'), findsNothing);
+
+      await search(tester, 'guru purnima 2027');
+      expect(result('observance:guru-purnima:'), findsWidgets);
+      await search(tester, '2027');
+      final purnima = find.byKey(const Key('search_filter_purnima'));
+      await tester.ensureVisible(purnima);
+      await tester.tap(purnima);
+      await tester.pumpAndSettle();
+      expect(result('observance:purnima:'), findsWidgets);
+      expect(result('observance:guru-purnima:'), findsNothing);
+
+      // Clear the explicit category, then verify the recurring title.
+      await tester.tap(purnima);
+      await tester.pumpAndSettle();
+      await search(tester, 'monthly vinayaka chaturthi 2027');
+      expect(find.text('Monthly Vinayaka Chaturthi'), findsWidgets);
+      expect(result('observance:ganesh-chaturthi:'), findsNothing);
+    },
+  );
 }

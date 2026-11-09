@@ -120,7 +120,13 @@ public final class UnifiedSearch: @unchecked Sendable {
         let query = SearchQueryParser.parse(raw, catalog: catalog, category: chip, year: chipYear)
         func allowed(_ item: SearchItem) -> Bool {
             if let year = query.year, item.date?.year != year { return false }
-            if let category = query.category, !item.categories.contains(category) { return false }
+            if let category = query.category {
+                // Explicit chips and type-only listings are exclusive. Full
+                // names such as "Guru Purnima" still find related festivals.
+                let matches = chip != nil || query.isListing
+                    ? category.includes(item.categories) : item.categories.contains(category)
+                if !matches { return false }
+            }
             return true
         }
         if query.isListing {

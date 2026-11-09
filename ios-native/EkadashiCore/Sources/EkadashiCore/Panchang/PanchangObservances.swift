@@ -154,8 +154,7 @@ extension PanchangEngine {
                 note: "Smarta fasting day for this location (Drik rules); Gaudiya days are in the Ekadashi tab.")
         }
         if [12, 27].contains(tithi.index) { add("dwadashi", "Dwadashi") }
-        if observed(15, .sunrise) { add("purnima", "Purnima", major: true) }
-        if observed(30, .sunrise) { add("amavasya", "Amavasya", major: true) }
+        for event in lunarStartObservances(city, date) { add(event.id, event.name, major: true) }
         if [8, 23].contains(tithi.index) { add("ashtami", "Ashtami") }
         if [9, 24].contains(tithi.index) { add("navami", "Navami") }
         if let chaturthi = occurrence(4), chaturthi.observedOn(.madhyahna, .longest, days, city) == date {
@@ -293,12 +292,43 @@ extension PanchangEngine {
         return !thiruvonam(previous.adding(nazhika6))
     }
 
-    func sankrantiOnly(_ city: PanchangCity, _ date: CivilDate, _ sunset: Date?) -> [PanchangObservance] {
+    /// Generic lunar entries use the local civil day of tithi onset. Named
+    /// ritual observances keep their own sunrise/midday/night rules.
+    func lunarStartObservances(_ city: PanchangCity, _ date: CivilDate) -> [PanchangObservance] {
+        let start = startFor(date, city: city), end = endFor(date, city: city)
+        guard start < end else { return [] }
         var items: [PanchangObservance] = []
+        func add(_ index: Int) {
+            guard index == 15 || index == 30 else { return }
+            let id = index == 15 ? "purnima" : "amavasya"
+            guard !items.contains(where: { $0.id == id }) else { return }
+            items.append(PanchangObservance(id: id, name: index == 15 ? "Purnima" : "Amavasya",
+                                            ruleSource: "calculated", description: "", isMajor: true))
+        }
+        var probe = start
+        var limb = tithiAt(probe)
+        if (limb.index == 15 || limb.index == 30), city.wallClock(tithiStart(probe)).date == date { add(limb.index) }
+        // Classify each transition in the local midnight-to-midnight interval,
+        // not the following probe, which can cross midnight. DST changes the
+        // interval length; a fixed 24-hour UTC shift would be incorrect.
+        while let transition = limb.endsAt, transition > probe, transition < end {
+            add(limb.index % 30 + 1)
+            probe = transition.addingTimeInterval(1)
+            if probe >= end { break }
+            limb = tithiAt(probe)
+        }
+        return items
+    }
+
+    func solarIndependentObservances(_ city: PanchangCity, _ date: CivilDate, _ sunset: Date?) -> [PanchangObservance] {
+        var items = lunarStartObservances(city, date)
         addSankranti({ id, name, major, note in
             items.append(PanchangObservance(id: id, name: name, ruleSource: "calculated", description: note, isMajor: major))
         }, city, date, sunset, SolarDays(self, city))
-        return items
+        return items.sorted { a, b in
+            if a.isMajor != b.isMajor { return a.isMajor }
+            return a.name < b.name
+        }
     }
 
     /// Solar ingress: the Sankranti moment on its civil date. Makar Sankranti
@@ -417,7 +447,7 @@ extension PanchangEngine {
         let localSunrise = sunrise ?? city.dateAtHour(date, 6)
         let localSunset = sunset ?? city.dateAtHour(date, 18)
         let nightEnd = findCrossing(localSunset, city.midnight(date, dayOffset: 2), city, moon: false, rising: true)
-        guard hasSolarDay, nightEnd != nil else { return sankrantiOnly(city, date, sunset) }
+        guard hasSolarDay, nightEnd != nil else { return solarIndependentObservances(city, date, sunset) }
         return observances(city: city, date: date, sunrise: localSunrise, sunset: localSunset, tithi: tithiAt(localSunrise))
     }
 
