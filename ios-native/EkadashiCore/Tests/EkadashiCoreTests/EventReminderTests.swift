@@ -29,10 +29,10 @@ final class EventReminderTests: XCTestCase {
 
     func testAmavasyaOneDayBeforeAtSevenThirty() {
         let reminder = EventReminder(target: .observance("amavasya"), daysBefore: [1], hour: 7, minute: 30)
-        let result = plan([reminder], now: instant("2026-10-08T10:00:00+05:30"))
-        XCTAssertEqual(result.first?.fireDate, instant("2026-10-09T07:30:00+05:30"), "Amavasya is on 10 October")
+        let result = plan([reminder], now: instant("2026-10-07T10:00:00+05:30"))
+        XCTAssertEqual(result.first?.fireDate, instant("2026-10-08T07:30:00+05:30"), "Amavasya starts on 9 October")
         XCTAssertEqual(result.first?.title, "Amavasya")
-        XCTAssertEqual(result.first?.body, "Amavasya is tomorrow (Sat, 10 Oct 2026)")
+        XCTAssertEqual(result.first?.body, "Amavasya is tomorrow (Fri, 9 Oct 2026)")
         XCTAssertEqual(result.count, 3, "October, November and December 2026")
         XCTAssertTrue(result.allSatisfy { $0.url.absoluteString.hasPrefix("ekadashi://panchang") })
     }

@@ -445,14 +445,7 @@
      }
     ]
    },
-   "observances": [
-    {
-     "id": "purnima",
-     "name": "Purnima",
-     "description": "",
-     "major": true
-    }
-   ],
+   "observances": [],
    "formattedSunrise": "7:14 AM IST (UTC+05:30)"
   },
   {
@@ -4035,12 +4028,6 @@
    },
    "observances": [
     {
-     "id": "amavasya",
-     "name": "Amavasya",
-     "description": "",
-     "major": true
-    },
-    {
      "id": "sankranti-7",
      "name": "Vrischika Sankranti",
      "description": "Sidereal solar ingress at 8:01 AM IST (UTC+05:30).",
@@ -6751,14 +6738,7 @@
      }
     ]
    },
-   "observances": [
-    {
-     "id": "purnima",
-     "name": "Purnima",
-     "description": "",
-     "major": true
-    }
-   ],
+   "observances": [],
    "formattedSunrise": "6:31 AM IST (UTC+05:30)"
   },
   {
@@ -10346,12 +10326,6 @@
    },
    "observances": [
     {
-     "id": "amavasya",
-     "name": "Amavasya",
-     "description": "",
-     "major": true
-    },
-    {
      "id": "sankranti-7",
      "name": "Vrischika Sankranti",
      "description": "Sidereal solar ingress at 8:01 AM IST (UTC+05:30).",
@@ -13068,14 +13042,7 @@
      }
     ]
    },
-   "observances": [
-    {
-     "id": "purnima",
-     "name": "Purnima",
-     "description": "",
-     "major": true
-    }
-   ],
+   "observances": [],
    "formattedSunrise": "8:05 AM GMT (UTC+00:00)"
   },
   {
@@ -16663,12 +16630,6 @@
     ]
    },
    "observances": [
-    {
-     "id": "amavasya",
-     "name": "Amavasya",
-     "description": "",
-     "major": true
-    },
     {
      "id": "sankranti-7",
      "name": "Vrischika Sankranti",
@@ -22927,14 +22888,7 @@
      }
     ]
    },
-   "observances": [
-    {
-     "id": "amavasya",
-     "name": "Amavasya",
-     "description": "",
-     "major": true
-    }
-   ],
+   "observances": [],
    "formattedSunrise": "6:44 AM EST (UTC-05:00)"
   },
   {
@@ -35511,12 +35465,6 @@
     ]
    },
    "observances": [
-    {
-     "id": "amavasya",
-     "name": "Amavasya",
-     "description": "",
-     "major": true
-    },
     {
      "id": "sankranti-7",
      "name": "Vrischika Sankranti",

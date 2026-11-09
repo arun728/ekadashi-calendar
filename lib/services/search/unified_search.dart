@@ -169,8 +169,14 @@ class UnifiedSearch {
     );
     bool allowed(SearchItem item) {
       if (query.year != null && item.date?.year != query.year) return false;
-      if (query.category != null && !item.categories.contains(query.category)) {
-        return false;
+      final filter = query.category;
+      if (filter != null) {
+        // Explicit chips and type-only listings use exclusive categories.
+        // A name query such as "Guru Purnima" can still find its festival.
+        final matches = category != null || query.isListing
+            ? filter.includes(item.categories)
+            : item.categories.contains(filter);
+        if (!matches) return false;
       }
       return true;
     }

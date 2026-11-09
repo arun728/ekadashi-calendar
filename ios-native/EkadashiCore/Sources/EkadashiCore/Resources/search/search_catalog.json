@@ -376,16 +376,17 @@
     "chaturthi"
    ],
    "names": {
-    "en": "Vinayaka Chaturthi",
-    "hi": "विनायक चतुर्थी",
-    "ta": "விநாயக சதுர்த்தி",
-    "te": "వినాయక చతుర్థి",
-    "gu": "વિનાયક ચતુર્થી",
-    "bn": "বিনায়ক চতুর্থী"
+    "en": "Monthly Vinayaka Chaturthi",
+    "hi": "मासिक विनायक चतुर्थी",
+    "ta": "மாதாந்திர விநாயக சதுர்த்தி",
+    "te": "మాస వినాయక చతుర్థి",
+    "gu": "માસિક વિનાયક ચતુર્થી",
+    "bn": "মাসিক বিনায়ক চতুর্থী"
    },
    "aliases": [
     "masik vinayaka chaturthi",
-    "monthly chaturthi"
+    "monthly chaturthi",
+    "vinayaka chaturthi"
    ]
   },
   {

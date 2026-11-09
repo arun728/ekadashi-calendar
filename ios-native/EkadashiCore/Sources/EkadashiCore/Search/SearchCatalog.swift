@@ -11,6 +11,11 @@ public enum SearchCategory: String, CaseIterable, Codable, Sendable {
 
     public var localizationKey: String { "search_filter_\(rawValue)" }
 
+    /// Festival classification wins over related lunar/monthly tags.
+    public func includes(_ categories: [SearchCategory]) -> Bool {
+        categories.contains(.festival) ? self == .festival : categories.contains(self)
+    }
+
     public var symbol: String {
         switch self {
         case .ekadashi: return AppSymbol.categoryEkadashi

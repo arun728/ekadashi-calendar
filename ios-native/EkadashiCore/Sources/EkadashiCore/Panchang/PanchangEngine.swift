@@ -74,9 +74,9 @@ public struct PanchangEngine: Sendable {
         let rahukala = dayPeriod(localSunrise, localSunset, weekday: weekday, segments: [2, 7, 5, 6, 4, 3, 8], name: "Rahu Kalam")
         let yamaganda = dayPeriod(localSunrise, localSunset, weekday: weekday, segments: [4, 3, 2, 1, 7, 6, 5], name: "Yamaganda")
         let gulika = dayPeriod(localSunrise, localSunset, weekday: weekday, segments: [6, 5, 4, 3, 2, 1, 7], name: "Gulika Kalam")
-        // Without a full solar day only the Sankranti moment is reported.
+        // Lunar start-date entries do not require a solar day; ritual windows do.
         let events = !hasSolarDay || nightEnd == nil
-            ? sankrantiOnly(city, date, sunset)
+            ? solarIndependentObservances(city, date, sunset)
             : observances(city: city, date: date, sunrise: localSunrise, sunset: localSunset, tithi: tithi)
         let fullNight = hasSolarDay && nightEnd != nil
         let sunLongitude = AstronomyCalculator.sunLongitude(localSunrise)

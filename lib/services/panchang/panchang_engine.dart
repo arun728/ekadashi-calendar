@@ -162,7 +162,7 @@ class PanchangEngine {
       rising: true,
     );
     if (!hasSolarDay || nightEnd == null) {
-      return _sankrantiOnly(city, calendarDate, sunset);
+      return _solarIndependentObservances(city, calendarDate, sunset);
     }
     return _observances(
       city: city,
@@ -331,10 +331,9 @@ class PanchangEngine {
       segmentByWeekday: const [6, 5, 4, 3, 2, 1, 7],
       name: 'Gulika Kalam',
     );
-    // Without a full solar day only the Sankranti moment is reported; every
-    // other observance needs sunrise-based windows.
+    // Lunar start-date entries do not require a solar day; ritual windows do.
     final events = !hasSolarDay || nightEnd == null
-        ? _sankrantiOnly(city, calendarDate, sunset)
+        ? _solarIndependentObservances(city, calendarDate, sunset)
         : _observances(
             city: city,
             date: calendarDate,
@@ -1098,8 +1097,9 @@ class PanchangEngine {
     for (final index in const [12, 27]) {
       if (tithi.index == index) add('dwadashi', 'Dwadashi');
     }
-    if (observed(15, _Kala.sunrise)) add('purnima', 'Purnima', major: true);
-    if (observed(30, _Kala.sunrise)) add('amavasya', 'Amavasya', major: true);
+    for (final event in _lunarStartObservances(city, date)) {
+      add(event.id, event.name, major: true);
+    }
     for (final index in const [8, 23]) {
       if (tithi.index == index) add('ashtami', 'Ashtami');
     }
@@ -1316,12 +1316,59 @@ class PanchangEngine {
     return List.unmodifiable(items);
   }
 
-  List<PanchangObservance> _sankrantiOnly(
+  /// Generic lunar entries belong to the local civil day of tithi onset,
+  /// independently of sunrise. Ritual festival rules keep their own windows.
+  List<PanchangObservance> _lunarStartObservances(
+    PanchangCity city,
+    DateTime date,
+  ) {
+    final start = startFor(date, city: city), end = endFor(date, city: city);
+    final items = <PanchangObservance>[];
+    if (!start.isBefore(end)) return items;
+    void add(int index) {
+      if (index != 15 && index != 30) return;
+      final id = index == 15 ? 'purnima' : 'amavasya';
+      if (items.any((item) => item.id == id)) return;
+      items.add(
+        PanchangObservance(
+          id: id,
+          name: index == 15 ? 'Purnima' : 'Amavasya',
+          ruleSource: 'calculated',
+          isMajor: true,
+        ),
+      );
+    }
+
+    var probe = start;
+    var limb = _tithiAt(probe);
+    if ((limb.index == 15 || limb.index == 30) &&
+        _sameDate(city.wallClock(tithiStart(probe)), date)) {
+      add(limb.index);
+    }
+    // Enumerate transitions in [local midnight, next local midnight), which
+    // can be 23/25 hours across DST. Classify the transition itself, not the
+    // probe a second later (which might cross local midnight).
+    while (true) {
+      final transition = limb.endsAtUtc;
+      if (transition == null ||
+          !transition.isAfter(probe) ||
+          !transition.isBefore(end)) {
+        break;
+      }
+      add(limb.index % 30 + 1);
+      probe = transition.add(const Duration(seconds: 1));
+      if (!probe.isBefore(end)) break;
+      limb = _tithiAt(probe);
+    }
+    return items;
+  }
+
+  List<PanchangObservance> _solarIndependentObservances(
     PanchangCity city,
     DateTime date,
     DateTime? sunset,
   ) {
-    final items = <PanchangObservance>[];
+    final items = _lunarStartObservances(city, date);
     _addSankranti(
       (id, name, {major = false, note = ''}) => items.add(
         PanchangObservance(
@@ -1337,6 +1384,10 @@ class PanchangEngine {
       sunset,
       _SolarDays(this, city),
     );
+    items.sort((a, b) {
+      if (a.isMajor != b.isMajor) return a.isMajor ? -1 : 1;
+      return a.name.compareTo(b.name);
+    });
     return List.unmodifiable(items);
   }
 

@@ -79,16 +79,16 @@ void main() {
       hour: 7,
       minute: 30,
     );
-    final result = plan([reminder], now: ist('2026-10-08T10:00:00'));
-    expect(result.first.fireDate, ist('2026-10-09T07:30:00'));
+    final result = plan([reminder], now: ist('2026-10-07T10:00:00'));
+    expect(result.first.fireDate, ist('2026-10-08T07:30:00'));
     expect(result.first.title, 'Amavasya');
-    expect(result.first.body, 'Amavasya is tomorrow (Sat, 10 Oct 2026)');
+    expect(result.first.body, 'Amavasya is tomorrow (Fri, 9 Oct 2026)');
     expect(result, hasLength(3), reason: 'October, November and December');
     expect(
       result.every((r) => r.url.startsWith('ekadashi://panchang?date=')),
       isTrue,
     );
-    expect(result.first.url, 'ekadashi://panchang?date=2026-10-10');
+    expect(result.first.url, 'ekadashi://panchang?date=2026-10-09');
   });
 
   test('several lead times and the day itself', () {

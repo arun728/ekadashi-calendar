@@ -16,7 +16,7 @@ void main() {
     await SearchCatalog.load();
   });
 
-  final now = DateTime.parse('2026-10-08T10:00:00+05:30');
+  final now = DateTime.parse('2026-10-07T10:00:00+05:30');
   final entry = CalendarEntry(
     id: 'c1',
     title: 'Temple visit',
@@ -79,7 +79,7 @@ void main() {
     expect(planned.map((p) => p.title), contains('Temple visit'));
     expect(
       planned.firstWhere((p) => p.title == 'Amavasya').fireDate,
-      DateTime.parse('2026-10-09T07:00:00+05:30'),
+      DateTime.parse('2026-10-08T07:00:00+05:30'),
     );
   });
 }
