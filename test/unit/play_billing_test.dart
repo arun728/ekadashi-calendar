@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:in_app_purchase_platform_interface/in_app_purchase_platform_interface.dart';
 import 'package:ekadashi_calendar/services/play_billing_service.dart';
 import 'package:ekadashi_calendar/services/premium_service.dart';
@@ -92,6 +93,22 @@ GooglePlayPurchaseDetails playPurchase(
     purchaseState: state,
   ),
 ).single;
+
+class NonOkAcknowledgementStore extends Store {
+  final codes = <BillingResponse>[];
+  final firstAcknowledgement = Completer<void>();
+  final secondAcknowledgement = Completer<void>();
+
+  @override
+  Future<BillingResultWrapper> completePurchase(
+    PurchaseDetails purchase,
+  ) async {
+    completions++;
+    if (completions == 1) firstAcknowledgement.complete();
+    if (completions == 2) secondAcknowledgement.complete();
+    return BillingResultWrapper(responseCode: codes.removeAt(0));
+  }
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -376,4 +393,60 @@ void main() {
       },
     );
   });
+  test('non-OK acknowledgement is not reported as a success', () async {
+    final store = NonOkAcknowledgementStore()
+      ..codes.add(BillingResponse.developerError);
+    InAppPurchasePlatform.instance = store;
+    final premium = PremiumService(
+      entitlements: PremiumFixture()..premium = false,
+    );
+    final billing = PlayBillingService(premium);
+    addTearDown(store.updates.close);
+    addTearDown(premium.dispose);
+    addTearDown(billing.dispose);
+    await billing.initialize();
+    await store.emit(PurchaseStatus.purchased);
+    expect(store.completions, 1);
+    expect(billing.error, 'premium_unavailable');
+  });
+
+  test('transient Play acknowledgement failure is retried', () async {
+    final store = NonOkAcknowledgementStore()
+      ..codes.addAll([BillingResponse.serviceUnavailable, BillingResponse.ok]);
+    InAppPurchasePlatform.instance = store;
+    final premium = PremiumService(
+      entitlements: PremiumFixture()..premium = false,
+    );
+    final billing = PlayBillingService(premium);
+    addTearDown(store.updates.close);
+    addTearDown(premium.dispose);
+    addTearDown(billing.dispose);
+    await billing.initialize();
+    await store.emit(PurchaseStatus.purchased);
+    await store.secondAcknowledgement.future.timeout(
+      const Duration(seconds: 3),
+    );
+    await Future<void>.delayed(Duration.zero);
+    expect(store.completions, 2);
+    expect(billing.error, isNull);
+    expect(premium.isPremium, isTrue);
+  });
+
+  test(
+    'restoring ownership ignores the previously saved base-plan hint',
+    () async {
+      SharedPreferences.setMockInitialValues({'premium_plan_hint': 'monthly'});
+      final store = Store();
+      InAppPurchasePlatform.instance = store;
+      final premium = PremiumService(entitlements: PremiumFixture());
+      final billing = PlayBillingService(premium);
+      addTearDown(store.updates.close);
+      addTearDown(premium.dispose);
+      addTearDown(billing.dispose);
+      await billing.initialize();
+      await billing.restore();
+      expect(premium.subscribed, isTrue);
+      expect(billing.currentPlanId, isNull);
+    },
+  );
 }

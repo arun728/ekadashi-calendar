@@ -379,18 +379,28 @@ class CalendarScreenState extends State<CalendarScreen> {
         .read<LanguageService>()
         .currentLocale
         .languageCode;
-    final prefs = await SharedPreferences.getInstance();
-    if (!mounted) return;
-    var premium = _isPremium();
-    if (!premium && prefs.getBool(CalendarScreen.freeSyncUsedKey) == true) {
-      // Continue straight into the import after a successful purchase.
-      if (!await _unlockPremium(reasonKey: 'google_free_sync_used')) return;
-      premium = true;
-    }
+    final previouslyPremium = _isPremium();
     setState(() => _syncing = true);
-    // Names the step a failed sync stopped at in the device log.
-    var stage = 'sign_in';
+    var stage = 'verify_premium';
     try {
+      final prefs = await SharedPreferences.getInstance();
+      await premiumService?.refresh();
+      if (!mounted) return;
+      final freeSyncUsed =
+          prefs.getBool(CalendarScreen.freeSyncUsedKey) == true;
+      if (premiumService?.error != null &&
+          (previouslyPremium || freeSyncUsed)) {
+        _showMessage('premium_unavailable');
+        return;
+      }
+      var premium = _isPremium();
+      if (!premium && freeSyncUsed) {
+        setState(() => _syncing = false);
+        if (!await _unlockPremium(reasonKey: 'google_free_sync_used')) return;
+        premium = true;
+        setState(() => _syncing = true);
+      }
+      stage = 'sign_in';
       final bool signedIn;
       try {
         signedIn = await _google.isSignedIn() || await _google.signIn();
@@ -434,13 +444,17 @@ class CalendarScreenState extends State<CalendarScreen> {
         setState(() => _syncing = true);
       }
       final window = premium
-          ? premiumService!.syncWindow(
+          ? premiumService?.syncWindow(
               _now(),
               calendarYears: _years.isEmpty
                   ? null
                   : (first: _years.first, last: _years.last),
-            )!
+            )
           : (start: month, end: DateTime(month.year, month.month + 1));
+      if (window == null) {
+        _showMessage('premium_unavailable');
+        return;
+      }
       stage = 'list_calendars';
       final account = await _google.auth.accountId();
       if (account == null) throw StateError('No Google account');

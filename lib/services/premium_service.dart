@@ -11,6 +11,8 @@ abstract class PlayEntitlementSource {
   /// [ownedProducts] call. A cancelled subscription stays owned (and
   /// Premium stays on) until the period already paid for ends.
   Map<String, bool> get autoRenewing => const {};
+
+  String? get subscriptionPurchaseToken => null;
 }
 
 /// Premium access comes only from Google Play's purchase record. It is never
@@ -23,6 +25,8 @@ class PremiumService extends ChangeNotifier {
 
   final PlayEntitlementSource entitlements;
   bool _disposed = false;
+  Future<void>? _refreshInFlight;
+  String? subscriptionPurchaseToken;
   bool subscribed = false;
   bool lifetime = false;
   bool busy = false;
@@ -84,10 +88,12 @@ class PremiumService extends ChangeNotifier {
     Set<String> owned, {
     Map<String, DateTime?> purchasedAt = const {},
     Map<String, bool> autoRenewing = const {},
+    String? subscriptionToken,
   }) {
     if (_disposed) return;
     subscribed = owned.contains(subscriptionId);
     lifetime = owned.contains(lifetimeId);
+    subscriptionPurchaseToken = subscribed ? subscriptionToken : null;
     subscriptionCancelled = subscribed && autoRenewing[subscriptionId] == false;
     _confirmedByPlay = true;
     // The subscription's year governs syncing while it is active.
@@ -101,10 +107,15 @@ class PremiumService extends ChangeNotifier {
   }
 
   /// Adds one completed purchase reported by the Play purchase stream.
-  void grant(String productId, {DateTime? purchasedAt}) {
+  void grant(
+    String productId, {
+    DateTime? purchasedAt,
+    String? subscriptionToken,
+  }) {
     if (_disposed) return;
     if (productId == subscriptionId) {
       subscribed = true;
+      subscriptionPurchaseToken = subscriptionToken;
       this.purchasedAt = purchasedAt;
     }
     if (productId == lifetimeId) {
@@ -116,10 +127,21 @@ class PremiumService extends ChangeNotifier {
   }
 
   /// Re-reads owned purchases from Google Play (startup, resume, restore).
-  Future<void> refresh() async {
-    if (busy || _disposed) return;
+  Future<void> refresh() {
+    if (_disposed) return Future<void>.value();
+    final running = _refreshInFlight;
+    if (running != null) return running;
+    final check = Future<void>.microtask(
+      _refreshOwned,
+    ).whenComplete(() => _refreshInFlight = null);
+    _refreshInFlight = check;
     busy = true;
     _notify();
+    return check;
+  }
+
+  Future<void> _refreshOwned() async {
+    if (_disposed) return;
     try {
       final owned = await entitlements.ownedProducts();
       if (_disposed) return;
@@ -128,6 +150,7 @@ class PremiumService extends ChangeNotifier {
         owned.keys.toSet(),
         purchasedAt: owned,
         autoRenewing: entitlements.autoRenewing,
+        subscriptionToken: entitlements.subscriptionPurchaseToken,
       );
     } catch (_) {
       if (_disposed) return;
@@ -136,6 +159,7 @@ class PremiumService extends ChangeNotifier {
       subscribed = false;
       lifetime = false;
       subscriptionCancelled = false;
+      subscriptionPurchaseToken = null;
       purchasedAt = null;
       error = 'premium_unavailable';
       _notify();

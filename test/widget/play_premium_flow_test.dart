@@ -646,6 +646,27 @@ void main() {
     expect(google.min, isNull);
   });
 
+  testWidgets('Calendar rechecks Play before using an expired subscription', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({
+      CalendarScreen.freeSyncUsedKey: true,
+    });
+    final source = PremiumFixture()..purchasedAt = DateTime(2026, 9, 10);
+    final premium = PremiumService(entitlements: source);
+    addTearDown(premium.dispose);
+    await premium.refresh();
+    final google = await pumpCalendar(tester, premium);
+    source.premium = false;
+
+    await tapImport(tester);
+    if (find.text('Import selected').evaluate().isNotEmpty) {
+      await importSelected(tester);
+    }
+    expect(google.min, isNull);
+    expect(find.byType(PremiumScreen), findsOneWidget);
+  });
+
   testWidgets('Calendar reports a Google sign-in failure, not a cancel', (
     tester,
   ) async {

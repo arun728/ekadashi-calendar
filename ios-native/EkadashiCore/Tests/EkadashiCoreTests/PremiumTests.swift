@@ -164,3 +164,52 @@ final class PremiumTests: XCTestCase {
                        ["ekadashi_premium_monthly", "ekadashi_premium_yearly", "ekadashi_premium_lifetime"])
     }
 }
+
+extension PremiumTests {
+    func testVerifiedCurrentEntitlementSurvivesNominalExpiryDuringGrace() {
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        let expired = now.addingTimeInterval(-60)
+        for isCurrent in [true, false] {
+            XCTAssertEqual(PremiumProduct.grantsAccess(
+                productId: PremiumProduct.monthly, revoked: false, upgraded: false,
+                expirationDate: expired, isCurrent: isCurrent, now: now
+            ), isCurrent, "An expired historical transaction must not grant access")
+        }
+        for (id, revoked, upgraded) in [(PremiumProduct.monthly, true, false),
+                                         (PremiumProduct.monthly, false, true), ("unknown", false, false)] {
+            XCTAssertFalse(PremiumProduct.grantsAccess(
+                productId: id, revoked: revoked, upgraded: upgraded,
+                expirationDate: nil, isCurrent: true, now: now
+            ))
+        }
+        XCTAssertTrue(PremiumProduct.grantsAccess(
+            productId: PremiumProduct.lifetime, revoked: false, upgraded: false,
+            expirationDate: nil, isCurrent: false, now: now
+        ))
+        XCTAssertTrue(PremiumProduct.grantsAccess(
+            productId: PremiumProduct.yearly, revoked: false, upgraded: false,
+            expirationDate: now.addingTimeInterval(60), isCurrent: false, now: now
+        ))
+    }
+
+    func testPendingPurchaseSurvivesUnrelatedAndHistoricalTransactions() {
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        var pending = PendingPremiumPurchase(productId: PremiumProduct.yearly, startedAt: now)
+        XCTAssertFalse(pending.matches(productId: PremiumProduct.monthly, purchaseDate: now))
+        XCTAssertFalse(pending.matches(productId: PremiumProduct.yearly, purchaseDate: now.addingTimeInterval(-60)))
+        XCTAssertTrue(pending.matches(productId: PremiumProduct.yearly, purchaseDate: now))
+        pending = PendingPremiumPurchase(productId: PremiumProduct.lifetime, startedAt: now)
+        XCTAssertTrue(pending.matches(productId: PremiumProduct.lifetime, purchaseDate: now.addingTimeInterval(1)))
+    }
+
+    func testRestoreDistinguishesUnavailableFromConfirmedEmptyAndOwned() {
+        var state = PremiumState()
+        XCTAssertEqual(state.restoreResult, .unavailable)
+        state.apply(owned: [])
+        XCTAssertEqual(state.restoreResult, .none)
+        state.apply(owned: [OwnedProduct(productId: PremiumProduct.lifetime)])
+        XCTAssertEqual(state.restoreResult, .restored)
+        state.storeUnavailable()
+        XCTAssertEqual(state.restoreResult, .unavailable)
+    }
+}
