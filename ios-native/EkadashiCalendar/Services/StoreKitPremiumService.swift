@@ -6,8 +6,6 @@ import EkadashiCore
 
 private let logger = Logger(subsystem: "com.applausestudios.ekadashi-calendar", category: "premium")
 
-enum RestoreResult { case restored, none, unavailable }
-
 /// The last premium state, readable from any thread (the Google sync rules
 /// run off the main actor).
 final class PremiumSnapshot: @unchecked Sendable {
@@ -29,7 +27,9 @@ final class PremiumSnapshot: @unchecked Sendable {
 final class StoreKitPremiumService {
     private(set) var state = PremiumState()
     private(set) var products: [PremiumPlanID: Product] = [:]
-    private(set) var pending = false
+    private var pendingPurchase: PendingPremiumPurchase?
+    private var purchasing = false
+    var pending: Bool { pendingPurchase != nil }
     private(set) var busy = false
     /// Translation key of the last store problem (`premium_unavailable`).
     var error: String?
@@ -47,7 +47,10 @@ final class StoreKitPremiumService {
     init() {
         updates = Task { [weak self] in
             for await result in Transaction.updates {
-                if case .verified(let transaction) = result { await transaction.finish() }
+                if case .verified(let transaction) = result {
+                    self?.resolvePending(with: transaction)
+                    await transaction.finish()
+                }
                 await self?.refresh()
             }
         }
@@ -106,20 +109,25 @@ final class StoreKitPremiumService {
         // came back empty while the history held a verified, unexpired
         // monthly purchase. Ask for the latest transaction of each product
         // too; both are signed by the App Store and verified the same way.
-        var results: [VerificationResult<Transaction>] = []
-        for await result in Transaction.currentEntitlements { results.append(result) }
+        var results: [(result: VerificationResult<Transaction>, isCurrent: Bool)] = []
+        for await result in Transaction.currentEntitlements { results.append((result, true)) }
         for productId in PremiumProduct.all {
-            if let result = await Transaction.latest(for: productId) { results.append(result) }
+            if let result = await Transaction.latest(for: productId) { results.append((result, false)) }
         }
         var owned: [OwnedProduct] = []
-        for result in results {
+        for (result, isCurrent) in results {
             guard case .verified(let transaction) = result else {
                 if case .unverified(let transaction, let failure) = result {
                     logger.error("Premium refresh: ignored unverified \(transaction.productID, privacy: .public): \(String(describing: failure), privacy: .public)")
                 }
                 continue
             }
-            guard Self.grantsAccess(transaction, now: Date()),
+            resolvePending(with: transaction)
+            guard PremiumProduct.grantsAccess(
+                productId: transaction.productID, revoked: transaction.revocationDate != nil,
+                upgraded: transaction.isUpgraded, expirationDate: transaction.expirationDate,
+                isCurrent: isCurrent, now: Date()
+            ),
                   !owned.contains(where: { $0.productId == transaction.productID }) else { continue }
             var renews: Bool?
             if transaction.productType == .autoRenewable {
@@ -136,18 +144,13 @@ final class StoreKitPremiumService {
             state.apply(owned: owned)
         }
         snapshot.set(state)
-        pending = false
         logger.info("Premium refresh: owned=\(owned.map(\.productId), privacy: .public) premium=\(self.state.isPremium, privacy: .public) products=\(self.products.count, privacy: .public)")
     }
 
-    /// A verified transaction unlocks Premium while it is one of ours, not
-    /// refunded or revoked, not replaced by an upgrade, and (for a
-    /// subscription) not past its expiry.
-    private static func grantsAccess(_ transaction: Transaction, now: Date) -> Bool {
-        guard PremiumPlanID(productId: transaction.productID) != nil,
-              transaction.revocationDate == nil, !transaction.isUpgraded else { return false }
-        if let expiry = transaction.expirationDate, expiry < now { return false }
-        return true
+    private func resolvePending(with transaction: Transaction) {
+        if pendingPurchase?.matches(productId: transaction.productID, purchaseDate: transaction.purchaseDate) == true {
+            pendingPurchase = nil
+        }
     }
 
     private func willAutoRenew(_ productId: String) async -> Bool? {
@@ -173,10 +176,15 @@ final class StoreKitPremiumService {
         }
     }
 
-    func canBuy(_ plan: PremiumPlanID) -> Bool { products[plan] != nil && state.canBuy(plan, pending: pending) }
+    func canBuy(_ plan: PremiumPlanID) -> Bool {
+        products[plan] != nil && state.canBuy(plan, pending: pending || purchasing)
+    }
 
     func buy(_ plan: PremiumPlanID) async {
         guard let product = products[plan], canBuy(plan) else { return }
+        let startedAt = Date()
+        purchasing = true
+        defer { purchasing = false }
         do {
             let outcome = try await product.purchase()
             switch outcome {
@@ -193,7 +201,10 @@ final class StoreKitPremiumService {
                 error = nil
                 await refresh()
             case .pending:
-                pending = true
+                pendingPurchase = PendingPremiumPurchase(productId: product.id, startedAt: startedAt)
+                // Approval can race the purchase result. Check the latest
+                // transactions once, then keep the pending state until approval.
+                await refresh()
             case .userCancelled:
                 break
             @unknown default:
@@ -209,14 +220,14 @@ final class StoreKitPremiumService {
     }
 
     /// Restores from the App Store; no account sign-in inside the app.
-    func restore() async -> RestoreResult {
+    func restore() async -> PremiumRestoreResult {
         do {
             try await AppStore.sync()
         } catch {
             return .unavailable
         }
         await refresh()
-        return state.isPremium ? .restored : .none
+        return state.restoreResult
     }
 
     /// Re-checks every five minutes while the app is open.

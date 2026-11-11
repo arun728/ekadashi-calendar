@@ -9,6 +9,15 @@ public enum PremiumProduct {
     public static let lifetime = "ekadashi_premium_lifetime"
     public static let subscriptionGroup = "ekadashi_premium"
     public static let all = [monthly, yearly, lifetime]
+
+    /// Call with verified transactions only. StoreKit includes grace-period
+    /// subscriptions in current entitlements even after their nominal expiry.
+    public static func grantsAccess(productId: String, revoked: Bool, upgraded: Bool,
+                                    expirationDate: Date?, isCurrent: Bool, now: Date) -> Bool {
+        guard all.contains(productId), !revoked, !upgraded else { return false }
+        if isCurrent { return true }
+        return expirationDate.map { $0 > now } ?? (productId == lifetime)
+    }
 }
 
 public enum PremiumPlanID: String, CaseIterable, Sendable {
@@ -45,6 +54,24 @@ public struct OwnedProduct: Equatable, Sendable {
     }
 }
 
+public enum PremiumRestoreResult: Equatable, Sendable {
+    case restored, none, unavailable
+}
+
+public struct PendingPremiumPurchase: Sendable {
+    public let productId: String
+    public let startedAt: Date
+
+    public init(productId: String, startedAt: Date) {
+        self.productId = productId
+        self.startedAt = startedAt
+    }
+
+    public func matches(productId: String, purchaseDate: Date) -> Bool {
+        self.productId == productId && purchaseDate >= startedAt
+    }
+}
+
 /// Premium access, derived only from what the App Store reports as owned on
 /// this Apple ID (premium_service.dart). It is never persisted locally and
 /// never tied to the Google (Calendar) sign-in.
@@ -61,6 +88,11 @@ public struct PremiumState: Equatable, Sendable {
     public init() {}
 
     public var isPremium: Bool { subscribed || lifetime }
+
+    public var restoreResult: PremiumRestoreResult {
+        guard confirmedByStore else { return .unavailable }
+        return isPremium ? .restored : .none
+    }
 
     /// The store answered and reports nothing owned (a subscription ended or
     /// a purchase was refunded). Never true while the store is unreachable.
