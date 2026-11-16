@@ -499,6 +499,12 @@ final class EditSubscriptionSummaryTests: XCTestCase {
         XCTAssertNil(model.editSubscriptionSummary(free, price: nil), "Nothing to edit without a subscription")
     }
 
+    func testTheEnglishSheetIsWordedLikeClaudes() {
+        let model = model("en")
+        XCTAssertEqual(model.t("ios_edit_subscription_title"), "Edit Subscription")
+        XCTAssertEqual(model.t("ios_done"), "Done")
+    }
+
     func testEveryLanguageHasTheSheetWithoutLatinLetters() {
         for language in ["hi", "ta", "te", "gu", "bn"] {
             let model = model(language)
@@ -507,7 +513,7 @@ final class EditSubscriptionSummaryTests: XCTestCase {
             let summary = model.editSubscriptionSummary(state, price: "₹99")
             let texts = [summary?.plan, summary?.renewal, summary?.note, summary?.price,
                          model.t("ios_edit_subscription_title"), model.t("ios_see_all_plans"),
-                         model.t("ios_cancel_subscription")]
+                         model.t("ios_cancel_subscription"), model.t("ios_done")]
             for text in texts {
                 XCTAssertNotNil(text, language)
                 XCTAssertNil(text?.range(of: "[A-Za-z]", options: .regularExpression), "\(language): \(text ?? "")")

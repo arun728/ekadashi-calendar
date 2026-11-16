@@ -91,6 +91,8 @@ public enum AppSymbol {
     public static let reminderGoogle = "calendar.circle"
     public static let reminderObservance = "sparkles"
     public static let rowDisclosure = "chevron.right"
+    public static let subscriptionPrice = "creditcard"
+    public static let subscriptionRenewal = "calendar"
     public static let save = "square.and.arrow.down"
     public static let search = "magnifyingglass"
     public static let searchAllCategories = "square.grid.2x2"
@@ -210,6 +212,8 @@ public enum AppSymbol {
         "reminder_google": reminderGoogle,
         "reminder_observance": reminderObservance,
         "row_disclosure": rowDisclosure,
+        "subscription_price": subscriptionPrice,
+        "subscription_renewal": subscriptionRenewal,
         "save": save,
         "search": search,
         "search_all_categories": searchAllCategories,

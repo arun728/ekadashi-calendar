@@ -256,6 +256,7 @@ struct SettingsView: View {
 struct SettingsPremiumCard: View {
     @Environment(AppModel.self) private var model
     @State private var managing = false
+    @State private var editing = false
 
     private var state: PremiumState { model.premium.state }
 
@@ -284,6 +285,18 @@ struct SettingsPremiumCard: View {
         .manageSubscriptionsSheet(isPresented: $managing)
         .onChange(of: managing) { _, isPresented in
             if !isPresented { Task { await model.premium.refresh() } }
+        }
+        .sheet(isPresented: $editing) {
+            // See all plans closes this sheet and opens Ekadashi Premium.
+            NavigationStack {
+                EditSubscriptionView {
+                    editing = false
+                    Task { @MainActor in
+                        try? await Task.sleep(nanoseconds: 350_000_000)
+                        model.openPaywall()
+                    }
+                }
+            }
         }
     }
 
@@ -330,10 +343,11 @@ struct SettingsPremiumCard: View {
             }
             HStack(spacing: 10) {
                 if state.subscribed {
-                    Button { managing = true } label: {
+                    Button { editing = true } label: {
                         Text(model.t("settings_premium_manage")).frame(maxWidth: .infinity).padding(.vertical, 4)
                     }
                     .secondaryActionStyle()
+                    .accessibilityIdentifier("settings_premium_manage")
                 }
                 if !state.lifetime {
                     Button { model.openPaywall() } label: {

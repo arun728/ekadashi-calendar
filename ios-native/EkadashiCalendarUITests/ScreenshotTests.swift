@@ -715,8 +715,14 @@ final class ScreenshotTests: XCTestCase {
         XCTAssertTrue(manage.waitForExistence(timeout: 60), "Settings shows Manage for a subscriber")
         for _ in 0..<5 where !manage.isHittable { app.swipeUp() }
         manage.tap()
-        let title = app.staticTexts["Edit subscription"].firstMatch
+        let title = app.staticTexts["Edit Subscription"].firstMatch
         XCTAssertTrue(title.waitForExistence(timeout: 5))
+        // As in Claude's app: Done at the top right, no close button.
+        let done = app.buttons["edit_subscription_done"].firstMatch
+        XCTAssertTrue(done.exists)
+        XCTAssertEqual(done.label, "Done")
+        XCTAssertGreaterThan(done.frame.midX, app.frame.midX, "Done sits on the right")
+        XCTAssertFalse(app.buttons["edit_subscription_close"].exists)
         XCTAssertTrue(app.staticTexts["edit_subscription_plan"].firstMatch.label == "Yearly")
         XCTAssertTrue(app.staticTexts["edit_subscription_renewal"].firstMatch.label.hasPrefix("Renews"))
         XCTAssertTrue(app.buttons["edit_subscription_cancel"].firstMatch.exists)
@@ -733,6 +739,12 @@ final class ScreenshotTests: XCTestCase {
         XCTAssertTrue(app.buttons["premium_plan_yearly"].firstMatch.waitForExistence(timeout: 10),
                       "See all plans opens the Ekadashi Premium page")
         XCTAssertFalse(title.exists)
+        app.buttons["premium_close"].firstMatch.tap()
+        manage.tap()
+        XCTAssertTrue(done.waitForExistence(timeout: 5))
+        done.tap()
+        XCTAssertTrue(XCTWaiter.wait(for: [expectation(for: NSPredicate(format: "exists == false"), evaluatedWith: title)],
+                                     timeout: 5) == .completed, "Done closes Edit Subscription")
         #endif
     }
 
@@ -814,6 +826,11 @@ final class ScreenshotTests: XCTestCase {
         for _ in 0..<5 where !manage.isHittable { app.swipeUp() }
         XCTAssertTrue(manage.isHittable)
         manage.tap()
+        // Manage opens our Edit Subscription sheet; Cancel Subscription
+        // hands over to Apple's sheet, whose names this test reads.
+        let cancel = app.buttons["edit_subscription_cancel"].firstMatch
+        XCTAssertTrue(cancel.waitForExistence(timeout: 10))
+        cancel.tap()
         // Apple's remote controller does not expose its labels to XCUITest
         // on every OS. Read the actual visible screenshot with Vision rather
         // than passing an assertion against a missing accessibility element.

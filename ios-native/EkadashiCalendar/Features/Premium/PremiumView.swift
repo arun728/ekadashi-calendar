@@ -15,6 +15,7 @@ struct PremiumView: View {
     /// this view left one of them unable to appear on Arun's iPhone.
     @State private var confirmation: PremiumPaywallAction?
     @State private var managing = false
+    @State private var editing = false
     @State private var toast: ToastMessage?
 
     static let privacyURL = URL(string: "https://arun728.github.io/ekadashi-calendar/privacy-policy")!
@@ -73,6 +74,10 @@ struct PremiumView: View {
         .manageSubscriptionsSheet(isPresented: $managing)
         .onChange(of: managing) { _, isPresented in
             if !isPresented { Task { await model.premium.refresh() } }
+        }
+        .sheet(isPresented: $editing) {
+            // See all plans returns to this page.
+            NavigationStack { EditSubscriptionView { editing = false } }
         }
         .alert(confirmationTitle, isPresented: Binding(
             get: { confirmation != nil }, set: { if !$0 { confirmation = nil } }), presenting: confirmation) { action in
@@ -236,7 +241,7 @@ struct PremiumView: View {
             }
             FlowLayout(spacing: 4) {
                 link("premium_restore") { Task { await restore() } }.disabled(store.busy)
-                link("premium_manage") { managing = true }
+                link("premium_manage") { if state.subscribed && !state.lifetime { editing = true } else { managing = true } }
                 link("terms_of_service") { openURL(Self.termsURL) }
                 link("privacy_policy") { openURL(Self.privacyURL) }
             }
@@ -276,5 +281,91 @@ struct PremiumView: View {
         case .unavailable: key = "premium_unavailable"
         }
         toast = ToastMessage(text: model.t(key))
+    }
+}
+
+/// Our Edit subscription sheet, laid out like Claude's (Arun, 16 Nov 2026):
+/// the plan in use with "See all plans" (the Ekadashi Premium page), its
+/// price and renewal, and Cancel, which hands over to Apple (only Apple can
+/// cancel). Apple's own sheet lists plan options instead. Closes with a pull
+/// down like any sheet.
+struct EditSubscriptionView: View {
+    @Environment(AppModel.self) private var model
+    @Environment(\.dismiss) private var dismiss
+    let seeAllPlans: () -> Void
+    @State private var managing = false
+
+    private var state: PremiumState { model.premium.state }
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                if let summary = model.editSubscriptionSummary(
+                    state, price: state.currentPlan.flatMap { model.premium.products[$0]?.displayPrice }) {
+                    card(summary)
+                    Button(role: .destructive) { managing = true } label: {
+                        Text(model.t(summary.cancelled ? "premium_manage" : "ios_cancel_subscription"))
+                            .font(.body).frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(16)
+                            .foregroundStyle(summary.cancelled ? Theme.teal : .red)
+                    }
+                    .glassPanel(cornerRadius: 20)
+                    .accessibilityIdentifier("edit_subscription_cancel")
+                    if let note = summary.note {
+                        Text(note).font(.subheadline).foregroundStyle(.secondary).padding(.horizontal, 16)
+                    }
+                }
+            }
+            .padding(20)
+        }
+        .background(AppBackground())
+        // The grab bar of Claude's sheets: pull down to close.
+        .presentationDragIndicator(.visible)
+        .navigationTitle(model.t("ios_edit_subscription_title"))
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            // Done at the top right, as in Claude's Edit Subscription sheet.
+            ToolbarItem(placement: .confirmationAction) {
+                Button(model.t("ios_done")) { dismiss() }
+                    .accessibilityIdentifier("edit_subscription_done")
+            }
+        }
+        .manageSubscriptionsSheet(isPresented: $managing)
+        .onChange(of: managing) { _, isPresented in
+            if !isPresented { Task { await model.premium.refresh() } }
+        }
+    }
+
+    private func card(_ summary: EditSubscriptionSummary) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Image("widget_brand_icon").resizable().scaledToFit().frame(width: 52, height: 52)
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .accessibilityHidden(true)
+            Text(model.t("premium_title")).font(.title2.bold())
+            HStack(alignment: .firstTextBaseline) {
+                Text(summary.plan).font(.headline).accessibilityIdentifier("edit_subscription_plan")
+                Spacer(minLength: 8)
+                Button {
+                    seeAllPlans()
+                } label: {
+                    HStack(spacing: 4) {
+                        Text(model.t("ios_see_all_plans"))
+                        Image(systemName: AppSymbol.rowDisclosure).font(.subheadline.weight(.semibold))
+                    }
+                    .foregroundStyle(Theme.teal)
+                }
+                .accessibilityIdentifier("edit_subscription_see_all_plans")
+            }
+            Divider()
+            if let price = summary.price {
+                Label { Text(price) } icon: { Image(systemName: AppSymbol.subscriptionPrice) }
+            }
+            Label {
+                Text(summary.renewal).accessibilityIdentifier("edit_subscription_renewal")
+            } icon: { Image(systemName: AppSymbol.subscriptionRenewal) }
+        }
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .glassPanel(cornerRadius: 20)
     }
 }

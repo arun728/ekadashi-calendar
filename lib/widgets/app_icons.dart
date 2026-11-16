@@ -269,6 +269,12 @@ class AppIcons {
   /// chevron.right
   static const rowDisclosure = CupertinoIcons.chevron_right;
 
+  /// creditcard
+  static const subscriptionPrice = CupertinoIcons.creditcard;
+
+  /// calendar
+  static const subscriptionRenewal = CupertinoIcons.calendar;
+
   /// square.and.arrow.down
   static const save = CupertinoIcons.square_arrow_down;
 
@@ -445,6 +451,8 @@ class AppIcons {
     'reminder_google': reminderGoogle,
     'reminder_observance': reminderObservance,
     'row_disclosure': rowDisclosure,
+    'subscription_price': subscriptionPrice,
+    'subscription_renewal': subscriptionRenewal,
     'save': save,
     'search': search,
     'search_all_categories': searchAllCategories,
