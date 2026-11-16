@@ -13,6 +13,9 @@ abstract class PlayEntitlementSource {
   Map<String, bool> get autoRenewing => const {};
 
   String? get subscriptionPurchaseToken => null;
+
+  /// Requires explicit expiry evidence, beyond absence from owned products.
+  bool get subscriptionExpiryConfirmed => false;
 }
 
 /// Premium access comes only from Google Play's purchase record. It is never
@@ -47,6 +50,9 @@ class PremiumService extends ChangeNotifier {
   /// subscription ended or a purchase was refunded). False while Play has not
   /// answered or is unreachable, so being offline never counts as a lapse.
   bool get lapsed => _confirmedByPlay && !isPremium;
+
+  bool get canRemovePremiumImports =>
+      lapsed && entitlements.subscriptionExpiryConfirmed;
 
   /// The 12-month subscription year containing [now], anchored on the month
   /// of [purchasedAt] (a plan bought in November runs November to October).

@@ -1,8 +1,14 @@
 import 'dart:async';
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:in_app_purchase_android/billing_client_wrappers.dart';
 import 'package:in_app_purchase_android/in_app_purchase_android.dart';
+import 'package:in_app_purchase_platform_interface/in_app_purchase_platform_interface.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'premium_service.dart';
 
 class PremiumPlan {
@@ -65,9 +71,11 @@ Future<void> _retryPlayAcknowledgement(
     BillingResponse.networkError,
   };
   for (var attempt = 0; ; attempt++) {
-    // The facade declares Future<void>, but the Android implementation
-    // returns the actual BillingResultWrapper through that same future.
-    final Future<Object?> completion = store.completePurchase(purchase);
+    final platform = InAppPurchasePlatform.instance;
+    // The Android API explicitly returns the Play acknowledgement result.
+    final Future<Object?> completion = platform is InAppPurchaseAndroidPlatform
+        ? platform.completePurchase(purchase)
+        : store.completePurchase(purchase);
     final result = await completion;
     if (result is! BillingResultWrapper ||
         result.responseCode == BillingResponse.ok) {
@@ -173,11 +181,30 @@ class PlayBillingService extends ChangeNotifier {
   // Use a completed checkout's choice only for the same purchase token.
   String? _currentPlanId;
   String? _planPurchaseToken;
-  String? get currentPlanId =>
-      premium.subscribed &&
-          premium.subscriptionPurchaseToken == _planPurchaseToken
-      ? _currentPlanId
-      : null;
+  static const _verifiedPlanKey = 'premium_verified_plan_v1';
+  SharedPreferences? _preferences;
+
+  static String _fingerprint(String token) =>
+      sha256.convert(utf8.encode(token)).toString();
+
+  String? get currentPlanId {
+    if (!premium.subscribed) return null;
+    final token = premium.subscriptionPurchaseToken;
+    if (token == _planPurchaseToken && _currentPlanId != null) {
+      return _currentPlanId;
+    }
+    if (token == null) return null;
+    final stored = _preferences?.getString(_verifiedPlanKey)?.split(':');
+    if (stored == null ||
+        stored.length != 2 ||
+        stored.last != _fingerprint(token)) {
+      return null;
+    }
+    return switch (stored.first) {
+      'monthly' || 'yearly' => stored.first,
+      _ => null,
+    };
+  }
 
   @visibleForTesting
   set currentPlanId(String? value) {
@@ -198,6 +225,12 @@ class PlayBillingService extends ChangeNotifier {
   }
 
   Future<void> initialize() async {
+    if (_disposed) return;
+    try {
+      _preferences ??= await SharedPreferences.getInstance();
+    } catch (error) {
+      debugPrint('Play plan preference unavailable: $error');
+    }
     if (_disposed) return;
     _subscription ??= store.purchaseStream.listen(
       (values) {
@@ -292,10 +325,21 @@ class PlayBillingService extends ChangeNotifier {
               purchasedAt != null &&
               _requestedAt != null &&
               !purchasedAt.isBefore(_requestedAt!)) {
-            _currentPlanId = _requestedPlan;
+            final plan = _requestedPlan;
+            _currentPlanId = plan;
             _planPurchaseToken = token;
             _requestedPlan = null;
             _requestedAt = null;
+            if (plan != null) {
+              try {
+                await _preferences?.setString(
+                  _verifiedPlanKey,
+                  '$plan:${_fingerprint(token)}',
+                );
+              } catch (error) {
+                debugPrint('Play plan preference could not be saved: $error');
+              }
+            }
           }
           premium.grant(
             purchase.productID,

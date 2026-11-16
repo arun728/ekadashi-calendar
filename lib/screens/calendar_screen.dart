@@ -237,7 +237,9 @@ class CalendarScreenState extends State<CalendarScreen> {
   /// Once Google Play confirms premium has ended, removes the Google events
   /// that Premium synced. Events of the one free month stay.
   Future<void> _removeLapsedPremiumSync({bool notify = true}) async {
-    if (_premium?.lapsed != true) return;
+    // Play can omit purchases during a recoverable account hold. Keep the
+    // user's imports unless the store explicitly confirms expiry.
+    if (_premium?.canRemovePremiumImports != true) return;
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(CalendarScreen.premiumSyncKey);
     if (raw == null) return;

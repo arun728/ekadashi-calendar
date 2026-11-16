@@ -47,15 +47,17 @@ public struct OwnedProduct: Equatable, Sendable {
     /// Whether the subscription renews; nil when unknown or not a subscription.
     public let willAutoRenew: Bool?
     public let expirationDate: Date?
+    public let transactionDate: Date?
     public let nextProductID: String?
     public let renewalDate: Date?
 
     public init(productId: String, purchaseDate: Date? = nil, willAutoRenew: Bool? = nil,
-                expirationDate: Date? = nil, nextProductID: String? = nil, renewalDate: Date? = nil) {
+                expirationDate: Date? = nil, transactionDate: Date? = nil, nextProductID: String? = nil, renewalDate: Date? = nil) {
         self.productId = productId
         self.purchaseDate = purchaseDate
         self.willAutoRenew = willAutoRenew
         self.expirationDate = expirationDate
+        self.transactionDate = transactionDate
         self.nextProductID = nextProductID
         self.renewalDate = renewalDate
     }
@@ -83,6 +85,7 @@ public struct PendingPremiumPurchase: Sendable {
 /// this Apple ID (premium_service.dart). It is never persisted locally and
 /// never tied to the Google (Calendar) sign-in.
 public struct PremiumState: Equatable, Sendable {
+    public private(set) var isInBillingRetry = false
     public private(set) var subscribed = false
     public private(set) var lifetime = false
     public private(set) var subscriptionCancelled = false
@@ -106,14 +109,24 @@ public struct PremiumState: Equatable, Sendable {
 
     /// The store answered and reports nothing owned (a subscription ended or
     /// a purchase was refunded). Never true while the store is unreachable.
-    public var lapsed: Bool { confirmedByStore && !isPremium }
+    public var lapsed: Bool { confirmedByStore && !isPremium && !isInBillingRetry }
 
     /// Applies the complete owned list, revoking anything missing.
-    public mutating func apply(owned: [OwnedProduct]) {
-        let subscription = owned.first { $0.productId == PremiumProduct.yearly }
-            ?? owned.first { $0.productId == PremiumProduct.monthly }
+    public mutating func apply(owned: [OwnedProduct], billingRetry: Bool = false) {
+        let subscription = owned.filter {
+            $0.productId == PremiumProduct.yearly || $0.productId == PremiumProduct.monthly
+        }.max { lhs, rhs in
+            if let left = lhs.transactionDate, let right = rhs.transactionDate, left != right {
+                return left < right
+            }
+            let left = lhs.expirationDate ?? .distantPast
+            let right = rhs.expirationDate ?? .distantPast
+            if left != right { return left < right }
+            return lhs.productId == PremiumProduct.monthly && rhs.productId == PremiumProduct.yearly
+        }
         let lifetimeProduct = owned.first { $0.productId == PremiumProduct.lifetime }
         subscribed = subscription != nil
+        isInBillingRetry = billingRetry && !subscribed
         lifetime = lifetimeProduct != nil
         currentPlan = subscription.flatMap { PremiumPlanID(productId: $0.productId) }
         subscriptionCancelled = subscription?.willAutoRenew == false
@@ -130,6 +143,7 @@ public struct PremiumState: Equatable, Sendable {
 
     /// The store could not be read: fail closed, and do not treat it as a lapse.
     public mutating func storeUnavailable() {
+        isInBillingRetry = false
         subscribed = false
         lifetime = false
         subscriptionCancelled = false
@@ -171,7 +185,7 @@ public struct PremiumState: Equatable, Sendable {
     public func canBuy(_ plan: PremiumPlanID, pending: Bool) -> Bool {
         if pending || lifetime { return false }
         if plan == .lifetime || !subscribed { return true }
-        return plan != currentPlan || subscriptionCancelled
+        return plan != scheduledPlan && (plan != currentPlan || subscriptionCancelled)
     }
 
     /// Suggest an upgrade after confirmed ownership; retain owned Lifetime.

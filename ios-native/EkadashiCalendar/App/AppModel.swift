@@ -159,8 +159,6 @@ final class AppModel {
     }
     @ObservationIgnored private var timePickerLocales: [String: Locale] = [:]
 
-    /// The one way every tab shows a date: weekday, date, month and year
-    /// ("Thu, 8 Oct 2026"), as AppStrings.fullDate on Android.
     func premiumRenewalMessage(_ state: PremiumState) -> String {
         guard let plan = state.scheduledPlan else { return t("premium_subscriber_body") }
         let name = t("premium_\(plan.rawValue)")
@@ -177,6 +175,7 @@ final class AppModel {
         return t("ios_premium_cancelled_until", fullDate(CivilDate.today(now: endDate)))
     }
 
+    /// Weekday, date, month and year in the app language.
     func fullDate(_ date: CivilDate) -> String { PanchangFormat.date(date, language: language) }
 
     func format(_ date: CivilDate, _ pattern: String) -> String {

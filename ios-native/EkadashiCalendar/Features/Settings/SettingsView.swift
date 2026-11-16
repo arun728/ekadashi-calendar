@@ -289,12 +289,18 @@ struct SettingsPremiumCard: View {
 
     private var subtitleKey: String {
         if state.lifetime { return "premium_lifetime_thanks_title" }
+        if state.isInBillingRetry { return "ios_premium_billing_retry_title" }
         if state.subscribed { return state.subscriptionCancelled ? "premium_cancelled_title" : "premium_subscriber_title" }
         return "settings_premium_subtitle"
     }
 
     private var offer: some View {
         VStack(alignment: .leading, spacing: 10) {
+            if state.isInBillingRetry {
+                Text(model.t("ios_premium_billing_retry_body")).font(.footnote)
+                Button(model.t("settings_premium_manage")) { managing = true }
+                    .secondaryActionStyle()
+            }
             benefit(AppSymbol.premiumCalendar, "premium_feature_calendar")
             benefit(AppSymbol.premiumVrat, "premium_feature_vrat")
             benefit(AppSymbol.premiumPanchang, "premium_feature_panchang_v2")

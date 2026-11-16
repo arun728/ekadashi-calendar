@@ -27,6 +27,7 @@ struct PremiumView: View {
     private var plan: PremiumPlanID? {
         if state.lifetime { return store.plans.contains(.lifetime) ? .lifetime : nil }
         if let selected, store.plans.contains(selected) { return selected }
+        if let scheduled = state.scheduledPlan, store.plans.contains(scheduled) { return scheduled }
         return state.defaultPlan(available: store.plans, pending: store.pending)
     }
 
@@ -66,6 +67,7 @@ struct PremiumView: View {
                     .accessibilityIdentifier("premium_close")
             }
         }
+        .onChange(of: state.scheduledPlan) { _, _ in selected = nil }
         .onChange(of: state.currentPlan) { _, _ in selected = nil }
         .onChange(of: state.lifetime) { _, _ in selected = nil }
         .manageSubscriptionsSheet(isPresented: $managing)
@@ -114,6 +116,11 @@ struct PremiumView: View {
                         .secondaryActionStyle()
                         .accessibilityIdentifier("premium_cancel_subscription")
                 }
+            }
+        } else if state.isInBillingRetry {
+            statusCard("ios_premium_billing_retry_title", "ios_premium_billing_retry_body", .orange) {
+                Button(model.t("premium_manage")) { managing = true }
+                    .secondaryActionStyle()
             }
         } else if state.subscribed {
             Group {
@@ -174,6 +181,10 @@ struct PremiumView: View {
                     Text(model.t("premium_current_plan")).font(.caption).foregroundStyle(Theme.teal)
                         .accessibilityIdentifier("premium_current_\(id.rawValue)")
                 }
+                if id == state.scheduledPlan {
+                    Text(model.t("ios_premium_next_plan")).font(.caption).foregroundStyle(Theme.teal)
+                        .accessibilityIdentifier("premium_scheduled_\(id.rawValue)")
+                }
                 Spacer(minLength: 0)
             }
             .padding(EdgeInsets(top: 10, leading: 8, bottom: 12, trailing: 8))
@@ -183,7 +194,7 @@ struct PremiumView: View {
                                                                      lineWidth: isSelected ? 2 : 1))
         }
         .buttonStyle(.plain)
-        .opacity(store.canBuy(id) || current ? 1 : 0.5)
+        .opacity(store.canBuy(id) || current || id == state.scheduledPlan ? 1 : 0.5)
         .accessibilityIdentifier("premium_plan_\(id.rawValue)")
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
@@ -192,15 +203,17 @@ struct PremiumView: View {
         VStack(spacing: 4) {
             if showPlans, !state.lifetime, let plan {
                 let price = store.products[plan]?.displayPrice ?? ""
-                let title = state.subscriptionCancelled && plan == state.currentPlan
-                    ? "\(model.t("premium_reactivate")) · \(price)" : "\(model.t("premium_\(plan.rawValue)")) · \(price)"
+                let reactivating = state.subscriptionCancelled && plan == state.currentPlan
+                let title = reactivating ? model.t("premium_reactivate")
+                    : "\(model.t("premium_\(plan.rawValue)")) · \(price)"
                 Button {
-                    buy(plan)
+                    if reactivating || plan == state.scheduledPlan { managing = true }
+                    else { buy(plan) }
                 } label: {
-                    Text(title).font(.headline).multilineTextAlignment(.center).frame(maxWidth: .infinity).padding(.vertical, 6)
+                    Text(plan == state.scheduledPlan ? model.t("premium_manage") : title).font(.headline).multilineTextAlignment(.center).frame(maxWidth: .infinity).padding(.vertical, 6)
                 }
                 .primaryActionStyle()
-                .disabled(!store.canBuy(plan))
+                .disabled(plan != state.scheduledPlan && !store.canBuy(plan))
                 .accessibilityIdentifier("premium_buy")
             }
             FlowLayout(spacing: 4) {

@@ -1,6 +1,9 @@
 {
  "_about": "iOS wording for strings that name Google Play, the Play Store or Android battery settings, and iOS-only keys (prefixed ios_). Everything else comes from lib/l10n/app_*.arb. Tamil, Hindi, Telugu, Gujarati and Bengali entries need native review like translation_review.json.",
  "en": {
+  "ios_premium_billing_retry_title": "Subscription payment failed",
+  "ios_premium_billing_retry_body": "Update your payment method in the App Store to restore Premium.",
+  "ios_premium_next_plan": "Next plan",
   "ios_premium_scheduled_plan": "Switches to {value0} at the next renewal.",
   "ios_premium_scheduled_plan_date": "Switches to {value0} on {value1}.",
   "ios_premium_cancelled_until": "Premium stays on until {value0}. Reactivate anytime to keep it.",
@@ -29,6 +32,9 @@
   "ios_fast_completed": "completed"
  },
  "ta": {
+  "ios_premium_billing_retry_title": "சந்தா கட்டணம் செலுத்தப்படவில்லை",
+  "ios_premium_billing_retry_body": "பிரீமியத்தை மீண்டும் பெற ஆப் ஸ்டோரில் கட்டண முறையைப் புதுப்பிக்கவும்.",
+  "ios_premium_next_plan": "அடுத்த திட்டம்",
   "ios_premium_scheduled_plan": "அடுத்த புதுப்பிப்பில் {value0} திட்டத்திற்கு மாறும்.",
   "ios_premium_scheduled_plan_date": "{value1} அன்று {value0} திட்டத்திற்கு மாறும்.",
   "ios_premium_cancelled_until": "{value0} வரை பிரீமியம் செயலில் இருக்கும். தொடர எப்போது வேண்டுமானாலும் மீண்டும் இயக்கலாம்.",
@@ -57,6 +63,9 @@
   "ios_fast_completed": "நிறைவு"
  },
  "hi": {
+  "ios_premium_billing_retry_title": "सदस्यता का भुगतान विफल रहा",
+  "ios_premium_billing_retry_body": "प्रीमियम वापस पाने के लिए ऐप स्टोर में भुगतान का तरीका अपडेट करें।",
+  "ios_premium_next_plan": "अगला प्लान",
   "ios_premium_scheduled_plan": "अगले नवीनीकरण पर {value0} प्लान लागू होगा।",
   "ios_premium_scheduled_plan_date": "{value1} को {value0} प्लान लागू होगा।",
   "ios_premium_cancelled_until": "प्रीमियम {value0} तक चालू रहेगा। इसे बनाए रखने के लिए कभी भी फिर से चालू करें।",
@@ -85,6 +94,9 @@
   "ios_fast_completed": "पूर्ण"
  },
  "te": {
+  "ios_premium_billing_retry_title": "సభ్యత్వ చెల్లింపు విఫలమైంది",
+  "ios_premium_billing_retry_body": "ప్రీమియంను తిరిగి పొందడానికి యాప్ స్టోర్‌లో చెల్లింపు పద్ధతిని నవీకరించండి.",
+  "ios_premium_next_plan": "తదుపరి ప్లాన్",
   "ios_premium_scheduled_plan": "తదుపరి పునరుద్ధరణలో {value0} ప్లాన్‌కు మారుతుంది.",
   "ios_premium_scheduled_plan_date": "{value1}న {value0} ప్లాన్‌కు మారుతుంది.",
   "ios_premium_cancelled_until": "{value0} వరకు ప్రీమియం ఉంటుంది. కొనసాగించడానికి ఎప్పుడైనా మళ్లీ ప్రారంభించండి.",
@@ -113,6 +125,9 @@
   "ios_fast_completed": "పూర్తి"
  },
  "gu": {
+  "ios_premium_billing_retry_title": "સભ્યપદની ચુકવણી નિષ્ફળ ગઈ",
+  "ios_premium_billing_retry_body": "પ્રીમિયમ ફરી મેળવવા ઍપ સ્ટોરમાં ચુકવણીની રીત અપડેટ કરો.",
+  "ios_premium_next_plan": "આગામી પ્લાન",
   "ios_premium_scheduled_plan": "આગામી નવીનીકરણ વખતે {value0} પ્લાન લાગુ થશે.",
   "ios_premium_scheduled_plan_date": "{value1}ના રોજ {value0} પ્લાન લાગુ થશે.",
   "ios_premium_cancelled_until": "{value0} સુધી પ્રીમિયમ ચાલુ રહેશે. ચાલુ રાખવા ગમે ત્યારે ફરી સક્રિય કરો.",
@@ -141,6 +156,9 @@
   "ios_fast_completed": "પૂર્ણ"
  },
  "bn": {
+  "ios_premium_billing_retry_title": "সাবস্ক্রিপশনের পেমেন্ট ব্যর্থ হয়েছে",
+  "ios_premium_billing_retry_body": "প্রিমিয়াম ফিরে পেতে অ্যাপ স্টোরে পেমেন্ট পদ্ধতি আপডেট করুন।",
+  "ios_premium_next_plan": "পরবর্তী প্ল্যান",
   "ios_premium_scheduled_plan": "পরবর্তী নবীকরণে {value0} প্ল্যান চালু হবে।",
   "ios_premium_scheduled_plan_date": "{value1} তারিখে {value0} প্ল্যান চালু হবে।",
   "ios_premium_cancelled_until": "{value0} পর্যন্ত প্রিমিয়াম চালু থাকবে। রাখতে চাইলে যেকোনো সময় আবার সক্রিয় করুন।",

@@ -35,6 +35,7 @@ final class StoreKitPremiumService {
     var error: String?
 
     @ObservationIgnored let snapshot = PremiumSnapshot()
+    @ObservationIgnored private var statusUpdates: Task<Void, Never>?
     @ObservationIgnored private var updates: Task<Void, Never>?
     @ObservationIgnored private var recheck: Task<Void, Never>?
     @ObservationIgnored private var refreshAgain = false
@@ -57,6 +58,14 @@ final class StoreKitPremiumService {
     }
 
     func start() async {
+        if statusUpdates == nil {
+            statusUpdates = Task { [weak self] in
+                for await _ in Product.SubscriptionInfo.Status.updates {
+                    guard let self else { return }
+                    await self.refresh()
+                }
+            }
+        }
         await loadProducts()
         await refresh()
     }
@@ -138,12 +147,14 @@ final class StoreKitPremiumService {
             let purchased = transaction.productType == .autoRenewable ? transaction.originalPurchaseDate : transaction.purchaseDate
             owned.append(OwnedProduct(productId: transaction.productID, purchaseDate: purchased,
                                       willAutoRenew: renewal?.willRenew, expirationDate: transaction.expirationDate,
-                                      nextProductID: renewal?.nextProductID, renewalDate: renewal?.renewalDate))
+                                      transactionDate: transaction.purchaseDate, nextProductID: renewal?.nextProductID, renewalDate: renewal?.renewalDate))
         }
-        if owned.isEmpty, !(await storeConfirmsNoSubscription()) {
-            // The App Store could not confirm: free features stay, but this
-            // is not treated as a lapse (no Premium-imported events removed).
-            state.storeUnavailable()
+        if owned.isEmpty {
+            switch await emptyOwnershipStatus() {
+            case .ended: state.apply(owned: [])
+            case .billingRetry: state.apply(owned: [], billingRetry: true)
+            case .unknown: state.storeUnavailable()
+            }
         } else {
             state.apply(owned: owned)
         }
@@ -175,16 +186,18 @@ final class StoreKitPremiumService {
                                             productID: transaction.productID)
     }
 
-    /// True when the subscription status request succeeds and shows no
-    /// active subscription (expired, revoked or never bought).
-    private func storeConfirmsNoSubscription() async -> Bool {
-        guard let product = products[.monthly] ?? products[.yearly], let subscription = product.subscription else { return false }
-        do {
-            let statuses = try await subscription.status
-            return !statuses.contains { $0.state == .subscribed || $0.state == .inGracePeriod || $0.state == .inBillingRetryPeriod }
-        } catch {
-            return false
+    private enum EmptyOwnershipStatus { case ended, billingRetry, unknown }
+
+    private func emptyOwnershipStatus() async -> EmptyOwnershipStatus {
+        guard let product = products[.monthly] ?? products[.yearly],
+              let statuses = try? await product.subscription?.status else { return .unknown }
+        var billingRetry = false
+        for status in statuses {
+            guard case .verified = status.transaction, case .verified = status.renewalInfo else { return .unknown }
+            if status.state == .subscribed || status.state == .inGracePeriod { return .unknown }
+            if status.state == .inBillingRetryPeriod { billingRetry = true }
         }
+        return billingRetry ? .billingRetry : .ended
     }
 
     func canBuy(_ plan: PremiumPlanID) -> Bool {

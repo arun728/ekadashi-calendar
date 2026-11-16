@@ -565,12 +565,16 @@ class _PremiumScreenState extends State<PremiumScreen> {
                             key: const Key('premium_buy'),
                             style: IosButtons.prominent(vertical: 14),
                             onPressed: billing.canBuy(selected)
-                                ? () => _buy(lang, selected)
+                                ? () =>
+                                      premium.subscriptionCancelled &&
+                                          selected.id == billing.currentPlanId
+                                      ? _manage()
+                                      : _buy(lang, selected)
                                 : null,
                             child: Text(
                               premium.subscriptionCancelled &&
                                       selected.id == billing.currentPlanId
-                                  ? '${lang.translate('premium_reactivate')} · ${selected.price}'
+                                  ? lang.translate('premium_reactivate')
                                   : '${lang.translate('premium_${selected.id}')} · ${selected.price}',
                               textAlign: TextAlign.center,
                               style: IosButtons.label,
