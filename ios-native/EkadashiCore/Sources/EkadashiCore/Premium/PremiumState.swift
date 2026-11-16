@@ -9,6 +9,15 @@ public enum PremiumProduct {
     public static let lifetime = "ekadashi_premium_lifetime"
     public static let subscriptionGroup = "ekadashi_premium"
     public static let all = [monthly, yearly, lifetime]
+
+    /// Call with verified transactions only. StoreKit includes grace-period
+    /// subscriptions in current entitlements even after their nominal expiry.
+    public static func grantsAccess(productId: String, revoked: Bool, upgraded: Bool,
+                                    expirationDate: Date?, isCurrent: Bool, now: Date) -> Bool {
+        guard all.contains(productId), !revoked, !upgraded else { return false }
+        if isCurrent { return true }
+        return expirationDate.map { $0 > now } ?? (productId == lifetime)
+    }
 }
 
 public enum PremiumPlanID: String, CaseIterable, Sendable {
@@ -37,11 +46,38 @@ public struct OwnedProduct: Equatable, Sendable {
     public let purchaseDate: Date?
     /// Whether the subscription renews; nil when unknown or not a subscription.
     public let willAutoRenew: Bool?
+    public let expirationDate: Date?
+    public let transactionDate: Date?
+    public let nextProductID: String?
+    public let renewalDate: Date?
 
-    public init(productId: String, purchaseDate: Date? = nil, willAutoRenew: Bool? = nil) {
+    public init(productId: String, purchaseDate: Date? = nil, willAutoRenew: Bool? = nil,
+                expirationDate: Date? = nil, transactionDate: Date? = nil, nextProductID: String? = nil, renewalDate: Date? = nil) {
         self.productId = productId
         self.purchaseDate = purchaseDate
         self.willAutoRenew = willAutoRenew
+        self.expirationDate = expirationDate
+        self.transactionDate = transactionDate
+        self.nextProductID = nextProductID
+        self.renewalDate = renewalDate
+    }
+}
+
+public enum PremiumRestoreResult: Equatable, Sendable {
+    case restored, none, unavailable
+}
+
+public struct PendingPremiumPurchase: Sendable {
+    public let productId: String
+    public let startedAt: Date
+
+    public init(productId: String, startedAt: Date) {
+        self.productId = productId
+        self.startedAt = startedAt
+    }
+
+    public func matches(productId: String, purchaseDate: Date) -> Bool {
+        self.productId == productId && purchaseDate >= startedAt
     }
 }
 
@@ -49,9 +85,13 @@ public struct OwnedProduct: Equatable, Sendable {
 /// this Apple ID (premium_service.dart). It is never persisted locally and
 /// never tied to the Google (Calendar) sign-in.
 public struct PremiumState: Equatable, Sendable {
+    public private(set) var isInBillingRetry = false
     public private(set) var subscribed = false
     public private(set) var lifetime = false
     public private(set) var subscriptionCancelled = false
+    public private(set) var cancelledSubscriptionEndDate: Date?
+    public private(set) var scheduledPlan: PremiumPlanID?
+    public private(set) var scheduledPlanDate: Date?
     public private(set) var currentPlan: PremiumPlanID?
     /// When the active premium product was bought, as the App Store reports.
     public private(set) var purchasedAt: Date?
@@ -62,19 +102,39 @@ public struct PremiumState: Equatable, Sendable {
 
     public var isPremium: Bool { subscribed || lifetime }
 
+    public var restoreResult: PremiumRestoreResult {
+        guard confirmedByStore else { return .unavailable }
+        return isPremium ? .restored : .none
+    }
+
     /// The store answered and reports nothing owned (a subscription ended or
     /// a purchase was refunded). Never true while the store is unreachable.
-    public var lapsed: Bool { confirmedByStore && !isPremium }
+    public var lapsed: Bool { confirmedByStore && !isPremium && !isInBillingRetry }
 
     /// Applies the complete owned list, revoking anything missing.
-    public mutating func apply(owned: [OwnedProduct]) {
-        let subscription = owned.first { $0.productId == PremiumProduct.yearly }
-            ?? owned.first { $0.productId == PremiumProduct.monthly }
+    public mutating func apply(owned: [OwnedProduct], billingRetry: Bool = false) {
+        let subscription = owned.filter {
+            $0.productId == PremiumProduct.yearly || $0.productId == PremiumProduct.monthly
+        }.max { lhs, rhs in
+            if let left = lhs.transactionDate, let right = rhs.transactionDate, left != right {
+                return left < right
+            }
+            let left = lhs.expirationDate ?? .distantPast
+            let right = rhs.expirationDate ?? .distantPast
+            if left != right { return left < right }
+            return lhs.productId == PremiumProduct.monthly && rhs.productId == PremiumProduct.yearly
+        }
         let lifetimeProduct = owned.first { $0.productId == PremiumProduct.lifetime }
         subscribed = subscription != nil
+        isInBillingRetry = billingRetry && !subscribed
         lifetime = lifetimeProduct != nil
         currentPlan = subscription.flatMap { PremiumPlanID(productId: $0.productId) }
         subscriptionCancelled = subscription?.willAutoRenew == false
+        cancelledSubscriptionEndDate = subscriptionCancelled ? subscription?.expirationDate : nil
+        let nextPlan = subscription?.nextProductID.flatMap(PremiumPlanID.init(productId:))
+        scheduledPlan = subscription?.willAutoRenew == true && nextPlan != currentPlan && nextPlan != .lifetime
+            ? nextPlan : nil
+        scheduledPlanDate = scheduledPlan == nil ? nil : subscription?.renewalDate
         // The subscription's year governs syncing while it is active.
         purchasedAt = subscription?.purchaseDate ?? lifetimeProduct?.purchaseDate
         confirmedByStore = true
@@ -83,10 +143,14 @@ public struct PremiumState: Equatable, Sendable {
 
     /// The store could not be read: fail closed, and do not treat it as a lapse.
     public mutating func storeUnavailable() {
+        isInBillingRetry = false
         subscribed = false
         lifetime = false
         subscriptionCancelled = false
+        cancelledSubscriptionEndDate = nil
         currentPlan = nil
+        scheduledPlan = nil
+        scheduledPlanDate = nil
         purchasedAt = nil
         confirmedByStore = false
         error = "premium_unavailable"
@@ -121,7 +185,7 @@ public struct PremiumState: Equatable, Sendable {
     public func canBuy(_ plan: PremiumPlanID, pending: Bool) -> Bool {
         if pending || lifetime { return false }
         if plan == .lifetime || !subscribed { return true }
-        return plan != currentPlan || subscriptionCancelled
+        return plan != scheduledPlan && (plan != currentPlan || subscriptionCancelled)
     }
 
     /// Suggest an upgrade after confirmed ownership; retain owned Lifetime.
@@ -131,5 +195,37 @@ public struct PremiumState: Equatable, Sendable {
             ? [.lifetime, .monthly, .yearly] : [.yearly, .lifetime, .monthly]
         for plan in order where available.contains(plan) && canBuy(plan, pending: pending) { return plan }
         return available.first
+    }
+}
+
+/// A verified StoreKit renewal record tied to a subscription purchase.
+public struct PremiumRenewalRecord: Sendable {
+    public let originalID: UInt64
+    public let productID: String
+    public let signedAt: Date
+    public let willRenew: Bool
+    public let nextProductID: String?
+    public let renewalDate: Date?
+
+    public init(originalID: UInt64, productID: String, signedAt: Date, willRenew: Bool,
+                nextProductID: String? = nil, renewalDate: Date? = nil) {
+        self.originalID = originalID
+        self.productID = productID
+        self.signedAt = signedAt
+        self.willRenew = willRenew
+        self.nextProductID = nextProductID
+        self.renewalDate = renewalDate
+    }
+
+    public static func resolve(_ records: [Self], originalID: UInt64, productID: String) -> Self? {
+        let matching = records.filter { $0.originalID == originalID && $0.productID == productID }
+        guard let latest = matching.max(by: { $0.signedAt < $1.signedAt }),
+              !matching.contains(where: {
+                  $0.signedAt == latest.signedAt &&
+                      ($0.willRenew != latest.willRenew || $0.nextProductID != latest.nextProductID ||
+                       $0.renewalDate != latest.renewalDate)
+              })
+        else { return nil }
+        return latest
     }
 }

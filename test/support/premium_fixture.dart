@@ -8,6 +8,10 @@ class PremiumFixture extends PlayEntitlementSource {
   bool lifetime = false;
   bool fail = false;
   int queries = 0;
+  @override
+  String? subscriptionPurchaseToken;
+  @override
+  bool subscriptionExpiryConfirmed = false;
 
   /// When Google Play says the owned product was bought.
   DateTime? purchasedAt;

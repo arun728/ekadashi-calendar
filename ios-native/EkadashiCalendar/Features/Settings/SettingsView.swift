@@ -282,16 +282,25 @@ struct SettingsPremiumCard: View {
             in: RoundedRectangle(cornerRadius: 24, style: .continuous))
         .glassPanel(cornerRadius: 24)
         .manageSubscriptionsSheet(isPresented: $managing)
+        .onChange(of: managing) { _, isPresented in
+            if !isPresented { Task { await model.premium.refresh() } }
+        }
     }
 
     private var subtitleKey: String {
         if state.lifetime { return "premium_lifetime_thanks_title" }
+        if state.isInBillingRetry { return "ios_premium_billing_retry_title" }
         if state.subscribed { return state.subscriptionCancelled ? "premium_cancelled_title" : "premium_subscriber_title" }
         return "settings_premium_subtitle"
     }
 
     private var offer: some View {
         VStack(alignment: .leading, spacing: 10) {
+            if state.isInBillingRetry {
+                Text(model.t("ios_premium_billing_retry_body")).font(.footnote)
+                Button(model.t("settings_premium_manage")) { managing = true }
+                    .secondaryActionStyle()
+            }
             benefit(AppSymbol.premiumCalendar, "premium_feature_calendar")
             benefit(AppSymbol.premiumVrat, "premium_feature_vrat")
             benefit(AppSymbol.premiumPanchang, "premium_feature_panchang_v2")
@@ -315,7 +324,8 @@ struct SettingsPremiumCard: View {
             } else if let plan = state.currentPlan {
                 Text(model.t("settings_premium_plan", model.t("premium_\(plan.rawValue)"))).font(.subheadline.weight(.semibold))
                     .foregroundStyle(.primary)
-                Text(model.t(state.subscriptionCancelled ? "premium_cancelled_body" : "premium_subscriber_body"))
+                Text(state.subscriptionCancelled ? model.premiumCancellationMessage(state)
+                     : model.premiumRenewalMessage(state))
                     .font(.footnote).foregroundStyle(.secondary)
             }
             HStack(spacing: 10) {

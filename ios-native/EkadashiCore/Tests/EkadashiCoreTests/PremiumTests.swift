@@ -164,3 +164,171 @@ final class PremiumTests: XCTestCase {
                        ["ekadashi_premium_monthly", "ekadashi_premium_yearly", "ekadashi_premium_lifetime"])
     }
 }
+
+extension PremiumTests {
+    func testVerifiedCurrentEntitlementSurvivesNominalExpiryDuringGrace() {
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        let expired = now.addingTimeInterval(-60)
+        for isCurrent in [true, false] {
+            XCTAssertEqual(PremiumProduct.grantsAccess(
+                productId: PremiumProduct.monthly, revoked: false, upgraded: false,
+                expirationDate: expired, isCurrent: isCurrent, now: now
+            ), isCurrent, "An expired historical transaction must not grant access")
+        }
+        for (id, revoked, upgraded) in [(PremiumProduct.monthly, true, false),
+                                         (PremiumProduct.monthly, false, true), ("unknown", false, false)] {
+            XCTAssertFalse(PremiumProduct.grantsAccess(
+                productId: id, revoked: revoked, upgraded: upgraded,
+                expirationDate: nil, isCurrent: true, now: now
+            ))
+        }
+        XCTAssertTrue(PremiumProduct.grantsAccess(
+            productId: PremiumProduct.lifetime, revoked: false, upgraded: false,
+            expirationDate: nil, isCurrent: false, now: now
+        ))
+        XCTAssertTrue(PremiumProduct.grantsAccess(
+            productId: PremiumProduct.yearly, revoked: false, upgraded: false,
+            expirationDate: now.addingTimeInterval(60), isCurrent: false, now: now
+        ))
+    }
+
+    func testPendingPurchaseSurvivesUnrelatedAndHistoricalTransactions() {
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        var pending = PendingPremiumPurchase(productId: PremiumProduct.yearly, startedAt: now)
+        XCTAssertFalse(pending.matches(productId: PremiumProduct.monthly, purchaseDate: now))
+        XCTAssertFalse(pending.matches(productId: PremiumProduct.yearly, purchaseDate: now.addingTimeInterval(-60)))
+        XCTAssertTrue(pending.matches(productId: PremiumProduct.yearly, purchaseDate: now))
+        pending = PendingPremiumPurchase(productId: PremiumProduct.lifetime, startedAt: now)
+        XCTAssertTrue(pending.matches(productId: PremiumProduct.lifetime, purchaseDate: now.addingTimeInterval(1)))
+    }
+
+    func testRestoreDistinguishesUnavailableFromConfirmedEmptyAndOwned() {
+        var state = PremiumState()
+        XCTAssertEqual(state.restoreResult, .unavailable)
+        state.apply(owned: [])
+        XCTAssertEqual(state.restoreResult, .none)
+        state.apply(owned: [OwnedProduct(productId: PremiumProduct.lifetime)])
+        XCTAssertEqual(state.restoreResult, .restored)
+        state.storeUnavailable()
+        XCTAssertEqual(state.restoreResult, .unavailable)
+    }
+}
+
+extension PremiumTests {
+    func testCancelledSubscriptionUsesStoreExpiryAndClearsItWhenOwnershipEnds() {
+        let expiry = CivilDate(2026, 12, 16).utcMidnight
+        var state = PremiumState()
+        state.apply(owned: [OwnedProduct(productId: PremiumProduct.monthly, willAutoRenew: false,
+                                        expirationDate: expiry)])
+        XCTAssertEqual(state.cancelledSubscriptionEndDate, expiry)
+        state.apply(owned: [OwnedProduct(productId: PremiumProduct.monthly, willAutoRenew: true,
+                                        expirationDate: expiry)])
+        XCTAssertNil(state.cancelledSubscriptionEndDate)
+        state.apply(owned: [])
+        XCTAssertNil(state.cancelledSubscriptionEndDate)
+        state.apply(owned: [OwnedProduct(productId: PremiumProduct.monthly, willAutoRenew: false)])
+        XCTAssertNil(state.cancelledSubscriptionEndDate)
+    }
+}
+
+extension PremiumTests {
+    func testRenewalStatusUsesCurrentPurchaseAndNewestSignedRecord() {
+        let old = Date(timeIntervalSince1970: 1_800_000_000)
+        let recent = old.addingTimeInterval(60)
+        let stale = PremiumRenewalRecord(originalID: 1, productID: PremiumProduct.monthly,
+                                         signedAt: old, willRenew: false)
+        let current = PremiumRenewalRecord(originalID: 1, productID: PremiumProduct.monthly,
+                                           signedAt: recent, willRenew: true)
+        let unrelated = PremiumRenewalRecord(originalID: 2, productID: PremiumProduct.monthly,
+                                             signedAt: recent, willRenew: false)
+        let otherPlan = PremiumRenewalRecord(originalID: 1, productID: PremiumProduct.yearly,
+                                             signedAt: recent, willRenew: false)
+        XCTAssertEqual(PremiumRenewalRecord.resolve([stale, unrelated, otherPlan, current],
+                                                     originalID: 1, productID: PremiumProduct.monthly)?.willRenew, true)
+        XCTAssertNil(PremiumRenewalRecord.resolve([unrelated, otherPlan],
+                                                  originalID: 1, productID: PremiumProduct.monthly))
+        XCTAssertEqual(PremiumRenewalRecord.resolve([stale], originalID: 1,
+                                                     productID: PremiumProduct.monthly)?.willRenew, false)
+        let conflicting = PremiumRenewalRecord(originalID: 1, productID: PremiumProduct.monthly,
+                                               signedAt: recent, willRenew: false)
+        XCTAssertNil(PremiumRenewalRecord.resolve([current, conflicting],
+                                                  originalID: 1, productID: PremiumProduct.monthly))
+    }
+}
+
+extension PremiumTests {
+    func testScheduledMonthlyRenewalKeepsYearlyUntilTheStoreReportsMonthly() {
+        let date = Date(timeIntervalSince1970: 2_000_000_000)
+        var state = PremiumState()
+        state.apply(owned: [OwnedProduct(productId: PremiumProduct.yearly, willAutoRenew: true,
+                                         nextProductID: PremiumProduct.monthly, renewalDate: date)])
+        XCTAssertEqual(state.currentPlan, .yearly)
+        XCTAssertEqual(state.scheduledPlan, .monthly)
+        XCTAssertEqual(state.scheduledPlanDate, date)
+
+        state.apply(owned: [OwnedProduct(productId: PremiumProduct.yearly, willAutoRenew: false,
+                                         nextProductID: PremiumProduct.monthly, renewalDate: date)])
+        XCTAssertTrue(state.isPremium)
+        XCTAssertNil(state.scheduledPlan)
+
+        state.apply(owned: [OwnedProduct(productId: PremiumProduct.monthly, willAutoRenew: true,
+                                         nextProductID: PremiumProduct.monthly)])
+        XCTAssertEqual(state.currentPlan, .monthly)
+        XCTAssertNil(state.scheduledPlan)
+    }
+
+    func testConflictingNextProductsAtSameSignedDateAreUnknown() {
+        let date = Date(timeIntervalSince1970: 2_000_000_000)
+        let monthly = PremiumRenewalRecord(originalID: 1, productID: PremiumProduct.yearly,
+                                           signedAt: date, willRenew: true, nextProductID: PremiumProduct.monthly)
+        let yearly = PremiumRenewalRecord(originalID: 1, productID: PremiumProduct.yearly,
+                                          signedAt: date, willRenew: true, nextProductID: PremiumProduct.yearly)
+        XCTAssertNil(PremiumRenewalRecord.resolve([monthly, yearly], originalID: 1,
+                                                  productID: PremiumProduct.yearly))
+    }
+}
+
+extension PremiumTests {
+    func testNewMonthlyTransactionWinsOverOldYearlyAfterRenewal() {
+        let end = Date(timeIntervalSince1970: 1_800_000_000)
+        let yearly = OwnedProduct(productId: PremiumProduct.yearly, expirationDate: end)
+        let monthly = OwnedProduct(productId: PremiumProduct.monthly,
+                                   expirationDate: end.addingTimeInterval(2_592_000))
+        var state = PremiumState()
+        state.apply(owned: [yearly, monthly])
+        XCTAssertEqual(state.currentPlan, .monthly)
+    }
+
+    func testScheduledPlanCannotBePurchasedAgain() {
+        var state = PremiumState()
+        state.apply(owned: [OwnedProduct(productId: PremiumProduct.yearly,
+                                          willAutoRenew: true, nextProductID: PremiumProduct.monthly)])
+        XCTAssertFalse(state.canBuy(.monthly, pending: false))
+        XCTAssertTrue(state.canBuy(.lifetime, pending: false))
+    }
+}
+
+extension PremiumTests {
+    func testBillingRetryWithoutGraceDoesNotGrantAccessOrConfirmLapse() {
+        var state = PremiumState()
+        state.apply(owned: [], billingRetry: true)
+        XCTAssertFalse(state.isPremium)
+        XCTAssertFalse(state.lapsed)
+        XCTAssertTrue(state.isInBillingRetry)
+        state.apply(owned: [OwnedProduct(productId: PremiumProduct.monthly)])
+        XCTAssertTrue(state.isPremium)
+        XCTAssertFalse(state.isInBillingRetry)
+    }
+
+    func testNewerMonthlyWinsEvenWhenOldYearlyHasLaterExpiry() {
+        let start = Date(timeIntervalSince1970: 1_800_000_000)
+        let yearly = OwnedProduct(productId: PremiumProduct.yearly,
+                                  expirationDate: start.addingTimeInterval(31_536_000), transactionDate: start)
+        let monthly = OwnedProduct(productId: PremiumProduct.monthly,
+                                   expirationDate: start.addingTimeInterval(2_592_000),
+                                   transactionDate: start.addingTimeInterval(60))
+        var state = PremiumState()
+        state.apply(owned: [yearly, monthly])
+        XCTAssertEqual(state.currentPlan, .monthly)
+    }
+}
