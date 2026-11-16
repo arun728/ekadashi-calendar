@@ -104,3 +104,19 @@ test('invalid preferences and unavailable storage leave the switch usable', () =
   session.button.click();
   assert.equal(session.root.dataset.theme, 'light');
 });
+
+test('the homepage uses the Apptinel artwork and a dedicated browser icon', () => {
+  const home = read('index.html');
+  assert.match(home, /class="studio-art"[\s\S]*?src="\/assets\/apptinel-logo\.jpg"/);
+  assert.match(home, /rel="icon" href="\/assets\/apptinel-icon\.png"/);
+  assert.ok(readFileSync(new URL('assets/apptinel-logo.jpg', publicDir)).length > 30_000);
+});
+
+test('the Ekadashi pages have a dedicated readable type system', () => {
+  const css = read('assets/site.css');
+  assert.match(css, /\.ekadashi h1, \.ekadashi h2\s*\{[^}]*font-family: Lora/);
+  assert.match(css, /\.ekadashi\s*\{[^}]*font-family: 'Source Sans 3'/);
+  for (const file of ['lora.woff2', 'source-sans-3.woff2']) {
+    assert.ok(existsSync(new URL('assets/fonts/' + file, publicDir)));
+  }
+});
