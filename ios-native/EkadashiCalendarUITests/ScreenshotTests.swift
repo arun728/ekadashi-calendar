@@ -668,6 +668,27 @@ final class ScreenshotTests: XCTestCase {
         #endif
     }
 
+    /// Arun (16 Nov 2026): Lifetime took 5-10 taps and Monthly 2-4 because
+    /// only the text in a plan box answered. Every part of each box, edges
+    /// and corners included, must select the plan on one tap.
+    @MainActor
+    func testPlanBoxesSelectFromTheirEdgesAndCorners() throws {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        glassTab(4); app.buttons["settings_premium"].firstMatch.tap()
+        let ids = ["monthly", "yearly", "lifetime"]
+        XCTAssertTrue(app.buttons["premium_plan_lifetime"].firstMatch.waitForExistence(timeout: 30))
+        let points: [CGVector] = [CGVector(dx: 0.08, dy: 0.06), CGVector(dx: 0.92, dy: 0.06), CGVector(dx: 0.08, dy: 0.94),
+                                  CGVector(dx: 0.92, dy: 0.94), CGVector(dx: 0.5, dy: 0.97), CGVector(dx: 0.04, dy: 0.5)]
+        for point in points {
+            for id in ids {
+                let tile = app.buttons["premium_plan_\(id)"].firstMatch
+                tile.coordinate(withNormalizedOffset: point).tap()
+                XCTAssertTrue(tile.wait(for: \.isSelected, toEqual: true, timeout: 2),
+                              "A tap at \(point) in the \(id) box did not select it")
+            }
+        }
+    }
+
     /// XCTest's timing of a tile tap until the tile reports selected. dev
     /// measured 1.55 s on iOS 18.6 and 2.15 s on iOS 26.5 (mostly XCTest's
     /// own polling); the plans page must stay within that.
