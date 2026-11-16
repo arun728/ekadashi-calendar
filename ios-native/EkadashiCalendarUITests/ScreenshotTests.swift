@@ -480,6 +480,83 @@ final class ScreenshotTests: XCTestCase {
         #endif
     }
 
+    /// The plans page must not move under the finger: a refresh (Restore,
+    /// returning to the app, closing Manage, a renewal change) must not
+    /// shift the tiles, and one tap selects a plan (PR #42 review, 16 Nov
+    /// 2026: slower than dev, sometimes two taps). On PR #42 the loading
+    /// spinner sat in the page above the tiles, so every refresh moved them.
+    @MainActor
+    func testSubscriberPlanTilesStayStillDuringRefreshAndSelectOnTheFirstTap() async throws {
+        #if !targetEnvironment(simulator)
+        throw XCTSkip("Purchases and resets belong only to isolated Simulator test accounts")
+        #else
+        let configuration = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("EkadashiCalendar/Resources/Products.storekit")
+        app.terminate()
+        let session = try SKTestSession(contentsOf: configuration)
+        session.resetToDefaultState()
+        session.disableDialogs = true
+        session.timeRate = .realTime
+        try session.clearTransactions()
+        defer { try? session.clearTransactions() }
+        _ = try await session.buyProduct(identifier: "ekadashi_premium_monthly")
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        glassTab(4); app.buttons["settings_premium"].firstMatch.tap()
+        let tiles = ["monthly", "yearly", "lifetime"].map { app.buttons["premium_plan_\($0)"].firstMatch }
+        XCTAssertTrue(tiles[0].waitForExistence(timeout: 15))
+        // While Premium is being read, the loading indicator sits in the
+        // navigation bar, never in the page above the plans.
+        let spinner = app.activityIndicators.firstMatch
+        if spinner.waitForExistence(timeout: 2) {
+            XCTAssertLessThanOrEqual(spinner.frame.maxY, app.navigationBars.firstMatch.frame.maxY + 1,
+                                     "The loading indicator is inside the page and pushes the plans down")
+        }
+        // Wait for the store's answer: Monthly is marked as the current plan.
+        await fulfillment(of: [expectation(for: NSPredicate(format: "label CONTAINS %@", "Your current plan"),
+                                           evaluatedWith: tiles[0])], timeout: 60)
+        try await Task.sleep(nanoseconds: 1_000_000_000)
+        let settled = tiles.map(\.frame)
+        // Restore purchases re-reads Premium while the page stays on screen.
+        let restore = app.buttons["Restore purchases"].firstMatch
+        XCTAssertTrue(restore.waitForExistence(timeout: 5))
+        restore.tap()
+        for _ in 0..<12 {
+            XCTAssertEqual(tiles.map(\.frame), settled, "Plan tiles moved during a background refresh")
+            try await Task.sleep(nanoseconds: 250_000_000)
+        }
+        for tile in [tiles[1], tiles[2], tiles[1]] {
+            tile.tap()
+            XCTAssertTrue(tile.wait(for: \.isSelected, toEqual: true, timeout: 3), "One tap must select \(tile.identifier)")
+            try await Task.sleep(nanoseconds: 1_000_000_000)
+            XCTAssertTrue(tile.isSelected, "\(tile.identifier) lost its selection")
+        }
+        snap("premium-subscriber-tiles-stay-still")
+        #endif
+    }
+
+    /// XCTest's timing of a tile tap until the tile reports selected. dev
+    /// measured 1.55 s on iOS 18.6 and 2.15 s on iOS 26.5 (mostly XCTest's
+    /// own polling); the plans page must stay within that.
+    @MainActor
+    func testPlanTileSelectionPerformance() throws {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        glassTab(4); app.buttons["settings_premium"].firstMatch.tap()
+        let yearly = app.buttons["premium_plan_yearly"].firstMatch
+        let lifetime = app.buttons["premium_plan_lifetime"].firstMatch
+        XCTAssertTrue(lifetime.waitForExistence(timeout: 15))
+        let options = XCTMeasureOptions()
+        options.iterationCount = 5
+        measure(metrics: [XCTClockMetric()], options: options) {
+            for tile in [lifetime, yearly] {
+                let tapped = Date()
+                tile.tap()
+                XCTAssertTrue(tile.wait(for: \.isSelected, toEqual: true, timeout: 3))
+                XCTAssertLessThan(Date().timeIntervalSince(tapped), 2.5, "Tap to selected was slower than dev")
+            }
+        }
+    }
+
     func testShareActionsSaveLeftAndShareRightInBothGlassModes() {
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
         for enabled in [false, true] {

@@ -332,3 +332,58 @@ extension PremiumTests {
         XCTAssertEqual(state.currentPlan, .monthly)
     }
 }
+
+/// PR #42 review follow-ups (16 Nov 2026): unknown renewal status is not shown
+/// as renewing, and a plan change Apple schedules for the next renewal is
+/// visible in the app (Apple's Manage sheet keeps the current plan ticked).
+extension PremiumTests {
+    func testRenewalStatusIsUnknownOnlyWhenTheStoreDoesNotSay() {
+        var state = PremiumState()
+        state.apply(owned: [owned(PremiumProduct.monthly, renews: nil)])
+        XCTAssertTrue(state.renewalStatusUnknown)
+        XCTAssertFalse(state.subscriptionCancelled)
+        state.apply(owned: [owned(PremiumProduct.monthly, renews: true)])
+        XCTAssertFalse(state.renewalStatusUnknown)
+        state.apply(owned: [owned(PremiumProduct.monthly, renews: false)])
+        XCTAssertFalse(state.renewalStatusUnknown)
+        state.apply(owned: [owned(PremiumProduct.lifetime)])
+        XCTAssertFalse(state.renewalStatusUnknown, "Lifetime has no renewal")
+        state.storeUnavailable()
+        XCTAssertFalse(state.renewalStatusUnknown)
+    }
+
+    func testPlanBadgesShowTheCurrentPlanEndAndTheScheduledStart() {
+        let end = local(2027, 11, 16)
+        var state = PremiumState()
+        state.apply(owned: [])
+        for plan in PremiumPlanID.allCases { XCTAssertEqual(state.planBadge(for: plan), .none) }
+
+        state.apply(owned: [OwnedProduct(productId: PremiumProduct.yearly, willAutoRenew: true, expirationDate: end)])
+        XCTAssertEqual(state.planBadge(for: .yearly), .current)
+        XCTAssertEqual(state.planBadge(for: .monthly), .none)
+
+        state.apply(owned: [OwnedProduct(productId: PremiumProduct.yearly, willAutoRenew: true, expirationDate: end,
+                                         nextProductID: PremiumProduct.monthly, renewalDate: end)])
+        XCTAssertEqual(state.planBadge(for: .yearly), .currentUntil(end))
+        XCTAssertEqual(state.planBadge(for: .monthly), .startsOn(end))
+        XCTAssertEqual(state.planBadge(for: .lifetime), .none)
+
+        state.apply(owned: [OwnedProduct(productId: PremiumProduct.yearly, willAutoRenew: false, expirationDate: end)])
+        XCTAssertEqual(state.planBadge(for: .yearly), .currentUntil(end))
+
+        state.apply(owned: [owned(PremiumProduct.lifetime)])
+        XCTAssertEqual(state.planBadge(for: .lifetime), .current)
+    }
+
+    func testDowngradesWaitForTheRenewalAndUpgradesStartNow() {
+        let end = local(2027, 11, 16)
+        var state = PremiumState()
+        state.apply(owned: [])
+        XCTAssertEqual(state.switchTiming(to: .monthly), .now)
+        state.apply(owned: [OwnedProduct(productId: PremiumProduct.yearly, willAutoRenew: true, expirationDate: end)])
+        XCTAssertEqual(state.switchTiming(to: .monthly), .atRenewal(end), "Yearly is level 1, Monthly level 2: a downgrade")
+        XCTAssertEqual(state.switchTiming(to: .lifetime), .now)
+        state.apply(owned: [OwnedProduct(productId: PremiumProduct.monthly, willAutoRenew: true, expirationDate: end)])
+        XCTAssertEqual(state.switchTiming(to: .yearly), .now, "An upgrade starts immediately")
+    }
+}
