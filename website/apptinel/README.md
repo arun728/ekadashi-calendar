@@ -9,8 +9,9 @@ Preview from the repository root with
 `python3 -m http.server 8080 --directory website/apptinel/public`.
 Run `node --test website/apptinel/tests/site.test.mjs` to check the pages.
 
-For a future Cloudflare Pages project, use `website/apptinel/public` as the
-output directory in the repository. The files require no build step. The
+Production uses the existing `apptinel` Cloudflare Worker. In its Deployments
+view, select New deployment and upload the `website/apptinel/public` folder
+as static assets. The files require no build step. The
 product page and its legal URLs use directory indexes with trailing slashes.
 Confirm the public URLs before updating the iOS paywall and App Store Connect
 metadata to use them.

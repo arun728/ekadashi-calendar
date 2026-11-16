@@ -5,8 +5,15 @@
   font-display: swap;
 }
 @font-face {
-  font-family: 'Instrument Serif';
-  src: url('/assets/fonts/instrument-serif.woff2') format('woff2');
+  font-family: Lora;
+  src: url('/assets/fonts/lora.woff2') format('woff2');
+  font-weight: 500 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Source Sans 3';
+  src: url('/assets/fonts/source-sans-3.woff2') format('woff2');
+  font-weight: 400 700;
   font-display: swap;
 }
 
@@ -33,6 +40,7 @@ body {
   color: var(--ink);
 }
 .ekadashi {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
   --background: #121212;
   --surface: #1c2928;
   --ink: #f0f5f3;
@@ -155,7 +163,7 @@ h3 { font-size: 1.18rem; font-weight: 650; line-height: 1.25; }
   border-radius: 50%;
 }
 .studio-art::after { inset: 25% 7%; transform: rotate(-33deg); }
-.studio-art img { width: 40%; height: auto; filter: drop-shadow(0 1rem 2rem #0006); }
+.studio-art img { width: 72%; height: auto; border-radius: 20%; box-shadow: 0 1rem 2rem #0006; }
 .product-section { border-top: 1px solid var(--line); padding-top: 1.65rem; }
 .product-grid, .feature-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin-top: 1.25rem; }
 .product-card, .feature-grid article, .premium-list > div {
@@ -169,7 +177,10 @@ h3 { font-size: 1.18rem; font-weight: 650; line-height: 1.25; }
 .product-icon, .app-icon { border-radius: 22%; }
 .future-product .status { color: var(--muted); font-size: .72rem; }
 .hero-actions { display: flex; align-items: center; flex-wrap: wrap; gap: .6rem 1.1rem; }
-.ekadashi h1, .ekadashi h2 { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; letter-spacing: -.03em; }
+.ekadashi h1, .ekadashi h2 { font-family: Lora, Georgia, serif; font-weight: 500; letter-spacing: -.035em; }
+.ekadashi h1 { font-size: clamp(2.8rem, 6vw, 5.6rem); line-height: 1.05; }
+.ekadashi p, .ekadashi li { max-width: 68ch; }
+.ekadashi .intro { max-width: 42ch; }
 .app-hero { grid-template-columns: minmax(0, 1fr) minmax(0, .8fr); }
 .app-shot { justify-self: center; width: min(100%, 17.8rem); }
 .app-shot img {
@@ -189,7 +200,7 @@ h3 { font-size: 1.18rem; font-weight: 650; line-height: 1.25; }
 .premium-list dt { font-weight: 650; }
 .premium-list dd { margin: 0; }
 .legal { max-width: 46rem; padding-top: clamp(2.5rem, 6vw, 5rem); }
-.legal h1 { font-size: clamp(3rem, 8vw, 5.75rem); margin-bottom: .5rem; }
+.ekadashi .legal h1 { font-size: clamp(3rem, 8vw, 5.75rem); margin-bottom: .5rem; }
 .legal h2 { font-size: clamp(1.55rem, 3vw, 2.2rem); margin-top: 1.9rem; }
 .legal p, .legal li { overflow-wrap: anywhere; }
 .legal p, .legal li + li { margin-top: .62rem; }
