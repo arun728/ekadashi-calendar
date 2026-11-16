@@ -213,3 +213,20 @@ extension PremiumTests {
         XCTAssertEqual(state.restoreResult, .unavailable)
     }
 }
+
+extension PremiumTests {
+    func testCancelledSubscriptionUsesStoreExpiryAndClearsItWhenOwnershipEnds() {
+        let expiry = CivilDate(2026, 12, 16).utcMidnight
+        var state = PremiumState()
+        state.apply(owned: [OwnedProduct(productId: PremiumProduct.monthly, willAutoRenew: false,
+                                        expirationDate: expiry)])
+        XCTAssertEqual(state.cancelledSubscriptionEndDate, expiry)
+        state.apply(owned: [OwnedProduct(productId: PremiumProduct.monthly, willAutoRenew: true,
+                                        expirationDate: expiry)])
+        XCTAssertNil(state.cancelledSubscriptionEndDate)
+        state.apply(owned: [])
+        XCTAssertNil(state.cancelledSubscriptionEndDate)
+        state.apply(owned: [OwnedProduct(productId: PremiumProduct.monthly, willAutoRenew: false)])
+        XCTAssertNil(state.cancelledSubscriptionEndDate)
+    }
+}
