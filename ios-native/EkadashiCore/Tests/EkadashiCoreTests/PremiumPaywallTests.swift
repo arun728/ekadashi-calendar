@@ -57,15 +57,31 @@ final class PremiumPaywallTests: XCTestCase {
         state.apply(owned: [OwnedProduct(productId: PremiumProduct.yearly, willAutoRenew: true, expirationDate: end)])
         yearly.storeChanged(state)
         XCTAssertNil(yearly.selected, "A bought, renewing plan is no longer a choice")
+        XCTAssertEqual(yearly.plan(state, available: all, pending: false), .yearly, "The bought plan is ticked")
     }
 
-    func testTheBuyButtonAlwaysDoesSomethingForABuyablePlan() {
+    /// As in Apple's Available Plans sheet (Arun, 16 Nov 2026): the plan in
+    /// use is ticked, even with another plan scheduled next; a free user
+    /// starts on the suggested plan.
+    func testTheCurrentPlanIsTickedLikeApplesPlanList() {
+        let selection = PremiumPaywallSelection()
+        XCTAssertEqual(selection.plan(yearlyWithMonthlyNext(), available: all, pending: false), .yearly)
+        XCTAssertEqual(selection.plan(cancelledYearly(), available: all, pending: false), .yearly)
+        var free = PremiumState()
+        free.apply(owned: [])
+        XCTAssertEqual(selection.plan(free, available: all, pending: false), .yearly)
+    }
+
+    /// The button appears only once another plan is ticked; a downgrade is
+    /// bought straight away and Apple's own sheet says when it starts.
+    func testTheBuyButtonOnlyActsOnADifferentPlan() {
         let scheduled = yearlyWithMonthlyNext()
+        XCTAssertEqual(scheduled.paywallAction(for: .yearly, canBuy: false), .none, "No button on the plan in use")
         XCTAssertEqual(scheduled.paywallAction(for: .lifetime, canBuy: true), .confirmLifetime)
         XCTAssertEqual(scheduled.paywallAction(for: .monthly, canBuy: false), .manage, "Monthly is already scheduled")
 
         let cancelled = cancelledYearly()
-        XCTAssertEqual(cancelled.paywallAction(for: .monthly, canBuy: true), .confirmSwitch(.monthly))
+        XCTAssertEqual(cancelled.paywallAction(for: .monthly, canBuy: true), .purchase(.monthly))
         XCTAssertEqual(cancelled.paywallAction(for: .yearly, canBuy: true), .manage, "Reactivating is in Apple's sheet")
         XCTAssertEqual(cancelled.paywallAction(for: .lifetime, canBuy: true), .confirmLifetime)
 
@@ -77,6 +93,17 @@ final class PremiumPaywallTests: XCTestCase {
 
         var monthly = PremiumState()
         monthly.apply(owned: [OwnedProduct(productId: PremiumProduct.monthly, willAutoRenew: true, expirationDate: end)])
+        XCTAssertEqual(monthly.paywallAction(for: .monthly, canBuy: false), .none)
         XCTAssertEqual(monthly.paywallAction(for: .yearly, canBuy: true), .purchase(.yearly), "Upgrades start now")
+    }
+
+    func testTheButtonSaysChangePlanOnlyForASubscriptionSwitch() {
+        XCTAssertTrue(cancelledYearly().paywallIsPlanChange(to: .monthly))
+        XCTAssertTrue(yearlyWithMonthlyNext().paywallIsPlanChange(to: .monthly))
+        XCTAssertFalse(cancelledYearly().paywallIsPlanChange(to: .lifetime))
+        XCTAssertFalse(cancelledYearly().paywallIsPlanChange(to: .yearly))
+        var free = PremiumState()
+        free.apply(owned: [])
+        XCTAssertFalse(free.paywallIsPlanChange(to: .monthly))
     }
 }
