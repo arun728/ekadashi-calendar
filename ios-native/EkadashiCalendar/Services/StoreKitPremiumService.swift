@@ -134,7 +134,8 @@ final class StoreKitPremiumService {
                 renews = await willAutoRenew(transaction.productID)
             }
             let purchased = transaction.productType == .autoRenewable ? transaction.originalPurchaseDate : transaction.purchaseDate
-            owned.append(OwnedProduct(productId: transaction.productID, purchaseDate: purchased, willAutoRenew: renews))
+            owned.append(OwnedProduct(productId: transaction.productID, purchaseDate: purchased,
+                                      willAutoRenew: renews, expirationDate: transaction.expirationDate))
         }
         if owned.isEmpty, !(await storeConfirmsNoSubscription()) {
             // The App Store could not confirm: free features stay, but this

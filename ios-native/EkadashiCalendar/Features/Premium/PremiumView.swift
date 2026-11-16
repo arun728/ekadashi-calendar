@@ -115,7 +115,8 @@ struct PremiumView: View {
         } else if state.subscribed {
             Group {
                 if state.subscriptionCancelled {
-                    statusCard("premium_cancelled_title", "premium_cancelled_body", .orange)
+                    statusCard("premium_cancelled_title", "premium_cancelled_body", .orange,
+                               bodyText: model.premiumCancellationMessage(state))
                 } else {
                     statusCard("premium_subscriber_title", "premium_subscriber_body", Theme.teal)
                 }
@@ -132,11 +133,11 @@ struct PremiumView: View {
         .padding(.vertical, 4)
     }
 
-    private func statusCard(_ title: String, _ body: String, _ color: Color,
+    private func statusCard(_ title: String, _ body: String, _ color: Color, bodyText: String? = nil,
                             @ViewBuilder action: () -> some View = { EmptyView() }) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(model.t(title)).font(.headline)
-            Text(model.t(body)).font(.subheadline)
+            Text(bodyText ?? model.t(body)).font(.subheadline)
             action().padding(.top, 6)
         }
         .padding(16)

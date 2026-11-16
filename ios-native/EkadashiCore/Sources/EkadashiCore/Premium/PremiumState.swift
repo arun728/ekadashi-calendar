@@ -46,11 +46,14 @@ public struct OwnedProduct: Equatable, Sendable {
     public let purchaseDate: Date?
     /// Whether the subscription renews; nil when unknown or not a subscription.
     public let willAutoRenew: Bool?
+    public let expirationDate: Date?
 
-    public init(productId: String, purchaseDate: Date? = nil, willAutoRenew: Bool? = nil) {
+    public init(productId: String, purchaseDate: Date? = nil, willAutoRenew: Bool? = nil,
+                expirationDate: Date? = nil) {
         self.productId = productId
         self.purchaseDate = purchaseDate
         self.willAutoRenew = willAutoRenew
+        self.expirationDate = expirationDate
     }
 }
 
@@ -79,6 +82,7 @@ public struct PremiumState: Equatable, Sendable {
     public private(set) var subscribed = false
     public private(set) var lifetime = false
     public private(set) var subscriptionCancelled = false
+    public private(set) var cancelledSubscriptionEndDate: Date?
     public private(set) var currentPlan: PremiumPlanID?
     /// When the active premium product was bought, as the App Store reports.
     public private(set) var purchasedAt: Date?
@@ -107,6 +111,7 @@ public struct PremiumState: Equatable, Sendable {
         lifetime = lifetimeProduct != nil
         currentPlan = subscription.flatMap { PremiumPlanID(productId: $0.productId) }
         subscriptionCancelled = subscription?.willAutoRenew == false
+        cancelledSubscriptionEndDate = subscriptionCancelled ? subscription?.expirationDate : nil
         // The subscription's year governs syncing while it is active.
         purchasedAt = subscription?.purchaseDate ?? lifetimeProduct?.purchaseDate
         confirmedByStore = true
@@ -118,6 +123,7 @@ public struct PremiumState: Equatable, Sendable {
         subscribed = false
         lifetime = false
         subscriptionCancelled = false
+        cancelledSubscriptionEndDate = nil
         currentPlan = nil
         purchasedAt = nil
         confirmedByStore = false

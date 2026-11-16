@@ -1,6 +1,7 @@
 {
  "_about": "iOS wording for strings that name Google Play, the Play Store or Android battery settings, and iOS-only keys (prefixed ios_). Everything else comes from lib/l10n/app_*.arb. Tamil, Hindi, Telugu, Gujarati and Bengali entries need native review like translation_review.json.",
  "en": {
+  "ios_premium_cancelled_until": "Premium stays on until {value0}. Reactivate anytime to keep it.",
   "rate_app_desc": "Rate us on the App Store",
   "app_settings_desc": "Manage permissions and background refresh",
   "perm_guide_desc": "For accurate notifications and location features, please allow:\n• Notifications\n• Location\n• Background App Refresh",
@@ -26,6 +27,7 @@
   "ios_fast_completed": "completed"
  },
  "ta": {
+  "ios_premium_cancelled_until": "{value0} வரை பிரீமியம் செயலில் இருக்கும். தொடர எப்போது வேண்டுமானாலும் மீண்டும் இயக்கலாம்.",
   "rate_app_desc": "ஆப் ஸ்டோரில் எங்களை மதிப்பிடவும்",
   "app_settings_desc": "அனுமதிகள் மற்றும் பின்னணிப் புதுப்பிப்பை நிர்வகிக்கவும்",
   "perm_guide_desc": "துல்லியமான அறிவிப்புகள் மற்றும் இருப்பிட அம்சங்களுக்கு, அனுமதிக்கவும்:\n• அறிவிப்புகள்\n• இருப்பிடம்\n• பின்னணி ஆப் புதுப்பிப்பு",
@@ -51,6 +53,7 @@
   "ios_fast_completed": "நிறைவு"
  },
  "hi": {
+  "ios_premium_cancelled_until": "प्रीमियम {value0} तक चालू रहेगा। इसे बनाए रखने के लिए कभी भी फिर से चालू करें।",
   "rate_app_desc": "ऐप स्टोर पर हमें रेट करें",
   "app_settings_desc": "अनुमतियां और बैकग्राउंड रिफ्रेश प्रबंधित करें",
   "perm_guide_desc": "सटीक सूचनाओं और स्थान सुविधाओं के लिए, कृपया अनुमति दें:\n• सूचनाएं\n• स्थान\n• बैकग्राउंड ऐप रिफ्रेश",
@@ -76,6 +79,7 @@
   "ios_fast_completed": "पूर्ण"
  },
  "te": {
+  "ios_premium_cancelled_until": "{value0} వరకు ప్రీమియం ఉంటుంది. కొనసాగించడానికి ఎప్పుడైనా మళ్లీ ప్రారంభించండి.",
   "rate_app_desc": "యాప్ స్టోర్‌లో రేట్ చేయండి",
   "app_settings_desc": "అనుమతులు మరియు బ్యాక్‌గ్రౌండ్ రిఫ్రెష్ నిర్వహించండి",
   "perm_guide_desc": "ఖచ్చితమైన నోటిఫికేషన్లు మరియు స్థాన ఫీచర్ల కోసం, దయచేసి అనుమతించండి:\n• నోటిఫికేషన్లు\n• స్థానం\n• బ్యాక్‌గ్రౌండ్ యాప్ రిఫ్రెష్",
@@ -101,6 +105,7 @@
   "ios_fast_completed": "పూర్తి"
  },
  "gu": {
+  "ios_premium_cancelled_until": "{value0} સુધી પ્રીમિયમ ચાલુ રહેશે. ચાલુ રાખવા ગમે ત્યારે ફરી સક્રિય કરો.",
   "rate_app_desc": "એપ સ્ટોર પર અમને રેટ કરો",
   "app_settings_desc": "પરવાનગીઓ અને બેકગ્રાઉન્ડ રિફ્રેશ સંભાળો",
   "perm_guide_desc": "ચોક્કસ સૂચનાઓ અને સ્થાન સુવિધાઓ માટે કૃપા કરીને મંજૂરી આપો:\n• સૂચનાઓ\n• સ્થાન\n• બેકગ્રાઉન્ડ એપ રિફ્રેશ",
@@ -126,6 +131,7 @@
   "ios_fast_completed": "પૂર્ણ"
  },
  "bn": {
+  "ios_premium_cancelled_until": "{value0} পর্যন্ত প্রিমিয়াম চালু থাকবে। রাখতে চাইলে যেকোনো সময় আবার সক্রিয় করুন।",
   "rate_app_desc": "অ্যাপ স্টোর-এ আমাদের রেট দিন",
   "app_settings_desc": "অনুমতি ও ব্যাকগ্রাউন্ড রিফ্রেশ পরিচালনা করুন",
   "perm_guide_desc": "সঠিক বিজ্ঞপ্তি ও অবস্থান সুবিধার জন্য অনুগ্রহ করে অনুমতি দিন:\n• বিজ্ঞপ্তি\n• অবস্থান\n• ব্যাকগ্রাউন্ড অ্যাপ রিফ্রেশ",
