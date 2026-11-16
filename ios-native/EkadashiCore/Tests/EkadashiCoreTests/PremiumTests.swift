@@ -255,3 +255,35 @@ extension PremiumTests {
                                                   originalID: 1, productID: PremiumProduct.monthly))
     }
 }
+
+extension PremiumTests {
+    func testScheduledMonthlyRenewalKeepsYearlyUntilTheStoreReportsMonthly() {
+        let date = Date(timeIntervalSince1970: 2_000_000_000)
+        var state = PremiumState()
+        state.apply(owned: [OwnedProduct(productId: PremiumProduct.yearly, willAutoRenew: true,
+                                         nextProductID: PremiumProduct.monthly, renewalDate: date)])
+        XCTAssertEqual(state.currentPlan, .yearly)
+        XCTAssertEqual(state.scheduledPlan, .monthly)
+        XCTAssertEqual(state.scheduledPlanDate, date)
+
+        state.apply(owned: [OwnedProduct(productId: PremiumProduct.yearly, willAutoRenew: false,
+                                         nextProductID: PremiumProduct.monthly, renewalDate: date)])
+        XCTAssertTrue(state.isPremium)
+        XCTAssertNil(state.scheduledPlan)
+
+        state.apply(owned: [OwnedProduct(productId: PremiumProduct.monthly, willAutoRenew: true,
+                                         nextProductID: PremiumProduct.monthly)])
+        XCTAssertEqual(state.currentPlan, .monthly)
+        XCTAssertNil(state.scheduledPlan)
+    }
+
+    func testConflictingNextProductsAtSameSignedDateAreUnknown() {
+        let date = Date(timeIntervalSince1970: 2_000_000_000)
+        let monthly = PremiumRenewalRecord(originalID: 1, productID: PremiumProduct.yearly,
+                                           signedAt: date, willRenew: true, nextProductID: PremiumProduct.monthly)
+        let yearly = PremiumRenewalRecord(originalID: 1, productID: PremiumProduct.yearly,
+                                          signedAt: date, willRenew: true, nextProductID: PremiumProduct.yearly)
+        XCTAssertNil(PremiumRenewalRecord.resolve([monthly, yearly], originalID: 1,
+                                                  productID: PremiumProduct.yearly))
+    }
+}
