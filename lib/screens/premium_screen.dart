@@ -85,8 +85,10 @@ class _PremiumScreenState extends State<PremiumScreen> {
   String? _selected;
   String? _selectionOwnership;
 
-  /// Suggest the next upgrade after confirmed ownership changes. Retain
-  /// a manual choice otherwise, and keep owned Lifetime selected.
+  /// A tapped plan stays selected through Play refreshes (they can briefly
+  /// report no plan). When ownership changes it is dropped only if that plan
+  /// is now owned; then the next upgrade is suggested. Owned Lifetime stays
+  /// selected.
   PremiumPlan? _selectedPlan() {
     final plans = billing.plans;
     if (plans.isEmpty) return null;
@@ -94,7 +96,12 @@ class _PremiumScreenState extends State<PremiumScreen> {
         '${premium.subscribed}:${premium.lifetime}:${billing.currentPlanId}';
     if (_selectionOwnership != ownership) {
       _selectionOwnership = ownership;
-      _selected = null;
+      final owned =
+          premium.lifetime ||
+          (premium.subscribed &&
+              _selected == billing.currentPlanId &&
+              !premium.subscriptionCancelled);
+      if (owned) _selected = null;
     }
     if (premium.lifetime) {
       for (final plan in plans) {
