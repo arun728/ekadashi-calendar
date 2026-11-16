@@ -9,15 +9,6 @@ enum LocationState: Equatable { case detecting, denied, located(String), unknown
 
 struct PaywallRequest: Identifiable { let id = UUID(); let reason: String? }
 
-/// What the Edit subscription sheet shows (AppModel.editSubscriptionSummary).
-struct EditSubscriptionSummary: Equatable {
-    let plan: String
-    let price: String?
-    let renewal: String
-    let note: String?
-    let cancelled: Bool
-}
-
 struct GooglePickerRequest: Identifiable {
     let id = UUID()
     let calendars: [GoogleCalendarInfo]
@@ -205,27 +196,6 @@ final class AppModel {
             return t("premium_cancelled_body")
         }
         return t("ios_premium_cancelled_until", fullDate(CivilDate.today(now: endDate)))
-    }
-
-    /// The Edit subscription sheet (Claude's layout): the plan in use, its
-    /// price, when it renews or ends, and the note under Cancel.
-    func editSubscriptionSummary(_ state: PremiumState, price: String?) -> EditSubscriptionSummary? {
-        guard state.subscribed, !state.lifetime, let plan = state.currentPlan else { return nil }
-        let period = plan == .monthly ? "premium_per_month" : "premium_per_year"
-        let end = state.cancelledSubscriptionEndDate ?? state.currentPeriodEnd
-        let date = end.map { fullDate(CivilDate.today(now: $0)) }
-        let renewal: String
-        if state.subscriptionCancelled {
-            renewal = date.map { t("ios_subscription_ends", $0) } ?? t("premium_cancelled_body")
-        } else if state.scheduledPlan != nil || state.renewalStatusUnknown {
-            renewal = premiumRenewalMessage(state)
-        } else {
-            renewal = date.map { t("ios_subscription_renews", $0) } ?? t("premium_subscriber_body")
-        }
-        return EditSubscriptionSummary(
-            plan: t("premium_\(plan.rawValue)"), price: price.map { "\($0) \(t(period))" }, renewal: renewal,
-            note: state.subscriptionCancelled ? nil : date.map { t("ios_subscription_cancel_note", $0) },
-            cancelled: state.subscriptionCancelled)
     }
 
     /// Weekday, date, month and year in the app language.

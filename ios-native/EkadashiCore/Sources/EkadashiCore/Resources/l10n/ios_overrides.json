@@ -35,14 +35,7 @@
   "ios_widget_desc_next": "The next five upcoming Ekadashis. Tap an Ekadashi to open its Home card.",
   "ios_glass_look": "Glass Look",
   "ios_glass_look_desc": "Use clearer, translucent cards and controls.",
-  "ios_fast_completed": "completed",
-  "ios_edit_subscription_title": "Edit Subscription",
-  "ios_see_all_plans": "See all plans",
-  "ios_cancel_subscription": "Cancel subscription",
-  "ios_subscription_renews": "Renews {value0}",
-  "ios_subscription_ends": "Ends {value0}",
-  "ios_subscription_cancel_note": "If you cancel now, you can still use Premium until {value0}.",
-  "ios_done": "Done"
+  "ios_fast_completed": "completed"
  },
  "ta": {
   "ios_premium_renewal_unknown": "பிரீமியம் செயலில் உள்ளது. எப்போது புதுப்பிக்கப்படும் என அறிய நிர்வகி என்பதைத் திறக்கவும்.",
@@ -79,14 +72,7 @@
   "ios_widget_desc_next": "அடுத்து வரும் ஐந்து ஏகாதசிகள். ஓர் ஏகாதசியைத் தொட்டு அதன் முகப்புப் பக்கத்தைத் திறக்கவும்.",
   "ios_glass_look": "கண்ணாடித் தோற்றம்",
   "ios_glass_look_desc": "தெளிவான, ஒளி ஊடுருவும் அட்டைகளையும் கட்டுப்பாடுகளையும் பயன்படுத்தவும்.",
-  "ios_fast_completed": "நிறைவு",
-  "ios_edit_subscription_title": "சந்தாவைத் திருத்து",
-  "ios_see_all_plans": "எல்லா திட்டங்களையும் காண்க",
-  "ios_cancel_subscription": "சந்தாவை ரத்துசெய்",
-  "ios_subscription_renews": "{value0} அன்று புதுப்பிக்கப்படும்",
-  "ios_subscription_ends": "{value0} அன்று முடிவடையும்",
-  "ios_subscription_cancel_note": "இப்போது ரத்துசெய்தாலும் {value0} வரை பிரீமியத்தைப் பயன்படுத்தலாம்.",
-  "ios_done": "முடிந்தது"
+  "ios_fast_completed": "நிறைவு"
  },
  "hi": {
   "ios_premium_renewal_unknown": "प्रीमियम सक्रिय है। यह कब नवीनीकृत होगा, यह देखने के लिए प्रबंधित करें खोलें।",
@@ -123,14 +109,7 @@
   "ios_widget_desc_next": "आने वाली पाँच एकादशियाँ। किसी एकादशी पर टैप करके उसका होम कार्ड खोलें।",
   "ios_glass_look": "काँच जैसा रूप",
   "ios_glass_look_desc": "अधिक पारदर्शी कार्ड और नियंत्रण दिखाएँ।",
-  "ios_fast_completed": "पूर्ण",
-  "ios_edit_subscription_title": "सदस्यता बदलें",
-  "ios_see_all_plans": "सभी प्लान देखें",
-  "ios_cancel_subscription": "सदस्यता रद्द करें",
-  "ios_subscription_renews": "{value0} को नवीनीकरण",
-  "ios_subscription_ends": "{value0} को समाप्त",
-  "ios_subscription_cancel_note": "अभी रद्द करने पर भी आप {value0} तक प्रीमियम का उपयोग कर सकते हैं।",
-  "ios_done": "हो गया"
+  "ios_fast_completed": "पूर्ण"
  },
  "te": {
   "ios_premium_renewal_unknown": "ప్రీమియం సక్రియంగా ఉంది. ఎప్పుడు పునరుద్ధరించబడుతుందో చూడటానికి నిర్వహించండి తెరవండి.",
@@ -167,14 +146,7 @@
   "ios_widget_desc_next": "రాబోయే ఐదు ఏకాదశులు. ఏకాదశిని తాకి దాని హోమ్ కార్డును తెరవండి.",
   "ios_glass_look": "గాజు రూపం",
   "ios_glass_look_desc": "మరింత పారదర్శకంగా కనిపించే కార్డులు, నియంత్రణలను ఉపయోగించండి.",
-  "ios_fast_completed": "పూర్తి",
-  "ios_edit_subscription_title": "సభ్యత్వాన్ని మార్చండి",
-  "ios_see_all_plans": "అన్ని ప్లాన్‌లను చూడండి",
-  "ios_cancel_subscription": "సభ్యత్వాన్ని రద్దు చేయండి",
-  "ios_subscription_renews": "{value0}న పునరుద్ధరించబడుతుంది",
-  "ios_subscription_ends": "{value0}న ముగుస్తుంది",
-  "ios_subscription_cancel_note": "ఇప్పుడు రద్దు చేసినా {value0} వరకు ప్రీమియంను ఉపయోగించవచ్చు.",
-  "ios_done": "పూర్తయింది"
+  "ios_fast_completed": "పూర్తి"
  },
  "gu": {
   "ios_premium_renewal_unknown": "પ્રીમિયમ સક્રિય છે. તે ક્યારે રિન્યૂ થશે તે જોવા સંભાળો ખોલો.",
@@ -211,14 +183,7 @@
   "ios_widget_desc_next": "આગામી પાંચ એકાદશીઓ. એકાદશીનું હોમ કાર્ડ ખોલવા તેના પર ટૅપ કરો.",
   "ios_glass_look": "કાચ જેવો દેખાવ",
   "ios_glass_look_desc": "વધુ પારદર્શક કાર્ડ અને નિયંત્રણો વાપરો.",
-  "ios_fast_completed": "પૂર્ણ",
-  "ios_edit_subscription_title": "સભ્યપદ બદલો",
-  "ios_see_all_plans": "બધા પ્લાન જુઓ",
-  "ios_cancel_subscription": "સભ્યપદ રદ કરો",
-  "ios_subscription_renews": "{value0}ના રોજ નવીકરણ",
-  "ios_subscription_ends": "{value0}ના રોજ સમાપ્ત",
-  "ios_subscription_cancel_note": "હમણાં રદ કરશો તો પણ {value0} સુધી પ્રીમિયમ વાપરી શકશો.",
-  "ios_done": "થઈ ગયું"
+  "ios_fast_completed": "પૂર્ણ"
  },
  "bn": {
   "ios_premium_renewal_unknown": "প্রিমিয়াম চালু আছে। কবে নবীকরণ হবে দেখতে পরিচালনা খুলুন।",
@@ -255,13 +220,6 @@
   "ios_widget_desc_next": "পরবর্তী পাঁচটি একাদশী। কোনো একাদশীতে ট্যাপ করে তার হোম কার্ড খুলুন।",
   "ios_glass_look": "কাচের মতো চেহারা",
   "ios_glass_look_desc": "আরও স্বচ্ছ কার্ড ও নিয়ন্ত্রণ ব্যবহার করুন।",
-  "ios_fast_completed": "সম্পূর্ণ",
-  "ios_edit_subscription_title": "সাবস্ক্রিপশন সম্পাদনা",
-  "ios_see_all_plans": "সব প্ল্যান দেখুন",
-  "ios_cancel_subscription": "সাবস্ক্রিপশন বাতিল করুন",
-  "ios_subscription_renews": "{value0} তারিখে নবায়ন হবে",
-  "ios_subscription_ends": "{value0} তারিখে শেষ হবে",
-  "ios_subscription_cancel_note": "এখন বাতিল করলেও {value0} পর্যন্ত প্রিমিয়াম ব্যবহার করতে পারবেন।",
-  "ios_done": "সম্পন্ন"
+  "ios_fast_completed": "সম্পূর্ণ"
  }
 }
