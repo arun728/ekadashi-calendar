@@ -10,9 +10,10 @@ struct PremiumView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
     let reason: String?
-    @State private var selected: PremiumPlanID?
-    @State private var confirmLifetime = false
-    @State private var downgrade: PremiumPlanID?
+    @State private var selection = PremiumPaywallSelection()
+    /// The one pop-up the buy button can raise. Two chained `.alert`s on
+    /// this view left one of them unable to appear on Arun's iPhone.
+    @State private var confirmation: PremiumPaywallAction?
     @State private var managing = false
     @State private var toast: ToastMessage?
 
@@ -23,13 +24,9 @@ struct PremiumView: View {
     private var state: PremiumState { store.state }
     private var showPlans: Bool { !store.plans.isEmpty }
 
-    /// A manual choice until verified ownership changes; then suggest the
-    /// next upgrade, retaining Lifetime when it is already owned.
+    /// The tapped plan, kept through store refreshes until it is owned.
     private var plan: PremiumPlanID? {
-        if state.lifetime { return store.plans.contains(.lifetime) ? .lifetime : nil }
-        if let selected, store.plans.contains(selected) { return selected }
-        if let scheduled = state.scheduledPlan, store.plans.contains(scheduled) { return scheduled }
-        return state.defaultPlan(available: store.plans, pending: store.pending)
+        selection.plan(state, available: store.plans, pending: store.pending)
     }
 
     var body: some View {
@@ -72,28 +69,26 @@ struct PremiumView: View {
                 if store.busy { ProgressView().tint(Theme.teal).accessibilityIdentifier("premium_loading") }
             }
         }
-        .onChange(of: state.scheduledPlan) { _, _ in selected = nil }
-        .onChange(of: state.currentPlan) { _, _ in selected = nil }
-        .onChange(of: state.lifetime) { _, _ in selected = nil }
+        .onChange(of: state) { _, newState in selection.storeChanged(newState) }
         .manageSubscriptionsSheet(isPresented: $managing)
         .onChange(of: managing) { _, isPresented in
             if !isPresented { Task { await model.premium.refresh() } }
         }
-        .alert(model.t("ios_premium_switch_title"), isPresented: Binding(
-            get: { downgrade != nil }, set: { if !$0 { downgrade = nil } })) {
-            Button(model.t("cancel"), role: .cancel) { downgrade = nil }
-            Button(model.t("ios_premium_switch_confirm")) {
-                if let plan = downgrade { Task { await store.buy(plan) } }
-                downgrade = nil
-            }
-        } message: {
-            if let plan = downgrade, let note = model.premiumSwitchNote(state, to: plan) { Text(note) }
-        }
-        .alert(model.t("premium_lifetime_confirm_title"), isPresented: $confirmLifetime) {
+        .alert(confirmationTitle, isPresented: Binding(
+            get: { confirmation != nil }, set: { if !$0 { confirmation = nil } }), presenting: confirmation) { action in
             Button(model.t("cancel"), role: .cancel) {}
-            Button(model.t("premium_buy_lifetime_anyway")) { Task { await store.buy(.lifetime) } }
-        } message: {
-            Text(model.t("premium_lifetime_confirm_body"))
+            switch action {
+            case .confirmSwitch(let plan):
+                Button(model.t("ios_premium_switch_confirm")) { Task { await store.buy(plan) } }
+            default:
+                Button(model.t("premium_buy_lifetime_anyway")) { Task { await store.buy(.lifetime) } }
+            }
+        } message: { action in
+            if case .confirmSwitch(let plan) = action {
+                Text(model.premiumSwitchNote(state, to: plan) ?? "")
+            } else {
+                Text(model.t("premium_lifetime_confirm_body"))
+            }
         }
         .toast($toast)
         .task {
@@ -176,7 +171,7 @@ struct PremiumView: View {
         let current = (state.lifetime && id == .lifetime) || (state.subscribed && !state.lifetime && id == state.currentPlan)
         let period = id == .monthly ? "premium_per_month" : id == .yearly ? "premium_per_year" : "premium_one_time"
         return Button {
-            selected = id
+            selection.tap(id)
         } label: {
             VStack(spacing: 6) {
                 Group {
@@ -225,14 +220,14 @@ struct PremiumView: View {
                 let reactivating = state.subscriptionCancelled && plan == state.currentPlan
                 let title = reactivating ? model.t("premium_reactivate")
                     : "\(model.t("premium_\(plan.rawValue)")) · \(price)"
+                let action = state.paywallAction(for: plan, canBuy: store.canBuy(plan))
                 Button {
-                    if reactivating || plan == state.scheduledPlan { managing = true }
-                    else { buy(plan) }
+                    buy(action)
                 } label: {
                     Text(plan == state.scheduledPlan ? model.t("premium_manage") : title).font(.headline).multilineTextAlignment(.center).frame(maxWidth: .infinity).padding(.vertical, 6)
                 }
                 .primaryActionStyle()
-                .disabled(plan != state.scheduledPlan && !store.canBuy(plan))
+                .disabled(action == .none)
                 .accessibilityIdentifier("premium_buy")
             }
             FlowLayout(spacing: 4) {
@@ -255,14 +250,18 @@ struct PremiumView: View {
     /// subscriber is told before buying lifetime to cancel it themselves. A
     /// downgrade first says when each plan applies (Apple keeps the current
     /// plan ticked in its Manage sheet until the renewal).
-    private func buy(_ plan: PremiumPlanID) {
-        if model.premiumSwitchNote(state, to: plan) != nil {
-            downgrade = plan
-        } else if plan == .lifetime && state.subscribed {
-            confirmLifetime = true
-        } else {
-            Task { await store.buy(plan) }
+    private func buy(_ action: PremiumPaywallAction) {
+        switch action {
+        case .purchase(let plan): Task { await store.buy(plan) }
+        case .confirmLifetime, .confirmSwitch: confirmation = action
+        case .manage: managing = true
+        case .none: break
         }
+    }
+
+    private var confirmationTitle: String {
+        if case .confirmSwitch = confirmation { return model.t("ios_premium_switch_title") }
+        return model.t("premium_lifetime_confirm_title")
     }
 
     private func restore() async {
