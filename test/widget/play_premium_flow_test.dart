@@ -279,6 +279,50 @@ void main() {
     );
   });
 
+  testWidgets('Switching between Monthly and Yearly says it is charged '
+      'today and the unused time is kept', (tester) async {
+    for (final (current, target) in [
+      ('yearly', 'monthly'),
+      ('monthly', 'yearly'),
+    ]) {
+      final premium = PremiumService(entitlements: PremiumFixture())
+        ..applyOwned({PremiumService.subscriptionId});
+      addTearDown(premium.dispose);
+      final billing = await pumpPaywall(tester, premium, currentPlan: current);
+      await tester.tap(find.byKey(Key('premium_plan_$target')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('premium_buy')));
+      await tester.pumpAndSettle();
+      expect(
+        find.text(lang.translate('premium_switch_now_body')),
+        findsOneWidget,
+        reason: '$current to $target',
+      );
+      await tester.tap(find.text(lang.translate('cancel')));
+      await tester.pumpAndSettle();
+      expect(billing.bought, isEmpty);
+      await tester.tap(find.byKey(const Key('premium_buy')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(lang.translate('premium_switch_now_confirm')));
+      await tester.pumpAndSettle();
+      expect(billing.bought, [target]);
+      await tester.pumpWidget(const SizedBox.shrink());
+    }
+  });
+
+  testWidgets('A free user buys a plan without the switch note', (
+    tester,
+  ) async {
+    final premium = freeUser(PremiumFixture());
+    final billing = await pumpPaywall(tester, premium);
+    await tester.tap(find.byKey(const Key('premium_plan_monthly')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('premium_buy')));
+    await tester.pumpAndSettle();
+    expect(find.text(lang.translate('premium_switch_now_body')), findsNothing);
+    expect(billing.bought, ['monthly']);
+  });
+
   testWidgets('The paywall says why it opened after the free sync', (
     tester,
   ) async {
@@ -559,6 +603,34 @@ void main() {
       findsNothing,
     );
     source.subscriptionExpiryConfirmed = true;
+    await premium.refresh();
+    await tester.pumpAndSettle();
+    expect(repo.entries.values.map((e) => e.title), ['Free month event']);
+  });
+
+  testWidgets('A cancelled plan that ends removes the events Premium '
+      'synced at once and keeps the free month', (tester) async {
+    SharedPreferences.setMockInitialValues({
+      CalendarScreen.freeSyncUsedKey: true,
+      CalendarScreen.freeSyncMonthKey: '2026-10',
+    });
+    final source = PremiumFixture()
+      ..purchasedAt = DateTime(2026, 9, 10)
+      ..renewing = false;
+    final premium = PremiumService(entitlements: source);
+    addTearDown(premium.dispose);
+    await premium.refresh();
+    final repo = MemoryCalendarRepository();
+    final google = UiGoogle()
+      ..events = [
+        event('Free month event', start: '2026-10-10', end: '2026-10-11'),
+        event('Premium event', start: '2027-01-10', end: '2027-01-11'),
+      ];
+    await pumpCalendar(tester, premium, google: google, repository: repo);
+    await tapImport(tester);
+    await importSelected(tester);
+    // The user cancelled; the paid period has now ended in Google Play.
+    source.premium = false;
     await premium.refresh();
     await tester.pumpAndSettle();
     expect(repo.entries.values.map((e) => e.title), ['Free month event']);
