@@ -230,3 +230,28 @@ extension PremiumTests {
         XCTAssertNil(state.cancelledSubscriptionEndDate)
     }
 }
+
+extension PremiumTests {
+    func testRenewalStatusUsesCurrentPurchaseAndNewestSignedRecord() {
+        let old = Date(timeIntervalSince1970: 1_800_000_000)
+        let recent = old.addingTimeInterval(60)
+        let stale = PremiumRenewalRecord(originalID: 1, productID: PremiumProduct.monthly,
+                                         signedAt: old, willRenew: false)
+        let current = PremiumRenewalRecord(originalID: 1, productID: PremiumProduct.monthly,
+                                           signedAt: recent, willRenew: true)
+        let unrelated = PremiumRenewalRecord(originalID: 2, productID: PremiumProduct.monthly,
+                                             signedAt: recent, willRenew: false)
+        let otherPlan = PremiumRenewalRecord(originalID: 1, productID: PremiumProduct.yearly,
+                                             signedAt: recent, willRenew: false)
+        XCTAssertEqual(PremiumRenewalRecord.resolve([stale, unrelated, otherPlan, current],
+                                                     originalID: 1, productID: PremiumProduct.monthly), true)
+        XCTAssertNil(PremiumRenewalRecord.resolve([unrelated, otherPlan],
+                                                  originalID: 1, productID: PremiumProduct.monthly))
+        XCTAssertEqual(PremiumRenewalRecord.resolve([stale], originalID: 1,
+                                                     productID: PremiumProduct.monthly), false)
+        let conflicting = PremiumRenewalRecord(originalID: 1, productID: PremiumProduct.monthly,
+                                               signedAt: recent, willRenew: false)
+        XCTAssertNil(PremiumRenewalRecord.resolve([current, conflicting],
+                                                  originalID: 1, productID: PremiumProduct.monthly))
+    }
+}
