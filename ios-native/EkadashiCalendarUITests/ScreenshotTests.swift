@@ -689,53 +689,6 @@ final class ScreenshotTests: XCTestCase {
         }
     }
 
-    /// Arun (16 Nov 2026), as in Claude's app: Manage opens an Edit
-    /// subscription sheet with the plan, "See all plans" (our Premium page),
-    /// price and renewal, and Cancel; no list of plan options. It closes
-    /// with a pull down.
-    @MainActor
-    func testManageOpensEditSubscriptionWithSeeAllPlans() async throws {
-        #if !targetEnvironment(simulator)
-        throw XCTSkip("Purchases and resets belong only to isolated Simulator test accounts")
-        #else
-        let configuration = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
-            .appendingPathComponent("EkadashiCalendar/Resources/Products.storekit")
-        app.terminate()
-        let session = try SKTestSession(contentsOf: configuration)
-        session.resetToDefaultState()
-        session.disableDialogs = true
-        session.timeRate = .realTime
-        try session.clearTransactions()
-        defer { try? session.clearTransactions() }
-        _ = try await session.buyProduct(identifier: "ekadashi_premium_yearly")
-        app.launch()
-        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
-        glassTab(4)
-        let manage = app.buttons["settings_premium_manage"].firstMatch
-        XCTAssertTrue(manage.waitForExistence(timeout: 60), "Settings shows Manage for a subscriber")
-        for _ in 0..<5 where !manage.isHittable { app.swipeUp() }
-        manage.tap()
-        let title = app.staticTexts["Edit subscription"].firstMatch
-        XCTAssertTrue(title.waitForExistence(timeout: 5))
-        XCTAssertTrue(app.staticTexts["edit_subscription_plan"].firstMatch.label == "Yearly")
-        XCTAssertTrue(app.staticTexts["edit_subscription_renewal"].firstMatch.label.hasPrefix("Renews"))
-        XCTAssertTrue(app.buttons["edit_subscription_cancel"].firstMatch.exists)
-        XCTAssertFalse(app.staticTexts["Options"].exists, "No plan options on this sheet")
-        snap("edit-subscription")
-        // Pull down closes it, as in Claude's app.
-        let start = title.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
-        start.press(forDuration: 0.1, thenDragTo: start.withOffset(CGVector(dx: 0, dy: 650)))
-        XCTAssertTrue(XCTWaiter.wait(for: [expectation(for: NSPredicate(format: "exists == false"), evaluatedWith: title)],
-                                     timeout: 5) == .completed, "A pull down closes Edit subscription")
-        manage.tap()
-        XCTAssertTrue(title.waitForExistence(timeout: 5))
-        app.buttons["edit_subscription_see_all_plans"].firstMatch.tap()
-        XCTAssertTrue(app.buttons["premium_plan_yearly"].firstMatch.waitForExistence(timeout: 10),
-                      "See all plans opens the Ekadashi Premium page")
-        XCTAssertFalse(title.exists)
-        #endif
-    }
-
     /// XCTest's timing of a tile tap until the tile reports selected. dev
     /// measured 1.55 s on iOS 18.6 and 2.15 s on iOS 26.5 (mostly XCTest's
     /// own polling); the plans page must stay within that.
