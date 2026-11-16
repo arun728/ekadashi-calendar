@@ -614,6 +614,60 @@ final class ScreenshotTests: XCTestCase {
         #endif
     }
 
+    /// On a real iPhone with its sandbox subscription (Arun, 16 Nov 2026):
+    /// every plan selects on the first tap, quickly, and stays selected while
+    /// the App Store refreshes; Lifetime and a downgrade raise their pop-ups.
+    /// Never buys: every pop-up is cancelled and Apple's sheets are not opened.
+    @MainActor
+    func testDeviceSandboxPlansSelectQuicklyAndConfirm() throws {
+        #if targetEnvironment(simulator)
+        throw XCTSkip("Runs on a real iPhone signed in to a sandbox account")
+        #else
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        glassTab(4); app.buttons["settings_premium"].firstMatch.tap()
+        let tile = { (id: String) in self.app.buttons["premium_plan_\(id)"].firstMatch }
+        XCTAssertTrue(tile("lifetime").waitForExistence(timeout: 30), "The App Store returned no plans")
+        let current = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'premium_plan_' AND label CONTAINS 'Your current plan'")).firstMatch
+        let subscribed = current.waitForExistence(timeout: 30)
+        let currentID = subscribed ? current.identifier : "none"
+        print("DEVICE premium current=\(currentID) labels=\(["monthly", "yearly", "lifetime"].map { tile($0).label })")
+        func select(_ id: String) {
+            let start = Date()
+            tile(id).tap()
+            XCTAssertTrue(tile(id).wait(for: \.isSelected, toEqual: true, timeout: 3), "\(id) needed more than one tap")
+            print("DEVICE tap \(id) selected after \(String(format: "%.2f", Date().timeIntervalSince(start))) s")
+            for _ in 0..<6 {
+                Thread.sleep(forTimeInterval: 0.5)
+                XCTAssertTrue(tile(id).isSelected, "\(id) lost its selection during a store refresh")
+            }
+        }
+        for id in ["lifetime", "monthly", "yearly", "lifetime"] where !tile(id).label.contains("Your current plan") { select(id) }
+        let buy = app.buttons["premium_buy"].firstMatch
+        if subscribed {
+            select("lifetime")
+            XCTAssertTrue(buy.isEnabled)
+            buy.tap()
+            XCTAssertTrue(app.alerts.firstMatch.waitForExistence(timeout: 5), "Lifetime raised no warning")
+            XCTAssertTrue(app.alerts.buttons["Buy lifetime"].exists)
+            app.alerts.buttons["Cancel"].firstMatch.tap()
+            XCTAssertTrue(tile("lifetime").isSelected)
+        }
+        if currentID == "premium_plan_yearly" {
+            select("monthly")
+            if buy.label.contains("Monthly") {
+                XCTAssertTrue(buy.isEnabled)
+                buy.tap()
+                XCTAssertTrue(app.alerts.firstMatch.waitForExistence(timeout: 5), "Monthly raised no plan-change note")
+                XCTAssertTrue(app.alerts.buttons["Change plan"].exists)
+                print("DEVICE monthly note: \(app.alerts.firstMatch.staticTexts.allElementsBoundByIndex.map(\.label))")
+                app.alerts.buttons["Cancel"].firstMatch.tap()
+            } else {
+                print("DEVICE monthly is already scheduled: buy shows \(buy.label)")
+            }
+        }
+        #endif
+    }
+
     /// XCTest's timing of a tile tap until the tile reports selected. dev
     /// measured 1.55 s on iOS 18.6 and 2.15 s on iOS 26.5 (mostly XCTest's
     /// own polling); the plans page must stay within that.
