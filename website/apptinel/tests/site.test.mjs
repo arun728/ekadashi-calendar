@@ -123,6 +123,7 @@ test('the Ekadashi hero presents a silent looping preview with playback controls
   assert.match(home, /type="video\/mp4"/);
   assert.doesNotMatch(home, /ekadashi-home\.jpg/);
   assert.match(home, /aria-label="Ekadashi Calendar app preview"/);
+  assert.match(home, /<figcaption>2027 app preview/);
 });
 
 test('the Ekadashi pages have a dedicated readable type system', () => {
