@@ -287,3 +287,48 @@ extension PremiumTests {
                                                   productID: PremiumProduct.yearly))
     }
 }
+
+extension PremiumTests {
+    func testNewMonthlyTransactionWinsOverOldYearlyAfterRenewal() {
+        let end = Date(timeIntervalSince1970: 1_800_000_000)
+        let yearly = OwnedProduct(productId: PremiumProduct.yearly, expirationDate: end)
+        let monthly = OwnedProduct(productId: PremiumProduct.monthly,
+                                   expirationDate: end.addingTimeInterval(2_592_000))
+        var state = PremiumState()
+        state.apply(owned: [yearly, monthly])
+        XCTAssertEqual(state.currentPlan, .monthly)
+    }
+
+    func testScheduledPlanCannotBePurchasedAgain() {
+        var state = PremiumState()
+        state.apply(owned: [OwnedProduct(productId: PremiumProduct.yearly,
+                                          willAutoRenew: true, nextProductID: PremiumProduct.monthly)])
+        XCTAssertFalse(state.canBuy(.monthly, pending: false))
+        XCTAssertTrue(state.canBuy(.lifetime, pending: false))
+    }
+}
+
+extension PremiumTests {
+    func testBillingRetryWithoutGraceDoesNotGrantAccessOrConfirmLapse() {
+        var state = PremiumState()
+        state.apply(owned: [], billingRetry: true)
+        XCTAssertFalse(state.isPremium)
+        XCTAssertFalse(state.lapsed)
+        XCTAssertTrue(state.isInBillingRetry)
+        state.apply(owned: [OwnedProduct(productId: PremiumProduct.monthly)])
+        XCTAssertTrue(state.isPremium)
+        XCTAssertFalse(state.isInBillingRetry)
+    }
+
+    func testNewerMonthlyWinsEvenWhenOldYearlyHasLaterExpiry() {
+        let start = Date(timeIntervalSince1970: 1_800_000_000)
+        let yearly = OwnedProduct(productId: PremiumProduct.yearly,
+                                  expirationDate: start.addingTimeInterval(31_536_000), transactionDate: start)
+        let monthly = OwnedProduct(productId: PremiumProduct.monthly,
+                                   expirationDate: start.addingTimeInterval(2_592_000),
+                                   transactionDate: start.addingTimeInterval(60))
+        var state = PremiumState()
+        state.apply(owned: [yearly, monthly])
+        XCTAssertEqual(state.currentPlan, .monthly)
+    }
+}

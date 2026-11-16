@@ -308,7 +308,10 @@ void main() {
         subscriptionOfferDetails: offers,
       ),
     );
-    final premium = PremiumService(entitlements: PremiumFixture());
+    SharedPreferences.setMockInitialValues({});
+    final source = PremiumFixture()
+      ..subscriptionPurchaseToken = 'token-${PlayBillingService.subscription}';
+    final premium = PremiumService(entitlements: source);
     final billing = PlayBillingService(premium);
     await billing.initialize();
     premium.applyOwned({PremiumService.subscriptionId});
@@ -319,7 +322,24 @@ void main() {
     expect(param.offerToken, 'year-token');
     expect(param.changeSubscriptionParam, isNull);
     expect(billing.error, isNull);
+    store.updates.add([
+      playPurchase(
+        PlayBillingService.subscription,
+        PurchaseStateWrapper.purchased,
+      ),
+    ]);
+    await Future<void>.delayed(const Duration(milliseconds: 30));
+    expect(billing.currentPlanId, 'yearly');
     billing.dispose();
+    final restarted = PlayBillingService(premium);
+    await restarted.initialize();
+    await restarted.restore();
+    expect(restarted.currentPlanId, 'yearly');
+    expect(restarted.canBuy(restarted.plans.last), isFalse);
+    source.subscriptionPurchaseToken = 'another-purchase';
+    await restarted.restore();
+    expect(restarted.currentPlanId, isNull);
+    restarted.dispose();
     premium.dispose();
     await store.updates.close();
   });

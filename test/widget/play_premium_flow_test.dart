@@ -233,15 +233,35 @@ void main() {
     expect(billing.bought, ['lifetime']);
   });
 
-  testWidgets('A cancelled subscriber is told and can reactivate', (
-    tester,
-  ) async {
+  testWidgets('Reactivate opens Play subscription management', (tester) async {
     final premium = PremiumService(entitlements: PremiumFixture())
       ..applyOwned(
         {PremiumService.subscriptionId},
         autoRenewing: {PremiumService.subscriptionId: false},
       );
     addTearDown(premium.dispose);
+    final opened = <String>[];
+    const channel = MethodChannel('plugins.flutter.io/url_launcher');
+    final messenger =
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(channel, (call) async {
+      if (call.method == 'launch') {
+        opened.add((call.arguments as Map)['url'] as String);
+      }
+      return true;
+    });
+    const androidChannel = BasicMessageChannel<Object?>(
+      'dev.flutter.pigeon.url_launcher_android.UrlLauncherApi.launchUrl',
+      StandardMessageCodec(),
+    );
+    messenger.setMockDecodedMessageHandler(androidChannel, (message) async {
+      opened.add((message as List).first as String);
+      return <Object?>[true];
+    });
+    addTearDown(() {
+      messenger.setMockMethodCallHandler(channel, null);
+      messenger.setMockDecodedMessageHandler(androidChannel, null);
+    });
     final billing = await pumpPaywall(tester, premium, currentPlan: 'monthly');
     expect(
       find.text(lang.translate('premium_cancelled_title')),
@@ -252,7 +272,11 @@ void main() {
     expect(ctaLabel(tester), contains(lang.translate('premium_reactivate')));
     await tester.tap(find.byKey(const Key('premium_buy')));
     await tester.pumpAndSettle();
-    expect(billing.bought, ['monthly']);
+    expect(billing.bought, isEmpty);
+    expect(
+      Uri.parse(opened.single).queryParameters['sku'],
+      PremiumService.subscriptionId,
+    );
   });
 
   testWidgets('The paywall says why it opened after the free sync', (
@@ -499,8 +523,8 @@ void main() {
     expect(google.max, DateTime(2028, 1, 1));
   });
 
-  testWidgets('When a monthly plan lapses, the events Premium synced are '
-      'removed and the free month stays', (tester) async {
+  testWidgets('When Play omits a monthly plan, the events Premium synced are '
+      'kept along with the free month', (tester) async {
     SharedPreferences.setMockInitialValues({
       CalendarScreen.freeSyncUsedKey: true,
       CalendarScreen.freeSyncMonthKey: '2026-10',
@@ -522,19 +546,26 @@ void main() {
       repo.entries.values.map((e) => e.title),
       containsAll(['Free month event', 'Premium event']),
     );
-    // The monthly plan was cancelled and has now expired in Google Play.
+    // Play returns no purchase during account hold or after expiry.
     source.premium = false;
     await premium.refresh();
     await tester.pumpAndSettle();
-    expect(repo.entries.values.map((e) => e.title), ['Free month event']);
+    expect(
+      repo.entries.values.map((e) => e.title),
+      containsAll(['Free month event', 'Premium event']),
+    );
     expect(
       find.text(lang.translate('google_premium_events_removed')),
-      findsOneWidget,
+      findsNothing,
     );
+    source.subscriptionExpiryConfirmed = true;
+    await premium.refresh();
+    await tester.pumpAndSettle();
+    expect(repo.entries.values.map((e) => e.title), ['Free month event']);
   });
 
-  testWidgets('Premium-synced events are removed on the next launch after a '
-      'lapse, but kept while Google Play is unreachable', (tester) async {
+  testWidgets('Premium-synced events survive the next launch after an '
+      'ambiguous ownership result', (tester) async {
     SharedPreferences.setMockInitialValues({
       CalendarScreen.freeSyncUsedKey: true,
     });
@@ -563,7 +594,7 @@ void main() {
       ..premium = false;
     await premium.refresh();
     await pumpCalendar(tester, premium, google: google, repository: repo);
-    expect(repo.entries, isEmpty);
+    expect(repo.entries.values.map((e) => e.title), ['Premium event']);
   });
 
   testWidgets('After the free sync, buying premium continues into the '
