@@ -148,6 +148,64 @@ void main() {
     );
   });
 
+  // Arun's iPhone (16 Nov 2026): every store refresh cleared the tapped
+  // plan, so Lifetime took 5-10 taps. A tap stays until that plan is owned.
+  testWidgets('A tapped plan survives Play refreshes until it is owned', (
+    tester,
+  ) async {
+    final premium = PremiumService(entitlements: PremiumFixture())
+      ..applyOwned({PremiumService.subscriptionId});
+    addTearDown(premium.dispose);
+    final billing = await pumpPaywall(tester, premium, currentPlan: 'yearly');
+    await tester.tap(find.byKey(const Key('premium_plan_lifetime')));
+    await tester.pumpAndSettle();
+    expect(ctaLabel(tester), contains('₹999'));
+    // Play's answer arrives in steps: the plan is briefly unknown.
+    for (final plan in [null, 'yearly', null, 'yearly']) {
+      billing.currentPlanId = plan;
+      billing.notifyListeners();
+      await tester.pumpAndSettle();
+      expect(ctaLabel(tester), contains('₹999'), reason: 'after $plan');
+    }
+    await tester.tap(find.byKey(const Key('premium_plan_monthly')));
+    await tester.pumpAndSettle();
+    billing.currentPlanId = null;
+    billing.notifyListeners();
+    await tester.pumpAndSettle();
+    expect(ctaLabel(tester), contains('₹99'));
+    expect(ctaLabel(tester), isNot(contains('₹999')));
+    // Once Lifetime is owned there is nothing left to buy.
+    premium.applyOwned({PremiumService.lifetimeId});
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('premium_buy')), findsNothing);
+  });
+
+  // Arun (16 Nov 2026): only the middle of a plan box answered on his phone.
+  testWidgets('Every edge and corner of a plan box selects it', (tester) async {
+    final premium = freeUser(PremiumFixture());
+    await pumpPaywall(tester, premium);
+    const prices = {'monthly': '₹99', 'yearly': '₹499', 'lifetime': '₹999'};
+    for (final inset in const [
+      Offset(3, 3),
+      Offset(-3, 3),
+      Offset(3, -3),
+      Offset(-3, -3),
+    ]) {
+      for (final id in ['monthly', 'lifetime', 'yearly']) {
+        final box = tester.getRect(find.byKey(Key('premium_plan_$id')));
+        final x = inset.dx > 0 ? box.left + inset.dx : box.right + inset.dx;
+        final y = inset.dy > 0 ? box.top + inset.dy : box.bottom + inset.dy;
+        await tester.tapAt(Offset(x, y));
+        await tester.pumpAndSettle();
+        expect(ctaLabel(tester), contains(prices[id]!), reason: '$id $inset');
+      }
+    }
+    final box = tester.getRect(find.byKey(const Key('premium_plan_monthly')));
+    await tester.tapAt(Offset(box.center.dx, box.bottom - 2));
+    await tester.pumpAndSettle();
+    expect(ctaLabel(tester), contains('₹99'));
+  });
+
   testWidgets('Restore says whether purchases were found', (tester) async {
     final source = PremiumFixture()..premium = false;
     final premium = PremiumService(entitlements: source);
