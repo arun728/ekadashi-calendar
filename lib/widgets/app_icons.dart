@@ -245,12 +245,6 @@ class AppIcons {
   /// sparkles
   static const premiumPanchang = CupertinoIcons.sparkles;
 
-  /// checkmark.circle.fill
-  static const premiumPlanSelected = CupertinoIcons.checkmark_circle_fill;
-
-  /// circle
-  static const premiumPlanUnselected = CupertinoIcons.circle;
-
   /// rosette
   static const premiumVrat = CupertinoIcons.rosette;
 
@@ -443,8 +437,6 @@ class AppIcons {
     'premium': premium,
     'premium_calendar': premiumCalendar,
     'premium_panchang': premiumPanchang,
-    'premium_plan_selected': premiumPlanSelected,
-    'premium_plan_unselected': premiumPlanUnselected,
     'premium_vrat': premiumVrat,
     'previous': previous,
     'rate_app': rateApp,

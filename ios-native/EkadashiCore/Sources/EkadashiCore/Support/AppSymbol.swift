@@ -83,8 +83,6 @@ public enum AppSymbol {
     public static let premium = "star.circle.fill"
     public static let premiumCalendar = "calendar.badge.plus"
     public static let premiumPanchang = "sparkles"
-    public static let premiumPlanSelected = "checkmark.circle.fill"
-    public static let premiumPlanUnselected = "circle"
     public static let premiumVrat = "rosette"
     public static let previous = "chevron.left"
     public static let rateApp = "star.fill"
@@ -204,8 +202,6 @@ public enum AppSymbol {
         "premium": premium,
         "premium_calendar": premiumCalendar,
         "premium_panchang": premiumPanchang,
-        "premium_plan_selected": premiumPlanSelected,
-        "premium_plan_unselected": premiumPlanUnselected,
         "premium_vrat": premiumVrat,
         "previous": previous,
         "rate_app": rateApp,

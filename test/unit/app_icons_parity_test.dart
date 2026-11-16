@@ -72,7 +72,6 @@ const _byName = <String, IconData>{
   'checkmark': CupertinoIcons.checkmark,
   'checkmark_circle': CupertinoIcons.checkmark_circle,
   'checkmark_circle_fill': CupertinoIcons.checkmark_circle_fill,
-  'circle': CupertinoIcons.circle,
   'checkmark_seal_fill': CupertinoIcons.checkmark_seal_fill,
   'chevron_back': CupertinoIcons.chevron_back,
   'chevron_down': CupertinoIcons.chevron_down,

@@ -11,8 +11,9 @@ struct PremiumView: View {
     @Environment(\.openURL) private var openURL
     let reason: String?
     @State private var selection = PremiumPaywallSelection()
-    /// The one pop-up the buy button can raise (Lifetime for a subscriber).
-    @State private var confirmLifetime = false
+    /// The one pop-up the buy button can raise. Two chained `.alert`s on
+    /// this view left one of them unable to appear on Arun's iPhone.
+    @State private var confirmation: PremiumPaywallAction?
     @State private var managing = false
     @State private var toast: ToastMessage?
 
@@ -36,11 +37,10 @@ struct PremiumView: View {
                     status
                     if store.pending { Text(model.t("premium_pending")).font(.subheadline) }
                     if showPlans {
-                        // Full-width rows, top to bottom, as in Apple's
-                        // Available Plans sheet.
-                        VStack(spacing: 12) {
+                        HStack(alignment: .top, spacing: 8) {
                             ForEach(store.plans, id: \.self) { tile($0) }
                         }
+                        .fixedSize(horizontal: false, vertical: true)
                     }
                     if showPlans, let plan {
                         Text(model.t("premium_\(plan.rawValue)_terms")).font(.caption).foregroundStyle(.secondary)
@@ -74,11 +74,21 @@ struct PremiumView: View {
         .onChange(of: managing) { _, isPresented in
             if !isPresented { Task { await model.premium.refresh() } }
         }
-        .alert(model.t("premium_lifetime_confirm_title"), isPresented: $confirmLifetime) {
+        .alert(confirmationTitle, isPresented: Binding(
+            get: { confirmation != nil }, set: { if !$0 { confirmation = nil } }), presenting: confirmation) { action in
             Button(model.t("cancel"), role: .cancel) {}
-            Button(model.t("premium_buy_lifetime_anyway")) { Task { await store.buy(.lifetime) } }
-        } message: {
-            Text(model.t("premium_lifetime_confirm_body"))
+            switch action {
+            case .confirmSwitch(let plan):
+                Button(model.t("ios_premium_switch_confirm")) { Task { await store.buy(plan) } }
+            default:
+                Button(model.t("premium_buy_lifetime_anyway")) { Task { await store.buy(.lifetime) } }
+            }
+        } message: { action in
+            if case .confirmSwitch(let plan) = action {
+                Text(model.premiumSwitchNote(state, to: plan) ?? "")
+            } else {
+                Text(model.t("premium_lifetime_confirm_body"))
+            }
         }
         .toast($toast)
         .task {
@@ -156,56 +166,52 @@ struct PremiumView: View {
         .glassPanel(cornerRadius: 16, tint: color)
     }
 
-    /// One plan row: name, price, its state, and a tick circle on the right
-    /// (Apple's Available Plans sheet). The whole row answers a tap.
     private func tile(_ id: PremiumPlanID) -> some View {
         let isSelected = id == plan
         let current = (state.lifetime && id == .lifetime) || (state.subscribed && !state.lifetime && id == state.currentPlan)
         let period = id == .monthly ? "premium_per_month" : id == .yearly ? "premium_per_year" : "premium_one_time"
-        let price = store.products[id]?.displayPrice ?? ""
         return Button {
             selection.tap(id)
         } label: {
-            HStack(alignment: .center, spacing: 12) {
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 8) {
-                        Text(model.t("premium_\(id.rawValue)")).font(.headline)
-                        if id == .yearly {
-                            Text(model.t("premium_best_value")).font(.caption2.weight(.semibold)).foregroundStyle(.white)
-                                .padding(.horizontal, 8).padding(.vertical, 2).background(Theme.teal, in: Capsule())
-                                .lineLimit(1)
-                        }
-                    }
-                    Text("\(price) \(model.t(period))").font(.subheadline).foregroundStyle(.secondary)
-                    if current {
-                        Text(model.t("premium_current_plan")).font(.caption).foregroundStyle(Theme.teal)
-                            .accessibilityIdentifier("premium_current_\(id.rawValue)")
-                    }
-                    if id == state.scheduledPlan {
-                        Text(model.premiumPlanBadgeText(state, id) ?? model.t("ios_premium_next_plan"))
-                            .font(.caption).foregroundStyle(Theme.teal)
-                            .accessibilityIdentifier("premium_scheduled_\(id.rawValue)")
-                    } else if current, let until = model.premiumPlanBadgeText(state, id) {
-                        Text(until).font(.caption).foregroundStyle(.secondary)
-                            .accessibilityIdentifier("premium_current_until_\(id.rawValue)")
+            VStack(spacing: 6) {
+                Group {
+                    if id == .yearly {
+                        Text(model.t("premium_best_value")).font(.caption2.weight(.semibold)).foregroundStyle(.white)
+                            .padding(.horizontal, 8).padding(.vertical, 2).background(Theme.teal, in: Capsule())
+                            .minimumScaleFactor(0.7).lineLimit(1)
+                    } else {
+                        Color.clear
                     }
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                Image(systemName: isSelected ? AppSymbol.premiumPlanSelected : AppSymbol.premiumPlanUnselected)
-                    .font(.title2)
-                    .foregroundStyle(isSelected ? Theme.teal : Color.secondary)
+                .frame(height: 20)
+                Text(model.t("premium_\(id.rawValue)")).font(.subheadline.weight(.semibold)).multilineTextAlignment(.center)
+                Text(store.products[id]?.displayPrice ?? "").font(.title3.bold()).minimumScaleFactor(0.6).lineLimit(1)
+                Text(model.t(period)).font(.caption).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                if current {
+                    Text(model.t("premium_current_plan")).font(.caption).foregroundStyle(Theme.teal)
+                        .accessibilityIdentifier("premium_current_\(id.rawValue)")
+                }
+                if id == state.scheduledPlan {
+                    Text(model.premiumPlanBadgeText(state, id) ?? model.t("ios_premium_next_plan"))
+                        .font(.caption).foregroundStyle(Theme.teal).multilineTextAlignment(.center)
+                        .accessibilityIdentifier("premium_scheduled_\(id.rawValue)")
+                } else if current, let until = model.premiumPlanBadgeText(state, id) {
+                    Text(until).font(.caption2).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                        .accessibilityIdentifier("premium_current_until_\(id.rawValue)")
+                }
+                Spacer(minLength: 0)
             }
-            .padding(16)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .glassPanel(cornerRadius: 20, tint: isSelected ? Theme.teal : nil, interactive: true)
-            .overlay(RoundedRectangle(cornerRadius: 20).strokeBorder(isSelected ? Theme.teal : Color.secondary.opacity(0.3),
+            .padding(EdgeInsets(top: 10, leading: 8, bottom: 12, trailing: 8))
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .glassPanel(cornerRadius: 16, tint: isSelected ? Theme.teal : nil, interactive: true)
+            .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(isSelected ? Theme.teal : Color.secondary.opacity(0.3),
                                                                      lineWidth: isSelected ? 2 : 1))
-            // The whole row answers a tap, edges and corners included, not
+            // The whole box answers a tap, edges and corners included, not
             // only its text (on a device the empty glass did not respond).
-            .contentShape(.rect(cornerRadius: 20))
+            .contentShape(.rect(cornerRadius: 16))
         }
         .buttonStyle(.plain)
-        .contentShape(.rect(cornerRadius: 20))
+        .contentShape(.rect(cornerRadius: 16))
         .opacity(store.canBuy(id) || current || id == state.scheduledPlan ? 1 : 0.5)
         .accessibilityIdentifier("premium_plan_\(id.rawValue)")
         .accessibilityAddTraits(isSelected ? .isSelected : [])
@@ -213,14 +219,11 @@ struct PremiumView: View {
 
     private var footer: some View {
         VStack(spacing: 4) {
-            // No button while the plan in use is ticked, as in Apple's list.
-            if showPlans, !state.lifetime, let plan,
-               !(state.subscribed && plan == state.currentPlan && !state.subscriptionCancelled) {
+            if showPlans, !state.lifetime, let plan {
                 let price = store.products[plan]?.displayPrice ?? ""
                 let reactivating = state.subscriptionCancelled && plan == state.currentPlan
-                let name = state.paywallIsPlanChange(to: plan) ? model.t("ios_premium_switch_confirm")
-                    : model.t("premium_\(plan.rawValue)")
-                let title = reactivating ? model.t("premium_reactivate") : "\(name) · \(price)"
+                let title = reactivating ? model.t("premium_reactivate")
+                    : "\(model.t("premium_\(plan.rawValue)")) · \(price)"
                 let action = state.paywallAction(for: plan, canBuy: store.canBuy(plan))
                 Button {
                     buy(action)
@@ -249,14 +252,20 @@ struct PremiumView: View {
 
     /// The App Store cannot cancel a subscription for the app, so a
     /// subscriber is told before buying lifetime to cancel it themselves. A
-    /// downgrade goes straight to Apple's sheet, which says when it starts.
+    /// downgrade first says when each plan applies (Apple keeps the current
+    /// plan ticked in its Manage sheet until the renewal).
     private func buy(_ action: PremiumPaywallAction) {
         switch action {
         case .purchase(let plan): Task { await store.buy(plan) }
-        case .confirmLifetime: confirmLifetime = true
+        case .confirmLifetime, .confirmSwitch: confirmation = action
         case .manage: managing = true
         case .none: break
         }
+    }
+
+    private var confirmationTitle: String {
+        if case .confirmSwitch = confirmation { return model.t("ios_premium_switch_title") }
+        return model.t("premium_lifetime_confirm_title")
     }
 
     private func restore() async {
