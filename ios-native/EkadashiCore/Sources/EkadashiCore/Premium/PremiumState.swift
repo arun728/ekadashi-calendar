@@ -47,13 +47,17 @@ public struct OwnedProduct: Equatable, Sendable {
     /// Whether the subscription renews; nil when unknown or not a subscription.
     public let willAutoRenew: Bool?
     public let expirationDate: Date?
+    public let nextProductID: String?
+    public let renewalDate: Date?
 
     public init(productId: String, purchaseDate: Date? = nil, willAutoRenew: Bool? = nil,
-                expirationDate: Date? = nil) {
+                expirationDate: Date? = nil, nextProductID: String? = nil, renewalDate: Date? = nil) {
         self.productId = productId
         self.purchaseDate = purchaseDate
         self.willAutoRenew = willAutoRenew
         self.expirationDate = expirationDate
+        self.nextProductID = nextProductID
+        self.renewalDate = renewalDate
     }
 }
 
@@ -83,6 +87,8 @@ public struct PremiumState: Equatable, Sendable {
     public private(set) var lifetime = false
     public private(set) var subscriptionCancelled = false
     public private(set) var cancelledSubscriptionEndDate: Date?
+    public private(set) var scheduledPlan: PremiumPlanID?
+    public private(set) var scheduledPlanDate: Date?
     public private(set) var currentPlan: PremiumPlanID?
     /// When the active premium product was bought, as the App Store reports.
     public private(set) var purchasedAt: Date?
@@ -112,6 +118,10 @@ public struct PremiumState: Equatable, Sendable {
         currentPlan = subscription.flatMap { PremiumPlanID(productId: $0.productId) }
         subscriptionCancelled = subscription?.willAutoRenew == false
         cancelledSubscriptionEndDate = subscriptionCancelled ? subscription?.expirationDate : nil
+        let nextPlan = subscription?.nextProductID.flatMap(PremiumPlanID.init(productId:))
+        scheduledPlan = subscription?.willAutoRenew == true && nextPlan != currentPlan && nextPlan != .lifetime
+            ? nextPlan : nil
+        scheduledPlanDate = scheduledPlan == nil ? nil : subscription?.renewalDate
         // The subscription's year governs syncing while it is active.
         purchasedAt = subscription?.purchaseDate ?? lifetimeProduct?.purchaseDate
         confirmedByStore = true
@@ -125,6 +135,8 @@ public struct PremiumState: Equatable, Sendable {
         subscriptionCancelled = false
         cancelledSubscriptionEndDate = nil
         currentPlan = nil
+        scheduledPlan = nil
+        scheduledPlanDate = nil
         purchasedAt = nil
         confirmedByStore = false
         error = "premium_unavailable"
@@ -178,19 +190,28 @@ public struct PremiumRenewalRecord: Sendable {
     public let productID: String
     public let signedAt: Date
     public let willRenew: Bool
+    public let nextProductID: String?
+    public let renewalDate: Date?
 
-    public init(originalID: UInt64, productID: String, signedAt: Date, willRenew: Bool) {
+    public init(originalID: UInt64, productID: String, signedAt: Date, willRenew: Bool,
+                nextProductID: String? = nil, renewalDate: Date? = nil) {
         self.originalID = originalID
         self.productID = productID
         self.signedAt = signedAt
         self.willRenew = willRenew
+        self.nextProductID = nextProductID
+        self.renewalDate = renewalDate
     }
 
-    public static func resolve(_ records: [Self], originalID: UInt64, productID: String) -> Bool? {
+    public static func resolve(_ records: [Self], originalID: UInt64, productID: String) -> Self? {
         let matching = records.filter { $0.originalID == originalID && $0.productID == productID }
         guard let latest = matching.max(by: { $0.signedAt < $1.signedAt }),
-              !matching.contains(where: { $0.signedAt == latest.signedAt && $0.willRenew != latest.willRenew })
+              !matching.contains(where: {
+                  $0.signedAt == latest.signedAt &&
+                      ($0.willRenew != latest.willRenew || $0.nextProductID != latest.nextProductID ||
+                       $0.renewalDate != latest.renewalDate)
+              })
         else { return nil }
-        return latest.willRenew
+        return latest
     }
 }

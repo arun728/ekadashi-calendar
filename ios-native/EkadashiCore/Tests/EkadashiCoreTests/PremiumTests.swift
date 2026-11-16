@@ -244,11 +244,11 @@ extension PremiumTests {
         let otherPlan = PremiumRenewalRecord(originalID: 1, productID: PremiumProduct.yearly,
                                              signedAt: recent, willRenew: false)
         XCTAssertEqual(PremiumRenewalRecord.resolve([stale, unrelated, otherPlan, current],
-                                                     originalID: 1, productID: PremiumProduct.monthly), true)
+                                                     originalID: 1, productID: PremiumProduct.monthly)?.willRenew, true)
         XCTAssertNil(PremiumRenewalRecord.resolve([unrelated, otherPlan],
                                                   originalID: 1, productID: PremiumProduct.monthly))
         XCTAssertEqual(PremiumRenewalRecord.resolve([stale], originalID: 1,
-                                                     productID: PremiumProduct.monthly), false)
+                                                     productID: PremiumProduct.monthly)?.willRenew, false)
         let conflicting = PremiumRenewalRecord(originalID: 1, productID: PremiumProduct.monthly,
                                                signedAt: recent, willRenew: false)
         XCTAssertNil(PremiumRenewalRecord.resolve([current, conflicting],

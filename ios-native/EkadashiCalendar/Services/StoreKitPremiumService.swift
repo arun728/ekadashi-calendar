@@ -129,13 +129,16 @@ final class StoreKitPremiumService {
                 isCurrent: isCurrent, now: Date()
             ),
                   !owned.contains(where: { $0.productId == transaction.productID }) else { continue }
-            var renews: Bool?
-            if transaction.productType == .autoRenewable {
-                renews = await willAutoRenew(transaction)
+            let renewal = transaction.productType == .autoRenewable ? await renewalRecord(for: transaction) : nil
+            #if DEBUG
+            if let renewal {
+                logger.debug("Premium renewal: current=\(renewal.productID, privacy: .public) willAutoRenew=\(renewal.willRenew, privacy: .public) autoRenewPreference=\(renewal.nextProductID ?? "nil", privacy: .public)")
             }
+            #endif
             let purchased = transaction.productType == .autoRenewable ? transaction.originalPurchaseDate : transaction.purchaseDate
             owned.append(OwnedProduct(productId: transaction.productID, purchaseDate: purchased,
-                                      willAutoRenew: renews, expirationDate: transaction.expirationDate))
+                                      willAutoRenew: renewal?.willRenew, expirationDate: transaction.expirationDate,
+                                      nextProductID: renewal?.nextProductID, renewalDate: renewal?.renewalDate))
         }
         if owned.isEmpty, !(await storeConfirmsNoSubscription()) {
             // The App Store could not confirm: free features stay, but this
@@ -154,7 +157,7 @@ final class StoreKitPremiumService {
         }
     }
 
-    private func willAutoRenew(_ transaction: Transaction) async -> Bool? {
+    private func renewalRecord(for transaction: Transaction) async -> PremiumRenewalRecord? {
         guard let plan = PremiumPlanID(productId: transaction.productID),
               let statuses = try? await products[plan]?.subscription?.status else { return nil }
         let records: [PremiumRenewalRecord] = statuses.compactMap { status in
@@ -165,7 +168,8 @@ final class StoreKitPremiumService {
                   renewal.currentProductID == statusTransaction.productID else { return nil }
             return PremiumRenewalRecord(originalID: statusTransaction.originalID,
                                         productID: renewal.currentProductID,
-                                        signedAt: renewal.signedDate, willRenew: renewal.willAutoRenew)
+                                        signedAt: renewal.signedDate, willRenew: renewal.willAutoRenew,
+                                        nextProductID: renewal.autoRenewPreference, renewalDate: renewal.renewalDate)
         }
         return PremiumRenewalRecord.resolve(records, originalID: transaction.originalID,
                                             productID: transaction.productID)

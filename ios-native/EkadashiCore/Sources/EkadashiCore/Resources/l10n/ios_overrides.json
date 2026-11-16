@@ -1,6 +1,8 @@
 {
  "_about": "iOS wording for strings that name Google Play, the Play Store or Android battery settings, and iOS-only keys (prefixed ios_). Everything else comes from lib/l10n/app_*.arb. Tamil, Hindi, Telugu, Gujarati and Bengali entries need native review like translation_review.json.",
  "en": {
+  "ios_premium_scheduled_plan": "Switches to {value0} at the next renewal.",
+  "ios_premium_scheduled_plan_date": "Switches to {value0} on {value1}.",
   "ios_premium_cancelled_until": "Premium stays on until {value0}. Reactivate anytime to keep it.",
   "rate_app_desc": "Rate us on the App Store",
   "app_settings_desc": "Manage permissions and background refresh",
@@ -27,6 +29,8 @@
   "ios_fast_completed": "completed"
  },
  "ta": {
+  "ios_premium_scheduled_plan": "அடுத்த புதுப்பிப்பில் {value0} திட்டத்திற்கு மாறும்.",
+  "ios_premium_scheduled_plan_date": "{value1} அன்று {value0} திட்டத்திற்கு மாறும்.",
   "ios_premium_cancelled_until": "{value0} வரை பிரீமியம் செயலில் இருக்கும். தொடர எப்போது வேண்டுமானாலும் மீண்டும் இயக்கலாம்.",
   "rate_app_desc": "ஆப் ஸ்டோரில் எங்களை மதிப்பிடவும்",
   "app_settings_desc": "அனுமதிகள் மற்றும் பின்னணிப் புதுப்பிப்பை நிர்வகிக்கவும்",
@@ -53,6 +57,8 @@
   "ios_fast_completed": "நிறைவு"
  },
  "hi": {
+  "ios_premium_scheduled_plan": "अगले नवीनीकरण पर {value0} प्लान लागू होगा।",
+  "ios_premium_scheduled_plan_date": "{value1} को {value0} प्लान लागू होगा।",
   "ios_premium_cancelled_until": "प्रीमियम {value0} तक चालू रहेगा। इसे बनाए रखने के लिए कभी भी फिर से चालू करें।",
   "rate_app_desc": "ऐप स्टोर पर हमें रेट करें",
   "app_settings_desc": "अनुमतियां और बैकग्राउंड रिफ्रेश प्रबंधित करें",
@@ -79,6 +85,8 @@
   "ios_fast_completed": "पूर्ण"
  },
  "te": {
+  "ios_premium_scheduled_plan": "తదుపరి పునరుద్ధరణలో {value0} ప్లాన్‌కు మారుతుంది.",
+  "ios_premium_scheduled_plan_date": "{value1}న {value0} ప్లాన్‌కు మారుతుంది.",
   "ios_premium_cancelled_until": "{value0} వరకు ప్రీమియం ఉంటుంది. కొనసాగించడానికి ఎప్పుడైనా మళ్లీ ప్రారంభించండి.",
   "rate_app_desc": "యాప్ స్టోర్‌లో రేట్ చేయండి",
   "app_settings_desc": "అనుమతులు మరియు బ్యాక్‌గ్రౌండ్ రిఫ్రెష్ నిర్వహించండి",
@@ -105,6 +113,8 @@
   "ios_fast_completed": "పూర్తి"
  },
  "gu": {
+  "ios_premium_scheduled_plan": "આગામી નવીનીકરણ વખતે {value0} પ્લાન લાગુ થશે.",
+  "ios_premium_scheduled_plan_date": "{value1}ના રોજ {value0} પ્લાન લાગુ થશે.",
   "ios_premium_cancelled_until": "{value0} સુધી પ્રીમિયમ ચાલુ રહેશે. ચાલુ રાખવા ગમે ત્યારે ફરી સક્રિય કરો.",
   "rate_app_desc": "એપ સ્ટોર પર અમને રેટ કરો",
   "app_settings_desc": "પરવાનગીઓ અને બેકગ્રાઉન્ડ રિફ્રેશ સંભાળો",
@@ -131,6 +141,8 @@
   "ios_fast_completed": "પૂર્ણ"
  },
  "bn": {
+  "ios_premium_scheduled_plan": "পরবর্তী নবীকরণে {value0} প্ল্যান চালু হবে।",
+  "ios_premium_scheduled_plan_date": "{value1} তারিখে {value0} প্ল্যান চালু হবে।",
   "ios_premium_cancelled_until": "{value0} পর্যন্ত প্রিমিয়াম চালু থাকবে। রাখতে চাইলে যেকোনো সময় আবার সক্রিয় করুন।",
   "rate_app_desc": "অ্যাপ স্টোর-এ আমাদের রেট দিন",
   "app_settings_desc": "অনুমতি ও ব্যাকগ্রাউন্ড রিফ্রেশ পরিচালনা করুন",

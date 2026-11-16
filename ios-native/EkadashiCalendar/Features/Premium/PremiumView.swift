@@ -121,7 +121,8 @@ struct PremiumView: View {
                     statusCard("premium_cancelled_title", "premium_cancelled_body", .orange,
                                bodyText: model.premiumCancellationMessage(state))
                 } else {
-                    statusCard("premium_subscriber_title", "premium_subscriber_body", Theme.teal)
+                    statusCard("premium_subscriber_title", "premium_subscriber_body", Theme.teal,
+                               bodyText: model.premiumRenewalMessage(state))
                 }
             }
             .accessibilityIdentifier("premium_active")
