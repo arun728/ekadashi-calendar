@@ -34,7 +34,7 @@ for (const path of pages) {
 
 test('the product introduction and legal pages describe the iOS app', () => {
   const home = read('ekadashi-calendar/index.html');
-  for (const item of ['2026 and 2027', 'Smarta', 'Vaishnava', '34,152', 'Lock Screen', 'Shortcuts', 'Monthly', 'Yearly', 'Lifetime', 'Gujarati', 'Bengali']) {
+  for (const item of ['2026 and 2027', 'Smarta', 'Vaishnava', '34,152', 'Lock Screen', 'iPad', 'Monthly', 'Yearly', 'Lifetime', 'Gujarati', 'Bengali']) {
     assert.ok(home.includes(item), item);
   }
   const privacy = read('ekadashi-calendar/privacy-policy/index.html');
@@ -46,6 +46,19 @@ test('the product introduction and legal pages describe the iOS app', () => {
   for (const html of [home, privacy, terms]) {
     assert.doesNotMatch(html, /Google Play|Android/);
   }
+});
+
+test('the iOS page offers the full shared city and time-zone catalog', () => {
+  const home = read('ekadashi-calendar/index.html');
+  assert.match(home, /data-catalog="\/assets\/locations.json"/);
+  assert.match(home, /src="\/assets\/locations.js"/);
+  assert.match(home, /id="zone-filter"/);
+  assert.match(home, /தமிழ்/);
+  const catalog = JSON.parse(read('assets/locations.json'));
+  assert.equal(catalog.release, '2026b');
+  assert.equal(catalog.cities.length, 34152);
+  assert.equal(catalog.zones.length, 554);
+  assert.ok(catalog.zones.includes('Pacific/Chatham'));
 });
 
 function themeSession(value, failWrites = false) {
