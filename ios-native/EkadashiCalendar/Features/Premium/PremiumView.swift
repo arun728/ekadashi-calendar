@@ -206,8 +206,12 @@ struct PremiumView: View {
             .glassPanel(cornerRadius: 16, tint: isSelected ? Theme.teal : nil, interactive: true)
             .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(isSelected ? Theme.teal : Color.secondary.opacity(0.3),
                                                                      lineWidth: isSelected ? 2 : 1))
+            // The whole box answers a tap, edges and corners included, not
+            // only its text (on a device the empty glass did not respond).
+            .contentShape(.rect(cornerRadius: 16))
         }
         .buttonStyle(.plain)
+        .contentShape(.rect(cornerRadius: 16))
         .opacity(store.canBuy(id) || current || id == state.scheduledPlan ? 1 : 0.5)
         .accessibilityIdentifier("premium_plan_\(id.rawValue)")
         .accessibilityAddTraits(isSelected ? .isSelected : [])
