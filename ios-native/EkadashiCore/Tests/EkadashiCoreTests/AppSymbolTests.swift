@@ -21,6 +21,12 @@ final class AppSymbolTests: XCTestCase {
         }
     }
 
+    /// The Edit subscription sheet's price and renewal rows (Claude's layout).
+    func testEditSubscriptionRows() {
+        XCTAssertEqual(AppSymbol.all["subscription_price"], "creditcard")
+        XCTAssertEqual(AppSymbol.all["subscription_renewal"], "calendar")
+    }
+
     func testGlassLookUsesTheAppleStyleOverlappingGlassShapes() {
         XCTAssertEqual(AppSymbol.all["glass_look"], "square.on.circle")
     }
