@@ -25,7 +25,7 @@ final class PremiumPaywallTests: XCTestCase {
     func testATappedPlanSurvivesStoreRefreshes() {
         var selection = PremiumPaywallSelection()
         var state = yearlyWithMonthlyNext()
-        XCTAssertEqual(selection.plan(state, available: all, pending: false), .monthly)
+        XCTAssertEqual(selection.plan(state, available: all, pending: false), .yearly, "The plan in use is ticked")
         selection.tap(.lifetime)
         XCTAssertEqual(selection.plan(state, available: all, pending: false), .lifetime)
         // A refresh that briefly loses the renewal record, then finds it again.

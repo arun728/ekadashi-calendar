@@ -6,8 +6,6 @@ public enum PremiumPaywallAction: Equatable, Sendable {
     case purchase(PremiumPlanID)
     /// A subscriber buying Lifetime is first told to cancel the subscription.
     case confirmLifetime
-    /// A downgrade first says when each plan applies (at the renewal).
-    case confirmSwitch(PremiumPlanID)
     /// Reactivating or a plan already scheduled: Apple's Manage sheet.
     case manage
     /// Nothing can be bought right now (a purchase is pending).
@@ -15,13 +13,21 @@ public enum PremiumPaywallAction: Equatable, Sendable {
 }
 
 extension PremiumState {
+    /// As in Apple's plan list: no button for the plan in use; a downgrade
+    /// is bought straight away and Apple's own sheet says when it starts.
     public func paywallAction(for plan: PremiumPlanID, canBuy: Bool) -> PremiumPaywallAction {
         if lifetime { return .none }
-        if plan == scheduledPlan || (subscriptionCancelled && plan == currentPlan) { return .manage }
+        if plan == scheduledPlan { return .manage }
+        if subscribed && plan == currentPlan { return subscriptionCancelled ? .manage : .none }
         guard canBuy else { return .none }
-        if case .atRenewal = switchTiming(to: plan) { return .confirmSwitch(plan) }
         if plan == .lifetime && subscribed { return .confirmLifetime }
         return .purchase(plan)
+    }
+
+    /// Whether the button switches one subscription for the other ("Change
+    /// plan") rather than buying a first plan or Lifetime.
+    public func paywallIsPlanChange(to plan: PremiumPlanID) -> Bool {
+        subscribed && !lifetime && plan != .lifetime && plan != currentPlan
     }
 }
 
@@ -46,7 +52,8 @@ public struct PremiumPaywallSelection: Equatable, Sendable {
     public func plan(_ state: PremiumState, available: [PremiumPlanID], pending: Bool) -> PremiumPlanID? {
         if state.lifetime { return available.contains(.lifetime) ? .lifetime : nil }
         if let selected, available.contains(selected) { return selected }
-        if let scheduled = state.scheduledPlan, available.contains(scheduled) { return scheduled }
+        // Apple's plan list ticks the plan in use, even with another next.
+        if state.subscribed, let current = state.currentPlan, available.contains(current) { return current }
         return state.defaultPlan(available: available, pending: pending)
     }
 }
