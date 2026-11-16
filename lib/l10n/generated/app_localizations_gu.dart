@@ -956,6 +956,16 @@ class AppLocalizationsGu extends AppLocalizations {
   String get premium_buy_lifetime_anyway => 'આજીવન ખરીદો';
 
   @override
+  String get premium_switch_now_title => 'પ્લાન બદલવો છે?';
+
+  @override
+  String get premium_switch_now_body =>
+      'તમારો નવો પ્લાન આજથી શરૂ થશે અને આજે જ ચુકવણી લેવાશે. હાલના પ્લાનનો બાકી સમય તેમાં ઉમેરાશે.';
+
+  @override
+  String get premium_switch_now_confirm => 'પ્લાન બદલો';
+
+  @override
   String get premium_unavailable =>
       'હાલમાં ખરીદી ઉપલબ્ધ નથી. ગૂગલ પ્લે પરથી એપ ઇન્સ્ટોલ કરીને ફરી પ્રયાસ કરો. મફત સુવિધાઓ ચાલુ રહે છે.';
 

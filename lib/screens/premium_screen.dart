@@ -293,6 +293,43 @@ class _PremiumScreenState extends State<PremiumScreen> {
       );
       if (go != true) return;
     }
+    // Switching base plans uses Play Console's "Charge immediately": the new
+    // plan starts and is charged today and the unused time is added to it.
+    // Say so first, since Apple-style deferred changes are not possible
+    // between base plans of one Play subscription.
+    if (plan.id != 'lifetime' &&
+        premium.subscribed &&
+        !premium.lifetime &&
+        plan.id != billing.currentPlanId) {
+      if (!mounted) return;
+      final go = await showDialog<bool>(
+        context: context,
+        useRootNavigator: true,
+        builder: (context) {
+          final style = TextButton.styleFrom(foregroundColor: IosColors.teal);
+          return AlertDialog(
+            title: Text(lang.translate('premium_switch_now_title')),
+            content: Text(lang.translate('premium_switch_now_body')),
+            actions: [
+              TextButton(
+                style: style,
+                onPressed: () => Navigator.pop(context, false),
+                child: Text(
+                  lang.translate('cancel'),
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+              TextButton(
+                style: style,
+                onPressed: () => Navigator.pop(context, true),
+                child: Text(lang.translate('premium_switch_now_confirm')),
+              ),
+            ],
+          );
+        },
+      );
+      if (go != true) return;
+    }
     await billing.buy(plan);
   }
 

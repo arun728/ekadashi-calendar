@@ -963,6 +963,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premium_buy_lifetime_anyway => 'Buy lifetime';
 
   @override
+  String get premium_switch_now_title => 'Change your plan?';
+
+  @override
+  String get premium_switch_now_body =>
+      'Your new plan starts today and is charged today. Any unused time on your current plan is added to it.';
+
+  @override
+  String get premium_switch_now_confirm => 'Change plan';
+
+  @override
   String get premium_unavailable =>
       'Purchases are unavailable right now. Install the app from Google Play and try again. Free features still work.';
 

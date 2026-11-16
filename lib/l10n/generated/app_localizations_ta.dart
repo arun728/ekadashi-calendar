@@ -966,6 +966,16 @@ class AppLocalizationsTa extends AppLocalizations {
   String get premium_buy_lifetime_anyway => 'வாழ்நாள் திட்டத்தை வாங்கு';
 
   @override
+  String get premium_switch_now_title => 'திட்டத்தை மாற்றவா?';
+
+  @override
+  String get premium_switch_now_body =>
+      'உங்கள் புதிய திட்டம் இன்றே தொடங்கும், இன்றே கட்டணம் வசூலிக்கப்படும். தற்போதைய திட்டத்தில் மீதமுள்ள காலம் அதில் சேர்க்கப்படும்.';
+
+  @override
+  String get premium_switch_now_confirm => 'திட்டத்தை மாற்று';
+
+  @override
   String get premium_unavailable =>
       'தற்போது வாங்க முடியவில்லை. கூகுள் பிளே-இலிருந்து செயலியை நிறுவி மீண்டும் முயலவும். இலவச அம்சங்கள் தொடர்ந்து செயல்படும்.';
 

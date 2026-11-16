@@ -1906,6 +1906,24 @@ abstract class AppLocalizations {
   /// **'Buy lifetime'**
   String get premium_buy_lifetime_anyway;
 
+  /// No description provided for @premium_switch_now_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Change your plan?'**
+  String get premium_switch_now_title;
+
+  /// No description provided for @premium_switch_now_body.
+  ///
+  /// In en, this message translates to:
+  /// **'Your new plan starts today and is charged today. Any unused time on your current plan is added to it.'**
+  String get premium_switch_now_body;
+
+  /// No description provided for @premium_switch_now_confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Change plan'**
+  String get premium_switch_now_confirm;
+
   /// No description provided for @premium_unavailable.
   ///
   /// In en, this message translates to:
