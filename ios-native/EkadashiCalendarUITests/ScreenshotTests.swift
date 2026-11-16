@@ -535,6 +535,85 @@ final class ScreenshotTests: XCTestCase {
         #endif
     }
 
+    /// Arun on his iPhone (16 Nov 2026): Lifetime did nothing after several
+    /// taps for a subscriber. The Lifetime tile must select on one tap and the
+    /// buy button must show the "already subscribed" warning.
+    @MainActor
+    func testSubscriberLifetimeTapSelectsAndBuyShowsTheWarning() async throws {
+        #if !targetEnvironment(simulator)
+        throw XCTSkip("Purchases and resets belong only to isolated Simulator test accounts")
+        #else
+        let configuration = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("EkadashiCalendar/Resources/Products.storekit")
+        app.terminate()
+        let session = try SKTestSession(contentsOf: configuration)
+        session.resetToDefaultState()
+        session.disableDialogs = true
+        session.timeRate = .realTime
+        try session.clearTransactions()
+        defer { try? session.clearTransactions() }
+        _ = try await session.buyProduct(identifier: "ekadashi_premium_yearly")
+        // As on Arun's iPhone: Yearly in use with Monthly scheduled next.
+        _ = try? await session.buyProduct(identifier: "ekadashi_premium_monthly")
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        glassTab(4); app.buttons["settings_premium"].firstMatch.tap()
+        let current = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'premium_plan_' AND label CONTAINS 'Your current plan'")).firstMatch
+        XCTAssertTrue(current.waitForExistence(timeout: 60), "The store never reported the subscription")
+        let lifetime = app.buttons["premium_plan_lifetime"].firstMatch
+        lifetime.tap()
+        XCTAssertTrue(lifetime.wait(for: \.isSelected, toEqual: true, timeout: 3), "One tap must select Lifetime")
+        for _ in 0..<8 {
+            try await Task.sleep(nanoseconds: 250_000_000)
+            XCTAssertTrue(lifetime.isSelected, "Lifetime lost its selection")
+        }
+        let buy = app.buttons["premium_buy"].firstMatch
+        XCTAssertTrue(buy.isEnabled)
+        buy.tap()
+        XCTAssertTrue(app.alerts.firstMatch.waitForExistence(timeout: 5), "Buying Lifetime as a subscriber must show the warning")
+        XCTAssertTrue(app.alerts.buttons["Buy lifetime"].exists)
+        snap("premium-subscriber-lifetime-warning")
+        app.alerts.buttons["Cancel"].firstMatch.tap()
+        #endif
+    }
+
+    /// Arun's iPhone: with Yearly cancelled, choosing Monthly and Buy did
+    /// nothing because the plan-change note never appeared.
+    @MainActor
+    func testCancelledSubscriberMonthlyTapSelectsAndBuyShowsTheNote() async throws {
+        #if !targetEnvironment(simulator)
+        throw XCTSkip("Purchases and resets belong only to isolated Simulator test accounts")
+        #else
+        let configuration = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("EkadashiCalendar/Resources/Products.storekit")
+        app.terminate()
+        let session = try SKTestSession(contentsOf: configuration)
+        session.resetToDefaultState()
+        session.disableDialogs = true
+        session.timeRate = .realTime
+        try session.clearTransactions()
+        defer { try? session.clearTransactions() }
+        let yearlyPurchase = try await session.buyProduct(identifier: "ekadashi_premium_yearly")
+        try session.disableAutoRenewForTransaction(identifier: UInt(yearlyPurchase.id))
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        glassTab(4); app.buttons["settings_premium"].firstMatch.tap()
+        let yearly = app.buttons["premium_plan_yearly"].firstMatch
+        await fulfillment(of: [expectation(for: NSPredicate(format: "label CONTAINS %@", "Your current plan"),
+                                           evaluatedWith: yearly)], timeout: 60)
+        let monthly = app.buttons["premium_plan_monthly"].firstMatch
+        monthly.tap()
+        XCTAssertTrue(monthly.wait(for: \.isSelected, toEqual: true, timeout: 3), "One tap must select Monthly")
+        let buy = app.buttons["premium_buy"].firstMatch
+        XCTAssertTrue(buy.isEnabled)
+        buy.tap()
+        XCTAssertTrue(app.alerts.firstMatch.waitForExistence(timeout: 5), "Switching to Monthly must show when it starts")
+        XCTAssertTrue(app.alerts.buttons["Change plan"].exists)
+        snap("premium-cancelled-monthly-note")
+        app.alerts.buttons["Cancel"].firstMatch.tap()
+        #endif
+    }
+
     /// XCTest's timing of a tile tap until the tile reports selected. dev
     /// measured 1.55 s on iOS 18.6 and 2.15 s on iOS 26.5 (mostly XCTest's
     /// own polling); the plans page must stay within that.
