@@ -105,11 +105,24 @@ test('invalid preferences and unavailable storage leave the switch usable', () =
   assert.equal(session.root.dataset.theme, 'light');
 });
 
-test('the homepage uses the Apptinel artwork and a dedicated browser icon', () => {
+test('the studio homepage uses one logo and displays the 2026 copyright', () => {
   const home = read('index.html');
-  assert.match(home, /class="studio-art"[\s\S]*?src="\/assets\/apptinel-logo\.jpg"/);
+  assert.doesNotMatch(home, /class="studio-art"|apptinel-logo\.jpg/);
+  assert.equal((home.match(/<img[^>]*apptinel-icon\.png/g) || []).length, 1);
   assert.match(home, /rel="icon" href="\/assets\/apptinel-icon\.png"/);
-  assert.ok(readFileSync(new URL('assets/apptinel-logo.jpg', publicDir)).length > 30_000);
+  assert.match(home, /© 2026 Apptinel Software Private Limited/);
+});
+
+test('the Ekadashi hero presents a silent looping preview with playback controls', () => {
+  const home = read('ekadashi-calendar/index.html');
+  const video = home.match(/<video[^>]+>/);
+  assert.ok(video);
+  for (const attribute of ['controls', 'muted', 'loop', 'playsinline', 'poster']) {
+    assert.ok(video[0].includes(attribute), attribute);
+  }
+  assert.match(home, /type="video\/mp4"/);
+  assert.doesNotMatch(home, /ekadashi-home\.jpg/);
+  assert.match(home, /aria-label="Ekadashi Calendar app preview"/);
 });
 
 test('the Ekadashi pages have a dedicated readable type system', () => {
