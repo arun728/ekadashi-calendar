@@ -467,17 +467,14 @@ final class ScreenshotTests: XCTestCase {
             XCUIDevice.shared.press(.home)
             app.activate()
             let owned = app.buttons["premium_plan_\(product)"].firstMatch
-            // As in Apple's plan list, the bought plan is ticked and there is
-            // no button until another plan is chosen.
+            // Lifetime is already the selected suggestion after Yearly. Wait
+            // for verified ownership, not only the pre-existing selection.
             await fulfillment(of: [expectation(for: NSPredicate(format: "label CONTAINS %@", "Your current plan"), evaluatedWith: owned)], timeout: 60)
-            await fulfillment(of: [expectation(for: NSPredicate(format: "selected == true"), evaluatedWith: owned)], timeout: 10)
-            XCTAssertFalse(app.buttons["premium_buy"].exists, "No button on the plan in use")
-            snap("premium-owned-\(product)")
-            guard product != next else { continue }
             let tile = app.buttons["premium_plan_\(next)"].firstMatch
-            tile.tap()
-            XCTAssertTrue(tile.wait(for: \.isSelected, toEqual: true, timeout: 3), next)
-            XCTAssertTrue(app.buttons["premium_buy"].firstMatch.waitForExistence(timeout: 3), next)
+            await fulfillment(of: [expectation(for: NSPredicate(format: "exists == true AND selected == true"), evaluatedWith: tile)], timeout: 60)
+            XCTAssertTrue(tile.isSelected, next)
+            XCTAssertTrue(tile.isEnabled)
+            snap("premium-owned-\(product)-suggest-\(next)")
         }
         XCTAssertFalse(app.buttons["premium_buy"].exists, "Lifetime ownership must not offer another charge")
         #endif
@@ -580,11 +577,10 @@ final class ScreenshotTests: XCTestCase {
         #endif
     }
 
-    /// Arun's iPhone: with Yearly cancelled, choosing Monthly did nothing.
-    /// Now Yearly is ticked with no button; ticking Monthly shows "Change
-    /// plan", which opens Apple's sheet (it says when Monthly starts).
+    /// Arun's iPhone: with Yearly cancelled, choosing Monthly and Buy did
+    /// nothing because the plan-change note never appeared.
     @MainActor
-    func testCancelledSubscriberMonthlyTapOffersChangePlan() async throws {
+    func testCancelledSubscriberMonthlyTapSelectsAndBuyShowsTheNote() async throws {
         #if !targetEnvironment(simulator)
         throw XCTSkip("Purchases and resets belong only to isolated Simulator test accounts")
         #else
@@ -605,15 +601,16 @@ final class ScreenshotTests: XCTestCase {
         let yearly = app.buttons["premium_plan_yearly"].firstMatch
         await fulfillment(of: [expectation(for: NSPredicate(format: "label CONTAINS %@", "Your current plan"),
                                            evaluatedWith: yearly)], timeout: 60)
-        XCTAssertTrue(yearly.isSelected, "The plan in use is ticked")
-        let buy = app.buttons["premium_buy"].firstMatch
         let monthly = app.buttons["premium_plan_monthly"].firstMatch
         monthly.tap()
         XCTAssertTrue(monthly.wait(for: \.isSelected, toEqual: true, timeout: 3), "One tap must select Monthly")
-        XCTAssertTrue(buy.waitForExistence(timeout: 3))
-        XCTAssertTrue(buy.label.hasPrefix("Change plan"), buy.label)
+        let buy = app.buttons["premium_buy"].firstMatch
         XCTAssertTrue(buy.isEnabled)
-        snap("premium-cancelled-monthly-change-plan")
+        buy.tap()
+        XCTAssertTrue(app.alerts.firstMatch.waitForExistence(timeout: 5), "Switching to Monthly must show when it starts")
+        XCTAssertTrue(app.alerts.buttons["Change plan"].exists)
+        snap("premium-cancelled-monthly-note")
+        app.alerts.buttons["Cancel"].firstMatch.tap()
         #endif
     }
 
@@ -657,9 +654,13 @@ final class ScreenshotTests: XCTestCase {
         }
         if currentID == "premium_plan_yearly" {
             select("monthly")
-            if buy.label.hasPrefix("Change plan") {
+            if buy.label.contains("Monthly") {
                 XCTAssertTrue(buy.isEnabled)
-                print("DEVICE monthly offers \(buy.label)")
+                buy.tap()
+                XCTAssertTrue(app.alerts.firstMatch.waitForExistence(timeout: 5), "Monthly raised no plan-change note")
+                XCTAssertTrue(app.alerts.buttons["Change plan"].exists)
+                print("DEVICE monthly note: \(app.alerts.firstMatch.staticTexts.allElementsBoundByIndex.map(\.label))")
+                app.alerts.buttons["Cancel"].firstMatch.tap()
             } else {
                 print("DEVICE monthly is already scheduled: buy shows \(buy.label)")
             }
@@ -686,71 +687,6 @@ final class ScreenshotTests: XCTestCase {
                               "A tap at \(point) in the \(id) box did not select it")
             }
         }
-    }
-
-    /// Apple's Available Plans layout (Arun, 16 Nov 2026): full-width plan
-    /// rows stacked top to bottom, the suggested plan ticked for a free user
-    /// with its price on the button.
-    @MainActor
-    func testPlansAreFullWidthRowsLikeApplesPlanList() throws {
-        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
-        glassTab(4); app.buttons["settings_premium"].firstMatch.tap()
-        let rows = ["monthly", "yearly", "lifetime"].map { app.buttons["premium_plan_\($0)"].firstMatch }
-        XCTAssertTrue(rows[2].waitForExistence(timeout: 30))
-        XCTAssertLessThanOrEqual(rows[0].frame.maxY, rows[1].frame.minY + 1, "Yearly sits below Monthly")
-        XCTAssertLessThanOrEqual(rows[1].frame.maxY, rows[2].frame.minY + 1, "Lifetime sits below Yearly")
-        for row in rows {
-            XCTAssertGreaterThan(row.frame.width, app.frame.width * 0.8, "\(row.identifier) spans the page")
-        }
-        XCTAssertTrue(rows[1].isSelected, "Yearly is suggested")
-        XCTAssertTrue(app.buttons["premium_buy"].firstMatch.label.hasPrefix("Yearly"))
-        rows[0].tap()
-        XCTAssertTrue(rows[0].wait(for: \.isSelected, toEqual: true, timeout: 3))
-        XCTAssertFalse(rows[1].isSelected, "One plan is ticked at a time")
-        XCTAssertTrue(app.buttons["premium_buy"].firstMatch.label.hasPrefix("Monthly"))
-        snap("premium-plan-rows-free")
-        // Like Claude's and ChatGPT's sheets, a pull down on the plans closes it.
-        let start = rows[0].coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
-        start.press(forDuration: 0.1, thenDragTo: start.withOffset(CGVector(dx: 0, dy: 600)))
-        XCTAssertTrue(XCTWaiter.wait(for: [expectation(for: NSPredicate(format: "exists == false"),
-                                                       evaluatedWith: rows[0])], timeout: 5) == .completed)
-    }
-
-    /// A subscriber sees the plan in use ticked and no button; choosing
-    /// another subscription shows "Change plan".
-    @MainActor
-    func testSubscriberSeesTheCurrentPlanTickedAndChangePlanOnAnother() async throws {
-        #if !targetEnvironment(simulator)
-        throw XCTSkip("Purchases and resets belong only to isolated Simulator test accounts")
-        #else
-        let configuration = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
-            .appendingPathComponent("EkadashiCalendar/Resources/Products.storekit")
-        app.terminate()
-        let session = try SKTestSession(contentsOf: configuration)
-        session.resetToDefaultState()
-        session.disableDialogs = true
-        session.timeRate = .realTime
-        try session.clearTransactions()
-        defer { try? session.clearTransactions() }
-        _ = try await session.buyProduct(identifier: "ekadashi_premium_yearly")
-        app.launch()
-        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
-        glassTab(4); app.buttons["settings_premium"].firstMatch.tap()
-        let yearly = app.buttons["premium_plan_yearly"].firstMatch
-        await fulfillment(of: [expectation(for: NSPredicate(format: "label CONTAINS %@", "Your current plan"),
-                                           evaluatedWith: yearly)], timeout: 60)
-        XCTAssertTrue(yearly.wait(for: \.isSelected, toEqual: true, timeout: 5), "The plan in use is ticked")
-        let buy = app.buttons["premium_buy"].firstMatch
-        XCTAssertFalse(buy.exists, "No button while the plan in use is ticked")
-        let monthly = app.buttons["premium_plan_monthly"].firstMatch
-        monthly.tap()
-        XCTAssertTrue(buy.waitForExistence(timeout: 3))
-        XCTAssertTrue(buy.label.hasPrefix("Change plan"), buy.label)
-        snap("premium-subscriber-change-plan")
-        yearly.tap()
-        XCTAssertTrue(XCTWaiter.wait(for: [expectation(for: NSPredicate(format: "exists == false"), evaluatedWith: buy)],
-                                     timeout: 3) == .completed, "Ticking the plan in use hides the button again")
-        #endif
     }
 
     /// XCTest's timing of a tile tap until the tile reports selected. dev

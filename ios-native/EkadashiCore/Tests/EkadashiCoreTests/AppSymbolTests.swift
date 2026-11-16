@@ -21,12 +21,6 @@ final class AppSymbolTests: XCTestCase {
         }
     }
 
-    /// The plans list ticks a plan like Apple's Available Plans sheet.
-    func testPlanRowsUseAppleStyleTickCircles() {
-        XCTAssertEqual(AppSymbol.all["premium_plan_selected"], "checkmark.circle.fill")
-        XCTAssertEqual(AppSymbol.all["premium_plan_unselected"], "circle")
-    }
-
     func testGlassLookUsesTheAppleStyleOverlappingGlassShapes() {
         XCTAssertEqual(AppSymbol.all["glass_look"], "square.on.circle")
     }
