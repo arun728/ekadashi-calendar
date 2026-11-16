@@ -282,6 +282,9 @@ struct SettingsPremiumCard: View {
             in: RoundedRectangle(cornerRadius: 24, style: .continuous))
         .glassPanel(cornerRadius: 24)
         .manageSubscriptionsSheet(isPresented: $managing)
+        .onChange(of: managing) { _, isPresented in
+            if !isPresented { Task { await model.premium.refresh() } }
+        }
     }
 
     private var subtitleKey: String {

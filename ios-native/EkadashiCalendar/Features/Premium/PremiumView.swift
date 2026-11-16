@@ -69,6 +69,9 @@ struct PremiumView: View {
         .onChange(of: state.currentPlan) { _, _ in selected = nil }
         .onChange(of: state.lifetime) { _, _ in selected = nil }
         .manageSubscriptionsSheet(isPresented: $managing)
+        .onChange(of: managing) { _, isPresented in
+            if !isPresented { Task { await model.premium.refresh() } }
+        }
         .alert(model.t("premium_lifetime_confirm_title"), isPresented: $confirmLifetime) {
             Button(model.t("cancel"), role: .cancel) {}
             Button(model.t("premium_buy_lifetime_anyway")) { Task { await store.buy(.lifetime) } }

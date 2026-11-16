@@ -171,3 +171,26 @@ public struct PremiumState: Equatable, Sendable {
         return available.first
     }
 }
+
+/// A verified StoreKit renewal record tied to a subscription purchase.
+public struct PremiumRenewalRecord: Sendable {
+    public let originalID: UInt64
+    public let productID: String
+    public let signedAt: Date
+    public let willRenew: Bool
+
+    public init(originalID: UInt64, productID: String, signedAt: Date, willRenew: Bool) {
+        self.originalID = originalID
+        self.productID = productID
+        self.signedAt = signedAt
+        self.willRenew = willRenew
+    }
+
+    public static func resolve(_ records: [Self], originalID: UInt64, productID: String) -> Bool? {
+        let matching = records.filter { $0.originalID == originalID && $0.productID == productID }
+        guard let latest = matching.max(by: { $0.signedAt < $1.signedAt }),
+              !matching.contains(where: { $0.signedAt == latest.signedAt && $0.willRenew != latest.willRenew })
+        else { return nil }
+        return latest.willRenew
+    }
+}

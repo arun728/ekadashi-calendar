@@ -131,7 +131,7 @@ final class StoreKitPremiumService {
                   !owned.contains(where: { $0.productId == transaction.productID }) else { continue }
             var renews: Bool?
             if transaction.productType == .autoRenewable {
-                renews = await willAutoRenew(transaction.productID)
+                renews = await willAutoRenew(transaction)
             }
             let purchased = transaction.productType == .autoRenewable ? transaction.originalPurchaseDate : transaction.purchaseDate
             owned.append(OwnedProduct(productId: transaction.productID, purchaseDate: purchased,
@@ -154,15 +154,21 @@ final class StoreKitPremiumService {
         }
     }
 
-    private func willAutoRenew(_ productId: String) async -> Bool? {
-        guard let plan = PremiumPlanID(productId: productId), let product = products[plan],
-              let statuses = try? await product.subscription?.status else { return nil }
-        for status in statuses {
-            if case .verified(let renewal) = status.renewalInfo, renewal.currentProductID == productId || renewal.autoRenewPreference == productId {
-                return renewal.willAutoRenew
-            }
+    private func willAutoRenew(_ transaction: Transaction) async -> Bool? {
+        guard let plan = PremiumPlanID(productId: transaction.productID),
+              let statuses = try? await products[plan]?.subscription?.status else { return nil }
+        let records: [PremiumRenewalRecord] = statuses.compactMap { status in
+            guard status.state == .subscribed || status.state == .inGracePeriod,
+                  case .verified(let statusTransaction) = status.transaction,
+                  statusTransaction.revocationDate == nil, !statusTransaction.isUpgraded,
+                  case .verified(let renewal) = status.renewalInfo,
+                  renewal.currentProductID == statusTransaction.productID else { return nil }
+            return PremiumRenewalRecord(originalID: statusTransaction.originalID,
+                                        productID: renewal.currentProductID,
+                                        signedAt: renewal.signedDate, willRenew: renewal.willAutoRenew)
         }
-        return nil
+        return PremiumRenewalRecord.resolve(records, originalID: transaction.originalID,
+                                            productID: transaction.productID)
     }
 
     /// True when the subscription status request succeeds and shows no
