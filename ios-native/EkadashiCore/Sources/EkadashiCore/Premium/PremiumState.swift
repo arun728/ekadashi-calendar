@@ -1,7 +1,8 @@
 import Foundation
 
-/// App Store products. Prices are set in App Store Connect (INR 99 monthly,
-/// INR 499 yearly, INR 999 lifetime), never in code. Monthly and yearly are
+/// App Store products. Prices are set in App Store Connect, never in code
+/// (India: INR 99 monthly, INR 599 yearly, INR 1,999 lifetime; see
+/// docs/PREMIUM_SETUP.md). Monthly and yearly are
 /// one auto-renewable subscription group; lifetime is a non-consumable.
 public enum PremiumProduct {
     public static let monthly = "ekadashi_premium_monthly"
@@ -63,6 +64,25 @@ public struct OwnedProduct: Equatable, Sendable {
     }
 }
 
+/// What a plan tile says about the plan the user owns or has scheduled.
+public enum PremiumPlanBadge: Equatable, Sendable {
+    case none
+    /// The plan in use, renewing as it is.
+    case current
+    /// The plan in use until this date (cancelled, or another plan follows).
+    case currentUntil(Date)
+    /// The plan Apple has scheduled to start at the next renewal.
+    case startsOn(Date)
+}
+
+/// When a switch to another plan takes effect. Yearly is level 1 and
+/// Monthly level 2 in the subscription group, so Yearly to Monthly is a
+/// downgrade that Apple applies at the next renewal; upgrades start now.
+public enum PremiumSwitchTiming: Equatable, Sendable {
+    case now
+    case atRenewal(Date?)
+}
+
 public enum PremiumRestoreResult: Equatable, Sendable {
     case restored, none, unavailable
 }
@@ -111,6 +131,12 @@ public struct PremiumState: Equatable, Sendable {
     /// a purchase was refunded). Never true while the store is unreachable.
     public var lapsed: Bool { confirmedByStore && !isPremium && !isInBillingRetry }
 
+    /// The store gave no verified renewal record for the subscription in use:
+    /// shown as unknown, never as renewing.
+    public private(set) var renewalStatusUnknown = false
+    /// When the paid period of the subscription in use ends.
+    public private(set) var currentPeriodEnd: Date?
+
     /// Applies the complete owned list, revoking anything missing.
     public mutating func apply(owned: [OwnedProduct], billingRetry: Bool = false) {
         let subscription = owned.filter {
@@ -130,6 +156,8 @@ public struct PremiumState: Equatable, Sendable {
         lifetime = lifetimeProduct != nil
         currentPlan = subscription.flatMap { PremiumPlanID(productId: $0.productId) }
         subscriptionCancelled = subscription?.willAutoRenew == false
+        renewalStatusUnknown = subscription != nil && subscription?.willAutoRenew == nil
+        currentPeriodEnd = subscription?.expirationDate
         cancelledSubscriptionEndDate = subscriptionCancelled ? subscription?.expirationDate : nil
         let nextPlan = subscription?.nextProductID.flatMap(PremiumPlanID.init(productId:))
         scheduledPlan = subscription?.willAutoRenew == true && nextPlan != currentPlan && nextPlan != .lifetime
@@ -148,6 +176,8 @@ public struct PremiumState: Equatable, Sendable {
         lifetime = false
         subscriptionCancelled = false
         cancelledSubscriptionEndDate = nil
+        renewalStatusUnknown = false
+        currentPeriodEnd = nil
         currentPlan = nil
         scheduledPlan = nil
         scheduledPlanDate = nil
@@ -182,6 +212,25 @@ public struct PremiumState: Equatable, Sendable {
     /// Subscribers can switch between monthly and yearly or buy lifetime;
     /// lifetime owners need nothing more; a cancelled subscriber may
     /// reactivate the current plan; nothing while a purchase is pending.
+    /// Apple's Manage sheet keeps the current plan ticked after a downgrade,
+    /// so the paywall names both dates itself.
+    public func planBadge(for plan: PremiumPlanID) -> PremiumPlanBadge {
+        if lifetime { return plan == .lifetime ? .current : .none }
+        guard subscribed else { return .none }
+        let end = scheduledPlanDate ?? currentPeriodEnd
+        if plan == currentPlan {
+            if scheduledPlan != nil || subscriptionCancelled, let end { return .currentUntil(end) }
+            return .current
+        }
+        if plan == scheduledPlan, let end { return .startsOn(end) }
+        return .none
+    }
+
+    public func switchTiming(to plan: PremiumPlanID) -> PremiumSwitchTiming {
+        guard subscribed, !lifetime, currentPlan == .yearly, plan == .monthly else { return .now }
+        return .atRenewal(currentPeriodEnd)
+    }
+
     public func canBuy(_ plan: PremiumPlanID, pending: Bool) -> Bool {
         if pending || lifetime { return false }
         if plan == .lifetime || !subscribed { return true }

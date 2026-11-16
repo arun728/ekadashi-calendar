@@ -1,6 +1,12 @@
 {
  "_about": "iOS wording for strings that name Google Play, the Play Store or Android battery settings, and iOS-only keys (prefixed ios_). Everything else comes from lib/l10n/app_*.arb. Tamil, Hindi, Telugu, Gujarati and Bengali entries need native review like translation_review.json.",
  "en": {
+  "ios_premium_renewal_unknown": "Premium is active. Open Manage to see when it renews.",
+  "ios_premium_current_until": "Current plan until {value0}",
+  "ios_premium_starts_on": "Starts {value0}",
+  "ios_premium_switch_title": "Change your plan?",
+  "ios_premium_switch_note": "{value0} stays active until {value1}. {value2} starts on {value1}.",
+  "ios_premium_switch_confirm": "Change plan",
   "ios_premium_billing_retry_title": "Subscription payment failed",
   "ios_premium_billing_retry_body": "Update your payment method in the App Store to restore Premium.",
   "ios_premium_next_plan": "Next plan",
@@ -32,6 +38,12 @@
   "ios_fast_completed": "completed"
  },
  "ta": {
+  "ios_premium_renewal_unknown": "பிரீமியம் செயலில் உள்ளது. எப்போது புதுப்பிக்கப்படும் என அறிய நிர்வகி என்பதைத் திறக்கவும்.",
+  "ios_premium_current_until": "{value0} வரை தற்போதைய திட்டம்",
+  "ios_premium_starts_on": "{value0} முதல் தொடங்கும்",
+  "ios_premium_switch_title": "திட்டத்தை மாற்றவா?",
+  "ios_premium_switch_note": "{value0} திட்டம் {value1} வரை செயலில் இருக்கும். {value2} திட்டம் {value1} அன்று தொடங்கும்.",
+  "ios_premium_switch_confirm": "திட்டத்தை மாற்று",
   "ios_premium_billing_retry_title": "சந்தா கட்டணம் செலுத்தப்படவில்லை",
   "ios_premium_billing_retry_body": "பிரீமியத்தை மீண்டும் பெற ஆப் ஸ்டோரில் கட்டண முறையைப் புதுப்பிக்கவும்.",
   "ios_premium_next_plan": "அடுத்த திட்டம்",
@@ -63,6 +75,12 @@
   "ios_fast_completed": "நிறைவு"
  },
  "hi": {
+  "ios_premium_renewal_unknown": "प्रीमियम सक्रिय है। यह कब नवीनीकृत होगा, यह देखने के लिए प्रबंधित करें खोलें।",
+  "ios_premium_current_until": "{value0} तक मौजूदा प्लान",
+  "ios_premium_starts_on": "{value0} से शुरू",
+  "ios_premium_switch_title": "प्लान बदलें?",
+  "ios_premium_switch_note": "{value0} प्लान {value1} तक चालू रहेगा। {value2} प्लान {value1} को शुरू होगा।",
+  "ios_premium_switch_confirm": "प्लान बदलें",
   "ios_premium_billing_retry_title": "सदस्यता का भुगतान विफल रहा",
   "ios_premium_billing_retry_body": "प्रीमियम वापस पाने के लिए ऐप स्टोर में भुगतान का तरीका अपडेट करें।",
   "ios_premium_next_plan": "अगला प्लान",
@@ -94,6 +112,12 @@
   "ios_fast_completed": "पूर्ण"
  },
  "te": {
+  "ios_premium_renewal_unknown": "ప్రీమియం సక్రియంగా ఉంది. ఎప్పుడు పునరుద్ధరించబడుతుందో చూడటానికి నిర్వహించండి తెరవండి.",
+  "ios_premium_current_until": "{value0} వరకు ప్రస్తుత ప్లాన్",
+  "ios_premium_starts_on": "{value0} నుండి ప్రారంభం",
+  "ios_premium_switch_title": "ప్లాన్ మార్చాలా?",
+  "ios_premium_switch_note": "{value0} ప్లాన్ {value1} వరకు సక్రియంగా ఉంటుంది. {value2} ప్లాన్ {value1}న ప్రారంభమవుతుంది.",
+  "ios_premium_switch_confirm": "ప్లాన్ మార్చండి",
   "ios_premium_billing_retry_title": "సభ్యత్వ చెల్లింపు విఫలమైంది",
   "ios_premium_billing_retry_body": "ప్రీమియంను తిరిగి పొందడానికి యాప్ స్టోర్‌లో చెల్లింపు పద్ధతిని నవీకరించండి.",
   "ios_premium_next_plan": "తదుపరి ప్లాన్",
@@ -125,6 +149,12 @@
   "ios_fast_completed": "పూర్తి"
  },
  "gu": {
+  "ios_premium_renewal_unknown": "પ્રીમિયમ સક્રિય છે. તે ક્યારે રિન્યૂ થશે તે જોવા સંભાળો ખોલો.",
+  "ios_premium_current_until": "{value0} સુધી હાલનો પ્લાન",
+  "ios_premium_starts_on": "{value0}થી શરૂ",
+  "ios_premium_switch_title": "પ્લાન બદલવો છે?",
+  "ios_premium_switch_note": "{value0} પ્લાન {value1} સુધી સક્રિય રહેશે. {value2} પ્લાન {value1}ના રોજ શરૂ થશે.",
+  "ios_premium_switch_confirm": "પ્લાન બદલો",
   "ios_premium_billing_retry_title": "સભ્યપદની ચુકવણી નિષ્ફળ ગઈ",
   "ios_premium_billing_retry_body": "પ્રીમિયમ ફરી મેળવવા ઍપ સ્ટોરમાં ચુકવણીની રીત અપડેટ કરો.",
   "ios_premium_next_plan": "આગામી પ્લાન",
@@ -156,6 +186,12 @@
   "ios_fast_completed": "પૂર્ણ"
  },
  "bn": {
+  "ios_premium_renewal_unknown": "প্রিমিয়াম চালু আছে। কবে নবীকরণ হবে দেখতে পরিচালনা খুলুন।",
+  "ios_premium_current_until": "{value0} পর্যন্ত বর্তমান প্ল্যান",
+  "ios_premium_starts_on": "{value0} থেকে শুরু",
+  "ios_premium_switch_title": "প্ল্যান বদলাবেন?",
+  "ios_premium_switch_note": "{value0} প্ল্যান {value1} পর্যন্ত চালু থাকবে। {value2} প্ল্যান {value1} তারিখে শুরু হবে।",
+  "ios_premium_switch_confirm": "প্ল্যান বদলান",
   "ios_premium_billing_retry_title": "সাবস্ক্রিপশনের পেমেন্ট ব্যর্থ হয়েছে",
   "ios_premium_billing_retry_body": "প্রিমিয়াম ফিরে পেতে অ্যাপ স্টোরে পেমেন্ট পদ্ধতি আপডেট করুন।",
   "ios_premium_next_plan": "পরবর্তী প্ল্যান",

@@ -159,13 +159,36 @@ final class AppModel {
     }
     @ObservationIgnored private var timePickerLocales: [String: Locale] = [:]
 
+    /// The subscriber line in Settings and the paywall: neutral wording when
+    /// the renewal status is unknown, a plan Apple has scheduled for the next
+    /// renewal, else the usual subscriber text.
     func premiumRenewalMessage(_ state: PremiumState) -> String {
+        if state.renewalStatusUnknown { return t("ios_premium_renewal_unknown") }
         guard let plan = state.scheduledPlan else { return t("premium_subscriber_body") }
         let name = t("premium_\(plan.rawValue)")
         if let date = state.scheduledPlanDate, date > Date() {
             return t("ios_premium_scheduled_plan_date", name, fullDate(CivilDate.today(now: date)))
         }
         return t("ios_premium_scheduled_plan", name)
+    }
+
+    /// The date line on a plan tile: "Current plan until <date>" on the plan
+    /// in use when it ends or changes, "Starts <date>" on the scheduled plan.
+    func premiumPlanBadgeText(_ state: PremiumState, _ plan: PremiumPlanID) -> String? {
+        switch state.planBadge(for: plan) {
+        case .currentUntil(let end): return t("ios_premium_current_until", fullDate(CivilDate.today(now: end)))
+        case .startsOn(let start): return t("ios_premium_starts_on", fullDate(CivilDate.today(now: start)))
+        case .current, .none: return nil
+        }
+    }
+
+    /// Shown before an in-app downgrade: Apple keeps the current plan until
+    /// the renewal date and starts the new one then. Nil when the change
+    /// starts now (Apple's own purchase sheet explains upgrades).
+    func premiumSwitchNote(_ state: PremiumState, to plan: PremiumPlanID) -> String? {
+        guard case .atRenewal(let date?) = state.switchTiming(to: plan), let current = state.currentPlan else { return nil }
+        return t("ios_premium_switch_note", t("premium_\(current.rawValue)"),
+                 fullDate(CivilDate.today(now: date)), t("premium_\(plan.rawValue)"))
     }
 
     func premiumCancellationMessage(_ state: PremiumState) -> String {

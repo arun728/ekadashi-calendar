@@ -12,6 +12,7 @@ struct PremiumView: View {
     let reason: String?
     @State private var selected: PremiumPlanID?
     @State private var confirmLifetime = false
+    @State private var downgrade: PremiumPlanID?
     @State private var managing = false
     @State private var toast: ToastMessage?
 
@@ -37,7 +38,6 @@ struct PremiumView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     header
                     status
-                    if store.busy { ProgressView().tint(Theme.teal).frame(maxWidth: .infinity) }
                     if store.pending { Text(model.t("premium_pending")).font(.subheadline) }
                     if showPlans {
                         HStack(alignment: .top, spacing: 8) {
@@ -66,6 +66,11 @@ struct PremiumView: View {
                     .accessibilityLabel(model.t("premium_continue_free"))
                     .accessibilityIdentifier("premium_close")
             }
+            // In the navigation bar, never in the page: a spinner above the
+            // plans moved them on every refresh and swallowed taps.
+            ToolbarItem(placement: .topBarTrailing) {
+                if store.busy { ProgressView().tint(Theme.teal).accessibilityIdentifier("premium_loading") }
+            }
         }
         .onChange(of: state.scheduledPlan) { _, _ in selected = nil }
         .onChange(of: state.currentPlan) { _, _ in selected = nil }
@@ -73,6 +78,16 @@ struct PremiumView: View {
         .manageSubscriptionsSheet(isPresented: $managing)
         .onChange(of: managing) { _, isPresented in
             if !isPresented { Task { await model.premium.refresh() } }
+        }
+        .alert(model.t("ios_premium_switch_title"), isPresented: Binding(
+            get: { downgrade != nil }, set: { if !$0 { downgrade = nil } })) {
+            Button(model.t("cancel"), role: .cancel) { downgrade = nil }
+            Button(model.t("ios_premium_switch_confirm")) {
+                if let plan = downgrade { Task { await store.buy(plan) } }
+                downgrade = nil
+            }
+        } message: {
+            if let plan = downgrade, let note = model.premiumSwitchNote(state, to: plan) { Text(note) }
         }
         .alert(model.t("premium_lifetime_confirm_title"), isPresented: $confirmLifetime) {
             Button(model.t("cancel"), role: .cancel) {}
@@ -182,8 +197,12 @@ struct PremiumView: View {
                         .accessibilityIdentifier("premium_current_\(id.rawValue)")
                 }
                 if id == state.scheduledPlan {
-                    Text(model.t("ios_premium_next_plan")).font(.caption).foregroundStyle(Theme.teal)
+                    Text(model.premiumPlanBadgeText(state, id) ?? model.t("ios_premium_next_plan"))
+                        .font(.caption).foregroundStyle(Theme.teal).multilineTextAlignment(.center)
                         .accessibilityIdentifier("premium_scheduled_\(id.rawValue)")
+                } else if current, let until = model.premiumPlanBadgeText(state, id) {
+                    Text(until).font(.caption2).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                        .accessibilityIdentifier("premium_current_until_\(id.rawValue)")
                 }
                 Spacer(minLength: 0)
             }
@@ -233,9 +252,13 @@ struct PremiumView: View {
     }
 
     /// The App Store cannot cancel a subscription for the app, so a
-    /// subscriber is told before buying lifetime to cancel it themselves.
+    /// subscriber is told before buying lifetime to cancel it themselves. A
+    /// downgrade first says when each plan applies (Apple keeps the current
+    /// plan ticked in its Manage sheet until the renewal).
     private func buy(_ plan: PremiumPlanID) {
-        if plan == .lifetime && state.subscribed {
+        if model.premiumSwitchNote(state, to: plan) != nil {
+            downgrade = plan
+        } else if plan == .lifetime && state.subscribed {
             confirmLifetime = true
         } else {
             Task { await store.buy(plan) }

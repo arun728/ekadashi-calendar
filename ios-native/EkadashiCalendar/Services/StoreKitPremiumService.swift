@@ -31,6 +31,8 @@ final class StoreKitPremiumService {
     private var purchasing = false
     var pending: Bool { pendingPurchase != nil }
     private(set) var busy = false
+    /// Completed entitlement reads (the refresh-churn test reads it).
+    @ObservationIgnored private(set) var refreshCount = 0
     /// Translation key of the last store problem (`premium_unavailable`).
     var error: String?
 
@@ -105,6 +107,7 @@ final class StoreKitPremiumService {
             repeat {
                 self.refreshAgain = false
                 await self.readEntitlements()
+                self.refreshCount += 1
             } while self.refreshAgain
             self.busy = false
             self.inFlight = nil
@@ -118,11 +121,12 @@ final class StoreKitPremiumService {
         // came back empty while the history held a verified, unexpired
         // monthly purchase. Ask for the latest transaction of each product
         // too; both are signed by the App Store and verified the same way.
-        var results: [(result: VerificationResult<Transaction>, isCurrent: Bool)] = []
-        for await result in Transaction.currentEntitlements { results.append((result, true)) }
-        for productId in PremiumProduct.all {
-            if let result = await Transaction.latest(for: productId) { results.append((result, false)) }
-        }
+        // The lookups run together: one after another, a cold StoreKit start
+        // took the sum of them before the paywall knew the user's plan.
+        async let current = Self.currentEntitlements()
+        async let latest = Self.latestTransactions()
+        var results: [(result: VerificationResult<Transaction>, isCurrent: Bool)] = await current.map { ($0, true) }
+        results += await latest.map { ($0, false) }
         var owned: [OwnedProduct] = []
         for (result, isCurrent) in results {
             guard case .verified(let transaction) = result else {
@@ -160,6 +164,21 @@ final class StoreKitPremiumService {
         }
         snapshot.set(state)
         logger.info("Premium refresh: owned=\(owned.map(\.productId), privacy: .public) premium=\(self.state.isPremium, privacy: .public) products=\(self.products.count, privacy: .public)")
+    }
+
+    private nonisolated static func currentEntitlements() async -> [VerificationResult<Transaction>] {
+        var list: [VerificationResult<Transaction>] = []
+        for await result in Transaction.currentEntitlements { list.append(result) }
+        return list
+    }
+
+    private nonisolated static func latestTransactions() async -> [VerificationResult<Transaction>] {
+        await withTaskGroup(of: VerificationResult<Transaction>?.self) { group in
+            for productId in PremiumProduct.all { group.addTask { await Transaction.latest(for: productId) } }
+            var list: [VerificationResult<Transaction>] = []
+            for await result in group { if let result { list.append(result) } }
+            return list
+        }
     }
 
     private func resolvePending(with transaction: Transaction) {
