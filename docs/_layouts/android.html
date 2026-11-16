@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ page.title | escape }}{% unless page.url == "/" %} · Ekadashi Calendar{% endunless %}</title>
+  <meta name="description" content="{{ page.description | escape }}">
+  <meta name="theme-color" content="#092b29">
+  <link rel="canonical" href="{{ page.url | absolute_url }}">
+  <link rel="icon" type="image/png" href="{{ '/assets/app-icon.png' | relative_url }}">
+  <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  <header class="site-header">
+    <div class="site-width header-inner">
+      <a class="wordmark" href="{{ '/' | relative_url }}">Ekadashi Calendar</a>
+      <nav aria-label="Main navigation">
+        <a href="{{ '/' | relative_url }}"{% if page.url == "/" %} aria-current="page"{% endif %}>Home</a>
+        <a href="{{ '/privacy-policy.html' | relative_url }}"{% if page.url == "/privacy-policy.html" %} aria-current="page"{% endif %}>Privacy</a>
+        <a href="{{ '/terms-of-service.html' | relative_url }}"{% if page.url == "/terms-of-service.html" %} aria-current="page"{% endif %}>Terms</a>
+      </nav>
+    </div>
+  </header>
+  <main id="main-content" class="site-width {{ page.page_class }}">
+    {{ content }}
+  </main>
+  <footer class="site-width site-footer">
+    <span>Ekadashi Calendar for Android</span>
+    <a href="mailto:arunmp.728@gmail.com">Contact support</a>
+  </footer>
+</body>
+</html>

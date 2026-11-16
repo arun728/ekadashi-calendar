@@ -1,6 +1,4 @@
-# Cayman theme - Most popular, needs custom CSS for dark mode
-theme: jekyll-theme-cayman
-
-title: ""
-description: ""
-show_downloads: false
+url: https://arun728.github.io
+baseurl: /ekadashi-calendar
+title: Ekadashi Calendar
+description: Ekadashi fasting times, Parana, and Panchang for Android.
