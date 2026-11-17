@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../l10n/place_names.dart';
+import 'display_clock.dart';
 import 'ekadashi_schedule.dart';
 import 'ekadashi_service.dart';
 import 'native_location_service.dart';
@@ -32,7 +33,24 @@ class EkadashiSettings extends ChangeNotifier {
   bool isManual = false;
   EkadashiTradition tradition = EkadashiTradition.gaudiya;
   List<int> years = EkadashiYears.fallback;
-  int year = EkadashiYears.defaultYear(DateTime.now(), EkadashiYears.fallback);
+  int year = EkadashiYears.defaultYear(
+    DisplayClock.now(),
+    EkadashiYears.fallback,
+  );
+  bool homeShowsAllYears = false;
+  int? calendarRequestedYear;
+  int calendarYearRevision = 0;
+  int? _observedCivilYear;
+
+  int get currentYear =>
+      _observedCivilYear ?? city.wallClock(DisplayClock.now()).year;
+
+  void refreshCivilYear(DateTime now) {
+    final updated = city.wallClock(now).year;
+    final previous = _observedCivilYear;
+    _observedCivilYear = updated;
+    if (previous != null && previous != updated) notifyListeners();
+  }
 
   /// Bumped when Home sets the Panchang location; an open Panchang tab follows.
   int panchangCityRevision = 0;
@@ -59,13 +77,14 @@ class EkadashiSettings extends ChangeNotifier {
     final saved = prefs.getInt(yearKey);
     year = saved != null && years.contains(saved)
         ? saved
-        : EkadashiYears.defaultYear(DateTime.now(), years);
+        : EkadashiYears.defaultYear(city.wallClock(DisplayClock.now()), years);
     loaded = true;
     notifyListeners();
   }
 
   Future<void> _saveCity(PanchangCity value, {required bool manual}) async {
     city = value;
+    _observedCivilYear = null;
     isManual = manual;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(
@@ -168,9 +187,21 @@ class EkadashiSettings extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> setYear(int value) async {
-    if (!years.contains(value) || value == year) return;
+  void showAllYearsOnHome() {
+    if (homeShowsAllYears) return;
+    homeShowsAllYears = true;
+    notifyListeners();
+  }
+
+  Future<void> setYear(int value, {bool focusCalendar = true}) async {
+    if (!years.contains(value) || (value == year && !homeShowsAllYears)) return;
+    if (homeShowsAllYears && !focusCalendar) return;
     year = value;
+    homeShowsAllYears = false;
+    if (focusCalendar) {
+      calendarRequestedYear = value;
+      calendarYearRevision++;
+    }
     await (await SharedPreferences.getInstance()).setInt(yearKey, value);
     notifyListeners();
   }

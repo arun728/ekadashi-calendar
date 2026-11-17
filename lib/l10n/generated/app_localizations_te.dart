@@ -154,6 +154,28 @@ class AppLocalizationsTe extends AppLocalizations {
   String get about => 'గురించి';
 
   @override
+  String get app_update_available => 'అప్‌డేట్ అందుబాటులో ఉంది';
+
+  @override
+  String get app_update_now => 'అప్‌డేట్ చేయండి';
+
+  @override
+  String get app_update_later => 'తర్వాత';
+
+  @override
+  String get app_update_downloading => 'అప్‌డేట్ డౌన్‌లోడ్ అవుతోంది…';
+
+  @override
+  String get app_update_downloaded => 'అప్‌డేట్ డౌన్‌లోడ్ అయింది.';
+
+  @override
+  String get app_update_restart => 'అప్‌డేట్ కోసం మళ్లీ ప్రారంభించండి';
+
+  @override
+  String get app_update_failed =>
+      'అప్‌డేట్‌ను డౌన్‌లోడ్ చేయడం లేదా ఇన్‌స్టాల్ చేయడం సాధ్యం కాలేదు.';
+
+  @override
   String get version => 'వెర్షన్';
 
   @override

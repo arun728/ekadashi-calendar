@@ -154,6 +154,27 @@ class AppLocalizationsBn extends AppLocalizations {
   String get about => 'সম্পর্কে';
 
   @override
+  String get app_update_available => 'আপডেট পাওয়া যাচ্ছে';
+
+  @override
+  String get app_update_now => 'আপডেট করুন';
+
+  @override
+  String get app_update_later => 'পরে';
+
+  @override
+  String get app_update_downloading => 'আপডেট ডাউনলোড হচ্ছে…';
+
+  @override
+  String get app_update_downloaded => 'আপডেট ডাউনলোড হয়েছে।';
+
+  @override
+  String get app_update_restart => 'আপডেট করতে আবার চালু করুন';
+
+  @override
+  String get app_update_failed => 'আপডেট ডাউনলোড বা ইনস্টল করা যায়নি।';
+
+  @override
   String get version => 'সংস্করণ';
 
   @override

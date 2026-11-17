@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'services/display_clock.dart';
 import 'widgets/home_fasting_progress.dart';
+import 'widgets/play_update_notice.dart';
 import 'services/ekadashi_lifecycle.dart';
 import 'widgets/glass_look.dart';
 import 'services/premium_service.dart';
@@ -354,6 +355,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       }
     }
     _lastHomeNow = now;
+    final settings = _settings;
+    settings?.refreshCivilYear(now);
     var delay = const Duration(hours: 1);
     if (_currentIndex == 0 &&
         !_tabPushed &&
@@ -364,6 +367,13 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         now,
         _getIANATimezone(_currentTimezone),
       ).nextDelay(event, now, _getIANATimezone(_currentTimezone));
+    }
+    if (settings != null) {
+      final city = settings.city;
+      final midnight = city
+          .midnight(city.wallClock(now), dayOffset: 1)
+          .difference(now);
+      if (midnight < delay) delay = midnight;
     }
     for (final event in events) {
       final end = DateTime.tryParse(event.paranaEndIso);
@@ -654,6 +664,26 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     }
     final year = _homeYearList();
     if (!_sameIds(year, _ekadashiList)) {
+      if (settings.homeShowsAllYears && _currentPage < _ekadashiList.length) {
+        final visibleUid = _ekadashiList[_currentPage].occurrenceUid;
+        final page = year.indexWhere(
+          (entry) => entry.occurrenceUid == visibleUid,
+        );
+        if (page >= 0) {
+          setState(() {
+            _ekadashiList = year;
+            _currentPage = page;
+          });
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted &&
+                settings.homeShowsAllYears &&
+                _pageController.hasClients) {
+              _pageController.jumpToPage(page);
+            }
+          });
+          return;
+        }
+      }
       setState(() {
         _ekadashiList = year;
         _currentPage = 0;
@@ -677,10 +707,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   }
 
   List<EkadashiDate> _homeYearList() {
-    final year = _settings?.year;
-    return year == null
-        ? _allEkadashis
-        : _allEkadashis.where((e) => e.date.year == year).toList();
+    final settings = _settings;
+    if (settings == null || settings.homeShowsAllYears) return _allEkadashis;
+    return _allEkadashis.where((e) => e.date.year == settings.year).toList();
   }
 
   static bool _sameIds(List<EkadashiDate> a, List<EkadashiDate> b) =>
@@ -827,8 +856,11 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           now,
           _getIANATimezone(_currentTimezone),
         )];
-    if (_settings != null && _settings!.year != event.date.year) {
-      _settings!.setYear(event.date.year);
+    final settings = _settings;
+    if (settings != null &&
+        !settings.homeShowsAllYears &&
+        settings.year != event.date.year) {
+      settings.setYear(event.date.year, focusCalendar: false);
       _ekadashiList = _homeYearList();
     }
     final indexToScroll = _ekadashiList.indexWhere(
@@ -1175,6 +1207,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       _ => null,
     };
     // The iOS gradient behind every tab (docs/ROADMAP.md Phase 8).
+    final body = _buildBody(lang, tealColor);
     return PopScope(
       canPop: !searchBack && !tabCanPop,
       onPopInvokedWithResult: (didPop, _) {
@@ -1201,7 +1234,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                         _topBar(context, lang, searchBack, slots),
                   ),
                 ),
-          body: _buildBody(lang, tealColor),
+          body: Platform.isAndroid ? PlayUpdateNotice(child: body) : body,
           bottomNavigationBar: glass
               ? (keyboardOpen
                     ? null

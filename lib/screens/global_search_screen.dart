@@ -6,7 +6,10 @@ import 'package:provider/provider.dart';
 
 import '../data/calendar_entry_repository.dart';
 import '../models/calendar_entry.dart';
+import '../services/display_clock.dart';
+import '../services/ekadashi_lifecycle.dart';
 import '../services/ekadashi_service.dart';
+import '../services/ekadashi_settings.dart';
 import '../services/language_service.dart';
 import '../services/panchang/observance_calendar_service.dart';
 import '../services/panchang/panchang_city.dart';
@@ -95,12 +98,19 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
   String _searched = '';
 
   /// Each page's results, worked out when the page is shown.
-  final Map<SearchCategory?, List<SearchItem>> _pageResults = {};
+  final Map<(SearchCategory?, int?), List<SearchItem>> _pageResults = {};
   late final PageController _pages;
   List<String> _suggestions = const [];
   List<String> _recents = const [];
   SearchCategory? _category;
   int? _year;
+  bool _usesDefaultYear = true;
+
+  DateTime get _today =>
+      EkadashiLifecycle.localDay(DisplayClock.now(), widget.currentTimezone);
+  int get _currentYear =>
+      context.watch<EkadashiSettings?>()?.currentYear ?? _today.year;
+  int? get _visibleYear => _usesDefaultYear ? _currentYear : _year;
   bool _loadingObservances = false;
   Timer? _debounce;
   String _language = '';
@@ -109,8 +119,12 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
   bool _hasInput(SearchCategory? page) =>
       _searched.trim().isNotEmpty || page != null || _year != null;
 
-  SearchSession get _session =>
-      SearchSession(query: _searched, category: _category, year: _year);
+  SearchSession get _session => SearchSession(
+    query: _searched,
+    category: _category,
+    year: _year,
+    usesDefaultYear: _usesDefaultYear,
+  );
 
   @override
   void initState() {
@@ -121,6 +135,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
       _searched = session.query;
       _category = session.category;
       _year = session.year;
+      _usesDefaultYear = session.usesDefaultYear;
     }
     _pages = PageController(
       initialPage: SearchCategory.pages.indexOf(_category),
@@ -182,7 +197,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
     final city = await PanchangLocationStore().load() ?? PanchangCity.newDelhi;
     final years = widget.availableYears.isNotEmpty
         ? widget.availableYears
-        : [DateTime.now().year];
+        : [_today.year];
     final observances = await ObservanceCalendarService.instance.years(
       years,
       city,
@@ -206,13 +221,14 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
   List<SearchItem> _results(SearchCategory? page) {
     final index = _index;
     if (index == null) return const [];
-    return _pageResults.putIfAbsent(page, () {
-      final now = DateTime.now();
+    final defaultYear = _usesDefaultYear ? _currentYear : null;
+    return _pageResults.putIfAbsent((page, defaultYear), () {
       return index.search(
         _searched,
         category: page,
         year: _year,
-        today: DateTime.utc(now.year, now.month, now.day),
+        defaultYear: defaultYear,
+        today: _today,
       );
     });
   }
@@ -442,8 +458,10 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
   /// The year menu (a glass capsule) and the type chips, each its own glass
   /// control, scrolling sideways.
   Widget _filters(LanguageService lang) {
-    final years = widget.availableYears;
-    final yearColor = _year == null
+    final years = {...widget.availableYears, _currentYear}.toList()
+      ..sort((a, b) => b.compareTo(a));
+    final year = _visibleYear;
+    final yearColor = year == null
         ? IosColors.primary(context)
         : IosColors.teal;
     return Padding(
@@ -460,7 +478,10 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
               tooltip: lang.translate('year'),
               padding: EdgeInsets.zero,
               onSelected: (value) {
-                setState(() => _year = value == 0 ? null : value);
+                setState(() {
+                  _usesDefaultYear = false;
+                  _year = value == 0 ? null : value;
+                });
                 _run();
               },
               itemBuilder: (_) => [
@@ -483,10 +504,10 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
                     Icon(AppIcons.year, size: 15, color: yearColor),
                     const SizedBox(width: 6),
                     Text(
-                      _year?.toString() ?? lang.translate('year'),
+                      year?.toString() ?? lang.translate('search_all_years'),
                       style: TextStyle(
                         fontSize: IosText.subheadline,
-                        fontWeight: _year == null
+                        fontWeight: year == null
                             ? FontWeight.w400
                             : FontWeight.w600,
                         color: yearColor,

@@ -144,8 +144,9 @@ void main() {
       ]) {
         final word = language.translate('app_update_$key');
         expect(word, isNot(contains('app_update_')), reason: code);
-        if (code != 'en')
+        if (code != 'en') {
           expect(word, isNot(contains(RegExp('[a-zA-Z]'))), reason: code);
+        }
       }
       expect(
         find.text(language.translate('app_update_available')),

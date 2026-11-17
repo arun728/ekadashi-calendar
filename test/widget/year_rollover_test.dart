@@ -1,4 +1,3 @@
-import 'package:ekadashi_calendar/main.dart';
 import 'package:ekadashi_calendar/services/display_clock.dart';
 import 'package:ekadashi_calendar/services/ekadashi_settings.dart';
 import 'package:flutter/material.dart';
@@ -53,7 +52,7 @@ void main() {
     expect(find.text('24 / 49'), findsOneWidget);
 
     now = DateTime.parse('2026-12-21T10:13:00+05:30');
-    (tester.state(find.byType(MainScreen)) as dynamic).refreshLifecycle();
+    // Let the foreground timer advance Home without a tap or refresh call.
     await frames(tester);
     expect(homeYear('All years'), findsOneWidget);
     expect(find.text('25 / 49'), findsOneWidget);
@@ -86,6 +85,15 @@ void main() {
     await tester.pumpWidget(harness.app());
     await frames(tester);
     expect(homeYear('2027'), findsOneWidget);
+    await tester.tap(menu);
+    await frames(tester);
+    await tester.tap(find.widgetWithText(PopupMenuItem<int>, '2026'));
+    await frames(tester);
+    expect(homeYear('2026'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('glass_tab_0')));
+    await frames(tester);
+    expect(homeYear('2027'), findsOneWidget);
+    expect(find.text('Sun, 3 Jan 2027'), findsWidgets);
     await tester.tap(find.byKey(const Key('glass_tab_2')));
     await frames(tester);
     final journey = find.byKey(const Key('journey_overview_year'));

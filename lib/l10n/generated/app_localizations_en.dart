@@ -154,6 +154,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get about => 'About';
 
   @override
+  String get app_update_available => 'Update available';
+
+  @override
+  String get app_update_now => 'Update';
+
+  @override
+  String get app_update_later => 'Later';
+
+  @override
+  String get app_update_downloading => 'Downloading update…';
+
+  @override
+  String get app_update_downloaded => 'Update downloaded.';
+
+  @override
+  String get app_update_restart => 'Restart to update';
+
+  @override
+  String get app_update_failed => 'Could not download or install the update.';
+
+  @override
   String get version => 'Version';
 
   @override

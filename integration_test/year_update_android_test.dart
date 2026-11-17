@@ -50,10 +50,14 @@ void main() {
       await tester.pumpWidget(harness.app());
       final menu = find.byKey(const Key('home_year_menu'));
       await waitFor(find.byKey(const Key('home_page_indicator')));
-      await tester.tap(find.text('Update'));
+      final update = find.text('Update').hitTestable();
+      await waitFor(update);
+      await tester.tap(update);
       await waitFor(find.text('Downloading update…'));
       await tester.tap(menu);
-      final allYears = find.widgetWithText(PopupMenuItem<int>, 'All years');
+      final allYears = find
+          .widgetWithText(PopupMenuItem<int>, 'All years')
+          .hitTestable();
       await waitFor(allYears);
       await tester.tap(allYears);
       await waitFor(find.text('24 / 49'));
@@ -80,7 +84,7 @@ void main() {
         ),
         (_) {},
       );
-      final restart = find.text('Restart to update');
+      final restart = find.text('Restart to update').hitTestable();
       await waitFor(restart);
       expect(calls, isNot(contains('complete')));
       await capture('android-restart-to-update');
