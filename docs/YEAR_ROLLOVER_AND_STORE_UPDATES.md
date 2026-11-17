@@ -13,7 +13,7 @@ Research snapshot of `dev` at `2d8f01b`. This draft is for review before impleme
 
 ### Rollover evidence
 
-The existing Flutter Home, lifecycle visibility, Calendar and widget suites passed (36 tests). Three temporary Flutter widget tests also passed on unchanged app code. Chennai Vaishnava Home switched from Mokshada (20 December 2026) to Saphala (3 January 2027) at 10:13 IST on 21 December, using the lifecycle refresh path. Launching with a saved 2026 selection on 1 and 3 January showed Saphala. Returning from Calendar kept an explicitly browsed 2026 card and re-tapping the active Home tab selected Saphala. The shared fixture puts the Chennai Smarta cutoff at 08:42 IST on 21 December and its next fast on 3 January. Test the actual simulator/emulator timer and resume lifecycle before implementation sign-off.
+The existing Flutter Home, lifecycle visibility, Calendar and widget suites passed (36 tests). Three temporary Flutter widget tests also passed on unchanged app code. Chennai Vaishnava Home switched from Mokshada (20 December 2026) to Saphala (3 January 2027) at 10:13 IST on 21 December, using the lifecycle refresh path. Launching with a saved 2026 selection on 1 and 3 January showed Saphala. Returning from Calendar kept an explicitly browsed 2026 card and re-tapping the active Home tab selected Saphala. The selected Swift lifecycle, schedule parity and Journey suites passed (45 tests), including the Swift comparison against the Dart-generated schedule for both traditions, ten cities and 2026–2028. The shared fixture puts the Chennai Smarta cutoff at 08:42 IST on 21 December and its next fast on 3 January. Test the actual simulator/emulator timer and resume lifecycle before implementation sign-off.
 
 ## Proposed year workflow
 
