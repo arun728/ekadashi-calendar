@@ -105,6 +105,55 @@ void main() {
     },
   );
 
+  testWidgets('dismissing the notice preserves a draft on the active screen', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ChangeNotifierProvider(
+        create: (_) => LanguageService(),
+        child: const MaterialApp(
+          home: Scaffold(body: PlayUpdateNotice(child: TextField())),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.enterText(find.byType(TextField), 'calendar draft');
+    await tester.tap(find.text('Later'));
+    await tester.pump();
+    expect(find.text('calendar draft'), findsOneWidget);
+  });
+
+  testWidgets('all update states are translated in every app language', (
+    tester,
+  ) async {
+    await launch(tester);
+    final language = tester
+        .element(find.byType(PlayUpdateNotice))
+        .read<LanguageService>();
+    for (final code in ['en', 'hi', 'ta', 'te', 'gu', 'bn']) {
+      await language.changeLanguage(code);
+      await tester.pump();
+      for (final key in [
+        'available',
+        'now',
+        'later',
+        'downloading',
+        'downloaded',
+        'restart',
+        'failed',
+      ]) {
+        final word = language.translate('app_update_$key');
+        expect(word, isNot(contains('app_update_')), reason: code);
+        if (code != 'en')
+          expect(word, isNot(contains(RegExp('[a-zA-Z]'))), reason: code);
+      }
+      expect(
+        find.text(language.translate('app_update_available')),
+        findsOneWidget,
+      );
+    }
+  });
+
   testWidgets('no Play offer leaves the app unchanged', (tester) async {
     offer = null;
     await launch(tester);
