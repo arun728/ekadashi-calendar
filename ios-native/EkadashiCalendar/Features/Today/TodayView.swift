@@ -44,7 +44,7 @@ struct TodayView: View {
                     .tabViewStyle(.page(indexDisplayMode: .never))
                     // Years have different page counts. Recreate the pager so
                     // a linked final page is not reset against the previous year.
-                    .id(model.selectedYear)
+                    .id(model.homeShowsAllYears ? nil : model.selectedYear)
                     arrow(AppSymbol.next, target: model.homeIndex + 1) { model.homeIndex += 1 }
                 }
                 .padding(.horizontal, 4)
@@ -147,7 +147,7 @@ struct HomeControls: View {
     // MARK: Right column: as wide as the wider of language and year
 
     private var languageName: String { Localizer.displayName(model.language) }
-    private var yearText: String { String(model.selectedYear) }
+    private var yearText: String { model.homeShowsAllYears ? model.t("search_all_years") : String(model.selectedYear) }
 
     private var languageMenu: some View {
         Menu {
@@ -167,16 +167,21 @@ struct HomeControls: View {
 
     private var yearMenu: some View {
         Menu {
-            ForEach(model.enabledYears, id: \.self) { year in
+            Button { model.showAllYearsOnHome() } label: {
+                let title = model.t("search_all_years")
+                if model.homeShowsAllYears { Label(title, systemImage: AppSymbol.checkmark) } else { Text(title) }
+            }
+            ForEach(model.enabledYears.reversed(), id: \.self) { year in
                 Button { model.setYear(year) } label: {
-                    if year == model.selectedYear { Label(String(year), systemImage: AppSymbol.checkmark) } else { Text(String(year)) }
+                    if !model.homeShowsAllYears && year == model.selectedYear { Label(String(year), systemImage: AppSymbol.checkmark) } else { Text(String(year)) }
                 }
             }
         } label: {
             rightPill(shown: (yearText, AppSymbol.homeYear), reserved: (languageName, AppSymbol.homeLanguage))
         }
+        .menuOrder(.fixed)
         .fixedSize()
-        .accessibilityLabel("\(model.t("year")): \(model.selectedYear)")
+        .accessibilityLabel("\(model.t("year")): \(yearText)")
         .accessibilityIdentifier("home_year_menu")
     }
 

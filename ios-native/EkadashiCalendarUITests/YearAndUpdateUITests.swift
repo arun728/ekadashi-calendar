@@ -60,6 +60,20 @@ final class YearAndUpdateUITests: XCTestCase {
         XCTAssertTrue(search.label.contains("All years"))
     }
 
+    func testDecemberHomeAdvanceDoesNotTurnCalendarToJanuary() {
+        let app = launch(at: "2026-12-21T11:00:00+05:30")
+        let year = app.buttons["home_year_menu"]
+        XCTAssertTrue(year.waitForExistence(timeout: 30))
+        let january = NSPredicate(format: "label CONTAINS %@", "2027")
+        expectation(for: january, evaluatedWith: year)
+        waitForExpectations(timeout: 30)
+        app.tabBars.buttons["Calendar"].tap()
+        let calendar = app.buttons["calendar_year_selector"]
+        XCTAssertTrue(calendar.waitForExistence(timeout: 5))
+        XCTAssertTrue(calendar.label.contains("21 Dec 2026"))
+        capture(app, name: "ios-december-calendar-after-home-rollover")
+    }
+
     func testNewerCompatiblePublicVersionPromptsAndCanBeDismissed() {
         let app = launch(at: "2026-11-17T12:00:00+05:30", newerVersion: "99.0")
         let prompt = app.alerts.firstMatch

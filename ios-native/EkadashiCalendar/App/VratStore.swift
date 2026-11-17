@@ -39,7 +39,9 @@ final class VratStore {
     func currentStreak(_ events: [EkadashiOccurrence]) -> Int { _ = revision; return tracker.currentStreak(events) }
     func longestStreak(_ events: [EkadashiOccurrence]) -> Int { _ = revision; return tracker.longestStreak(events) }
     func annualStats(_ year: Int, _ events: [EkadashiOccurrence]) -> VratYearStats { _ = revision; return tracker.annualStats(year: year, occurrences: events) }
-    func years(_ events: [EkadashiOccurrence]) -> [Int] { _ = revision; return tracker.availableYears(events) }
+    func years(_ events: [EkadashiOccurrence], currentYear: Int) -> [Int] {
+        VratStatistics.availableYears(occurrences: events, history: allRecords, currentYear: currentYear)
+    }
 
     func save(_ event: EkadashiOccurrence, status: ObservanceStatus, method: FastingMethod?, methodOther: String?, note: String?,
               timezone: String, tradition: String? = nil, occurrences: [EkadashiOccurrence]) throws -> [Achievement] {
