@@ -77,6 +77,36 @@ void main() {
     catalog,
   );
 
+  test('default year scopes dates while preserving tools and typed years', () {
+    final index = search('en');
+    final today = DateTime.utc(2027, 1, 1);
+    expect(
+      index
+          .search('settings', defaultYear: 2027, today: today)
+          .map((item) => item.id),
+      contains('screen:settings'),
+    );
+    final defaultResults = index.search(
+      'ekadashi',
+      defaultYear: 2027,
+      today: today,
+    );
+    expect(defaultResults, isNotEmpty);
+    expect(
+      defaultResults
+          .where((item) => item.date != null)
+          .map((item) => item.date!.year),
+      everyElement(2027),
+    );
+    final typedResults = index.search(
+      'ekadashi 2026',
+      defaultYear: 2027,
+      today: today,
+    );
+    expect(typedResults, isNotEmpty);
+    expect(typedResults.map((item) => item.date!.year), everyElement(2026));
+  });
+
   test('golden cases match the iOS search', () {
     final today = DateTime.parse(fixture['today'] as String);
     final english = {
