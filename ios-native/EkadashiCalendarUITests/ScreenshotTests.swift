@@ -331,8 +331,12 @@ final class ScreenshotTests: XCTestCase {
     }
 
     func testRecordEditorCancelSaveAndDeleteKeepTheirToolbarControls() {
+        app.terminate()
+        app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = "2026-10-24T12:00:00+05:30"
+        app.launch()
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
-        app.buttons["Papankusha Ekadashi"].firstMatch.tap()
+        app.open(URL(string: "ekadashi://ekadashi?uid=ekadashi%3A2026%3A20")!)
+        XCTAssertTrue(app.staticTexts["Papankusha Ekadashi"].firstMatch.waitForExistence(timeout: 10))
         app.buttons["home_record_vrat"].firstMatch.tap()
         XCTAssertTrue(app.buttons["vrat_record_save"].firstMatch.waitForExistence(timeout: 5))
         app.buttons["Cancel"].firstMatch.tap()
@@ -344,9 +348,7 @@ final class ScreenshotTests: XCTestCase {
             else { break }
         }
         XCTAssertTrue(app.buttons["home_record_vrat"].firstMatch.waitForExistence(timeout: 5))
-        if app.buttons["Papankusha Ekadashi"].firstMatch.exists {
-            app.buttons["Papankusha Ekadashi"].firstMatch.tap()
-        }
+        XCTAssertTrue(app.staticTexts["Papankusha Ekadashi"].firstMatch.exists)
         app.buttons["home_record_vrat"].firstMatch.tap()
         let delete = app.buttons["Delete Record"].firstMatch
         XCTAssertTrue(delete.waitForExistence(timeout: 5))
@@ -705,7 +707,7 @@ final class ScreenshotTests: XCTestCase {
             for tile in [lifetime, yearly] {
                 let tapped = Date()
                 tile.tap()
-                XCTAssertTrue(tile.wait(for: \.isSelected, toEqual: true, timeout: 3))
+                XCTAssertTrue(tile.isSelected || tile.wait(for: \.isSelected, toEqual: true, timeout: 2))
                 XCTAssertLessThan(Date().timeIntervalSince(tapped), 2.5, "Tap to selected was slower than dev")
             }
         }
@@ -901,7 +903,9 @@ final class ScreenshotTests: XCTestCase {
         clock.tap()
         app.buttons["test_clock_midnight"].firstMatch.tap()
         tab(0)
-        XCTAssertEqual(badge.label, "06:00:00")
+        XCTAssertTrue(badge.wait(for: \.label, toEqual: "06:00:00", timeout: 5),
+                      "Midnight should select the fast nearest the simulated time; got \(badge.label)")
+        XCTAssertTrue(app.staticTexts["Papankusha Ekadashi"].firstMatch.exists)
         XCTAssertFalse(app.descendants(matching: .any)["home_remaining_ring"].firstMatch.exists)
         snap("lifecycle-debug-midnight-countdown")
     }
@@ -1071,7 +1075,7 @@ final class ScreenshotTests: XCTestCase {
             let offTabFrames = stableNativeTabFrames()
             glassTab(4)
             let glass = app.switches["settings_glass_look"].firstMatch
-            XCTAssertTrue(glass.waitForExistence(timeout: 5))
+            XCTAssertTrue(revealSettingsSwitch(glass), language)
             XCTAssertTrue(glass.label.contains(title), language)
             XCTAssertEqual(glass.value as? String, "0")
             snap("glass-settings-off-\(language)")
@@ -1278,9 +1282,14 @@ final class ScreenshotTests: XCTestCase {
         XCTAssertGreaterThan(Int(bytes[1]), Int(bytes[0]) + 1, "Continue the teal page behind the floating bar: \(bytes)")
     }
 
+    private func revealSettingsSwitch(_ toggle: XCUIElement) -> Bool {
+        // Settings retains its scroll position across native tab visits.
+        for _ in 0..<4 where !(toggle.exists && toggle.isHittable) { app.swipeDown() }
+        return reveal(toggle)
+    }
+
     private func setSwitch(_ toggle: XCUIElement, to enabled: Bool) {
-        if !toggle.exists || !toggle.isHittable { XCTAssertTrue(reveal(toggle)) }
-        XCTAssertTrue(toggle.waitForExistence(timeout: 5))
+        XCTAssertTrue(revealSettingsSwitch(toggle), toggle.identifier)
         // A long translated label can be hittable while its switch thumb is
         // behind the floating native tab bar. Bring the entire row into view.
         for _ in 0..<4 where toggle.frame.maxY > app.windows.firstMatch.frame.height * 0.8 {
@@ -2031,9 +2040,10 @@ final class ScreenshotTests: XCTestCase {
         XCTAssertTrue(element("event_reminder_lead_2").waitForExistence(timeout: 10))
         snap("12-event-reminder-editor")
         element("event_reminder_save").tap()
-        XCTAssertTrue(element("event_reminder_row_calendar:custom").waitForExistence(timeout: 10))
+        let reminder = element("event_reminder_row_calendar:custom")
+        XCTAssertTrue(reveal(reminder) || reveal(reminder, upwards: true), "saved reminder row")
         snap("13-notifications")
-        element("event_reminder_row_calendar:custom").tap()
+        reminder.tap()
         XCTAssertTrue(element("event_reminder_save").waitForExistence(timeout: 5))
         app.buttons["Cancel"].firstMatch.tap()
         XCTAssertTrue(element("event_reminder_row_calendar:custom").waitForExistence(timeout: 5))

@@ -168,9 +168,14 @@ final class LocalizationTests: XCTestCase {
         // Eight shared widget-preview/localization keys were ported from iOS overrides to ARB.
         // Two Android Glass Look preference strings share the approved iOS wording.
         // 63 approved Journey keys are now shared by iOS and Android.
-        XCTAssertEqual(english.count, 586)
+        // Three shared Play plan-change strings.
+        XCTAssertEqual(english.count, 589)
+        XCTAssertTrue(Set(english).isSuperset(of: [
+            "premium_switch_now_title", "premium_switch_now_body", "premium_switch_now_confirm",
+        ]))
         var problems: [String] = []
         for language in ["ta", "hi", "te", "gu", "bn"] {
+            XCTAssertEqual(Localizer.shared.keys(language: language), english, language)
             for key in english {
                 let value = Localizer.shared.translate(key, language: language)
                 if value == key || value.trimmingCharacters(in: .whitespaces).isEmpty {

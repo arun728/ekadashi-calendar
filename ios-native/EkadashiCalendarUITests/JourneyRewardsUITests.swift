@@ -177,6 +177,7 @@ final class JourneyRewardsUITests: XCTestCase {
     func testAllYearsIncludesBothCalendarsAndFullCapacity() {
         let app = XCUIApplication()
         app.launchArguments = ["-ui-testing"]
+        app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = "2026-10-22T07:15:00Z"
         app.launch()
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 40))
         app.tabBars.buttons.element(boundBy: 2).tap()
@@ -185,8 +186,11 @@ final class JourneyRewardsUITests: XCTestCase {
         let futureChapter = app.descendants(matching: .any)["journey_quarter_2027_1"].firstMatch
         for _ in 0..<12 where !futureChapter.isHittable { app.swipeUp() }
         XCTAssertTrue(futureChapter.exists, "All years must include the future 2027 calendar")
-        app.buttons["journey_tab_statistics"].tap()
-        XCTAssertTrue(app.staticTexts["0 of 49 Ekadashis"].exists)
+        let statistics = app.buttons["journey_tab_statistics"]
+        for _ in 0..<8 where !statistics.isHittable { app.swipeDown() }
+        XCTAssertTrue(statistics.isHittable)
+        statistics.tap()
+        XCTAssertTrue(app.staticTexts["0 of 49 Ekadashis"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.staticTexts["0%"].exists)
     }
 
