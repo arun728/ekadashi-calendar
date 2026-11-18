@@ -362,9 +362,9 @@ final class ScreenshotTests: XCTestCase {
     func testCalendarMonthPickerCancelAndDoneWorkInBothGlassModes() {
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
         for enabled in [false, true] {
-            glassTab(4)
+            tab(4)
             setSwitch(app.switches["settings_glass_look"].firstMatch, to: enabled)
-            glassTab(1)
+            tab(1)
             for action in ["Cancel", "Done"] {
                 app.buttons["calendar_year_selector"].firstMatch.tap()
                 XCTAssertTrue(app.pickerWheels.firstMatch.waitForExistence(timeout: 5))
@@ -633,6 +633,7 @@ final class ScreenshotTests: XCTestCase {
         let subscribed = current.waitForExistence(timeout: 30)
         let currentID = subscribed ? current.identifier : "none"
         print("DEVICE premium current=\(currentID) labels=\(["monthly", "yearly", "lifetime"].map { tile($0).label })")
+        var capturedPlans: Set<String> = []
         func select(_ id: String) {
             let start = Date()
             tile(id).tap()
@@ -642,6 +643,7 @@ final class ScreenshotTests: XCTestCase {
                 Thread.sleep(forTimeInterval: 0.5)
                 XCTAssertTrue(tile(id).isSelected, "\(id) lost its selection during a store refresh")
             }
+            if capturedPlans.insert(id).inserted { snap("app-review-\(id)") }
         }
         for id in ["lifetime", "monthly", "yearly", "lifetime"] where !tile(id).label.contains("Your current plan") { select(id) }
         let buy = app.buttons["premium_buy"].firstMatch
@@ -1073,7 +1075,7 @@ final class ScreenshotTests: XCTestCase {
             XCTAssertTrue(app.staticTexts[eventName].firstMatch.waitForExistence(timeout: 10), language)
             assertHomeActionEnclosures(language)
             let offTabFrames = stableNativeTabFrames()
-            glassTab(4)
+            tab(4)
             let glass = app.switches["settings_glass_look"].firstMatch
             XCTAssertTrue(revealSettingsSwitch(glass), language)
             XCTAssertTrue(glass.label.contains(title), language)
@@ -1081,12 +1083,12 @@ final class ScreenshotTests: XCTestCase {
             snap("glass-settings-off-\(language)")
             setSwitch(glass, to: true)
             snap("glass-settings-on-\(language)")
-            glassTab(0)
+            tab(0)
             for theme in ["dark", "light"] {
                 if theme == "light" {
-                    glassTab(4)
+                    tab(4)
                     setSwitch(app.switches["settings_dark_mode"].firstMatch, to: false)
-                    glassTab(0)
+                    tab(0)
                 }
                 XCTAssertTrue(app.staticTexts[eventName].firstMatch.waitForExistence(timeout: 10), language)
                 assertHomeActionEnclosures("\(language) \(theme)")
@@ -1101,10 +1103,10 @@ final class ScreenshotTests: XCTestCase {
                 assertPageBackgroundContinuesBehindGlassTabs()
                 snap("glass-home-on-\(theme)-\(language)")
             }
-            glassTab(4)
+            tab(4)
             setSwitch(app.switches["settings_dark_mode"].firstMatch, to: true)
             setSwitch(glass, to: false)
-            glassTab(0)
+            tab(0)
         }
     }
 
