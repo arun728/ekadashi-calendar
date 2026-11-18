@@ -20,8 +20,13 @@ final class AppModelTests: XCTestCase {
             throw XCTSkip("This command-line iOS 26 runner did not provision its local StoreKit catalog; run this catalog integration check on iOS 18.6")
         }
         XCTAssertEqual(Set(products.map(\.id)), Set(PremiumProduct.all))
+        let displayNames = [
+            PremiumProduct.monthly: "Ekadashi Premium - Monthly",
+            PremiumProduct.yearly: "Ekadashi Premium - Yearly",
+            PremiumProduct.lifetime: "Ekadashi Premium",
+        ]
         for product in products {
-            XCTAssertEqual(product.displayName, "Ekadashi Premium", product.id)
+            XCTAssertEqual(product.displayName, displayNames[product.id], product.id)
             if let subscription = product.subscription {
                 XCTAssertEqual(subscription.groupDisplayName, "Ekadashi Premium", product.id)
             }

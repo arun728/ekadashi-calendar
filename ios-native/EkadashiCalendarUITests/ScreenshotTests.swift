@@ -775,20 +775,28 @@ final class ScreenshotTests: XCTestCase {
         // on every OS. Read the actual visible screenshot with Vision rather
         // than passing an assertion against a missing accessibility element.
         var text: [String] = []
-        let expectedNames = ["Ekadashi Premium", "Ekadashi Premium (1 month)", "Ekadashi Premium (1 year)"]
+        let expectedNames = ["Ekadashi Premium - Monthly", "Ekadashi Premium - Yearly"]
+        func showsPlan(_ name: String) -> Bool {
+            text.contains { line in
+                // Vision can recognize the displayed hyphen as a typographic dash.
+                line.replacingOccurrences(of: "–", with: "-")
+                    .replacingOccurrences(of: "—", with: "-")
+                    .localizedCaseInsensitiveContains(name)
+            }
+        }
         let shown = expectation(for: NSPredicate { _, _ in
             text = (try? self.visibleStoreText()) ?? []
             // Wait for the content this test verifies, rather than the
             // system-owned title. Vision's cold start and title recognition
             // vary across hosted macOS/iOS versions.
             return text.contains { $0.localizedCaseInsensitiveContains("Cancel Subscription") }
-                && expectedNames.allSatisfy { text.contains($0) }
+                && expectedNames.allSatisfy(showsPlan)
         }, evaluatedWith: nil)
         await fulfillment(of: [shown], timeout: 30)
         snap("store-managed-subscription-correct-name")
         XCTAssertFalse(text.contains { $0.contains("ekadashi_premium") })
         for name in expectedNames {
-            XCTAssertTrue(text.contains(name), "The current subscription and each plan option need their customer-facing names: \(text)")
+            XCTAssertTrue(showsPlan(name), "The current subscription and each plan option need their customer-facing names: \(text)")
         }
         #endif
     }
