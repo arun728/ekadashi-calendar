@@ -596,13 +596,19 @@ final class ScreenshotTests: XCTestCase {
         try session.clearTransactions()
         defer { try? session.clearTransactions() }
         let yearlyPurchase = try await session.buyProduct(identifier: "ekadashi_premium_yearly")
-        try session.disableAutoRenewForTransaction(identifier: UInt(yearlyPurchase.id))
         app.launch()
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
         glassTab(4); app.buttons["settings_premium"].firstMatch.tap()
         let yearly = app.buttons["premium_plan_yearly"].firstMatch
         await fulfillment(of: [expectation(for: NSPredicate(format: "label CONTAINS %@", "Your current plan"),
                                            evaluatedWith: yearly)], timeout: 60)
+        // Establish the verified subscription before turning off renewal.
+        try session.disableAutoRenewForTransaction(identifier: UInt(yearlyPurchase.id))
+        XCUIDevice.shared.press(.home)
+        app.activate()
+        let cancelled = app.staticTexts["Subscription cancelled"].firstMatch
+        XCTAssertTrue(cancelled.waitForExistence(timeout: 30))
+        XCTAssertTrue(yearly.label.contains("Your current plan"))
         let monthly = app.buttons["premium_plan_monthly"].firstMatch
         monthly.tap()
         XCTAssertTrue(monthly.wait(for: \.isSelected, toEqual: true, timeout: 3), "One tap must select Monthly")
