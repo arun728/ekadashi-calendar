@@ -8,6 +8,18 @@ class PremiumFixture extends PlayEntitlementSource {
   bool lifetime = false;
   bool fail = false;
   int queries = 0;
+  @override
+  String? subscriptionPurchaseToken;
+  @override
+  bool subscriptionExpiryConfirmed = false;
+
+  /// Whether Play reports the owned subscription as auto-renewing; null when
+  /// the fixture does not say (as before).
+  bool? renewing;
+  @override
+  Map<String, bool> get autoRenewing => premium && renewing != null
+      ? {PremiumService.subscriptionId: renewing!}
+      : const {};
 
   /// When Google Play says the owned product was bought.
   DateTime? purchasedAt;

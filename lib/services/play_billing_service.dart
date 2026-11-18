@@ -1,9 +1,14 @@
 import 'dart:async';
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:in_app_purchase_android/billing_client_wrappers.dart';
 import 'package:in_app_purchase_android/in_app_purchase_android.dart';
+import 'package:in_app_purchase_platform_interface/in_app_purchase_platform_interface.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import 'premium_service.dart';
 
 class PremiumPlan {
@@ -36,6 +41,53 @@ DateTime? playPurchaseTime(PurchaseDetails purchase) {
   return millis == null ? null : DateTime.fromMillisecondsSinceEpoch(millis);
 }
 
+// A stream event and an ownership refresh may see the same purchase together.
+final _acknowledgements = <String, Future<void>>{};
+
+Future<void> _acknowledgePlayPurchase(
+  InAppPurchase store,
+  PurchaseDetails purchase,
+) async {
+  final token = purchase.verificationData.serverVerificationData;
+  final running = _acknowledgements[token];
+  if (running != null) return running;
+  final attempt = _retryPlayAcknowledgement(store, purchase);
+  _acknowledgements[token] = attempt;
+  try {
+    await attempt;
+  } finally {
+    _acknowledgements.remove(token);
+  }
+}
+
+Future<void> _retryPlayAcknowledgement(
+  InAppPurchase store,
+  PurchaseDetails purchase,
+) async {
+  const transient = {
+    BillingResponse.serviceDisconnected,
+    BillingResponse.serviceTimeout,
+    BillingResponse.serviceUnavailable,
+    BillingResponse.networkError,
+  };
+  for (var attempt = 0; ; attempt++) {
+    final platform = InAppPurchasePlatform.instance;
+    // The Android API explicitly returns the Play acknowledgement result.
+    final Future<Object?> completion = platform is InAppPurchaseAndroidPlatform
+        ? platform.completePurchase(purchase)
+        : store.completePurchase(purchase);
+    final result = await completion;
+    if (result is! BillingResultWrapper ||
+        result.responseCode == BillingResponse.ok) {
+      return;
+    }
+    if (attempt == 2 || !transient.contains(result.responseCode)) {
+      throw StateError('Play acknowledgement: ${result.responseCode.name}');
+    }
+    await Future<void>.delayed(Duration(milliseconds: 250 << attempt));
+  }
+}
+
 /// Reads owned purchases from Google Play Billing on this device and
 /// acknowledges any completed purchase Play still holds unacknowledged
 /// (Play refunds purchases left unacknowledged for three days).
@@ -47,7 +99,8 @@ class PlayStoreEntitlements extends PlayEntitlementSource {
        // Resolve the store lazily: creating it connects to Play Billing.
        _acknowledge =
            acknowledge ??
-           ((purchase) => InAppPurchase.instance.completePurchase(purchase));
+           ((purchase) =>
+               _acknowledgePlayPurchase(InAppPurchase.instance, purchase));
 
   final Future<List<PurchaseDetails>> Function() _query;
   final Future<void> Function(PurchaseDetails purchase) _acknowledge;
@@ -66,9 +119,13 @@ class PlayStoreEntitlements extends PlayEntitlementSource {
   Map<String, bool> autoRenewing = const {};
 
   @override
+  String? subscriptionPurchaseToken;
+
+  @override
   Future<Map<String, DateTime?>> ownedProducts() async {
     final owned = <String, DateTime?>{};
     final renewing = <String, bool>{};
+    String? subscriptionToken;
     for (final purchase in await _query()) {
       if (!{
             PremiumService.subscriptionId,
@@ -81,10 +138,21 @@ class PlayStoreEntitlements extends PlayEntitlementSource {
       if (purchase is GooglePlayPurchaseDetails) {
         renewing[purchase.productID] =
             purchase.billingClientPurchase.isAutoRenewing;
+        if (purchase.productID == PremiumService.subscriptionId) {
+          subscriptionToken = purchase.billingClientPurchase.purchaseToken;
+        }
       }
-      if (purchase.pendingCompletePurchase) await _acknowledge(purchase);
+      if (purchase.pendingCompletePurchase) {
+        try {
+          await _acknowledge(purchase);
+        } catch (error) {
+          // The purchase is still owned. The next store read will retry it.
+          debugPrint('Google Play acknowledgement failed: $error');
+        }
+      }
     }
     autoRenewing = renewing;
+    subscriptionPurchaseToken = subscriptionToken;
     return owned;
   }
 }
@@ -109,11 +177,43 @@ class PlayBillingService extends ChangeNotifier {
   bool pending = false;
   Future<void>? _processing;
 
-  /// The base plan (`monthly`/`yearly`) last bought on this phone. Only a
-  /// label hint for the paywall; entitlement always comes from Google Play.
-  String? currentPlanId;
+  // Play ownership reports the subscription product ID, not the base plan.
+  // Use a completed checkout's choice only for the same purchase token.
+  String? _currentPlanId;
+  String? _planPurchaseToken;
+  static const _verifiedPlanKey = 'premium_verified_plan_v1';
+  SharedPreferences? _preferences;
+
+  static String _fingerprint(String token) =>
+      sha256.convert(utf8.encode(token)).toString();
+
+  String? get currentPlanId {
+    if (!premium.subscribed) return null;
+    final token = premium.subscriptionPurchaseToken;
+    if (token == _planPurchaseToken && _currentPlanId != null) {
+      return _currentPlanId;
+    }
+    if (token == null) return null;
+    final stored = _preferences?.getString(_verifiedPlanKey)?.split(':');
+    if (stored == null ||
+        stored.length != 2 ||
+        stored.last != _fingerprint(token)) {
+      return null;
+    }
+    return switch (stored.first) {
+      'monthly' || 'yearly' => stored.first,
+      _ => null,
+    };
+  }
+
+  @visibleForTesting
+  set currentPlanId(String? value) {
+    _currentPlanId = value;
+    _planPurchaseToken = premium.subscriptionPurchaseToken;
+  }
+
   String? _requestedPlan;
-  static const planHintKey = 'premium_plan_hint';
+  DateTime? _requestedAt;
 
   /// Like other subscription apps, a subscriber can still switch between
   /// monthly and yearly or buy lifetime; lifetime owners need nothing more.
@@ -127,10 +227,11 @@ class PlayBillingService extends ChangeNotifier {
   Future<void> initialize() async {
     if (_disposed) return;
     try {
-      currentPlanId = (await SharedPreferences.getInstance()).getString(
-        planHintKey,
-      );
-    } catch (_) {}
+      _preferences ??= await SharedPreferences.getInstance();
+    } catch (error) {
+      debugPrint('Play plan preference unavailable: $error');
+    }
+    if (_disposed) return;
     _subscription ??= store.purchaseStream.listen(
       (values) {
         _processing = (_processing ?? Future<void>.value())
@@ -193,6 +294,8 @@ class PlayBillingService extends ChangeNotifier {
           pending = true;
           break;
         case PurchaseStatus.error:
+          _requestedPlan = null;
+          _requestedAt = null;
           pending = false;
           error = 'premium_unavailable';
           debugPrint(
@@ -201,6 +304,8 @@ class PlayBillingService extends ChangeNotifier {
           );
           break;
         case PurchaseStatus.canceled:
+          _requestedPlan = null;
+          _requestedAt = null;
           pending = false;
           break;
         case PurchaseStatus.purchased:
@@ -210,21 +315,45 @@ class PlayBillingService extends ChangeNotifier {
             break;
           }
           pending = false;
+          final purchasedAt = playPurchaseTime(purchase);
+          final token = purchase is GooglePlayPurchaseDetails
+              ? purchase.billingClientPurchase.purchaseToken
+              : null;
+          if (purchase.productID == subscription &&
+              purchase.status == PurchaseStatus.purchased &&
+              token != null &&
+              purchasedAt != null &&
+              _requestedAt != null &&
+              !purchasedAt.isBefore(_requestedAt!)) {
+            final plan = _requestedPlan;
+            _currentPlanId = plan;
+            _planPurchaseToken = token;
+            _requestedPlan = null;
+            _requestedAt = null;
+            if (plan != null) {
+              try {
+                await _preferences?.setString(
+                  _verifiedPlanKey,
+                  '$plan:${_fingerprint(token)}',
+                );
+              } catch (error) {
+                debugPrint('Play plan preference could not be saved: $error');
+              }
+            }
+          }
           premium.grant(
             purchase.productID,
-            purchasedAt: playPurchaseTime(purchase),
+            purchasedAt: purchasedAt,
+            subscriptionToken: token,
           );
-          if (purchase.productID == subscription && _requestedPlan != null) {
-            currentPlanId = _requestedPlan;
-            try {
-              await (await SharedPreferences.getInstance()).setString(
-                planHintKey,
-                _requestedPlan!,
-              );
-            } catch (_) {}
-          }
           if (purchase.pendingCompletePurchase) {
-            await store.completePurchase(purchase);
+            try {
+              await _acknowledgePlayPurchase(store, purchase);
+            } catch (failure) {
+              debugPrint('Google Play acknowledgement failed: $failure');
+              error = 'premium_unavailable';
+              break;
+            }
           }
           error = null;
       }
@@ -235,6 +364,11 @@ class PlayBillingService extends ChangeNotifier {
   Future<void> buy(PremiumPlan plan) async {
     if (!canBuy(plan)) return;
     _requestedPlan = plan.id == 'lifetime' ? null : plan.id;
+    _requestedAt = _requestedPlan == null
+        ? null
+        : DateTime.fromMillisecondsSinceEpoch(
+            DateTime.now().millisecondsSinceEpoch,
+          );
     try {
       final product = plan.product;
       String? offer;
@@ -254,9 +388,13 @@ class PlayBillingService extends ChangeNotifier {
         offerToken: offer,
       );
       if (!await store.buyNonConsumable(purchaseParam: param)) {
+        _requestedPlan = null;
+        _requestedAt = null;
         error = 'premium_unavailable';
       }
     } catch (e) {
+      _requestedPlan = null;
+      _requestedAt = null;
       debugPrint('Google Play checkout failed: $e');
       error = 'premium_unavailable';
     }

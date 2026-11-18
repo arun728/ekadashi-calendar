@@ -148,6 +148,64 @@ void main() {
     );
   });
 
+  // Arun's iPhone (16 Nov 2026): every store refresh cleared the tapped
+  // plan, so Lifetime took 5-10 taps. A tap stays until that plan is owned.
+  testWidgets('A tapped plan survives Play refreshes until it is owned', (
+    tester,
+  ) async {
+    final premium = PremiumService(entitlements: PremiumFixture())
+      ..applyOwned({PremiumService.subscriptionId});
+    addTearDown(premium.dispose);
+    final billing = await pumpPaywall(tester, premium, currentPlan: 'yearly');
+    await tester.tap(find.byKey(const Key('premium_plan_lifetime')));
+    await tester.pumpAndSettle();
+    expect(ctaLabel(tester), contains('₹999'));
+    // Play's answer arrives in steps: the plan is briefly unknown.
+    for (final plan in [null, 'yearly', null, 'yearly']) {
+      billing.currentPlanId = plan;
+      billing.notifyListeners();
+      await tester.pumpAndSettle();
+      expect(ctaLabel(tester), contains('₹999'), reason: 'after $plan');
+    }
+    await tester.tap(find.byKey(const Key('premium_plan_monthly')));
+    await tester.pumpAndSettle();
+    billing.currentPlanId = null;
+    billing.notifyListeners();
+    await tester.pumpAndSettle();
+    expect(ctaLabel(tester), contains('₹99'));
+    expect(ctaLabel(tester), isNot(contains('₹999')));
+    // Once Lifetime is owned there is nothing left to buy.
+    premium.applyOwned({PremiumService.lifetimeId});
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('premium_buy')), findsNothing);
+  });
+
+  // Arun (16 Nov 2026): only the middle of a plan box answered on his phone.
+  testWidgets('Every edge and corner of a plan box selects it', (tester) async {
+    final premium = freeUser(PremiumFixture());
+    await pumpPaywall(tester, premium);
+    const prices = {'monthly': '₹99', 'yearly': '₹499', 'lifetime': '₹999'};
+    for (final inset in const [
+      Offset(3, 3),
+      Offset(-3, 3),
+      Offset(3, -3),
+      Offset(-3, -3),
+    ]) {
+      for (final id in ['monthly', 'lifetime', 'yearly']) {
+        final box = tester.getRect(find.byKey(Key('premium_plan_$id')));
+        final x = inset.dx > 0 ? box.left + inset.dx : box.right + inset.dx;
+        final y = inset.dy > 0 ? box.top + inset.dy : box.bottom + inset.dy;
+        await tester.tapAt(Offset(x, y));
+        await tester.pumpAndSettle();
+        expect(ctaLabel(tester), contains(prices[id]!), reason: '$id $inset');
+      }
+    }
+    final box = tester.getRect(find.byKey(const Key('premium_plan_monthly')));
+    await tester.tapAt(Offset(box.center.dx, box.bottom - 2));
+    await tester.pumpAndSettle();
+    expect(ctaLabel(tester), contains('₹99'));
+  });
+
   testWidgets('Restore says whether purchases were found', (tester) async {
     final source = PremiumFixture()..premium = false;
     final premium = PremiumService(entitlements: source);
@@ -233,15 +291,35 @@ void main() {
     expect(billing.bought, ['lifetime']);
   });
 
-  testWidgets('A cancelled subscriber is told and can reactivate', (
-    tester,
-  ) async {
+  testWidgets('Reactivate opens Play subscription management', (tester) async {
     final premium = PremiumService(entitlements: PremiumFixture())
       ..applyOwned(
         {PremiumService.subscriptionId},
         autoRenewing: {PremiumService.subscriptionId: false},
       );
     addTearDown(premium.dispose);
+    final opened = <String>[];
+    const channel = MethodChannel('plugins.flutter.io/url_launcher');
+    final messenger =
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(channel, (call) async {
+      if (call.method == 'launch') {
+        opened.add((call.arguments as Map)['url'] as String);
+      }
+      return true;
+    });
+    const androidChannel = BasicMessageChannel<Object?>(
+      'dev.flutter.pigeon.url_launcher_android.UrlLauncherApi.launchUrl',
+      StandardMessageCodec(),
+    );
+    messenger.setMockDecodedMessageHandler(androidChannel, (message) async {
+      opened.add((message as List).first as String);
+      return <Object?>[true];
+    });
+    addTearDown(() {
+      messenger.setMockMethodCallHandler(channel, null);
+      messenger.setMockDecodedMessageHandler(androidChannel, null);
+    });
     final billing = await pumpPaywall(tester, premium, currentPlan: 'monthly');
     expect(
       find.text(lang.translate('premium_cancelled_title')),
@@ -252,6 +330,54 @@ void main() {
     expect(ctaLabel(tester), contains(lang.translate('premium_reactivate')));
     await tester.tap(find.byKey(const Key('premium_buy')));
     await tester.pumpAndSettle();
+    expect(billing.bought, isEmpty);
+    expect(
+      Uri.parse(opened.single).queryParameters['sku'],
+      PremiumService.subscriptionId,
+    );
+  });
+
+  testWidgets('Switching between Monthly and Yearly says it is charged '
+      'today and the unused time is kept', (tester) async {
+    for (final (current, target) in [
+      ('yearly', 'monthly'),
+      ('monthly', 'yearly'),
+    ]) {
+      final premium = PremiumService(entitlements: PremiumFixture())
+        ..applyOwned({PremiumService.subscriptionId});
+      addTearDown(premium.dispose);
+      final billing = await pumpPaywall(tester, premium, currentPlan: current);
+      await tester.tap(find.byKey(Key('premium_plan_$target')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('premium_buy')));
+      await tester.pumpAndSettle();
+      expect(
+        find.text(lang.translate('premium_switch_now_body')),
+        findsOneWidget,
+        reason: '$current to $target',
+      );
+      await tester.tap(find.text(lang.translate('cancel')));
+      await tester.pumpAndSettle();
+      expect(billing.bought, isEmpty);
+      await tester.tap(find.byKey(const Key('premium_buy')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(lang.translate('premium_switch_now_confirm')));
+      await tester.pumpAndSettle();
+      expect(billing.bought, [target]);
+      await tester.pumpWidget(const SizedBox.shrink());
+    }
+  });
+
+  testWidgets('A free user buys a plan without the switch note', (
+    tester,
+  ) async {
+    final premium = freeUser(PremiumFixture());
+    final billing = await pumpPaywall(tester, premium);
+    await tester.tap(find.byKey(const Key('premium_plan_monthly')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('premium_buy')));
+    await tester.pumpAndSettle();
+    expect(find.text(lang.translate('premium_switch_now_body')), findsNothing);
     expect(billing.bought, ['monthly']);
   });
 
@@ -499,8 +625,8 @@ void main() {
     expect(google.max, DateTime(2028, 1, 1));
   });
 
-  testWidgets('When a monthly plan lapses, the events Premium synced are '
-      'removed and the free month stays', (tester) async {
+  testWidgets('When Play omits a monthly plan, the events Premium synced are '
+      'kept along with the free month', (tester) async {
     SharedPreferences.setMockInitialValues({
       CalendarScreen.freeSyncUsedKey: true,
       CalendarScreen.freeSyncMonthKey: '2026-10',
@@ -522,19 +648,54 @@ void main() {
       repo.entries.values.map((e) => e.title),
       containsAll(['Free month event', 'Premium event']),
     );
-    // The monthly plan was cancelled and has now expired in Google Play.
+    // Play returns no purchase during account hold or after expiry.
+    source.premium = false;
+    await premium.refresh();
+    await tester.pumpAndSettle();
+    expect(
+      repo.entries.values.map((e) => e.title),
+      containsAll(['Free month event', 'Premium event']),
+    );
+    expect(
+      find.text(lang.translate('google_premium_events_removed')),
+      findsNothing,
+    );
+    source.subscriptionExpiryConfirmed = true;
+    await premium.refresh();
+    await tester.pumpAndSettle();
+    expect(repo.entries.values.map((e) => e.title), ['Free month event']);
+  });
+
+  testWidgets('A cancelled plan that ends removes the events Premium '
+      'synced at once and keeps the free month', (tester) async {
+    SharedPreferences.setMockInitialValues({
+      CalendarScreen.freeSyncUsedKey: true,
+      CalendarScreen.freeSyncMonthKey: '2026-10',
+    });
+    final source = PremiumFixture()
+      ..purchasedAt = DateTime(2026, 9, 10)
+      ..renewing = false;
+    final premium = PremiumService(entitlements: source);
+    addTearDown(premium.dispose);
+    await premium.refresh();
+    final repo = MemoryCalendarRepository();
+    final google = UiGoogle()
+      ..events = [
+        event('Free month event', start: '2026-10-10', end: '2026-10-11'),
+        event('Premium event', start: '2027-01-10', end: '2027-01-11'),
+      ];
+    await pumpCalendar(tester, premium, google: google, repository: repo);
+    await tapImport(tester);
+    await importSelected(tester);
+    // The user cancelled; the paid period has now ended in Google Play.
     source.premium = false;
     await premium.refresh();
     await tester.pumpAndSettle();
     expect(repo.entries.values.map((e) => e.title), ['Free month event']);
-    expect(
-      find.text(lang.translate('google_premium_events_removed')),
-      findsOneWidget,
-    );
   });
 
-  testWidgets('Premium-synced events are removed on the next launch after a '
-      'lapse, but kept while Google Play is unreachable', (tester) async {
+  testWidgets('Premium-synced events survive the next launch after an '
+      'ambiguous ownership result', (tester) async {
     SharedPreferences.setMockInitialValues({
       CalendarScreen.freeSyncUsedKey: true,
     });
@@ -563,7 +724,7 @@ void main() {
       ..premium = false;
     await premium.refresh();
     await pumpCalendar(tester, premium, google: google, repository: repo);
-    expect(repo.entries, isEmpty);
+    expect(repo.entries.values.map((e) => e.title), ['Premium event']);
   });
 
   testWidgets('After the free sync, buying premium continues into the '
@@ -644,6 +805,27 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(PremiumScreen), findsOneWidget);
     expect(google.min, isNull);
+  });
+
+  testWidgets('Calendar rechecks Play before using an expired subscription', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({
+      CalendarScreen.freeSyncUsedKey: true,
+    });
+    final source = PremiumFixture()..purchasedAt = DateTime(2026, 9, 10);
+    final premium = PremiumService(entitlements: source);
+    addTearDown(premium.dispose);
+    await premium.refresh();
+    final google = await pumpCalendar(tester, premium);
+    source.premium = false;
+
+    await tapImport(tester);
+    if (find.text('Import selected').evaluate().isNotEmpty) {
+      await importSelected(tester);
+    }
+    expect(google.min, isNull);
+    expect(find.byType(PremiumScreen), findsOneWidget);
   });
 
   testWidgets('Calendar reports a Google sign-in failure, not a cancel', (

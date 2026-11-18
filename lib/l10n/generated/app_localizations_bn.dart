@@ -966,6 +966,16 @@ class AppLocalizationsBn extends AppLocalizations {
   String get premium_buy_lifetime_anyway => 'আজীবন কিনুন';
 
   @override
+  String get premium_switch_now_title => 'প্ল্যান বদলাবেন?';
+
+  @override
+  String get premium_switch_now_body =>
+      'আপনার নতুন প্ল্যান আজ থেকেই শুরু হবে এবং আজই টাকা কাটা হবে। বর্তমান প্ল্যানের বাকি সময় এতে যোগ হবে।';
+
+  @override
+  String get premium_switch_now_confirm => 'প্ল্যান বদলান';
+
+  @override
   String get premium_unavailable =>
       'এখন কেনাকাটা করা যাচ্ছে না। গুগল প্লে থেকে অ্যাপটি ইনস্টল করে আবার চেষ্টা করুন। বিনামূল্যের সুবিধাগুলো চালু থাকবে।';
 

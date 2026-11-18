@@ -966,6 +966,16 @@ class AppLocalizationsTe extends AppLocalizations {
   String get premium_buy_lifetime_anyway => 'జీవితకాలం కొనండి';
 
   @override
+  String get premium_switch_now_title => 'ప్లాన్ మార్చాలా?';
+
+  @override
+  String get premium_switch_now_body =>
+      'మీ కొత్త ప్లాన్ ఈరోజే ప్రారంభమవుతుంది, ఈరోజే ఛార్జీ వసూలు చేయబడుతుంది. ప్రస్తుత ప్లాన్‌లో మిగిలిన సమయం దానికి జోడించబడుతుంది.';
+
+  @override
+  String get premium_switch_now_confirm => 'ప్లాన్ మార్చండి';
+
+  @override
   String get premium_unavailable =>
       'ప్రస్తుతం కొనుగోళ్లు అందుబాటులో లేవు. గూగుల్ ప్లే నుండి యాప్‌ను ఇన్‌స్టాల్ చేసి మళ్లీ ప్రయత్నించండి. ఉచిత ఫీచర్లు పనిచేస్తాయి.';
 

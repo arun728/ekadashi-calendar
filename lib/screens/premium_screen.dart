@@ -85,8 +85,10 @@ class _PremiumScreenState extends State<PremiumScreen> {
   String? _selected;
   String? _selectionOwnership;
 
-  /// Suggest the next upgrade after confirmed ownership changes. Retain
-  /// a manual choice otherwise, and keep owned Lifetime selected.
+  /// A tapped plan stays selected through Play refreshes (they can briefly
+  /// report no plan). When ownership changes it is dropped only if that plan
+  /// is now owned; then the next upgrade is suggested. Owned Lifetime stays
+  /// selected.
   PremiumPlan? _selectedPlan() {
     final plans = billing.plans;
     if (plans.isEmpty) return null;
@@ -94,7 +96,12 @@ class _PremiumScreenState extends State<PremiumScreen> {
         '${premium.subscribed}:${premium.lifetime}:${billing.currentPlanId}';
     if (_selectionOwnership != ownership) {
       _selectionOwnership = ownership;
-      _selected = null;
+      final owned =
+          premium.lifetime ||
+          (premium.subscribed &&
+              _selected == billing.currentPlanId &&
+              !premium.subscriptionCancelled);
+      if (owned) _selected = null;
     }
     if (premium.lifetime) {
       for (final plan in plans) {
@@ -286,6 +293,43 @@ class _PremiumScreenState extends State<PremiumScreen> {
                 style: style,
                 onPressed: () => Navigator.pop(context, true),
                 child: Text(lang.translate('premium_buy_lifetime_anyway')),
+              ),
+            ],
+          );
+        },
+      );
+      if (go != true) return;
+    }
+    // Switching base plans uses Play Console's "Charge immediately": the new
+    // plan starts and is charged today and the unused time is added to it.
+    // Say so first, since Apple-style deferred changes are not possible
+    // between base plans of one Play subscription.
+    if (plan.id != 'lifetime' &&
+        premium.subscribed &&
+        !premium.lifetime &&
+        plan.id != billing.currentPlanId) {
+      if (!mounted) return;
+      final go = await showDialog<bool>(
+        context: context,
+        useRootNavigator: true,
+        builder: (context) {
+          final style = TextButton.styleFrom(foregroundColor: IosColors.teal);
+          return AlertDialog(
+            title: Text(lang.translate('premium_switch_now_title')),
+            content: Text(lang.translate('premium_switch_now_body')),
+            actions: [
+              TextButton(
+                style: style,
+                onPressed: () => Navigator.pop(context, false),
+                child: Text(
+                  lang.translate('cancel'),
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+              TextButton(
+                style: style,
+                onPressed: () => Navigator.pop(context, true),
+                child: Text(lang.translate('premium_switch_now_confirm')),
               ),
             ],
           );
@@ -565,12 +609,16 @@ class _PremiumScreenState extends State<PremiumScreen> {
                             key: const Key('premium_buy'),
                             style: IosButtons.prominent(vertical: 14),
                             onPressed: billing.canBuy(selected)
-                                ? () => _buy(lang, selected)
+                                ? () =>
+                                      premium.subscriptionCancelled &&
+                                          selected.id == billing.currentPlanId
+                                      ? _manage()
+                                      : _buy(lang, selected)
                                 : null,
                             child: Text(
                               premium.subscriptionCancelled &&
                                       selected.id == billing.currentPlanId
-                                  ? '${lang.translate('premium_reactivate')} · ${selected.price}'
+                                  ? lang.translate('premium_reactivate')
                                   : '${lang.translate('premium_${selected.id}')} · ${selected.price}',
                               textAlign: TextAlign.center,
                               style: IosButtons.label,
