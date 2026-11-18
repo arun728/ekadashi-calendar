@@ -1,9 +1,16 @@
 # Apptinel website
 
-The static pages in `public/` are the studio website and the iPhone and iPad
-product pages for Ekadashi Calendar. They are separate from the Android
-GitHub Pages site. The app copy and the location catalog use the Android site
-as their baseline, with App Store, widget, permission and privacy adjustments.
+The static pages in `public/` are the studio website and the shared Android,
+iPhone and iPad product and legal pages for Ekadashi Calendar. They remain
+separate from the Android GitHub Pages site. The feature copy is shared;
+permissions, billing and widgets describe each platform where they differ.
+
+Android links to the live Google Play listing. At iOS launch, replace the
+“iOS · Coming soon” label in `public/ekadashi-calendar/index.html` with the
+verified public App Store URL. Do not use the placeholder app URL. The preview
+is labelled as iOS footage. Android v2 availability is distinguished from the
+existing live Android listing. Minimum Android 7.0 follows Flutter's minSdk 24;
+iOS and iPadOS require version 17.
 
 Preview from the repository root with
 `python3 -m http.server 8080 --directory website/apptinel/public`.
