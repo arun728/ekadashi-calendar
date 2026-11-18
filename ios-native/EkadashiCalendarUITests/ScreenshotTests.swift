@@ -1309,12 +1309,14 @@ final class ScreenshotTests: XCTestCase {
         }
         let value = enabled ? "1" : "0"
         if toggle.value as? String != value {
-            // A SwiftUI Toggle can expose the label and thumb as one wide
-            // accessibility element. Tap the actual switch at its trailing end.
-            toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.93, dy: 0.5)).tap()
+            // Accessibility exposes the whole row. The switch track is
+            // centered about 44 points inside its trailing edge.
+            toggle.coordinate(withNormalizedOffset: CGVector(dx: 1, dy: 0.5))
+                .withOffset(CGVector(dx: -44, dy: 0)).tap()
         }
         XCTAssertTrue(NSPredicate(format: "value == %@", value).evaluate(with: toggle)
-            || XCTWaiter.wait(for: [expectation(for: NSPredicate(format: "value == %@", value), evaluatedWith: toggle)], timeout: 5) == .completed)
+            || XCTWaiter.wait(for: [expectation(for: NSPredicate(format: "value == %@", value), evaluatedWith: toggle)], timeout: 5) == .completed,
+            "Expected \(toggle.label) to have value \(value); found \(String(describing: toggle.value))")
     }
 
     private func pixelDifference(_ first: UIImage, _ second: UIImage) -> Double {
