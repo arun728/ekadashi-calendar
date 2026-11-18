@@ -14,6 +14,7 @@ import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -44,6 +45,7 @@ class MainActivity: FlutterActivity() {
     // Deep link handling for Module 13 widgets
     private var initialDeepLinkUri: String? = null
     private var widgetChannel: MethodChannel? = null
+    private var playUpdateBridge: PlayUpdateBridge? = null
 
     // Flag to prevent duplicate initialization
     private var servicesInitialized = false
@@ -95,6 +97,12 @@ class MainActivity: FlutterActivity() {
         setupNotificationChannel(flutterEngine)
         setupSettingsChannel(flutterEngine)
         setupWidgetChannel(flutterEngine)
+        playUpdateBridge?.close()
+        playUpdateBridge = PlayUpdateBridge(
+            this,
+            AppUpdateManagerFactory.create(this),
+            MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.ekadashi.app_update")
+        )
         flutterEngine.platformViewsController.registry.registerViewFactory(
             "com.ekadashi.widget/preview", com.applausestudios.ekadashi_calendar.widget.ui.WidgetPreviewFactory(flutterEngine.dartExecutor.binaryMessenger))
     }
@@ -134,6 +142,8 @@ class MainActivity: FlutterActivity() {
     }
 
     override fun onDestroy() {
+        playUpdateBridge?.close()
+        playUpdateBridge = null
         // Cancel coroutine scope to prevent leaks
         mainScope?.cancel()
         mainScope = null

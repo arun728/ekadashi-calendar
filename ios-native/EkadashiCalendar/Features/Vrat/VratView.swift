@@ -9,7 +9,7 @@ struct VratView: View {
     @Environment(AppModel.self) private var model
     enum Section: String, CaseIterable { case overview, history, statistics, achievements }
     @State private var section: Section = .overview
-    @State private var selectedYear = CivilDate.today().year
+    @State private var selectedYear: Int?
     @State private var allYears = false
     @State private var statusFilter: ObservanceStatus?
     @State private var recording: EkadashiOccurrence?
@@ -21,15 +21,8 @@ struct VratView: View {
     private var periodJourney: JourneySummary { journey.scoped(toYear: allYears ? nil : year) }
 
     private var events: [EkadashiOccurrence] { model.ekadashis }
-    private var years: [Int] { model.vrat.years(events) }
-
-    /// The chosen year when it has data, else this year, else the latest.
-    private var year: Int {
-        let available = years
-        if available.contains(selectedYear) || available.isEmpty { return selectedYear }
-        let current = CivilDate.today().year
-        return available.contains(current) ? current : available.last!
-    }
+    private var years: [Int] { model.vrat.years(events, currentYear: model.currentYear) }
+    private var year: Int { selectedYear ?? model.currentYear }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -173,6 +166,7 @@ struct VratView: View {
                 .glassCapsule(tint: Theme.teal)
                 .fixedSize(horizontal: true, vertical: false)
         }
+        .menuOrder(.fixed)
         .fixedSize(horizontal: true, vertical: false)
     }
 

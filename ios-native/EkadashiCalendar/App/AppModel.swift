@@ -64,6 +64,8 @@ final class AppModel {
     private(set) var tradition: EkadashiTradition
     /// The year Home lists and Calendar opens on.
     private(set) var selectedYear: Int
+    private(set) var homeShowsAllYears = false
+    private(set) var observedCivilYear: Int?
     let enabledYears = EkadashiYears.enabled()
     /// Every enabled year's Ekadashis at [ekadashiCity] for [tradition]:
     /// reminders, widgets, Vrat, search and the Calendar markers use these.
@@ -118,12 +120,13 @@ final class AppModel {
         language = store.string(forKey: "language_code").flatMap { Localizer.languages.contains($0) ? $0 : nil } ?? Self.systemLanguage
         isDarkMode = store.bool(forKey: "is_dark_mode") ?? true
         isGlassLookEnabled = store.bool(forKey: Self.glassLookKey) ?? false
-        ekadashiCity = Self.loadCity(store) ?? Self.defaultCity
+        let city = Self.loadCity(store) ?? Self.defaultCity
+        ekadashiCity = city
         ekadashiCityIsManual = store.bool(forKey: Self.manualCityKey) ?? false
         tradition = store.string(forKey: Self.traditionKey).flatMap(EkadashiTradition.init(rawValue:)) ?? .gaudiya
         let years = EkadashiYears.enabled()
         selectedYear = store.string(forKey: Self.yearKey).flatMap(Int.init).flatMap { years.contains($0) ? $0 : nil }
-            ?? EkadashiYears.defaultYear(today: CivilDate.today(), enabled: years)
+            ?? EkadashiYears.defaultYear(today: city.zone.wallClock(DisplayClock.date(Date())).date, enabled: years)
         reminderSettings = ReminderSettings.load(from: store)
         eventReminders = EventReminderSettings.load(from: store)
         recents = RecentSearches(store: store)
@@ -211,6 +214,7 @@ final class AppModel {
 
     var scheduleZone: TzLocation { ekadashiCity.zone }
     var today: CivilDate { scheduleZone.wallClock(DisplayClock.date(Date())).date }
+    var currentYear: Int { observedCivilYear ?? today.year }
     var locationName: String { if case .located(let city) = locationState { return city }; return "" }
 
     /// Place names Apple's geocoder gave in the app language (see [placeName]).
@@ -275,7 +279,9 @@ final class AppModel {
     }
 
     /// Home lists the selected year's Ekadashis.
-    var homeEkadashis: [EkadashiOccurrence] { ekadashis.filter { $0.date.year == selectedYear } }
+    var homeEkadashis: [EkadashiOccurrence] {
+        homeShowsAllYears ? ekadashis : ekadashis.filter { $0.date.year == selectedYear }
+    }
 
     func traditionName(_ value: EkadashiTradition) -> String { t(value == .smarta ? "tradition_smarta" : "tradition_vaishnava") }
 
@@ -398,6 +404,7 @@ final class AppModel {
 
     private func saveCity(_ city: PanchangCity, manual: Bool) {
         ekadashiCity = city
+        observedCivilYear = today.year
         ekadashiCityIsManual = manual
         if let data = try? JSONEncoder().encode(city) { store.set(String(decoding: data, as: UTF8.self), forKey: Self.cityKey) }
         store.set(manual, forKey: Self.manualCityKey)
@@ -411,9 +418,17 @@ final class AppModel {
         reload(scrollToNext: false)
     }
 
-    /// Home's year menu; Calendar opens on the chosen year.
+    func showAllYearsOnHome() {
+        guard !homeShowsAllYears else { return }
+        let visibleUID = homeEkadashis.indices.contains(homeIndex) ? homeEkadashis[homeIndex].occurrenceUid : nil
+        homeShowsAllYears = true
+        homeIndex = homeEkadashis.firstIndex { $0.occurrenceUid == visibleUID } ?? 0
+    }
+
+    /// An explicit Home year can also be opened in Calendar.
     func setYear(_ year: Int) {
-        guard enabledYears.contains(year), year != selectedYear else { return }
+        guard enabledYears.contains(year), year != selectedYear || homeShowsAllYears else { return }
+        homeShowsAllYears = false
         selectedYear = year
         store.set(String(year), forKey: Self.yearKey)
         homeIndex = HomeSelection.index(of: homeEkadashis, now: DisplayClock.date(Date()), zone: scheduleZone, includeParana: true)
@@ -422,7 +437,7 @@ final class AppModel {
 
     /// Calendar moved into another year: Home follows.
     func calendarShowsYear(_ year: Int) {
-        guard enabledYears.contains(year), year != selectedYear else { return }
+        guard !homeShowsAllYears, enabledYears.contains(year), year != selectedYear else { return }
         selectedYear = year
         store.set(String(year), forKey: Self.yearKey)
         homeIndex = HomeSelection.index(of: homeEkadashis, now: DisplayClock.date(Date()), zone: scheduleZone, includeParana: true)
@@ -736,7 +751,7 @@ final class AppModel {
     /// Select across enabled years so Dec/Jan Parana is not lost at midnight.
     func selectCurrentOccurrence(now: Date) {
         guard let event = ekadashis.first(where: { $0.paranaEnd.map { now < $0 } ?? ($0.date >= scheduleZone.wallClock(now).date) }) else { return }
-        if selectedYear != event.date.year {
+        if !homeShowsAllYears && selectedYear != event.date.year {
             selectedYear = event.date.year
             store.set(String(selectedYear), forKey: Self.yearKey)
         }
@@ -746,6 +761,8 @@ final class AppModel {
     /// Advance only a displayed current occurrence that just finished. Browsing
     /// another historical/future card never causes an unsolicited page jump.
     func refreshCurrentOccurrence(previousNow: Date, now: Date) {
+        let year = scheduleZone.wallClock(now).date.year
+        if observedCivilYear != year { observedCivilYear = year }
         guard let previous = ekadashis.first(where: { $0.paranaEnd.map { previousNow < $0 } ?? false }),
               homeEkadashis.indices.contains(homeIndex),
               homeEkadashis[homeIndex].occurrenceUid == previous.occurrenceUid,

@@ -116,15 +116,16 @@ public final class UnifiedSearch: @unchecked Sendable {
     public var years: [Int] { Array(Set(items.compactMap { $0.date?.year })).sorted() }
 
     public func search(_ raw: String, category chip: SearchCategory? = nil, year chipYear: Int? = nil,
-                       today: CivilDate, limit: Int = 300) -> [SearchItem] {
+                       defaultYear: Int? = nil, today: CivilDate, limit: Int = 300) -> [SearchItem] {
         let query = SearchQueryParser.parse(raw, catalog: catalog, category: chip, year: chipYear)
         func allowed(_ item: SearchItem) -> Bool {
             if let year = query.year, item.date?.year != year { return false }
+            if query.year == nil, let defaultYear, let date = item.date, date.year != defaultYear { return false }
             if let category = query.category, !item.categories.contains(category) { return false }
             return true
         }
         if query.isListing {
-            guard query.year != nil || query.category != nil else { return [] }
+            guard query.year != nil || defaultYear != nil || query.category != nil else { return [] }
             let listed = prepared.map(\.item).filter { allowed($0) && !$0.categories.contains(.screen) }
             return Array(listed.sorted { before($0, $1, today) }.prefix(limit))
         }

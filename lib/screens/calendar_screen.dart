@@ -83,8 +83,9 @@ class CalendarScreenState extends State<CalendarScreen> {
   /// grid's own paging (CalendarView.monthSlide on iOS).
   static const monthSlide = Duration(milliseconds: 250);
 
-  /// Home's city, tradition and year; the Calendar stays on Home's year.
+  /// Home's city, tradition and explicit year-navigation requests.
   EkadashiSettings? _settings;
+  int _calendarYearRevision = 0;
 
   /// The enabled Ekadashi years (assets/calendar/ekadashi_years.json).
   List<int> get _years {
@@ -150,12 +151,19 @@ class CalendarScreenState extends State<CalendarScreen> {
   }
 
   /// The Calendar moved into another year: Home follows.
-  void _showsYear(int year) => _settings?.setYear(year);
+  void _showsYear(int year) => _settings?.setYear(year, focusCalendar: false);
 
   /// Home's year menu chose another year: today in it, else its January.
   void _homeYearChanged() {
-    final year = _settings?.year;
-    if (!mounted || year == null || year == _focusedDay.year) return;
+    final settings = _settings;
+    if (!mounted ||
+        settings == null ||
+        settings.calendarYearRevision == _calendarYearRevision) {
+      return;
+    }
+    _calendarYearRevision = settings.calendarYearRevision;
+    final year = settings.calendarRequestedYear;
+    if (year == null || year == _focusedDay.year) return;
     final now = _now();
     final target = now.year == year
         ? DateTime(now.year, now.month, now.day)
@@ -182,10 +190,13 @@ class CalendarScreenState extends State<CalendarScreen> {
     widget.barSlots?.attach(leading: _todayButton, actions: _barActions);
     _settings = context.read<EkadashiSettings?>()
       ?..addListener(_homeYearChanged);
-    // Opens on Home's year: today in it, else its January.
+    // Only an explicit Home year choice can override today's date.
+    _calendarYearRevision = _settings?.calendarYearRevision ?? 0;
     var now = _now();
-    final homeYear = _settings?.year;
-    if (homeYear != null && homeYear != now.year) now = DateTime(homeYear);
+    final requestedYear = _settings?.calendarRequestedYear;
+    if (requestedYear != null && requestedYear != now.year) {
+      now = DateTime(requestedYear);
+    }
     _selectedYear = _years.contains(now.year)
         ? now.year
         : (_years.isEmpty ? now.year : _years.last);
@@ -594,7 +605,7 @@ class CalendarScreenState extends State<CalendarScreen> {
       context,
       month: DateTime.utc(_focusedDay.year, _focusedDay.month),
       language: lang.currentLocale.languageCode,
-      years: _years.isEmpty ? [_selectedYear] : _years,
+      years: _years.isEmpty ? [_selectedYear] : _years.reversed.toList(),
     );
     if (month == null || !mounted) return;
     // The current month opens on today; any other on its first day.

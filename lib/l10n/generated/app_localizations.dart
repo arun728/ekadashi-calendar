@@ -388,6 +388,48 @@ abstract class AppLocalizations {
   /// **'About'**
   String get about;
 
+  /// No description provided for @app_update_available.
+  ///
+  /// In en, this message translates to:
+  /// **'Update available'**
+  String get app_update_available;
+
+  /// No description provided for @app_update_now.
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get app_update_now;
+
+  /// No description provided for @app_update_later.
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get app_update_later;
+
+  /// No description provided for @app_update_downloading.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading update…'**
+  String get app_update_downloading;
+
+  /// No description provided for @app_update_downloaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Update downloaded.'**
+  String get app_update_downloaded;
+
+  /// No description provided for @app_update_restart.
+  ///
+  /// In en, this message translates to:
+  /// **'Restart to update'**
+  String get app_update_restart;
+
+  /// No description provided for @app_update_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not download or install the update.'**
+  String get app_update_failed;
+
   /// No description provided for @version.
   ///
   /// In en, this message translates to:

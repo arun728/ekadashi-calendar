@@ -2,21 +2,28 @@ import 'search_catalog.dart';
 
 /// What a search showed: the text, the type page and the year.
 class SearchSession {
-  const SearchSession({required this.query, this.category, this.year});
+  const SearchSession({
+    required this.query,
+    this.category,
+    this.year,
+    this.usesDefaultYear = false,
+  });
 
   final String query;
   final SearchCategory? category;
   final int? year;
+  final bool usesDefaultYear;
 
   @override
   bool operator ==(Object other) =>
       other is SearchSession &&
       other.query == query &&
       other.category == category &&
-      other.year == year;
+      other.year == year &&
+      other.usesDefaultYear == usesDefaultYear;
 
   @override
-  int get hashCode => Object.hash(query, category, year);
+  int get hashCode => Object.hash(query, category, year, usesDefaultYear);
 }
 
 /// A search result that opens a tab or a calendar day leaves the search;

@@ -189,6 +189,9 @@ final class SearchMatchingTests: XCTestCase {
         XCTAssertTrue(search.search("", today: today).isEmpty, "no text and no filter is the start screen")
         XCTAssertEqual(search.search("premium", today: today).map(\.id), ["screen"])
         XCTAssertTrue(search.search("premium", year: 2026, today: today).isEmpty, "screens have no year")
+        XCTAssertEqual(search.search("premium", defaultYear: 2027, today: today).map(\.id), ["screen"])
+        XCTAssertEqual(search.search("amavasya", defaultYear: 2027, today: today).map(\.id), ["a27"])
+        XCTAssertEqual(search.search("amavasya 2026", defaultYear: 2027, today: today).map(\.id), ["a26"])
     }
 }
 

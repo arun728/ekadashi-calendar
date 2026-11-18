@@ -1,6 +1,10 @@
 {
  "_about": "iOS wording for strings that name Google Play, the Play Store or Android battery settings, and iOS-only keys (prefixed ios_). Everything else comes from lib/l10n/app_*.arb. Tamil, Hindi, Telugu, Gujarati and Bengali entries need native review like translation_review.json.",
  "en": {
+  "ios_update_available": "Update available",
+  "ios_update_now": "Update",
+  "ios_update_later": "Later",
+  "ios_update_message": "A new version is available in the App Store.",
   "ios_premium_renewal_unknown": "Premium is active. Open Manage to see when it renews.",
   "ios_premium_current_until": "Current plan until {value0}",
   "ios_premium_starts_on": "Starts {value0}",
@@ -38,6 +42,10 @@
   "ios_fast_completed": "completed"
  },
  "ta": {
+  "ios_update_available": "புதுப்பிப்பு கிடைக்கிறது",
+  "ios_update_now": "புதுப்பிக்கவும்",
+  "ios_update_later": "பிறகு",
+  "ios_update_message": "ஆப் ஸ்டோரில் புதிய பதிப்பு கிடைக்கிறது.",
   "ios_premium_renewal_unknown": "பிரீமியம் செயலில் உள்ளது. எப்போது புதுப்பிக்கப்படும் என அறிய நிர்வகி என்பதைத் திறக்கவும்.",
   "ios_premium_current_until": "{value0} வரை தற்போதைய திட்டம்",
   "ios_premium_starts_on": "{value0} முதல் தொடங்கும்",
@@ -75,6 +83,10 @@
   "ios_fast_completed": "நிறைவு"
  },
  "hi": {
+  "ios_update_available": "अपडेट उपलब्ध है",
+  "ios_update_now": "अपडेट करें",
+  "ios_update_later": "बाद में",
+  "ios_update_message": "ऐप स्टोर में नया संस्करण उपलब्ध है।",
   "ios_premium_renewal_unknown": "प्रीमियम सक्रिय है। यह कब नवीनीकृत होगा, यह देखने के लिए प्रबंधित करें खोलें।",
   "ios_premium_current_until": "{value0} तक मौजूदा प्लान",
   "ios_premium_starts_on": "{value0} से शुरू",
@@ -112,6 +124,10 @@
   "ios_fast_completed": "पूर्ण"
  },
  "te": {
+  "ios_update_available": "అప్‌డేట్ అందుబాటులో ఉంది",
+  "ios_update_now": "అప్‌డేట్ చేయండి",
+  "ios_update_later": "తర్వాత",
+  "ios_update_message": "యాప్ స్టోర్‌లో కొత్త వెర్షన్ అందుబాటులో ఉంది.",
   "ios_premium_renewal_unknown": "ప్రీమియం సక్రియంగా ఉంది. ఎప్పుడు పునరుద్ధరించబడుతుందో చూడటానికి నిర్వహించండి తెరవండి.",
   "ios_premium_current_until": "{value0} వరకు ప్రస్తుత ప్లాన్",
   "ios_premium_starts_on": "{value0} నుండి ప్రారంభం",
@@ -149,6 +165,10 @@
   "ios_fast_completed": "పూర్తి"
  },
  "gu": {
+  "ios_update_available": "અપડેટ ઉપલબ્ધ છે",
+  "ios_update_now": "અપડેટ કરો",
+  "ios_update_later": "પછી",
+  "ios_update_message": "ઍપ સ્ટોરમાં નવું સંસ્કરણ ઉપલબ્ધ છે.",
   "ios_premium_renewal_unknown": "પ્રીમિયમ સક્રિય છે. તે ક્યારે રિન્યૂ થશે તે જોવા સંભાળો ખોલો.",
   "ios_premium_current_until": "{value0} સુધી હાલનો પ્લાન",
   "ios_premium_starts_on": "{value0}થી શરૂ",
@@ -186,6 +206,10 @@
   "ios_fast_completed": "પૂર્ણ"
  },
  "bn": {
+  "ios_update_available": "আপডেট পাওয়া যাচ্ছে",
+  "ios_update_now": "আপডেট করুন",
+  "ios_update_later": "পরে",
+  "ios_update_message": "অ্যাপ স্টোরে নতুন সংস্করণ পাওয়া যাচ্ছে।",
   "ios_premium_renewal_unknown": "প্রিমিয়াম চালু আছে। কবে নবীকরণ হবে দেখতে পরিচালনা খুলুন।",
   "ios_premium_current_until": "{value0} পর্যন্ত বর্তমান প্ল্যান",
   "ios_premium_starts_on": "{value0} থেকে শুরু",

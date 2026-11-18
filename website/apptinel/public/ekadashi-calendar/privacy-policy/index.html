@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="How Ekadashi Calendar on iPhone and iPad handles location, Calendar import, purchases and deletion.">
+  <title>Privacy Policy · Ekadashi Calendar</title>
+  <link rel="canonical" href="https://apptinel.com/ekadashi-calendar/privacy-policy/">
+  <link rel="icon" href="/assets/ekadashi-icon.png" type="image/png">
+  <script src="/assets/theme.js"></script>
+  <link rel="stylesheet" href="/assets/site.css">
+</head>
+<body class="ekadashi">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="frame site-header">
+    <a class="wordmark" href="/"><img src="/assets/apptinel-icon.png" width="30" height="30" alt="">Apptinel</a>
+    <nav aria-label="Main navigation">
+      <a href="/ekadashi-calendar/">Ekadashi Calendar</a>
+      <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" hidden>Light mode</button>
+    </nav>
+  </header>
+  <main id="main" class="frame legal">
+    <h1>Privacy Policy</h1>
+    <p class="quiet">Updated November 16, 2026 · Ekadashi Calendar for iPhone and iPad</p>
+    <p>Apptinel Software Private Limited publishes Ekadashi Calendar for iPhone and iPad. Contact <a href="mailto:contact@apptinel.com">contact@apptinel.com</a> for privacy questions. This policy covers the iOS and iPadOS app and these product pages. Availability of optional features depends on the installed version.</p>
+
+    <h2>Calendar, Journey and settings</h2>
+    <p>Your custom calendar entries, recent searches, vrat records and notes, progress, achievements, language, appearance, selected places and reminder preferences are stored on your device. The app shares the schedule and settings needed by its widgets with its widget extension through Apple’s App Group storage. Apple device backup or transfer may retain or restore eligible app data depending on your device and Apple Account settings. The core features work without a separate Ekadashi Calendar account. The app has no ad network or in-app analytics service.</p>
+
+    <h2>Location and Apple permissions</h2>
+    <ul>
+      <li><strong>Location.</strong> If you allow location while using the app, it uses Apple location services to suggest the city and calculate fasting and Panchang times. It uses your selected or last available place, with Chennai as the default. A detected place can be saved on the device. The app may use Apple’s geocoder to look up a readable city name. Apple may process the location for that lookup. The app does not keep a movement history or send your location to a developer server. You can pick a place without granting permission.</li>
+      <li><strong>Notifications.</strong> With your permission, the app schedules fasting, Parana and event reminders locally. You can change or turn off notification access in Settings.</li>
+      <li><strong>Photos and sharing.</strong> If you save a card, the app may request permission to add the image to Photos. When you share a card or recap, the system sends the content you select to the app or recipient you choose.</li>
+    </ul>
+
+    <h2>Optional Google Calendar import</h2>
+    <p>If you choose <strong>Import from Google Calendar</strong>, the app uses Google Sign-In and the read-only Google Calendar permission (<code>calendar.readonly</code>). It can receive an account identifier and email to identify the selected account, list calendar names and identifiers, and read event information in the calendars and date range you select, such as titles, descriptions, locations and scheduled times. The app uses this information to display events, support search and reminders, and remember which calendars you selected. Imported events and selections are stored on your device. The app does not create, edit or delete events in Google Calendar or send imported event content to a developer server.</p>
+    <p>To verify eligibility for a free import across devices, the app sends your Google ID token over HTTPS to <strong>Firebase Authentication</strong>. Google authenticates the account and returns an account identifier and session credentials. The app uses the identifier to check or create a <strong>Firestore</strong> record with the imported month and a timestamp. The record contains no event content or email address. Firebase Authentication processes the Google account information needed for sign-in. The registry exists to remember whether an account already used its free import.</p>
+    <p>Ekadashi Calendar’s use and transfer of information received from Google APIs follows the <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>, including the Limited Use requirements. We use Google Calendar data to provide the import and related features you request. We do not sell it or use it for advertising.</p>
+
+    <h2>App Store purchases</h2>
+    <p>Apple processes payments and provides purchase and entitlement information through StoreKit, such as the Premium product and subscription status when available. The app uses verified information to grant or restore Premium. We do not receive your card or bank details through the app. Apple describes its handling of account, payment and service data in the <a href="https://www.apple.com/legal/privacy/">Apple Privacy Policy</a>.</p>
+
+    <h2>Retention and deletion</h2>
+    <ul>
+      <li><strong>Local app data.</strong> You can delete your own entries in the app. Deleting the app removes its local copy. Eligible device backups or saved images may remain outside the app and can be managed in your backup settings or Photos.</li>
+      <li><strong>Google Calendar.</strong> In Calendar, <strong>Disconnect Google</strong> signs out and removes the imported copy and saved calendar selections for the connected account. You can also remove the app’s permission in your <a href="https://myaccount.google.com/connections">Google Account connections</a>. Revoking access at Google blocks future access. To remove a copy already stored on the device, use <strong>Disconnect Google</strong> or delete the app.</li>
+      <li><strong>Free-import record.</strong> The Firestore record is retained to enforce the one-time import across devices. Signing out or deleting the app does not remove it. To request deletion of the free-import record and the associated Firebase authentication record, email <a href="mailto:contact@apptinel.com">contact@apptinel.com</a>. We may ask for information to verify the request. Never send a password or Google security code.</li>
+      <li><strong>Support correspondence.</strong> If you email us, we receive your email address and the information you choose to provide. We keep the correspondence as needed to respond, follow up, or comply with legal obligations. You can contact us about access, correction or deletion requests.</li>
+    </ul>
+
+    <h2>This website</h2>
+    <p>Our hosting provider processes standard request information, such as your IP address, to deliver and protect the site. The appearance setting is stored in your browser and the city lookup runs there against public catalog data. The city lookup does not request your current location or send your search terms. These pages have no advertising trackers or analytics. External services apply their own privacy policies.</p>
+    <p>We post updates to this policy here and revise the date above.</p>
+  </main>
+  <footer class="frame site-footer">
+    <span>Ekadashi Calendar for iPhone and iPad</span>
+    <nav aria-label="Ekadashi Calendar support">
+      <a href="/ekadashi-calendar/privacy-policy/" aria-current="page">Privacy Policy</a>
+      <a href="/ekadashi-calendar/terms-of-service/">Terms of Service</a>
+      <a href="mailto:contact@apptinel.com">Support</a>
+    </nav>
+  </footer>
+</body>
+</html>

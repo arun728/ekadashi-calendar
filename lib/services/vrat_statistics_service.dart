@@ -153,6 +153,7 @@ class VratStatisticsService {
   static List<int> getAvailableYears({
     required List<EkadashiDate> occurrences,
     required List<VratHistory> history,
+    int? currentYear,
   }) {
     final years = <int>{};
     for (final occ in occurrences) {
@@ -166,7 +167,7 @@ class VratStatisticsService {
     }
     // Keep the device's current year selectable even when the bundled calendar
     // only contains older dates (or a history-only archive was just edited).
-    years.add(DateTime.now().year);
+    years.add(currentYear ?? DateTime.now().year);
     final sorted = years.toList()..sort((a, b) => b.compareTo(a));
     return sorted;
   }

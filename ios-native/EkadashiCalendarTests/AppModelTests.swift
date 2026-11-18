@@ -65,6 +65,54 @@ final class AppModelTests: XCTestCase {
         }
     }
 
+    func testHomeScopeAndCivilYearRollOverAcrossCitiesTraditionsAndLanguages() async throws {
+        let places: [(String, Double, Double, String)] = [
+            ("Chennai (IN)", 13.08784, 80.27847, "Asia/Kolkata"),
+            ("Kathmandu (NP)", 27.70169, 85.3206, "Asia/Kathmandu"),
+            ("London (GB)", 51.50853, -0.12574, "Europe/London"),
+            ("New York City (US)", 40.71427, -74.00597, "America/New_York"),
+            ("Los Angeles (US)", 34.05223, -118.24368, "America/Los_Angeles"),
+            ("Sydney (AU)", -33.86785, 151.20732, "Australia/Sydney"),
+        ]
+        for (label, latitude, longitude, zone) in places {
+            let city = PanchangCity(id: zone, label: label, latitude: latitude, longitude: longitude, timeZoneId: zone)
+            let cityJSON = String(decoding: try JSONEncoder().encode(city), as: UTF8.self)
+            for tradition in EkadashiTradition.allCases {
+                for language in Localizer.languages {
+                    let scenario = "\(zone) \(tradition) \(language)"
+                    let model = AppModel(store: InMemoryKeyValueStore([
+                        "has_launched": true, "language_code": language, AppModel.cityKey: cityJSON,
+                        AppModel.traditionKey: tradition.rawValue,
+                    ]))
+                    model.reload()
+                    await model.waitForLoad()
+                    let last = try XCTUnwrap(model.ekadashis.last { $0.date.year == 2026 }, scenario)
+                    let first = try XCTUnwrap(model.ekadashis.first { $0.date.year == 2027 }, scenario)
+                    let end = try XCTUnwrap(last.paranaEnd, scenario)
+                    let before = end.addingTimeInterval(-1)
+                    model.selectCurrentOccurrence(now: before)
+                    XCTAssertEqual(model.selectedYear, 2026, scenario)
+                    XCTAssertEqual(model.homeEkadashis[model.homeIndex].occurrenceUid, last.occurrenceUid, scenario)
+                    model.refreshCurrentOccurrence(previousNow: before, now: end)
+                    XCTAssertEqual(model.selectedYear, 2027, scenario)
+                    XCTAssertEqual(model.currentYear, 2026, scenario)
+                    XCTAssertEqual(model.homeEkadashis[model.homeIndex].occurrenceUid, first.occurrenceUid, scenario)
+
+                    model.selectCurrentOccurrence(now: before)
+                    model.showAllYearsOnHome()
+                    XCTAssertEqual(model.homeEkadashis.count, model.ekadashis.count, scenario)
+                    model.refreshCurrentOccurrence(previousNow: before, now: end)
+                    XCTAssertTrue(model.homeShowsAllYears, scenario)
+                    XCTAssertEqual(model.homeEkadashis[model.homeIndex].occurrenceUid, first.occurrenceUid, scenario)
+
+                    let midnight = city.zone.utc(CivilDate(2027, 1, 1))
+                    model.refreshCurrentOccurrence(previousNow: midnight.addingTimeInterval(-1), now: midnight)
+                    XCTAssertEqual(model.currentYear, 2027, scenario)
+                }
+            }
+        }
+    }
+
     #if DEBUG
     func testDebugClockIsPausedOrScaledAndNeverUsesTheProductionSnapshotKey() throws {
         defer { WidgetClock.set(nil) }

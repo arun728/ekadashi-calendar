@@ -86,7 +86,7 @@ struct CalendarView: View {
         }
         .toolbar {
             AppToolbarItem(placement: .topBarLeading) {
-                Button(model.t("today")) { focus(model.today) }
+                Button(model.t("today")) { focus(model.today, updateHomeYear: true) }
                     .disabled(selected == model.today && month == model.today.firstOfMonth)
                     .accessibilityIdentifier("calendar_today")
             }
@@ -103,7 +103,7 @@ struct CalendarView: View {
         }
         .sheet(item: $editing) { EntryEditorView(request: $0) }
         .sheet(isPresented: $pickingMonth) {
-            PanchangMonthPicker(month: month, years: years.first.map { $0...(years.last ?? $0) }) { focusMonth($0) }
+            PanchangMonthPicker(month: month, years: years) { focusMonth($0) }
                 .presentationDetents([.height(320)])
         }
         .onAppear { visible = true; focusInitial() }.onDisappear { visible = false }
@@ -117,8 +117,6 @@ struct CalendarView: View {
                 do { try await Task.sleep(for: .seconds(delay)) } catch { break }
             }
         }
-        // Home's year menu and Calendar stay on the same year.
-        .onChange(of: month) { _, value in model.calendarShowsYear(value.year) }
         .onChange(of: model.calendarFocus) { _, date in
             guard let date else { return }
             hasFocused = true
@@ -233,7 +231,7 @@ struct CalendarView: View {
 
     // MARK: Navigation
 
-    /// Opens on the year chosen on Home: today in this year, else its January.
+    /// The initial Calendar view shows today or a requested date.
     private func focusInitial() {
         if let pending = model.calendarFocus {
             hasFocused = true
@@ -241,24 +239,24 @@ struct CalendarView: View {
             model.calendarFocus = nil
             return
         }
-        guard !hasFocused || month.year != model.selectedYear else { return }
+        guard !hasFocused else { return }
         hasFocused = true
-        let today = model.today
-        focus(today.year == model.selectedYear ? today : CivilDate(model.selectedYear, 1, 1))
+        focus(model.today)
     }
 
     /// Today, clamped to the data years.
-    private func focus(_ date: CivilDate) {
+    private func focus(_ date: CivilDate, updateHomeYear: Bool = false) {
         let target = min(max(date, firstDay), lastDay)
         selected = target
         forward = target.firstOfMonth >= month
         withAnimation(Self.monthSlide) { month = target.firstOfMonth }
+        if updateHomeYear { model.calendarShowsYear(target.year) }
     }
 
     /// A picked month selects today when it is this month, else its first day.
     private func focusMonth(_ picked: CivilDate) {
         let today = model.today
-        focus(picked.firstOfMonth == today.firstOfMonth ? today : picked.firstOfMonth)
+        focus(picked.firstOfMonth == today.firstOfMonth ? today : picked.firstOfMonth, updateHomeYear: true)
     }
 
     /// A new month keeps the day of the month selected (its last day when
@@ -269,6 +267,7 @@ struct CalendarView: View {
         selected = min(max(selected.steppingMonths(months), firstDay), lastDay)
         forward = months > 0
         withAnimation(Self.monthSlide) { month = target }
+        model.calendarShowsYear(target.year)
     }
 
     private func markers(for day: CivilDate, _ list: [CalendarEntry]) -> [Color] {
