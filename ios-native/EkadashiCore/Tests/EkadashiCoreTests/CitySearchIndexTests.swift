@@ -17,16 +17,20 @@ final class CitySearchIndexTests: XCTestCase {
     }
 
     func testEveryKeystrokeIsFastOnceTheIndexIsBuilt() {
+        var slowest: UInt64 = 0
         for language in ["en", "hi", "ta", "te", "gu", "bn"] {
             let index = PanchangCityCatalog.shared.searchIndex(language: language)
             for query in ["சென", "ஸான்", "zzq", "मुं", "che"] {
-                let start = Date()
+                // Search is synchronous. Measure its work on this thread so
+                // Simulator and emulator jobs cannot count as search time.
+                let start = clock_gettime_nsec_np(CLOCK_THREAD_CPUTIME_ID)
                 _ = index.search(query, limit: 20)
-                // Was 2,000-2,500 ms for Tamil; a keystroke must stay well
-                // under a frame budget's worth of work on this machine.
-                XCTAssertLessThan(Date().timeIntervalSince(start), 0.1, "\(language) \(query)")
+                let elapsed = clock_gettime_nsec_np(CLOCK_THREAD_CPUTIME_ID) - start
+                XCTAssertLessThan(elapsed, 100_000_000, "\(language) \(query)")
+                slowest = max(slowest, elapsed)
             }
         }
+        print("City search maximum thread time: \(Double(slowest) / 1_000_000) ms")
     }
 
     func testCitiesAreFoundByTheirNameInTheAppLanguage() {
