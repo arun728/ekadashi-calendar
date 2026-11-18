@@ -7,9 +7,9 @@ import '../support/premium_fixture.dart';
 /// Arun (16 Nov 2026): when a subscription has expired, remove the Google
 /// events Premium synced at once; when in doubt (Play may be holding the
 /// subscription while it retries a failed payment), keep them, for at most
-/// 7 days. Play gives the device no expiry signal, so what Play last showed
+/// 57 days. Play gives the device no expiry signal, so what Play last showed
 /// decides: cancelled then gone, or Lifetime gone, is confirmed; renewing
-/// then gone waits 7 days.
+/// then gone waits 57 days.
 void main() {
   late DateTime now;
 
@@ -39,7 +39,7 @@ void main() {
     },
   );
 
-  test('a renewing subscription that disappears is kept for 7 days', () async {
+  test('a renewing subscription that disappears is kept for 57 days', () async {
     final source = PremiumFixture()..renewing = true;
     final premium = service(source);
     await premium.refresh();
@@ -51,22 +51,24 @@ void main() {
       isFalse,
       reason: 'possible account hold',
     );
-    now = now.add(const Duration(days: 6, hours: 23));
+    now = now.add(const Duration(days: 56, hours: 23));
     await premium.refresh();
     expect(premium.canRemovePremiumImports, isFalse);
     now = now.add(const Duration(hours: 1));
     await premium.refresh();
     expect(premium.canRemovePremiumImports, isTrue);
-    expect(PremiumService.accountHoldWindow, const Duration(days: 7));
+    expect(PremiumService.accountHoldWindow, const Duration(days: 57));
   });
 
-  test('coming back within 7 days restarts the clock', () async {
+  test('coming back within 57 days restarts the clock', () async {
     final source = PremiumFixture()..renewing = true;
     final premium = service(source);
     await premium.refresh();
     source.premium = false;
     await premium.refresh();
-    now = now.add(const Duration(days: 5));
+    now = now.add(const Duration(days: 56));
+    await premium.refresh();
+    expect(premium.canRemovePremiumImports, isFalse);
     source.premium = true;
     await premium.refresh();
     expect(premium.canRemovePremiumImports, isFalse);
@@ -80,7 +82,7 @@ void main() {
       isFalse,
       reason: 'only 5 days since the second absence began',
     );
-    now = now.add(const Duration(days: 2));
+    now = now.add(const Duration(days: 52));
     await premium.refresh();
     expect(premium.canRemovePremiumImports, isTrue);
   });
@@ -116,29 +118,29 @@ void main() {
       isFalse,
       reason: 'the absence starts when Play first answers without it',
     );
-    now = now.add(const Duration(days: 7));
+    now = now.add(const Duration(days: 57));
     await premium.refresh();
     expect(premium.canRemovePremiumImports, isTrue);
   });
 
-  test('the 7-day clock survives a restart', () async {
+  test('the 57-day clock survives a restart', () async {
     final source = PremiumFixture()..renewing = true;
     final first = service(source);
     await first.refresh();
     source.premium = false;
     await first.refresh();
-    now = now.add(const Duration(days: 7));
+    now = now.add(const Duration(days: 57));
     final restarted = service(source);
     await restarted.refresh();
     expect(restarted.canRemovePremiumImports, isTrue);
   });
 
-  test('with no history (a reinstall), an absence waits 7 days', () async {
+  test('with no history (a reinstall), an absence waits 57 days', () async {
     final source = PremiumFixture()..premium = false;
     final premium = service(source);
     await premium.refresh();
     expect(premium.canRemovePremiumImports, isFalse);
-    now = now.add(const Duration(days: 7));
+    now = now.add(const Duration(days: 57));
     await premium.refresh();
     expect(premium.canRemovePremiumImports, isTrue);
   });

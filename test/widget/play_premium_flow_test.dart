@@ -632,7 +632,8 @@ void main() {
       CalendarScreen.freeSyncMonthKey: '2026-10',
     });
     final source = PremiumFixture()..purchasedAt = DateTime(2026, 9, 10);
-    final premium = PremiumService(entitlements: source);
+    var now = DateTime(2026, 10, 15);
+    final premium = PremiumService(entitlements: source, now: () => now);
     addTearDown(premium.dispose);
     await premium.refresh();
     final repo = MemoryCalendarRepository();
@@ -650,6 +651,9 @@ void main() {
     );
     // Play returns no purchase during account hold or after expiry.
     source.premium = false;
+    await premium.refresh();
+    await tester.pumpAndSettle();
+    now = now.add(const Duration(days: 56));
     await premium.refresh();
     await tester.pumpAndSettle();
     expect(
