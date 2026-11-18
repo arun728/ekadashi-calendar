@@ -39,6 +39,24 @@ final class CitySearchIndexTests: XCTestCase {
         XCTAssertTrue(PanchangCityCatalog.shared.search("reykjavik").contains { $0.label.hasPrefix("Reykjav") })
     }
 
+    func testMatchRankingKeepsTheBestPositionInEachName() {
+        for (query, name, expected) in [
+            ("che", "chennai", 0),
+            ("che", "anche chen", 1),
+            ("che", "anche-chen", 1),
+            ("che", "anche(chen", 1),
+            ("che", "anche", 2),
+            ("சென", "புது சென்னை", 1),
+            ("मुं", "मुंबई", 0),
+            ("aba", "aaba", 2),
+            ("che", "ch", 3),
+            ("", "chennai", 3),
+        ] {
+            XCTAssertEqual(CitySearchIndex.tier(of: Array(query.utf8), in: Array(name.utf8)),
+                           expected, "\(query) in \(name)")
+        }
+    }
+
     func testShortQueriesSearchNothing() {
         XCTAssertNil(CitySearchIndex.query(" c "))
         XCTAssertEqual(CitySearchIndex.query(" Che "), "che")
