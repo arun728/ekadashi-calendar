@@ -2053,10 +2053,19 @@ final class ScreenshotTests: XCTestCase {
         let reminder = element("event_reminder_row_calendar:custom")
         XCTAssertTrue(reveal(reminder) || reveal(reminder, upwards: true), "saved reminder row")
         snap("13-notifications")
-        reminder.tap()
-        XCTAssertTrue(element("event_reminder_save").waitForExistence(timeout: 5))
+        // After saving, the newly inserted row can still be under the edge
+        // of the floating tab bar or scrolling into position. Re-resolve it
+        // before retrying a tap that didn't show the editor.
+        let editSave = element("event_reminder_save")
+        for _ in 0..<2 {
+            XCTAssertTrue(reminder.isEnabled)
+            reminder.tap()
+            if editSave.waitForExistence(timeout: 5) { break }
+            XCTAssertTrue(reveal(reminder, upwards: true), "saved reminder row after scrolling")
+        }
+        XCTAssertTrue(editSave.exists, "The saved reminder opens for editing")
         app.buttons["Cancel"].firstMatch.tap()
-        XCTAssertTrue(element("event_reminder_row_calendar:custom").waitForExistence(timeout: 5))
+        XCTAssertTrue(reminder.waitForExistence(timeout: 5), "Cancelling edit keeps the saved reminder")
     }
 
     /// A notification shown while the app is open must not crash it (the
