@@ -49,7 +49,7 @@
           "localizations": [
             {
               "description": "Ekadashi Premium, billed yearly",
-              "displayName": "Ekadashi Premium",
+              "displayName": "Ekadashi Premium - Yearly",
               "locale": "en_US"
             }
           ],
@@ -70,7 +70,7 @@
           "localizations": [
             {
               "description": "Ekadashi Premium, billed monthly",
-              "displayName": "Ekadashi Premium",
+              "displayName": "Ekadashi Premium - Monthly",
               "locale": "en_US"
             }
           ],
