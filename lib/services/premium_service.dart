@@ -58,9 +58,10 @@ class PremiumService extends ChangeNotifier {
   /// expired. Play drops a purchase both during account hold (a failed
   /// renewal it is still retrying) and after expiry, and tells the device
   /// neither, so a subscription that was renewing when last seen is kept
-  /// this long (Arun, 16 Nov 2026). Set Play's account hold to 7 days to make
-  /// it exact.
-  static const accountHoldWindow = Duration(days: 7);
+  /// this long. Both live base plans use a 3-day grace period and Play's
+  /// default account hold (60 days minus grace). Keep this window in sync
+  /// with Play Console if either plan's recovery periods change.
+  static const accountHoldWindow = Duration(days: 57);
 
   static const _historyRenewingKey = 'premium_history_subscription_renewing';
   static const _historyLifetimeKey = 'premium_history_lifetime_owned';
