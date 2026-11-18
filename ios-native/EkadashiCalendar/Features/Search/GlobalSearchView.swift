@@ -16,7 +16,9 @@ struct GlobalSearchView: View {
     @State private var suggestions: [String] = []
     @State private var recents: [String] = []
     @State private var category: SearchCategory?
-    @State private var year: Int?
+    @State private var pickedYear: Int?
+    @State private var usesDefaultYear = true
+    private var year: Int? { usesDefaultYear ? model.currentYear : pickedYear }
     @State private var index: UnifiedSearch?
     @State private var loadingObservances = false
     @State private var debounce: Task<Void, Never>?
@@ -24,7 +26,7 @@ struct GlobalSearchView: View {
     @State private var pushed: SearchItem?
 
     private func hasInput(_ page: SearchCategory?) -> Bool {
-        !searched.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || page != nil || year != nil
+        !searched.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || page != nil || (!usesDefaultYear && year != nil)
     }
 
     var body: some View {
@@ -79,16 +81,17 @@ struct GlobalSearchView: View {
                 GlassGroup(spacing: 8) {
                     HStack(spacing: 8) {
                         Menu {
-                            Button(model.t("search_all_years")) { year = nil; run() }
-                            ForEach(model.enabledYears, id: \.self) { value in
-                                Button(String(value)) { year = value; run() }
+                            Button(model.t("search_all_years")) { selectYear(nil) }
+                            ForEach(Set(model.enabledYears + [model.currentYear]).sorted(by: >), id: \.self) { value in
+                                Button(String(value)) { selectYear(value) }
                             }
                         } label: {
-                            Label(year.map(String.init) ?? model.t("year"), systemImage: AppSymbol.year)
+                            Label(year.map(String.init) ?? model.t("search_all_years"), systemImage: AppSymbol.year)
                                 .font(.subheadline.weight(year == nil ? .regular : .semibold))
                                 .padding(.horizontal, 14)
                                 .padding(.vertical, 8)
                         }
+                        .menuOrder(.fixed)
                         .tint(year == nil ? .primary : Theme.teal)
                         .glassPanel(cornerRadius: 18)
                         .accessibilityIdentifier("search_year_selector")
@@ -213,8 +216,15 @@ struct GlobalSearchView: View {
         query = session.query
         searched = session.query
         category = session.category
-        year = session.year
+        pickedYear = session.year
+        usesDefaultYear = session.usesDefaultYear
         debounce?.cancel()
+        run()
+    }
+
+    private func selectYear(_ value: Int?) {
+        pickedYear = value
+        usesDefaultYear = false
         run()
     }
 
@@ -255,13 +265,19 @@ struct GlobalSearchView: View {
 
     private func results(_ page: SearchCategory?) -> [SearchItem] {
         guard let index else { return [] }
-        let key = SearchPageCache.Key(query: searched, category: page, year: year, index: ObjectIdentifier(index))
-        return cache.results(key) { index.search(searched, category: page, year: year, today: model.today) }
+        let key = SearchPageCache.Key(query: searched, category: page, year: year, usesDefaultYear: usesDefaultYear,
+                                      index: ObjectIdentifier(index))
+        return cache.results(key) {
+            index.search(searched, category: page, year: usesDefaultYear ? nil : pickedYear,
+                         defaultYear: usesDefaultYear ? model.currentYear : nil, today: model.today)
+        }
     }
 
     // MARK: Opening results
 
-    private var session: SearchSession { SearchSession(query: searched, category: category, year: year) }
+    private var session: SearchSession {
+        SearchSession(query: searched, category: category, year: year, usesDefaultYear: usesDefaultYear)
+    }
 
     private func isLocked(_ item: SearchItem) -> Bool { item.requiresPremium && !model.premium.isPremium }
 
@@ -309,6 +325,7 @@ final class SearchPageCache {
         let query: String
         let category: SearchCategory?
         let year: Int?
+        let usesDefaultYear: Bool
         let index: ObjectIdentifier
     }
 

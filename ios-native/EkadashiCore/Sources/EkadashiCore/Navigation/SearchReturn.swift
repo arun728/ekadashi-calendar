@@ -5,11 +5,13 @@ public struct SearchSession: Equatable, Sendable {
     public var query: String
     public var category: SearchCategory?
     public var year: Int?
+    public var usesDefaultYear: Bool
 
-    public init(query: String, category: SearchCategory?, year: Int?) {
+    public init(query: String, category: SearchCategory?, year: Int?, usesDefaultYear: Bool = false) {
         self.query = query
         self.category = category
         self.year = year
+        self.usesDefaultYear = usesDefaultYear
     }
 }
 

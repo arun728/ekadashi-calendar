@@ -158,6 +158,7 @@ class UnifiedSearch {
     String raw, {
     SearchCategory? category,
     int? year,
+    int? defaultYear,
     required DateTime today,
     int limit = 300,
   }) {
@@ -169,6 +170,13 @@ class UnifiedSearch {
     );
     bool allowed(SearchItem item) {
       if (query.year != null && item.date?.year != query.year) return false;
+      final date = item.date;
+      if (query.year == null &&
+          defaultYear != null &&
+          date != null &&
+          date.year != defaultYear) {
+        return false;
+      }
       if (query.category != null && !item.categories.contains(query.category)) {
         return false;
       }
@@ -177,7 +185,9 @@ class UnifiedSearch {
 
     final day = DateTime.utc(today.year, today.month, today.day);
     if (query.isListing) {
-      if (query.year == null && query.category == null) return const [];
+      if (query.year == null && defaultYear == null && query.category == null) {
+        return const [];
+      }
       final listed = [
         for (final entry in _prepared)
           if (allowed(entry.item) &&

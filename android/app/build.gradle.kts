@@ -114,6 +114,8 @@ dependencies {
     // NATIVE HYBRID ARCHITECTURE DEPENDENCIES (v2.0)
     // ============================================================
 
+    implementation("com.google.android.play:app-update:2.1.0")
+
     // Location - Native FusedLocationProviderClient (replaces Geolocator plugin)
     implementation("com.google.android.gms:play-services-location:21.0.1")
 

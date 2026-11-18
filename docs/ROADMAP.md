@@ -47,6 +47,7 @@ My Panchang and daily Rasi Palan are not included in this Journey delivery.
 | 9 | Swipeable sub-sections and back to search | Done | Done (`feature/android-v2`) |
 | 10 | Gujarati and Bengali | Done | Done (`feature/android-v2`) |
 | 11 | Ekadashis from the Panchang engine per city, tradition and year menus on Home, city search on Home, free share card | Draft (`feature/engine-ekadashi`, PR #22) | Ported (same PR) |
+| v2 release follow-up | Current-year defaults, year rollover and store update prompts | Draft (PR #45) | Ported (same PR) |
 
 ## Phase 0: housekeeping
 

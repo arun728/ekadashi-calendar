@@ -39,7 +39,9 @@ class HomeControls extends StatelessWidget {
     final language = lang.currentLocale.languageCode;
     final current = AppLanguage.named(language);
     final languageName = current.nativeName;
-    final yearText = '${settings.year}';
+    final yearText = settings.homeShowsAllYears
+        ? lang.translate('search_all_years')
+        : '${settings.year}';
     return LayoutBuilder(
       builder: (context, constraints) {
         // The right column never takes more than half the row.
@@ -68,7 +70,7 @@ class HomeControls extends StatelessWidget {
             const SizedBox(height: spacing),
             row(
               _traditionMenu(context, settings, lang),
-              _yearMenu(context, settings, lang, languageName),
+              _yearMenu(context, settings, lang, languageName, yearText),
             ),
           ],
         );
@@ -187,23 +189,35 @@ class HomeControls extends StatelessWidget {
     EkadashiSettings settings,
     LanguageService lang,
     String languageName,
+    String yearText,
   ) => PopupMenuButton<int>(
     key: const Key('home_year_menu'),
     tooltip: lang.translate('year'),
-    onSelected: settings.setYear,
+    onSelected: (value) {
+      if (value == 0) {
+        settings.showAllYearsOnHome();
+      } else {
+        settings.setYear(value);
+      }
+    },
     // The menu overlays the app; it is not a page in Home's tab stack.
     useRootNavigator: true,
     color: IosColors.sheet(context),
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
     offset: const Offset(0, pillHeight),
     itemBuilder: (_) => [
-      for (final year in settings.years)
-        _item(year, '$year', year == settings.year),
+      _item(0, lang.translate('search_all_years'), settings.homeShowsAllYears),
+      for (final year in settings.years.reversed)
+        _item(
+          year,
+          '$year',
+          !settings.homeShowsAllYears && year == settings.year,
+        ),
     ],
     child: _Pill(
       centered: true,
       label: _reserving(
-        shown: ('${settings.year}', AppIcons.homeYear),
+        shown: (yearText, AppIcons.homeYear),
         reserved: (languageName, AppIcons.homeLanguage),
       ),
     ),

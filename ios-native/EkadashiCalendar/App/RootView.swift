@@ -30,6 +30,7 @@ struct RootView: View {
                 .tabItem { Label(model.t("settings"), systemImage: AppSymbol.tabSettings) }
                 .tag(AppTab.settings)
         }
+        .modifier(AppUpdatePrompt())
         .tint(Theme.teal)
         .modifier(TabBarMinimize())
         .sheet(isPresented: $model.showSearch) {
@@ -60,7 +61,8 @@ struct RootView: View {
                 model.refreshCurrentOccurrence(previousNow: model.lifecycleLastNow ?? now, now: now)
                 model.lifecycleLastNow = now
                 let end = model.ekadashis.compactMap(\.paranaEnd).first { $0 > now }
-                var delay = min(3600, max(0.05, end?.timeIntervalSince(now) ?? 3600))
+                let midnight = model.scheduleZone.utc(model.scheduleZone.wallClock(now).date.adding(days: 1))
+                var delay = min(3600, max(0.05, min(midnight, end ?? midnight).timeIntervalSince(now)))
                 #if DEBUG
                 if DisplayClock.isSimulationSession { delay = 0.25 }
                 #endif

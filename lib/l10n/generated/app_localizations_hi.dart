@@ -154,6 +154,27 @@ class AppLocalizationsHi extends AppLocalizations {
   String get about => 'बारे में';
 
   @override
+  String get app_update_available => 'अपडेट उपलब्ध है';
+
+  @override
+  String get app_update_now => 'अपडेट करें';
+
+  @override
+  String get app_update_later => 'बाद में';
+
+  @override
+  String get app_update_downloading => 'अपडेट डाउनलोड हो रहा है…';
+
+  @override
+  String get app_update_downloaded => 'अपडेट डाउनलोड हो गया है।';
+
+  @override
+  String get app_update_restart => 'अपडेट के लिए फिर से शुरू करें';
+
+  @override
+  String get app_update_failed => 'अपडेट डाउनलोड या इंस्टॉल नहीं हो सका।';
+
+  @override
   String get version => 'संस्करण';
 
   @override

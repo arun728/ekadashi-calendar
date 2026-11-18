@@ -6,7 +6,10 @@ import 'package:provider/provider.dart';
 import '../../l10n/app_language.dart';
 import '../../models/vrat_tracker_models.dart';
 import 'journey_rewards_views.dart';
+import '../../services/display_clock.dart';
+import '../../services/ekadashi_lifecycle.dart';
 import '../../services/ekadashi_service.dart';
+import '../../services/ekadashi_settings.dart';
 import '../../services/language_service.dart';
 import '../../services/premium_service.dart';
 import '../../services/vrat_recording.dart';
@@ -45,7 +48,7 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
 
   final _pages = PageController();
   var _section = _JourneySection.overview;
-  int _selectedYear = DateTime.now().year;
+  int? _selectedYear;
   bool _allYears = false;
   ObservanceStatus? _historyStatusFilter;
 
@@ -140,15 +143,17 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
       VratStatisticsService.getAvailableYears(
         occurrences: widget.ekadashiList,
         history: tracker.getAllRecords(),
+        currentYear: _currentYear,
       );
 
-  int _coherentSelectedYear(List<int> availableYears) {
-    if (availableYears.contains(_selectedYear)) return _selectedYear;
-    if (availableYears.contains(DateTime.now().year)) {
-      return DateTime.now().year;
-    }
-    return availableYears.first;
-  }
+  int get _currentYear =>
+      context.watch<EkadashiSettings?>()?.currentYear ??
+      EkadashiLifecycle.localDay(
+        DisplayClock.now(),
+        widget.currentTimezone,
+      ).year;
+
+  int get _year => _selectedYear ?? _currentYear;
 
   String _yearTitle(LanguageService lang, int year) =>
       _allYears ? lang.translate('search_all_years') : '$year';
@@ -177,7 +182,7 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
       widget.ekadashiList,
       timezone: widget.currentTimezone,
     );
-    final selectedYear = _coherentSelectedYear(_years(tracker));
+    final selectedYear = _year;
     final summary = fullSummary.scoped(toYear: _allYears ? null : selectedYear);
     final currentStreak = summary.currentStreak,
         longestStreak = summary.longestStreak;
@@ -342,7 +347,7 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
   // ==================== HISTORY ====================
   Widget _buildHistoryTab(LanguageService lang, VratTrackerService tracker) {
     final availableYears = _years(tracker);
-    final selectedYear = _coherentSelectedYear(availableYears);
+    final selectedYear = _year;
     final filtered = widget.ekadashiList.where((e) {
       if (!_allYears && e.date.year != selectedYear) return false;
       if (_historyStatusFilter == null) return true;
@@ -607,7 +612,7 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
   // ==================== STATISTICS ====================
   Widget _buildStatisticsTab(LanguageService lang, VratTrackerService tracker) {
     final availableYears = _years(tracker);
-    final selectedYear = _coherentSelectedYear(availableYears);
+    final selectedYear = _year;
     final stats = _periodStats(tracker, selectedYear);
     final summary = tracker
         .journey(widget.ekadashiList, timezone: widget.currentTimezone)
@@ -788,15 +793,13 @@ class _VratTrackerScreenState extends State<VratTrackerScreen> {
             child: _yearMenu(
               const Key('journey_achievements_year'),
               _years(tracker),
-              _coherentSelectedYear(_years(tracker)),
+              _year,
             ),
           ),
         ),
         Expanded(
           child: JourneyBadgeCollection(
-            selectedYear: _allYears
-                ? null
-                : _coherentSelectedYear(_years(tracker)),
+            selectedYear: _allYears ? null : _year,
             years: _years(tracker),
             summary: tracker.journey(
               widget.ekadashiList,

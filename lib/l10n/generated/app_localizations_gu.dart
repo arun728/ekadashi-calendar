@@ -154,6 +154,27 @@ class AppLocalizationsGu extends AppLocalizations {
   String get about => 'વિશે';
 
   @override
+  String get app_update_available => 'અપડેટ ઉપલબ્ધ છે';
+
+  @override
+  String get app_update_now => 'અપડેટ કરો';
+
+  @override
+  String get app_update_later => 'પછી';
+
+  @override
+  String get app_update_downloading => 'અપડેટ ડાઉનલોડ થઈ રહ્યું છે…';
+
+  @override
+  String get app_update_downloaded => 'અપડેટ ડાઉનલોડ થઈ ગયું છે.';
+
+  @override
+  String get app_update_restart => 'અપડેટ માટે ફરી શરૂ કરો';
+
+  @override
+  String get app_update_failed => 'અપડેટ ડાઉનલોડ અથવા ઇન્સ્ટૉલ થઈ શક્યું નથી.';
+
+  @override
   String get version => 'આવૃત્તિ';
 
   @override

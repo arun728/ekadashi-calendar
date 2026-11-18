@@ -154,6 +154,28 @@ class AppLocalizationsTa extends AppLocalizations {
   String get about => 'பற்றி';
 
   @override
+  String get app_update_available => 'புதுப்பிப்பு கிடைக்கிறது';
+
+  @override
+  String get app_update_now => 'புதுப்பிக்கவும்';
+
+  @override
+  String get app_update_later => 'பிறகு';
+
+  @override
+  String get app_update_downloading => 'புதுப்பிப்பு பதிவிறக்கப்படுகிறது…';
+
+  @override
+  String get app_update_downloaded => 'புதுப்பிப்பு பதிவிறக்கப்பட்டது.';
+
+  @override
+  String get app_update_restart => 'புதுப்பிக்க மீண்டும் தொடங்கவும்';
+
+  @override
+  String get app_update_failed =>
+      'புதுப்பிப்பைப் பதிவிறக்கவோ நிறுவவோ முடியவில்லை.';
+
+  @override
   String get version => 'பதிப்பு';
 
   @override
