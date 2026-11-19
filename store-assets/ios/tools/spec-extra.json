@@ -1,0 +1,185 @@
+[
+ {
+  "out": "11-search-free-vs-premium",
+  "src": "free-12a-search-filter-1.png",
+  "hue": "gold",
+  "tag": null,
+  "title": "Search every<br><em>festival</em>",
+  "sub": "Premium unlocks every result and date",
+  "pair": [
+   {
+    "src": "free-12a-search-filter-1.png",
+    "label": "Free",
+    "x": -10,
+    "y": 930,
+    "w": 640,
+    "rotate": -3
+   },
+   {
+    "src": "prem-50-search-diwali-filter-1.png",
+    "label": "Premium",
+    "x": 642,
+    "y": 930,
+    "w": 640,
+    "rotate": 3
+   }
+  ]
+ },
+ {
+  "out": "12-any-city-in-the-world",
+  "src": "free-04-city-search.png",
+  "hue": "indigo",
+  "tag": "free",
+  "title": "Any city<br>in the <em>world</em>",
+  "sub": "Dates and times for where you are",
+  "phone": {
+   "y": 960,
+   "w": 980
+  }
+ },
+ {
+  "out": "13-smarta-or-vaishnava",
+  "src": "free-03-tradition-menu.png",
+  "hue": "teal",
+  "tag": "free",
+  "title": "<em>Smarta</em> or<br><em>Vaishnava</em>",
+  "sub": "Fasting dates for your tradition",
+  "phone": {
+   "y": 960,
+   "w": 980
+  },
+  "callouts": [
+   {
+    "crop": [
+     55,
+     540,
+     760,
+     320
+    ],
+    "pop": 1.35,
+    "rotate": -2,
+    "radius": 44
+   }
+  ]
+ },
+ {
+  "out": "14-panchang-free-preview",
+  "src": "free-10-panchang-preview.png",
+  "hue": "teal",
+  "tag": "free",
+  "title": "Free <em>Ekadashis</em>,<br>Premium festivals",
+  "sub": "See every key day of the month",
+  "phone": {
+   "y": 960,
+   "w": 980
+  }
+ },
+ {
+  "out": "15-festival-reminders",
+  "src": "prem-53-reminders-list.png",
+  "hue": "gold",
+  "tag": "premium",
+  "title": "Reminders for<br>every <em>festival</em>",
+  "sub": "Free for your own and Google events",
+  "phone": {
+   "y": 960,
+   "w": 980
+  }
+ },
+ {
+  "out": "16-reminders-free",
+  "src": "free-31-reminder-after-diwali.png",
+  "hue": "teal",
+  "tag": "free",
+  "title": "Never forget<br>a <em>festival</em>",
+  "sub": "Festival reminders unlock with Premium",
+  "phone": {
+   "y": 960,
+   "w": 980
+  }
+ },
+ {
+  "out": "17-first-three-vrats-free",
+  "src": "free-21-journey-three.png",
+  "hue": "lotus",
+  "tag": "free",
+  "title": "Your first three<br>vrats are <em>free</em>",
+  "sub": "Record, earn points and keep your streak",
+  "phone": {
+   "y": 960,
+   "w": 980
+  }
+ },
+ {
+  "out": "18-vrat-paywall",
+  "src": "free-22-vrat-paywall.png",
+  "hue": "gold",
+  "tag": "premium",
+  "title": "Keep recording<br>with <em>Premium</em>",
+  "sub": "Monthly or Yearly",
+  "phone": {
+   "y": 960,
+   "w": 980
+  }
+ },
+ {
+  "out": "19-plans",
+  "src": "free-14-plans.png",
+  "hue": "gold",
+  "tag": "premium",
+  "title": "Unlock <em>everything</em>",
+  "sub": "Google sync, unlimited vrats, full Panchang",
+  "phone": {
+   "y": 800,
+   "w": 980
+  }
+ },
+ {
+  "out": "20-premium-member",
+  "src": "prem-41-plans-monthly-owned.png",
+  "hue": "gold",
+  "tag": "premium",
+  "title": "You have<br><em>Premium</em>",
+  "sub": "Switch plans any time",
+  "phone": {
+   "y": 960,
+   "w": 980
+  }
+ },
+ {
+  "out": "21-journey-statistics",
+  "src": "prem-03-journey-statistics.png",
+  "hue": "lotus",
+  "tag": "premium",
+  "title": "See your year<br>at a <em>glance</em>",
+  "sub": "Observed, partial, missed and streaks",
+  "phone": {
+   "y": 960,
+   "w": 980
+  }
+ },
+ {
+  "out": "22-calendar-holi",
+  "src": "free-07f-calendar-holi.png",
+  "hue": "teal",
+  "tag": null,
+  "title": "Holi, Diwali<br>and every <em>Ekadashi</em>",
+  "sub": "All in one calendar",
+  "phone": {
+   "y": 960,
+   "w": 980
+  }
+ },
+ {
+  "out": "23-rashi",
+  "src": "prem-14-panchang-rashi.png",
+  "hue": "gold",
+  "tag": "premium",
+  "title": "Sun and Moon<br><em>Rashi</em>",
+  "sub": "Nakshatra and pada, every day",
+  "phone": {
+   "y": 960,
+   "w": 980
+  }
+ }
+]

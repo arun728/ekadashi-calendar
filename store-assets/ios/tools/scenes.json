@@ -1,0 +1,107 @@
+[
+ {
+  "clip": "testV1Free.mov",
+  "start": 33.3,
+  "dur": 2.8,
+  "speed": 1.1,
+  "tag": "free",
+  "hue": "teal",
+  "title": "Every <em>Ekadashi</em> of 2027"
+ },
+ {
+  "clip": "testV1Free.mov",
+  "start": 44.2,
+  "dur": 3.2,
+  "speed": 1.75,
+  "tag": "free",
+  "hue": "indigo",
+  "title": "In <em>your</em> language"
+ },
+ {
+  "clip": "testV1Free.mov",
+  "start": 92.4,
+  "dur": 2.4,
+  "speed": 1.5,
+  "tag": "free",
+  "hue": "teal",
+  "title": "Share with <em>family</em>"
+ },
+ {
+  "clip": "testV1Free.mov",
+  "start": 122.8,
+  "dur": 2.6,
+  "speed": 1.15,
+  "hue": "teal",
+  "title": "<em>Festivals</em> in your calendar"
+ },
+ {
+  "clip": "testV3YearlyPanchang.mov",
+  "start": 43.5,
+  "dur": 2.7,
+  "speed": 2.0,
+  "tag": "premium",
+  "hue": "gold",
+  "title": "Every <em>festival</em>"
+ },
+ {
+  "clip": "testV3YearlyPanchang.mov",
+  "start": 52.5,
+  "dur": 2.8,
+  "speed": 3.2,
+  "tag": "premium",
+  "hue": "gold",
+  "title": "The full <em>Panchang</em>"
+ },
+ {
+  "clip": "testV2YearlyJourney.mov",
+  "start": 273.8,
+  "dur": 3.4,
+  "speed": 4.0,
+  "tag": "premium",
+  "hue": "lotus",
+  "title": "Track every <em>vrat</em>"
+ },
+ {
+  "clip": "testV2YearlyJourney.mov",
+  "start": 300.8,
+  "dur": 2.4,
+  "speed": 1.5,
+  "tag": "premium",
+  "hue": "lotus",
+  "title": "Share your <em>journey</em>"
+ },
+ {
+  "clip": "testV1Free.mov",
+  "start": 163.0,
+  "dur": 2.6,
+  "speed": 3.4,
+  "hue": "gold",
+  "title": "Search <em>everything</em>"
+ },
+ {
+  "clip": "testV1Free.mov",
+  "start": 189.5,
+  "dur": 2.8,
+  "speed": 3.8,
+  "tag": "free",
+  "hue": "indigo",
+  "title": "Home and Lock Screen <em>widgets</em>"
+ },
+ {
+  "clip": "testV1Free.mov",
+  "start": 214.2,
+  "dur": 2.6,
+  "speed": 2.2,
+  "tag": "premium",
+  "hue": "gold",
+  "title": "Monthly or <em>Yearly</em>"
+ },
+ {
+  "end": true,
+  "dur": 2.4,
+  "hue": "teal",
+  "icon": "$SCRATCH/shots/video/icon.png",
+  "title": "Ekadashi Calendar",
+  "sub": "Every Ekadashi · Panchang · Journey"
+ }
+]
