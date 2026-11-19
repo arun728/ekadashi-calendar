@@ -19,9 +19,9 @@ Kept up to date as we discuss. iOS first; Android after iOS is final.
   - [x] Original synthesized devotional music (tanpura + bansuri, Raga Bhupali, bells), no vocals
 - [x] In-app purchase review screenshots — already uploaded in App Store Connect (real device, INR); copies in ios/iap-review/
 - [ ] iPad 13" screenshots 2064 × 2752 (after iPhone set is approved)
-- [ ] In-App Events: card 1920 × 1080 + details 1080 × 1920 per event
+- [x] In-App Events (5 for 2027, art + en/hi copy): ios/in-app-events/ — card 1920 × 1080 + details 1080 × 1920 per event
       (e.g. Nirjala Ekadashi, Vaikuntha Ekadashi)
-- [ ] Promotional images for in-app purchases, 1024 × 1024 each
+- [x] Promotional images for in-app purchases, 1024 × 1024 each: ios/iap-promo/
 - [ ] Custom product pages (e.g. Hindi-first page for North India ads)
 - [x] Product page text (en-US + hi): ios/listing/product-page-text.md
 - [x] Support / privacy / marketing / terms URLs (apptinel.com, all live): ios/listing/app-store-connect.md
