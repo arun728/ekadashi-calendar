@@ -1,0 +1,74 @@
+[
+ {
+  "out": "p01-never-miss-an-ekadashi",
+  "src": "pad-01-home.png",
+  "hue": "teal",
+  "tag": "free",
+  "title": "Never miss<br>an <em>Ekadashi</em>",
+  "sub": "Fasting and Parana times for your city",
+  "phone": {
+   "y": 900,
+   "w": 1760
+  }
+ },
+ {
+  "out": "p02-festivals-in-your-calendar",
+  "src": "pad-03-calendar-diwali.png",
+  "hue": "teal",
+  "tag": null,
+  "title": "India's <em>festivals</em>,<br>in your calendar",
+  "sub": "Google Calendar holidays, your events and every Ekadashi",
+  "phone": {
+   "y": 900,
+   "w": 1760
+  }
+ },
+ {
+  "out": "p03-every-festival",
+  "src": "pad-04-panchang-keydays.png",
+  "hue": "gold",
+  "tag": "premium",
+  "title": "Every <em>festival</em>,<br>one tap away",
+  "sub": "Karwa Chauth, Dhanteras, Diwali and more",
+  "phone": {
+   "y": 900,
+   "w": 1760
+  }
+ },
+ {
+  "out": "p04-full-panchang",
+  "src": "pad-05-panchang-daily.png",
+  "hue": "gold",
+  "tag": "premium",
+  "title": "The full <em>Panchang</em>,<br>every day",
+  "sub": "Tithi, Nakshatra, Yoga and timings",
+  "phone": {
+   "y": 900,
+   "w": 1760
+  }
+ },
+ {
+  "out": "p05-muhurta",
+  "src": "pad-06-panchang-muhurta.png",
+  "hue": "gold",
+  "tag": "premium",
+  "title": "<em>Muhurta</em> and<br>Choghadiya",
+  "sub": "Hora and good times, day and night",
+  "phone": {
+   "y": 900,
+   "w": 1760
+  }
+ },
+ {
+  "out": "p06-share-the-vrat",
+  "src": "pad-02-share-card.png",
+  "hue": "teal",
+  "tag": "free",
+  "title": "Share the vrat<br>with <em>family</em>",
+  "sub": "A beautiful card for every Ekadashi",
+  "phone": {
+   "y": 900,
+   "w": 1760
+  }
+ }
+]

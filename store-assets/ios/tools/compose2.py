@@ -4,8 +4,10 @@ Usage: compose2.py spec.json raw_dir out_dir [names...]"""
 import json, sys, subprocess, pathlib, math
 
 CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-W, H = 1320, 2868
-RAW_W, RAW_H = 1320, 2868
+import os
+W, H = int(os.environ.get("FW", 1320)), int(os.environ.get("FH", 2868))
+RAW_W, RAW_H = int(os.environ.get("RW", 1320)), int(os.environ.get("RH", 2868))
+PAD = os.environ.get("PAD") == "1"
 
 HUES = {  # glow colours per accent
     "teal":   ("#12b5ae", "#0a6e6a"),
@@ -53,7 +55,7 @@ def phone_html(src, p, screen=None):
         return (f'<div class="phone" style="left:{p.get("x", (W - w)//2 - 24)}px;top:{p["y"]}px;width:{w + 48}px;'
                 f'transform:rotate({rot}deg)"><div class="screen" style="width:{w}px;height:{h}px;border-radius:{int(150*r)}px">{screen}</div></div>')
     return (f'<div class="phone" style="left:{p.get("x", (W - w)//2 - 24)}px;top:{p["y"]}px;width:{w + 48}px;'
-            f'transform:rotate({rot}deg)"><img src="{src}" style="width:{w}px;border-radius:{int(150*r)}px"></div>')
+            f'transform:rotate({rot}deg);border-radius:{90 if PAD else 170}px"><img src="{src}" style="width:{w}px;border-radius:{int((70 if PAD else 150)*(w/1320 if not PAD else 1))}px"></div>')
 
 def callout_html(src, c):
     x0, y0, cw, ch = c["crop"]
@@ -63,7 +65,7 @@ def callout_html(src, c):
             f'<img src="{src}" style="width:{int(RAW_W*s)}px;left:{-int(x0*s)}px;top:{-int(y0*s)}px"></div>')
 
 CSS = """*{box-sizing:border-box;margin:0;padding:0}
-html,body{width:1320px;height:2868px;overflow:hidden;background:#040706}
+html,body{overflow:hidden;background:#040706}
 body{font-family:-apple-system,"SF Pro Display","Helvetica Neue",sans-serif;color:#fff;position:relative}
 .pano{position:absolute;top:0}
 .glow{position:absolute;inset:0}
@@ -114,10 +116,11 @@ def render(i, n, item, raw, out):
     a, b = HUES[hue]
     src = (raw / item["src"]).resolve().as_uri()
     tag = ""
+    hi_tag = item.get("lang") == "hi"
     if item.get("tag") == "free":
-        tag = '<div><span class="tag free">Free</span></div>'
+        tag = f'<div><span class="tag free">{"मुफ़्त" if hi_tag else "Free"}</span></div>'
     elif item.get("tag") == "premium":
-        tag = '<div><span class="tag premium">★ Premium</span></div>'
+        tag = f'<div><span class="tag premium">{"★ प्रीमियम" if hi_tag else "★ Premium"}</span></div>'
     sub = f'<p class="sub">{item["sub"]}</p>' if item.get("sub") else ""
     ph = item.get("phone", {"y": 900})
     pw = ph.get("w", 980); r = pw / RAW_W
@@ -145,7 +148,7 @@ def render(i, n, item, raw, out):
         chips = f'<div class="chips" style="top:{item["chips"]["y"]}px">' + "".join(
             f'<span class="chip">{t}</span>' for t in item["chips"]["items"]) + "</div>"
     page = (f'<!doctype html><html><head><meta charset="utf-8"><style>{CSS}</style></head>'
-            f'<body style="--a:{a};--b2:{"#ffffff" if hue!="gold" else "#ffe3a3"};--shadow:{a}40">'
+            f'<body style="width:{W}px;height:{H}px;--a:{a};--b2:{"#ffffff" if hue!="gold" else "#ffe3a3"};--shadow:{a}40">'
             f'{background(i, n, hue)}<div class="top">{tag}<h1>{item["title"]}</h1>{sub}</div>'
             f'{"" if item.get("pair") else phone_html(src, item.get("phone", {"y": 900}), screen_html(item, raw))}{calls}{chips}</body></html>')
     hp = out / (item["out"] + ".html")
