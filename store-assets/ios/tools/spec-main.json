@@ -1,0 +1,228 @@
+[
+ {
+  "out": "01-never-miss-an-ekadashi",
+  "src": "free-01-home.png",
+  "hue": "teal",
+  "tag": "free",
+  "title": "Never miss<br>an <em>Ekadashi</em>",
+  "sub": "Fasting and Parana times for your city",
+  "phone": {
+   "y": 960,
+   "w": 980
+  },
+  "callouts": [
+   {
+    "crop": [
+     90,
+     1270,
+     1140,
+     480
+    ],
+    "pop": 1.14,
+    "rotate": -2,
+    "radius": 40
+   }
+  ]
+ },
+ {
+  "out": "02-your-language-your-tradition",
+  "src": "free-02-language-menu.png",
+  "hue": "indigo",
+  "tag": "free",
+  "title": "Your language,<br>your <em>tradition</em>",
+  "sub": "6 languages · Smarta or Vaishnava",
+  "phone": {
+   "y": 960,
+   "w": 980
+  },
+  "callouts": [
+   {
+    "crop": [
+     500,
+     385,
+     770,
+     820
+    ],
+    "pop": 1.22,
+    "rotate": 2,
+    "radius": 46
+   }
+  ]
+ },
+ {
+  "out": "03-festivals-in-your-calendar",
+  "src": "prem-63-calendar-diwali.png",
+  "hue": "teal",
+  "tag": null,
+  "title": "India's <em>festivals</em>,<br>in your calendar",
+  "sub": "Google Calendar holidays, your events and every Ekadashi",
+  "phone": {
+   "y": 960,
+   "w": 980
+  },
+  "callouts": [
+   {
+    "crop": [
+     40,
+     1670,
+     1240,
+     420
+    ],
+    "pop": 1.1,
+    "rotate": -2,
+    "radius": 40
+   }
+  ]
+ },
+ {
+  "out": "04-full-panchang-every-day",
+  "src": "prem-11-panchang-daily.png",
+  "hue": "gold",
+  "tag": "premium",
+  "title": "The full <em>Panchang</em>,<br>every day",
+  "sub": "Tithi, Nakshatra, Yoga and timings",
+  "phone": {
+   "y": 960,
+   "w": 980
+  },
+  "callouts": [
+   {
+    "crop": [
+     50,
+     850,
+     1220,
+     460
+    ],
+    "pop": 1.12,
+    "rotate": 2,
+    "radius": 44
+   }
+  ]
+ },
+ {
+  "out": "05-every-festival",
+  "src": "prem-62-panchang-festivals-oct.png",
+  "hue": "gold",
+  "tag": "premium",
+  "title": "Every <em>festival</em>,<br>one tap away",
+  "sub": "Karwa Chauth, Dhanteras, Diwali and more",
+  "phone": {
+   "y": 960,
+   "w": 980
+  },
+  "callouts": [
+   {
+    "crop": [
+     40,
+     1520,
+     1240,
+     510
+    ],
+    "pop": 1.1,
+    "rotate": -2,
+    "radius": 44
+   }
+  ]
+ },
+ {
+  "out": "06-muhurta-choghadiya-hora",
+  "src": "prem-12-panchang-muhurta.png",
+  "hue": "gold",
+  "tag": "premium",
+  "title": "<em>Muhurta</em> and<br>Choghadiya",
+  "sub": "Hora and good times, day and night",
+  "phone": {
+   "y": 960,
+   "w": 980,
+   "rotate": -2
+  }
+ },
+ {
+  "out": "07-every-vrat-remembered",
+  "src": "prem-02-journey-overview.png",
+  "hue": "lotus",
+  "tag": "premium",
+  "title": "Every vrat,<br><em>remembered</em>",
+  "sub": "Points, streaks and badges",
+  "phone": {
+   "y": 960,
+   "w": 980
+  },
+  "callouts": [
+   {
+    "crop": [
+     250,
+     720,
+     820,
+     380
+    ],
+    "pop": 1.3,
+    "rotate": -3,
+    "radius": 44
+   }
+  ]
+ },
+ {
+  "out": "08-share-your-journey",
+  "src": "prem-05-journey-share.png",
+  "hue": "lotus",
+  "tag": "premium",
+  "title": "Share your<br><em>journey</em>",
+  "sub": "Your year's points and badges, on one card",
+  "phone": {
+   "y": 960,
+   "w": 980
+  },
+  "callouts": [
+   {
+    "crop": [
+     55,
+     465,
+     1210,
+     1670
+    ],
+    "pop": 1.05,
+    "rotate": -2,
+    "radius": 60
+   }
+  ]
+ },
+ {
+  "out": "09-share-the-vrat",
+  "src": "free-06-share-card.png",
+  "hue": "teal",
+  "tag": "free",
+  "title": "Share the vrat<br>with <em>family</em>",
+  "sub": "A beautiful card for every Ekadashi",
+  "phone": {
+   "y": 960,
+   "w": 980
+  },
+  "callouts": [
+   {
+    "crop": [
+     110,
+     460,
+     1100,
+     1280
+    ],
+    "pop": 1.07,
+    "rotate": -2,
+    "radius": 56
+   }
+  ]
+ },
+ {
+  "out": "10-home-and-lock-screen",
+  "src": "free-16-widget-medium.png",
+  "hue": "indigo",
+  "tag": "free",
+  "title": "On your Home<br>and <em>Lock Screen</em>",
+  "sub": "Countdown, fasting and Parana at a glance",
+  "screen": "widgets",
+  "phone": {
+   "y": 960,
+   "w": 980
+  }
+ }
+]
