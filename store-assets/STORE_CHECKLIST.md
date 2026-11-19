@@ -17,21 +17,25 @@ Kept up to date as we discuss. iOS first; Android after iOS is final.
 - [x] App preview video, 886 × 1920, 15–30 s, H.264 High ≤ L4.0, 30 fps, ~11 Mbps,
       AAC stereo 256 kbps 48 kHz, .mp4 (up to 3 per size and language)
   - [x] Original synthesized devotional music (tanpura + bansuri, Raga Bhupali, bells), no vocals
-- [ ] In-app purchase review screenshots (one per product, ≥ 640 × 920)
+- [x] In-app purchase review screenshots — already uploaded in App Store Connect (real device, INR); copies in ios/iap-review/
 - [ ] iPad 13" screenshots 2064 × 2752 (after iPhone set is approved)
 - [ ] In-App Events: card 1920 × 1080 + details 1080 × 1920 per event
       (e.g. Nirjala Ekadashi, Vaikuntha Ekadashi)
 - [ ] Promotional images for in-app purchases, 1024 × 1024 each
 - [ ] Custom product pages (e.g. Hindi-first page for North India ads)
-- [ ] Product page text: name (30), subtitle (30), promotional text (170),
-      description, keywords (100), What's New
-- [ ] Support URL, privacy policy URL, marketing URL (optional)
-- [ ] App Privacy labels, age rating, category, copyright, review notes / contact
-- [ ] IAP display names / descriptions, subscription group display name
+- [x] Product page text (en-US + hi): ios/listing/product-page-text.md
+- [x] Support / privacy / marketing / terms URLs (apptinel.com, all live): ios/listing/app-store-connect.md
+- [x] App Privacy labels, age rating, category, copyright, review notes: ios/listing/app-store-connect.md (confirm Firebase email)
+- [x] IAP display names / descriptions + group name in 6 languages: ios/listing/app-store-connect.md
 - [x] App icon 1024 × 1024 (already in the build)
 
 ## App features to build later
 - [ ] Premium alternate app icons for subscribers (iOS alternate icons; ships in the build)
+
+## Later
+- [ ] Check the Play listing privacy link points to apptinel.com, then make the repo private
+- [ ] Preview video pacing: research slower cuts (fewer scenes at ~1x) within the 30 s limit
+- [ ] Rename the App Store version 1.0 → 2.0.0 to match the builds
 
 ## Android (after iOS is final)
 - [ ] Play screenshots, feature graphic 1024 × 500, preview video, listing text
