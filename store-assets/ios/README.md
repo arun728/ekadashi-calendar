@@ -36,6 +36,14 @@ Each slide comes in three sizes (PNG, RGB, no alpha):
 
 App Store limits: up to 10 screenshots per device size per language.
 
+`screenshots/ipad-13in-2064x2752/` — 6 iPad slides (required because the app runs on iPad;
+kept short since the app is phone-first). The status-bar date is blanked because
+simctl can't override it on iPad.
+
+Also here: `listing/` (product page text, App Store Connect answers),
+`iap-review/`, `iap-promo/`, `in-app-events/`, `custom-product-pages/` and
+`../brand/` (v2 poster).
+
 ## App preview
 
 `preview/ekadashi-app-preview-886x1920.mp4`
