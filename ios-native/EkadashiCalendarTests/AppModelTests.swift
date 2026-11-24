@@ -9,6 +9,13 @@ import EkadashiCore
 /// domain rules are covered by the EkadashiCore package tests).
 @MainActor
 final class AppModelTests: XCTestCase {
+    func testPremiumLegalLinksUseApptinelPages() {
+        XCTAssertEqual(PremiumView.privacyURL.absoluteString,
+                       "https://apptinel.com/ekadashi-calendar/privacy-policy/")
+        XCTAssertEqual(PremiumView.termsURL.absoluteString,
+                       "https://apptinel.com/ekadashi-calendar/terms-of-service/")
+    }
+
     /// Read the StoreKit-resolved metadata, not only the JSON text. Initializing
     /// a session refreshes local test metadata without buying, cancelling,
     /// clearing, or otherwise changing the device's existing transactions.
