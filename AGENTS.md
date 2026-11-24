@@ -65,8 +65,8 @@ untouched.
 
 After that validated UI merge, develop paid subscriptions and fasting rewards
 on a separate branch. Do not merge paid/reward work to dev until Arun finalizes
-and tests it and gives new explicit approval. Monthly INR99 / annual INR399 are
-subscriptions; lifetime INR999 is a non-consumable purchase. Google Calendar
+and tests it and gives new explicit approval. Monthly and annual are
+subscriptions; lifetime is a non-consumable purchase (current prices below). Google Calendar
 sync is paid; custom entries and core Ekadashi features remain free. Remove
 Vrat enable/disable: recording/history/streaks/statistics are always free, with
 three free achievement unlocks and additional achievements in premium. Preserve
@@ -121,9 +121,17 @@ for review, and do not merge it to `dev` or `main`.
   a persisted local flag or a pending purchase. Acknowledge completed purchases.
   The paywall needs no Google sign-in. Google sign-in is only for Calendar
   import, and disconnecting Google must not affect premium.
-- Products (prices are set in Play Console, never hard-coded): subscription
-  `ekadashi_premium` with base plans `monthly` (INR99) and `yearly` (INR499);
-  one-time `ekadashi_premium_lifetime` (INR999).
+- Products (prices are set in Play Console and App Store Connect, never
+  hard-coded): subscription `ekadashi_premium` with base plans `monthly` and
+  `yearly`; one-time `ekadashi_premium_lifetime`.
+- Prices (set 16–17 November 2026, same on Google Play and the App Store):
+  India ₹99 monthly / ₹599 yearly / ₹1,999 lifetime. In the 28 Indian-diaspora
+  countries (United States, United Kingdom, Australia, New Zealand, Singapore,
+  Malaysia, Germany, France, Spain, UAE, Saudi Arabia, Qatar, Kuwait, Oman,
+  Bahrain, Canada, Ireland, Italy, Netherlands, Belgium, Switzerland, Austria,
+  Sweden, Norway, Denmark, Finland, Hong Kong, Japan) the local price nearest
+  US$2.99 / $9.99 / $29.99. Every other country uses the store's automatic
+  conversion from the India prices. Read prices from the store at runtime.
 - Hide fasting rewards/coins from the app for now (no wallet, redemption or
   cloud account UI). The `backend/` service is dormant and not used by v2.
 - Free vs premium (three premium features for v2):

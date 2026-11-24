@@ -22,14 +22,16 @@ Play Console → your app → **Monetize with Play**. First finish the
 1. **Products → Subscriptions → Create subscription**
    - Product ID: `ekadashi_premium` (exactly; cannot be changed later).
    - Add base plan `monthly`: auto-renewing, billing period 1 month, price
-     INR 99. Activate.
+     ₹99 (India). Activate.
    - Add base plan `yearly`: auto-renewing, billing period 1 year, price
-     INR 499. Activate.
+     ₹599 (India). Activate.
    - Do not add introductory offers yet (the app hides offers by design).
 2. **Products → One-time products → Create**
-   - Product ID: `ekadashi_premium_lifetime`, price INR 999. Activate.
-3. Use Play's suggested local prices for other countries or restrict
-   availability to India.
+   - Product ID: `ekadashi_premium_lifetime`, price ₹1,999 (India). Activate.
+3. Prices outside India: in the 28 Indian-diaspora countries listed in
+   `AGENTS.md`, set the local price nearest US$2.99 / $9.99 / $29.99 by hand
+   (Play prices are entered before VAT). Every other country keeps the store's
+   automatic conversion from the India prices. Set the same on the App Store.
 
 The app shows whatever price Google Play returns; changing a price in Play
 Console needs no app update.
