@@ -151,6 +151,7 @@ h3 { font-size: 1.18rem; font-weight: 650; line-height: 1.25; }
 .studio-hero { display: block; }
 .product-section { border-top: 1px solid var(--line); padding-top: 1.65rem; }
 .product-grid, .feature-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin-top: 1.25rem; }
+.product-grid--two { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 52rem; }
 .product-card, .feature-grid article, .premium-list > div {
   border: 1px solid var(--line);
   border-radius: .9rem;
