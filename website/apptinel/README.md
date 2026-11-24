@@ -22,3 +22,11 @@ as static assets. The files require no build step. The
 product page and its legal URLs use directory indexes with trailing slashes.
 Confirm the public URLs before updating the iOS paywall and App Store Connect
 metadata to use them.
+
+Deploy from the command line (signed in once with `npx wrangler login`):
+
+```bash
+cd website/apptinel && npx wrangler@4 deploy --name apptinel --assets ./public --compatibility-date 2026-11-01
+```
+
+This uploads the folder as-is (directory indexes intact) and keeps the existing apptinel.com routes.
