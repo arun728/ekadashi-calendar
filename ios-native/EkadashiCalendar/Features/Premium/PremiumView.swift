@@ -139,7 +139,8 @@ struct PremiumView: View {
                                bodyText: model.premiumCancellationMessage(state))
                 } else {
                     statusCard("premium_subscriber_title", "premium_subscriber_body", Theme.teal,
-                               bodyText: model.premiumRenewalMessage(state))
+                               bodyText: model.premiumRenewalMessage(state),
+                               bodyIdentifier: "subscription_renewal_date")
                 }
             }
             .accessibilityIdentifier("premium_active")
@@ -155,10 +156,12 @@ struct PremiumView: View {
     }
 
     private func statusCard(_ title: String, _ body: String, _ color: Color, bodyText: String? = nil,
+                            bodyIdentifier: String? = nil,
                             @ViewBuilder action: () -> some View = { EmptyView() }) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(model.t(title)).font(.headline)
             Text(bodyText ?? model.t(body)).font(.subheadline)
+                .accessibilityIdentifier(bodyIdentifier ?? "")
             action().padding(.top, 6)
         }
         .padding(16)
@@ -187,17 +190,15 @@ struct PremiumView: View {
                 Text(model.t("premium_\(id.rawValue)")).font(.subheadline.weight(.semibold)).multilineTextAlignment(.center)
                 Text(store.products[id]?.displayPrice ?? "").font(.title3.bold()).minimumScaleFactor(0.6).lineLimit(1)
                 Text(model.t(period)).font(.caption).foregroundStyle(.secondary).multilineTextAlignment(.center)
-                if current {
-                    Text(model.t("premium_current_plan")).font(.caption).foregroundStyle(Theme.teal)
-                        .accessibilityIdentifier("premium_current_\(id.rawValue)")
-                }
-                if id == state.scheduledPlan {
-                    Text(model.premiumPlanBadgeText(state, id) ?? model.t("ios_premium_next_plan"))
-                        .font(.caption).foregroundStyle(Theme.teal).multilineTextAlignment(.center)
-                        .accessibilityIdentifier("premium_scheduled_\(id.rawValue)")
-                } else if current, let until = model.premiumPlanBadgeText(state, id) {
-                    Text(until).font(.caption2).foregroundStyle(.secondary).multilineTextAlignment(.center)
-                        .accessibilityIdentifier("premium_current_until_\(id.rawValue)")
+                if let badge = model.premiumPlanBadgeText(state, id) {
+                    Text(badge)
+                        .font(.caption2.weight(.semibold))
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 3)
+                        .foregroundStyle(current ? Color.primary : Theme.teal)
+                        .background(current ? Color.primary.opacity(0.08) : Theme.teal.opacity(0.12), in: Capsule())
+                        .accessibilityIdentifier("premium_\(current ? "current" : "scheduled")_\(id.rawValue)")
                 }
                 Spacer(minLength: 0)
             }

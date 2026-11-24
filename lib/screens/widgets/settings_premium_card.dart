@@ -245,13 +245,8 @@ class SettingsPremiumCard extends StatelessWidget {
                     ),
                   ),
                   onPressed: () => launchUrl(
-                    Uri.https(
-                      'play.google.com',
-                      '/store/account/subscriptions',
-                      {
-                        'package': 'com.applausestudios.ekadashi_calendar',
-                        'sku': PlayBillingService.subscription,
-                      },
+                    PlayBillingService.managementUrl(
+                      premium.subscriptionProductId,
                     ),
                     mode: LaunchMode.externalApplication,
                   ),

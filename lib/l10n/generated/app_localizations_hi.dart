@@ -980,6 +980,21 @@ class AppLocalizationsHi extends AppLocalizations {
   String get premium_switch_now_title => 'प्लान बदलें?';
 
   @override
+  String get premium_switch_at_renewal_body =>
+      'सालाना प्लान अगले नवीनीकरण तक चालू रहेगा। उसके बाद गूगल प्ले मासिक प्लान शुरू करेगा और उसका शुल्क लेगा।';
+
+  @override
+  String get premium_upcoming_plan => 'अगला प्लान';
+
+  @override
+  String get premium_monthly_switch_scheduled =>
+      'नवीनीकरण पर मासिक प्लान शुरू होगा। तारीख और समय गूगल प्ले में देखें।';
+
+  @override
+  String get premium_renewal_in_play =>
+      'अगला नवीनीकरण और तय किया गया बदलाव गूगल प्ले में देखें।';
+
+  @override
   String get premium_switch_now_body =>
       'आपका नया प्लान आज से शुरू होगा और आज ही भुगतान लिया जाएगा। मौजूदा प्लान का बचा हुआ समय इसमें जोड़ दिया जाएगा।';
 

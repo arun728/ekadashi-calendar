@@ -359,8 +359,7 @@ void main() {
     );
   });
 
-  testWidgets('Switching between Monthly and Yearly says it is charged '
-      'today and the unused time is kept', (tester) async {
+  testWidgets('Plan switches explain when Google Play charges', (tester) async {
     for (final (current, target) in [
       ('yearly', 'monthly'),
       ('monthly', 'yearly'),
@@ -374,7 +373,13 @@ void main() {
       await tester.tap(find.byKey(const Key('premium_buy')));
       await tester.pumpAndSettle();
       expect(
-        find.text(lang.translate('premium_switch_now_body')),
+        find.text(
+          lang.translate(
+            target == 'monthly'
+                ? 'premium_switch_at_renewal_body'
+                : 'premium_switch_now_body',
+          ),
+        ),
         findsOneWidget,
         reason: '$current to $target',
       );
@@ -389,6 +394,36 @@ void main() {
       await tester.pumpWidget(const SizedBox.shrink());
     }
   });
+
+  testWidgets(
+    'Upcoming Monthly opens Play management and keeps Yearly current',
+    (tester) async {
+      final opened = captureExternalLinks();
+      final premium = PremiumService(entitlements: PremiumFixture())
+        ..applyOwned({PremiumService.yearlySubscriptionId});
+      addTearDown(premium.dispose);
+      final billing = await pumpPaywall(tester, premium);
+      billing.monthlySwitchScheduled = true;
+      billing.notifyListeners();
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('premium_current_yearly')), findsOneWidget);
+      expect(find.byKey(const Key('premium_upcoming_monthly')), findsOneWidget);
+      expect(
+        find.text(lang.translate('premium_monthly_switch_scheduled')),
+        findsOneWidget,
+      );
+      await tester.tap(find.byKey(const Key('premium_plan_monthly')));
+      await tester.pumpAndSettle();
+      expect(ctaLabel(tester), lang.translate('premium_manage'));
+      await tester.tap(find.byKey(const Key('premium_buy')));
+      await tester.pumpAndSettle();
+      expect(billing.bought, isEmpty);
+      expect(
+        Uri.parse(opened.single).queryParameters['sku'],
+        PremiumService.yearlySubscriptionId,
+      );
+    },
+  );
 
   testWidgets('A free user buys a plan without the switch note', (
     tester,

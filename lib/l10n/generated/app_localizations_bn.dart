@@ -990,6 +990,21 @@ class AppLocalizationsBn extends AppLocalizations {
   String get premium_switch_now_title => 'প্ল্যান বদলাবেন?';
 
   @override
+  String get premium_switch_at_renewal_body =>
+      'পরবর্তী নবীকরণ পর্যন্ত বার্ষিক প্ল্যান চালু থাকবে। এরপর গুগল প্লে মাসিক প্ল্যান চালু করে তার মূল্য নেবে।';
+
+  @override
+  String get premium_upcoming_plan => 'পরবর্তী প্ল্যান';
+
+  @override
+  String get premium_monthly_switch_scheduled =>
+      'নবীকরণের সময় মাসিক প্ল্যান শুরু হবে। তারিখ ও সময় গুগল প্লেতে দেখুন।';
+
+  @override
+  String get premium_renewal_in_play =>
+      'পরবর্তী নবীকরণ এবং নির্ধারিত পরিবর্তন গুগল প্লেতে দেখুন।';
+
+  @override
   String get premium_switch_now_body =>
       'আপনার নতুন প্ল্যান আজ থেকেই শুরু হবে এবং আজই টাকা কাটা হবে। বর্তমান প্ল্যানের বাকি সময় এতে যোগ হবে।';
 

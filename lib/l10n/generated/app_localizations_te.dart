@@ -991,6 +991,21 @@ class AppLocalizationsTe extends AppLocalizations {
   String get premium_switch_now_title => 'ప్లాన్ మార్చాలా?';
 
   @override
+  String get premium_switch_at_renewal_body =>
+      'తదుపరి పునరుద్ధరణ వరకు వార్షిక ప్లాన్ సక్రియంగా ఉంటుంది. ఆ తర్వాత గూగుల్ ప్లే నెలవారీ ప్లాన్‌ను ప్రారంభించి దాని రుసుమును వసూలు చేస్తుంది.';
+
+  @override
+  String get premium_upcoming_plan => 'తదుపరి ప్లాన్';
+
+  @override
+  String get premium_monthly_switch_scheduled =>
+      'పునరుద్ధరణ సమయంలో నెలవారీ ప్లాన్ మొదలవుతుంది. తేదీ, సమయాన్ని గూగుల్ ప్లేలో చూడండి.';
+
+  @override
+  String get premium_renewal_in_play =>
+      'తదుపరి పునరుద్ధరణను, నిర్ణయించిన మార్పును గూగుల్ ప్లేలో చూడండి.';
+
+  @override
   String get premium_switch_now_body =>
       'మీ కొత్త ప్లాన్ ఈరోజే ప్రారంభమవుతుంది, ఈరోజే ఛార్జీ వసూలు చేయబడుతుంది. ప్రస్తుత ప్లాన్‌లో మిగిలిన సమయం దానికి జోడించబడుతుంది.';
 

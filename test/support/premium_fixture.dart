@@ -37,6 +37,9 @@ class PremiumFixture extends PlayEntitlementSource {
 class FixtureBilling extends PlayBillingService {
   FixtureBilling(super.premium);
 
+  @override
+  bool monthlySwitchScheduled = false;
+
   /// Plans the paywall asked Google Play to buy (no real checkout in tests).
   final bought = <String>[];
   @override

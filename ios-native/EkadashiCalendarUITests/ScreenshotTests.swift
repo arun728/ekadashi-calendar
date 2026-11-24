@@ -607,7 +607,7 @@ final class ScreenshotTests: XCTestCase {
                                            evaluatedWith: yearly)], timeout: 30)
         XCTAssertTrue(monthly.label.contains("Upcoming plan"))
         XCTAssertFalse(monthly.label.contains("Starts"))
-        XCTAssertTrue(app.staticTexts["premium_next_renewal"].firstMatch.label.contains("Next renewal"))
+        XCTAssertTrue(app.staticTexts["subscription_renewal_date"].firstMatch.label.contains("Switches to Monthly"))
         snap("premium-yearly-current-monthly-upcoming")
 
         try session.forceRenewalOfSubscription(productIdentifier: "ekadashi_premium_yearly")

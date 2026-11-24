@@ -162,36 +162,50 @@ final class AppModel {
     }
     @ObservationIgnored private var timePickerLocales: [String: Locale] = [:]
 
-    /// The subscriber line in Settings and the paywall: neutral wording when
-    /// the renewal status is unknown, a plan Apple has scheduled for the next
-    /// renewal, else the usual subscriber text.
-    func premiumRenewalMessage(_ state: PremiumState) -> String {
+    /// Format the store's instant in the device time zone, independent of
+    /// which city is selected for the Ekadashi calendar.
+    func premiumRenewalMessage(
+        _ state: PremiumState, timeZone: TimeZone = .autoupdatingCurrent, now: Date = Date()
+    ) -> String {
         if state.renewalStatusUnknown { return t("ios_premium_renewal_unknown") }
+        if let date = state.nextRenewalDate, date > now {
+            let renewal = premiumDateAndTime(date, in: timeZone)
+            if let plan = state.scheduledPlan {
+                return t("ios_premium_scheduled_plan_date", t("premium_\(plan.rawValue)"), renewal)
+            }
+            return t("premium_next_renewal_date", renewal)
+        }
         guard let plan = state.scheduledPlan else { return t("premium_subscriber_body") }
-        let name = t("premium_\(plan.rawValue)")
-        if let date = state.scheduledPlanDate, date > Date() {
-            return t("ios_premium_scheduled_plan_date", name, fullDate(CivilDate.today(now: date)))
-        }
-        return t("ios_premium_scheduled_plan", name)
+        return t("ios_premium_scheduled_plan", t("premium_\(plan.rawValue)"))
     }
 
-    /// The date line on a plan tile: "Current plan until <date>" on the plan
-    /// in use when it ends or changes, "Starts <date>" on the scheduled plan.
+    private func premiumDateAndTime(_ instant: Date, in timeZone: TimeZone = .autoupdatingCurrent) -> String {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = timeZone
+        let hour = calendar.component(.hour, from: instant)
+        let minute = calendar.component(.minute, from: instant)
+        let date = fullDate(CivilDate.today(in: timeZone, now: instant))
+        let time = Localizer.shared.clock(hour: hour, minute: minute, language: language)
+        return "\(date) · \(time)"
+    }
+
+    /// The plan tiles identify ownership and the upcoming plan. Dates are
+    /// displayed once in the subscription summary.
     func premiumPlanBadgeText(_ state: PremiumState, _ plan: PremiumPlanID) -> String? {
-        switch state.planBadge(for: plan) {
-        case .currentUntil(let end): return t("ios_premium_current_until", fullDate(CivilDate.today(now: end)))
-        case .startsOn(let start): return t("ios_premium_starts_on", fullDate(CivilDate.today(now: start)))
-        case .current, .none: return nil
-        }
+        if plan == state.scheduledPlan && !state.lifetime { return t("premium_upcoming_plan") }
+        return state.planBadge(for: plan) == .none ? nil : t("premium_current_plan")
     }
 
-    /// Shown before an in-app downgrade: Apple keeps the current plan until
-    /// the renewal date and starts the new one then. Nil when the change
-    /// starts now (Apple's own purchase sheet explains upgrades).
+    /// Explain the App Store's different billing rules before presenting its
+    /// confirmation.
     func premiumSwitchNote(_ state: PremiumState, to plan: PremiumPlanID) -> String? {
-        guard case .atRenewal(let date?) = state.switchTiming(to: plan), let current = state.currentPlan else { return nil }
+        if state.currentPlan == .monthly && plan == .yearly && !state.lifetime {
+            return t("ios_premium_upgrade_refund")
+        }
+        guard case .atRenewal(let date) = state.switchTiming(to: plan), let current = state.currentPlan else { return nil }
+        guard let date else { return t("ios_premium_scheduled_plan", t("premium_\(plan.rawValue)")) }
         return t("ios_premium_switch_note", t("premium_\(current.rawValue)"),
-                 fullDate(CivilDate.today(now: date)), t("premium_\(plan.rawValue)"))
+                 premiumDateAndTime(date), t("premium_\(plan.rawValue)"))
     }
 
     func premiumCancellationMessage(_ state: PremiumState) -> String {

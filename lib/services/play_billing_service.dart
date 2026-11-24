@@ -120,26 +120,30 @@ class PlayStoreEntitlements extends PlayEntitlementSource {
 
   @override
   String? subscriptionPurchaseToken;
+  GooglePlayPurchaseDetails? subscriptionPurchase;
 
   @override
   Future<Map<String, DateTime?>> ownedProducts() async {
     final owned = <String, DateTime?>{};
     final renewing = <String, bool>{};
-    String? subscriptionToken;
+    final subscriptions = <String, GooglePlayPurchaseDetails>{};
     for (final purchase in await _query()) {
-      if (!{
-            PremiumService.subscriptionId,
-            PremiumService.lifetimeId,
-          }.contains(purchase.productID) ||
+      if (!(PremiumService.subscriptionIds.contains(purchase.productID) ||
+              purchase.productID == PremiumService.lifetimeId) ||
           !isCompletedPlayPurchase(purchase)) {
         continue;
       }
       owned[purchase.productID] = playPurchaseTime(purchase);
       if (purchase is GooglePlayPurchaseDetails) {
-        renewing[purchase.productID] =
-            purchase.billingClientPurchase.isAutoRenewing;
-        if (purchase.productID == PremiumService.subscriptionId) {
-          subscriptionToken = purchase.billingClientPurchase.purchaseToken;
+        final autoRenews = purchase.billingClientPurchase.isAutoRenewing;
+        // With separate products, Play can report a non-renewing old item
+        // during a scheduled switch. Only Play's manager can distinguish that
+        // from cancellation, so keep the status unknown locally.
+        if (autoRenews || purchase.productID == PremiumService.subscriptionId) {
+          renewing[purchase.productID] = autoRenews;
+        }
+        if (PremiumService.subscriptionIds.contains(purchase.productID)) {
+          subscriptions[purchase.productID] = purchase;
         }
       }
       if (purchase.pendingCompletePurchase) {
@@ -152,7 +156,13 @@ class PlayStoreEntitlements extends PlayEntitlementSource {
       }
     }
     autoRenewing = renewing;
-    subscriptionPurchaseToken = subscriptionToken;
+    subscriptionPurchase =
+        subscriptions[PremiumService.ownedSubscriptionId(
+          owned.keys.toSet(),
+          owned,
+        )];
+    subscriptionPurchaseToken =
+        subscriptionPurchase?.billingClientPurchase.purchaseToken;
     return owned;
   }
 }
@@ -167,7 +177,15 @@ class PlayBillingService extends ChangeNotifier {
   }
 
   static const subscription = PremiumService.subscriptionId;
+  static const monthly = PremiumService.monthlySubscriptionId;
+  static const yearly = PremiumService.yearlySubscriptionId;
   static const lifetime = PremiumService.lifetimeId;
+
+  static Uri managementUrl(String? activeProductId) =>
+      Uri.https('play.google.com', '/store/account/subscriptions', {
+        'package': 'com.applausestudios.ekadashi_calendar',
+        'sku': activeProductId ?? subscription,
+      });
   final PremiumService premium;
   InAppPurchase? _store;
   InAppPurchase get store => _store ??= InAppPurchase.instance;
@@ -175,6 +193,7 @@ class PlayBillingService extends ChangeNotifier {
   StreamSubscription<List<PurchaseDetails>>? _subscription;
   String? error;
   bool pending = false;
+  bool _launchingCheckout = false;
   Future<void>? _processing;
 
   // Play ownership reports the subscription product ID, not the base plan.
@@ -189,6 +208,8 @@ class PlayBillingService extends ChangeNotifier {
 
   String? get currentPlanId {
     if (!premium.subscribed) return null;
+    if (premium.subscriptionProductId == monthly) return 'monthly';
+    if (premium.subscriptionProductId == yearly) return 'yearly';
     final token = premium.subscriptionPurchaseToken;
     if (token == _planPurchaseToken && _currentPlanId != null) {
       return _currentPlanId;
@@ -214,6 +235,13 @@ class PlayBillingService extends ChangeNotifier {
 
   String? _requestedPlan;
   DateTime? _requestedAt;
+  ({String productId, String token})? _requestedDeferredSwitch;
+  String? _scheduledMonthlyToken;
+
+  bool get monthlySwitchScheduled =>
+      currentPlanId == 'yearly' &&
+      _scheduledMonthlyToken != null &&
+      _scheduledMonthlyToken == premium.subscriptionPurchaseToken;
 
   /// Like other subscription apps, a subscriber can still switch between
   /// monthly and yearly or buy lifetime; lifetime owners need nothing more.
@@ -221,7 +249,12 @@ class PlayBillingService extends ChangeNotifier {
   bool canBuy(PremiumPlan plan) {
     if (pending || premium.lifetime) return false;
     if (plan.id == 'lifetime' || !premium.subscribed) return true;
-    return plan.id != currentPlanId || premium.subscriptionCancelled;
+    if (plan.id == 'monthly' && monthlySwitchScheduled) return false;
+    final current = currentPlanId;
+    if (current == null) return false;
+    if (plan.id == current) return premium.subscriptionCancelled;
+    if (plan.id == 'monthly' && plan.product.id == subscription) return false;
+    return true;
   }
 
   Future<void> initialize() async {
@@ -248,13 +281,16 @@ class PlayBillingService extends ChangeNotifier {
     );
     try {
       if (!await store.isAvailable()) throw StateError('Store unavailable');
-      final result = await store.queryProductDetails({subscription, lifetime});
+      final result = await store.queryProductDetails({
+        ...PremiumService.subscriptionIds,
+        lifetime,
+      });
       if (_disposed) return;
       if (result.error != null) throw StateError('Store unavailable');
-      plans.clear();
+      final catalog = <String, PremiumPlan>{};
       for (final product in result.productDetails) {
         if (product.id == lifetime) {
-          plans.add(PremiumPlan('lifetime', product.price, product));
+          catalog['lifetime'] = PremiumPlan('lifetime', product.price, product);
           continue;
         }
         if (product is GooglePlayProductDetails) {
@@ -266,14 +302,23 @@ class PlayBillingService extends ChangeNotifier {
               !['monthly', 'yearly'].contains(offer.basePlanId)) {
             continue;
           }
-          plans.add(PremiumPlan(offer.basePlanId, product.price, product));
+          final id = offer.basePlanId;
+          final separate = product.id == (id == 'monthly' ? monthly : yearly);
+          if (separate ||
+              (product.id == subscription && !catalog.containsKey(id))) {
+            catalog[id] = PremiumPlan(id, product.price, product);
+          }
         }
       }
-      plans.sort(
-        (a, b) => ['monthly', 'yearly', 'lifetime']
-            .indexOf(a.id)
-            .compareTo(['monthly', 'yearly', 'lifetime'].indexOf(b.id)),
-      );
+      plans
+        ..clear()
+        ..addAll(
+          [
+            'monthly',
+            'yearly',
+            'lifetime',
+          ].map((id) => catalog[id]).whereType<PremiumPlan>(),
+        );
       error = plans.isEmpty ? 'premium_unavailable' : null;
     } catch (_) {
       error = 'premium_unavailable';
@@ -288,7 +333,10 @@ class PlayBillingService extends ChangeNotifier {
         '${purchase.status.name} ${purchase.error?.code ?? ''} '
         '${purchase.error?.message ?? ''} ${purchase.error?.details ?? ''}',
       );
-      if (!{subscription, lifetime}.contains(purchase.productID)) continue;
+      if (!(PremiumService.subscriptionIds.contains(purchase.productID) ||
+          purchase.productID == lifetime)) {
+        continue;
+      }
       switch (purchase.status) {
         case PurchaseStatus.pending:
           pending = true;
@@ -296,6 +344,7 @@ class PlayBillingService extends ChangeNotifier {
         case PurchaseStatus.error:
           _requestedPlan = null;
           _requestedAt = null;
+          _requestedDeferredSwitch = null;
           pending = false;
           error = 'premium_unavailable';
           debugPrint(
@@ -306,6 +355,7 @@ class PlayBillingService extends ChangeNotifier {
         case PurchaseStatus.canceled:
           _requestedPlan = null;
           _requestedAt = null;
+          _requestedDeferredSwitch = null;
           pending = false;
           break;
         case PurchaseStatus.purchased:
@@ -319,13 +369,27 @@ class PlayBillingService extends ChangeNotifier {
           final token = purchase is GooglePlayPurchaseDetails
               ? purchase.billingClientPurchase.purchaseToken
               : null;
-          if (purchase.productID == subscription &&
+          final deferred = _requestedDeferredSwitch;
+          final scheduled =
+              deferred != null &&
+              purchase.status == PurchaseStatus.purchased &&
+              purchase.productID == deferred.productId &&
+              token != null &&
+              token != deferred.token;
+          if (scheduled) {
+            _scheduledMonthlyToken = token;
+            _requestedDeferredSwitch = null;
+          }
+          final verifiedLegacyCheckout =
+              purchase.productID == subscription &&
               purchase.status == PurchaseStatus.purchased &&
               token != null &&
               purchasedAt != null &&
               _requestedAt != null &&
-              !purchasedAt.isBefore(_requestedAt!)) {
-            final plan = _requestedPlan;
+              !purchasedAt.isBefore(_requestedAt!);
+          if (verifiedLegacyCheckout ||
+              (scheduled && purchase.productID == subscription)) {
+            final plan = scheduled ? 'yearly' : _requestedPlan;
             _currentPlanId = plan;
             _planPurchaseToken = token;
             _requestedPlan = null;
@@ -362,15 +426,18 @@ class PlayBillingService extends ChangeNotifier {
   }
 
   Future<void> buy(PremiumPlan plan) async {
-    if (!canBuy(plan)) return;
-    _requestedPlan = plan.id == 'lifetime' ? null : plan.id;
-    _requestedAt = _requestedPlan == null
-        ? null
-        : DateTime.fromMillisecondsSinceEpoch(
-            DateTime.now().millisecondsSinceEpoch,
-          );
+    if (_launchingCheckout || !canBuy(plan)) return;
+    _launchingCheckout = true;
     try {
       final product = plan.product;
+      final source = premium.entitlements;
+      if (plan.id != 'lifetime' && source is PlayStoreEntitlements) {
+        await premium.refresh();
+        if (premium.error != null) {
+          throw StateError('Play ownership could not be checked');
+        }
+        if (_disposed || !canBuy(plan)) return;
+      }
       String? offer;
       if (product is GooglePlayProductDetails &&
           product.subscriptionIndex != null) {
@@ -379,26 +446,59 @@ class PlayBillingService extends ChangeNotifier {
             .subscriptionOfferDetails![product.subscriptionIndex!]
             .offerIdToken;
       }
-      // Switching between monthly and yearly (base plans of the same
-      // subscription) and reactivating a cancelled plan are plain purchases:
-      // Google says to send no SubscriptionUpdateParams; Play replaces the
-      // old plan using the Play Console's default replacement mode.
+      ChangeSubscriptionParam? change;
+      _requestedDeferredSwitch = null;
+      final currentProduct = premium.subscriptionProductId;
+      if (currentProduct != null &&
+          product.id != lifetime &&
+          product.id != currentProduct) {
+        if (currentPlanId == plan.id) return;
+        final existing = source is PlayStoreEntitlements
+            ? source.subscriptionPurchase
+            : null;
+        if (existing == null || existing.productID != currentProduct) {
+          throw StateError('The active Play plan could not be verified');
+        }
+        change = ChangeSubscriptionParam(
+          oldPurchaseDetails: existing,
+          replacementMode: plan.id == 'monthly'
+              ? ReplacementMode.deferred
+              : ReplacementMode.chargeFullPrice,
+        );
+        if (change.replacementMode == ReplacementMode.deferred) {
+          _requestedDeferredSwitch = (
+            productId: existing.productID,
+            token: existing.billingClientPurchase.purchaseToken,
+          );
+        }
+      }
+      _requestedPlan = product.id == subscription ? plan.id : null;
+      _requestedAt = _requestedPlan == null
+          ? null
+          : DateTime.fromMillisecondsSinceEpoch(
+              DateTime.now().millisecondsSinceEpoch,
+            );
       final param = GooglePlayPurchaseParam(
         productDetails: product,
         offerToken: offer,
+        changeSubscriptionParam: change,
       );
       if (!await store.buyNonConsumable(purchaseParam: param)) {
         _requestedPlan = null;
         _requestedAt = null;
+        _requestedDeferredSwitch = null;
         error = 'premium_unavailable';
       }
     } catch (e) {
       _requestedPlan = null;
       _requestedAt = null;
+      _requestedDeferredSwitch = null;
       debugPrint('Google Play checkout failed: $e');
       error = 'premium_unavailable';
+    } finally {
+      _launchingCheckout = false;
+      _notify();
     }
-    _notify();
   }
 
   /// Restores from Google Play's owned purchases; no account sign-in needed.

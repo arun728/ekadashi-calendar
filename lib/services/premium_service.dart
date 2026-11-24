@@ -26,6 +26,13 @@ class PremiumService extends ChangeNotifier {
     : _now = now ?? DateTime.now;
 
   static const subscriptionId = 'ekadashi_premium';
+  static const monthlySubscriptionId = 'ekadashi_premium_monthly';
+  static const yearlySubscriptionId = 'ekadashi_premium_yearly';
+  static const subscriptionIds = {
+    subscriptionId,
+    monthlySubscriptionId,
+    yearlySubscriptionId,
+  };
   static const lifetimeId = 'ekadashi_premium_lifetime';
 
   final PlayEntitlementSource entitlements;
@@ -33,6 +40,7 @@ class PremiumService extends ChangeNotifier {
   bool _disposed = false;
   Future<void>? _refreshInFlight;
   String? subscriptionPurchaseToken;
+  String? subscriptionProductId;
   bool subscribed = false;
   bool lifetime = false;
   bool busy = false;
@@ -42,6 +50,23 @@ class PremiumService extends ChangeNotifier {
   DateTime? purchasedAt;
 
   bool get isPremium => subscribed || lifetime;
+
+  static String? ownedSubscriptionId(
+    Set<String> owned,
+    Map<String, DateTime?> purchasedAt,
+  ) {
+    String? latest;
+    for (final id in subscriptionIds) {
+      if (!owned.contains(id)) continue;
+      final date = purchasedAt[id];
+      final previous = purchasedAt[latest];
+      if (latest == null ||
+          (date != null && (previous == null || date.isAfter(previous)))) {
+        latest = id;
+      }
+    }
+    return latest;
+  }
 
   /// The subscription was cancelled in Google Play but the paid period has
   /// not ended yet, so Premium stays on until it does (Google's rule).
@@ -176,14 +201,16 @@ class PremiumService extends ChangeNotifier {
     String? subscriptionToken,
   }) {
     if (_disposed) return;
-    subscribed = owned.contains(subscriptionId);
+    subscriptionProductId = ownedSubscriptionId(owned, purchasedAt);
+    subscribed = subscriptionProductId != null;
     lifetime = owned.contains(lifetimeId);
     subscriptionPurchaseToken = subscribed ? subscriptionToken : null;
-    subscriptionCancelled = subscribed && autoRenewing[subscriptionId] == false;
+    subscriptionCancelled =
+        subscribed && autoRenewing[subscriptionProductId] == false;
     _confirmedByPlay = true;
     // The subscription's year governs syncing while it is active.
     this.purchasedAt = subscribed
-        ? purchasedAt[subscriptionId]
+        ? purchasedAt[subscriptionProductId]
         : lifetime
         ? purchasedAt[lifetimeId]
         : null;
@@ -199,8 +226,9 @@ class PremiumService extends ChangeNotifier {
     String? subscriptionToken,
   }) {
     if (_disposed) return;
-    if (productId == subscriptionId) {
+    if (subscriptionIds.contains(productId)) {
       subscribed = true;
+      subscriptionProductId = productId;
       subscriptionPurchaseToken = subscriptionToken;
       this.purchasedAt = purchasedAt;
     }
@@ -249,6 +277,7 @@ class PremiumService extends ChangeNotifier {
       lifetime = false;
       subscriptionCancelled = false;
       subscriptionPurchaseToken = null;
+      subscriptionProductId = null;
       purchasedAt = null;
       error = 'premium_unavailable';
       _notify();

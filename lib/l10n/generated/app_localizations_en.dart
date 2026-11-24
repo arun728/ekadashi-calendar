@@ -987,6 +987,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premium_switch_now_title => 'Change your plan?';
 
   @override
+  String get premium_switch_at_renewal_body =>
+      'Yearly stays active until your next renewal. Google Play then starts Monthly and charges for it.';
+
+  @override
+  String get premium_upcoming_plan => 'Upcoming plan';
+
+  @override
+  String get premium_monthly_switch_scheduled =>
+      'Switching to Monthly at renewal. See the date and time in Google Play.';
+
+  @override
+  String get premium_renewal_in_play =>
+      'See your next renewal and any scheduled change in Google Play.';
+
+  @override
   String get premium_switch_now_body =>
       'Your new plan starts today and is charged today. Any unused time on your current plan is added to it.';
 

@@ -20,6 +20,7 @@ extension PremiumState {
         if plan == scheduledPlan || (subscriptionCancelled && plan == currentPlan) { return .manage }
         guard canBuy else { return .none }
         if case .atRenewal = switchTiming(to: plan) { return .confirmSwitch(plan) }
+        if currentPlan == .monthly && plan == .yearly { return .confirmSwitch(plan) }
         if plan == .lifetime && subscribed { return .confirmLifetime }
         return .purchase(plan)
     }

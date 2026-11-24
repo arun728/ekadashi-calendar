@@ -75,12 +75,8 @@ class _PremiumScreenState extends State<PremiumScreen> {
   Future<void> _open(Uri uri) =>
       launchUrl(uri, mode: LaunchMode.externalApplication);
 
-  Future<void> _manage() => _open(
-    Uri.https('play.google.com', '/store/account/subscriptions', {
-      'package': 'com.applausestudios.ekadashi_calendar',
-      'sku': PlayBillingService.subscription,
-    }),
-  );
+  Future<void> _manage() =>
+      _open(PlayBillingService.managementUrl(premium.subscriptionProductId));
 
   String? _selected;
   String? _selectionOwnership;
@@ -157,13 +153,14 @@ class _PremiumScreenState extends State<PremiumScreen> {
       'yearly' => lang.translate('premium_per_year'),
       _ => lang.translate('premium_one_time'),
     };
+    final upcoming = plan.id == 'monthly' && billing.monthlySwitchScheduled;
     final secondary = IosColors.secondary(context);
     return Semantics(
       key: Key('premium_plan_${plan.id}'),
       button: true,
       selected: selected,
       child: Opacity(
-        opacity: billing.canBuy(plan) || current ? 1 : 0.5,
+        opacity: billing.canBuy(plan) || current || upcoming ? 1 : 0.5,
         child: DecoratedBox(
           position: DecorationPosition.foreground,
           decoration: BoxDecoration(
@@ -237,15 +234,39 @@ class _PremiumScreenState extends State<PremiumScreen> {
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: IosText.caption, color: secondary),
                 ),
-                if (current) ...[
+                if (current || upcoming) ...[
                   const SizedBox(height: 6),
-                  Text(
-                    lang.translate('premium_current_plan'),
-                    key: Key('premium_current_${plan.id}'),
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: IosColors.teal,
-                      fontSize: IosText.caption,
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: upcoming
+                          ? IosColors.teal.withValues(alpha: .12)
+                          : IosColors.primary(context).withValues(alpha: .08),
+                      shape: BoxShape.rectangle,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 3,
+                      ),
+                      child: Text(
+                        lang.translate(
+                          upcoming
+                              ? 'premium_upcoming_plan'
+                              : 'premium_current_plan',
+                        ),
+                        key: Key(
+                          'premium_${upcoming ? 'upcoming' : 'current'}_${plan.id}',
+                        ),
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: upcoming
+                              ? IosColors.teal
+                              : IosColors.primary(context),
+                          fontSize: IosText.caption2,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -300,10 +321,6 @@ class _PremiumScreenState extends State<PremiumScreen> {
       );
       if (go != true) return;
     }
-    // Switching base plans uses Play Console's "Charge immediately": the new
-    // plan starts and is charged today and the unused time is added to it.
-    // Say so first, since Apple-style deferred changes are not possible
-    // between base plans of one Play subscription.
     if (plan.id != 'lifetime' &&
         premium.subscribed &&
         !premium.lifetime &&
@@ -316,7 +333,13 @@ class _PremiumScreenState extends State<PremiumScreen> {
           final style = TextButton.styleFrom(foregroundColor: IosColors.teal);
           return AlertDialog(
             title: Text(lang.translate('premium_switch_now_title')),
-            content: Text(lang.translate('premium_switch_now_body')),
+            content: Text(
+              lang.translate(
+                plan.id == 'monthly'
+                    ? 'premium_switch_at_renewal_body'
+                    : 'premium_switch_now_body',
+              ),
+            ),
             actions: [
               TextButton(
                 style: style,
@@ -404,6 +427,8 @@ class _PremiumScreenState extends State<PremiumScreen> {
       animation: Listenable.merge([premium, billing]),
       builder: (context, _) {
         final selected = _selectedPlan();
+        final scheduled =
+            selected?.id == 'monthly' && billing.monthlySwitchScheduled;
         final showPlans = billing.plans.isNotEmpty;
         final orange = IosColors.orange(context);
         return AppBackground(
@@ -483,7 +508,9 @@ class _PremiumScreenState extends State<PremiumScreen> {
                                       'premium_subscriber_title',
                                     ),
                                     body: lang.translate(
-                                      'premium_subscriber_body',
+                                      billing.monthlySwitchScheduled
+                                          ? 'premium_monthly_switch_scheduled'
+                                          : 'premium_renewal_in_play',
                                     ),
                                   ),
                           ),
@@ -608,7 +635,9 @@ class _PremiumScreenState extends State<PremiumScreen> {
                           FilledButton(
                             key: const Key('premium_buy'),
                             style: IosButtons.prominent(vertical: 14),
-                            onPressed: billing.canBuy(selected)
+                            onPressed: scheduled
+                                ? _manage
+                                : billing.canBuy(selected)
                                 ? () =>
                                       premium.subscriptionCancelled &&
                                           selected.id == billing.currentPlanId
@@ -616,8 +645,10 @@ class _PremiumScreenState extends State<PremiumScreen> {
                                       : _buy(lang, selected)
                                 : null,
                             child: Text(
-                              premium.subscriptionCancelled &&
-                                      selected.id == billing.currentPlanId
+                              scheduled
+                                  ? lang.translate('premium_manage')
+                                  : premium.subscriptionCancelled &&
+                                        selected.id == billing.currentPlanId
                                   ? lang.translate('premium_reactivate')
                                   : '${lang.translate('premium_${selected.id}')} · ${selected.price}',
                               textAlign: TextAlign.center,

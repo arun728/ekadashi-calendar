@@ -991,6 +991,21 @@ class AppLocalizationsTa extends AppLocalizations {
   String get premium_switch_now_title => 'திட்டத்தை மாற்றவா?';
 
   @override
+  String get premium_switch_at_renewal_body =>
+      'அடுத்த புதுப்பிப்பு வரை ஆண்டுத் திட்டம் செயலில் இருக்கும். அதன் பிறகு கூகுள் பிளே மாதத் திட்டத்தைத் தொடங்கி அதற்கான கட்டணத்தை வசூலிக்கும்.';
+
+  @override
+  String get premium_upcoming_plan => 'அடுத்த திட்டம்';
+
+  @override
+  String get premium_monthly_switch_scheduled =>
+      'புதுப்பிக்கும்போது மாதத் திட்டம் தொடங்கும். தேதியையும் நேரத்தையும் கூகுள் பிளேயில் பார்க்கவும்.';
+
+  @override
+  String get premium_renewal_in_play =>
+      'அடுத்த புதுப்பிப்பையும் திட்டமிட்ட மாற்றத்தையும் கூகுள் பிளேயில் பார்க்கவும்.';
+
+  @override
   String get premium_switch_now_body =>
       'உங்கள் புதிய திட்டம் இன்றே தொடங்கும், இன்றே கட்டணம் வசூலிக்கப்படும். தற்போதைய திட்டத்தில் மீதமுள்ள காலம் அதில் சேர்க்கப்படும்.';
 

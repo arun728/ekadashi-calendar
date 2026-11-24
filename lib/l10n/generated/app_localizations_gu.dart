@@ -980,6 +980,21 @@ class AppLocalizationsGu extends AppLocalizations {
   String get premium_switch_now_title => 'પ્લાન બદલવો છે?';
 
   @override
+  String get premium_switch_at_renewal_body =>
+      'આગામી નવીનીકરણ સુધી વાર્ષિક પ્લાન ચાલુ રહેશે. પછી ગૂગલ પ્લે માસિક પ્લાન શરૂ કરશે અને તેનો ચાર્જ લેશે.';
+
+  @override
+  String get premium_upcoming_plan => 'આગામી પ્લાન';
+
+  @override
+  String get premium_monthly_switch_scheduled =>
+      'નવીનીકરણ વખતે માસિક પ્લાન શરૂ થશે. તારીખ અને સમય ગૂગલ પ્લેમાં જુઓ.';
+
+  @override
+  String get premium_renewal_in_play =>
+      'આગામી નવીનીકરણ અને નક્કી કરેલો ફેરફાર ગૂગલ પ્લેમાં જુઓ.';
+
+  @override
   String get premium_switch_now_body =>
       'તમારો નવો પ્લાન આજથી શરૂ થશે અને આજે જ ચુકવણી લેવાશે. હાલના પ્લાનનો બાકી સમય તેમાં ઉમેરાશે.';
 

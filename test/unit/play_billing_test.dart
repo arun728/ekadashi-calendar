@@ -433,16 +433,20 @@ void main() {
     await billing.restore();
     expect(billing.currentPlanId, 'yearly');
 
-      // Checkout can be tapped while launch is still restoring ownership.
-      // Play must replace the actual subscription, even with a free UI.
-      premium.applyOwned({});
-      await billing.buy(billing.plans.first);
-      change = (store.param as GooglePlayPurchaseParam).changeSubscriptionParam!;
-      expect(change.replacementMode, ReplacementMode.deferred);
-      expect(change.oldPurchaseDetails.productID, yearly);
+    // Checkout can be tapped while launch is still restoring ownership.
+    // Play must replace the actual subscription, even with a free UI.
+    premium.applyOwned({});
+    await billing.buy(billing.plans.first);
+    change = (store.param as GooglePlayPurchaseParam).changeSubscriptionParam!;
+    expect(change.replacementMode, ReplacementMode.deferred);
+    expect(change.oldPurchaseDetails.productID, yearly);
 
-    final scheduled = playPurchase(yearly, PurchaseStateWrapper.purchased,
-        acknowledged: true, token: 'scheduled-monthly');
+    final scheduled = playPurchase(
+      yearly,
+      PurchaseStateWrapper.purchased,
+      acknowledged: true,
+      token: 'scheduled-monthly',
+    );
     owned = [scheduled];
     final replaced = Completer<void>();
     billing.addListener(() {
@@ -454,8 +458,11 @@ void main() {
     store.updates.add([scheduled]);
     await replaced.future.timeout(const Duration(seconds: 5));
     expect(billing.currentPlanId, 'yearly');
-    expect(billing.canBuy(billing.plans.first), isFalse,
-        reason: 'a confirmed upcoming Monthly plan should open Play management');
+    expect(
+      billing.canBuy(billing.plans.first),
+      isFalse,
+      reason: 'a confirmed upcoming Monthly plan should open Play management',
+    );
 
     owned = [
       playPurchase(monthly, PurchaseStateWrapper.purchased, acknowledged: true),

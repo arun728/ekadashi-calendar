@@ -447,6 +447,70 @@ final class AppModelTests: XCTestCase {
 /// (16 Nov 2026): an idle subscriber must not keep the service refreshing.
 @MainActor
 final class PremiumRefreshChurnTests: XCTestCase {
+    func testStoreKitSwitchesToMonthlyAtTheYearlyRenewal() async throws {
+        #if targetEnvironment(simulator)
+        let configuration = try XCTUnwrap(Bundle.main.url(forResource: "Products", withExtension: "storekit"))
+        let session = try SKTestSession(contentsOf: configuration)
+        session.resetToDefaultState()
+        session.disableDialogs = true
+        session.timeRate = .realTime
+        session.clearTransactions()
+        defer { session.clearTransactions() }
+
+        print("STOREKIT RENEWAL: cleared isolated transaction history")
+        let service = StoreKitPremiumService()
+        await service.loadProducts()
+        XCTAssertEqual(service.products.count, 3)
+        print("STOREKIT RENEWAL: buying Monthly")
+        _ = try await session.buyProduct(identifier: PremiumProduct.monthly)
+        await service.refresh()
+        XCTAssertEqual(service.state.currentPlan, .monthly)
+        print("STOREKIT RENEWAL: buying Yearly")
+        _ = try await session.buyProduct(identifier: PremiumProduct.yearly)
+        await service.refresh()
+        XCTAssertEqual(service.state.currentPlan, .yearly)
+
+        print("STOREKIT RENEWAL: scheduling Monthly")
+        _ = try await session.buyProduct(identifier: PremiumProduct.monthly)
+        await service.refresh()
+        XCTAssertEqual(service.state.currentPlan, .yearly)
+        XCTAssertEqual(service.state.scheduledPlan, .monthly)
+        XCTAssertNotNil(service.state.nextRenewalDate)
+
+        print("STOREKIT RENEWAL: forcing the Yearly renewal")
+        try session.forceRenewalOfSubscription(productIdentifier: PremiumProduct.yearly)
+        await service.refresh()
+        XCTAssertEqual(service.state.currentPlan, .monthly)
+        XCTAssertNil(service.state.scheduledPlan)
+        XCTAssertTrue(service.state.isPremium)
+        #else
+        throw XCTSkip("Uses Xcode's isolated StoreKit test catalog")
+        #endif
+    }
+
+    func testStoreKitPricesFollowTheStorefrontCurrency() async throws {
+        #if targetEnvironment(simulator)
+        let configuration = try XCTUnwrap(Bundle.main.url(forResource: "Products", withExtension: "storekit"))
+        let session = try SKTestSession(contentsOf: configuration)
+        session.resetToDefaultState()
+        defer { session.resetToDefaultState() }
+        for (storefront, language, currency) in [
+            ("IND", "en_IN", "INR"), ("USA", "en_US", "USD"),
+            ("GBR", "en_GB", "GBP"), ("JPN", "ja_JP", "JPY"),
+        ] {
+            session.storefront = storefront
+            session.locale = Locale(identifier: language)
+            let service = StoreKitPremiumService()
+            await service.loadProducts()
+            let product = try XCTUnwrap(service.products[.yearly], storefront)
+            XCTAssertEqual(product.priceFormatStyle.currencyCode, currency, storefront)
+            XCTAssertFalse(product.displayPrice.isEmpty, storefront)
+        }
+        #else
+        throw XCTSkip("Uses Xcode's isolated StoreKit storefront")
+        #endif
+    }
+
     func testIdleSubscriberDoesNotKeepRefreshing() async throws {
         let configuration = try XCTUnwrap(Bundle.main.url(forResource: "Products", withExtension: "storekit"))
         let session = try SKTestSession(contentsOf: configuration)
@@ -483,8 +547,9 @@ final class PremiumPlanChangeWordingTests: XCTestCase {
                                             expirationDate: end, nextProductID: PremiumProduct.monthly,
                                             renewalDate: end)])
             let date = model.fullDate(CivilDate.today(now: end))
-            let message = model.premiumRenewalMessage(state)
-            XCTAssertEqual(message, model.t("premium_next_renewal_date", date), language)
+            let message = model.premiumRenewalMessage(state, now: end.addingTimeInterval(-1))
+            XCTAssertTrue(message.contains(model.t("premium_monthly")), language)
+            XCTAssertTrue(message.contains(":"), language)
             XCTAssertEqual(message.components(separatedBy: date).count, 2, language)
             if language != "en" {
                 XCTAssertNil(message.range(of: "[A-Za-z]", options: .regularExpression), language)
@@ -498,14 +563,15 @@ final class PremiumPlanChangeWordingTests: XCTestCase {
         let renewal = CivilDate(2027, 11, 16).utcMidnight.addingTimeInterval(2 * 3600)
         state.apply(owned: [OwnedProduct(productId: PremiumProduct.yearly, willAutoRenew: true,
                                         expirationDate: end, renewalDate: renewal)])
-        for (zone, date) in [("America/Los_Angeles", "Mon, 15 Nov 2027"),
-                             ("America/New_York", "Mon, 15 Nov 2027"),
-                             ("Europe/London", "Tue, 16 Nov 2027"),
-                             ("Asia/Kolkata", "Tue, 16 Nov 2027"),
-                             ("Asia/Tokyo", "Tue, 16 Nov 2027"),
-                             ("Pacific/Auckland", "Tue, 16 Nov 2027")] {
+        for (zone, date) in [("America/Los_Angeles", "Mon, 15 Nov 2027 · 6:00 PM"),
+                             ("America/New_York", "Mon, 15 Nov 2027 · 9:00 PM"),
+                             ("Europe/London", "Tue, 16 Nov 2027 · 2:00 AM"),
+                             ("Asia/Kolkata", "Tue, 16 Nov 2027 · 7:30 AM"),
+                             ("Asia/Tokyo", "Tue, 16 Nov 2027 · 11:00 AM"),
+                             ("Pacific/Auckland", "Tue, 16 Nov 2027 · 3:00 PM")] {
             let timeZone = try XCTUnwrap(TimeZone(identifier: zone))
-            XCTAssertEqual(model.premiumRenewalMessage(state, timeZone: timeZone), "Next renewal · \(date)", zone)
+            XCTAssertEqual(model.premiumRenewalMessage(state, timeZone: timeZone, now: renewal.addingTimeInterval(-1)),
+                           "Next renewal · \(date)", zone)
         }
     }
 
@@ -518,23 +584,22 @@ final class PremiumPlanChangeWordingTests: XCTestCase {
         XCTAssertEqual(model.premiumRenewalMessage(state), model.t("premium_subscriber_body"))
     }
 
-    func testTilesNameTheScheduledStartAndTheCurrentEndInEveryLanguage() {
+    func testTilesShowShortStatusBadgesInEveryLanguage() {
         for language in ["en", "hi", "ta", "te", "gu", "bn"] {
             let model = AppModel(store: InMemoryKeyValueStore(["has_launched": true, "language_code": language]))
             var state = PremiumState()
             state.apply(owned: [OwnedProduct(productId: PremiumProduct.yearly, willAutoRenew: true, expirationDate: end,
                                              nextProductID: PremiumProduct.monthly, renewalDate: end)])
-            let date = model.fullDate(CivilDate.today(now: end))
-            let starts = model.premiumPlanBadgeText(state, .monthly)
-            let until = model.premiumPlanBadgeText(state, .yearly)
-            XCTAssertEqual(starts, model.t("ios_premium_starts_on", date), language)
-            XCTAssertEqual(until, model.t("ios_premium_current_until", date), language)
+            let upcoming = model.premiumPlanBadgeText(state, .monthly)
+            let current = model.premiumPlanBadgeText(state, .yearly)
+            XCTAssertEqual(upcoming, model.t("premium_upcoming_plan"), language)
+            XCTAssertEqual(current, model.t("premium_current_plan"), language)
             XCTAssertNil(model.premiumPlanBadgeText(state, .lifetime))
             if language == "en" {
-                XCTAssertEqual(starts, "Starts \(date)")
-                XCTAssertEqual(until, "Current plan until \(date)")
+                XCTAssertEqual(upcoming, "Upcoming plan")
+                XCTAssertEqual(current, "Your current plan")
             } else {
-                for text in [starts, until] { XCTAssertNil(text?.range(of: "[A-Za-z]", options: .regularExpression), language) }
+                for text in [upcoming, current] { XCTAssertNil(text?.range(of: "[A-Za-z]", options: .regularExpression), language) }
             }
         }
     }
@@ -544,8 +609,9 @@ final class PremiumPlanChangeWordingTests: XCTestCase {
         var state = PremiumState()
         state.apply(owned: [OwnedProduct(productId: PremiumProduct.yearly, willAutoRenew: true, expirationDate: end)])
         let date = model.fullDate(CivilDate.today(now: end))
-        XCTAssertEqual(model.premiumSwitchNote(state, to: .monthly),
-                       "Yearly stays active until \(date). Monthly starts on \(date).")
+        let downgrade = model.premiumSwitchNote(state, to: .monthly)
+        XCTAssertTrue(downgrade?.contains("Monthly starts on \(date) · ") == true)
+        XCTAssertEqual(downgrade?.components(separatedBy: date).count, 2)
         XCTAssertNil(model.premiumSwitchNote(state, to: .lifetime), "Lifetime starts now")
         state.apply(owned: [OwnedProduct(productId: PremiumProduct.monthly, willAutoRenew: true, expirationDate: end)])
         XCTAssertEqual(model.premiumSwitchNote(state, to: .yearly),

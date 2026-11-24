@@ -136,6 +136,8 @@ public struct PremiumState: Equatable, Sendable {
     public private(set) var renewalStatusUnknown = false
     /// When the paid period of the subscription in use ends.
     public private(set) var currentPeriodEnd: Date?
+    /// The next charge boundary confirmed by the subscription's renewal record.
+    public private(set) var nextRenewalDate: Date?
 
     /// Applies the complete owned list, revoking anything missing.
     public mutating func apply(owned: [OwnedProduct], billingRetry: Bool = false) {
@@ -158,6 +160,9 @@ public struct PremiumState: Equatable, Sendable {
         subscriptionCancelled = subscription?.willAutoRenew == false
         renewalStatusUnknown = subscription != nil && subscription?.willAutoRenew == nil
         currentPeriodEnd = subscription?.expirationDate
+        nextRenewalDate = subscription?.willAutoRenew == true
+            ? subscription?.renewalDate ?? subscription?.expirationDate
+            : nil
         cancelledSubscriptionEndDate = subscriptionCancelled ? subscription?.expirationDate : nil
         let nextPlan = subscription?.nextProductID.flatMap(PremiumPlanID.init(productId:))
         scheduledPlan = subscription?.willAutoRenew == true && nextPlan != currentPlan && nextPlan != .lifetime
@@ -178,6 +183,7 @@ public struct PremiumState: Equatable, Sendable {
         cancelledSubscriptionEndDate = nil
         renewalStatusUnknown = false
         currentPeriodEnd = nil
+        nextRenewalDate = nil
         currentPlan = nil
         scheduledPlan = nil
         scheduledPlanDate = nil

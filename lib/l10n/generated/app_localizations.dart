@@ -1954,6 +1954,30 @@ abstract class AppLocalizations {
   /// **'Change your plan?'**
   String get premium_switch_now_title;
 
+  /// No description provided for @premium_switch_at_renewal_body.
+  ///
+  /// In en, this message translates to:
+  /// **'Yearly stays active until your next renewal. Google Play then starts Monthly and charges for it.'**
+  String get premium_switch_at_renewal_body;
+
+  /// No description provided for @premium_upcoming_plan.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming plan'**
+  String get premium_upcoming_plan;
+
+  /// No description provided for @premium_monthly_switch_scheduled.
+  ///
+  /// In en, this message translates to:
+  /// **'Switching to Monthly at renewal. See the date and time in Google Play.'**
+  String get premium_monthly_switch_scheduled;
+
+  /// No description provided for @premium_renewal_in_play.
+  ///
+  /// In en, this message translates to:
+  /// **'See your next renewal and any scheduled change in Google Play.'**
+  String get premium_renewal_in_play;
+
   /// No description provided for @premium_switch_now_body.
   ///
   /// In en, this message translates to:
