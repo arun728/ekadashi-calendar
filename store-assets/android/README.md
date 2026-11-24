@@ -16,8 +16,9 @@ owned, no prices, Wi-Fi-only status bar (SystemUI demo mode).
       (upcoming-large missing: Upcoming has no Large size; check). NEXT: compose slide 10 as a mock Android home screen with these.
 - [x] All 10 slides composed: screenshots/phone-1080x1920/ (contact-sheet.png). Slide 10 = Android home screen with the Ekadashi (Medium) and Upcoming (Large) widgets from the in-app preview (tools/crop_widgets.py; compose2.py `screen: android-widgets`). Waiting for Arun to pick 8. like iOS (`../ios/tools/compose2.py`, FW=1320 FH=2347,
       then scale to 1080 × 1920)
-- [ ] Video: same flows recorded, ~1× speed, music = `../ios/preview/music-original-bhupali.m4a`
-      (Arun chose it on 24 Nov 2026; re-render with ../ios/tools/synth.py if longer than 32 s)
+- [x] Video: preview/ekadashi-play-video-1080x1920.mp4 — 9 scenes at 1× (iOS: 11 at up to 4×), 30.6 s, H.264 30 fps + AAC,
+      original Bhupali music. Footage: profile build driven by real touches (tools/rec_video.py; the debug test build was too choppy).
+      Panchang shows Chennai (Arun OK'd). For Play it is uploaded to YouTube (ask Arun before uploading).
 - [ ] Listing text (short 80 / full 4000, no year), Data safety notes
 
 App note: Panchang Key days shows "1 days ago" (should be "1 day ago").

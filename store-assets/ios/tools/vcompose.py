@@ -7,9 +7,11 @@ import json, sys, subprocess, pathlib, math
 
 CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 FF = "/opt/homebrew/bin/ffmpeg"
-W, H = 886, 1920
-VW = 700                       # footage width inside the card
-VH = round(VW * 2868 / 1320)   # 1521
+import os
+# Defaults are the iOS preview; Android sets VW_OUT=1080 VW_FOOT=680 SRC_W=1344 SRC_H=2992.
+W, H = int(os.environ.get("VW_OUT", 886)), 1920
+VW = int(os.environ.get("VW_FOOT", 700))  # footage width inside the card
+VH = round(VW * int(os.environ.get("SRC_H", 2868)) / int(os.environ.get("SRC_W", 1320)))
 VX, VY = (W - VW) // 2, 352
 FPS = 30
 XF = 0.35                      # cross-fade seconds
@@ -73,7 +75,7 @@ def scene_clip(scene, vdir, work, i):
     else:
         src = vdir / scene["clip"]
         speed = scene.get("speed", 1.0)
-        fc = (f"[1:v]trim=start={scene['start']}:duration={dur*speed},setpts=(PTS-STARTPTS)/{speed},fps={FPS},"
+        fc = (f"[1:v]trim=start={scene['start']}:duration={dur*speed},setpts=(PTS-STARTPTS)/{speed},tpad=stop_mode=clone:stop_duration=4,fps={FPS},"
               f"scale={VW}:{VH}:flags=lanczos,format=rgba[v];[2:v]format=gray[m];[v][m]alphamerge[vm];"
               f"[0:v][vm]overlay={VX}:{VY}:shortest=1,format=yuv420p[o]")
         cmd = [FF, "-y", "-loglevel", "error", "-loop", "1", "-t", str(dur), "-i", str(card), "-i", str(src),

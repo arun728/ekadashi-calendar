@@ -261,6 +261,145 @@ void main() {
       await shot('w-upcoming-medium');
       await tapText('Large');
       await shot('w-upcoming-large');
+    } else if (session == 'video') {
+      // Each scene: the host starts screenrecord on REC:<name> and stops on STOP:<name>.
+      Future<void> scene(String name, double seconds, Future<void> Function() act) async {
+        debugPrint('REC:$name');
+        await hold(1.2); // screenrecord start-up
+        final end = DateTime.now().add(Duration(milliseconds: (seconds * 1000).round()));
+        await act();
+        while (DateTime.now().isBefore(end)) {
+          await tester.pump(const Duration(milliseconds: 16));
+        }
+        debugPrint('STOP:$name');
+        await hold(1.0);
+      }
+      Future<void> slowScroll(double dy, double seconds) async {
+        final lists = find.byWidgetPredicate((w) => w is Scrollable && w.axisDirection == AxisDirection.down);
+        if (lists.evaluate().isEmpty) return;
+        final g = await tester.startGesture(tester.getCenter(lists.last));
+        final steps = (seconds * 60).round();
+        for (var i = 0; i < steps; i++) {
+          await g.moveBy(Offset(0, dy / steps));
+          await tester.pump(const Duration(milliseconds: 16));
+        }
+        await g.up();
+        await hold(0.6);
+      }
+      Future<void> tapText(String t) async {
+        final f = find.text(t);
+        if (!await ready(f, seconds: 8)) { debugPrint('MISSING:text $t'); return; }
+        final v = f.hitTestable();
+        await tester.tap(v.evaluate().isNotEmpty ? v.first : f.last, warnIfMissed: false);
+        await hold(1.2);
+      }
+      Future<void> tapOnScreen(String id) async {
+        final f = find.byKey(Key(id));
+        if (!await ready(f, seconds: 10)) { debugPrint('MISSING:$id'); return; }
+        final size = tester.view.physicalSize / tester.view.devicePixelRatio;
+        for (var k = 0; k < f.evaluate().length; k++) {
+          final c = tester.getCenter(f.at(k));
+          if (c.dx > 0 && c.dx < size.width && c.dy > 0 && c.dy < size.height) {
+            await tester.tapAt(c);
+            return;
+          }
+        }
+        debugPrint('OFFSCREEN:$id');
+      }
+
+      // Off camera: record 2026 so Journey has points.
+      await tap('glass_tab_2', after: 2);
+      await tap('journey_tab_history', after: 2);
+      await pickYear('journey_history_year_menu', '2026');
+      for (final n in plan.keys) {
+        final id = 'journey_row_ekadashi:2026:${n.toString().padLeft(2, '0')}';
+        final row = find.byKey(Key(id));
+        for (var k = 0; k < 40 && row.evaluate().isEmpty; k++) {
+          final lists = find.byWidgetPredicate((w) => w is Scrollable && w.axisDirection == AxisDirection.down);
+          if (lists.evaluate().isEmpty) { await hold(0.5); continue; }
+          await tester.drag(lists.last, const Offset(0, -300), warnIfMissed: false);
+          await hold(0.4);
+        }
+        if (!await tap(id, after: 1.5)) continue;
+        final (status, method) = plan[n]!;
+        if (status != 'observed') await tap('vrat_status_$status', seconds: 4, after: 0.5);
+        if (method != null) await tap('vrat_method_$method', seconds: 4, after: 0.4);
+        await tap('vrat_record_save', seconds: 5, after: 1.8);
+        for (final close in ['journey_celebration_close', 'achievement_unlock_ok']) {
+          if (find.byKey(Key(close)).evaluate().isNotEmpty) await tap(close, after: 1.2);
+        }
+      }
+      await tap('glass_tab_0', after: 3);
+      await settled();
+      await hold(2);
+
+      await scene('home', 4.5, () async {
+        await hold(1.6);
+        await tapOnScreen('home_next');
+        await hold(1.6);
+        await tapOnScreen('home_previous');
+      });
+      await scene('language', 4.5, () async {
+        await hold(0.6);
+        await tapOnScreen('language_menu');
+        await hold(1.0);
+        await tapText('हिंदी');
+      });
+      // Back to English off camera.
+      await tapOnScreen('language_menu');
+      await hold(1);
+      await tapText('English');
+      await settled();
+      await scene('share', 4.0, () async {
+        await hold(0.6);
+        await tapOnScreen('home_share_card');
+      });
+      await back();
+      await scene('calendar', 4.5, () async {
+        await tapOnScreen('glass_tab_1');
+        await hold(1.8);
+        await tapText('15');
+      });
+      await tap('glass_tab_3', after: 4);
+      await tap('panchang_tab_keydays', after: 2);
+      await scene('festivals', 4.5, () async {
+        await hold(0.4);
+        await tapOnScreen('panchang_key_filter_festival');
+        await hold(1.0);
+        await slowScroll(-500, 2.0);
+      });
+      await scene('panchang', 4.5, () async {
+        await tapOnScreen('panchang_tab_daily');
+        await hold(1.4);
+        await slowScroll(-700, 2.4);
+      });
+      await tap('glass_tab_2', after: 2);
+      await tap('journey_tab_overview', after: 1.5);
+      await pickYear('journey_overview_year', '2026');
+      await tester.drag(find.byWidgetPredicate((w) => w is Scrollable && w.axisDirection == AxisDirection.down).last, const Offset(0, 2000), warnIfMissed: false);
+      await hold(1.5);
+      await scene('journey', 4.5, () async {
+        await hold(0.6);
+        await slowScroll(-600, 2.6);
+      });
+      await tester.drag(find.byWidgetPredicate((w) => w is Scrollable && w.axisDirection == AxisDirection.down).last, const Offset(0, 3000), warnIfMissed: false);
+      await hold(1.2);
+      await scene('journey-share', 4.0, () async {
+        await hold(0.4);
+        await tapOnScreen('journey_share_year');
+      });
+      await back();
+      await tap('glass_tab_4', after: 2);
+      await tapText('Widget Preview');
+      await tapText('Medium');
+      await scene('widgets', 5.0, () async {
+        await hold(1.2);
+        await tapText('Small');
+        await hold(0.6);
+        await tapText('Upcoming Ekadashis');
+        await hold(0.4);
+        await tapText('Large');
+      });
     } else if (session == 'oct') {
       await tap('glass_tab_1', after: 3);
       await shot('calendar-diwali', settle: 2);
