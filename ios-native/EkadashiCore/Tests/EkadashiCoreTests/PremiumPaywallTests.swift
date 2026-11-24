@@ -77,6 +77,7 @@ final class PremiumPaywallTests: XCTestCase {
 
         var monthly = PremiumState()
         monthly.apply(owned: [OwnedProduct(productId: PremiumProduct.monthly, willAutoRenew: true, expirationDate: end)])
-        XCTAssertEqual(monthly.paywallAction(for: .yearly, canBuy: true), .purchase(.yearly), "Upgrades start now")
+        XCTAssertEqual(monthly.paywallAction(for: .yearly, canBuy: true), .confirmSwitch(.yearly),
+                       "Disclose Apple's refund before the immediate upgrade")
     }
 }

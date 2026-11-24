@@ -579,6 +579,48 @@ final class ScreenshotTests: XCTestCase {
         #endif
     }
 
+    @MainActor
+    func testStoreKitDowngradeKeepsYearlyUntilMonthlyRenews() async throws {
+        #if !targetEnvironment(simulator)
+        throw XCTSkip("Uses Xcode's isolated StoreKit test catalog")
+        #else
+        let configuration = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("EkadashiCalendar/Resources/Products.storekit")
+        app.terminate()
+        let session = try SKTestSession(contentsOf: configuration)
+        session.resetToDefaultState()
+        session.disableDialogs = true
+        session.timeRate = .realTime
+        try session.clearTransactions()
+        defer { try? session.clearTransactions() }
+        _ = try await session.buyProduct(identifier: "ekadashi_premium_monthly")
+        _ = try await session.buyProduct(identifier: "ekadashi_premium_yearly")
+        _ = try await session.buyProduct(identifier: "ekadashi_premium_monthly")
+
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        glassTab(4)
+        app.buttons["settings_premium"].firstMatch.tap()
+        let yearly = app.buttons["premium_plan_yearly"].firstMatch
+        let monthly = app.buttons["premium_plan_monthly"].firstMatch
+        await fulfillment(of: [expectation(for: NSPredicate(format: "label CONTAINS %@", "Your current plan"),
+                                           evaluatedWith: yearly)], timeout: 30)
+        XCTAssertTrue(monthly.label.contains("Upcoming plan"))
+        XCTAssertFalse(monthly.label.contains("Starts"))
+        XCTAssertTrue(app.staticTexts["premium_next_renewal"].firstMatch.label.contains("Next renewal"))
+        snap("premium-yearly-current-monthly-upcoming")
+
+        try session.forceRenewalOfSubscription(productIdentifier: "ekadashi_premium_yearly")
+        XCUIDevice.shared.press(.home)
+        app.activate()
+        await fulfillment(of: [expectation(for: NSPredicate(format: "label CONTAINS %@", "Your current plan"),
+                                           evaluatedWith: monthly)], timeout: 30)
+        XCTAssertFalse(yearly.label.contains("Your current plan"))
+        XCTAssertFalse(monthly.label.contains("Upcoming plan"))
+        snap("premium-monthly-after-renewal")
+        #endif
+    }
+
     /// Arun's iPhone: with Yearly cancelled, choosing Monthly and Buy did
     /// nothing because the plan-change note never appeared.
     @MainActor
