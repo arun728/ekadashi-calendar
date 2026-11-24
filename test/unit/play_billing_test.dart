@@ -359,6 +359,87 @@ void main() {
     await store.updates.close();
   });
 
+  test('separate products use paid upgrades and deferred downgrades', () async {
+    const monthly = 'ekadashi_premium_monthly';
+    const yearly = 'ekadashi_premium_yearly';
+    final store = Store()
+      ..catalog = [
+        for (final (id, basePlan, period) in [
+          (monthly, 'monthly', 'P1M'),
+          (yearly, 'yearly', 'P1Y'),
+        ])
+          ...GooglePlayProductDetails.fromProductDetails(
+            ProductDetailsWrapper(
+              description: 'Premium',
+              name: 'Premium',
+              productId: id,
+              productType: ProductType.subs,
+              title: 'Premium',
+              subscriptionOfferDetails: [
+                SubscriptionOfferDetailsWrapper(
+                  basePlanId: basePlan,
+                  offerIdToken: '$basePlan-offer',
+                  offerTags: const [],
+                  pricingPhases: [
+                    PricingPhaseWrapper(
+                      billingCycleCount: 0,
+                      billingPeriod: period,
+                      formattedPrice: '₹99',
+                      priceAmountMicros: 99000000,
+                      priceCurrencyCode: 'INR',
+                      recurrenceMode: RecurrenceMode.infiniteRecurring,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+      ];
+    InAppPurchasePlatform.instance = store;
+    SharedPreferences.setMockInitialValues({});
+    var owned = [
+      playPurchase(monthly, PurchaseStateWrapper.purchased, acknowledged: true),
+    ];
+    final premium = PremiumService(
+      entitlements: PlayStoreEntitlements(query: () async => owned),
+    );
+    final billing = PlayBillingService(premium);
+    addTearDown(() async {
+      billing.dispose();
+      premium.dispose();
+      await store.updates.close();
+    });
+    await billing.initialize();
+    await premium.refresh();
+    expect(billing.currentPlanId, 'monthly');
+    expect(billing.plans.map((p) => p.id), ['monthly', 'yearly']);
+
+    await billing.buy(billing.plans.last);
+    var change =
+        (store.param as GooglePlayPurchaseParam).changeSubscriptionParam!;
+    expect(change.replacementMode, ReplacementMode.chargeFullPrice);
+    expect(change.oldPurchaseDetails.productID, monthly);
+
+    owned = [
+      playPurchase(yearly, PurchaseStateWrapper.purchased, acknowledged: true),
+    ];
+    await premium.refresh();
+    expect(billing.currentPlanId, 'yearly');
+    await billing.buy(billing.plans.first);
+    change = (store.param as GooglePlayPurchaseParam).changeSubscriptionParam!;
+    expect(change.replacementMode, ReplacementMode.deferred);
+    expect(change.oldPurchaseDetails.productID, yearly);
+    await billing.restore();
+    expect(billing.currentPlanId, 'yearly');
+
+    owned = [
+      playPurchase(monthly, PurchaseStateWrapper.purchased, acknowledged: true),
+    ];
+    await billing.restore();
+    expect(billing.currentPlanId, 'monthly');
+    expect(premium.isPremium, isTrue);
+  });
+
   group('owned purchases from Google Play', () {
     test(
       'only PURCHASED premium products count and are acknowledged',
