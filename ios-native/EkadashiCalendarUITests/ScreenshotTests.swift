@@ -120,7 +120,7 @@ final class ScreenshotTests: XCTestCase {
         lifetime.tap(); app.buttons["premium_buy"].firstMatch.tap()
         let confirm = app.alerts.buttons["Buy lifetime"]
         if confirm.exists { confirm.tap() }
-        let owned = NSPredicate(format: "label CONTAINS %@", "Your current plan")
+        let owned = NSPredicate(format: "label CONTAINS %@", "Current plan")
         guard XCTWaiter.wait(for: [expectation(for: owned, evaluatedWith: lifetime)], timeout: 10) == .completed else {
             XCTFail("Purchase must be verified by the app before testing Premium pages"); return
         }
@@ -471,7 +471,7 @@ final class ScreenshotTests: XCTestCase {
             let owned = app.buttons["premium_plan_\(product)"].firstMatch
             // Lifetime is already the selected suggestion after Yearly. Wait
             // for verified ownership, not only the pre-existing selection.
-            await fulfillment(of: [expectation(for: NSPredicate(format: "label CONTAINS %@", "Your current plan"), evaluatedWith: owned)], timeout: 60)
+            await fulfillment(of: [expectation(for: NSPredicate(format: "label CONTAINS %@", "Current plan"), evaluatedWith: owned)], timeout: 60)
             let tile = app.buttons["premium_plan_\(next)"].firstMatch
             await fulfillment(of: [expectation(for: NSPredicate(format: "exists == true AND selected == true"), evaluatedWith: tile)], timeout: 60)
             XCTAssertTrue(tile.isSelected, next)
@@ -515,7 +515,7 @@ final class ScreenshotTests: XCTestCase {
                                      "The loading indicator is inside the page and pushes the plans down")
         }
         // Wait for the store's answer: Monthly is marked as the current plan.
-        await fulfillment(of: [expectation(for: NSPredicate(format: "label CONTAINS %@", "Your current plan"),
+        await fulfillment(of: [expectation(for: NSPredicate(format: "label CONTAINS %@", "Current plan"),
                                            evaluatedWith: tiles[0])], timeout: 60)
         try await Task.sleep(nanoseconds: 1_000_000_000)
         let settled = tiles.map(\.frame)
@@ -560,7 +560,7 @@ final class ScreenshotTests: XCTestCase {
         app.launch()
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
         glassTab(4); app.buttons["settings_premium"].firstMatch.tap()
-        let current = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'premium_plan_' AND label CONTAINS 'Your current plan'")).firstMatch
+        let current = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'premium_plan_' AND label CONTAINS 'Current plan'")).firstMatch
         XCTAssertTrue(current.waitForExistence(timeout: 60), "The store never reported the subscription")
         let lifetime = app.buttons["premium_plan_lifetime"].firstMatch
         lifetime.tap()
@@ -603,7 +603,7 @@ final class ScreenshotTests: XCTestCase {
         app.buttons["settings_premium"].firstMatch.tap()
         let yearly = app.buttons["premium_plan_yearly"].firstMatch
         let monthly = app.buttons["premium_plan_monthly"].firstMatch
-        await fulfillment(of: [expectation(for: NSPredicate(format: "label CONTAINS %@", "Your current plan"),
+        await fulfillment(of: [expectation(for: NSPredicate(format: "label CONTAINS %@", "Current plan"),
                                            evaluatedWith: yearly)], timeout: 30)
         XCTAssertTrue(monthly.label.contains("Upcoming plan"))
         XCTAssertFalse(monthly.label.contains("Starts"))
@@ -613,9 +613,9 @@ final class ScreenshotTests: XCTestCase {
         try session.forceRenewalOfSubscription(productIdentifier: "ekadashi_premium_yearly")
         XCUIDevice.shared.press(.home)
         app.activate()
-        await fulfillment(of: [expectation(for: NSPredicate(format: "label CONTAINS %@", "Your current plan"),
+        await fulfillment(of: [expectation(for: NSPredicate(format: "label CONTAINS %@", "Current plan"),
                                            evaluatedWith: monthly)], timeout: 30)
-        XCTAssertFalse(yearly.label.contains("Your current plan"))
+        XCTAssertFalse(yearly.label.contains("Current plan"))
         XCTAssertFalse(monthly.label.contains("Upcoming plan"))
         snap("premium-monthly-after-renewal")
         #endif
@@ -642,7 +642,7 @@ final class ScreenshotTests: XCTestCase {
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
         glassTab(4); app.buttons["settings_premium"].firstMatch.tap()
         let yearly = app.buttons["premium_plan_yearly"].firstMatch
-        await fulfillment(of: [expectation(for: NSPredicate(format: "label CONTAINS %@", "Your current plan"),
+        await fulfillment(of: [expectation(for: NSPredicate(format: "label CONTAINS %@", "Current plan"),
                                            evaluatedWith: yearly)], timeout: 60)
         // Establish the verified subscription before turning off renewal.
         try session.disableAutoRenewForTransaction(identifier: UInt(yearlyPurchase.id))
@@ -650,7 +650,7 @@ final class ScreenshotTests: XCTestCase {
         app.activate()
         let cancelled = app.staticTexts["Subscription cancelled"].firstMatch
         XCTAssertTrue(cancelled.waitForExistence(timeout: 30))
-        XCTAssertTrue(yearly.label.contains("Your current plan"))
+        XCTAssertTrue(yearly.label.contains("Current plan"))
         let monthly = app.buttons["premium_plan_monthly"].firstMatch
         monthly.tap()
         XCTAssertTrue(monthly.wait(for: \.isSelected, toEqual: true, timeout: 3), "One tap must select Monthly")
@@ -677,7 +677,7 @@ final class ScreenshotTests: XCTestCase {
         glassTab(4); app.buttons["settings_premium"].firstMatch.tap()
         let tile = { (id: String) in self.app.buttons["premium_plan_\(id)"].firstMatch }
         XCTAssertTrue(tile("lifetime").waitForExistence(timeout: 30), "The App Store returned no plans")
-        let current = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'premium_plan_' AND label CONTAINS 'Your current plan'")).firstMatch
+        let current = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'premium_plan_' AND label CONTAINS 'Current plan'")).firstMatch
         let subscribed = current.waitForExistence(timeout: 30)
         let currentID = subscribed ? current.identifier : "none"
         print("DEVICE premium current=\(currentID) labels=\(["monthly", "yearly", "lifetime"].map { tile($0).label })")
@@ -693,7 +693,7 @@ final class ScreenshotTests: XCTestCase {
             }
             if capturedPlans.insert(id).inserted { snap("app-review-\(id)") }
         }
-        for id in ["lifetime", "monthly", "yearly", "lifetime"] where !tile(id).label.contains("Your current plan") { select(id) }
+        for id in ["lifetime", "monthly", "yearly", "lifetime"] where !tile(id).label.contains("Current plan") { select(id) }
         let buy = app.buttons["premium_buy"].firstMatch
         if subscribed {
             select("lifetime")
@@ -812,7 +812,7 @@ final class ScreenshotTests: XCTestCase {
         app.buttons["premium_buy"].firstMatch.tap()
         XCUIDevice.shared.press(.home)
         app.activate()
-        await fulfillment(of: [expectation(for: NSPredicate(format: "label CONTAINS %@", "Your current plan"), evaluatedWith: product)], timeout: 60)
+        await fulfillment(of: [expectation(for: NSPredicate(format: "label CONTAINS %@", "Current plan"), evaluatedWith: product)], timeout: 60)
         app.buttons["premium_close"].firstMatch.tap()
         let manage = app.buttons["Manage"].firstMatch
         XCTAssertTrue(manage.waitForExistence(timeout: 30))

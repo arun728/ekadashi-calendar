@@ -169,7 +169,7 @@ final class AppModel {
     ) -> String {
         if state.renewalStatusUnknown { return t("ios_premium_renewal_unknown") }
         if let date = state.nextRenewalDate, date > now {
-            let renewal = premiumDateAndTime(date, in: timeZone)
+            let renewal = fullDate(CivilDate.today(in: timeZone, now: date))
             if let plan = state.scheduledPlan {
                 return t("ios_premium_scheduled_plan_date", t("premium_\(plan.rawValue)"), renewal)
             }
@@ -177,16 +177,6 @@ final class AppModel {
         }
         guard let plan = state.scheduledPlan else { return t("premium_subscriber_body") }
         return t("ios_premium_scheduled_plan", t("premium_\(plan.rawValue)"))
-    }
-
-    private func premiumDateAndTime(_ instant: Date, in timeZone: TimeZone = .autoupdatingCurrent) -> String {
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = timeZone
-        let hour = calendar.component(.hour, from: instant)
-        let minute = calendar.component(.minute, from: instant)
-        let date = fullDate(CivilDate.today(in: timeZone, now: instant))
-        let time = Localizer.shared.clock(hour: hour, minute: minute, language: language)
-        return "\(date) · \(time)"
     }
 
     /// The plan tiles identify ownership and the upcoming plan. Dates are
@@ -205,7 +195,7 @@ final class AppModel {
         guard case .atRenewal(let date) = state.switchTiming(to: plan), let current = state.currentPlan else { return nil }
         guard let date else { return t("ios_premium_scheduled_plan", t("premium_\(plan.rawValue)")) }
         return t("ios_premium_switch_note", t("premium_\(current.rawValue)"),
-                 premiumDateAndTime(date), t("premium_\(plan.rawValue)"))
+                 fullDate(CivilDate.today(in: .autoupdatingCurrent, now: date)), t("premium_\(plan.rawValue)"))
     }
 
     func premiumCancellationMessage(_ state: PremiumState) -> String {

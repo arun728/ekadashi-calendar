@@ -914,7 +914,7 @@ class AppLocalizationsBn extends AppLocalizations {
   String get premium_active => 'প্রিমিয়াম অ্যাক্সেস সক্রিয়';
 
   @override
-  String get premium_current_plan => 'আপনার বর্তমান প্ল্যান';
+  String get premium_current_plan => 'বর্তমান প্ল্যান';
 
   @override
   String get premium_best_value => 'সবচেয়ে সাশ্রয়ী';
@@ -998,7 +998,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get premium_monthly_switch_scheduled =>
-      'নবীকরণের সময় মাসিক প্ল্যান শুরু হবে। তারিখ ও সময় গুগল প্লেতে দেখুন।';
+      'নবীকরণের সময় মাসিক প্ল্যান শুরু হবে। নবীকরণের তারিখ গুগল প্লেতে দেখুন।';
 
   @override
   String get premium_renewal_in_play =>

@@ -916,7 +916,7 @@ class AppLocalizationsTa extends AppLocalizations {
   String get premium_active => 'பிரீமியம் அணுகல் செயலில் உள்ளது';
 
   @override
-  String get premium_current_plan => 'உங்கள் தற்போதைய திட்டம்';
+  String get premium_current_plan => 'தற்போதைய திட்டம்';
 
   @override
   String get premium_best_value => 'சிறந்த மதிப்பு';
@@ -999,7 +999,7 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get premium_monthly_switch_scheduled =>
-      'புதுப்பிக்கும்போது மாதத் திட்டம் தொடங்கும். தேதியையும் நேரத்தையும் கூகுள் பிளேயில் பார்க்கவும்.';
+      'புதுப்பிக்கும்போது மாதத் திட்டம் தொடங்கும். புதுப்பிப்புத் தேதியைக் கூகுள் பிளேயில் பார்க்கவும்.';
 
   @override
   String get premium_renewal_in_play =>

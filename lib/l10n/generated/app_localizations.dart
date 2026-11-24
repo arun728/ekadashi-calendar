@@ -1825,7 +1825,7 @@ abstract class AppLocalizations {
   /// No description provided for @premium_current_plan.
   ///
   /// In en, this message translates to:
-  /// **'Your current plan'**
+  /// **'Current plan'**
   String get premium_current_plan;
 
   /// No description provided for @premium_best_value.
@@ -1969,7 +1969,7 @@ abstract class AppLocalizations {
   /// No description provided for @premium_monthly_switch_scheduled.
   ///
   /// In en, this message translates to:
-  /// **'Switching to Monthly at renewal. See the date and time in Google Play.'**
+  /// **'Switching to Monthly at renewal. See the renewal date in Google Play.'**
   String get premium_monthly_switch_scheduled;
 
   /// No description provided for @premium_renewal_in_play.

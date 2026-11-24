@@ -907,7 +907,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get premium_active => 'प्रीमियम सुविधा सक्रिय है';
 
   @override
-  String get premium_current_plan => 'आपका मौजूदा प्लान';
+  String get premium_current_plan => 'मौजूदा प्लान';
 
   @override
   String get premium_best_value => 'सबसे किफ़ायती';
@@ -988,7 +988,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get premium_monthly_switch_scheduled =>
-      'नवीनीकरण पर मासिक प्लान शुरू होगा। तारीख और समय गूगल प्ले में देखें।';
+      'नवीनीकरण पर मासिक प्लान शुरू होगा। नवीनीकरण की तारीख गूगल प्ले में देखें।';
 
   @override
   String get premium_renewal_in_play =>

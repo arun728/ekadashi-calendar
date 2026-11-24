@@ -913,7 +913,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premium_active => 'Premium access active';
 
   @override
-  String get premium_current_plan => 'Your current plan';
+  String get premium_current_plan => 'Current plan';
 
   @override
   String get premium_best_value => 'Best value';
@@ -995,7 +995,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premium_monthly_switch_scheduled =>
-      'Switching to Monthly at renewal. See the date and time in Google Play.';
+      'Switching to Monthly at renewal. See the renewal date in Google Play.';
 
   @override
   String get premium_renewal_in_play =>
