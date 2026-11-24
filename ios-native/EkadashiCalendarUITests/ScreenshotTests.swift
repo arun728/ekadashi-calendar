@@ -607,7 +607,9 @@ final class ScreenshotTests: XCTestCase {
                                            evaluatedWith: yearly)], timeout: 30)
         XCTAssertTrue(monthly.label.contains("Upcoming plan"))
         XCTAssertFalse(monthly.label.contains("Starts"))
-        XCTAssertTrue(app.staticTexts["subscription_renewal_date"].firstMatch.label.contains("Switches to Monthly"))
+        let summary = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "label BEGINSWITH %@", "Switches to Monthly on")).firstMatch
+        XCTAssertTrue(summary.exists)
         snap("premium-yearly-current-monthly-upcoming")
 
         try session.forceRenewalOfSubscription(productIdentifier: "ekadashi_premium_yearly")
