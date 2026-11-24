@@ -358,3 +358,12 @@ launch, on a language change and when the sheet opens), searched in about
 compute place names for the whole catalog in a view body, `onChanged` or
 any other per-keystroke path. Keep CitySearchIndexTests and
 city_search_index_test.dart green.
+
+## Apptinel website on Cloudflare (24 November 2026)
+
+Every change to `website/apptinel/` is deployed to production by the agent
+that makes it and verified live: `npx wrangler@4 deploy` (never the
+dashboard upload, which flattens folders). The Cloudflare plugin for Claude
+Code is installed from
+https://developers.cloudflare.com/agent-setup/prompt.md; its MCP sign-in is
+Arun's to approve via `/mcp`. See docs/CLOUDFLARE.md.

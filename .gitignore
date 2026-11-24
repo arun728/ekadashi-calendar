@@ -50,3 +50,6 @@ tool/l10n/out/
 
 # Local simulator/device screenshots and test evidence
 /outputs/
+
+# Wrangler local cache
+.wrangler/
