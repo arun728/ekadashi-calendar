@@ -14,7 +14,7 @@ whose App Store is set to Hindi.
 - **Reference name:** Hindi – North India
 - **Screenshots:** `hindi/` (10 slides, app in हिंदी, Hindi headlines), 6.9" set
 - **Preview:** reuse the main preview for now; a Hindi cut is a good next step
-- **Promotional text (170):** 2027 की हर एकादशी, आपके शहर के व्रत और पारण समय के साथ। पूरा पंचांग, सभी त्योहार, रिमाइंडर और आपकी व्रत यात्रा, अब हिंदी में।
+- **Promotional text (170):** हर एकादशी, आपके शहर के व्रत और पारण समय के साथ। पूरा पंचांग, सभी त्योहार, रिमाइंडर और आपकी व्रत यात्रा, अब हिंदी में।
 - **Where to use the link:**
   - Apple Search Ads ad variations for Hindi keywords (एकादशी, व्रत, पंचांग, ekadashi vrat)
   - WhatsApp: temple, satsang and family groups; a forwardable message with the Hindi banner (`../../brand/banner-1920x1080-hi.png`)

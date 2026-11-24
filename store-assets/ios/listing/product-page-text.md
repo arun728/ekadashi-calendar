@@ -27,12 +27,12 @@ ekadasi,upvas,fasting,hindu,tithi,muhurat,choghadiya,rahu kaal,diwali,iskcon,sma
 *(98/100)*
 
 ### Promotional text (170, can change anytime without review)
-Every Ekadashi of 2027 with fasting and Parana times for your city. Full Panchang, festivals, reminders and your vrat journey, in 6 Indian languages.
+Every Ekadashi with fasting and Parana times for your city. Full Panchang, festivals, reminders and your vrat journey, in 6 Indian languages.
 
-*(149/170)*
+*(141/170)*
 
 ### Description (4000)
-Never miss an Ekadashi again. Ekadashi Calendar gives you the exact fasting start and Parana (fast-breaking) window for every Ekadashi of 2026 and 2027, calculated for your city, anywhere in the world.
+Never miss an Ekadashi again. Ekadashi Calendar gives you the exact fasting start and Parana (fast-breaking) window for every Ekadashi, calculated for your city, anywhere in the world.
 
 FREE, FOREVER
 • Every Ekadashi with fasting and Parana times for your city
@@ -63,17 +63,17 @@ Privacy Policy: https://apptinel.com/ekadashi-calendar/privacy-policy/
 
 Hari Om 🙏
 
-*(1807/4000)*
+*(1790/4000)*
 
 ### What's New (4000)
 Ekadashi Calendar arrives on iPhone and iPad.
-• Every Ekadashi of 2026 and 2027 for your city, Smarta or Vaishnava
+• Every Ekadashi for your city, Smarta or Vaishnava
 • Full Panchang, Muhurta and every festival with Premium
 • Vrat Journey with points, streaks and badges
 • Home and Lock Screen widgets
 • 6 Indian languages
 
-*(270/4000)*
+*(253/4000)*
 
 
 ## Hindi (hi) — add this localization
@@ -95,12 +95,12 @@ Ekadashi Calendar arrives on iPhone and iPad.
 *(98/100)*
 
 ### Promotional text (170, can change anytime without review)
-2027 की हर एकादशी, आपके शहर के व्रत और पारण समय के साथ। पूरा पंचांग, सभी त्योहार, रिमाइंडर और आपकी व्रत यात्रा, अब हिंदी में।
+हर एकादशी, आपके शहर के व्रत और पारण समय के साथ। पूरा पंचांग, सभी त्योहार, रिमाइंडर और आपकी व्रत यात्रा, अब हिंदी में।
 
-*(125/170)*
+*(117/170)*
 
 ### Description (4000)
-अब कोई एकादशी न चूकें। एकादशी कैलेंडर 2026 और 2027 की हर एकादशी के व्रत प्रारंभ और पारण का सही समय आपके शहर के अनुसार बताता है, दुनिया में कहीं भी।
+अब कोई एकादशी न चूकें। एकादशी कैलेंडर हर एकादशी के व्रत प्रारंभ और पारण का सही समय आपके शहर के अनुसार बताता है, दुनिया में कहीं भी।
 
 हमेशा मुफ़्त
 • हर एकादशी, आपके शहर के व्रत और पारण समय के साथ
@@ -131,14 +131,14 @@ Ekadashi Calendar arrives on iPhone and iPad.
 
 हरि ॐ 🙏
 
-*(1601/4000)*
+*(1585/4000)*
 
 ### What's New (4000)
 एकादशी कैलेंडर अब iPhone और iPad पर।
-• आपके शहर के लिए 2026 और 2027 की हर एकादशी, स्मार्त या वैष्णव
+• आपके शहर के लिए हर एकादशी, स्मार्त या वैष्णव
 • प्रीमियम के साथ पूरा पंचांग, मुहूर्त और हर त्योहार
 • अंकों, स्ट्रीक और बैज के साथ व्रत यात्रा
 • होम और लॉक स्क्रीन विजेट
 • 6 भारतीय भाषाएँ
 
-*(240/4000)*
+*(224/4000)*

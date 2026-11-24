@@ -1,16 +1,16 @@
 # Brand poster (v2)
 
-The v1 Play feature graphic (`v1-feature-graphic-1024x500.png`, pulled from the live
-listing) redone for v2 with the same look: glowing lotus with Vishnu over an aurora
-sky, gold serif title, feature checklist. The lotus is cut from the 1024 app icon
-(`lotus-cutout-1024.png`) so it stays sharp at large sizes.
+The v1 Play feature graphic (`v1-feature-graphic-1024x500.png`, pulled from the
+live listing) with only the text changed. Background, lotus, glow, title and gold
+check marks are the original pixels; the old bullets (and, for Hindi, the title and
+tagline) are painted out with the surrounding aurora and new text is set in the
+same style. No year, so it stays valid for future releases.
 
 | File | Use |
 |---|---|
-| feature-graphic-1024x500-en.png | Google Play feature graphic (required, 1024 × 500) |
-| feature-graphic-1024x500-hi.png | Play feature graphic for the Hindi listing |
-| banner-1920x1080-en.png | iOS / web / social / ads banner (16:9) |
-| banner-1920x1080-hi.png | Hindi banner for North India campaigns and the Hindi custom product page links |
+| feature-graphic-1024x500-en.png | Google Play feature graphic |
+| feature-graphic-1024x500-hi.png | Play feature graphic for the Hindi listing; also for Hindi WhatsApp / social posts |
 
-The App Store has no feature-graphic slot, so on iOS use the banner for ads, the
-apptinel.com page and social posts. Rebuild with `ios/tools/poster.py`.
+The App Store has no feature-graphic slot; use these for ads and social on iOS too.
+Rebuild: open `../ios/tools/poster-en.html` / `poster-hi.html` in headless Chrome at
+1024 × 500 (they use the painted-out backgrounds `poster-bg-*.png`).
