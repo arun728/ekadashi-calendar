@@ -37,9 +37,9 @@ class PremiumScreen extends StatefulWidget {
   final String? reasonKey;
 
   static const privacyUrl =
-      'https://arun728.github.io/ekadashi-calendar/privacy-policy';
+      'https://apptinel.com/ekadashi-calendar/privacy-policy/';
   static const termsUrl =
-      'https://arun728.github.io/ekadashi-calendar/terms-of-service';
+      'https://apptinel.com/ekadashi-calendar/terms-of-service/';
 
   @override
   State<PremiumScreen> createState() => _PremiumScreenState();
