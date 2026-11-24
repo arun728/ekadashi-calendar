@@ -1,30 +1,47 @@
 (() => {
+  // System follows the OS colour scheme live; Light and Dark override it and persist.
   const key = 'apptinel-theme';
+  const choices = ['system', 'light', 'dark'];
   const root = document.documentElement;
+  const media = matchMedia('(prefers-color-scheme: dark)');
+  let choice = 'system';
   try {
-    if (localStorage.getItem(key) === 'light') root.dataset.theme = 'light';
+    const saved = localStorage.getItem(key);
+    if (choices.includes(saved)) choice = saved;
   } catch {
-    // The switch still works for the current page when storage is unavailable.
+    // Without storage the switch still works for the current page.
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
-    const button = document.querySelector('[data-theme-toggle]');
-    if (!button) return;
+  function apply() {
+    root.dataset.theme = choice === 'system' ? (media.matches ? 'dark' : 'light') : choice;
+  }
+  apply();
+  media.addEventListener('change', () => { if (choice === 'system') apply(); });
 
-    function updateButton() {
-      button.setAttribute('aria-pressed', String(root.dataset.theme === 'light'));
+  document.addEventListener('DOMContentLoaded', () => {
+    const group = document.querySelector('[data-theme-switch]');
+    if (!group) return;
+    const buttons = Array.from(document.querySelectorAll('[data-theme-choice]'));
+
+    function update() {
+      for (const button of buttons) {
+        button.setAttribute('aria-checked', String(button.dataset.themeChoice === choice));
+      }
     }
 
-    button.addEventListener('click', () => {
-      root.dataset.theme = root.dataset.theme === 'light' ? 'dark' : 'light';
-      updateButton();
-      try {
-        localStorage.setItem(key, root.dataset.theme);
-      } catch {
-        // This page still reflects the requested mode.
-      }
-    });
-    updateButton();
-    button.hidden = false;
+    for (const button of buttons) {
+      button.addEventListener('click', () => {
+        choice = button.dataset.themeChoice;
+        apply();
+        update();
+        try {
+          localStorage.setItem(key, choice);
+        } catch {
+          // This page still reflects the requested mode.
+        }
+      });
+    }
+    update();
+    group.hidden = false;
   });
 })();

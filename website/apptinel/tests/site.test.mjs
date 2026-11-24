@@ -208,3 +208,13 @@ for (const path of pages) {
     }
   });
 }
+
+test('the studio products list Ekadashi Calendar and Vault Hub as a private vault, not AI tools or a password manager', () => {
+  const home = read('index.html');
+  assert.doesNotMatch(home, /AI tools/);
+  assert.doesNotMatch(home, /password manager/i);
+  const vault = home.match(/<h3>Vault Hub<\/h3>\s*<p>([^<]+)<\/p>/);
+  assert.ok(vault, 'Vault Hub card');
+  assert.match(vault[1], /end-to-end encrypted/);
+  assert.match(vault[1], /Google Drive or iCloud/);
+});
