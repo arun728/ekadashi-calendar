@@ -1,6 +1,7 @@
 # v2.0.0 release checklist (iOS + Android)
 
-Written 24 Nov 2026 for the release planned for the following week. Keep it current.
+Written 24 Nov 2026. **Android releases first** (update to the live v1), **then iOS**
+(first v2 launch) once Android is live and stable. Keep it current.
 Store-asset details live in `STORE_CHECKLIST.md`. PRs #26 and #34 are **not** in this release.
 
 ## Shared: merge order into `dev` (each with Arun's OK, final tests and CI)
@@ -15,24 +16,7 @@ Store-asset details live in `STORE_CHECKLIST.md`. PRs #26 and #34 are **not** in
 6. [ ] Performance pass once every feature is tested: launch, each tab and the heaviest
        screens, on both platforms.
 
-## iOS (App Store, first v2 launch)
-
-- [ ] Final build from `main`: version 2.0.0, new build number, uploaded (Xcode or Transporter).
-- [ ] TestFlight on Arun's iPhone: sandbox purchases, Restore, free Google sync, widgets, 6 languages.
-- [ ] **App Privacy**: Email Address + User ID (linked, app functionality, not tracking).
-      `PrivacyInfo.xcprivacy` is done in #48.
-- [ ] In-app purchases Monthly / Yearly / Lifetime "Ready to Submit" with review screenshots
-      (uploaded). Prices ₹99 / ₹599 / ₹1,999; diaspora prices set.
-- [ ] Listing: name *Ekadashi Calendar & Panchang* (set), subtitle, keywords, promotional
-      text, description, What's New: `ios/listing/` (English + Hindi).
-- [ ] Screenshots 6.9" × 10, iPad 13" × 6 and the preview video: ready in `ios/`.
-- [ ] Support, marketing, privacy and terms URLs on apptinel.com (live), age rating,
-      category, copyright, review notes.
-- [ ] After the listing has an ID: replace `AppLinks.appStorePlaceholder` (app change).
-- [ ] Optional: Hindi custom product page; In-App Events with this year's dates.
-- [ ] Submit for review, then release (manual or automatic).
-
-## Android (Google Play, update to the live v1)
+## 1. Android first (Google Play, update to the live v1)
 
 - [ ] Final build from `main`: version 2.0.0, version code above 6, signed AAB.
 - [ ] Internal testing: M52 and Arun's wife's phone. Real purchases with the license
@@ -48,6 +32,24 @@ Store-asset details live in `STORE_CHECKLIST.md`. PRs #26 and #34 are **not** in
       YouTube and linked (ask Arun before uploading).
 - [ ] Privacy policy URL: apptinel.com or GitHub Pages (both live).
 - [ ] Production: staged rollout (for example 20% → 100%); watch Android vitals.
+
+## 2. Then iOS (App Store, first v2 launch)
+
+- [ ] Start after the Android release is live and its staged rollout looks healthy.
+- [ ] Final build from `main`: version 2.0.0, new build number, uploaded (Xcode or Transporter).
+- [ ] TestFlight on Arun's iPhone: sandbox purchases, Restore, free Google sync, widgets, 6 languages.
+- [ ] **App Privacy**: Email Address + User ID (linked, app functionality, not tracking).
+      `PrivacyInfo.xcprivacy` is done in #48.
+- [ ] In-app purchases Monthly / Yearly / Lifetime "Ready to Submit" with review screenshots
+      (uploaded). Prices ₹99 / ₹599 / ₹1,999; diaspora prices set.
+- [ ] Listing: name *Ekadashi Calendar & Panchang* (set), subtitle, keywords, promotional
+      text, description, What's New: `ios/listing/` (English + Hindi).
+- [ ] Screenshots 6.9" × 10, iPad 13" × 6 and the preview video: ready in `ios/`.
+- [ ] Support, marketing, privacy and terms URLs on apptinel.com (live), age rating,
+      category, copyright, review notes.
+- [ ] After the listing has an ID: replace `AppLinks.appStorePlaceholder` (app change).
+- [ ] Optional: Hindi custom product page; In-App Events with this year's dates.
+- [ ] Submit for review, then release (manual or automatic).
 
 ## Housekeeping
 
