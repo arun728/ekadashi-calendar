@@ -17,8 +17,8 @@ struct PremiumView: View {
     @State private var managing = false
     @State private var toast: ToastMessage?
 
-    static let privacyURL = URL(string: "https://arun728.github.io/ekadashi-calendar/privacy-policy")!
-    static let termsURL = URL(string: "https://arun728.github.io/ekadashi-calendar/terms-of-service")!
+    static let privacyURL = URL(string: "https://apptinel.com/ekadashi-calendar/privacy-policy/")!
+    static let termsURL = URL(string: "https://apptinel.com/ekadashi-calendar/terms-of-service/")!
 
     private var store: StoreKitPremiumService { model.premium }
     private var state: PremiumState { store.state }
