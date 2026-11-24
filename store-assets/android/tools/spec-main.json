@@ -38,10 +38,10 @@
   "callouts": [
    {
     "crop": [
-     880,
-     460,
-     440,
-     800
+     930,
+     520,
+     380,
+     930
     ],
     "pop": 1.12,
     "rotate": 2,
@@ -88,10 +88,10 @@
   "callouts": [
    {
     "crop": [
-     60,
-     300,
-     1280,
-     400
+     40,
+     880,
+     1264,
+     520
     ],
     "pop": 1.12,
     "rotate": 2,
@@ -138,10 +138,10 @@
   "callouts": [
    {
     "crop": [
-     60,
-     370,
-     1280,
-     600
+     40,
+     1040,
+     1264,
+     560
     ],
     "pop": 1.12,
     "rotate": -2,
@@ -188,10 +188,10 @@
   "callouts": [
    {
     "crop": [
-     520,
-     0,
-     940,
-     1220
+     130,
+     380,
+     1080,
+     1130
     ],
     "pop": 1.12,
     "rotate": -2,
@@ -213,10 +213,10 @@
   "callouts": [
    {
     "crop": [
-     580,
-     140,
-     920,
-     620
+     133,
+     389,
+     1073,
+     520
     ],
     "pop": 1.12,
     "rotate": -2,
@@ -226,12 +226,12 @@
  },
  {
   "out": "10-home-screen-widgets",
-  "src": "widgets.png",
+  "src": "home.png",
   "hue": "indigo",
   "tag": "free",
-  "title": "On your <em>Home screen</em>",
+  "title": "On your<br><em>Home screen</em>",
   "sub": "Countdown, fasting and Parana at a glance",
-  "screen": "widgets",
+  "screen": "android-widgets",
   "phone": {
    "y": 720,
    "w": 880

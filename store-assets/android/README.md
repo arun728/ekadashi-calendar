@@ -14,8 +14,8 @@ owned, no prices, Wi-Fi-only status bar (SystemUI demo mode).
 - [x] `share-card` re-captured (Saphala, 3 Jan) via session `share`
 - [x] Widgets from Settings > Widget Preview, like iOS (session `widgets`): raw/widgets/
       (upcoming-large missing: Upcoming has no Large size; check). NEXT: compose slide 10 as a mock Android home screen with these.
-- [ ] NEXT AFTER WIDGETS: compose all 10 slides (spec: tools/spec-main.json; crops for 01/07 tuned) like iOS (`../ios/tools/compose2.py`, FW=1320 FH=2347,
-      then scale to 1080 × 1920); Arun picks 8 for Play (limit 8)
+- [x] All 10 slides composed: screenshots/phone-1080x1920/ (contact-sheet.png). Slide 10 = Android home screen with the Ekadashi (Medium) and Upcoming (Large) widgets from the in-app preview (tools/crop_widgets.py; compose2.py `screen: android-widgets`). Waiting for Arun to pick 8. like iOS (`../ios/tools/compose2.py`, FW=1320 FH=2347,
+      then scale to 1080 × 1920)
 - [ ] Video: same flows recorded, ~1× speed, music = `../ios/preview/music-original-bhupali.m4a`
       (Arun chose it on 24 Nov 2026; re-render with ../ios/tools/synth.py if longer than 32 s)
 - [ ] Listing text (short 80 / full 4000, no year), Data safety notes

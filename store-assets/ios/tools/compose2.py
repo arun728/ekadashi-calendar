@@ -97,7 +97,17 @@ p.sub{margin-top:38px;font-size:52px;line-height:1.28;color:rgba(255,255,255,.70
  border:2px solid rgba(255,255,255,.16);backdrop-filter:blur(20px);box-shadow:0 20px 60px rgba(0,0,0,.5)}
 """
 
+def android_widgets_html(raw):
+    """Android home screen: Pixel status bar, At a glance date, two large widgets."""
+    u = lambda n: (raw / "widgets" / "cut" / (n + ".png")).resolve().as_uri()
+    return (f'<img src="{u("statusbar")}" style="position:absolute;top:0;left:0;width:100%">'
+            f'<div style="position:absolute;top:120px;left:56px;font-size:46px;font-weight:500;color:rgba(255,255,255,.92)">Fri, Jan 1</div>'
+            f'<div class="wg" style="left:40px;top:220px;width:800px;border-radius:52px"><img src="{u("ekadashi-medium")}"></div>'
+            f'<div class="wg" style="left:40px;top:640px;width:800px;border-radius:52px"><img src="{u("upcoming-large")}"></div>')
+
 def screen_html(item, raw):
+    if item.get("screen") == "android-widgets":
+        return android_widgets_html(raw)
     if item.get("screen") != "widgets":
         return None
     u = lambda n: (raw.parent / "widgets" / (n + ".png")).resolve().as_uri()
