@@ -80,13 +80,14 @@ GooglePlayPurchaseDetails playPurchase(
   PurchaseStateWrapper state, {
   bool acknowledged = false,
   DateTime? purchasedAt,
+  String? token,
 }) => GooglePlayPurchaseDetails.fromPurchase(
   PurchaseWrapper(
     orderId: 'order',
     packageName: 'com.applausestudios.ekadashi_calendar',
     purchaseTime:
         (purchasedAt ?? DateTime(2026, 11, 20)).millisecondsSinceEpoch,
-    purchaseToken: 'token-$product',
+    purchaseToken: token ?? 'token-$product',
     signature: 'signature',
     products: [product],
     isAutoRenewing: product == PlayBillingService.subscription,
@@ -439,6 +440,22 @@ void main() {
       change = (store.param as GooglePlayPurchaseParam).changeSubscriptionParam!;
       expect(change.replacementMode, ReplacementMode.deferred);
       expect(change.oldPurchaseDetails.productID, yearly);
+
+    final scheduled = playPurchase(yearly, PurchaseStateWrapper.purchased,
+        acknowledged: true, token: 'scheduled-monthly');
+    owned = [scheduled];
+    final replaced = Completer<void>();
+    billing.addListener(() {
+      if (premium.subscriptionPurchaseToken == 'scheduled-monthly' &&
+          !replaced.isCompleted) {
+        replaced.complete();
+      }
+    });
+    store.updates.add([scheduled]);
+    await replaced.future.timeout(const Duration(seconds: 5));
+    expect(billing.currentPlanId, 'yearly');
+    expect(billing.canBuy(billing.plans.first), isFalse,
+        reason: 'a confirmed upcoming Monthly plan should open Play management');
 
     owned = [
       playPurchase(monthly, PurchaseStateWrapper.purchased, acknowledged: true),
