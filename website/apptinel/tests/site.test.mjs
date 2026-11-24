@@ -63,7 +63,7 @@ test('the iOS page offers the full shared city and time-zone catalog', () => {
 });
 
 function themeSession(stored, { osDark = true, failWrites = false } = {}) {
-  const buttons = ['system', 'light', 'dark'].map((choice) => ({
+  const buttons = ['light', 'dark'].map((choice) => ({
     choice,
     attrs: {},
     dataset: { themeChoice: choice },
@@ -99,17 +99,20 @@ function themeSession(stored, { osDark = true, failWrites = false } = {}) {
   return { localStorage, root: document.documentElement, media, group, pick, checked };
 }
 
-test('the theme defaults to the OS setting and follows it live', () => {
+test('with no saved choice the theme starts from the OS setting and follows it', () => {
   const dark = themeSession(null, { osDark: true });
   assert.equal(dark.root.dataset.theme, 'dark');
-  assert.deepEqual(dark.checked(), ['system']);
+  assert.deepEqual(dark.checked(), ['dark']);
   assert.equal(dark.group.hidden, false);
   dark.media.flip(false);
   assert.equal(dark.root.dataset.theme, 'light');
-  assert.equal(themeSession(null, { osDark: false }).root.dataset.theme, 'light');
+  assert.deepEqual(dark.checked(), ['light']);
+  const light = themeSession(null, { osDark: false });
+  assert.equal(light.root.dataset.theme, 'light');
+  assert.deepEqual(light.checked(), ['light']);
 });
 
-test('Light and Dark override the OS setting, persist and ignore OS changes', () => {
+test('Light and Dark persist and ignore OS changes', () => {
   const s = themeSession(null, { osDark: true });
   s.pick('light').click();
   assert.equal(s.root.dataset.theme, 'light');
@@ -119,20 +122,22 @@ test('Light and Dark override the OS setting, persist and ignore OS changes', ()
   assert.equal(s.root.dataset.theme, 'light');
   s.pick('dark').click();
   assert.equal(s.root.dataset.theme, 'dark');
+  assert.equal(s.localStorage.value, 'dark');
+  s.media.flip(false);
+  assert.equal(s.root.dataset.theme, 'dark');
   assert.equal(themeSession('dark', { osDark: false }).root.dataset.theme, 'dark');
   assert.equal(themeSession('light', { osDark: true }).root.dataset.theme, 'light');
-  s.pick('system').click();
-  assert.equal(s.localStorage.value, 'system');
-  s.media.flip(false);
-  assert.equal(s.root.dataset.theme, 'light');
 });
 
-test('invalid preferences and unavailable storage fall back to the OS setting', () => {
+test('an old System choice, invalid values and unavailable storage fall back to the OS setting', () => {
+  const old = themeSession('system', { osDark: false });
+  assert.equal(old.root.dataset.theme, 'light');
+  assert.deepEqual(old.checked(), ['light']);
   const s = themeSession('sepia', { osDark: false, failWrites: true });
   assert.equal(s.root.dataset.theme, 'light');
-  assert.deepEqual(s.checked(), ['system']);
   s.pick('dark').click();
   assert.equal(s.root.dataset.theme, 'dark');
+  assert.deepEqual(s.checked(), ['dark']);
 });
 
 test('the studio homepage uses one logo and displays the 2026 copyright', () => {
@@ -192,13 +197,15 @@ test('the privacy policy says Firebase Authentication keeps the Google account e
 });
 
 for (const path of pages) {
-  test('/' + path + ' has a System / Light / Dark icon switch outside the navigation links', () => {
+  test('/' + path + ' has a Light / Dark icon switch outside the navigation links, with no System option', () => {
     const html = read(path + 'index.html');
     const nav = html.match(/<nav aria-label="Main navigation">([\s\S]*?)<\/nav>/)[1];
     assert.doesNotMatch(nav, /data-theme/);
     const group = html.match(/<div class="theme-switch" role="radiogroup" aria-label="Theme" data-theme-switch hidden>([\s\S]*?)<\/div>/);
     assert.ok(group, 'theme switch exists');
-    for (const [choice, label, icon] of [['system', 'System', 'icon-system'], ['light', 'Light', 'icon-sun'], ['dark', 'Dark', 'icon-moon']]) {
+    assert.doesNotMatch(group[1], /system/i);
+    assert.equal((group[1].match(/<button/g) || []).length, 2);
+    for (const [choice, label, icon] of [['light', 'Light', 'icon-sun'], ['dark', 'Dark', 'icon-moon']]) {
       const button = group[1].match(new RegExp('<button[^>]+data-theme-choice="' + choice + '"[^>]*>([\\s\\S]*?)</button>'));
       assert.ok(button, choice);
       assert.match(button[0], new RegExp('role="radio"'));
