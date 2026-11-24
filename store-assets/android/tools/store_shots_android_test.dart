@@ -222,6 +222,45 @@ void main() {
       await shot('panchang-muhurta', settle: 2);
       await tap('panchang_tab_rashi', after: 3);
       await shot('panchang-rashi', settle: 2);
+    } else if (session == 'share') {
+      final f = find.byKey(const Key('home_share_card'));
+      final size = tester.view.physicalSize / tester.view.devicePixelRatio;
+      debugPrint('DBG screen $size count ${f.evaluate().length}');
+      for (var k = 0; k < f.evaluate().length; k++) {
+        debugPrint('DBG $k ${tester.getCenter(f.at(k))} hit=${f.at(k).hitTestable().evaluate().length}');
+      }
+      final onScreen = [
+        for (var k = 0; k < f.evaluate().length; k++)
+          if (tester.getCenter(f.at(k)).dx > 0 && tester.getCenter(f.at(k)).dx < size.width) k,
+      ];
+      debugPrint('DBG onScreen $onScreen');
+      await tester.tapAt(tester.getCenter(f.at(onScreen.first)));
+      await hold(3);
+      await shot('share-card');
+      await back();
+    } else if (session == 'widgets') {
+      Future<void> tapText(String t) async {
+        final f = find.text(t);
+        if (!await ready(f, seconds: 8)) { debugPrint('MISSING:text $t'); return; }
+        await tester.ensureVisible(f.last);
+        await hold(0.3);
+        await tester.tap(f.last, warnIfMissed: false);
+        await hold(1.8);
+      }
+      await tap('glass_tab_4', after: 2);
+      await tapText('Widget Preview');
+      await hold(2);
+      await tapText('Medium');
+      await shot('w-ekadashi-medium');
+      await tapText('Small');
+      await shot('w-ekadashi-small');
+      await tapText('Large');
+      await shot('w-ekadashi-large');
+      await tapText('Upcoming Ekadashis');
+      await tapText('Medium');
+      await shot('w-upcoming-medium');
+      await tapText('Large');
+      await shot('w-upcoming-large');
     } else if (session == 'oct') {
       await tap('glass_tab_1', after: 3);
       await shot('calendar-diwali', settle: 2);

@@ -1,0 +1,241 @@
+[
+ {
+  "out": "01-never-miss-an-ekadashi",
+  "src": "home.png",
+  "hue": "teal",
+  "tag": "free",
+  "title": "Never miss<br>an <em>Ekadashi</em>",
+  "sub": "Fasting and Parana times for your city",
+  "phone": {
+   "y": 720,
+   "w": 880
+  },
+  "callouts": [
+   {
+    "crop": [
+     140,
+     960,
+     1064,
+     960
+    ],
+    "pop": 1.12,
+    "rotate": -2,
+    "radius": 40
+   }
+  ]
+ },
+ {
+  "out": "02-your-language-your-tradition",
+  "src": "language-menu.png",
+  "hue": "indigo",
+  "tag": "free",
+  "title": "Your language,<br>your <em>tradition</em>",
+  "sub": "6 languages \u00b7 Smarta or Vaishnava",
+  "phone": {
+   "y": 720,
+   "w": 880
+  },
+  "callouts": [
+   {
+    "crop": [
+     880,
+     460,
+     440,
+     800
+    ],
+    "pop": 1.12,
+    "rotate": 2,
+    "radius": 40
+   }
+  ]
+ },
+ {
+  "out": "03-festivals-in-your-calendar",
+  "src": "calendar-diwali.png",
+  "hue": "teal",
+  "tag": null,
+  "title": "India's <em>festivals</em>,<br>in your calendar",
+  "sub": "Google Calendar holidays, your events and every Ekadashi",
+  "phone": {
+   "y": 720,
+   "w": 880
+  },
+  "callouts": [
+   {
+    "crop": [
+     40,
+     1690,
+     1264,
+     450
+    ],
+    "pop": 1.12,
+    "rotate": -2,
+    "radius": 40
+   }
+  ]
+ },
+ {
+  "out": "04-full-panchang-every-day",
+  "src": "panchang-daily.png",
+  "hue": "gold",
+  "tag": "premium",
+  "title": "The full <em>Panchang</em>,<br>every day",
+  "sub": "Tithi, Nakshatra, Yoga and timings",
+  "phone": {
+   "y": 720,
+   "w": 880
+  },
+  "callouts": [
+   {
+    "crop": [
+     60,
+     300,
+     1280,
+     400
+    ],
+    "pop": 1.12,
+    "rotate": 2,
+    "radius": 40
+   }
+  ]
+ },
+ {
+  "out": "05-every-festival",
+  "src": "panchang-festivals-oct.png",
+  "hue": "gold",
+  "tag": "premium",
+  "title": "Every <em>festival</em>,<br>one tap away",
+  "sub": "Karwa Chauth, Dhanteras, Diwali and more",
+  "phone": {
+   "y": 720,
+   "w": 880
+  },
+  "callouts": [
+   {
+    "crop": [
+     40,
+     1500,
+     1264,
+     800
+    ],
+    "pop": 1.12,
+    "rotate": -2,
+    "radius": 40
+   }
+  ]
+ },
+ {
+  "out": "06-muhurta-choghadiya-hora",
+  "src": "panchang-muhurta.png",
+  "hue": "gold",
+  "tag": "premium",
+  "title": "<em>Muhurta</em> and<br>Choghadiya",
+  "sub": "Hora and good times, day and night",
+  "phone": {
+   "y": 720,
+   "w": 880
+  },
+  "callouts": [
+   {
+    "crop": [
+     60,
+     370,
+     1280,
+     600
+    ],
+    "pop": 1.12,
+    "rotate": -2,
+    "radius": 40
+   }
+  ]
+ },
+ {
+  "out": "07-every-vrat-remembered",
+  "src": "journey-overview.png",
+  "hue": "lotus",
+  "tag": "premium",
+  "title": "Every vrat,<br><em>remembered</em>",
+  "sub": "Points, streaks and badges",
+  "phone": {
+   "y": 720,
+   "w": 880
+  },
+  "callouts": [
+   {
+    "crop": [
+     100,
+     760,
+     1144,
+     440
+    ],
+    "pop": 1.12,
+    "rotate": -3,
+    "radius": 40
+   }
+  ]
+ },
+ {
+  "out": "08-share-your-journey",
+  "src": "journey-share.png",
+  "hue": "lotus",
+  "tag": "premium",
+  "title": "Share your<br><em>journey</em>",
+  "sub": "Your year's points and badges, on one card",
+  "phone": {
+   "y": 720,
+   "w": 880
+  },
+  "callouts": [
+   {
+    "crop": [
+     520,
+     0,
+     940,
+     1220
+    ],
+    "pop": 1.12,
+    "rotate": -2,
+    "radius": 40
+   }
+  ]
+ },
+ {
+  "out": "09-share-the-vrat",
+  "src": "share-card.png",
+  "hue": "teal",
+  "tag": "free",
+  "title": "Share the vrat<br>with <em>family</em>",
+  "sub": "A beautiful card for every Ekadashi",
+  "phone": {
+   "y": 720,
+   "w": 880
+  },
+  "callouts": [
+   {
+    "crop": [
+     580,
+     140,
+     920,
+     620
+    ],
+    "pop": 1.12,
+    "rotate": -2,
+    "radius": 40
+   }
+  ]
+ },
+ {
+  "out": "10-home-screen-widgets",
+  "src": "widgets.png",
+  "hue": "indigo",
+  "tag": "free",
+  "title": "On your <em>Home screen</em>",
+  "sub": "Countdown, fasting and Parana at a glance",
+  "screen": "widgets",
+  "phone": {
+   "y": 720,
+   "w": 880
+  },
+  "callouts": []
+ }
+]

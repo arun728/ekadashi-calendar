@@ -11,10 +11,10 @@ owned, no prices, Wi-Fi-only status bar (SystemUI demo mode).
       (2026, 1,650 points), journey-share, journey-statistics, panchang-daily,
       panchang-muhurta, panchang-rashi (clock 1 Jan 2027 10:00 IST);
       calendar-diwali, panchang-festivals-oct (clock 29 Oct 2027 10:00 IST)
-- [ ] Re-capture `share-card` (current raw shows 19 Jan; the script fix to tap the
-      on-screen button is in `tools/store_shots_android_test.dart`, re-run `jan`)
-- [ ] Android home-screen widgets capture (slide 10)
-- [ ] Compose all 10 slides like iOS (`../ios/tools/compose2.py`, FW=1320 FH=2347,
+- [x] `share-card` re-captured (Saphala, 3 Jan) via session `share`
+- [x] Widgets from Settings > Widget Preview, like iOS (session `widgets`): raw/widgets/
+      (upcoming-large missing: Upcoming has no Large size; check). NEXT: compose slide 10 as a mock Android home screen with these.
+- [ ] NEXT AFTER WIDGETS: compose all 10 slides (spec: tools/spec-main.json; crops for 01/07 tuned) like iOS (`../ios/tools/compose2.py`, FW=1320 FH=2347,
       then scale to 1080 × 1920); Arun picks 8 for Play (limit 8)
 - [ ] Video: same flows recorded, ~1× speed, music = `../ios/preview/music-original-bhupali.m4a`
       (Arun chose it on 24 Nov 2026; re-render with ../ios/tools/synth.py if longer than 32 s)
