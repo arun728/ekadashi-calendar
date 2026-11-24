@@ -78,6 +78,49 @@ void main() {
     return billing;
   }
 
+  List<String> captureExternalLinks() {
+    final opened = <String>[];
+    const channel = MethodChannel('plugins.flutter.io/url_launcher');
+    final messenger =
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(channel, (call) async {
+      if (call.method == 'launch') {
+        opened.add((call.arguments as Map)['url'] as String);
+      }
+      return true;
+    });
+    const androidChannel = BasicMessageChannel<Object?>(
+      'dev.flutter.pigeon.url_launcher_android.UrlLauncherApi.launchUrl',
+      StandardMessageCodec(),
+    );
+    messenger.setMockDecodedMessageHandler(androidChannel, (message) async {
+      opened.add((message as List).first as String);
+      return <Object?>[true];
+    });
+    addTearDown(() {
+      messenger.setMockMethodCallHandler(channel, null);
+      messenger.setMockDecodedMessageHandler(androidChannel, null);
+    });
+    return opened;
+  }
+
+  testWidgets('Paywall opens the Apptinel privacy and terms pages', (
+    tester,
+  ) async {
+    final opened = captureExternalLinks();
+    await pumpPaywall(tester, freeUser(PremiumFixture()));
+    for (final key in ['privacy_policy', 'terms_of_service']) {
+      final link = find.text(lang.translate(key));
+      await tester.ensureVisible(link);
+      await tester.tap(link);
+      await tester.pumpAndSettle();
+    }
+    expect(opened, [
+      'https://apptinel.com/ekadashi-calendar/privacy-policy/',
+      'https://apptinel.com/ekadashi-calendar/terms-of-service/',
+    ]);
+  });
+
   String ctaLabel(WidgetTester tester) {
     final cta = find.byKey(const Key('premium_buy'));
     return tester
@@ -298,28 +341,7 @@ void main() {
         autoRenewing: {PremiumService.subscriptionId: false},
       );
     addTearDown(premium.dispose);
-    final opened = <String>[];
-    const channel = MethodChannel('plugins.flutter.io/url_launcher');
-    final messenger =
-        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
-    messenger.setMockMethodCallHandler(channel, (call) async {
-      if (call.method == 'launch') {
-        opened.add((call.arguments as Map)['url'] as String);
-      }
-      return true;
-    });
-    const androidChannel = BasicMessageChannel<Object?>(
-      'dev.flutter.pigeon.url_launcher_android.UrlLauncherApi.launchUrl',
-      StandardMessageCodec(),
-    );
-    messenger.setMockDecodedMessageHandler(androidChannel, (message) async {
-      opened.add((message as List).first as String);
-      return <Object?>[true];
-    });
-    addTearDown(() {
-      messenger.setMockMethodCallHandler(channel, null);
-      messenger.setMockDecodedMessageHandler(androidChannel, null);
-    });
+    final opened = captureExternalLinks();
     final billing = await pumpPaywall(tester, premium, currentPlan: 'monthly');
     expect(
       find.text(lang.translate('premium_cancelled_title')),
