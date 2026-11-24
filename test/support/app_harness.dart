@@ -20,6 +20,9 @@ class AppHarness {
   bool notificationGranted = true;
   bool gpsAvailable = true;
   String city = 'Chennai';
+
+  /// The phone's last saved fix (LocationService's cache), if any.
+  Map<String, Object>? cachedLocation;
   String timezone = 'IST';
   String deviceTimezone = 'Asia/Kolkata';
   bool notificationsEnabled = true;
@@ -108,7 +111,7 @@ class AppHarness {
           case 'getCurrentLocation':
             return locationGranted && gpsAvailable ? location : null;
           case 'getCachedLocation':
-            return null;
+            return cachedLocation;
           case 'hasLocationPermission':
             return locationGranted;
           case 'requestLocationPermission':
