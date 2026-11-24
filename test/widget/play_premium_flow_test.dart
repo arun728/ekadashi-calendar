@@ -407,9 +407,12 @@ void main() {
       billing.notifyListeners();
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('premium_current_yearly')), findsOneWidget);
+      expect(find.text('Current plan'), findsOneWidget);
       expect(find.byKey(const Key('premium_upcoming_monthly')), findsOneWidget);
       expect(
-        find.text(lang.translate('premium_monthly_switch_scheduled')),
+        find.text(
+          'Switching to Monthly at renewal. See the renewal date in Google Play.',
+        ),
         findsOneWidget,
       );
       await tester.tap(find.byKey(const Key('premium_plan_monthly')));
