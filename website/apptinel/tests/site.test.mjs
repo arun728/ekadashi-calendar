@@ -20,7 +20,7 @@ for (const path of pages) {
   test('/' + path + ' has a dark default, theme switch, favicon and canonical URL', () => {
     const html = read(path + 'index.html');
     assert.match(html, /<html lang="en" data-theme="dark"/);
-    assert.match(html, /<button[^>]+data-theme-toggle/);
+    assert.match(html, /data-theme-switch/);
     assert.equal((html.match(/<h1[ >]/g) || []).length, 1);
     assert.ok(html.includes('rel="canonical" href="https://apptinel.com/' + path + '"'));
     const icon = html.match(/rel="icon" href="([^"]+)"/);
@@ -62,48 +62,77 @@ test('the iOS page offers the full shared city and time-zone catalog', () => {
   assert.ok(catalog.zones.includes('Pacific/Chatham'));
 });
 
-function themeSession(value, failWrites = false) {
-  const attrs = {};
-  const button = {
-    setAttribute(key, value) { attrs[key] = value; },
+function themeSession(stored, { osDark = true, failWrites = false } = {}) {
+  const buttons = ['system', 'light', 'dark'].map((choice) => ({
+    choice,
+    attrs: {},
+    dataset: { themeChoice: choice },
+    setAttribute(key, value) { this.attrs[key] = value; },
     addEventListener(event, fn) { this[event] = fn; },
+  }));
+  const group = { hidden: true };
+  const media = {
+    matches: osDark,
+    listeners: [],
+    addEventListener(event, fn) { this.listeners.push(fn); },
+    flip(dark) { this.matches = dark; this.listeners.forEach((fn) => fn({ matches: dark })); },
   };
   const document = {
     documentElement: { dataset: { theme: 'dark' } },
-    querySelector: () => button,
+    querySelector: () => group,
+    querySelectorAll: () => buttons,
     addEventListener(event, fn) { this[event] = fn; },
   };
   const localStorage = {
-    value,
+    value: stored,
     getItem() { return this.value; },
     setItem(key, value) {
       if (failWrites) throw Error('storage unavailable');
       this.value = value;
     },
   };
-  runInNewContext(read('assets/theme.js'), { document, localStorage });
+  const matchMedia = () => media;
+  runInNewContext(read('assets/theme.js'), { document, localStorage, matchMedia });
   document.DOMContentLoaded();
-  return { localStorage, root: document.documentElement, button, attrs };
+  const pick = (choice) => buttons.find((b) => b.choice === choice);
+  const checked = () => buttons.filter((b) => b.attrs['aria-checked'] === 'true').map((b) => b.choice);
+  return { localStorage, root: document.documentElement, media, group, pick, checked };
 }
 
-test('modes default to dark, toggle in both directions and persist', () => {
-  const session = themeSession(null);
-  assert.equal(session.root.dataset.theme, 'dark');
-  assert.equal(session.attrs['aria-pressed'], 'false');
-  session.button.click();
-  assert.equal(session.root.dataset.theme, 'light');
-  assert.equal(session.attrs['aria-pressed'], 'true');
-  assert.equal(themeSession(session.localStorage.value).root.dataset.theme, 'light');
-  session.button.click();
-  assert.equal(session.localStorage.value, 'dark');
-  assert.equal(session.root.dataset.theme, 'dark');
+test('the theme defaults to the OS setting and follows it live', () => {
+  const dark = themeSession(null, { osDark: true });
+  assert.equal(dark.root.dataset.theme, 'dark');
+  assert.deepEqual(dark.checked(), ['system']);
+  assert.equal(dark.group.hidden, false);
+  dark.media.flip(false);
+  assert.equal(dark.root.dataset.theme, 'light');
+  assert.equal(themeSession(null, { osDark: false }).root.dataset.theme, 'light');
 });
 
-test('invalid preferences and unavailable storage leave the switch usable', () => {
-  const session = themeSession('sepia', true);
-  assert.equal(session.root.dataset.theme, 'dark');
-  session.button.click();
-  assert.equal(session.root.dataset.theme, 'light');
+test('Light and Dark override the OS setting, persist and ignore OS changes', () => {
+  const s = themeSession(null, { osDark: true });
+  s.pick('light').click();
+  assert.equal(s.root.dataset.theme, 'light');
+  assert.deepEqual(s.checked(), ['light']);
+  assert.equal(s.localStorage.value, 'light');
+  s.media.flip(true);
+  assert.equal(s.root.dataset.theme, 'light');
+  s.pick('dark').click();
+  assert.equal(s.root.dataset.theme, 'dark');
+  assert.equal(themeSession('dark', { osDark: false }).root.dataset.theme, 'dark');
+  assert.equal(themeSession('light', { osDark: true }).root.dataset.theme, 'light');
+  s.pick('system').click();
+  assert.equal(s.localStorage.value, 'system');
+  s.media.flip(false);
+  assert.equal(s.root.dataset.theme, 'light');
+});
+
+test('invalid preferences and unavailable storage fall back to the OS setting', () => {
+  const s = themeSession('sepia', { osDark: false, failWrites: true });
+  assert.equal(s.root.dataset.theme, 'light');
+  assert.deepEqual(s.checked(), ['system']);
+  s.pick('dark').click();
+  assert.equal(s.root.dataset.theme, 'dark');
 });
 
 test('the studio homepage uses one logo and displays the 2026 copyright', () => {
@@ -155,3 +184,27 @@ test('platform differences cover widgets, permission controls and both store can
   assert.match(terms, /support.google.com\/googleplay\/answer\/2479637/);
   assert.match(terms, /Uninstalling the app does not cancel/);
 });
+
+test('the privacy policy says Firebase Authentication keeps the Google account email', () => {
+  const privacy = read('ekadashi-calendar/privacy-policy/index.html');
+  assert.match(privacy, /Firebase Authentication keeps the Google account's email address/);
+  assert.match(privacy, /The Firestore record itself contains no event content or email address/);
+});
+
+for (const path of pages) {
+  test('/' + path + ' has a System / Light / Dark icon switch outside the navigation links', () => {
+    const html = read(path + 'index.html');
+    const nav = html.match(/<nav aria-label="Main navigation">([\s\S]*?)<\/nav>/)[1];
+    assert.doesNotMatch(nav, /data-theme/);
+    const group = html.match(/<div class="theme-switch" role="radiogroup" aria-label="Theme" data-theme-switch hidden>([\s\S]*?)<\/div>/);
+    assert.ok(group, 'theme switch exists');
+    for (const [choice, label, icon] of [['system', 'System', 'icon-system'], ['light', 'Light', 'icon-sun'], ['dark', 'Dark', 'icon-moon']]) {
+      const button = group[1].match(new RegExp('<button[^>]+data-theme-choice="' + choice + '"[^>]*>([\\s\\S]*?)</button>'));
+      assert.ok(button, choice);
+      assert.match(button[0], new RegExp('role="radio"'));
+      assert.match(button[0], new RegExp('aria-label="' + label + '"'));
+      assert.match(button[1], new RegExp('class="' + icon + '"'));
+      assert.doesNotMatch(button[1].replace(/<[^>]+>/g, ''), /\S/, 'icon only');
+    }
+  });
+}
