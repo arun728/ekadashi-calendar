@@ -79,11 +79,13 @@ GooglePlayPurchaseDetails playPurchase(
   String product,
   PurchaseStateWrapper state, {
   bool acknowledged = false,
+  DateTime? purchasedAt,
 }) => GooglePlayPurchaseDetails.fromPurchase(
   PurchaseWrapper(
     orderId: 'order',
     packageName: 'com.applausestudios.ekadashi_calendar',
-    purchaseTime: DateTime(2026, 11, 20).millisecondsSinceEpoch,
+    purchaseTime:
+        (purchasedAt ?? DateTime(2026, 11, 20)).millisecondsSinceEpoch,
     purchaseToken: 'token-$product',
     signature: 'signature',
     products: [product],
@@ -322,13 +324,26 @@ void main() {
     expect(param.offerToken, 'year-token');
     expect(param.changeSubscriptionParam, isNull);
     expect(billing.error, isNull);
+    final switched = Completer<void>();
+    void onBillingChanged() {
+      if (billing.currentPlanId == 'yearly' && !switched.isCompleted) {
+        switched.complete();
+      }
+    }
+
+    billing.addListener(onBillingChanged);
+    addTearDown(() {
+      if (!switched.isCompleted) billing.removeListener(onBillingChanged);
+    });
     store.updates.add([
       playPurchase(
         PlayBillingService.subscription,
         PurchaseStateWrapper.purchased,
+        purchasedAt: DateTime.now(),
       ),
     ]);
-    await Future<void>.delayed(const Duration(milliseconds: 30));
+    await switched.future.timeout(const Duration(seconds: 5));
+    billing.removeListener(onBillingChanged);
     expect(billing.currentPlanId, 'yearly');
     billing.dispose();
     final restarted = PlayBillingService(premium);
