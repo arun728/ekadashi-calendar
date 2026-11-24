@@ -150,7 +150,11 @@ class EkadashiScheduleKey {
 ///   attached. A fast the pack lacks (Saphala on 23 Dec 2027) gets the next
 ///   number of that year; years without a pack are numbered in date order.
 class EkadashiSchedule {
-  EkadashiSchedule({required this.publishedRows, this.persist = true});
+  EkadashiSchedule({
+    required this.publishedRows,
+    this.persist = true,
+    this.calculator,
+  });
 
   /// Bumped when the cached form changes, so older caches are recalculated.
   static const formatVersion = 'schedule-2';
@@ -158,6 +162,14 @@ class EkadashiSchedule {
   /// The published rows of a year (identities and texts).
   final List<Map<String, dynamic>> Function(int year) publishedRows;
   final bool persist;
+
+  /// Calculates a year that is not cached (tests); by default [calculate]
+  /// in a background isolate.
+  final Future<List<ScheduledEkadashi>> Function(
+    EkadashiScheduleKey key,
+    List<Map<String, dynamic>> published,
+  )?
+  calculator;
   final _memory = <String, List<ScheduledEkadashi>>{};
   final _running = <String, Future<List<ScheduledEkadashi>>>{};
 
@@ -197,6 +209,19 @@ class EkadashiSchedule {
     });
   }
 
+  /// Every year in [years] at [city] for [tradition], in that order. The
+  /// years not cached yet are calculated at the same time, each in its own
+  /// isolate, so a new place waits for the slowest year, not for all of
+  /// them one after another.
+  Future<List<List<ScheduledEkadashi>>> scheduledYears(
+    PanchangCity city,
+    EkadashiTradition tradition,
+    List<int> years,
+  ) => Future.wait([
+    for (final year in years)
+      scheduled(EkadashiScheduleKey(city, tradition, year)),
+  ]);
+
   Future<List<ScheduledEkadashi>> _load(EkadashiScheduleKey key) async {
     final id = key.cacheId;
     SharedPreferences? prefs;
@@ -213,7 +238,10 @@ class EkadashiSchedule {
       }
     }
     final rows = publishedRows(key.year);
-    final list = calculateInline
+    final custom = calculator;
+    final list = custom != null
+        ? await custom(key, rows)
+        : calculateInline
         ? calculate(key, rows)
         : await Isolate.run(() => calculate(key, rows));
     _memory[id] = list;

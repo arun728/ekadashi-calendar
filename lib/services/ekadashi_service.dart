@@ -321,9 +321,7 @@ class EkadashiService {
     required List<int> years,
   }) async {
     if (!_isDataLoaded) await initializeData();
-    for (final year in years) {
-      await schedule.scheduled(EkadashiScheduleKey(city, tradition, year));
-    }
+    await schedule.scheduledYears(city, tradition, years);
     return cachedEngineEkadashis(
       city: city,
       tradition: tradition,

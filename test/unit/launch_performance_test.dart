@@ -107,7 +107,19 @@ void main() {
       return longest;
     }
 
+    /// How long [work] holds the UI isolate when run on it.
+    int inline(void Function() work) {
+      final clock = Stopwatch()..start();
+      work();
+      return clock.elapsedMilliseconds;
+    }
+
+    // Measured against the same decode run inline first (cold, as at
+    // launch), so a busy machine slows both: before, the stall was the
+    // whole decode.
     test('the city catalog', () async {
+      final bytes = File('assets/panchang/cities.json').readAsBytesSync();
+      final onUi = inline(() => PanchangLocationStore.parseCities(bytes));
       final stall = await longestStall(PanchangLocationStore.cities);
       final cities = await PanchangLocationStore.cities();
       expect(cities.length, greaterThan(30000));
@@ -115,14 +127,29 @@ void main() {
       expect(chennai.label, 'Chennai (IN)');
       expect(chennai.timeZoneId, 'Asia/Kolkata');
       expect(chennai.searchTerms, contains('chennai'));
-      expect(stall, lessThan(60), reason: 'UI isolate stalled ${stall}ms');
+      expect(
+        stall,
+        lessThan(onUi / 2),
+        reason: 'UI isolate stalled ${stall}ms; decoding on it takes ${onUi}ms',
+      );
     });
 
     test('the place-name table', () async {
+      final bytes = File('assets/panchang/place_names.json').readAsBytesSync();
+      // Decoding and building the tables, as the loader did on the UI isolate.
+      final onUi = inline(
+        () => PlaceNames.use(
+          jsonDecode(utf8.decode(bytes)) as Map<String, dynamic>,
+        ),
+      );
       final stall = await longestStall(PlaceNames.load);
       expect(PlaceNames.place('Chennai', 'ta'), 'சென்னை');
       expect(PlaceNames.country('IN', 'hi'), isNot('IN'));
-      expect(stall, lessThan(60), reason: 'UI isolate stalled ${stall}ms');
+      expect(
+        stall,
+        lessThan(onUi / 2),
+        reason: 'UI isolate stalled ${stall}ms; decoding on it takes ${onUi}ms',
+      );
     });
   });
 }

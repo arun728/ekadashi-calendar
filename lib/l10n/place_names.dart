@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:isolate';
+import 'dart:typed_data';
 
 import 'package:flutter/services.dart' show rootBundle;
 
@@ -18,19 +20,42 @@ class PlaceNames {
   /// Reads the table once; later calls share the same load.
   static Future<void> load() => _loading ??= _read();
 
+  /// Decodes on the calling isolate (widget tests, whose fake clock never
+  /// runs other isolates).
+  static bool decodeInline = false;
+
   static Future<void> _read() async {
     try {
-      // Decoded here rather than with loadString, which hands large files
-      // to an isolate.
       final bytes = await rootBundle.load('assets/panchang/place_names.json');
-      use(
-        jsonDecode(utf8.decode(bytes.buffer.asUint8List()))
-            as Map<String, dynamic>,
+      final json = bytes.buffer.asUint8List(
+        bytes.offsetInBytes,
+        bytes.lengthInBytes,
       );
+      // Decoded off the UI isolate: the 1.1 MB table stalled the launch's
+      // first frames.
+      final (places, countries) = decodeInline
+          ? _tables(json)
+          : await Isolate.run(() => _tables(json));
+      _places = places;
+      _countries = countries;
     } catch (_) {
       _loading = null;
     }
   }
+
+  static (Map<String, Map<String, String>>, Map<String, Map<String, String>>)
+  _tables(Uint8List json) {
+    final data = jsonDecode(utf8.decode(json)) as Map<String, dynamic>;
+    return (_table(data, 'places'), _table(data, 'countries'));
+  }
+
+  static Map<String, Map<String, String>> _table(
+    Map<String, dynamic> data,
+    String key,
+  ) => {
+    for (final entry in (data[key] as Map<String, dynamic>).entries)
+      entry.key: Map<String, String>.from(entry.value as Map),
+  };
 
   /// The loaded table, to install in a background isolate with [use].
   static Map<String, dynamic> snapshot() => {
@@ -40,12 +65,8 @@ class PlaceNames {
 
   /// Installs a decoded table (tests and the loader).
   static void use(Map<String, dynamic> data) {
-    Map<String, Map<String, String>> table(String key) => {
-      for (final entry in (data[key] as Map<String, dynamic>).entries)
-        entry.key: Map<String, String>.from(entry.value as Map),
-    };
-    _places = table('places');
-    _countries = table('countries');
+    _places = _table(data, 'places');
+    _countries = _table(data, 'countries');
   }
 
   /// [name] in [language]: the table's translation, else [name] written in

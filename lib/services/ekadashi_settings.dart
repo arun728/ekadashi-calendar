@@ -56,7 +56,10 @@ class EkadashiSettings extends ChangeNotifier {
   int panchangCityRevision = 0;
   bool loaded = false;
 
-  Future<void> load() async {
+  /// Reads the saved settings. Without a saved city, [lastFix] (the phone's
+  /// last saved location) is the last detected place, so a first launch
+  /// calculates that place instead of Chennai and then the detected one.
+  Future<void> load({Future<LocationData?> Function()? lastFix}) async {
     years = await EkadashiYears.load();
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(cityKey);
@@ -78,6 +81,14 @@ class EkadashiSettings extends ChangeNotifier {
     year = saved != null && years.contains(saved)
         ? saved
         : EkadashiYears.defaultYear(city.wallClock(DisplayClock.now()), years);
+    if (raw == null && lastFix != null) {
+      try {
+        final fix = await lastFix();
+        if (fix != null) await useDetected(fix, atLaunch: true);
+      } catch (_) {
+        // No last fix: Chennai until the place is detected.
+      }
+    }
     loaded = true;
     notifyListeners();
   }

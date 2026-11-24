@@ -101,10 +101,16 @@ The Flutter app follows the iOS design file by file:
   `EkadashiYears`, `ScheduledEkadashi`): the same calculation, identities,
   minute truncation, sunset fallback and `schedule-2` cache key, calculated
   in an isolate and cached in memory and in shared preferences. Two screens
-  asking for the same city and year share one calculation.
+  asking for the same city and year share one calculation. The years of a
+  new place are calculated at the same time, one isolate each
+  (`scheduledYears`), so Home waits for the slowest year rather than all of
+  them in turn.
 - `lib/services/ekadashi_settings.dart` (`EkadashiSettings`, a provider):
   Home's city (picked, else last detected, else Chennai), tradition and year,
-  with the same preference keys as iOS. Choosing a city on Home also sets the
+  with the same preference keys as iOS. Without a saved city (a first v2
+  launch), the phone's last saved fix (`getCachedLocation`) is the last
+  detected place, so Home does not calculate Chennai first. The city catalog
+  and place-name table are decoded in background isolates at launch. Choosing a city on Home also sets the
   Panchang location (`panchangCityRevision`); the Panchang tab follows it.
 - `lib/main.dart`: Home's four menus in a 2×2 grid
   (`lib/screens/widgets/home_controls.dart`: location over tradition, language

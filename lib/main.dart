@@ -302,7 +302,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     if (_settings == null) {
       final settings = context.read<EkadashiSettings?>() ?? EkadashiSettings();
       _settings = settings..addListener(_settingsChanged);
-      _settingsLoad = settings.loaded ? Future.value() : settings.load();
+      // A first launch starts from the phone's last fix, if any.
+      _settingsLoad = settings.loaded
+          ? Future.value()
+          : settings.load(lastFix: _locationService.getCachedLocation);
     }
     final langService = Provider.of<LanguageService>(context);
     if (_currentLangCode != langService.currentLocale.languageCode) {
