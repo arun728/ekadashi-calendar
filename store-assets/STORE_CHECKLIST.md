@@ -48,9 +48,10 @@ Done in App Store Connect (20–24 Nov 2026): iOS name → **Ekadashi Calendar &
 - [ ] Preview video pacing: research slower cuts (fewer scenes at ~1x) within the 30 s limit
 
 ## Android (after iOS is final)
-- [ ] Phone screenshots re-captured from the Android app (same headlines, order and design; Android widgets), 1080 × 1920
-- [ ] Preview video: same story, captions and music over Android footage, uploaded to YouTube
-- [ ] Listing text (short 80 / full 4000) adapted from iOS, no year; name stays Ekadashi Calendar
+- [x] Phone screenshots from the Android app on Pixel 9 Pro XL (10 slides, pick 8 at publishing), 1080 × 1920: android/screenshots/
+- [x] Video: 9 scenes at 1×, 30.6 s, Bhupali music: android/preview/ (upload to YouTube at publishing, with Arun's OK)
+- [x] Listing text (short 80 / full 4000), no year; name stays Ekadashi Calendar: android/listing/play-listing.md
+- [x] Data safety answers: android/listing/data-safety.md
 - [x] Feature graphic 1024 × 500: brand/
 - Skip tablet screenshots
 
