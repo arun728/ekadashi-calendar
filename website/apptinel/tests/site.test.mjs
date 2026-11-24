@@ -32,7 +32,7 @@ for (const path of pages) {
   });
 }
 
-test('the product introduction and legal pages describe the iOS app', () => {
+test('the product introduction and legal pages describe both platforms', () => {
   const home = read('ekadashi-calendar/index.html');
   for (const item of ['2026 and 2027', 'Smarta', 'Vaishnava', '34,152', 'Lock Screen', 'iPad', 'Monthly', 'Yearly', 'Lifetime', 'Gujarati', 'Bengali']) {
     assert.ok(home.includes(item), item);
@@ -44,7 +44,8 @@ test('the product introduction and legal pages describe the iOS app', () => {
   assert.match(terms, /Auto-renew/i);
   assert.match(terms, /Restore Purchases/);
   for (const html of [home, privacy, terms]) {
-    assert.doesNotMatch(html, /Google Play|Android/);
+    assert.match(html, /Google Play/);
+    assert.match(html, /Android/);
   }
 });
 
@@ -133,4 +134,24 @@ test('the Ekadashi pages have a dedicated readable type system', () => {
   for (const file of ['lora.woff2', 'source-sans-3.woff2']) {
     assert.ok(existsSync(new URL('assets/fonts/' + file, publicDir)));
   }
+});
+
+test('every page has copyright and the product provides platform availability', () => {
+  for (const path of pages) assert.match(read(path + 'index.html'), /© 2026 Apptinel Software Private Limited/);
+  const home = read('ekadashi-calendar/index.html');
+  assert.match(home, /https:\/\/play.google.com\/store\/apps\/details\?id=com.applausestudios.ekadashi_calendar/);
+  assert.match(home, /iOS · Coming soon/);
+  assert.match(home, /Android 7.0/);
+});
+
+test('platform differences cover widgets, permission controls and both store cancellation paths', () => {
+  const home = read('ekadashi-calendar/index.html');
+  assert.match(home, /Ekadashi Today/);
+  assert.match(home, /iOS footage/);
+  const privacy = read('ekadashi-calendar/privacy-policy/index.html');
+  for (const text of ['Android Auto Backup', 'exact alarms', 'approximate or precise', 'older Android', 'Google Play Billing']) assert.ok(privacy.includes(text), text);
+  const terms = read('ekadashi-calendar/terms-of-service/index.html');
+  assert.match(terms, /Payments &amp; subscriptions/);
+  assert.match(terms, /support.google.com\/googleplay\/answer\/2479637/);
+  assert.match(terms, /Uninstalling the app does not cancel/);
 });
