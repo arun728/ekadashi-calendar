@@ -81,6 +81,7 @@ GooglePlayPurchaseDetails playPurchase(
   bool acknowledged = false,
   DateTime? purchasedAt,
   String? token,
+  bool autoRenewing = true,
 }) => GooglePlayPurchaseDetails.fromPurchase(
   PurchaseWrapper(
     orderId: 'order',
@@ -90,7 +91,7 @@ GooglePlayPurchaseDetails playPurchase(
     purchaseToken: token ?? 'token-$product',
     signature: 'signature',
     products: [product],
-    isAutoRenewing: product == PlayBillingService.subscription,
+    isAutoRenewing: autoRenewing && product != PlayBillingService.lifetime,
     originalJson: '{}',
     isAcknowledged: acknowledged,
     purchaseState: state,
@@ -111,6 +112,94 @@ class NonOkAcknowledgementStore extends Store {
     if (completions == 2) secondAcknowledgement.complete();
     return BillingResultWrapper(responseCode: codes.removeAt(0));
   }
+}
+
+const _monthlyId = 'ekadashi_premium_monthly';
+const _yearlyId = 'ekadashi_premium_yearly';
+
+List<ProductDetails> _separateCatalog() => [
+  for (final (id, basePlan, period) in [
+    (_monthlyId, 'monthly', 'P1M'),
+    (_yearlyId, 'yearly', 'P1Y'),
+  ])
+    ...GooglePlayProductDetails.fromProductDetails(
+      ProductDetailsWrapper(
+        description: 'Premium',
+        name: 'Premium',
+        productId: id,
+        productType: ProductType.subs,
+        title: 'Premium',
+        subscriptionOfferDetails: [
+          SubscriptionOfferDetailsWrapper(
+            basePlanId: basePlan,
+            offerIdToken: '$basePlan-offer',
+            offerTags: const [],
+            pricingPhases: [
+              PricingPhaseWrapper(
+                billingCycleCount: 0,
+                billingPeriod: period,
+                formattedPrice: '₹99',
+                priceAmountMicros: 99000000,
+                priceCurrencyCode: 'INR',
+                recurrenceMode: RecurrenceMode.infiniteRecurring,
+              ),
+            ],
+          ),
+        ],
+      ),
+    ),
+];
+
+/// Yearly owned, then a deferred switch to Monthly confirmed by Play, as seen
+/// on the M52 (25 Nov 2026): Play returns Yearly with a new purchase token
+/// that is still auto-renewing.
+Future<
+  ({
+    Store store,
+    PremiumService premium,
+    PlayBillingService billing,
+    void Function(List<GooglePlayPurchaseDetails>) setOwned,
+  })
+>
+_scheduleMonthlySwitch() async {
+  final store = Store()..catalog = _separateCatalog();
+  InAppPurchasePlatform.instance = store;
+  var owned = [
+    playPurchase(_yearlyId, PurchaseStateWrapper.purchased, acknowledged: true),
+  ];
+  final premium = PremiumService(
+    entitlements: PlayStoreEntitlements(query: () async => owned),
+  );
+  final billing = PlayBillingService(premium);
+  addTearDown(() async {
+    billing.dispose();
+    premium.dispose();
+    await store.updates.close();
+  });
+  await billing.initialize();
+  await premium.refresh();
+  await billing.buy(billing.plans.firstWhere((p) => p.id == 'monthly'));
+  final scheduled = playPurchase(
+    _yearlyId,
+    PurchaseStateWrapper.purchased,
+    acknowledged: true,
+    token: 'scheduled-monthly',
+  );
+  owned = [scheduled];
+  final replaced = Completer<void>();
+  billing.addListener(() {
+    if (billing.monthlySwitchScheduled && !replaced.isCompleted) {
+      replaced.complete();
+    }
+  });
+  store.updates.add([scheduled]);
+  await replaced.future.timeout(const Duration(seconds: 5));
+  return (
+    store: store,
+    premium: premium,
+    billing: billing,
+    setOwned: (List<GooglePlayPurchaseDetails> value) => owned = value,
+  );
 }
 
 void main() {
@@ -597,4 +686,121 @@ void main() {
       expect(billing.currentPlanId, isNull);
     },
   );
+
+  group('cancelling separate-product subscriptions (as on iOS)', () {
+    test('a subscription Play reports as not renewing is cancelled', () async {
+      SharedPreferences.setMockInitialValues({});
+      var renewing = true;
+      final premium = PremiumService(
+        entitlements: PlayStoreEntitlements(
+          query: () async => [
+            playPurchase(
+              _yearlyId,
+              PurchaseStateWrapper.purchased,
+              acknowledged: true,
+              autoRenewing: renewing,
+            ),
+          ],
+        ),
+      );
+      addTearDown(premium.dispose);
+      await premium.refresh();
+      expect(premium.subscriptionCancelled, isFalse);
+      renewing = false;
+      await premium.refresh();
+      expect(premium.isPremium, isTrue);
+      expect(premium.subscriptionCancelled, isTrue);
+    });
+
+    test(
+      'cancelling during a scheduled Monthly switch drops the upcoming '
+      'plan, offers Reactivate on Yearly and lets Monthly be bought',
+      () async {
+        SharedPreferences.setMockInitialValues({});
+        final setup = await _scheduleMonthlySwitch();
+        final billing = setup.billing;
+        PremiumPlan plan(String id) =>
+            billing.plans.firstWhere((p) => p.id == id);
+        expect(billing.monthlySwitchScheduled, isTrue);
+        expect(billing.canBuy(plan('monthly')), isFalse);
+
+        setup.setOwned([
+          playPurchase(
+            _yearlyId,
+            PurchaseStateWrapper.purchased,
+            acknowledged: true,
+            token: 'scheduled-monthly',
+            autoRenewing: false,
+          ),
+        ]);
+        await setup.premium.refresh();
+        expect(setup.premium.subscriptionCancelled, isTrue);
+        expect(billing.currentPlanId, 'yearly');
+        expect(billing.monthlySwitchScheduled, isFalse);
+        expect(billing.canBuy(plan('yearly')), isTrue, reason: 'Reactivate');
+        expect(billing.canBuy(plan('monthly')), isTrue);
+      },
+    );
+
+    test(
+      'the scheduled Monthly switch is still shown after a restart',
+      () async {
+        SharedPreferences.setMockInitialValues({});
+        final setup = await _scheduleMonthlySwitch();
+        expect(setup.billing.monthlySwitchScheduled, isTrue);
+
+        // A new launch: new services, same saved preferences and Play state.
+        final relaunched = PremiumService(
+          entitlements: PlayStoreEntitlements(
+            query: () async => [
+              playPurchase(
+                _yearlyId,
+                PurchaseStateWrapper.purchased,
+                acknowledged: true,
+                token: 'scheduled-monthly',
+              ),
+            ],
+          ),
+        );
+        final billing = PlayBillingService(relaunched);
+        addTearDown(() {
+          billing.dispose();
+          relaunched.dispose();
+        });
+        await billing.initialize();
+        await relaunched.refresh();
+        expect(billing.currentPlanId, 'yearly');
+        expect(billing.monthlySwitchScheduled, isTrue);
+        expect(
+          billing.canBuy(billing.plans.firstWhere((p) => p.id == 'monthly')),
+          isFalse,
+        );
+      },
+    );
+
+    test('a saved switch is ignored for another purchase', () async {
+      SharedPreferences.setMockInitialValues({});
+      await _scheduleMonthlySwitch();
+      final relaunched = PremiumService(
+        entitlements: PlayStoreEntitlements(
+          query: () async => [
+            playPurchase(
+              _yearlyId,
+              PurchaseStateWrapper.purchased,
+              acknowledged: true,
+              token: 'a-new-yearly',
+            ),
+          ],
+        ),
+      );
+      final billing = PlayBillingService(relaunched);
+      addTearDown(() {
+        billing.dispose();
+        relaunched.dispose();
+      });
+      await billing.initialize();
+      await relaunched.refresh();
+      expect(billing.monthlySwitchScheduled, isFalse);
+    });
+  });
 }
