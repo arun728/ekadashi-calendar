@@ -622,16 +622,6 @@ class CalendarScreenState extends State<CalendarScreen> {
     _showsYear(target.year);
   }
 
-  /// Settings > Google Calendar (25 Nov 2026): the same Import as the menu,
-  /// on the current month, with the same paywall and free-sync rules.
-  Future<void> importGoogleFromSettings() async {
-    resetToToday();
-    await _syncYear();
-  }
-
-  /// Settings > Google Calendar > Disconnect: the menu's own action.
-  Future<void> disconnectGoogleFromSettings() => _disconnectGoogle();
-
   void resetToToday() {
     final now = _now();
     _selectedYear = _years.contains(now.year)

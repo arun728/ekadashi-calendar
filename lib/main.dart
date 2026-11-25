@@ -957,21 +957,6 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     });
   }
 
-  /// Settings > Google Calendar: the Calendar tab runs its own Import (on the
-  /// current month) or Disconnect, as on iOS.
-  void _runGoogleCalendarFromSettings(GoogleCalendarRequest request) {
-    if (!mounted) return;
-    _popTabToRoot(_currentIndex);
-    setState(() => _currentIndex = 1);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final calendar = _calendarKey.currentState;
-      if (calendar == null) return;
-      request == GoogleCalendarRequest.importEvents
-          ? calendar.importGoogleFromSettings()
-          : calendar.disconnectGoogleFromSettings();
-    });
-  }
-
   bool _selectWidgetOccurrence() {
     final uid = _widgetOccurrenceUid;
     if (uid == null) return false;
@@ -1383,10 +1368,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                 barSlots: _panchangBar,
               )
             : const SizedBox.shrink(),
-      _ => SettingsScreen(
-        currentTimezone: _currentTimezone,
-        onGoogleCalendar: _runGoogleCalendarFromSettings,
-      ),
+      _ => SettingsScreen(currentTimezone: _currentTimezone),
     };
     return TabContentScope(
       build: tabRoot,

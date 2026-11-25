@@ -35,20 +35,9 @@ import '../services/place_name_resolver.dart';
 /// - Native permission checks run on IO threads
 /// - Faster permission state updates
 /// - Added parana reminder option (Break Fasting Reminder)
-/// What Settings > Google Calendar asks the Calendar tab to run.
-enum GoogleCalendarRequest { importEvents, disconnect }
-
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({
-    super.key,
-    this.currentTimezone = 'IST',
-    this.onGoogleCalendar,
-  });
+  const SettingsScreen({super.key, this.currentTimezone = 'IST'});
   final String currentTimezone;
-
-  /// Settings > Google Calendar: the Calendar tab runs its own Import (on
-  /// the current month) or Disconnect (25 Nov 2026, as on iOS).
-  final void Function(GoogleCalendarRequest request)? onGoogleCalendar;
 
   static final supportEmail = Uri.parse('mailto:contact@apptinel.com');
 
@@ -410,35 +399,11 @@ class _SettingsScreenState extends State<SettingsScreen>
             // Moved here from the old Journey section (25 Nov 2026).
             SettingsSwitchTile(
               key: const Key('journey_badge_haptics'),
+              icon: AppIcons.settingsBadgeHaptics,
               title: Text(lang.translate('ios_journey_haptics')),
               value: context.watch<VratTrackerService?>()?.badgeHaptics ?? true,
               onChanged: (value) =>
                   context.read<VratTrackerService?>()?.setBadgeHaptics(value),
-            ),
-          ],
-        ),
-
-        // ==================== GOOGLE CALENDAR ====================
-        header('google_calendar'),
-        SettingsCard(
-          key: const Key('settings_google_tube'),
-          children: [
-            ListTile(
-              key: const Key('settings_google_import'),
-              leading: const SettingsIcon(AppIcons.googleSync),
-              title: Text(lang.translate('sync_google')),
-              onTap: () => widget.onGoogleCalendar?.call(
-                GoogleCalendarRequest.importEvents,
-              ),
-            ),
-            const SettingsSeparator(inset: SettingsStyle.iconInset),
-            ListTile(
-              key: const Key('settings_google_disconnect'),
-              leading: const SettingsIcon(AppIcons.googleDisconnect),
-              title: Text(lang.translate('disconnect_google')),
-              onTap: () => widget.onGoogleCalendar?.call(
-                GoogleCalendarRequest.disconnect,
-              ),
             ),
           ],
         ),

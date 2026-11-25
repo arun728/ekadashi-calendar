@@ -347,6 +347,9 @@ class AppIcons {
   /// hand.raised
   static const settingsPrivacy = CupertinoIcons.hand_raised;
 
+  /// rosette
+  static const settingsBadgeHaptics = CupertinoIcons.rosette;
+
   /// envelope
   static const settingsContactSupport = CupertinoIcons.mail;
 
@@ -483,6 +486,7 @@ class AppIcons {
     'settings_notifications': settingsNotifications,
     'settings_terms': settingsTerms,
     'settings_privacy': settingsPrivacy,
+    'settings_badge_haptics': settingsBadgeHaptics,
     'settings_contact_support': settingsContactSupport,
     'test_notification': testNotification,
     'timings': timings,
