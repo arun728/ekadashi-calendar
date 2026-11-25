@@ -608,7 +608,7 @@ final class ScreenshotTests: XCTestCase {
         XCTAssertTrue(monthly.label.contains("Upcoming plan"))
         XCTAssertFalse(monthly.label.contains("Starts"))
         let summary = app.descendants(matching: .any)
-            .matching(NSPredicate(format: "label BEGINSWITH %@", "Switches to Monthly on")).firstMatch
+            .matching(NSPredicate(format: "label BEGINSWITH %@", "Switching to Monthly at renewal")).firstMatch
         XCTAssertTrue(summary.exists)
         snap("premium-yearly-current-monthly-upcoming")
 
