@@ -95,6 +95,18 @@ void main() {
       expect(label.a, greaterThanOrEqualTo(.85));
       expect(outline.toARGB32() & 0xFFFFFF, expected.toARGB32() & 0xFFFFFF);
       expect(outline.a, greaterThanOrEqualTo(.8));
+      // Same label size as Change plan, as on iOS.
+      TextStyle? labelStyle(Finder button) => tester
+          .widget<Text>(
+            find.descendant(of: button, matching: find.byType(Text)),
+          )
+          .style;
+      final manage = labelStyle(
+        find.byKey(const Key('settings_premium_manage')),
+      );
+      final change = labelStyle(find.byKey(const Key('settings_premium')));
+      expect(manage?.fontSize, change?.fontSize);
+      expect(manage?.fontWeight, change?.fontWeight);
     });
   }
 
