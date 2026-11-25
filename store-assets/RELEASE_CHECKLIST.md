@@ -8,7 +8,9 @@ Store-asset details live in `STORE_CHECKLIST.md`. PRs #26 and #34 are **not** in
 
 1. [ ] **#42 → #44: billing and payments** (Codex, in progress). Then device testing on the
        M52 and iPhone: buy, switch plans, restore, cancel and resubscribe, the free Google sync
-       and the Vrat limit, on both platforms.
+       and the Vrat limit, on both platforms. After the PR #44 report fixes land, re-test
+       every subscription flow end to end, behaviour and strings, on the M52 and the iPhone
+       (`docs/review/PR44_BILLING_DEVICE_REPORT.md`).
 2. [ ] **#48**: Firebase email declaration and prices (the website part is already live).
 3. [ ] **#49**: Android launch speed (review after #44; both touch `main.dart`).
 4. [ ] **#47**: store assets (assets only, can merge any time).
@@ -24,8 +26,16 @@ Store-asset details live in `STORE_CHECKLIST.md`. PRs #26 and #34 are **not** in
       v1 that keeps the data.
 - [ ] **Data safety**: Email address + User IDs (optional, not shared, deletion on request):
       `android/listing/data-safety.md`.
-- [ ] Subscriptions `ekadashi_premium` (Monthly, Yearly) + Lifetime active. India
-      ₹100 / ₹600 / ₹2,000 as on Play now, plus diaspora prices.
+- [ ] Subscriptions `ekadashi_premium_monthly` and `ekadashi_premium_yearly` plus the
+      one-time `ekadashi_premium_lifetime` active. India ₹100 / ₹600 / ₹2,000 as on Play
+      now, plus diaspora prices.
+- [ ] Once the PR work is done: **deactivate the old combined `ekadashi_premium`
+      subscription** in Play Console so no new buyer sees it (people who already own it
+      keep it).
+- [ ] Once the PR work is done: **update the benefits text** on the new subscriptions in
+      Play Console. Today it says "Unlimited Vrat entries and achievements"; match the app
+      ("Unlimited Vrat entries (the first three are free)", Google Calendar import,
+      Panchang details). Who makes these two changes is decided later.
 - [ ] Listing: short and full description and release notes, English + Hindi
       (`android/listing/play-listing.md`). Name stays *Ekadashi Calendar*.
 - [ ] Graphics: pick 8 of the 10 screenshots; feature graphic (ready); video uploaded to
