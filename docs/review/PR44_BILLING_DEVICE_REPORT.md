@@ -214,7 +214,7 @@ Resubscribe, so Reactivate works. iOS allows both.
 | Yearly → Monthly at renewal: "Upcoming plan" and "Switching to Monthly…" | ✅ |
 | Same after force-stopping and relaunching the app | ✅ (was ❌) |
 | Cancel in Play with the switch scheduled: "Subscription cancelled", Upcoming gone, Yearly current with Reactivate | ✅ (was ❌) |
-| Buy Monthly in that state | Play refuses (see the Play limitation above); the app stays correct |
+| Buy Monthly in that state | Play refuses (see the Play limitation above). Now greyed out with a note (`689c8c0` / `d52968e`) |
 | Cancelled plan ends: back to free | ✅ |
 | Plain cancel → Reactivate → Play's Resubscribe → app shows Premium renewing | ✅ |
 | Plans page and card in Hindi, Tamil, Telugu, Gujarati, Bengali: no Latin text, new strings shown | ✅ |
@@ -240,3 +240,20 @@ Arun confirmed Apple's sheets on the phone.
 The iPhone sandbox account now owns Lifetime. To test subscriptions again,
 clear it in Settings > App Store > Sandbox Account > Manage > Clear
 Purchase History.
+
+### Greyed out after a cancelled switch (Android, approved by Arun)
+
+When Play reports the Yearly that was switching to Monthly as cancelled,
+Reactivate and Monthly are greyed out and the cancelled card adds: "Google
+Play can't reactivate or change this plan because it was switching to
+Monthly. Choose a plan again after it ends." (six languages). Lifetime
+stays available. Checked on the M52 (build of `d52968e`):
+
+| Check | Result |
+|---|---|
+| Plain cancel (no switch): Reactivate and Monthly enabled, no note | ✅ |
+| Cancel with a switch scheduled: note shown, Reactivate and Monthly greyed, Lifetime enabled | ✅ |
+| Same after force-stopping and relaunching | ✅ |
+| Note in Hindi | ✅ |
+
+Automated: Flutter 1,007 pass, analyzer and format clean.
