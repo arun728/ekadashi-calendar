@@ -1392,6 +1392,15 @@ final class ScreenshotTests: XCTestCase {
             .withOffset(CGVector(dx: frame.midX, dy: frame.midY)).tap()
     }
 
+    /// Settings > Notifications has its own page since 25 Nov 2026.
+    private func openNotifications() {
+        let row = app.buttons["settings_notifications"].firstMatch
+        for _ in 0..<4 where !(row.exists && row.isHittable) { app.swipeDown() }
+        XCTAssertTrue(row.waitForExistence(timeout: 10), "Settings > Notifications")
+        row.tap()
+        XCTAssertTrue(app.switches["notifications_master"].firstMatch.waitForExistence(timeout: 10))
+    }
+
     private func glassTab(_ index: Int) {
         for _ in 0..<3 {
             let frames = stableNativeTabFrames()
@@ -2209,6 +2218,7 @@ final class ScreenshotTests: XCTestCase {
     func testEventReminderIsAddedFromSettings() {
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 20))
         tab(4)
+        openNotifications()
         // The Ekadashi switches come first, then Festivals and events.
         let parana = app.descendants(matching: .any)["notify_toggle_notify_parana"].firstMatch
         for _ in 0..<6 where !(parana.exists && parana.isHittable) { app.swipeUp() }
@@ -2288,6 +2298,7 @@ final class ScreenshotTests: XCTestCase {
     func testLockedReminderEventOpensThePaywall() {
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 20))
         tab(4)
+        openNotifications()
         let add = app.buttons["notifications_add_event"]
         for _ in 0..<8 where !(add.exists && add.isHittable) { app.swipeUp() }
         XCTAssertTrue(add.waitForExistence(timeout: 5))
@@ -2315,6 +2326,7 @@ final class ScreenshotTests: XCTestCase {
     func testEkadashiRemindersFollowTheMasterSwitch() {
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 20))
         tab(4)
+        openNotifications()
         let master = app.switches["notifications_master"].firstMatch
         XCTAssertTrue(reveal(master))
         let initiallyOn = expectation(for: NSPredicate(format: "value == '1'"), evaluatedWith: master)
