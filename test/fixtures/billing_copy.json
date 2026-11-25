@@ -47,6 +47,9 @@
     },
     "premium_manage": {
       "both": "Manage subscription"
+    },
+    "notifications_premium_events": {
+      "both": "Festival, Panchang and Google Calendar reminders are part of Premium. Reminders for your own entries are free."
     }
   },
   "hi": {
@@ -77,6 +80,9 @@
     },
     "premium_manage": {
       "both": "सदस्यता प्रबंधित करें"
+    },
+    "notifications_premium_events": {
+      "both": "त्योहार, पंचांग और गूगल कैलेंडर रिमाइंडर प्रीमियम का हिस्सा हैं। आपकी अपनी प्रविष्टियों के रिमाइंडर मुफ़्त हैं।"
     }
   },
   "ta": {
@@ -107,6 +113,9 @@
     },
     "premium_manage": {
       "both": "சந்தாவை நிர்வகிக்கவும்"
+    },
+    "notifications_premium_events": {
+      "both": "பண்டிகை, பஞ்சாங்கம் மற்றும் கூகுள் நாள்காட்டி நினைவூட்டல்கள் பிரீமியத்தின் பகுதி. உங்கள் சொந்தப் பதிவுகளுக்கான நினைவூட்டல்கள் இலவசம்."
     }
   },
   "te": {
@@ -137,6 +146,9 @@
     },
     "premium_manage": {
       "both": "సభ్యత్వాన్ని నిర్వహించండి"
+    },
+    "notifications_premium_events": {
+      "both": "పండుగ, పంచాంగం మరియు గూగుల్ క్యాలెండర్ రిమైండర్‌లు ప్రీమియంలో భాగం. మీ సొంత ఎంట్రీల రిమైండర్‌లు ఉచితం."
     }
   },
   "gu": {
@@ -167,6 +179,9 @@
     },
     "premium_manage": {
       "both": "સબ્સ્ક્રિપ્શન સંભાળો"
+    },
+    "notifications_premium_events": {
+      "both": "તહેવાર, પંચાંગ અને ગૂગલ કેલેન્ડર રિમાઇન્ડર પ્રીમિયમનો ભાગ છે. તમારી પોતાની નોંધોના રિમાઇન્ડર મફત છે."
     }
   },
   "bn": {
@@ -197,6 +212,9 @@
     },
     "premium_manage": {
       "both": "সাবস্ক্রিপশন পরিচালনা করুন"
+    },
+    "notifications_premium_events": {
+      "both": "উৎসব, পঞ্জিকা ও গুগল ক্যালেন্ডারের রিমাইন্ডার প্রিমিয়ামের অংশ। আপনার নিজের এন্ট্রির রিমাইন্ডার বিনামূল্যে।"
     }
   }
 }
