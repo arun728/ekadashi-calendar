@@ -221,7 +221,22 @@ Resubscribe, so Reactivate works. iOS allows both.
 | Free user: "All Google Calendar events" locked in Add a reminder, custom entries free, approved footer and paywall line | ✅ |
 | Free-sync-month exception on the phone | Not tested: needs Arun's tap on Google's account chooser (unit and widget tests cover it) |
 
-iPhone (debug build of `50f29d2`): the free plans page matches Android
-(button under the plans, centred links, "Manage subscription"). Its sandbox
-Monthly had ended, so purchases (including Lifetime) wait for Arun to
-confirm Apple's sheets.
+### Device results after the fixes (iPhone 16 Plus, sandbox, debug build of `50f29d2`)
+
+Arun confirmed Apple's sheets on the phone.
+
+| Check | Result |
+|---|---|
+| Free plans page matches Android: button under the plans, centred links, "Manage subscription" | ✅ |
+| Buy Monthly; Settings card Manage is white with a white outline, same size as Change plan | ✅ |
+| Monthly → Yearly | ✅ |
+| Yearly → Monthly at renewal: note "Yearly stays active until your next renewal. The App Store then starts Monthly and charges for it.", then "Upcoming plan" | ✅ |
+| Same after relaunching the app | ✅ |
+| Cancel in Apple's Manage sheet: "Subscription cancelled", Upcoming gone, Yearly current | ✅ |
+| Reactivate on Yearly → Apple's sheet → renewing again ("You have Premium ✨") | ✅ |
+| Lifetime while subscribed: warning "You already have a subscription…", then bought | ✅ |
+| Lifetime owner with a subscription: thank-you card, "Cancel subscription in the App Store", Manage on the plans page and the Settings card | ✅ |
+
+The iPhone sandbox account now owns Lifetime. To test subscriptions again,
+clear it in Settings > App Store > Sandbox Account > Manage > Clear
+Purchase History.
