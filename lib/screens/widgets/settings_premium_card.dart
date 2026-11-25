@@ -224,7 +224,9 @@ class SettingsPremiumCard extends StatelessWidget {
           Text(
             lang.translate(
               premium.subscriptionCancelled
-                  ? 'premium_cancelled_body'
+                  ? billing?.switchCancelledByPlay == true
+                        ? 'premium_cancelled_body_play_switch'
+                        : 'premium_cancelled_body'
                   : billing?.monthlySwitchScheduled == true
                   ? 'premium_monthly_switch_scheduled'
                   : 'premium_subscriber_body',
