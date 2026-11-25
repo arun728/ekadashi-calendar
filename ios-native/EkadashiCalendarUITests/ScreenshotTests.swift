@@ -537,6 +537,47 @@ final class ScreenshotTests: XCTestCase {
         #endif
     }
 
+    /// Settings redesign (Arun, 25 Nov 2026): Premium card, one Notifications
+    /// row that opens its own page, Appearance (with the badge haptics),
+    /// Google Calendar, then About & legal with Terms, Privacy and Contact
+    /// support. No Journey section.
+    func testSettingsAreGroupedAndNotificationsHaveTheirOwnPage() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        glassTab(4)
+        let ordered = ["settings_premium", "settings_notifications", "settings_widget_preview", "settings_dark_mode",
+                       "settings_glass_look", "journey_badge_haptics", "settings_google_import",
+                       "settings_google_disconnect", "settings_rate", "settings_share", "settings_terms",
+                       "settings_privacy", "settings_contact_support", "settings_version"]
+        // Each row exists and sits below the previous one (checked while
+        // both are on screen).
+        var previous: XCUIElement?
+        for id in ordered {
+            let element = app.descendants(matching: .any).matching(identifier: id).firstMatch
+            for _ in 0..<6 where !element.exists || !element.isHittable { app.swipeUp() }
+            XCTAssertTrue(element.waitForExistence(timeout: 5), id)
+            if let previous, previous.isHittable {
+                XCTAssertLessThan(previous.frame.midY, element.frame.midY, "\(previous.identifier) before \(id)")
+            }
+            previous = element
+        }
+        XCTAssertFalse(app.staticTexts["Journey"].exists && app.switches["journey_badge_haptics"].frame.minY
+                       > app.staticTexts["Journey"].frame.minY, "No Journey section")
+        // The Notifications page holds every reminder control.
+        for _ in 0..<8 { app.swipeDown() }
+        let notifications = app.buttons["settings_notifications"].firstMatch
+        XCTAssertTrue(notifications.waitForExistence(timeout: 5))
+        XCTAssertFalse(app.switches["notifications_master"].exists, "Reminder controls moved to their own page")
+        notifications.tap()
+        for id in ["notifications_master", "notify_toggle_notify_2day", "notifications_add_event", "settings_app_settings",
+                   "settings_permissions_guide"] {
+            let element = app.descendants(matching: .any).matching(identifier: id).firstMatch
+            for _ in 0..<6 where !element.exists || !element.isHittable { app.swipeUp() }
+            XCTAssertTrue(element.waitForExistence(timeout: 5), id)
+        }
+        XCTAssertTrue(app.staticTexts["Reminders not arriving?"].exists)
+        snap("settings-notifications-page")
+    }
+
     /// Arun (25 Nov 2026): on the Settings Premium card, Manage looked dimmed
     /// (teal on teal) next to Change plan. In dark mode its label and outline
     /// are white.
