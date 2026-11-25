@@ -18,6 +18,7 @@ void main() {
     WidgetTester tester,
     PremiumService premium, {
     PlayBillingService? billing,
+    ThemeData? theme,
   }) async {
     await tester.pumpWidget(
       MultiProvider(
@@ -27,7 +28,7 @@ void main() {
           ChangeNotifierProvider(create: (_) => LanguageService()),
         ],
         child: MaterialApp(
-          theme: ThemeData.dark(),
+          theme: theme ?? ThemeData.dark(),
           home: const Scaffold(body: SettingsPremiumCard()),
         ),
       ),
@@ -65,6 +66,37 @@ void main() {
     expect(find.widgetWithText(FilledButton, 'Change plan'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  // Arun (25 Nov 2026): teal Manage on the teal card looked disabled next to
+  // Change plan. Like iOS, its label and outline use the primary text colour.
+  for (final dark in [true, false]) {
+    testWidgets('Manage is clearly readable (${dark ? 'dark' : 'light'})', (
+      tester,
+    ) async {
+      final premium = PremiumService(
+        entitlements: PremiumFixture()..premium = true,
+      );
+      addTearDown(premium.dispose);
+      await premium.refresh();
+      await show(
+        tester,
+        premium,
+        theme: dark ? ThemeData.dark() : ThemeData.light(),
+      );
+      final style = tester
+          .widget<OutlinedButton>(
+            find.byKey(const Key('settings_premium_manage')),
+          )
+          .style!;
+      final label = style.foregroundColor!.resolve({})!;
+      final outline = style.side!.resolve({})!.color;
+      final expected = dark ? Colors.white : Colors.black;
+      expect(label.toARGB32() & 0xFFFFFF, expected.toARGB32() & 0xFFFFFF);
+      expect(label.a, greaterThanOrEqualTo(.85));
+      expect(outline.toARGB32() & 0xFFFFFF, expected.toARGB32() & 0xFFFFFF);
+      expect(outline.a, greaterThanOrEqualTo(.8));
+    });
+  }
 
   testWidgets(
     'a scheduled Monthly switch shows the same line as iOS, with no date',
