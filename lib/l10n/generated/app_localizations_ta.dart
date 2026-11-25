@@ -876,10 +876,6 @@ class AppLocalizationsTa extends AppLocalizations {
       'ஏகாதசி பிரீமியம் மூலம் அனைத்தையும் திறக்கவும். ஏகாதசி தேதிகள், நினைவூட்டல்கள், விட்ஜெட்டுகள், தனிப்பட்ட பதிவுகள் மற்றும் சேமித்த விரத வரலாறு இலவசமாகவே இருக்கும்.';
 
   @override
-  String get premium_free_achievements =>
-      'உங்கள் முதல் மூன்று விரதப் பதிவுகள் இலவசம். மேலும் பதிவு செய்ய பிரீமியம் பெறுங்கள்.';
-
-  @override
   String get premium_monthly => 'மாதந்தோறும்';
 
   @override

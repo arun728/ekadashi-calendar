@@ -874,10 +874,6 @@ class AppLocalizationsBn extends AppLocalizations {
       'একাদশী প্রিমিয়ামে সবকিছু আনলক করুন। একাদশীর তারিখ, রিমাইন্ডার, উইজেট, নিজের এন্ট্রি ও সংরক্ষিত ব্রত ইতিহাস বিনামূল্যে থাকবে।';
 
   @override
-  String get premium_free_achievements =>
-      'আপনার প্রথম তিনটি ব্রত এন্ট্রি বিনামূল্যে। আরও লিখতে প্রিমিয়াম নিন।';
-
-  @override
   String get premium_monthly => 'মাসিক';
 
   @override

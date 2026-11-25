@@ -874,10 +874,6 @@ class AppLocalizationsTe extends AppLocalizations {
       'ఏకాదశి ప్రీమియంతో అన్నింటినీ అన్‌లాక్ చేయండి. ఏకాదశి తేదీలు, రిమైండర్లు, విడ్జెట్లు, వ్యక్తిగత ఎంట్రీలు మరియు సేవ్ చేసిన వ్రత చరిత్ర ఉచితంగానే ఉంటాయి.';
 
   @override
-  String get premium_free_achievements =>
-      'మీ మొదటి మూడు వ్రత ఎంట్రీలు ఉచితం. మరిన్ని నమోదు చేయడానికి ప్రీమియం పొందండి.';
-
-  @override
   String get premium_monthly => 'నెలవారీ';
 
   @override

@@ -873,10 +873,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Unlock everything in Ekadashi Premium. Ekadashi dates, reminders, widgets, custom entries and your saved Vrat history stay free.';
 
   @override
-  String get premium_free_achievements =>
-      'Your first three Vrat entries are free. Get Premium to record more.';
-
-  @override
   String get premium_monthly => 'Monthly';
 
   @override

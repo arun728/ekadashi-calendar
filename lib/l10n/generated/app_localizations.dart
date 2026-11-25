@@ -1750,12 +1750,6 @@ abstract class AppLocalizations {
   /// **'Unlock everything in Ekadashi Premium. Ekadashi dates, reminders, widgets, custom entries and your saved Vrat history stay free.'**
   String get premium_benefits;
 
-  /// No description provided for @premium_free_achievements.
-  ///
-  /// In en, this message translates to:
-  /// **'Your first three Vrat entries are free. Get Premium to record more.'**
-  String get premium_free_achievements;
-
   /// No description provided for @premium_monthly.
   ///
   /// In en, this message translates to:

@@ -867,10 +867,6 @@ class AppLocalizationsHi extends AppLocalizations {
       'एकादशी प्रीमियम से सब कुछ अनलॉक करें। एकादशी तिथियाँ, रिमाइंडर, विजेट, निजी प्रविष्टियाँ और आपका सहेजा व्रत इतिहास मुफ़्त रहेगा।';
 
   @override
-  String get premium_free_achievements =>
-      'आपकी पहली तीन व्रत प्रविष्टियाँ मुफ़्त हैं। और दर्ज करने के लिए प्रीमियम लें।';
-
-  @override
   String get premium_monthly => 'मासिक';
 
   @override

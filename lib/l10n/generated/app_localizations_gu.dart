@@ -866,10 +866,6 @@ class AppLocalizationsGu extends AppLocalizations {
       'એકાદશી પ્રીમિયમમાં બધું અનલૉક કરો. એકાદશીની તારીખો, રિમાઇન્ડર, વિજેટ, તમારી નોંધો અને સાચવેલો વ્રત ઇતિહાસ મફત રહે છે.';
 
   @override
-  String get premium_free_achievements =>
-      'તમારી પ્રથમ ત્રણ વ્રત નોંધ મફત છે. વધુ નોંધવા માટે પ્રીમિયમ લો.';
-
-  @override
   String get premium_monthly => 'માસિક';
 
   @override
