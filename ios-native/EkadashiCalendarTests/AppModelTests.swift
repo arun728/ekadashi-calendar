@@ -605,3 +605,23 @@ final class PremiumPlanChangeWordingTests: XCTestCase {
                        "Yearly starts and is charged today. Apple refunds the unused portion of Monthly to your original payment method.")
     }
 }
+
+/// Arun (25 Nov 2026): Google Calendar reminders are Premium. A free user who
+/// used the one free sync may use them during that month only.
+@MainActor
+final class GoogleReminderLockTests: XCTestCase {
+    private func model(freeMonth: String?) -> AppModel {
+        var seed: [String: Any] = ["has_launched": true, "language_code": "en"]
+        if let freeMonth { seed[GoogleSyncCoordinator.freeSyncMonthKey] = freeMonth }
+        return AppModel(store: InMemoryKeyValueStore(seed))
+    }
+
+    func testAFreeUserGetsGoogleRemindersOnlyDuringTheFreeSyncMonth() {
+        let thisMonth = String(CivilDate.today().iso.prefix(7))
+        XCTAssertTrue(model(freeMonth: nil).reminderLocked(.calendar(.google)))
+        XCTAssertFalse(model(freeMonth: nil).reminderLocked(.calendar(.custom)), "custom entries stay free")
+        XCTAssertFalse(model(freeMonth: thisMonth).reminderLocked(.calendar(.google)))
+        XCTAssertTrue(model(freeMonth: thisMonth).reminderLocked(.observance("holi")))
+        XCTAssertTrue(model(freeMonth: "2020-01").reminderLocked(.calendar(.google)), "locked again after the month")
+    }
+}
