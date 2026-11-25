@@ -225,3 +225,11 @@ test('the studio products list Ekadashi Calendar and Vault Hub as a private vaul
   assert.match(vault[1], /end-to-end encrypted/);
   assert.match(vault[1], /Google Drive or iCloud/);
 });
+
+test('free use is three Vrat entries, never a limit on achievements (Arun, 25 Nov 2026)', () => {
+  for (const path of ['ekadashi-calendar/index.html', 'ekadashi-calendar/terms-of-service/index.html']) {
+    const text = read(path).replace(/<[^>]+>/g, '');
+    assert.doesNotMatch(text, /three achievement|first three achievements|achievement unlocks/i, path);
+    assert.match(text, /three new (Journey|vrat) entries/i, path);
+  }
+});
