@@ -24,6 +24,7 @@ class PlayInAppMessages {
       debugPrint('Google Play messages unavailable: $e');
       outcome = 'error';
     }
+    debugPrint('Google Play messages: $outcome');
     if (outcome == 'updated') await refresh();
     return outcome;
   }
