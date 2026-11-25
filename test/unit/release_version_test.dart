@@ -7,9 +7,9 @@ import 'package:flutter_test/flutter_test.dart';
 /// and the local debug builds (11).
 void main() {
   test('v2.0.0 with a version code above every Play upload', () {
-    final line = File('pubspec.yaml')
-        .readAsLinesSync()
-        .firstWhere((l) => l.startsWith('version:'));
+    final line = File(
+      'pubspec.yaml',
+    ).readAsLinesSync().firstWhere((l) => l.startsWith('version:'));
     final match = RegExp(r'version: (\d+\.\d+\.\d+)\+(\d+)').firstMatch(line)!;
     expect(match.group(1), '2.0.0');
     expect(int.parse(match.group(2)!), greaterThanOrEqualTo(12));

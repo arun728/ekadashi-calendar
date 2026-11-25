@@ -382,9 +382,13 @@ void main() {
     await tester.pumpAndSettle();
     expect(opened, ['mailto:contact@apptinel.com']);
 
+    // The Calendar tab opens and runs its own Disconnect (its spinner keeps
+    // turning here: the Google sign-in plugin does not answer in tests).
     await tester.tap(find.byKey(const Key('settings_google_disconnect')));
-    await tester.pumpAndSettle();
+    for (var i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
     expect(find.byKey(const Key('settings_google_tube')), findsNothing);
-    expect(find.byKey(const Key('calendar_google_menu')), findsOneWidget);
+    expect(find.byKey(const Key('calendar_month_tube')), findsOneWidget);
   });
 }

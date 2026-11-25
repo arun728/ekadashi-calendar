@@ -49,6 +49,12 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.text('Notifications disabled'), findsOneWidget);
+      await tester.ensureVisible(
+        find.byKey(const Key('settings_notifications')),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('settings_notifications')));
+      await tester.pumpAndSettle();
       // The Ekadashi switches are a sub-section below the master switch.
       await tester.scrollUntilVisible(
         find.widgetWithText(SwitchListTile, '2 Days Before'),
@@ -71,14 +77,12 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byIcon(AppIcons.tabSettings));
       await tester.pumpAndSettle();
-      // Notifications sits below the Premium card and the Appearance section.
+      // Settings > Notifications has its own page (25 Nov 2026).
       await tester.ensureVisible(
-        find.widgetWithText(
-          SwitchListTile,
-          'Enable Notifications',
-          skipOffstage: false,
-        ),
+        find.byKey(const Key('settings_notifications')),
       );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('settings_notifications')));
       await tester.pumpAndSettle();
       await tester.tap(
         find.widgetWithText(SwitchListTile, 'Enable Notifications'),
@@ -157,7 +161,7 @@ void main() {
     await tester.tap(find.byIcon(AppIcons.tabSettings));
     await tester.pumpAndSettle();
     expect(
-      find.text('Enable Notifications', skipOffstage: false),
+      find.byKey(const Key('settings_notifications'), skipOffstage: false),
       findsOneWidget,
     );
     await tester.tap(find.byIcon(AppIcons.tabHome));

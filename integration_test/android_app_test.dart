@@ -122,8 +122,14 @@ void main() {
     expect(tester.widget<SwitchListTile>(themeSwitch).value, !original);
     expect(await native.isDarkMode(), !original);
     await binding.takeScreenshot('android_settings_theme');
-    // The Android-only guide/settings pair stays operable after the glass layout.
-    final settingsScroll = find
+    // Settings > Notifications has its own page (25 Nov 2026): the
+    // Android-only guide/settings pair and the master switch live there.
+    final notificationsRow = find.byKey(const Key('settings_notifications'));
+    await tester.ensureVisible(notificationsRow);
+    await pumpUi(tester);
+    await tester.tap(notificationsRow);
+    await pumpUi(tester);
+    Finder pageScroll() => find
         .descendant(
           of: find.byType(ListView).hitTestable(),
           matching: find.byType(Scrollable),
@@ -132,7 +138,7 @@ void main() {
     await tester.scrollUntilVisible(
       find.byKey(const Key('settings_permission_actions_tube')),
       180,
-      scrollable: settingsScroll,
+      scrollable: pageScroll(),
     );
     await pumpUi(tester);
     for (final key in [
@@ -165,16 +171,9 @@ void main() {
     await tester.binding.handlePopRoute();
     await pumpUi(tester);
     await tester.scrollUntilVisible(
-      find.byKey(const Key('settings_about_tube')),
-      180,
-      scrollable: settingsScroll,
-    );
-    await pumpUi(tester);
-    await binding.takeScreenshot('android_settings_about');
-    await tester.scrollUntilVisible(
-      find.byKey(const Key('settings_appearance_tube')),
+      find.byKey(const Key('settings_notifications_tube')),
       -180,
-      scrollable: settingsScroll,
+      scrollable: pageScroll(),
     );
     await pumpUi(tester);
     // Master disable must cancel real WorkManager reminders.
@@ -193,6 +192,22 @@ void main() {
         0,
       );
     }
+    // Back to Settings: About & legal sits at the end.
+    await tester.binding.handlePopRoute();
+    await pumpUi(tester);
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('settings_about_tube')),
+      180,
+      scrollable: pageScroll(),
+    );
+    await pumpUi(tester);
+    await binding.takeScreenshot('android_settings_about');
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('settings_appearance_tube')),
+      -180,
+      scrollable: pageScroll(),
+    );
+    await pumpUi(tester);
     final language = Provider.of<LanguageService>(
       tester.element(find.byType(MaterialApp)),
       listen: false,
