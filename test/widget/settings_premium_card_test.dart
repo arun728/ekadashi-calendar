@@ -1,5 +1,6 @@
 import 'package:ekadashi_calendar/screens/widgets/settings_premium_card.dart';
 import 'package:ekadashi_calendar/services/language_service.dart';
+import 'package:ekadashi_calendar/services/play_billing_service.dart';
 import 'package:ekadashi_calendar/services/premium_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -13,11 +14,16 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  Future<void> show(WidgetTester tester, PremiumService premium) async {
+  Future<void> show(
+    WidgetTester tester,
+    PremiumService premium, {
+    PlayBillingService? billing,
+  }) async {
     await tester.pumpWidget(
       MultiProvider(
         providers: [
           ChangeNotifierProvider<PremiumService?>.value(value: premium),
+          ChangeNotifierProvider<PlayBillingService?>.value(value: billing),
           ChangeNotifierProvider(create: (_) => LanguageService()),
         ],
         child: MaterialApp(
@@ -59,4 +65,25 @@ void main() {
     expect(find.widgetWithText(FilledButton, 'Change plan'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets(
+    'a scheduled Monthly switch shows the same line as iOS, with no date',
+    (tester) async {
+      final premium = PremiumService(
+        entitlements: PremiumFixture()..premium = true,
+      );
+      addTearDown(premium.dispose);
+      await premium.refresh();
+      final billing = FixtureBilling(premium)..monthlySwitchScheduled = true;
+      addTearDown(billing.dispose);
+      await show(tester, premium, billing: billing);
+      expect(
+        find.text(
+          'Switching to Monthly at renewal. See the renewal date in Google Play.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Switch plans or go lifetime anytime.'), findsNothing);
+    },
+  );
 }
