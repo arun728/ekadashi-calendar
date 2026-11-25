@@ -233,3 +233,12 @@ test('free use is three Vrat entries, never a limit on achievements (Arun, 25 No
     assert.match(text, /three new (Journey|vrat) entries/i, path);
   }
 });
+
+test('Google Calendar reminders are Premium, the free import month included (Arun, 25 Nov 2026)', () => {
+  for (const path of ['ekadashi-calendar/index.html', 'ekadashi-calendar/terms-of-service/index.html']) {
+    const text = read(path).replace(/<[^>]+>/g, '');
+    assert.match(text, /Google Calendar event reminders/i, path);
+    assert.match(text, /free import month/i, path);
+    assert.match(text, /reminders for your (own|custom) (events|entries)[^.]*free/i, path);
+  }
+});
