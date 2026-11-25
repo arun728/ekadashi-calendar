@@ -93,6 +93,9 @@ flutter {
 }
 
 dependencies {
+    // Google Play's in-app "fix your payment" message (PlayInAppMessages.kt);
+    // the same Billing Library version in_app_purchase_android 0.5.0 uses.
+    implementation("com.android.billingclient:billing:8.0.0")
     // Match the runner used by instrumentation with the debug runtime (Flutter
     // integration_test otherwise selects runner 1.2.0 by consistent resolution).
     debugImplementation("androidx.test:runner:1.6.2")
