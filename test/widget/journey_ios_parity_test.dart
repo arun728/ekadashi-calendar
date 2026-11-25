@@ -383,15 +383,9 @@ void main() {
         find.ancestor(of: f, matching: find.byType(Scrollable)).first,
       );
       expect(identical(scrollOf(button), scrollOf(card)), isTrue);
-      expect(
-        identical(
-          scrollOf(
-            find.text(LanguageService().translate('premium_free_achievements')),
-          ),
-          scrollOf(card),
-        ),
-        isTrue,
-      );
+      // The Achievements tab is about badges, not Vrat entries (Arun,
+      // 25 Nov 2026): no "first three Vrat entries" line.
+      expect(find.textContaining('Vrat entries'), findsNothing);
 
       // Adaptive columns of at least 150: three across 600 points.
       final tops = [

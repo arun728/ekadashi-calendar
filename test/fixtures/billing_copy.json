@@ -8,14 +8,12 @@
     "ios_premium_starts_on",
     "ios_premium_switch_note",
     "ios_premium_renewal_unknown",
-    "premium_next_renewal_date"
+    "premium_next_renewal_date",
+    "premium_free_achievements"
   ],
   "en": {
     "premium_feature_vrat": {
       "both": "Unlimited Vrat entries (the first three are free)"
-    },
-    "premium_free_achievements": {
-      "both": "Your first three Vrat entries are free. Get Premium to record more."
     },
     "premium_more_achievements": {
       "both": "Unlock Achievements with Premium"
@@ -52,9 +50,6 @@
     "premium_feature_vrat": {
       "both": "असीमित व्रत प्रविष्टियाँ (पहली तीन मुफ़्त)"
     },
-    "premium_free_achievements": {
-      "both": "आपकी पहली तीन व्रत प्रविष्टियाँ मुफ़्त हैं। और दर्ज करने के लिए प्रीमियम लें।"
-    },
     "premium_more_achievements": {
       "both": "प्रीमियम के साथ उपलब्धियाँ खोलें"
     },
@@ -81,9 +76,6 @@
   "ta": {
     "premium_feature_vrat": {
       "both": "வரம்பற்ற விரதப் பதிவுகள் (முதல் மூன்று இலவசம்)"
-    },
-    "premium_free_achievements": {
-      "both": "உங்கள் முதல் மூன்று விரதப் பதிவுகள் இலவசம். மேலும் பதிவு செய்ய பிரீமியம் பெறுங்கள்."
     },
     "premium_more_achievements": {
       "both": "பிரீமியத்துடன் சாதனைகளைத் திறக்கவும்"
@@ -112,9 +104,6 @@
     "premium_feature_vrat": {
       "both": "అపరిమిత వ్రత ఎంట్రీలు (మొదటి మూడు ఉచితం)"
     },
-    "premium_free_achievements": {
-      "both": "మీ మొదటి మూడు వ్రత ఎంట్రీలు ఉచితం. మరిన్ని నమోదు చేయడానికి ప్రీమియం పొందండి."
-    },
     "premium_more_achievements": {
       "both": "ప్రీమియంతో విజయాలను అన్‌లాక్ చేయండి"
     },
@@ -142,9 +131,6 @@
     "premium_feature_vrat": {
       "both": "અમર્યાદિત વ્રત નોંધ (પ્રથમ ત્રણ મફત)"
     },
-    "premium_free_achievements": {
-      "both": "તમારી પ્રથમ ત્રણ વ્રત નોંધ મફત છે. વધુ નોંધવા માટે પ્રીમિયમ લો."
-    },
     "premium_more_achievements": {
       "both": "પ્રીમિયમ સાથે સિદ્ધિઓ અનલૉક કરો"
     },
@@ -171,9 +157,6 @@
   "bn": {
     "premium_feature_vrat": {
       "both": "সীমাহীন ব্রত এন্ট্রি (প্রথম তিনটি বিনামূল্যে)"
-    },
-    "premium_free_achievements": {
-      "both": "আপনার প্রথম তিনটি ব্রত এন্ট্রি বিনামূল্যে। আরও লিখতে প্রিমিয়াম নিন।"
     },
     "premium_more_achievements": {
       "both": "প্রিমিয়ামে অর্জন আনলক করুন"
