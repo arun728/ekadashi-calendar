@@ -198,15 +198,21 @@ void main() {
       restore.top - tester.getBottomLeft(buy).dy,
       greaterThanOrEqualTo(12),
     );
-    expect(restore.center.dy, closeTo(manage.center.dy, 2));
-    expect(termsLink.center.dy, closeTo(privacy.center.dy, 2));
-    expect(manage.left - restore.right, greaterThanOrEqualTo(12));
-    expect(privacy.left - termsLink.right, greaterThanOrEqualTo(12));
-    expect(termsLink.top - restore.bottom, greaterThanOrEqualTo(4));
+    expect(termsLink.top - manage.bottom, greaterThanOrEqualTo(4));
     final middle =
         tester.view.physicalSize.width / tester.view.devicePixelRatio / 2;
-    expect((restore.left + manage.right) / 2, closeTo(middle, 6));
-    expect((termsLink.left + privacy.right) / 2, closeTo(middle, 6));
+    // The test font draws every letter as a wide square, so a pair may wrap
+    // onto two lines; on a phone each pair shares one centred row.
+    for (final (a, b) in [(restore, manage), (termsLink, privacy)]) {
+      if ((a.center.dy - b.center.dy).abs() < 2) {
+        expect(b.left - a.right, greaterThanOrEqualTo(12));
+        expect((a.left + b.right) / 2, closeTo(middle, 6));
+      } else {
+        expect(a.center.dx, closeTo(middle, 6));
+        expect(b.center.dx, closeTo(middle, 6));
+        expect(b.top - a.bottom, greaterThanOrEqualTo(4));
+      }
+    }
   });
 
   testWidgets('Paywall: a monthly subscriber can only pick another plan', (

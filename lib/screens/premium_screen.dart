@@ -403,6 +403,13 @@ class _PremiumScreenState extends State<PremiumScreen> {
   );
 
   /// A footer link: 13 pt teal, as the iOS footnote buttons.
+  Widget _linkRow(List<Widget> links) => Wrap(
+    alignment: WrapAlignment.center,
+    spacing: 16,
+    runSpacing: 4,
+    children: links,
+  );
+
   Widget _link(String label, VoidCallback? onPressed) => TextButton(
     onPressed: onPressed,
     style: TextButton.styleFrom(
@@ -450,184 +457,170 @@ class _PremiumScreenState extends State<PremiumScreen> {
                 onPressed: () => Navigator.maybePop(context),
               ),
             ),
+            // The buy button and links follow the plans (Arun, 25 Nov 2026:
+            // a footer pinned to the bottom left a big empty gap above it).
             body: SafeArea(
-              child: Column(
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
                 children: [
-                  Expanded(
-                    child: ListView(
-                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
-                      children: [
-                        if (premium.lifetime) ...[
-                          _statusCard(
-                            key: const Key('premium_lifetime_thanks'),
-                            title: lang.translate(
-                              'premium_lifetime_thanks_title',
+                  if (premium.lifetime) ...[
+                    _statusCard(
+                      key: const Key('premium_lifetime_thanks'),
+                      title: lang.translate('premium_lifetime_thanks_title'),
+                      body: lang.translate('premium_lifetime_thanks_body'),
+                    ),
+                    if (premium.subscribed) ...[
+                      const SizedBox(height: 12),
+                      _statusCard(
+                        color: orange,
+                        title: lang.translate('premium_active'),
+                        body: lang.translate(
+                          'premium_cancel_subscription_note',
+                        ),
+                        action: OutlinedButton(
+                          key: const Key('premium_cancel_subscription'),
+                          style: IosButtons.glass(context),
+                          onPressed: _manage,
+                          child: Text(
+                            lang.translate(
+                              'premium_cancel_subscription_action',
                             ),
-                            body: lang.translate(
-                              'premium_lifetime_thanks_body',
-                            ),
+                            style: IosButtons.label,
                           ),
-                          if (premium.subscribed) ...[
-                            const SizedBox(height: 12),
-                            _statusCard(
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 12),
+                  ] else if (premium.subscribed) ...[
+                    Padding(
+                      key: const Key('premium_active'),
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: premium.subscriptionCancelled
+                          ? _statusCard(
                               color: orange,
-                              title: lang.translate('premium_active'),
+                              title: lang.translate('premium_cancelled_title'),
+                              body: lang.translate('premium_cancelled_body'),
+                            )
+                          : _statusCard(
+                              title: lang.translate('premium_subscriber_title'),
                               body: lang.translate(
-                                'premium_cancel_subscription_note',
+                                billing.monthlySwitchScheduled
+                                    ? 'premium_monthly_switch_scheduled'
+                                    : 'premium_renewal_in_play',
                               ),
-                              action: OutlinedButton(
-                                key: const Key('premium_cancel_subscription'),
-                                style: IosButtons.glass(context),
-                                onPressed: _manage,
-                                child: Text(
-                                  lang.translate(
-                                    'premium_cancel_subscription_action',
-                                  ),
-                                  style: IosButtons.label,
+                            ),
+                    ),
+                  ] else ...[
+                    if (widget.reasonKey != null)
+                      Padding(
+                        key: const Key('premium_reason'),
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(
+                              width: 26,
+                              child: Icon(
+                                AppIcons.info,
+                                color: IosColors.teal,
+                                size: 22,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                lang.translate(widget.reasonKey!),
+                                style: TextStyle(
+                                  fontSize: IosText.body,
+                                  fontWeight: FontWeight.w600,
+                                  color: IosColors.primary(context),
                                 ),
                               ),
                             ),
                           ],
-                          const SizedBox(height: 12),
-                        ] else if (premium.subscribed) ...[
-                          Padding(
-                            key: const Key('premium_active'),
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: premium.subscriptionCancelled
-                                ? _statusCard(
-                                    color: orange,
-                                    title: lang.translate(
-                                      'premium_cancelled_title',
-                                    ),
-                                    body: lang.translate(
-                                      'premium_cancelled_body',
-                                    ),
-                                  )
-                                : _statusCard(
-                                    title: lang.translate(
-                                      'premium_subscriber_title',
-                                    ),
-                                    body: lang.translate(
-                                      billing.monthlySwitchScheduled
-                                          ? 'premium_monthly_switch_scheduled'
-                                          : 'premium_renewal_in_play',
-                                    ),
-                                  ),
-                          ),
-                        ] else ...[
-                          if (widget.reasonKey != null)
-                            Padding(
-                              key: const Key('premium_reason'),
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const SizedBox(
-                                    width: 26,
-                                    child: Icon(
-                                      AppIcons.info,
-                                      color: IosColors.teal,
-                                      size: 22,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Text(
-                                      lang.translate(widget.reasonKey!),
-                                      style: TextStyle(
-                                        fontSize: IosText.body,
-                                        fontWeight: FontWeight.w600,
-                                        color: IosColors.primary(context),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          _feature(
-                            AppIcons.premiumCalendar,
-                            lang.translate('premium_feature_calendar'),
-                          ),
-                          _feature(
-                            AppIcons.premiumVrat,
-                            lang.translate('premium_feature_vrat'),
-                          ),
-                          _feature(
-                            AppIcons.premiumPanchang,
-                            lang.translate('premium_feature_panchang_v2'),
-                          ),
-                          const SizedBox(height: 20),
-                        ],
-                        if (premium.busy)
-                          const Padding(
-                            padding: EdgeInsets.only(bottom: 12),
-                            child: Center(
-                              child: SizedBox.square(
-                                dimension: 22,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2.4,
-                                  color: IosColors.teal,
-                                ),
-                              ),
-                            ),
-                          ),
-                        if (billing.pending)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: Text(
-                              lang.translate('premium_pending'),
-                              style: TextStyle(
-                                fontSize: IosText.subheadline,
-                                color: IosColors.primary(context),
-                              ),
-                            ),
-                          ),
-                        if (showPlans)
-                          IntrinsicHeight(
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                for (final plan in billing.plans) ...[
-                                  if (plan != billing.plans.first)
-                                    const SizedBox(width: 8),
-                                  Expanded(
-                                    child: _planTile(
-                                      lang,
-                                      plan,
-                                      plan.id == selected?.id,
-                                    ),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                        if (showPlans && selected != null) ...[
-                          const SizedBox(height: 12),
-                          Text(
-                            lang.translate('premium_${selected.id}_terms'),
-                            style: TextStyle(
-                              fontSize: IosText.caption,
-                              color: IosColors.secondary(context),
-                            ),
-                          ),
-                        ],
-                        if (billing.error != null && !premium.isPremium)
-                          Padding(
-                            key: const Key('premium_status_message'),
-                            padding: const EdgeInsets.only(top: 12),
-                            child: Text(
-                              lang.translate(billing.error!),
-                              style: TextStyle(
-                                fontSize: IosText.subheadline,
-                                color: IosColors.primary(context),
-                              ),
-                            ),
-                          ),
-                      ],
+                        ),
+                      ),
+                    _feature(
+                      AppIcons.premiumCalendar,
+                      lang.translate('premium_feature_calendar'),
                     ),
-                  ),
+                    _feature(
+                      AppIcons.premiumVrat,
+                      lang.translate('premium_feature_vrat'),
+                    ),
+                    _feature(
+                      AppIcons.premiumPanchang,
+                      lang.translate('premium_feature_panchang_v2'),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+                  if (premium.busy)
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 12),
+                      child: Center(
+                        child: SizedBox.square(
+                          dimension: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.4,
+                            color: IosColors.teal,
+                          ),
+                        ),
+                      ),
+                    ),
+                  if (billing.pending)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Text(
+                        lang.translate('premium_pending'),
+                        style: TextStyle(
+                          fontSize: IosText.subheadline,
+                          color: IosColors.primary(context),
+                        ),
+                      ),
+                    ),
+                  if (showPlans)
+                    IntrinsicHeight(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          for (final plan in billing.plans) ...[
+                            if (plan != billing.plans.first)
+                              const SizedBox(width: 8),
+                            Expanded(
+                              child: _planTile(
+                                lang,
+                                plan,
+                                plan.id == selected?.id,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  if (showPlans && selected != null) ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      lang.translate('premium_${selected.id}_terms'),
+                      style: TextStyle(
+                        fontSize: IosText.caption,
+                        color: IosColors.secondary(context),
+                      ),
+                    ),
+                  ],
+                  if (billing.error != null && !premium.isPremium)
+                    Padding(
+                      key: const Key('premium_status_message'),
+                      padding: const EdgeInsets.only(top: 12),
+                      child: Text(
+                        lang.translate(billing.error!),
+                        style: TextStyle(
+                          fontSize: IosText.subheadline,
+                          color: IosColors.primary(context),
+                        ),
+                      ),
+                    ),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
+                    padding: const EdgeInsets.only(top: 12),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
@@ -655,25 +648,31 @@ class _PremiumScreenState extends State<PremiumScreen> {
                               style: IosButtons.label,
                             ),
                           ),
-                        const SizedBox(height: 4),
-                        Wrap(
+                        const SizedBox(height: 12),
+                        // Two centred rows with room between the links, as
+                        // on iOS; a long translation wraps within its row.
+                        Column(
                           key: const Key('premium_links'),
-                          alignment: WrapAlignment.start,
                           spacing: 4,
                           children: [
-                            _link(
-                              lang.translate('premium_restore'),
-                              premium.busy ? null : () => _restore(lang),
-                            ),
-                            _link(lang.translate('premium_manage'), _manage),
-                            _link(
-                              lang.translate('terms_of_service'),
-                              () => _open(Uri.parse(PremiumScreen.termsUrl)),
-                            ),
-                            _link(
-                              lang.translate('privacy_policy'),
-                              () => _open(Uri.parse(PremiumScreen.privacyUrl)),
-                            ),
+                            _linkRow([
+                              _link(
+                                lang.translate('premium_restore'),
+                                premium.busy ? null : () => _restore(lang),
+                              ),
+                              _link(lang.translate('premium_manage'), _manage),
+                            ]),
+                            _linkRow([
+                              _link(
+                                lang.translate('terms_of_service'),
+                                () => _open(Uri.parse(PremiumScreen.termsUrl)),
+                              ),
+                              _link(
+                                lang.translate('privacy_policy'),
+                                () =>
+                                    _open(Uri.parse(PremiumScreen.privacyUrl)),
+                              ),
+                            ]),
                           ],
                         ),
                       ],
