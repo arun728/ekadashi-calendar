@@ -537,6 +537,63 @@ final class ScreenshotTests: XCTestCase {
         #endif
     }
 
+    /// Arun (25 Nov 2026): on the Settings Premium card, Manage looked dimmed
+    /// (teal on teal) next to Change plan. In dark mode its label and outline
+    /// are white.
+    @MainActor
+    func testSettingsPremiumManageIsClearlyReadable() async throws {
+        #if !targetEnvironment(simulator)
+        throw XCTSkip("Purchases and resets belong only to isolated Simulator test accounts")
+        #else
+        let configuration = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("EkadashiCalendar/Resources/Products.storekit")
+        app.terminate()
+        let session = try SKTestSession(contentsOf: configuration)
+        session.resetToDefaultState()
+        session.disableDialogs = true
+        session.timeRate = .realTime
+        try session.clearTransactions()
+        defer { try? session.clearTransactions() }
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        glassTab(4)
+        setSwitch(app.switches["settings_dark_mode"].firstMatch, to: true)
+        for _ in 0..<5 { app.swipeDown() }
+        app.buttons["settings_premium"].firstMatch.tap()
+        let monthly = app.buttons["premium_plan_monthly"].firstMatch
+        XCTAssertTrue(monthly.waitForExistence(timeout: 30))
+        monthly.tap()
+        app.buttons["premium_buy"].firstMatch.tap()
+        XCUIDevice.shared.press(.home)
+        app.activate()
+        await fulfillment(of: [expectation(for: NSPredicate(format: "label CONTAINS %@", "Current plan"),
+                                           evaluatedWith: monthly)], timeout: 60)
+        app.buttons["premium_close"].firstMatch.tap()
+        for _ in 0..<5 { app.swipeDown() }
+        let manage = app.buttons["settings_premium_manage"].firstMatch
+        XCTAssertTrue(manage.waitForExistence(timeout: 60), "The subscriber card has no Manage button")
+        try await Task.sleep(nanoseconds: 1_000_000_000)
+        let share = whitePixelShare(manage.screenshot().image)
+        snap("settings-premium-manage-dark")
+        XCTAssertGreaterThan(share, 0.03, "Manage is too faint: \(share) of its pixels are white")
+        #endif
+    }
+
+    /// The share of an image's pixels that are near white.
+    private func whitePixelShare(_ image: UIImage) -> Double {
+        guard let cg = image.cgImage else { return 0 }
+        let width = cg.width, height = cg.height
+        var pixels = [UInt8](repeating: 0, count: width * height * 4)
+        guard let context = CGContext(data: &pixels, width: width, height: height, bitsPerComponent: 8,
+                                      bytesPerRow: width * 4, space: CGColorSpaceCreateDeviceRGB(),
+                                      bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return 0 }
+        context.draw(cg, in: CGRect(x: 0, y: 0, width: width, height: height))
+        var white = 0
+        for index in stride(from: 0, to: pixels.count, by: 4)
+        where min(pixels[index], pixels[index + 1], pixels[index + 2]) > 215 { white += 1 }
+        return Double(white) / Double(width * height)
+    }
+
     /// Arun (25 Nov 2026): a big empty gap sat above the buy button and the
     /// links under it were cramped. The button follows the plan terms, and
     /// the links are centred with room between and above them.
