@@ -265,3 +265,18 @@ six languages). A plain cancel keeps it. Checked on the M52 at 19:09
 (new build): the paragraph ends "See the date in Google Play.", the note
 follows, Reactivate and Monthly are greyed out, Lifetime is available.
 Flutter 1,008 pass; analyzer, format and generated files clean.
+
+## 10. Evening (25 Nov 2026): issue 5, version, website, payment and restore tests
+
+| Item | Result |
+|---|---|
+| Issue 5: Android asks Google Play for its "fix your payment" message on open and resume (`4432af8`…`5201fa0`) | Built and wired; Kotlin and Dart tests pass. On the M52 with a declined test renewal Play answered "none" in the grace period and in account hold, so the message itself was **not seen**. Play decides when to show it; check again with a real card in internal testing |
+| Version 2.0.0 (12): above Play's highest upload (8, internal testing) (`80e1e6c`) | ✅ |
+| Website: Google Calendar reminders are Premium, the free import month included (PR #48 `f7d96c8`) | ✅ deployed and checked live on apptinel.com |
+| Declined payment on the M52 (test card "always declines") | ✅ Play: "Payment declined", Premium kept in the grace period; account hold turned Premium off; after fixing the card Play renewed and Premium came back |
+| Restore after uninstalling, M52 | ✅ Premium (Monthly) came back by itself after reinstalling; Restore purchases says "Purchases restored. Premium is active." |
+| Restore after uninstalling, iPhone | ✅ Lifetime came back by itself after reinstalling |
+| Full `swift test` | ✅ 362 pass (settings branch) |
+
+The Settings redesign is in draft PR #50 (stacked on this PR); its device
+results are in that PR.
