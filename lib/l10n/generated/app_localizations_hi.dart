@@ -897,7 +897,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get premium_restore => 'खरीदारियाँ बहाल करें';
 
   @override
-  String get premium_manage => 'गूगल प्ले में सदस्यता प्रबंधित करें';
+  String get premium_manage => 'सदस्यता प्रबंधित करें';
 
   @override
   String get premium_active => 'प्रीमियम सुविधा सक्रिय है';

@@ -906,7 +906,7 @@ class AppLocalizationsTa extends AppLocalizations {
   String get premium_restore => 'வாங்கியவற்றை மீட்டெடுக்கவும்';
 
   @override
-  String get premium_manage => 'கூகுள் பிளேயில் சந்தாவை நிர்வகிக்கவும்';
+  String get premium_manage => 'சந்தாவை நிர்வகிக்கவும்';
 
   @override
   String get premium_active => 'பிரீமியம் அணுகல் செயலில் உள்ளது';

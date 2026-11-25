@@ -904,7 +904,7 @@ class AppLocalizationsBn extends AppLocalizations {
   String get premium_restore => 'কেনাকাটা পুনরুদ্ধার করুন';
 
   @override
-  String get premium_manage => 'গুগল প্লে-তে সাবস্ক্রিপশন পরিচালনা করুন';
+  String get premium_manage => 'সাবস্ক্রিপশন পরিচালনা করুন';
 
   @override
   String get premium_active => 'প্রিমিয়াম অ্যাক্সেস সক্রিয়';

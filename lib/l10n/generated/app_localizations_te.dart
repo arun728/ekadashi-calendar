@@ -904,7 +904,7 @@ class AppLocalizationsTe extends AppLocalizations {
   String get premium_restore => 'కొనుగోళ్లను పునరుద్ధరించండి';
 
   @override
-  String get premium_manage => 'గూగుల్ ప్లేలో సభ్యత్వాన్ని నిర్వహించండి';
+  String get premium_manage => 'సభ్యత్వాన్ని నిర్వహించండి';
 
   @override
   String get premium_active => 'ప్రీమియం సదుపాయం అందుబాటులో ఉంది';

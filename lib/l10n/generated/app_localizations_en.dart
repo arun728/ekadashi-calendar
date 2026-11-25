@@ -903,7 +903,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premium_restore => 'Restore purchases';
 
   @override
-  String get premium_manage => 'Manage subscription in Google Play';
+  String get premium_manage => 'Manage subscription';
 
   @override
   String get premium_active => 'Premium access active';

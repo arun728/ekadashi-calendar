@@ -1807,7 +1807,7 @@ abstract class AppLocalizations {
   /// No description provided for @premium_manage.
   ///
   /// In en, this message translates to:
-  /// **'Manage subscription in Google Play'**
+  /// **'Manage subscription'**
   String get premium_manage;
 
   /// No description provided for @premium_active.

@@ -896,7 +896,7 @@ class AppLocalizationsGu extends AppLocalizations {
   String get premium_restore => 'ખરીદી પુનઃસ્થાપિત કરો';
 
   @override
-  String get premium_manage => 'ગૂગલ પ્લે માં સબ્સ્ક્રિપ્શન સંભાળો';
+  String get premium_manage => 'સબ્સ્ક્રિપ્શન સંભાળો';
 
   @override
   String get premium_active => 'પ્રીમિયમ ઍક્સેસ ચાલુ';
