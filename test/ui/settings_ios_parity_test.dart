@@ -133,10 +133,9 @@ void main() {
           ),
         );
         await checkHeaders(
-          ['appearance', 'google_calendar', 'settings_about_legal'],
+          ['appearance', 'settings_about_legal'],
           {
             'appearance': 'settings_appearance_tube',
-            'google_calendar': 'settings_google_tube',
             'settings_about_legal': 'settings_about_tube',
           },
         );
@@ -206,18 +205,17 @@ void main() {
           findsOneWidget,
           reason: 'badge haptics moved from the old Journey section',
         );
-        // Google Calendar: Import and Disconnect.
-        final google = find.byKey(const Key('settings_google_tube'));
-        for (final key in [
-          'settings_google_import',
-          'settings_google_disconnect',
-        ]) {
-          expect(
-            inTube(google, find.byKey(Key(key))),
-            findsOneWidget,
-            reason: key,
-          );
-        }
+        // Badge haptics has its badge icon (25 Nov 2026).
+        expect(
+          inTube(appearance, find.byIcon(AppIcons.settingsBadgeHaptics)),
+          findsOneWidget,
+        );
+        // Google Calendar stays in the Calendar tab only (25 Nov 2026).
+        expect(find.byKey(const Key('settings_google_tube')), findsNothing);
+        expect(
+          find.byKey(const Key('settings_header_google_calendar')),
+          findsNothing,
+        );
         // Every switch is drawn as the iOS switch (adaptive, iOS platform).
         final switches = find.byType(Switch);
         expect(switches, findsWidgets);
@@ -344,9 +342,7 @@ void main() {
     }
   }
 
-  testWidgets('Contact support emails Apptinel; Google actions open Calendar', (
-    tester,
-  ) async {
+  testWidgets('Contact support emails Apptinel', (tester) async {
     final opened = <String>[];
     const channel = MethodChannel('plugins.flutter.io/url_launcher');
     const androidChannel = BasicMessageChannel<Object?>(
@@ -381,14 +377,5 @@ void main() {
     await tester.tap(find.byKey(const Key('settings_contact_support')));
     await tester.pumpAndSettle();
     expect(opened, ['mailto:contact@apptinel.com']);
-
-    // The Calendar tab opens and runs its own Disconnect (its spinner keeps
-    // turning here: the Google sign-in plugin does not answer in tests).
-    await tester.tap(find.byKey(const Key('settings_google_disconnect')));
-    for (var i = 0; i < 10; i++) {
-      await tester.pump(const Duration(milliseconds: 100));
-    }
-    expect(find.byKey(const Key('settings_google_tube')), findsNothing);
-    expect(find.byKey(const Key('calendar_month_tube')), findsOneWidget);
   });
 }

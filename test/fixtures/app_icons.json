@@ -92,6 +92,7 @@
     "search": "magnifyingglass",
     "search_all_categories": "square.grid.2x2",
     "search_clear": "xmark.circle.fill",
+    "settings_badge_haptics": "rosette",
     "settings_contact_support": "envelope",
     "settings_notifications": "bell",
     "settings_privacy": "hand.raised",

@@ -639,18 +639,3 @@ final class GoogleReminderLockTests: XCTestCase {
         XCTAssertTrue(model(freeMonth: "2020-01").reminderLocked(.calendar(.google)), "locked again after the month")
     }
 }
-
-/// Settings redesign (25 Nov 2026): Settings > Google Calendar runs the
-/// Calendar tab's own Import and Disconnect on the current month.
-@MainActor
-final class SettingsGoogleCalendarTests: XCTestCase {
-    func testSettingsOpensTheCalendarTabForGoogleActions() {
-        let model = AppModel(store: InMemoryKeyValueStore(["has_launched": true, "language_code": "en"]))
-        model.selectedTab = .settings
-        model.requestGoogleCalendar(.importEvents)
-        XCTAssertEqual(model.selectedTab, .calendar)
-        XCTAssertEqual(model.googleCalendarRequest, .importEvents)
-        model.requestGoogleCalendar(.disconnect)
-        XCTAssertEqual(model.googleCalendarRequest, .disconnect)
-    }
-}

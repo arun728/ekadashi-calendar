@@ -544,10 +544,10 @@ final class ScreenshotTests: XCTestCase {
     func testSettingsAreGroupedAndNotificationsHaveTheirOwnPage() {
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
         glassTab(4)
+        // Google Calendar stays in the Calendar tab only (Arun, 25 Nov 2026).
         let ordered = ["settings_premium", "settings_notifications", "settings_widget_preview", "settings_dark_mode",
-                       "settings_glass_look", "journey_badge_haptics", "settings_google_import",
-                       "settings_google_disconnect", "settings_rate", "settings_share", "settings_terms",
-                       "settings_privacy", "settings_contact_support", "settings_version"]
+                       "settings_glass_look", "journey_badge_haptics", "settings_rate", "settings_share",
+                       "settings_terms", "settings_privacy", "settings_contact_support", "settings_version"]
         // Each row exists and sits below the previous one (checked while
         // both are on screen).
         var previous: XCUIElement?
@@ -560,6 +560,9 @@ final class ScreenshotTests: XCTestCase {
             }
             previous = element
         }
+        XCTAssertFalse(app.descendants(matching: .any).matching(identifier: "settings_google_import").firstMatch.exists)
+        XCTAssertFalse(app.descendants(matching: .any).matching(identifier: "settings_google_disconnect").firstMatch.exists)
+        XCTAssertTrue(app.images["settings_badge_haptics_icon"].exists, "Badge haptics has its icon")
         XCTAssertFalse(app.staticTexts["Journey"].exists && app.switches["journey_badge_haptics"].frame.minY
                        > app.staticTexts["Journey"].frame.minY, "No Journey section")
         // The Notifications page holds every reminder control.
