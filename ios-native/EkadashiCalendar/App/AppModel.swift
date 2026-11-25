@@ -78,8 +78,6 @@ final class AppModel {
     private(set) var eventReminders: EventReminderSettings
     private(set) var entriesRevision = 0
     var selectedTab: AppTab = .today
-    /// Import or Disconnect asked for from Settings; the Calendar tab runs it.
-    var googleCalendarRequest: GoogleCalendarRequest?
     var showSearch = false
     /// The way back to a search whose result opened a tab or calendar day.
     private(set) var searchReturn = SearchReturn()
@@ -864,15 +862,6 @@ final class AppModel {
     func entriesChanged() {
         entriesRevision += 1
         if eventReminders.reminders.contains(where: \.target.usesCalendarEntries) { Task { await scheduleReminders() } }
-    }
-
-    enum GoogleCalendarRequest: Equatable { case importEvents, disconnect }
-
-    /// Settings > Google Calendar (25 Nov 2026): the Calendar tab runs its own
-    /// Import (current month, paywall and free-sync rules) or Disconnect.
-    func requestGoogleCalendar(_ request: GoogleCalendarRequest) {
-        selectedTab = .calendar
-        googleCalendarRequest = request
     }
 
     /// The month of the one free Google sync ("2026-11"), if it was used.

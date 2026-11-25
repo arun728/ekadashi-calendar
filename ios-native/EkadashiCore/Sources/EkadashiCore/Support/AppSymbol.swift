@@ -117,6 +117,7 @@ public enum AppSymbol {
     public static let settingsNotifications = "bell"
     public static let settingsTerms = "doc.text"
     public static let settingsPrivacy = "hand.raised"
+    public static let settingsBadgeHaptics = "rosette"
     public static let settingsContactSupport = "envelope"
     public static let testNotification = "bell"
     public static let timings = "clock"
@@ -240,6 +241,7 @@ public enum AppSymbol {
         "settings_notifications": settingsNotifications,
         "settings_terms": settingsTerms,
         "settings_privacy": settingsPrivacy,
+        "settings_badge_haptics": settingsBadgeHaptics,
         "settings_contact_support": settingsContactSupport,
         "test_notification": testNotification,
         "timings": timings,

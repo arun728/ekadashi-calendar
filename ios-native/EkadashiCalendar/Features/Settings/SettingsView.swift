@@ -4,8 +4,8 @@ import UserNotifications
 import EkadashiCore
 
 /// Settings (settings_screen.dart), regrouped on 25 Nov 2026 (Arun): the
-/// Premium card, one Notifications row opening its own page, Appearance,
-/// Google Calendar and About & legal.
+/// Premium card, one Notifications row opening its own page, Appearance and
+/// About & legal. Google Calendar stays in the Calendar tab.
 struct SettingsView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.requestReview) private var requestReview
@@ -69,27 +69,20 @@ struct SettingsView: View {
                 .tint(Theme.teal)
                 .accessibilityIdentifier("settings_glass_look")
                 // Moved here from the old Journey section (25 Nov 2026).
-                Toggle(model.t("ios_journey_haptics"), isOn: Binding(get: { model.badgeHaptics }, set: { model.setBadgeHaptics($0) }))
-                    .tint(Theme.teal)
-                    .accessibilityIdentifier("journey_badge_haptics")
+                Toggle(isOn: Binding(get: { model.badgeHaptics }, set: { model.setBadgeHaptics($0) })) {
+                    Label {
+                        Text(model.t("ios_journey_haptics"))
+                    } icon: {
+                        Image(systemName: AppSymbol.settingsBadgeHaptics)
+                            .accessibilityIdentifier("settings_badge_haptics_icon")
+                    }
+                }
+                .tint(Theme.teal)
+                .accessibilityIdentifier("journey_badge_haptics")
             }
             .glassListRows()
             // Keep identifiers on the individual rows; a Section identifier
             // replaces those of its switches and navigation links.
-
-            Section(model.t("google_calendar")) {
-                Button { model.requestGoogleCalendar(.importEvents) } label: {
-                    row(AppSymbol.googleSync, model.t("sync_google"), nil)
-                }
-                .buttonStyle(.plain)
-                .accessibilityIdentifier("settings_google_import")
-                Button { model.requestGoogleCalendar(.disconnect) } label: {
-                    row(AppSymbol.googleDisconnect, model.t("disconnect_google"), nil)
-                }
-                .buttonStyle(.plain)
-                .accessibilityIdentifier("settings_google_disconnect")
-            }
-            .glassListRows()
 
             Section(model.t("settings_about_legal")) {
                 Button { rate() } label: { row(AppSymbol.rateApp, model.t("rate_app"), model.t("rate_app_desc")) }
