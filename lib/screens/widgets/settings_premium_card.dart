@@ -195,6 +195,9 @@ class SettingsPremiumCard extends StatelessWidget {
   ) {
     final billing = context.watch<PlayBillingService?>();
     final plan = billing?.currentPlanId;
+    final primary = Theme.of(context).brightness == Brightness.dark
+        ? Colors.white
+        : Colors.black;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -239,12 +242,15 @@ class SettingsPremiumCard extends StatelessWidget {
               Expanded(
                 child: OutlinedButton(
                   key: const Key('settings_premium_manage'),
+                  // Teal on the teal card looked disabled (Arun, 25 Nov
+                  // 2026): the primary text colour, as on iOS.
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: GlassTubeColors.teal,
+                    foregroundColor: primary,
                     shape: const StadiumBorder(),
                     padding: const EdgeInsets.symmetric(vertical: 11),
                     side: BorderSide(
-                      color: GlassTubeColors.teal.withValues(alpha: .5),
+                      color: primary.withValues(alpha: .85),
+                      width: 1.5,
                     ),
                   ),
                   onPressed: () => launchUrl(
