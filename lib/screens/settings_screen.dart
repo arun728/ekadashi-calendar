@@ -7,6 +7,8 @@ import '../services/premium_service.dart';
 import 'widgets/settings_permission_actions.dart';
 import '../widgets/settings_group.dart';
 import 'widget_preview_screen.dart';
+import 'premium_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -33,9 +35,22 @@ import '../services/place_name_resolver.dart';
 /// - Native permission checks run on IO threads
 /// - Faster permission state updates
 /// - Added parana reminder option (Break Fasting Reminder)
+/// What Settings > Google Calendar asks the Calendar tab to run.
+enum GoogleCalendarRequest { importEvents, disconnect }
+
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key, this.currentTimezone = 'IST'});
+  const SettingsScreen({
+    super.key,
+    this.currentTimezone = 'IST',
+    this.onGoogleCalendar,
+  });
   final String currentTimezone;
+
+  /// Settings > Google Calendar: the Calendar tab runs its own Import (on
+  /// the current month) or Disconnect (25 Nov 2026, as on iOS).
+  final void Function(GoogleCalendarRequest request)? onGoogleCalendar;
+
+  static final supportEmail = Uri.parse('mailto:contact@apptinel.com');
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -77,9 +92,19 @@ class _SettingsScreenState extends State<SettingsScreen>
     });
   }
 
+  /// Rebuilds the pushed Notifications page whenever this state changes.
+  final _revision = ValueNotifier<int>(0);
+
+  @override
+  void setState(VoidCallback fn) {
+    super.setState(fn);
+    _revision.value++;
+  }
+
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _revision.dispose();
     super.dispose();
   }
 
@@ -280,42 +305,15 @@ class _SettingsScreenState extends State<SettingsScreen>
   Widget build(BuildContext context) {
     final lang = Provider.of<LanguageService>(context);
 
-    final bool togglesEnabled =
-        _permissionStatus.hasNotificationPermission &&
-        _notificationSettings.enabled;
-
-    // Show permissions section always on Android (since USE_EXACT_ALARM is
-    // auto-granted). The target platform is Android on the device and in
-    // widget tests.
-    final bool showPermissionsSection =
-        Theme.of(context).platform == TargetPlatform.android;
-
     if (!_isInitialized) {
       return const Center(child: CircularProgressIndicator(color: tealColor));
     }
-
-    final premium = context.watch<PremiumService>().isPremium;
-    final secondary = SettingsStyle.secondary(context);
 
     Widget header(String key, {double top = 24}) => SettingsHeader(
       lang.translate(key),
       key: Key('settings_header_$key'),
       top: top,
     );
-
-    // Ekadashi reminders: the status is a grey detail, as on iOS.
-    Widget reminder(String key, bool value, ValueChanged<bool> onChanged) =>
-        SettingsSwitchTile(
-          title: Text(lang.translate(key)),
-          subtitle: Text(
-            lang.translate(
-              togglesEnabled && value ? 'status_active' : 'status_disabled',
-            ),
-            style: TextStyle(fontSize: 12, color: secondary),
-          ),
-          value: value && togglesEnabled,
-          onChanged: togglesEnabled ? onChanged : null,
-        );
 
     return ListView(
       padding: EdgeInsets.fromLTRB(
@@ -327,8 +325,32 @@ class _SettingsScreenState extends State<SettingsScreen>
       children: [
         SettingsPremiumCard(currentTimezone: widget.currentTimezone),
 
+        // ==================== NOTIFICATIONS ====================
+        // One row opening its own page (25 Nov 2026, as on iOS).
+        const SizedBox(height: 28),
+        SettingsCard(
+          children: [
+            ListTile(
+              key: const Key('settings_notifications'),
+              leading: const SettingsIcon(AppIcons.settingsNotifications),
+              title: Text(lang.translate('notifications')),
+              subtitle: Text(
+                !_permissionStatus.hasNotificationPermission
+                    ? lang.translate('notifications_off')
+                    : _notificationSettings.enabled
+                    ? lang.translateWithArgs('reminders_active', [
+                        _notificationSettings.enabledCount.toString(),
+                      ])
+                    : lang.translate('status_disabled'),
+              ),
+              trailing: const SettingsChevron(),
+              onTap: _openNotifications,
+            ),
+          ],
+        ),
+
         // ==================== APPEARANCE ====================
-        header('appearance', top: 28),
+        header('appearance'),
         SettingsCard(
           key: const Key('settings_appearance_tube'),
           children: [
@@ -384,9 +406,181 @@ class _SettingsScreenState extends State<SettingsScreen>
               value: context.watch<ThemeService>().isGlassLookEnabled,
               onChanged: context.read<ThemeService>().setGlassLook,
             ),
+            const SettingsSeparator(),
+            // Moved here from the old Journey section (25 Nov 2026).
+            SettingsSwitchTile(
+              key: const Key('journey_badge_haptics'),
+              title: Text(lang.translate('ios_journey_haptics')),
+              value: context.watch<VratTrackerService?>()?.badgeHaptics ?? true,
+              onChanged: (value) =>
+                  context.read<VratTrackerService?>()?.setBadgeHaptics(value),
+            ),
           ],
         ),
 
+        // ==================== GOOGLE CALENDAR ====================
+        header('google_calendar'),
+        SettingsCard(
+          key: const Key('settings_google_tube'),
+          children: [
+            ListTile(
+              key: const Key('settings_google_import'),
+              leading: const SettingsIcon(AppIcons.googleSync),
+              title: Text(lang.translate('sync_google')),
+              onTap: () => widget.onGoogleCalendar?.call(
+                GoogleCalendarRequest.importEvents,
+              ),
+            ),
+            const SettingsSeparator(inset: SettingsStyle.iconInset),
+            ListTile(
+              key: const Key('settings_google_disconnect'),
+              leading: const SettingsIcon(AppIcons.googleDisconnect),
+              title: Text(lang.translate('disconnect_google')),
+              onTap: () => widget.onGoogleCalendar?.call(
+                GoogleCalendarRequest.disconnect,
+              ),
+            ),
+          ],
+        ),
+
+        // ==================== ABOUT ====================
+        header('settings_about_legal'),
+        SettingsCard(
+          key: const Key('settings_about_tube'),
+          children: [
+            ListTile(
+              key: const Key('settings_rate'),
+              leading: const SettingsIcon(AppIcons.rateApp),
+              title: Text(lang.translate('rate_app')),
+              subtitle: Text(lang.translate('rate_app_desc')),
+              onTap: () => _settingsService.openStoreListing(),
+            ),
+            const SettingsSeparator(inset: SettingsStyle.iconInset),
+            ListTile(
+              key: const Key('settings_share'),
+              leading: const SettingsIcon(AppIcons.share),
+              title: Text(lang.translate('share_app')),
+              subtitle: Text(lang.translate('share_app_desc')),
+              onTap: _shareApp,
+            ),
+            const SettingsSeparator(inset: SettingsStyle.iconInset),
+            ListTile(
+              key: const Key('settings_terms'),
+              leading: const SettingsIcon(AppIcons.settingsTerms),
+              title: Text(lang.translate('terms_of_service')),
+              onTap: () => launchUrl(
+                Uri.parse(PremiumScreen.termsUrl),
+                mode: LaunchMode.externalApplication,
+              ),
+            ),
+            const SettingsSeparator(inset: SettingsStyle.iconInset),
+            ListTile(
+              key: const Key('settings_privacy'),
+              leading: const SettingsIcon(AppIcons.settingsPrivacy),
+              title: Text(lang.translate('privacy_policy')),
+              onTap: () => launchUrl(
+                Uri.parse(PremiumScreen.privacyUrl),
+                mode: LaunchMode.externalApplication,
+              ),
+            ),
+            const SettingsSeparator(inset: SettingsStyle.iconInset),
+            ListTile(
+              key: const Key('settings_contact_support'),
+              leading: const SettingsIcon(AppIcons.settingsContactSupport),
+              title: Text(lang.translate('settings_contact_support')),
+              subtitle: Text(lang.translate('settings_contact_support_desc')),
+              onTap: () => launchUrl(
+                SettingsScreen.supportEmail,
+                mode: LaunchMode.externalApplication,
+              ),
+            ),
+            const SettingsSeparator(inset: SettingsStyle.iconInset),
+            ListTile(
+              key: const Key('settings_version'),
+              title: Text(lang.translate('version')),
+              trailing: Text(
+                _version,
+                style: TextStyle(
+                  fontSize: IosText.body,
+                  color: IosColors.secondary(context),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  /// Settings > Notifications: the master switch and test, Ekadashi,
+  /// Festivals and events, and "Reminders not arriving?" (25 Nov 2026).
+  void _openNotifications() {
+    final lang = Provider.of<LanguageService>(context, listen: false);
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => Scaffold(
+          appBar: AppBar(
+            title: Text(lang.translate('notifications')),
+            leadingWidth: 68,
+            leading: const LeadingBarIcon(),
+          ),
+          body: ValueListenableBuilder<int>(
+            valueListenable: _revision,
+            builder: (context, _, _) => _notificationsPage(context),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _notificationsPage(BuildContext context) {
+    final lang = Provider.of<LanguageService>(context);
+
+    final bool togglesEnabled =
+        _permissionStatus.hasNotificationPermission &&
+        _notificationSettings.enabled;
+
+    // Show permissions section always on Android (since USE_EXACT_ALARM is
+    // auto-granted). The target platform is Android on the device and in
+    // widget tests.
+    final bool showPermissionsSection =
+        Theme.of(context).platform == TargetPlatform.android;
+
+    if (!_isInitialized) {
+      return const Center(child: CircularProgressIndicator(color: tealColor));
+    }
+
+    final premium = context.watch<PremiumService>().isPremium;
+    final secondary = SettingsStyle.secondary(context);
+
+    Widget header(String key, {double top = 24}) => SettingsHeader(
+      lang.translate(key),
+      key: Key('settings_header_$key'),
+      top: top,
+    );
+
+    // Ekadashi reminders: the status is a grey detail, as on iOS.
+    Widget reminder(String key, bool value, ValueChanged<bool> onChanged) =>
+        SettingsSwitchTile(
+          title: Text(lang.translate(key)),
+          subtitle: Text(
+            lang.translate(
+              togglesEnabled && value ? 'status_active' : 'status_disabled',
+            ),
+            style: TextStyle(fontSize: 12, color: secondary),
+          ),
+          value: value && togglesEnabled,
+          onChanged: togglesEnabled ? onChanged : null,
+        );
+
+    return ListView(
+      padding: EdgeInsets.fromLTRB(
+        16,
+        0,
+        16,
+        16 + MediaQuery.paddingOf(context).bottom,
+      ),
+      children: [
         // ==================== NOTIFICATIONS ====================
         header('notifications'),
         SettingsCard(
@@ -514,7 +708,7 @@ class _SettingsScreenState extends State<SettingsScreen>
 
         // ==================== PERMISSIONS ====================
         if (showPermissionsSection) ...[
-          header('permissions'),
+          header('settings_reminders_not_arriving'),
           SettingsPermissionActions(
             settingsTitle: lang.translate('app_settings'),
             settingsSubtitle: lang.translate('app_settings_desc'),
@@ -523,50 +717,6 @@ class _SettingsScreenState extends State<SettingsScreen>
             onGuide: _showPermissionsGuideDialog,
           ),
         ],
-
-        // ==================== ABOUT ====================
-        header('about'),
-        SettingsCard(
-          key: const Key('settings_about_tube'),
-          children: [
-            ListTile(
-              leading: const SettingsIcon(AppIcons.rateApp),
-              title: Text(lang.translate('rate_app')),
-              subtitle: Text(lang.translate('rate_app_desc')),
-              onTap: () => _settingsService.openStoreListing(),
-            ),
-            const SettingsSeparator(inset: SettingsStyle.iconInset),
-            ListTile(
-              leading: const SettingsIcon(AppIcons.share),
-              title: Text(lang.translate('share_app')),
-              subtitle: Text(lang.translate('share_app_desc')),
-              onTap: _shareApp,
-            ),
-            const SettingsSeparator(inset: SettingsStyle.iconInset),
-            ListTile(
-              title: Text(lang.translate('version')),
-              trailing: Text(
-                _version,
-                style: TextStyle(
-                  fontSize: IosText.body,
-                  color: IosColors.secondary(context),
-                ),
-              ),
-            ),
-          ],
-        ),
-        header('journey_tab'),
-        SettingsCard(
-          children: [
-            SettingsSwitchTile(
-              key: const Key('journey_badge_haptics'),
-              title: Text(lang.translate('ios_journey_haptics')),
-              value: context.watch<VratTrackerService?>()?.badgeHaptics ?? true,
-              onChanged: (value) =>
-                  context.read<VratTrackerService?>()?.setBadgeHaptics(value),
-            ),
-          ],
-        ),
       ],
     );
   }
