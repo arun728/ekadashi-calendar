@@ -11,6 +11,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'premium_service.dart';
 
+/// The store's localized price, shown as the App Store does: a whole price
+/// without zero decimals (₹99, not ₹99.00); a price with cents keeps them.
+String storePrice(String price, num rawPrice) {
+  if (rawPrice != rawPrice.truncate()) return price;
+  return price.replaceFirst(RegExp(r'[.,]0+(?=\D*$)'), '');
+}
+
 class PremiumPlan {
   const PremiumPlan(this.id, this.price, this.product);
   final String id, price;
@@ -297,7 +304,11 @@ class PlayBillingService extends ChangeNotifier {
       final catalog = <String, PremiumPlan>{};
       for (final product in result.productDetails) {
         if (product.id == lifetime) {
-          catalog['lifetime'] = PremiumPlan('lifetime', product.price, product);
+          catalog['lifetime'] = PremiumPlan(
+            'lifetime',
+            storePrice(product.price, product.rawPrice),
+            product,
+          );
           continue;
         }
         if (product is GooglePlayProductDetails) {
@@ -313,7 +324,11 @@ class PlayBillingService extends ChangeNotifier {
           final separate = product.id == (id == 'monthly' ? monthly : yearly);
           if (separate ||
               (product.id == subscription && !catalog.containsKey(id))) {
-            catalog[id] = PremiumPlan(id, product.price, product);
+            catalog[id] = PremiumPlan(
+              id,
+              storePrice(product.price, product.rawPrice),
+              product,
+            );
           }
         }
       }

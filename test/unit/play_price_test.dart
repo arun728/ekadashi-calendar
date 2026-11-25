@@ -1,6 +1,8 @@
 import 'package:ekadashi_calendar/services/play_billing_service.dart';
 import 'package:ekadashi_calendar/services/premium_service.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:in_app_purchase_platform_interface/in_app_purchase_platform_interface.dart';
 
@@ -30,6 +32,12 @@ class _PriceStore extends InAppPurchasePlatform {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  setUpAll(() {
+    debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+    InAppPurchase.instance;
+    debugDefaultTargetPlatformOverride = null;
+    SharedPreferences.setMockInitialValues({});
+  });
 
   group('Play prices show like the App Store (₹99, not ₹99.00)', () {
     test('whole prices drop zero decimals', () {
