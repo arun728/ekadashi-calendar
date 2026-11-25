@@ -193,7 +193,8 @@ class SettingsPremiumCard extends StatelessWidget {
     LanguageService lang,
     PremiumService premium,
   ) {
-    final plan = context.watch<PlayBillingService?>()?.currentPlanId;
+    final billing = context.watch<PlayBillingService?>();
+    final plan = billing?.currentPlanId;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -221,6 +222,8 @@ class SettingsPremiumCard extends StatelessWidget {
             lang.translate(
               premium.subscriptionCancelled
                   ? 'premium_cancelled_body'
+                  : billing?.monthlySwitchScheduled == true
+                  ? 'premium_monthly_switch_scheduled'
                   : 'premium_subscriber_body',
             ),
             style: TextStyle(

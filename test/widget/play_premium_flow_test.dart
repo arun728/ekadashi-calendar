@@ -395,38 +395,37 @@ void main() {
     }
   });
 
-  testWidgets(
-    'Upcoming Monthly opens Play management and keeps Yearly current',
-    (tester) async {
-      final opened = captureExternalLinks();
-      final premium = PremiumService(entitlements: PremiumFixture())
-        ..applyOwned({PremiumService.yearlySubscriptionId});
-      addTearDown(premium.dispose);
-      final billing = await pumpPaywall(tester, premium);
-      billing.monthlySwitchScheduled = true;
-      billing.notifyListeners();
-      await tester.pumpAndSettle();
-      expect(find.byKey(const Key('premium_current_yearly')), findsOneWidget);
-      expect(find.text('Current plan'), findsOneWidget);
-      expect(find.byKey(const Key('premium_upcoming_monthly')), findsOneWidget);
-      expect(
-        find.text(
-          'Switching to Monthly at renewal. See the renewal date in Google Play.',
-        ),
-        findsOneWidget,
-      );
-      await tester.tap(find.byKey(const Key('premium_plan_monthly')));
-      await tester.pumpAndSettle();
-      expect(ctaLabel(tester), lang.translate('premium_manage'));
-      await tester.tap(find.byKey(const Key('premium_buy')));
-      await tester.pumpAndSettle();
-      expect(billing.bought, isEmpty);
-      expect(
-        Uri.parse(opened.single).queryParameters['sku'],
-        PremiumService.yearlySubscriptionId,
-      );
-    },
-  );
+  testWidgets('Upcoming Monthly opens Play management and keeps Yearly current', (
+    tester,
+  ) async {
+    final opened = captureExternalLinks();
+    final premium = PremiumService(entitlements: PremiumFixture())
+      ..applyOwned({PremiumService.yearlySubscriptionId});
+    addTearDown(premium.dispose);
+    final billing = await pumpPaywall(tester, premium);
+    billing.monthlySwitchScheduled = true;
+    billing.notifyListeners();
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('premium_current_yearly')), findsOneWidget);
+    expect(find.text('Current plan'), findsOneWidget);
+    expect(find.byKey(const Key('premium_upcoming_monthly')), findsOneWidget);
+    expect(
+      find.text(
+        'Switching to Monthly at renewal. See the renewal date in Google Play.',
+      ),
+      findsOneWidget,
+    );
+    await tester.tap(find.byKey(const Key('premium_plan_monthly')));
+    await tester.pumpAndSettle();
+    expect(ctaLabel(tester), lang.translate('premium_manage'));
+    await tester.tap(find.byKey(const Key('premium_buy')));
+    await tester.pumpAndSettle();
+    expect(billing.bought, isEmpty);
+    expect(
+      Uri.parse(opened.single).queryParameters['sku'],
+      PremiumService.yearlySubscriptionId,
+    );
+  });
 
   testWidgets('A free user buys a plan without the switch note', (
     tester,
