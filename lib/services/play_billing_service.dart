@@ -135,14 +135,12 @@ class PlayStoreEntitlements extends PlayEntitlementSource {
       }
       owned[purchase.productID] = playPurchaseTime(purchase);
       if (purchase is GooglePlayPurchaseDetails) {
-        final autoRenews = purchase.billingClientPurchase.isAutoRenewing;
-        // With separate products, Play can report a non-renewing old item
-        // during a scheduled switch. Only Play's manager can distinguish that
-        // from cancellation, so keep the status unknown locally.
-        if (autoRenews || purchase.productID == PremiumService.subscriptionId) {
-          renewing[purchase.productID] = autoRenews;
-        }
+        // A scheduled Yearly to Monthly switch keeps auto-renewing; Play
+        // reports "not renewing" only once the user cancels (checked on the
+        // M52, 25 Nov 2026), so that is a cancellation, as on iOS.
         if (PremiumService.subscriptionIds.contains(purchase.productID)) {
+          renewing[purchase.productID] =
+              purchase.billingClientPurchase.isAutoRenewing;
           subscriptions[purchase.productID] = purchase;
         }
       }
@@ -237,11 +235,20 @@ class PlayBillingService extends ChangeNotifier {
   DateTime? _requestedAt;
   ({String productId, String token})? _requestedDeferredSwitch;
   String? _scheduledMonthlyToken;
+  static const _scheduledMonthlyKey = 'premium_scheduled_monthly_v1';
 
-  bool get monthlySwitchScheduled =>
-      currentPlanId == 'yearly' &&
-      _scheduledMonthlyToken != null &&
-      _scheduledMonthlyToken == premium.subscriptionPurchaseToken;
+  /// Yearly is switching to Monthly at renewal. Play's purchase data does not
+  /// say so, so the confirmed switch is remembered with its purchase token
+  /// (kept across launches). Cancelling in Play drops the switch.
+  bool get monthlySwitchScheduled {
+    if (currentPlanId != 'yearly' || premium.subscriptionCancelled) {
+      return false;
+    }
+    final token = premium.subscriptionPurchaseToken;
+    if (token == null) return false;
+    if (_scheduledMonthlyToken != null) return _scheduledMonthlyToken == token;
+    return _preferences?.getString(_scheduledMonthlyKey) == _fingerprint(token);
+  }
 
   /// Like other subscription apps, a subscriber can still switch between
   /// monthly and yearly or buy lifetime; lifetime owners need nothing more.
@@ -379,6 +386,14 @@ class PlayBillingService extends ChangeNotifier {
           if (scheduled) {
             _scheduledMonthlyToken = token;
             _requestedDeferredSwitch = null;
+            try {
+              await _preferences?.setString(
+                _scheduledMonthlyKey,
+                _fingerprint(token),
+              );
+            } catch (error) {
+              debugPrint('Scheduled plan could not be saved: $error');
+            }
           }
           final verifiedLegacyCheckout =
               purchase.productID == subscription &&
