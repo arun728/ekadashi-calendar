@@ -30,8 +30,10 @@ struct PremiumView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            ScrollView {
+        // The buy button and links follow the plans (Arun, 25 Nov 2026: a
+        // footer pinned to the bottom left a big empty gap above it).
+        ScrollView {
+            VStack(spacing: 0) {
                 VStack(alignment: .leading, spacing: 12) {
                     header
                     status
@@ -51,8 +53,8 @@ struct PremiumView: View {
                 }
                 .padding(.horizontal, 20)
                 .padding(.vertical, 8)
+                footer
             }
-            footer
         }
         .background(AppBackground())
         .navigationTitle(model.t("premium_title"))
@@ -234,16 +236,27 @@ struct PremiumView: View {
                 .disabled(action == .none)
                 .accessibilityIdentifier("premium_buy")
             }
-            FlowLayout(spacing: 4) {
-                link("premium_restore") { Task { await restore() } }.disabled(store.busy)
-                link("premium_manage") { managing = true }
-                link("terms_of_service") { openURL(Self.termsURL) }
-                link("privacy_policy") { openURL(Self.privacyURL) }
+            // Two centred rows with room between the links; a row that does
+            // not fit (long translations) stacks its links instead.
+            VStack(spacing: 4) {
+                linkRow(link("premium_restore") { Task { await restore() } }.disabled(store.busy),
+                        link("premium_manage") { managing = true })
+                linkRow(link("terms_of_service") { openURL(Self.termsURL) },
+                        link("privacy_policy") { openURL(Self.privacyURL) })
             }
+            .frame(maxWidth: .infinity)
+            .padding(.top, 12)
         }
         .padding(.horizontal, 20)
-        .padding(.top, 8)
-        .padding(.bottom, 4)
+        .padding(.top, 4)
+        .padding(.bottom, 12)
+    }
+
+    private func linkRow(_ first: some View, _ second: some View) -> some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 16) { first; second }
+            VStack(spacing: 4) { first; second }
+        }
     }
 
     private func link(_ key: String, action: @escaping () -> Void) -> some View {
