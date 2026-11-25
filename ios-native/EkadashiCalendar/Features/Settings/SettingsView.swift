@@ -299,7 +299,7 @@ struct SettingsPremiumCard: View {
             if state.isInBillingRetry {
                 Text(model.t("ios_premium_billing_retry_body")).font(.footnote)
                 Button(model.t("settings_premium_manage")) { managing = true }
-                    .secondaryActionStyle()
+                    .buttonStyle(PremiumCardOutlineStyle())
             }
             benefit(AppSymbol.premiumCalendar, "premium_feature_calendar")
             benefit(AppSymbol.premiumVrat, "premium_feature_vrat")
@@ -332,7 +332,8 @@ struct SettingsPremiumCard: View {
                     Button { managing = true } label: {
                         Text(model.t("settings_premium_manage")).frame(maxWidth: .infinity).padding(.vertical, 4)
                     }
-                    .secondaryActionStyle()
+                    .buttonStyle(PremiumCardOutlineStyle())
+                    .accessibilityIdentifier("settings_premium_manage")
                 }
                 if !state.lifetime {
                     Button { model.openPaywall() } label: {
@@ -351,5 +352,21 @@ struct SettingsPremiumCard: View {
         } icon: {
             Image(systemName: symbol).foregroundStyle(Theme.teal)
         }
+    }
+}
+
+/// Manage on the Premium card (Arun, 25 Nov 2026: teal on the teal card
+/// looked disabled next to Change plan). The label and outline use the
+/// primary text colour, white in dark mode, so it reads as a normal button
+/// that is still less prominent than the filled Change plan.
+private struct PremiumCardOutlineStyle: ButtonStyle {
+    @Environment(\.isEnabled) private var enabled
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .padding(.horizontal, 12).padding(.vertical, 7)
+            .foregroundStyle(.primary)
+            .overlay(Capsule().strokeBorder(.primary.opacity(0.85), lineWidth: 1.5))
+            .contentShape(Capsule())
+            .opacity(configuration.isPressed ? 0.7 : enabled ? 1 : 0.5)
     }
 }
