@@ -168,3 +168,60 @@ one small line, no Manage link for free users.
   reminders is checked later.
 - After the fixes: full end-to-end subscription re-test, behaviour and strings,
   on the M52 and the iPhone.
+
+## 9. Fixes made after Arun's GO (25 Nov 2026, afternoon)
+
+Tests first for every change (each "Failing tests" commit records the
+failing run), iOS first where both apps change, every commit `[skip ci]`.
+
+| Fix | Commits | Platforms |
+|---|---|---|
+| Cancel shows "Subscription cancelled" with Reactivate; the upcoming Monthly is dropped; Monthly can be picked again | `7916d79` / `df4dc3c` | Android (iOS already did this) |
+| A scheduled switch stays "Upcoming plan" after a restart | `7916d79` / `df4dc3c` | Android |
+| Prices without zero decimals (₹99) | `080a8f5` / `b475009` | Android |
+| "Manage subscription" without a store name, all six languages | `318b4d3` / `15f7d0f` | both |
+| Plans page: button right under the plans, links in two centred rows with room | `41c02c8` / `083d328` / `2938b87` | both |
+| Settings card: Manage readable (primary text colour, clear outline, same size as Change plan) | `4c66615` / `aaf97b0`, `cad1050` / `7090192`, `cfe0b33` / `452b786` | both |
+| Google Calendar reminders are Premium; free users only for the free sync month; approved line in all six languages | `69d46c5` / `573fcb9` / `f16073f`, `bc0dba6` / `2da13a7` | both |
+| Two flaky StoreKit simulator tests skipped (devices are the source of truth) | `cdd0808` | iOS tests |
+| Older tests brought up to date (centred links, key count 599) | `5040ffb`, `50f29d2` | both |
+
+What Google Play reports on the M52 (logged from the real purchase data):
+
+| State | Product, token | `autoRenewing` |
+|---|---|---|
+| Yearly, renewing | yearly, token A | true |
+| Yearly with a switch to Monthly scheduled | yearly, new token B | true |
+| Same, after cancelling in Play | yearly, token B | false |
+
+Play's data never says a switch is scheduled, so the app now remembers the
+confirmed switch with its token. "Not renewing" reliably means cancelled.
+
+**Play limitation (Android only):** after cancelling a subscription that
+had a switch scheduled, Play offers no Resubscribe button and refuses a
+plan change ("There is an existing deferred replacement for the old
+product"). Premium stays on until the period ends; then Monthly or Yearly
+can be bought normally. After a plain cancel (no switch), Play's page has
+Resubscribe, so Reactivate works. iOS allows both.
+
+### Device results after the fixes (M52, debug build of `50f29d2`)
+
+| Check | Result |
+|---|---|
+| Free plans page: ₹99 / ₹599 / ₹1,999, button under the plans, centred links, "Manage subscription" | ✅ |
+| Buy Monthly; Settings card shows a white, outlined Manage | ✅ (label size then matched to Change plan, `452b786`) |
+| Monthly → Yearly, charged today | ✅ |
+| Yearly → Monthly at renewal: "Upcoming plan" and "Switching to Monthly…" | ✅ |
+| Same after force-stopping and relaunching the app | ✅ (was ❌) |
+| Cancel in Play with the switch scheduled: "Subscription cancelled", Upcoming gone, Yearly current with Reactivate | ✅ (was ❌) |
+| Buy Monthly in that state | Play refuses (see the Play limitation above); the app stays correct |
+| Cancelled plan ends: back to free | ✅ |
+| Plain cancel → Reactivate → Play's Resubscribe → app shows Premium renewing | ✅ |
+| Plans page and card in Hindi, Tamil, Telugu, Gujarati, Bengali: no Latin text, new strings shown | ✅ |
+| Free user: "All Google Calendar events" locked in Add a reminder, custom entries free, approved footer and paywall line | ✅ |
+| Free-sync-month exception on the phone | Not tested: needs Arun's tap on Google's account chooser (unit and widget tests cover it) |
+
+iPhone (debug build of `50f29d2`): the free plans page matches Android
+(button under the plans, centred links, "Manage subscription"). Its sandbox
+Monthly had ended, so purchases (including Lifetime) wait for Arun to
+confirm Apple's sheets.
