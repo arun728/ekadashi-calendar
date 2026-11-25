@@ -154,6 +154,19 @@ class AppLocalizationsTa extends AppLocalizations {
   String get about => 'பற்றி';
 
   @override
+  String get settings_about_legal => 'பற்றி மற்றும் சட்டம்';
+
+  @override
+  String get settings_contact_support => 'உதவியைத் தொடர்புகொள்ளுங்கள்';
+
+  @override
+  String get settings_contact_support_desc =>
+      'உதவிக்கு எங்களுக்கு மின்னஞ்சல் அனுப்புங்கள்';
+
+  @override
+  String get settings_reminders_not_arriving => 'நினைவூட்டல்கள் வரவில்லையா?';
+
+  @override
   String get app_update_available => 'புதுப்பிப்பு கிடைக்கிறது';
 
   @override

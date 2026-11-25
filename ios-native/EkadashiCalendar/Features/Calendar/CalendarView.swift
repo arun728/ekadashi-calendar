@@ -117,6 +117,17 @@ struct CalendarView: View {
                 do { try await Task.sleep(for: .seconds(delay)) } catch { break }
             }
         }
+        .task(id: model.googleCalendarRequest) {
+            guard let request = model.googleCalendarRequest else { return }
+            model.googleCalendarRequest = nil
+            switch request {
+            case .importEvents:
+                focus(model.today)
+                await sync()
+            case .disconnect:
+                await disconnect()
+            }
+        }
         .onChange(of: model.calendarFocus) { _, date in
             guard let date else { return }
             hasFocused = true

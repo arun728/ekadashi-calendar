@@ -114,6 +114,10 @@ public enum AppSymbol {
     public static let tabJourney = "rosette"
     public static let tabPanchang = "sparkles"
     public static let tabSettings = "gearshape.fill"
+    public static let settingsNotifications = "bell"
+    public static let settingsTerms = "doc.text"
+    public static let settingsPrivacy = "hand.raised"
+    public static let settingsContactSupport = "envelope"
     public static let testNotification = "bell"
     public static let timings = "clock"
     public static let useCurrentLocation = "location"
@@ -233,6 +237,10 @@ public enum AppSymbol {
         "tab_journey": tabJourney,
         "tab_panchang": tabPanchang,
         "tab_settings": tabSettings,
+        "settings_notifications": settingsNotifications,
+        "settings_terms": settingsTerms,
+        "settings_privacy": settingsPrivacy,
+        "settings_contact_support": settingsContactSupport,
         "test_notification": testNotification,
         "timings": timings,
         "use_current_location": useCurrentLocation,
