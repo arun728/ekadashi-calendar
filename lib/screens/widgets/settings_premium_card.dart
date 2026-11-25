@@ -259,7 +259,10 @@ class SettingsPremiumCard extends StatelessWidget {
                     ),
                     mode: LaunchMode.externalApplication,
                   ),
-                  child: Text(lang.translate('settings_premium_manage')),
+                  child: Text(
+                    lang.translate('settings_premium_manage'),
+                    style: _label,
+                  ),
                 ),
               ),
               const SizedBox(width: 10),
