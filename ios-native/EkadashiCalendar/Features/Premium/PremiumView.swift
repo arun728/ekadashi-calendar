@@ -135,8 +135,7 @@ struct PremiumView: View {
         } else if state.subscribed {
             Group {
                 if state.subscriptionCancelled {
-                    statusCard("premium_cancelled_title", "premium_cancelled_body", .orange,
-                               bodyText: model.premiumCancellationMessage(state))
+                    statusCard("premium_cancelled_title", "premium_cancelled_body", .orange)
                 } else {
                     statusCard("premium_subscriber_title", "premium_subscriber_body", Theme.teal,
                                bodyText: model.premiumRenewalMessage(state),

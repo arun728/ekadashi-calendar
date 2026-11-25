@@ -875,7 +875,7 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get premium_free_achievements =>
-      'మీ మొదటి మూడు వ్రత ఎంట్రీలు మరియు మొదటి మూడు విజయాలు ఉచితం. మిగిలినవి ప్రీమియంలో అన్‌లాక్ అవుతాయి.';
+      'మీ మొదటి మూడు వ్రత ఎంట్రీలు ఉచితం. మరిన్ని నమోదు చేయడానికి ప్రీమియం పొందండి.';
 
   @override
   String get premium_monthly => 'నెలవారీ';
@@ -933,7 +933,7 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get premium_cancelled_body =>
-      'మీరు చెల్లించిన వ్యవధి ముగిసే వరకు ప్రీమియం ఉంటుంది. కొనసాగించడానికి ఎప్పుడైనా మళ్లీ ప్రారంభించండి.';
+      'మీరు చెల్లించిన వ్యవధి ముగిసే వరకు ప్రీమియం ఉంటుంది. తేదీని గూగుల్ ప్లేలో చూడండి. కొనసాగించడానికి ఎప్పుడైనా మళ్లీ ప్రారంభించండి.';
 
   @override
   String get premium_reactivate => 'మళ్లీ ప్రారంభించండి';
@@ -1062,7 +1062,7 @@ class AppLocalizationsTe extends AppLocalizations {
   String get premium_coins => 'నాణేలు';
 
   @override
-  String get premium_more_achievements => 'ప్రీమియంతో మరిన్ని విజయాలు';
+  String get premium_more_achievements => 'ప్రీమియంతో విజయాలను అన్‌లాక్ చేయండి';
 
   @override
   String get premium_reward_example =>
@@ -1073,8 +1073,7 @@ class AppLocalizationsTe extends AppLocalizations {
       'మీ పూర్తి సబ్‌స్క్రిప్షన్ సంవత్సరానికి గూగుల్ క్యాలెండర్ సింక్ (ఒక నెల సింక్ ఉచితం)';
 
   @override
-  String get premium_feature_vrat =>
-      'అపరిమిత వ్రత ఎంట్రీలు (మొదటి మూడు ఉచితం) మరియు అన్ని విజయాలు';
+  String get premium_feature_vrat => 'అపరిమిత వ్రత ఎంట్రీలు (మొదటి మూడు ఉచితం)';
 
   @override
   String get premium_feature_panchang =>
@@ -1864,7 +1863,7 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get ios_journey_premium_desc =>
-      'అపరిమిత నమోదులు, పూర్తి పతకాల సేకరణ మరియు మీ వార్షిక మండలం.';
+      'అపరిమిత వ్రత ఎంట్రీలు మరియు పూర్తి పతకాల సేకరణ';
 
   @override
   String get ios_journey_haptics => 'పతకం పొందినప్పుడు స్పర్శ స్పందన';

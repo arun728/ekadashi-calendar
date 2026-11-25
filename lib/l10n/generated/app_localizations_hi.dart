@@ -868,7 +868,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get premium_free_achievements =>
-      'आपकी पहली तीन व्रत प्रविष्टियाँ और पहली तीन उपलब्धियाँ मुफ़्त हैं। बाकी प्रीमियम में खुलती हैं।';
+      'आपकी पहली तीन व्रत प्रविष्टियाँ मुफ़्त हैं। और दर्ज करने के लिए प्रीमियम लें।';
 
   @override
   String get premium_monthly => 'मासिक';
@@ -926,7 +926,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get premium_cancelled_body =>
-      'भुगतान की गई अवधि के अंत तक प्रीमियम चालू रहेगा। इसे बनाए रखने के लिए कभी भी फिर से चालू करें।';
+      'भुगतान की गई अवधि के अंत तक प्रीमियम चालू रहेगा। तारीख गूगल प्ले में देखें। इसे बनाए रखने के लिए कभी भी फिर से चालू करें।';
 
   @override
   String get premium_reactivate => 'फिर से चालू करें';
@@ -1051,7 +1051,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get premium_coins => 'सिक्के';
 
   @override
-  String get premium_more_achievements => 'प्रीमियम के साथ और उपलब्धियाँ';
+  String get premium_more_achievements => 'प्रीमियम के साथ उपलब्धियाँ खोलें';
 
   @override
   String get premium_reward_example =>
@@ -1063,7 +1063,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get premium_feature_vrat =>
-      'असीमित व्रत प्रविष्टियाँ (पहली तीन मुफ़्त) और सभी उपलब्धियाँ';
+      'असीमित व्रत प्रविष्टियाँ (पहली तीन मुफ़्त)';
 
   @override
   String get premium_feature_panchang =>
@@ -1851,7 +1851,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get ios_journey_premium_desc =>
-      'असीमित अभिलेख, पूरा पदक संग्रह और आपका वार्षिक मंडल।';
+      'असीमित व्रत प्रविष्टियाँ और पूरा पदक संग्रह';
 
   @override
   String get ios_journey_haptics => 'पदक मिलने पर स्पर्श प्रतिक्रिया';

@@ -874,7 +874,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premium_free_achievements =>
-      'Your first three Vrat entries and first three achievements are free. Premium unlocks the rest.';
+      'Your first three Vrat entries are free. Get Premium to record more.';
 
   @override
   String get premium_monthly => 'Monthly';
@@ -887,11 +887,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premium_monthly_terms =>
-      'Full price charged each month. Automatically renews until canceled in Google Play.';
+      'Full price charged each month. Automatically renews until cancelled in Google Play.';
 
   @override
   String get premium_yearly_terms =>
-      'Full price charged each year. Automatically renews until canceled in Google Play.';
+      'Full price charged each year. Automatically renews until cancelled in Google Play.';
 
   @override
   String get premium_lifetime_terms =>
@@ -932,7 +932,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premium_cancelled_body =>
-      'Premium stays on until the end of the period you paid for. Reactivate anytime to keep it.';
+      'Premium stays on until the end of the period you paid for. See the date in Google Play. Reactivate anytime to keep it.';
 
   @override
   String get premium_reactivate => 'Reactivate';
@@ -1058,7 +1058,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premium_coins => 'Coins';
 
   @override
-  String get premium_more_achievements => 'More achievements with Premium';
+  String get premium_more_achievements => 'Unlock Achievements with Premium';
 
   @override
   String get premium_reward_example =>
@@ -1070,7 +1070,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premium_feature_vrat =>
-      'Unlimited Vrat entries (the first three are free) and all achievements';
+      'Unlimited Vrat entries (the first three are free)';
 
   @override
   String get premium_feature_panchang =>
@@ -1858,7 +1858,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ios_journey_premium_desc =>
-      'Unlimited recording, the complete badge collection and your annual mandala.';
+      'Unlimited Vrat entries and complete badge collection';
 
   @override
   String get ios_journey_haptics => 'Badge celebration haptics';

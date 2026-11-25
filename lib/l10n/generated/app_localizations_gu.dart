@@ -867,7 +867,7 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get premium_free_achievements =>
-      'તમારી પ્રથમ ત્રણ વ્રત નોંધ અને પ્રથમ ત્રણ સિદ્ધિઓ મફત છે. બાકીનું પ્રીમિયમથી અનલૉક થાય છે.';
+      'તમારી પ્રથમ ત્રણ વ્રત નોંધ મફત છે. વધુ નોંધવા માટે પ્રીમિયમ લો.';
 
   @override
   String get premium_monthly => 'માસિક';
@@ -925,7 +925,7 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get premium_cancelled_body =>
-      'તમે ચૂકવેલા સમયગાળાના અંત સુધી પ્રીમિયમ ચાલુ રહેશે. ચાલુ રાખવા ગમે ત્યારે ફરી સક્રિય કરો.';
+      'તમે ચૂકવેલા સમયગાળાના અંત સુધી પ્રીમિયમ ચાલુ રહેશે. તારીખ ગૂગલ પ્લેમાં જુઓ. ચાલુ રાખવા ગમે ત્યારે ફરી સક્રિય કરો.';
 
   @override
   String get premium_reactivate => 'ફરી સક્રિય કરો';
@@ -1051,7 +1051,7 @@ class AppLocalizationsGu extends AppLocalizations {
   String get premium_coins => 'સિક્કા';
 
   @override
-  String get premium_more_achievements => 'પ્રીમિયમ સાથે વધુ સિદ્ધિઓ';
+  String get premium_more_achievements => 'પ્રીમિયમ સાથે સિદ્ધિઓ અનલૉક કરો';
 
   @override
   String get premium_reward_example =>
@@ -1062,8 +1062,7 @@ class AppLocalizationsGu extends AppLocalizations {
       'તમારા આખા સબ્સ્ક્રિપ્શન વર્ષ માટે ગૂગલ કેલેન્ડર સિંક (એક મહિનાનું સિંક મફત)';
 
   @override
-  String get premium_feature_vrat =>
-      'અમર્યાદિત વ્રત નોંધ (પ્રથમ ત્રણ મફત) અને બધી સિદ્ધિઓ';
+  String get premium_feature_vrat => 'અમર્યાદિત વ્રત નોંધ (પ્રથમ ત્રણ મફત)';
 
   @override
   String get premium_feature_panchang =>
@@ -1851,7 +1850,7 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get ios_journey_premium_desc =>
-      'અમર્યાદિત નોંધો, સંપૂર્ણ પદક સંગ્રહ અને તમારું વાર્ષિક મંડળ.';
+      'અમર્યાદિત વ્રત નોંધ અને સંપૂર્ણ પદક સંગ્રહ';
 
   @override
   String get ios_journey_haptics => 'પદક મળતાં સ્પર્શ પ્રતિસાદ';

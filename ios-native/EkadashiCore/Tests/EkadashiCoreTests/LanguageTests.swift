@@ -21,14 +21,14 @@ final class AppLanguageTests: XCTestCase {
         }
     }
 
-    func testPaywallCopyShowsAShortCurrentBadgeAndOnlyTheRenewalDate() {
+    func testPaywallCopyShowsAShortCurrentBadgeAndSendsDatesToTheAppStore() {
         let expected: [String: (String, String)] = [
-            "en": ("Current plan", "Switching to Monthly at renewal. See the renewal date in Google Play."),
-            "hi": ("मौजूदा प्लान", "नवीनीकरण पर मासिक प्लान शुरू होगा। नवीनीकरण की तारीख गूगल प्ले में देखें।"),
-            "ta": ("தற்போதைய திட்டம்", "புதுப்பிக்கும்போது மாதத் திட்டம் தொடங்கும். புதுப்பிப்புத் தேதியைக் கூகுள் பிளேயில் பார்க்கவும்."),
-            "te": ("ప్రస్తుత ప్లాన్", "పునరుద్ధరణ సమయంలో నెలవారీ ప్లాన్ మొదలవుతుంది. పునరుద్ధరణ తేదీని గూగుల్ ప్లేలో చూడండి."),
-            "gu": ("હાલનો પ્લાન", "નવીનીકરણ વખતે માસિક પ્લાન શરૂ થશે. નવીનીકરણની તારીખ ગૂગલ પ્લેમાં જુઓ."),
-            "bn": ("বর্তমান প্ল্যান", "নবীকরণের সময় মাসিক প্ল্যান শুরু হবে। নবীকরণের তারিখ গুগল প্লেতে দেখুন।"),
+            "en": ("Current plan", "Switching to Monthly at renewal. See the renewal date in the App Store."),
+            "hi": ("मौजूदा प्लान", "नवीनीकरण पर मासिक प्लान शुरू होगा। नवीनीकरण की तारीख ऐप स्टोर में देखें।"),
+            "ta": ("தற்போதைய திட்டம்", "புதுப்பிக்கும்போது மாதத் திட்டம் தொடங்கும். புதுப்பிப்புத் தேதியை ஆப் ஸ்டோரில் பார்க்கவும்."),
+            "te": ("ప్రస్తుత ప్లాన్", "పునరుద్ధరణ సమయంలో నెలవారీ ప్లాన్ మొదలవుతుంది. పునరుద్ధరణ తేదీని యాప్ స్టోర్‌లో చూడండి."),
+            "gu": ("હાલનો પ્લાન", "નવીનીકરણ વખતે માસિક પ્લાન શરૂ થશે. નવીનીકરણની તારીખ એપ સ્ટોરમાં જુઓ."),
+            "bn": ("বর্তমান প্ল্যান", "নবীকরণের সময় মাসিক প্ল্যান শুরু হবে। নবীকরণের তারিখ অ্যাপ স্টোরে দেখুন।"),
         ]
         XCTAssertEqual(Set(expected.keys), Set(Localizer.languages))
         for (language, (badge, renewal)) in expected {

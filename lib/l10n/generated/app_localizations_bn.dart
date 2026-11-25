@@ -875,7 +875,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get premium_free_achievements =>
-      'আপনার প্রথম তিনটি ব্রত এন্ট্রি ও প্রথম তিনটি অর্জন বিনামূল্যে। বাকিগুলো প্রিমিয়ামে আনলক হয়।';
+      'আপনার প্রথম তিনটি ব্রত এন্ট্রি বিনামূল্যে। আরও লিখতে প্রিমিয়াম নিন।';
 
   @override
   String get premium_monthly => 'মাসিক';
@@ -933,7 +933,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get premium_cancelled_body =>
-      'আপনি যে সময়ের জন্য টাকা দিয়েছেন তার শেষ পর্যন্ত প্রিমিয়াম চালু থাকবে। রাখতে চাইলে যেকোনো সময় আবার সক্রিয় করুন।';
+      'আপনি যে সময়ের জন্য টাকা দিয়েছেন তার শেষ পর্যন্ত প্রিমিয়াম চালু থাকবে। তারিখ গুগল প্লেতে দেখুন। রাখতে চাইলে যেকোনো সময় আবার সক্রিয় করুন।';
 
   @override
   String get premium_reactivate => 'আবার সক্রিয় করুন';
@@ -1061,7 +1061,7 @@ class AppLocalizationsBn extends AppLocalizations {
   String get premium_coins => 'কয়েন';
 
   @override
-  String get premium_more_achievements => 'প্রিমিয়ামে আরও অর্জন';
+  String get premium_more_achievements => 'প্রিমিয়ামে অর্জন আনলক করুন';
 
   @override
   String get premium_reward_example =>
@@ -1073,7 +1073,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get premium_feature_vrat =>
-      'সীমাহীন ব্রত এন্ট্রি (প্রথম তিনটি বিনামূল্যে) এবং সব অর্জন';
+      'সীমাহীন ব্রত এন্ট্রি (প্রথম তিনটি বিনামূল্যে)';
 
   @override
   String get premium_feature_panchang =>
@@ -1864,7 +1864,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get ios_journey_premium_desc =>
-      'সীমাহীন নথিভুক্তি, সম্পূর্ণ পদক সংগ্রহ ও আপনার বার্ষিক মণ্ডল।';
+      'সীমাহীন ব্রত এন্ট্রি ও সম্পূর্ণ পদক সংগ্রহ';
 
   @override
   String get ios_journey_haptics => 'পদক উদ্‌যাপনে স্পর্শ প্রতিক্রিয়া';

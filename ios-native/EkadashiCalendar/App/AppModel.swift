@@ -162,25 +162,23 @@ final class AppModel {
     }
     @ObservationIgnored private var timePickerLocales: [String: Locale] = [:]
 
-    /// Format the store's instant in the device time zone, independent of
-    /// which city is selected for the Ekadashi calendar.
-    func premiumRenewalMessage(
-        _ state: PremiumState, timeZone: TimeZone = .autoupdatingCurrent, now: Date = Date()
-    ) -> String {
-        if state.renewalStatusUnknown { return t("ios_premium_renewal_unknown") }
-        if let date = state.nextRenewalDate, date > now {
-            let renewal = fullDate(CivilDate.today(in: timeZone, now: date))
-            if let plan = state.scheduledPlan {
-                return t("ios_premium_scheduled_plan_date", t("premium_\(plan.rawValue)"), renewal)
-            }
-            return t("premium_next_renewal_date", renewal)
-        }
-        guard let plan = state.scheduledPlan else { return t("premium_subscriber_body") }
-        return t("ios_premium_scheduled_plan", t("premium_\(plan.rawValue)"))
+    /// The paywall's status line. No date: the App Store shows renewal dates
+    /// in its own time zone, which disagreed with ours (Arun, 25 Nov 2026),
+    /// so users see them in Manage.
+    func premiumRenewalMessage(_ state: PremiumState) -> String {
+        if state.subscriptionCancelled { return t("premium_cancelled_body") }
+        if state.scheduledPlan == .monthly { return t("premium_monthly_switch_scheduled") }
+        return t("premium_renewal_in_play")
     }
 
-    /// The plan tiles identify ownership and the upcoming plan. Dates are
-    /// displayed once in the subscription summary.
+    /// The Settings card's line under "Your plan", as on Android.
+    func premiumSettingsMessage(_ state: PremiumState) -> String {
+        if state.subscriptionCancelled { return t("premium_cancelled_body") }
+        if state.scheduledPlan == .monthly { return t("premium_monthly_switch_scheduled") }
+        return t("premium_subscriber_body")
+    }
+
+    /// The plan tiles identify ownership and the upcoming plan, never a date.
     func premiumPlanBadgeText(_ state: PremiumState, _ plan: PremiumPlanID) -> String? {
         if plan == state.scheduledPlan && !state.lifetime { return t("premium_upcoming_plan") }
         return state.planBadge(for: plan) == .none ? nil : t("premium_current_plan")
@@ -192,17 +190,8 @@ final class AppModel {
         if state.currentPlan == .monthly && plan == .yearly && !state.lifetime {
             return t("ios_premium_upgrade_refund")
         }
-        guard case .atRenewal(let date) = state.switchTiming(to: plan), let current = state.currentPlan else { return nil }
-        guard let date else { return t("ios_premium_scheduled_plan", t("premium_\(plan.rawValue)")) }
-        return t("ios_premium_switch_note", t("premium_\(current.rawValue)"),
-                 fullDate(CivilDate.today(in: .autoupdatingCurrent, now: date)), t("premium_\(plan.rawValue)"))
-    }
-
-    func premiumCancellationMessage(_ state: PremiumState) -> String {
-        guard let endDate = state.cancelledSubscriptionEndDate, endDate > Date() else {
-            return t("premium_cancelled_body")
-        }
-        return t("ios_premium_cancelled_until", fullDate(CivilDate.today(now: endDate)))
+        guard case .atRenewal = state.switchTiming(to: plan), state.currentPlan != nil else { return nil }
+        return t("premium_switch_at_renewal_body")
     }
 
     /// Weekday, date, month and year in the app language.

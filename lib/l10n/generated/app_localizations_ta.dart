@@ -877,7 +877,7 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get premium_free_achievements =>
-      'உங்கள் முதல் மூன்று விரதப் பதிவுகளும் முதல் மூன்று சாதனைகளும் இலவசம். மற்றவை பிரீமியத்தில் திறக்கும்.';
+      'உங்கள் முதல் மூன்று விரதப் பதிவுகள் இலவசம். மேலும் பதிவு செய்ய பிரீமியம் பெறுங்கள்.';
 
   @override
   String get premium_monthly => 'மாதந்தோறும்';
@@ -935,7 +935,7 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get premium_cancelled_body =>
-      'நீங்கள் செலுத்திய காலம் முடியும் வரை பிரீமியம் செயலில் இருக்கும். தொடர எப்போது வேண்டுமானாலும் மீண்டும் இயக்கலாம்.';
+      'நீங்கள் செலுத்திய காலம் முடியும் வரை பிரீமியம் செயலில் இருக்கும். தேதியைக் கூகுள் பிளேயில் பார்க்கவும். தொடர எப்போது வேண்டுமானாலும் மீண்டும் இயக்கலாம்.';
 
   @override
   String get premium_reactivate => 'மீண்டும் இயக்கு';
@@ -1064,7 +1064,8 @@ class AppLocalizationsTa extends AppLocalizations {
   String get premium_coins => 'நாணயங்கள்';
 
   @override
-  String get premium_more_achievements => 'பிரீமியத்துடன் கூடுதல் சாதனைகள்';
+  String get premium_more_achievements =>
+      'பிரீமியத்துடன் சாதனைகளைத் திறக்கவும்';
 
   @override
   String get premium_reward_example =>
@@ -1076,7 +1077,7 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get premium_feature_vrat =>
-      'வரம்பற்ற விரதப் பதிவுகள் (முதல் மூன்று இலவசம்) மற்றும் அனைத்து சாதனைகளும்';
+      'வரம்பற்ற விரதப் பதிவுகள் (முதல் மூன்று இலவசம்)';
 
   @override
   String get premium_feature_panchang =>
@@ -1874,7 +1875,7 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get ios_journey_premium_desc =>
-      'வரம்பற்ற பதிவுகள், முழுப் பதக்கத் தொகுப்பு மற்றும் உங்கள் ஆண்டு மண்டலம்.';
+      'வரம்பற்ற விரதப் பதிவுகள் மற்றும் முழுப் பதக்கத் தொகுப்பு';
 
   @override
   String get ios_journey_haptics => 'பதக்கக் கொண்டாட்ட அதிர்வு';

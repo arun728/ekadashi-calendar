@@ -1753,7 +1753,7 @@ abstract class AppLocalizations {
   /// No description provided for @premium_free_achievements.
   ///
   /// In en, this message translates to:
-  /// **'Your first three Vrat entries and first three achievements are free. Premium unlocks the rest.'**
+  /// **'Your first three Vrat entries are free. Get Premium to record more.'**
   String get premium_free_achievements;
 
   /// No description provided for @premium_monthly.
@@ -1777,13 +1777,13 @@ abstract class AppLocalizations {
   /// No description provided for @premium_monthly_terms.
   ///
   /// In en, this message translates to:
-  /// **'Full price charged each month. Automatically renews until canceled in Google Play.'**
+  /// **'Full price charged each month. Automatically renews until cancelled in Google Play.'**
   String get premium_monthly_terms;
 
   /// No description provided for @premium_yearly_terms.
   ///
   /// In en, this message translates to:
-  /// **'Full price charged each year. Automatically renews until canceled in Google Play.'**
+  /// **'Full price charged each year. Automatically renews until cancelled in Google Play.'**
   String get premium_yearly_terms;
 
   /// No description provided for @premium_lifetime_terms.
@@ -1861,7 +1861,7 @@ abstract class AppLocalizations {
   /// No description provided for @premium_cancelled_body.
   ///
   /// In en, this message translates to:
-  /// **'Premium stays on until the end of the period you paid for. Reactivate anytime to keep it.'**
+  /// **'Premium stays on until the end of the period you paid for. See the date in Google Play. Reactivate anytime to keep it.'**
   String get premium_cancelled_body;
 
   /// No description provided for @premium_reactivate.
@@ -2077,7 +2077,7 @@ abstract class AppLocalizations {
   /// No description provided for @premium_more_achievements.
   ///
   /// In en, this message translates to:
-  /// **'More achievements with Premium'**
+  /// **'Unlock Achievements with Premium'**
   String get premium_more_achievements;
 
   /// No description provided for @premium_reward_example.
@@ -2095,7 +2095,7 @@ abstract class AppLocalizations {
   /// No description provided for @premium_feature_vrat.
   ///
   /// In en, this message translates to:
-  /// **'Unlimited Vrat entries (the first three are free) and all achievements'**
+  /// **'Unlimited Vrat entries (the first three are free)'**
   String get premium_feature_vrat;
 
   /// No description provided for @premium_feature_panchang.
@@ -3475,7 +3475,7 @@ abstract class AppLocalizations {
   /// No description provided for @ios_journey_premium_desc.
   ///
   /// In en, this message translates to:
-  /// **'Unlimited recording, the complete badge collection and your annual mandala.'**
+  /// **'Unlimited Vrat entries and complete badge collection'**
   String get ios_journey_premium_desc;
 
   /// No description provided for @ios_journey_haptics.

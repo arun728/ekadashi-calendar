@@ -324,8 +324,7 @@ struct SettingsPremiumCard: View {
             } else if let plan = state.currentPlan {
                 Text(model.t("settings_premium_plan", model.t("premium_\(plan.rawValue)"))).font(.subheadline.weight(.semibold))
                     .foregroundStyle(.primary)
-                Text(state.subscriptionCancelled ? model.premiumCancellationMessage(state)
-                     : model.premiumRenewalMessage(state))
+                Text(model.premiumSettingsMessage(state))
                     .font(.footnote).foregroundStyle(.secondary)
             }
             HStack(spacing: 10) {
