@@ -333,6 +333,7 @@
   "premium_one_time": "one-time",
   "premium_cancelled_title": "Subscription cancelled",
   "premium_cancelled_body": "Premium stays on until the end of the period you paid for. See the date in Google Play. Reactivate anytime to keep it.",
+  "premium_play_switch_cancelled_note": "Google Play can't reactivate or change this plan because it was switching to Monthly. Choose a plan again after it ends.",
   "premium_reactivate": "Reactivate",
   "free_sync_unverified": "Couldn't check your free sync. Check your connection, or get Premium.",
   "premium_upgrade": "Upgrade",

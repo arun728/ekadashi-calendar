@@ -925,6 +925,10 @@ class AppLocalizationsHi extends AppLocalizations {
       'भुगतान की गई अवधि के अंत तक प्रीमियम चालू रहेगा। तारीख गूगल प्ले में देखें। इसे बनाए रखने के लिए कभी भी फिर से चालू करें।';
 
   @override
+  String get premium_play_switch_cancelled_note =>
+      'गूगल प्ले इस प्लान को फिर से चालू या बदल नहीं सकता, क्योंकि यह मासिक में बदल रहा था। इसके खत्म होने के बाद फिर से प्लान चुनें।';
+
+  @override
   String get premium_reactivate => 'फिर से चालू करें';
 
   @override

@@ -924,6 +924,10 @@ class AppLocalizationsGu extends AppLocalizations {
       'તમે ચૂકવેલા સમયગાળાના અંત સુધી પ્રીમિયમ ચાલુ રહેશે. તારીખ ગૂગલ પ્લેમાં જુઓ. ચાલુ રાખવા ગમે ત્યારે ફરી સક્રિય કરો.';
 
   @override
+  String get premium_play_switch_cancelled_note =>
+      'આ પ્લાન માસિકમાં બદલાઈ રહ્યો હતો, તેથી ગૂગલ પ્લે તેને ફરી ચાલુ કે બદલી શકતું નથી. તે પૂરો થયા પછી ફરી પ્લાન પસંદ કરો.';
+
+  @override
   String get premium_reactivate => 'ફરી સક્રિય કરો';
 
   @override

@@ -500,6 +500,21 @@ class _PremiumScreenState extends State<PremiumScreen> {
                               color: orange,
                               title: lang.translate('premium_cancelled_title'),
                               body: lang.translate('premium_cancelled_body'),
+                              action: billing.switchCancelledByPlay
+                                  ? Text(
+                                      lang.translate(
+                                        'premium_play_switch_cancelled_note',
+                                      ),
+                                      key: const Key(
+                                        'premium_switch_cancelled_note',
+                                      ),
+                                      style: TextStyle(
+                                        fontSize: IosText.subheadline,
+                                        fontWeight: FontWeight.w600,
+                                        color: IosColors.primary(context),
+                                      ),
+                                    )
+                                  : null,
                             )
                           : _statusCard(
                               title: lang.translate('premium_subscriber_title'),

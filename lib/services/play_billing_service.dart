@@ -247,10 +247,18 @@ class PlayBillingService extends ChangeNotifier {
   /// Yearly is switching to Monthly at renewal. Play's purchase data does not
   /// say so, so the confirmed switch is remembered with its purchase token
   /// (kept across launches). Cancelling in Play drops the switch.
-  bool get monthlySwitchScheduled {
-    if (currentPlanId != 'yearly' || premium.subscriptionCancelled) {
-      return false;
-    }
+  bool get monthlySwitchScheduled =>
+      !premium.subscriptionCancelled && _yearlyHasScheduledSwitch;
+
+  /// Cancelled in Google Play while Yearly was switching to Monthly. Play
+  /// then offers no Resubscribe and refuses a plan change ("an existing
+  /// deferred replacement") until the paid period ends (seen on the M52,
+  /// 25 Nov 2026), so Reactivate and Monthly are greyed out with a note.
+  bool get switchCancelledByPlay =>
+      premium.subscriptionCancelled && _yearlyHasScheduledSwitch;
+
+  bool get _yearlyHasScheduledSwitch {
+    if (currentPlanId != 'yearly') return false;
     final token = premium.subscriptionPurchaseToken;
     if (token == null) return false;
     if (_scheduledMonthlyToken != null) return _scheduledMonthlyToken == token;
@@ -263,6 +271,7 @@ class PlayBillingService extends ChangeNotifier {
   bool canBuy(PremiumPlan plan) {
     if (pending || premium.lifetime) return false;
     if (plan.id == 'lifetime' || !premium.subscribed) return true;
+    if (switchCancelledByPlay) return false;
     if (plan.id == 'monthly' && monthlySwitchScheduled) return false;
     final current = currentPlanId;
     if (current == null) return false;
