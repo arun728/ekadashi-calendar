@@ -179,7 +179,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('glass plan cards, capsule buy button and leading links', (
+  testWidgets('glass plan cards, capsule buy button and centred links', (
     tester,
   ) async {
     await pump(tester);
@@ -213,9 +213,16 @@ void main() {
     );
     expect(label.style?.fontSize, IosText.headline);
     expect(label.style?.fontWeight, FontWeight.w600);
-    // Links: leading-aligned, 13 pt teal.
-    final links = find.byKey(const Key('premium_links'));
-    expect(tester.widget<Wrap>(links).alignment, WrapAlignment.start);
+    // Links: two centred rows of 13 pt teal, as on iOS (25 Nov 2026).
+    final rows = find.descendant(
+      of: find.byKey(const Key('premium_links')),
+      matching: find.byType(Wrap),
+    );
+    expect(rows, findsNWidgets(2));
+    for (final row in tester.widgetList<Wrap>(rows)) {
+      expect(row.alignment, WrapAlignment.center);
+      expect(row.spacing, greaterThanOrEqualTo(12));
+    }
     final restore = tester.widget<Text>(
       find.text(lang.translate('premium_restore')),
     );
@@ -223,7 +230,8 @@ void main() {
     expect(restore.style?.color, IosColors.teal);
     expect(
       tester.getTopLeft(find.text(lang.translate('premium_restore'))).dx,
-      lessThan(40),
+      greaterThan(40),
+      reason: 'centred, not at the leading edge',
     );
     expect(tester.takeException(), isNull);
   });
