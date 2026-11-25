@@ -213,7 +213,7 @@ final class LocalizationTests: XCTestCase {
                 XCTAssertFalse(android.contains { value.contains($0) }, "\(language) \(key): \(value)")
             }
         }
-        XCTAssertEqual(Localizer.shared.translate("premium_manage", language: "en"), "Manage subscription in the App Store")
+        XCTAssertEqual(Localizer.shared.translate("premium_manage", language: "en"), "Manage subscription")
         XCTAssertEqual(Localizer.shared.translate("ios_share_message", language: "en", args: ["https://example.org"]).suffix(19),
                        "https://example.org")
     }
@@ -240,6 +240,6 @@ final class LocalizationTests: XCTestCase {
                                Localizer.placeholders(Localizer.shared.translate(key, language: "en")), "\(language) \(key)")
             }
         }
-        XCTAssertEqual(Localizer.shared.arbValue("premium_manage", language: "en"), "Manage subscription in Google Play")
+        XCTAssertEqual(Localizer.shared.arbValue("premium_manage", language: "en"), "Manage subscription")
     }
 }
