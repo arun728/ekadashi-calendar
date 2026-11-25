@@ -110,6 +110,28 @@ void main() {
     });
   }
 
+  testWidgets('a cancelled switch leaves out "Reactivate anytime"', (
+    tester,
+  ) async {
+    final premium = PremiumService(entitlements: PremiumFixture())
+      ..applyOwned(
+        {PremiumService.subscriptionId},
+        autoRenewing: {PremiumService.subscriptionId: false},
+      );
+    addTearDown(premium.dispose);
+    final billing = FixtureBilling(premium)..switchCancelledByPlay = true;
+    addTearDown(billing.dispose);
+    await show(tester, premium, billing: billing);
+    expect(find.textContaining('Reactivate anytime'), findsNothing);
+    expect(
+      find.text(
+        'Premium stays on until the end of the period you paid for. '
+        'See the date in Google Play.',
+      ),
+      findsOneWidget,
+    );
+  });
+
   testWidgets(
     'a scheduled Monthly switch shows the same line as iOS, with no date',
     (tester) async {
