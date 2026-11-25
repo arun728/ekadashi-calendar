@@ -537,6 +537,35 @@ final class ScreenshotTests: XCTestCase {
         #endif
     }
 
+    /// Arun (25 Nov 2026): a big empty gap sat above the buy button and the
+    /// links under it were cramped. The button follows the plan terms, and
+    /// the links are centred with room between and above them.
+    func testPlansPageButtonFollowsThePlansAndLinksHaveRoom() throws {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        glassTab(4); app.buttons["settings_premium"].firstMatch.tap()
+        XCTAssertTrue(app.buttons["premium_plan_yearly"].firstMatch.waitForExistence(timeout: 30))
+        app.buttons["premium_plan_yearly"].firstMatch.tap()
+        let terms = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH 'Full price charged each year'")).firstMatch
+        XCTAssertTrue(terms.waitForExistence(timeout: 5))
+        let buy = app.buttons["premium_buy"].firstMatch
+        XCTAssertLessThanOrEqual(buy.frame.minY - terms.frame.maxY, 32, "Empty gap above the buy button")
+        let restore = app.buttons["Restore purchases"].firstMatch
+        let manage = app.buttons["Manage subscription"].firstMatch
+        let termsLink = app.buttons["Terms of service"].firstMatch
+        let privacy = app.buttons["Privacy policy"].firstMatch
+        for link in [restore, manage, termsLink, privacy] { XCTAssertTrue(link.exists, link.description) }
+        XCTAssertGreaterThanOrEqual(restore.frame.minY - buy.frame.maxY, 12, "Links crowd the buy button")
+        XCTAssertEqual(restore.frame.midY, manage.frame.midY, accuracy: 2)
+        XCTAssertEqual(termsLink.frame.midY, privacy.frame.midY, accuracy: 2)
+        XCTAssertGreaterThanOrEqual(manage.frame.minX - restore.frame.maxX, 12, "Restore and Manage are cramped")
+        XCTAssertGreaterThanOrEqual(privacy.frame.minX - termsLink.frame.maxX, 12, "Terms and Privacy are cramped")
+        XCTAssertGreaterThanOrEqual(termsLink.frame.minY - restore.frame.maxY, 4, "Link rows touch")
+        let middle = app.windows.firstMatch.frame.midX
+        XCTAssertEqual((restore.frame.minX + manage.frame.maxX) / 2, middle, accuracy: 6, "Links are not centred")
+        XCTAssertEqual((termsLink.frame.minX + privacy.frame.maxX) / 2, middle, accuracy: 6, "Links are not centred")
+        snap("premium-plans-page-spacing")
+    }
+
     /// Arun on his iPhone (16 Nov 2026): Lifetime did nothing after several
     /// taps for a subscriber. The Lifetime tile must select on one tap and the
     /// buy button must show the "already subscribed" warning.

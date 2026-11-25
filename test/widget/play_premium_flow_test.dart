@@ -164,6 +164,51 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  // Arun (25 Nov 2026): a big empty gap sat above the buy button and the
+  // links under it were cramped. Same layout as iOS.
+  testWidgets('Paywall: the buy button follows the plans; links have room', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1080, 2340);
+    tester.view.devicePixelRatio = 2.625;
+    addTearDown(tester.view.reset);
+    final premium = PremiumService(entitlements: PremiumFixture())
+      ..applyOwned({PremiumService.subscriptionId});
+    addTearDown(premium.dispose);
+    await pumpPaywall(tester, premium, currentPlan: 'monthly');
+    await tester.tap(find.byKey(const Key('premium_plan_yearly')));
+    await tester.pumpAndSettle();
+    final terms = find.text(lang.translate('premium_yearly_terms'));
+    final buy = find.byKey(const Key('premium_buy'));
+    expect(
+      tester.getTopLeft(buy).dy - tester.getBottomLeft(terms).dy,
+      lessThanOrEqualTo(32),
+      reason: 'empty gap above the buy button',
+    );
+    Rect link(String key) => tester.getRect(
+      find.ancestor(
+        of: find.text(lang.translate(key)),
+        matching: find.byType(TextButton),
+      ),
+    );
+    final restore = link('premium_restore'), manage = link('premium_manage');
+    final termsLink = link('terms_of_service');
+    final privacy = link('privacy_policy');
+    expect(
+      restore.top - tester.getBottomLeft(buy).dy,
+      greaterThanOrEqualTo(12),
+    );
+    expect(restore.center.dy, closeTo(manage.center.dy, 2));
+    expect(termsLink.center.dy, closeTo(privacy.center.dy, 2));
+    expect(manage.left - restore.right, greaterThanOrEqualTo(12));
+    expect(privacy.left - termsLink.right, greaterThanOrEqualTo(12));
+    expect(termsLink.top - restore.bottom, greaterThanOrEqualTo(4));
+    final middle =
+        tester.view.physicalSize.width / tester.view.devicePixelRatio / 2;
+    expect((restore.left + manage.right) / 2, closeTo(middle, 6));
+    expect((termsLink.left + privacy.right) / 2, closeTo(middle, 6));
+  });
+
   testWidgets('Paywall: a monthly subscriber can only pick another plan', (
     tester,
   ) async {
