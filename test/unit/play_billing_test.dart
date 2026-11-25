@@ -714,14 +714,17 @@ void main() {
 
     test(
       'cancelling during a scheduled Monthly switch drops the upcoming '
-      'plan, offers Reactivate on Yearly and lets Monthly be bought',
+      'plan; Play allows neither Reactivate nor Monthly until it ends',
       () async {
+        // Seen on the M52 (25 Nov 2026): Play offers no Resubscribe and
+        // refuses a plan change ("an existing deferred replacement").
         SharedPreferences.setMockInitialValues({});
         final setup = await _scheduleMonthlySwitch();
         final billing = setup.billing;
         PremiumPlan plan(String id) =>
             billing.plans.firstWhere((p) => p.id == id);
         expect(billing.monthlySwitchScheduled, isTrue);
+        expect(billing.switchCancelledByPlay, isFalse);
         expect(billing.canBuy(plan('monthly')), isFalse);
 
         setup.setOwned([
@@ -737,10 +740,75 @@ void main() {
         expect(setup.premium.subscriptionCancelled, isTrue);
         expect(billing.currentPlanId, 'yearly');
         expect(billing.monthlySwitchScheduled, isFalse);
-        expect(billing.canBuy(plan('yearly')), isTrue, reason: 'Reactivate');
-        expect(billing.canBuy(plan('monthly')), isTrue);
+        expect(billing.switchCancelledByPlay, isTrue);
+        expect(billing.canBuy(plan('yearly')), isFalse, reason: 'Reactivate');
+        expect(billing.canBuy(plan('monthly')), isFalse);
       },
     );
+
+    test(
+      'after a plain cancel, Reactivate and Monthly stay available',
+      () async {
+        SharedPreferences.setMockInitialValues({});
+        final store = Store()..catalog = _separateCatalog();
+        InAppPurchasePlatform.instance = store;
+        final premium = PremiumService(
+          entitlements: PlayStoreEntitlements(
+            query: () async => [
+              playPurchase(
+                _yearlyId,
+                PurchaseStateWrapper.purchased,
+                acknowledged: true,
+                autoRenewing: false,
+              ),
+            ],
+          ),
+        );
+        final billing = PlayBillingService(premium);
+        addTearDown(() async {
+          billing.dispose();
+          premium.dispose();
+          await store.updates.close();
+        });
+        await billing.initialize();
+        await premium.refresh();
+        expect(premium.subscriptionCancelled, isTrue);
+        expect(billing.switchCancelledByPlay, isFalse);
+        for (final id in ['yearly', 'monthly']) {
+          expect(
+            billing.canBuy(billing.plans.firstWhere((p) => p.id == id)),
+            isTrue,
+            reason: id,
+          );
+        }
+      },
+    );
+
+    test('a cancelled switch is still recognised after a restart', () async {
+      SharedPreferences.setMockInitialValues({});
+      await _scheduleMonthlySwitch();
+      final relaunched = PremiumService(
+        entitlements: PlayStoreEntitlements(
+          query: () async => [
+            playPurchase(
+              _yearlyId,
+              PurchaseStateWrapper.purchased,
+              acknowledged: true,
+              token: 'scheduled-monthly',
+              autoRenewing: false,
+            ),
+          ],
+        ),
+      );
+      final billing = PlayBillingService(relaunched);
+      addTearDown(() {
+        billing.dispose();
+        relaunched.dispose();
+      });
+      await billing.initialize();
+      await relaunched.refresh();
+      expect(billing.switchCancelledByPlay, isTrue);
+    });
 
     test(
       'the scheduled Monthly switch is still shown after a restart',

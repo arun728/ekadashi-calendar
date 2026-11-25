@@ -170,7 +170,8 @@ final class LocalizationTests: XCTestCase {
         // 63 approved Journey keys are now shared by iOS and Android.
         // Three shared Play plan-change strings and seven Play update notice strings.
         // premium_free_achievements was removed with the Achievements-tab line (25 Nov 2026).
-        XCTAssertEqual(english.count, 599)
+        // premium_play_switch_cancelled_note was added for Google Play's cancelled switch (25 Nov 2026).
+        XCTAssertEqual(english.count, 600)
         XCTAssertTrue(Set(english).isSuperset(of: [
             "premium_switch_now_title", "premium_switch_now_body", "premium_switch_now_confirm",
         ]))

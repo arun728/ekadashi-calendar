@@ -40,6 +40,9 @@ class FixtureBilling extends PlayBillingService {
   @override
   bool monthlySwitchScheduled = false;
 
+  @override
+  bool switchCancelledByPlay = false;
+
   /// Plans the paywall asked Google Play to buy (no real checkout in tests).
   final bought = <String>[];
   @override

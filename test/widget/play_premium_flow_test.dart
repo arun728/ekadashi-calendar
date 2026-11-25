@@ -410,6 +410,41 @@ void main() {
     );
   });
 
+  // Seen on the M52 (25 Nov 2026): after cancelling while Yearly was
+  // switching to Monthly, Play refuses Reactivate and a plan change until the
+  // paid period ends. Both are greyed out with a short note; Lifetime stays.
+  testWidgets(
+    'a cancelled switch greys out Reactivate and Monthly with a note',
+    (tester) async {
+      final premium = PremiumService(entitlements: PremiumFixture())
+        ..applyOwned(
+          {PremiumService.subscriptionId},
+          autoRenewing: {PremiumService.subscriptionId: false},
+        );
+      addTearDown(premium.dispose);
+      final billing = await pumpPaywall(tester, premium, currentPlan: 'yearly');
+      billing.switchCancelledByPlay = true;
+      billing.notifyListeners();
+      await tester.pumpAndSettle();
+      expect(
+        find.text(lang.translate('premium_play_switch_cancelled_note')),
+        findsOneWidget,
+      );
+      VoidCallback? buyAction() => tester
+          .widget<FilledButton>(find.byKey(const Key('premium_buy')))
+          .onPressed;
+      for (final (id, enabled) in [
+        ('yearly', false),
+        ('monthly', false),
+        ('lifetime', true),
+      ]) {
+        await tester.tap(find.byKey(Key('premium_plan_$id')));
+        await tester.pumpAndSettle();
+        expect(buyAction() != null, enabled, reason: id);
+      }
+    },
+  );
+
   testWidgets('Plan switches explain when Google Play charges', (tester) async {
     for (final (current, target) in [
       ('yearly', 'monthly'),
