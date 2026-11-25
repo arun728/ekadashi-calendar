@@ -1610,7 +1610,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get notifications_premium_events =>
-      'উৎসব ও পঞ্জিকার রিমাইন্ডার প্রিমিয়ামের অংশ। আপনার ক্যালেন্ডার এন্ট্রির রিমাইন্ডার বিনামূল্যে।';
+      'উৎসব, পঞ্জিকা ও গুগল ক্যালেন্ডারের রিমাইন্ডার প্রিমিয়ামের অংশ। আপনার নিজের এন্ট্রির রিমাইন্ডার বিনামূল্যে।';
 
   @override
   String get notifications_no_events => 'এখনও কোনো রিমাইন্ডার নেই';

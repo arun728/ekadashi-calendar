@@ -1600,7 +1600,7 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get notifications_premium_events =>
-      'તહેવાર અને પંચાંગ રિમાઇન્ડર પ્રીમિયમનો ભાગ છે. તમારી કેલેન્ડર નોંધોના રિમાઇન્ડર મફત છે.';
+      'તહેવાર, પંચાંગ અને ગૂગલ કેલેન્ડર રિમાઇન્ડર પ્રીમિયમનો ભાગ છે. તમારી પોતાની નોંધોના રિમાઇન્ડર મફત છે.';
 
   @override
   String get notifications_no_events => 'હજી કોઈ રિમાઇન્ડર નથી';

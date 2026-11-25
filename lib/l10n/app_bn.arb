@@ -491,7 +491,7 @@
   "notifications_time": "সময়",
   "notifications_delete_event": "রিমাইন্ডার মুছুন",
   "notifications_lead_required": "অন্তত একটি দিন বেছে নিন",
-  "notifications_premium_events": "উৎসব ও পঞ্জিকার রিমাইন্ডার প্রিমিয়ামের অংশ। আপনার ক্যালেন্ডার এন্ট্রির রিমাইন্ডার বিনামূল্যে।",
+  "notifications_premium_events": "উৎসব, পঞ্জিকা ও গুগল ক্যালেন্ডারের রিমাইন্ডার প্রিমিয়ামের অংশ। আপনার নিজের এন্ট্রির রিমাইন্ডার বিনামূল্যে।",
   "notifications_no_events": "এখনও কোনো রিমাইন্ডার নেই",
   "notifications_off_hint": "রিমাইন্ডার ব্যবহার করতে বিজ্ঞপ্তি চালু করুন।",
   "notifications_search_events": "ইভেন্ট খুঁজুন",

@@ -1600,7 +1600,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get notifications_premium_events =>
-      'त्योहार और पंचांग रिमाइंडर प्रीमियम का हिस्सा हैं। आपके कैलेंडर की प्रविष्टियों के रिमाइंडर मुफ़्त हैं।';
+      'त्योहार, पंचांग और गूगल कैलेंडर रिमाइंडर प्रीमियम का हिस्सा हैं। आपकी अपनी प्रविष्टियों के रिमाइंडर मुफ़्त हैं।';
 
   @override
   String get notifications_no_events => 'अभी कोई रिमाइंडर नहीं';

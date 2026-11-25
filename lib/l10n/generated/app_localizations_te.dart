@@ -1611,7 +1611,7 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get notifications_premium_events =>
-      'పండుగ మరియు పంచాంగ రిమైండర్‌లు ప్రీమియంలో భాగం. మీ క్యాలెండర్ ఎంట్రీల రిమైండర్‌లు ఉచితం.';
+      'పండుగ, పంచాంగం మరియు గూగుల్ క్యాలెండర్ రిమైండర్‌లు ప్రీమియంలో భాగం. మీ సొంత ఎంట్రీల రిమైండర్‌లు ఉచితం.';
 
   @override
   String get notifications_no_events => 'ఇంకా రిమైండర్‌లు లేవు';

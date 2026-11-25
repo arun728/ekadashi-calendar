@@ -1620,7 +1620,7 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get notifications_premium_events =>
-      'பண்டிகை மற்றும் பஞ்சாங்க நினைவூட்டல்கள் பிரீமியத்தின் பகுதி. உங்கள் நாட்காட்டி பதிவுகளுக்கான நினைவூட்டல்கள் இலவசம்.';
+      'பண்டிகை, பஞ்சாங்கம் மற்றும் கூகுள் நாள்காட்டி நினைவூட்டல்கள் பிரீமியத்தின் பகுதி. உங்கள் சொந்தப் பதிவுகளுக்கான நினைவூட்டல்கள் இலவசம்.';
 
   @override
   String get notifications_no_events => 'இன்னும் நினைவூட்டல்கள் இல்லை';

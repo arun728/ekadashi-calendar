@@ -519,7 +519,7 @@
   "notifications_time": "समय",
   "notifications_delete_event": "रिमाइंडर हटाएँ",
   "notifications_lead_required": "कम से कम एक दिन चुनें",
-  "notifications_premium_events": "त्योहार और पंचांग रिमाइंडर प्रीमियम का हिस्सा हैं। आपके कैलेंडर की प्रविष्टियों के रिमाइंडर मुफ़्त हैं।",
+  "notifications_premium_events": "त्योहार, पंचांग और गूगल कैलेंडर रिमाइंडर प्रीमियम का हिस्सा हैं। आपकी अपनी प्रविष्टियों के रिमाइंडर मुफ़्त हैं।",
   "notifications_no_events": "अभी कोई रिमाइंडर नहीं",
   "notifications_off_hint": "रिमाइंडर के लिए सूचनाएँ चालू करें।",
   "notifications_search_events": "इवेंट खोजें",

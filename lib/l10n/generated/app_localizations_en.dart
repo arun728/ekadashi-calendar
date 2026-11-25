@@ -1608,7 +1608,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notifications_premium_events =>
-      'Festival and Panchang reminders are part of Premium. Reminders for your calendar entries are free.';
+      'Festival, Panchang and Google Calendar reminders are part of Premium. Reminders for your own entries are free.';
 
   @override
   String get notifications_no_events => 'No reminders yet';

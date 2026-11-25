@@ -43,7 +43,7 @@ struct EventReminderRows: View {
     }
 
     private func row(_ reminder: EventReminder) -> some View {
-        let locked = reminder.target.requiresPremium && !model.premium.isPremium
+        let locked = model.reminderLocked(reminder.target)
         return HStack(spacing: 12) {
             Image(systemName: symbol(reminder.target)).foregroundStyle(enabled ? Theme.teal : Color.secondary)
                 .frame(width: 24)
@@ -238,7 +238,7 @@ struct EventReminderPicker: View {
                                     Spacer()
                                     if selection == choice.target {
                                         Image(systemName: AppSymbol.checkmark).foregroundStyle(Theme.teal)
-                                    } else if choice.requiresPremium && !model.premium.isPremium {
+                                    } else if model.reminderLocked(choice.target) {
                                         Image(systemName: AppSymbol.lock).font(.caption).foregroundStyle(.secondary)
                                     }
                                 }
@@ -261,7 +261,7 @@ struct EventReminderPicker: View {
     }
 
     private func choose(_ choice: EventReminderChoice) {
-        if choice.requiresPremium && !model.premium.isPremium {
+        if model.reminderLocked(choice.target) {
             pendingLocked = choice.target
             showPaywall = true
         } else {
@@ -273,7 +273,7 @@ struct EventReminderPicker: View {
     /// Selects the locked event only if the paywall ended with Premium.
     private func paywallClosed() {
         defer { pendingLocked = nil }
-        guard model.premium.isPremium, let target = pendingLocked else { return }
+        guard let target = pendingLocked, !model.reminderLocked(target) else { return }
         selection = target
         dismiss()
     }

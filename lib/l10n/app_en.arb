@@ -641,7 +641,7 @@
   "notifications_time": "At",
   "notifications_delete_event": "Delete reminder",
   "notifications_lead_required": "Choose at least one day",
-  "notifications_premium_events": "Festival and Panchang reminders are part of Premium. Reminders for your calendar entries are free.",
+  "notifications_premium_events": "Festival, Panchang and Google Calendar reminders are part of Premium. Reminders for your own entries are free.",
   "notifications_no_events": "No reminders yet",
   "notifications_off_hint": "Turn on notifications to use reminders.",
   "notifications_search_events": "Search events",

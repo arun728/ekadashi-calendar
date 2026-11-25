@@ -616,7 +616,7 @@ final class AppModel {
         let premium = self.premium.isPremium
         let city = panchangCity
         var observances: [DatedObservance] = []
-        if premium && events.reminders.contains(where: \.target.requiresPremium) {
+        if premium && events.reminders.contains(where: { !$0.target.usesCalendarEntries }) {
             let year = city.today().year
             observances = await panchangObservances(year: year, city: city)
             // Near the year's end the next year's festivals are within reach.
@@ -625,7 +625,7 @@ final class AppModel {
         let planned = EventReminderPlanner.plan(
             settings: events, observances: observances, entries: (try? entries.all()) ?? [],
             observanceZone: TimeZone(identifier: city.timeZoneId) ?? .current, entryZone: .current,
-            language: language, premium: premium, now: now)
+            language: language, premium: premium, now: now, freeGoogleMonth: freeGoogleSyncMonth)
         await notifications.schedule(PendingNotification.merge(ekadashi: fasts, events: planned))
     }
 
@@ -861,7 +861,16 @@ final class AppModel {
 
     func entriesChanged() {
         entriesRevision += 1
-        if eventReminders.reminders.contains(where: { !$0.target.requiresPremium }) { Task { await scheduleReminders() } }
+        if eventReminders.reminders.contains(where: \.target.usesCalendarEntries) { Task { await scheduleReminders() } }
+    }
+
+    /// The month of the one free Google sync ("2026-11"), if it was used.
+    var freeGoogleSyncMonth: String? { store.string(forKey: GoogleSyncCoordinator.freeSyncMonthKey) }
+
+    /// Festival, Panchang and Google reminders need Premium; a free user's
+    /// Google reminders stay open during the free sync month (Arun, 25 Nov 2026).
+    func reminderLocked(_ target: EventReminderTarget) -> Bool {
+        target.isLocked(premium: premium.isPremium, freeGoogleMonth: freeGoogleSyncMonth, today: CivilDate.today())
     }
 
     func removeLapsedPremiumImports() {

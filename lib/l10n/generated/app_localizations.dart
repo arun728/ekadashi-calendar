@@ -3055,7 +3055,7 @@ abstract class AppLocalizations {
   /// No description provided for @notifications_premium_events.
   ///
   /// In en, this message translates to:
-  /// **'Festival and Panchang reminders are part of Premium. Reminders for your calendar entries are free.'**
+  /// **'Festival, Panchang and Google Calendar reminders are part of Premium. Reminders for your own entries are free.'**
   String get notifications_premium_events;
 
   /// No description provided for @notifications_no_events.
