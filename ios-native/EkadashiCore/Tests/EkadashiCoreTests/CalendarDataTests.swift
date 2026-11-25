@@ -171,7 +171,8 @@ final class LocalizationTests: XCTestCase {
         // Three shared Play plan-change strings and seven Play update notice strings.
         // premium_free_achievements was removed with the Achievements-tab line (25 Nov 2026).
         // premium_play_switch_cancelled_note was added for Google Play's cancelled switch (25 Nov 2026).
-        XCTAssertEqual(english.count, 600)
+        // premium_cancelled_body_play_switch drops "Reactivate anytime" in that case (25 Nov 2026).
+        XCTAssertEqual(english.count, 601)
         XCTAssertTrue(Set(english).isSuperset(of: [
             "premium_switch_now_title", "premium_switch_now_body", "premium_switch_now_confirm",
         ]))

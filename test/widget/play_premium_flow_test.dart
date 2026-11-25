@@ -398,6 +398,12 @@ void main() {
       find.text(lang.translate('premium_cancelled_title')),
       findsOneWidget,
     );
+    // A plain cancel keeps "Reactivate anytime to keep it." and no note.
+    expect(find.text(lang.translate('premium_cancelled_body')), findsOneWidget);
+    expect(
+      find.text(lang.translate('premium_play_switch_cancelled_note')),
+      findsNothing,
+    );
     await tester.tap(find.byKey(const Key('premium_plan_monthly')));
     await tester.pumpAndSettle();
     expect(ctaLabel(tester), contains(lang.translate('premium_reactivate')));
@@ -428,6 +434,12 @@ void main() {
       await tester.pumpAndSettle();
       expect(
         find.text(lang.translate('premium_play_switch_cancelled_note')),
+        findsOneWidget,
+      );
+      // Arun (25 Nov 2026): "Reactivate anytime" contradicted the note.
+      expect(find.text(lang.translate('premium_cancelled_body')), findsNothing);
+      expect(
+        find.text(lang.translate('premium_cancelled_body_play_switch')),
         findsOneWidget,
       );
       VoidCallback? buyAction() => tester
