@@ -260,7 +260,7 @@ Automated: Flutter 1,007 pass, analyzer and format clean.
 
 **Follow-up (Arun, 25 Nov 2026):** in that case "Reactivate anytime to keep
 it." contradicted the note, so the cancelled paragraph is shown without its
-last sentence on the plans page and the Settings card (``…`1a660e4`,
+last sentence on the plans page and the Settings card (`f1210b9`…`1a660e4`,
 six languages). A plain cancel keeps it. Checked on the M52 at 19:09
 (new build): the paragraph ends "See the date in Google Play.", the note
 follows, Reactivate and Monthly are greyed out, Lifetime is available.
