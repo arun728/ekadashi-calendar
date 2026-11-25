@@ -169,7 +169,8 @@ final class LocalizationTests: XCTestCase {
         // Two Android Glass Look preference strings share the approved iOS wording.
         // 63 approved Journey keys are now shared by iOS and Android.
         // Three shared Play plan-change strings and seven Play update notice strings.
-        XCTAssertEqual(english.count, 600)
+        // premium_free_achievements was removed with the Achievements-tab line (25 Nov 2026).
+        XCTAssertEqual(english.count, 599)
         XCTAssertTrue(Set(english).isSuperset(of: [
             "premium_switch_now_title", "premium_switch_now_body", "premium_switch_now_confirm",
         ]))
