@@ -931,6 +931,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Premium stays on until the end of the period you paid for. See the date in Google Play. Reactivate anytime to keep it.';
 
   @override
+  String get premium_cancelled_body_play_switch =>
+      'Premium stays on until the end of the period you paid for. See the date in Google Play.';
+
+  @override
   String get premium_play_switch_cancelled_note =>
       'Google Play can\'t reactivate or change this plan because it was switching to Monthly. Choose a plan again after it ends.';
 

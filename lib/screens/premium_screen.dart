@@ -499,7 +499,13 @@ class _PremiumScreenState extends State<PremiumScreen> {
                           ? _statusCard(
                               color: orange,
                               title: lang.translate('premium_cancelled_title'),
-                              body: lang.translate('premium_cancelled_body'),
+                              // Reactivate is not possible after a cancelled
+                              // switch, so "Reactivate anytime" is left out.
+                              body: lang.translate(
+                                billing.switchCancelledByPlay
+                                    ? 'premium_cancelled_body_play_switch'
+                                    : 'premium_cancelled_body',
+                              ),
                               action: billing.switchCancelledByPlay
                                   ? Text(
                                       lang.translate(
