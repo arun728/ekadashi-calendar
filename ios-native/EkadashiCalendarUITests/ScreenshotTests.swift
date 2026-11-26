@@ -309,7 +309,9 @@ final class ScreenshotTests: XCTestCase {
                 prompt.exists || failure.exists || self.app.buttons["Cancel"].firstMatch.exists
                     || authentication.buttons["Cancel"].firstMatch.exists
             }, object: nil)
-            XCTAssertEqual(XCTWaiter.wait(for: [response], timeout: 15), .completed)
+            // The import first re-checks Premium with the App Store, which the
+            // simulator's StoreKit can take minutes to answer (fast on devices).
+            XCTAssertEqual(XCTWaiter.wait(for: [response], timeout: 150), .completed)
             if prompt.exists, prompt.buttons["Cancel"].exists {
                 prompt.buttons["Cancel"].tap()
             } else if app.buttons["Cancel"].firstMatch.exists {
@@ -1685,8 +1687,13 @@ final class ScreenshotTests: XCTestCase {
                     XCTAssertTrue(option.waitForExistence(timeout: 5))
                     option.tap(); current = language
                 }
+                // Wait for the menu to close and Home to redraw in the new
+                // language before the next tap (a tap during the redraw was
+                // lost and left the menu open over Home).
                 let record = app.buttons["home_record_vrat"].firstMatch
-                XCTAssertTrue(record.isHittable)
+                let ready = XCTNSPredicateExpectation(predicate: NSPredicate(format: "hittable == true"), object: record)
+                XCTAssertEqual(XCTWaiter.wait(for: [ready], timeout: 10), .completed, "Home ready after \(language)")
+                Thread.sleep(forTimeInterval: 0.5)
                 let actionsTop = ["view_details", "home_share_card", "home_record_vrat"]
                     .map { app.buttons[$0].firstMatch.frame.minY }.min()!
                 let text = app.staticTexts[message].firstMatch
