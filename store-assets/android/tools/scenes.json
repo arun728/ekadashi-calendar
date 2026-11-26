@@ -1,0 +1,82 @@
+[
+ {
+  "clip": "home.mp4",
+  "start": 0.6,
+  "dur": 3.8,
+  "speed": 1.0,
+  "hue": "teal",
+  "title": "Never miss an <em>Ekadashi</em>",
+  "tag": "free"
+ },
+ {
+  "clip": "language.mp4",
+  "start": 0.6,
+  "dur": 3.8,
+  "speed": 1.0,
+  "hue": "indigo",
+  "title": "In <em>your</em> language",
+  "tag": "free"
+ },
+ {
+  "clip": "share.mp4",
+  "start": 0.0,
+  "dur": 3.0,
+  "speed": 1.0,
+  "hue": "teal",
+  "title": "Share with <em>family</em>",
+  "tag": "free"
+ },
+ {
+  "clip": "calendar.mp4",
+  "start": 0.9,
+  "dur": 3.8,
+  "speed": 1.0,
+  "hue": "teal",
+  "title": "<em>Festivals</em> in your calendar"
+ },
+ {
+  "clip": "festivals.mp4",
+  "start": 0.6,
+  "dur": 3.8,
+  "speed": 1.0,
+  "hue": "gold",
+  "title": "Every <em>festival</em>",
+  "tag": "premium"
+ },
+ {
+  "clip": "panchang.mp4",
+  "start": 0.4,
+  "dur": 4.2,
+  "speed": 1.0,
+  "hue": "gold",
+  "title": "The full <em>Panchang</em>",
+  "tag": "premium"
+ },
+ {
+  "clip": "journey.mp4",
+  "start": 0.3,
+  "dur": 3.4,
+  "speed": 1.0,
+  "hue": "lotus",
+  "title": "Track every <em>vrat</em>",
+  "tag": "premium"
+ },
+ {
+  "clip": "journey-share.mp4",
+  "start": 0.0,
+  "dur": 3.0,
+  "speed": 1.0,
+  "hue": "lotus",
+  "title": "Share your <em>journey</em>",
+  "tag": "premium"
+ },
+ {
+  "clip": "widgets.mp4",
+  "start": 1.6,
+  "dur": 4.6,
+  "speed": 1.0,
+  "hue": "indigo",
+  "title": "Home screen <em>widgets</em>",
+  "tag": "free"
+ }
+]

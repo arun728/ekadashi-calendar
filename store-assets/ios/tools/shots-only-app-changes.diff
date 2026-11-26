@@ -1,0 +1,161 @@
+diff --git a/ios-native/EkadashiCalendar/App/AppModel.swift b/ios-native/EkadashiCalendar/App/AppModel.swift
+index 0680478..319851a 100644
+--- a/ios-native/EkadashiCalendar/App/AppModel.swift
++++ b/ios-native/EkadashiCalendar/App/AppModel.swift
+@@ -134,6 +134,58 @@ final class AppModel {
+         try? FileManager.default.createDirectory(at: support, withIntermediateDirectories: true)
+         entries = DisplayClock.isSimulationSession ? InMemoryCalendarEntryStore() :
+             ((try? FileCalendarEntryStore(url: support.appendingPathComponent("calendar_entries.json"))) ?? InMemoryCalendarEntryStore())
++        // SHOTS-ONLY: sample Google and custom entries for store screenshots.
++        if ProcessInfo.processInfo.environment["SHOTS_SEED"] != nil {
++            let f = ISO8601DateFormatter()
++            func d(_ s: String) -> Date { f.date(from: s + ":00+05:30")! }
++            let items: [(String, String, String, CalendarEntrySource, String?, Bool)] = [
++                ("2027-01-14T00:00", "2027-01-15T00:00", "Lohri", .google, "Holidays in India", true),
++                ("2027-01-15T00:00", "2027-01-16T00:00", "Makar Sankranti / Pongal", .google, "Holidays in India", true),
++                ("2027-01-26T00:00", "2027-01-27T00:00", "Republic Day", .google, "Holidays in India", true),
++                ("2027-02-11T00:00", "2027-02-12T00:00", "Vasant Panchami", .google, "Holidays in India", true),
++                ("2027-03-06T00:00", "2027-03-07T00:00", "Maha Shivaratri", .google, "Holidays in India", true),
++                ("2027-03-21T00:00", "2027-03-22T00:00", "Holika Dahan", .google, "Holidays in India", true),
++                ("2027-03-22T00:00", "2027-03-23T00:00", "Holi", .google, "Holidays in India", true),
++                ("2027-04-07T00:00", "2027-04-08T00:00", "Ugadi / Gudi Padwa", .google, "Holidays in India", true),
++                ("2027-04-15T00:00", "2027-04-16T00:00", "Ram Navami", .google, "Holidays in India", true),
++                ("2027-04-20T00:00", "2027-04-21T00:00", "Hanuman Jayanti", .google, "Holidays in India", true),
++                ("2027-05-09T00:00", "2027-05-10T00:00", "Akshaya Tritiya", .google, "Holidays in India", true),
++                ("2027-07-05T00:00", "2027-07-06T00:00", "Rath Yatra", .google, "Holidays in India", true),
++                ("2027-07-18T00:00", "2027-07-19T00:00", "Guru Purnima", .google, "Holidays in India", true),
++                ("2027-08-13T00:00", "2027-08-14T00:00", "Varalakshmi Vratam", .google, "Holidays in India", true),
++                ("2027-08-15T00:00", "2027-08-16T00:00", "Independence Day", .google, "Holidays in India", true),
++                ("2027-08-17T00:00", "2027-08-18T00:00", "Raksha Bandhan", .google, "Holidays in India", true),
++                ("2027-08-25T00:00", "2027-08-26T00:00", "Janmashtami", .google, "Holidays in India", true),
++                ("2027-09-12T00:00", "2027-09-13T00:00", "Onam", .google, "Holidays in India", true),
++                ("2027-10-02T00:00", "2027-10-03T00:00", "Gandhi Jayanti", .google, "Holidays in India", true),
++                ("2027-10-09T00:00", "2027-10-10T00:00", "Dussehra", .google, "Holidays in India", true),
++                ("2027-10-18T00:00", "2027-10-19T00:00", "Karwa Chauth", .google, "Holidays in India", true),
++                ("2027-10-27T00:00", "2027-10-28T00:00", "Dhanteras", .google, "Holidays in India", true),
++                ("2027-10-29T00:00", "2027-10-30T00:00", "Diwali", .google, "Holidays in India", true),
++                ("2027-10-31T00:00", "2027-11-01T00:00", "Bhai Dooj", .google, "Holidays in India", true),
++                ("2027-11-04T00:00", "2027-11-05T00:00", "Chhath Puja", .google, "Holidays in India", true),
++                ("2027-12-11T00:00", "2027-12-12T00:00", "Karthigai Deepam", .google, "Holidays in India", true),
++                ("2027-12-25T00:00", "2027-12-26T00:00", "Christmas", .google, "Holidays in India", true),
++                ("2027-01-05T18:30", "2027-01-05T19:30", "Mandir darshan with family", .google, "Family", false),
++                ("2027-01-10T10:00", "2027-01-10T12:00", "Satyanarayan Katha", .google, "Family", false),
++                ("2027-01-19T07:00", "2027-01-19T08:00", "Hanuman Chalisa path", .custom, nil, false),
++                ("2027-01-30T19:00", "2027-01-30T20:30", "Bhajan sandhya", .custom, nil, false),
++                ("2027-03-20T18:00", "2027-03-20T19:00", "Buy colours and gujiya", .custom, nil, false),
++                ("2027-07-11T09:00", "2027-07-11T10:00", "Rudrabhishek at Shiv mandir", .google, "Family", false),
++                ("2027-07-25T07:00", "2027-07-25T08:00", "Vishnu Sahasranama path", .custom, nil, false),
++                ("2027-08-21T18:00", "2027-08-21T19:30", "Satsang", .custom, nil, false),
++                ("2027-10-24T11:00", "2027-10-24T13:00", "Diwali shopping", .custom, nil, false),
++                ("2027-10-29T18:30", "2027-10-29T20:00", "Lakshmi Puja at home", .google, "Family", false),
++            ]
++            for (i, it) in items.enumerated() {
++                // All-day Google events are stored at UTC midnight, as the importer does.
++                let st = it.5 ? f.date(from: it.0 + ":00Z")! : d(it.0), en = it.5 ? f.date(from: it.1 + ":00Z")! : d(it.1)
++                try? entries.upsert(CalendarEntry(id: "shots-\(i)", title: it.2, start: st, end: en, isAllDay: it.5,
++                    source: it.3, googleEventId: it.3 == .google ? "g\(i)" : nil, calendarName: it.4,
++                    accountId: it.3 == .google ? "demo@gmail.com" : nil, calendarId: it.3 == .google ? "primary" : nil,
++                    updatedAt: d(it.0)))
++            }
++        }
+         registry = FirestoreFreeSyncRegistry.fromConfiguration(
+             apiKey: Bundle.main.object(forInfoDictionaryKey: "EkadashiFirebaseApiKey") as? String,
+             projectId: Bundle.main.object(forInfoDictionaryKey: "EkadashiFirebaseProjectId") as? String)
+diff --git a/ios-native/EkadashiCalendar/Features/Premium/PremiumView.swift b/ios-native/EkadashiCalendar/Features/Premium/PremiumView.swift
+index c09bea7..4ce691f 100644
+--- a/ios-native/EkadashiCalendar/Features/Premium/PremiumView.swift
++++ b/ios-native/EkadashiCalendar/Features/Premium/PremiumView.swift
+@@ -163,7 +163,6 @@ struct PremiumView: View {
+                 }
+                 .frame(height: 20)
+                 Text(model.t("premium_\(id.rawValue)")).font(.subheadline.weight(.semibold)).multilineTextAlignment(.center)
+-                Text(store.products[id]?.displayPrice ?? "").font(.title3.bold()).minimumScaleFactor(0.6).lineLimit(1)
+                 Text(model.t(period)).font(.caption).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                 if current {
+                     Text(model.t("premium_current_plan")).font(.caption).foregroundStyle(Theme.teal)
+@@ -188,7 +187,7 @@ struct PremiumView: View {
+             if showPlans, !state.lifetime, let plan {
+                 let price = store.products[plan]?.displayPrice ?? ""
+                 let title = state.subscriptionCancelled && plan == state.currentPlan
+-                    ? "\(model.t("premium_reactivate")) · \(price)" : "\(model.t("premium_\(plan.rawValue)")) · \(price)"
++                    ? "\(model.t("premium_reactivate"))" : "\(model.t("premium_\(plan.rawValue)"))"
+                 Button {
+                     buy(plan)
+                 } label: {
+diff --git a/ios-native/EkadashiCalendar/Features/Settings/SettingsView.swift b/ios-native/EkadashiCalendar/Features/Settings/SettingsView.swift
+index 3f001c9..1048978 100644
+--- a/ios-native/EkadashiCalendar/Features/Settings/SettingsView.swift
++++ b/ios-native/EkadashiCalendar/Features/Settings/SettingsView.swift
+@@ -295,7 +295,7 @@ struct SettingsPremiumCard: View {
+             benefit(AppSymbol.premiumCalendar, "premium_feature_calendar")
+             benefit(AppSymbol.premiumVrat, "premium_feature_vrat")
+             benefit(AppSymbol.premiumPanchang, "premium_feature_panchang_v2")
+-            if let monthly = model.premium.products[.monthly]?.displayPrice,
++            if false, let monthly = model.premium.products[.monthly]?.displayPrice,
+                let lifetime = model.premium.products[.lifetime]?.displayPrice {
+                 Text(model.t("settings_premium_from", monthly, lifetime)).font(.footnote.weight(.semibold))
+                     .foregroundStyle(.primary).padding(.top, 2)
+diff --git a/ios-native/EkadashiCalendar/Resources/Products.storekit b/ios-native/EkadashiCalendar/Resources/Products.storekit
+index f41b63a..ab4c1cd 100644
+--- a/ios-native/EkadashiCalendar/Resources/Products.storekit
++++ b/ios-native/EkadashiCalendar/Resources/Products.storekit
+@@ -3,7 +3,7 @@
+   "nonRenewingSubscriptions": [],
+   "products": [
+     {
+-      "displayPrice": "999.0",
++      "displayPrice": "1999.0",
+       "familyShareable": false,
+       "internalID": "6740000003",
+       "localizations": [
+@@ -41,7 +41,7 @@
+         {
+           "adHocOffers": [],
+           "codeOffers": [],
+-          "displayPrice": "499.0",
++          "displayPrice": "599.0",
+           "familyShareable": false,
+           "groupNumber": 1,
+           "internalID": "6740000002",
+@@ -87,4 +87,4 @@
+     "major": 3,
+     "minor": 0
+   }
+-}
++}
+\ No newline at end of file
+diff --git a/ios-native/EkadashiCalendar/Services/StoreKitPremiumService.swift b/ios-native/EkadashiCalendar/Services/StoreKitPremiumService.swift
+index cdd2e52..f62e7f3 100644
+--- a/ios-native/EkadashiCalendar/Services/StoreKitPremiumService.swift
++++ b/ios-native/EkadashiCalendar/Services/StoreKitPremiumService.swift
+@@ -102,6 +102,13 @@ final class StoreKitPremiumService {
+     }
+ 
+     private func readEntitlements() async {
++        // SHOTS-ONLY: a subscription treated as owned for store screenshots.
++        if let plan = ProcessInfo.processInfo.environment["SHOTS_PREMIUM"] {
++            state.apply(owned: [OwnedProduct(productId: "ekadashi_premium_" + plan,
++                                             purchaseDate: ISO8601DateFormatter().date(from: "2026-11-01T09:00:00+05:30"),
++                                             willAutoRenew: true)])
++            snapshot.set(state); pending = false; return
++        }
+         // On iOS 27 (Xcode StoreKit testing) `Transaction.currentEntitlements`
+         // came back empty while the history held a verified, unexpired
+         // monthly purchase. Ask for the latest transaction of each product
+diff --git a/ios-native/EkadashiCore/Sources/EkadashiCore/Panchang/PanchangCity.swift b/ios-native/EkadashiCore/Sources/EkadashiCore/Panchang/PanchangCity.swift
+index d75b103..04f16f4 100644
+--- a/ios-native/EkadashiCore/Sources/EkadashiCore/Panchang/PanchangCity.swift
++++ b/ios-native/EkadashiCore/Sources/EkadashiCore/Panchang/PanchangCity.swift
+@@ -95,7 +95,11 @@ public struct PanchangCity: Hashable, Codable, Sendable, Identifiable {
+         return total % 60 == 0 ? "UTC\(sign)\(total / 60)" : "UTC\(sign)\(total / 60):\(pad2(total % 60))"
+     }
+     /// Today's civil date at this location.
+-    public func today(now: Date = Date()) -> CivilDate { wallClock(now).date }
++    public func today(now: Date = Date()) -> CivilDate {
++        // SHOTS-ONLY: follow the pinned UI-test clock.
++        if let v = ProcessInfo.processInfo.environment["EKADASHI_UI_TEST_NOW"], let d = ISO8601DateFormatter().date(from: v) { return wallClock(d).date }
++        return wallClock(now).date
++    }
+ 
+     public static let newDelhi = PanchangCity(id: "new-delhi", label: "New Delhi", latitude: 28.6139, longitude: 77.2090)
+     public static let mumbai = PanchangCity(id: "mumbai", label: "Mumbai", latitude: 19.0760, longitude: 72.8777)
