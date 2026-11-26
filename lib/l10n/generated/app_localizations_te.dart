@@ -166,6 +166,17 @@ class AppLocalizationsTe extends AppLocalizations {
   String get settings_reminders_not_arriving => 'రిమైండర్‌లు రావడం లేదా?';
 
   @override
+  String get settings_purchases => 'కొనుగోళ్లు';
+
+  @override
+  String get settings_premium_cancelled_body =>
+      'మీరు చెల్లించిన వ్యవధి ముగిసే వరకు ప్రీమియం ఉంటుంది. తేదీని గూగుల్ ప్లేలో చూడండి. కింద ఉన్న “సభ్యత్వాన్ని నిర్వహించండి”లో దాన్ని మళ్లీ ప్రారంభించండి.';
+
+  @override
+  String get settings_premium_lifetime_subscription_active =>
+      'మీ సభ్యత్వం ఇంకా సక్రియంగా ఉంది. కింద ఉన్న “సభ్యత్వాన్ని నిర్వహించండి”లో దాన్ని రద్దు చేయండి.';
+
+  @override
   String get app_update_available => 'అప్‌డేట్ అందుబాటులో ఉంది';
 
   @override
@@ -1522,9 +1533,6 @@ class AppLocalizationsTe extends AppLocalizations {
   String settings_premium_plan(String value0) {
     return 'మీ ప్లాన్: $value0';
   }
-
-  @override
-  String get settings_premium_manage => 'నిర్వహించండి';
 
   @override
   String get settings_premium_plans => 'ప్లాన్ మార్చండి';

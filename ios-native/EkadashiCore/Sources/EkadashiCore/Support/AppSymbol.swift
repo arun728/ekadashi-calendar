@@ -119,6 +119,8 @@ public enum AppSymbol {
     public static let settingsPrivacy = "hand.raised"
     public static let settingsBadgeHaptics = "rosette"
     public static let settingsContactSupport = "envelope"
+    public static let settingsManageSubscription = "creditcard"
+    public static let settingsRestorePurchases = "arrow.clockwise.circle"
     public static let testNotification = "bell"
     public static let timings = "clock"
     public static let useCurrentLocation = "location"
@@ -243,6 +245,8 @@ public enum AppSymbol {
         "settings_privacy": settingsPrivacy,
         "settings_badge_haptics": settingsBadgeHaptics,
         "settings_contact_support": settingsContactSupport,
+        "settings_manage_subscription": settingsManageSubscription,
+        "settings_restore_purchases": settingsRestorePurchases,
         "test_notification": testNotification,
         "timings": timings,
         "use_current_location": useCurrentLocation,

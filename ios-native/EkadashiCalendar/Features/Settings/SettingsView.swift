@@ -4,8 +4,9 @@ import UserNotifications
 import EkadashiCore
 
 /// Settings (settings_screen.dart), regrouped on 25 Nov 2026 (Arun): the
-/// Premium card, one Notifications row opening its own page, Appearance and
-/// About & legal. Google Calendar stays in the Calendar tab.
+/// Premium card, one Notifications row opening its own page, Appearance,
+/// Purchases (27 Nov 2026: Manage subscription and Restore purchases for
+/// everyone) and About & legal. Google Calendar stays in the Calendar tab.
 struct SettingsView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.requestReview) private var requestReview
@@ -13,6 +14,10 @@ struct SettingsView: View {
     @State private var authorization: UNAuthorizationStatus = .notDetermined
     /// Terms or Privacy in the in-app browser (26 Nov 2026).
     @State private var webPage: InAppWebPage?
+    /// Apple's Manage Subscriptions sheet, from Purchases.
+    @State private var managing = false
+    @State private var restoring = false
+    @State private var toast: ToastMessage?
 
     private var hasPermission: Bool { authorization == .authorized || authorization == .provisional || authorization == .ephemeral }
     private var settings: ReminderSettings { model.reminderSettings }
@@ -86,6 +91,23 @@ struct SettingsView: View {
             // Keep identifiers on the individual rows; a Section identifier
             // replaces those of its switches and navigation links.
 
+            // Every user, free or paid: Manage opens Apple's subscriptions
+            // sheet (empty without one); Restore helps after changing phones.
+            Section(model.t("settings_purchases")) {
+                Button { managing = true } label: {
+                    row(AppSymbol.settingsManageSubscription, model.t("premium_manage"), nil)
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("settings_manage_subscription")
+                Button { Task { await restore() } } label: {
+                    row(AppSymbol.settingsRestorePurchases, model.t("premium_restore"), nil)
+                }
+                .buttonStyle(.plain)
+                .disabled(restoring)
+                .accessibilityIdentifier("settings_restore_purchases")
+            }
+            .glassListRows()
+
             Section(model.t("settings_about_legal")) {
                 Button { rate() } label: { row(AppSymbol.rateApp, model.t("rate_app"), model.t("rate_app_desc")) }
                     .buttonStyle(.plain)
@@ -124,10 +146,28 @@ struct SettingsView: View {
         .scrollContentBackground(.hidden)
         .contentMargins(.bottom, 80, for: .scrollContent)
         .inAppBrowser($webPage)
+        .manageSubscriptionsSheet(isPresented: $managing)
+        .onChange(of: managing) { _, isPresented in
+            if !isPresented { Task { await model.premium.refresh() } }
+        }
+        .toast($toast)
         .task { authorization = await model.notifications.authorizationStatus() }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
             Task { authorization = await model.notifications.authorizationStatus() }
         }
+    }
+
+    /// The same answers as Restore purchases on the plans page.
+    private func restore() async {
+        restoring = true
+        defer { restoring = false }
+        let key: String
+        switch await model.premium.restore() {
+        case .restored: key = "premium_restored"
+        case .none: key = "premium_restore_none"
+        case .unavailable: key = "premium_unavailable"
+        }
+        toast = ToastMessage(text: model.t(key))
     }
 
     /// "4/4 active", or why reminders are off.
@@ -340,10 +380,10 @@ struct NotificationSettingsView: View {
 
 
 /// Premium at the top of Settings: what it unlocks and the store prices
-/// for free users; the plan, its state and Manage for members.
+/// for free users; the plan and its state for members. Manage lives in the
+/// Purchases section (Arun, 27 Nov 2026); notes point there, never a date.
 struct SettingsPremiumCard: View {
     @Environment(AppModel.self) private var model
-    @State private var managing = false
 
     private var state: PremiumState { model.premium.state }
 
@@ -369,10 +409,6 @@ struct SettingsPremiumCard: View {
                            endPoint: .bottomTrailing),
             in: RoundedRectangle(cornerRadius: 24, style: .continuous))
         .glassPanel(cornerRadius: 24)
-        .manageSubscriptionsSheet(isPresented: $managing)
-        .onChange(of: managing) { _, isPresented in
-            if !isPresented { Task { await model.premium.refresh() } }
-        }
     }
 
     private var subtitleKey: String {
@@ -384,10 +420,9 @@ struct SettingsPremiumCard: View {
 
     private var offer: some View {
         VStack(alignment: .leading, spacing: 10) {
-            if state.isInBillingRetry {
-                Text(model.t("ios_premium_billing_retry_body")).font(.footnote)
-                Button(model.t("settings_premium_manage")) { managing = true }
-                    .buttonStyle(PremiumCardOutlineStyle())
+            if let note = model.premiumSettingsNote(state) {
+                Text(note).font(.footnote).foregroundStyle(.primary)
+                    .accessibilityIdentifier("settings_premium_note")
             }
             benefit(AppSymbol.premiumCalendar, "premium_feature_calendar")
             benefit(AppSymbol.premiumVrat, "premium_feature_vrat")
@@ -409,27 +444,22 @@ struct SettingsPremiumCard: View {
         VStack(alignment: .leading, spacing: 10) {
             if state.lifetime {
                 Text(model.t("premium_lifetime_thanks_body")).font(.subheadline).foregroundStyle(.primary)
+                if let note = model.premiumSettingsNote(state) {
+                    Text(note).font(.footnote.weight(.semibold)).foregroundStyle(.primary)
+                        .accessibilityIdentifier("settings_premium_note")
+                }
             } else if let plan = state.currentPlan {
                 Text(model.t("settings_premium_plan", model.t("premium_\(plan.rawValue)"))).font(.subheadline.weight(.semibold))
                     .foregroundStyle(.primary)
                 Text(model.premiumSettingsMessage(state))
                     .font(.footnote).foregroundStyle(.secondary)
             }
-            HStack(spacing: 10) {
-                if state.subscribed {
-                    Button { managing = true } label: {
-                        Text(model.t("settings_premium_manage")).frame(maxWidth: .infinity).padding(.vertical, 4)
-                    }
-                    .buttonStyle(PremiumCardOutlineStyle())
-                    .accessibilityIdentifier("settings_premium_manage")
+            if !state.lifetime {
+                Button { model.openPaywall() } label: {
+                    Text(model.t("settings_premium_plans")).frame(maxWidth: .infinity).padding(.vertical, 4)
                 }
-                if !state.lifetime {
-                    Button { model.openPaywall() } label: {
-                        Text(model.t("settings_premium_plans")).frame(maxWidth: .infinity).padding(.vertical, 4)
-                    }
-                    .primaryActionStyle()
-                    .accessibilityIdentifier("settings_premium")
-                }
+                .primaryActionStyle()
+                .accessibilityIdentifier("settings_premium")
             }
         }
     }
@@ -443,8 +473,8 @@ struct SettingsPremiumCard: View {
     }
 }
 
-/// Manage on the Premium card and Cancel subscription on the plans page
-/// (Arun, 25-26 Nov 2026: teal on a tinted card looked disabled). The label and outline use the
+/// Cancel subscription on the plans page (Arun, 25-26 Nov 2026: teal on a
+/// tinted card looked disabled). The label and outline use the
 /// primary text colour, white in dark mode, so it reads as a normal button
 /// that is still less prominent than the filled Change plan.
 struct PremiumCardOutlineStyle: ButtonStyle {
