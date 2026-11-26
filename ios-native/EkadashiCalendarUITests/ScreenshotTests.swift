@@ -594,6 +594,26 @@ final class ScreenshotTests: XCTestCase {
         return Double(white) / Double(width * height)
     }
 
+    /// Report issue 9 (Arun, 26 Nov 2026): Terms and Privacy open in an
+    /// in-app Safari sheet (as X opens links), not in the Safari app; Done
+    /// returns to the plans page.
+    func testPlansPageLegalLinksOpenInTheInAppBrowser() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        glassTab(4); app.buttons["settings_premium"].firstMatch.tap()
+        XCTAssertTrue(app.buttons["premium_buy"].firstMatch.waitForExistence(timeout: 30))
+        let safari = XCUIApplication(bundleIdentifier: "com.apple.mobilesafari")
+        for link in ["Terms of service", "Privacy policy"] {
+            app.buttons[link].firstMatch.tap()
+            let done = app.buttons["Done"].firstMatch
+            XCTAssertTrue(done.waitForExistence(timeout: 15), "\(link) opens inside the app")
+            XCTAssertEqual(app.state, .runningForeground)
+            XCTAssertNotEqual(safari.state, .runningForeground, "\(link) must not open the Safari app")
+            snap("legal-in-app-\(link)")
+            done.tap()
+            XCTAssertTrue(app.buttons["premium_buy"].firstMatch.waitForExistence(timeout: 10), "back on the plans page")
+        }
+    }
+
     /// Arun (25 Nov 2026): a big empty gap sat above the buy button and the
     /// links under it were cramped. The button follows the plan terms, and
     /// the links are centred with room between and above them.
