@@ -11,6 +11,8 @@ struct SettingsView: View {
     @Environment(\.requestReview) private var requestReview
     @Environment(\.openURL) private var openURL
     @State private var authorization: UNAuthorizationStatus = .notDetermined
+    /// Terms or Privacy in the in-app browser (26 Nov 2026).
+    @State private var webPage: InAppWebPage?
 
     private var hasPermission: Bool { authorization == .authorized || authorization == .provisional || authorization == .ephemeral }
     private var settings: ReminderSettings { model.reminderSettings }
@@ -93,12 +95,12 @@ struct SettingsView: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("settings_share")
-                Button { openURL(PremiumView.termsURL) } label: {
+                Button { webPage = InAppWebPage(url: PremiumView.termsURL) } label: {
                     row(AppSymbol.settingsTerms, model.t("terms_of_service"), nil)
                 }
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("settings_terms")
-                Button { openURL(PremiumView.privacyURL) } label: {
+                Button { webPage = InAppWebPage(url: PremiumView.privacyURL) } label: {
                     row(AppSymbol.settingsPrivacy, model.t("privacy_policy"), nil)
                 }
                 .buttonStyle(.plain)
@@ -121,6 +123,7 @@ struct SettingsView: View {
         }
         .scrollContentBackground(.hidden)
         .contentMargins(.bottom, 80, for: .scrollContent)
+        .inAppBrowser($webPage)
         .task { authorization = await model.notifications.authorizationStatus() }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
             Task { authorization = await model.notifications.authorizationStatus() }
