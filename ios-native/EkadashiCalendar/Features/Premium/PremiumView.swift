@@ -1,4 +1,5 @@
 import SwiftUI
+import SafariServices
 import StoreKit
 import EkadashiCore
 
@@ -8,7 +9,6 @@ import EkadashiCore
 struct PremiumView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.openURL) private var openURL
     let reason: String?
     @State private var selection = PremiumPaywallSelection()
     /// The one pop-up the buy button can raise. Two chained `.alert`s on
@@ -19,6 +19,9 @@ struct PremiumView: View {
 
     static let privacyURL = URL(string: "https://apptinel.com/ekadashi-calendar/privacy-policy/")!
     static let termsURL = URL(string: "https://apptinel.com/ekadashi-calendar/terms-of-service/")!
+
+    /// A Terms or Privacy page in the in-app browser (report issue 9).
+    @State private var webPage: InAppWebPage?
 
     private var store: StoreKitPremiumService { model.premium }
     private var state: PremiumState { store.state }
@@ -92,6 +95,7 @@ struct PremiumView: View {
                 Text(model.t("premium_lifetime_confirm_body"))
             }
         }
+        .inAppBrowser($webPage)
         .toast($toast)
         .task {
             if store.products.isEmpty { await store.loadProducts() }
@@ -241,8 +245,8 @@ struct PremiumView: View {
             VStack(spacing: 4) {
                 linkRow(link("premium_restore") { Task { await restore() } }.disabled(store.busy),
                         link("premium_manage") { managing = true })
-                linkRow(link("terms_of_service") { openURL(Self.termsURL) },
-                        link("privacy_policy") { openURL(Self.privacyURL) })
+                linkRow(link("terms_of_service") { webPage = InAppWebPage(url: Self.termsURL) },
+                        link("privacy_policy") { webPage = InAppWebPage(url: Self.privacyURL) })
             }
             .frame(maxWidth: .infinity)
             .padding(.top, 12)
@@ -289,5 +293,38 @@ struct PremiumView: View {
         case .unavailable: key = "premium_unavailable"
         }
         toast = ToastMessage(text: model.t(key))
+    }
+}
+
+/// A web page shown in the in-app browser.
+struct InAppWebPage: Identifiable {
+    let url: URL
+    var id: String { url.absoluteString }
+}
+
+/// Apple's in-app Safari (SFSafariViewController) with teal controls: web
+/// pages such as Terms and Privacy open over the app with Done, the page
+/// title and its address, as X opens links (report issue 9, 26 Nov 2026).
+struct SafariView: UIViewControllerRepresentable {
+    let url: URL
+
+    func makeUIViewController(context: Context) -> SFSafariViewController {
+        let configuration = SFSafariViewController.Configuration()
+        configuration.entersReaderIfAvailable = false
+        let controller = SFSafariViewController(url: url, configuration: configuration)
+        controller.preferredControlTintColor = UIColor(Theme.teal)
+        controller.dismissButtonStyle = .done
+        return controller
+    }
+
+    func updateUIViewController(_ controller: SFSafariViewController, context: Context) {}
+}
+
+extension View {
+    /// Shows [page] in the in-app browser while it is set.
+    func inAppBrowser(_ page: Binding<InAppWebPage?>) -> some View {
+        sheet(item: page) { page in
+            SafariView(url: page.url).ignoresSafeArea()
+        }
     }
 }
