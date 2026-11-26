@@ -4,6 +4,7 @@ import '../widgets/ios_style.dart';
 import 'widgets/event_reminder_rows.dart';
 import '../services/notifications/event_reminder_service.dart';
 import '../services/premium_service.dart';
+import '../services/play_billing_service.dart';
 import 'widgets/settings_permission_actions.dart';
 import '../widgets/settings_group.dart';
 import 'widget_preview_screen.dart';
@@ -409,6 +410,34 @@ class _SettingsScreenState extends State<SettingsScreen>
           ],
         ),
 
+        // ==================== PURCHASES ====================
+        // Every user, free or paid (Arun, 27 Nov 2026): Manage opens Google
+        // Play's subscriptions page; Restore helps after changing phones.
+        header('settings_purchases'),
+        SettingsCard(
+          key: const Key('settings_purchases_tube'),
+          children: [
+            ListTile(
+              key: const Key('settings_manage_subscription'),
+              leading: const SettingsIcon(AppIcons.settingsManageSubscription),
+              title: Text(lang.translate('premium_manage')),
+              onTap: () => launchUrl(
+                PlayBillingService.managementUrl(
+                  context.read<PremiumService?>()?.subscriptionProductId,
+                ),
+                mode: LaunchMode.externalApplication,
+              ),
+            ),
+            const SettingsSeparator(inset: SettingsStyle.iconInset),
+            ListTile(
+              key: const Key('settings_restore_purchases'),
+              leading: const SettingsIcon(AppIcons.settingsRestorePurchases),
+              title: Text(lang.translate('premium_restore')),
+              onTap: () => _restorePurchases(lang),
+            ),
+          ],
+        ),
+
         // ==================== ABOUT ====================
         header('settings_about_legal'),
         SettingsCard(
@@ -471,6 +500,21 @@ class _SettingsScreenState extends State<SettingsScreen>
         ),
       ],
     );
+  }
+
+  /// The same answers as Restore purchases on the plans page.
+  Future<void> _restorePurchases(LanguageService lang) async {
+    final billing = context.read<PlayBillingService?>();
+    final result = billing == null
+        ? RestoreResult.unavailable
+        : await billing.restore();
+    if (!mounted) return;
+    final key = switch (result) {
+      RestoreResult.restored => 'premium_restored',
+      RestoreResult.none => 'premium_restore_none',
+      RestoreResult.unavailable => 'premium_unavailable',
+    };
+    showToast(context, lang.translate(key));
   }
 
   /// Settings > Notifications: the master switch and test, Ekadashi,

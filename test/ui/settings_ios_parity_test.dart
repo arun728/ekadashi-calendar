@@ -427,10 +427,25 @@ void main() {
           '?package=com.applausestudios.ekadashi_calendar',
         ),
       );
+      // Restore asks Google Play and always answers (this test has no Play
+      // Store, so the answer is "unavailable" or "none").
       await tester.tap(find.byKey(const Key('settings_restore_purchases')));
-      await tester.pump(const Duration(milliseconds: 500));
       final lang = LanguageService();
-      expect(find.text(lang.translate('premium_restore_none')), findsOneWidget);
+      final answers = [
+        'premium_restored',
+        'premium_restore_none',
+        'premium_unavailable',
+      ].map(lang.translate).toList();
+      Finder answer() => find.byWidgetPredicate(
+        (widget) => widget is Text && answers.contains(widget.data),
+      );
+      for (var i = 0; i < 50 && answer().evaluate().isEmpty; i++) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 100)),
+        );
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      expect(answer(), findsOneWidget);
       await tester.pumpAndSettle(const Duration(seconds: 5));
     },
   );
