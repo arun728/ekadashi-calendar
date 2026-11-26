@@ -404,6 +404,11 @@ class _PremiumScreenState extends State<PremiumScreen> {
   );
 
   /// A footer link: 13 pt teal, as the iOS footnote buttons.
+  static Color _primary(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+      ? Colors.white
+      : Colors.black;
+
   Widget _linkRow(List<Widget> links) => Wrap(
     alignment: WrapAlignment.center,
     spacing: 16,
@@ -478,9 +483,22 @@ class _PremiumScreenState extends State<PremiumScreen> {
                         body: lang.translate(
                           'premium_cancel_subscription_note',
                         ),
+                        // Clear like the Settings card's Manage (Arun, 26
+                        // Nov 2026): the primary text colour and outline.
                         action: OutlinedButton(
                           key: const Key('premium_cancel_subscription'),
-                          style: IosButtons.glass(context),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: _primary(context),
+                            shape: const StadiumBorder(),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 11,
+                            ),
+                            side: BorderSide(
+                              color: _primary(context).withValues(alpha: .85),
+                              width: 1.5,
+                            ),
+                          ),
                           onPressed: _manage,
                           child: Text(
                             lang.translate(
