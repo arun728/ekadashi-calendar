@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:ekadashi_calendar/services/in_app_browser.dart';
 import 'package:provider/provider.dart';
 import 'package:ekadashi_calendar/services/language_service.dart';
 import 'package:ekadashi_calendar/widgets/ios_style.dart';
@@ -342,40 +344,70 @@ void main() {
     }
   }
 
-  testWidgets('Contact support emails Apptinel', (tester) async {
-    final opened = <String>[];
-    const channel = MethodChannel('plugins.flutter.io/url_launcher');
-    const androidChannel = BasicMessageChannel<Object?>(
-      'dev.flutter.pigeon.url_launcher_android.UrlLauncherApi.launchUrl',
-      StandardMessageCodec(),
-    );
-    final messenger =
-        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
-    messenger.setMockMethodCallHandler(channel, (call) async {
-      opened.add((call.arguments as Map)['url'] as String);
-      return true;
-    });
-    messenger.setMockDecodedMessageHandler(androidChannel, (message) async {
-      opened.add((message! as List<Object?>).first! as String);
-      return [true];
-    });
-    addTearDown(() {
-      messenger.setMockMethodCallHandler(channel, null);
-      messenger.setMockDecodedMessageHandler(androidChannel, null);
-    });
-    final harness = AppHarness();
-    await tester.runAsync(() => harness.install());
-    addTearDown(harness.uninstall);
-    tester.view.physicalSize = const Size(393, 2300);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-    await tester.pumpWidget(harness.app());
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('glass_tab_4')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('settings_contact_support')));
-    await tester.pumpAndSettle();
-    expect(opened, ['mailto:contact@apptinel.com']);
-  });
+  testWidgets(
+    'Contact support emails Apptinel; Terms and Privacy open in app',
+    (tester) async {
+      final opened = <String>[];
+      const channel = MethodChannel('plugins.flutter.io/url_launcher');
+      const androidChannel = BasicMessageChannel<Object?>(
+        'dev.flutter.pigeon.url_launcher_android.UrlLauncherApi.launchUrl',
+        StandardMessageCodec(),
+      );
+      final messenger =
+          TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+      messenger.setMockMethodCallHandler(channel, (call) async {
+        opened.add((call.arguments as Map)['url'] as String);
+        return true;
+      });
+      messenger.setMockDecodedMessageHandler(androidChannel, (message) async {
+        opened.add((message! as List<Object?>).first! as String);
+        return [true];
+      });
+      addTearDown(() {
+        messenger.setMockMethodCallHandler(channel, null);
+        messenger.setMockDecodedMessageHandler(androidChannel, null);
+      });
+      final harness = AppHarness();
+      await tester.runAsync(() => harness.install());
+      addTearDown(harness.uninstall);
+      tester.view.physicalSize = const Size(393, 2300);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(harness.app());
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('glass_tab_4')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('settings_contact_support')));
+      await tester.pumpAndSettle();
+      expect(opened, ['mailto:contact@apptinel.com']);
+
+      // Terms and Privacy open in the in-app browser (26 Nov 2026).
+      final inApp = <(String, LaunchMode)>[];
+      InAppBrowser.opener =
+          (
+            uri, {
+            mode = LaunchMode.platformDefault,
+            browserConfiguration = const BrowserConfiguration(),
+          }) async {
+            inApp.add((uri.toString(), mode));
+            return true;
+          };
+      addTearDown(InAppBrowser.reset);
+      for (final key in ['settings_terms', 'settings_privacy']) {
+        await tester.tap(find.byKey(Key(key)));
+        await tester.pumpAndSettle();
+      }
+      expect(inApp, [
+        (
+          'https://apptinel.com/ekadashi-calendar/terms-of-service/',
+          LaunchMode.inAppBrowserView,
+        ),
+        (
+          'https://apptinel.com/ekadashi-calendar/privacy-policy/',
+          LaunchMode.inAppBrowserView,
+        ),
+      ]);
+    },
+  );
 }

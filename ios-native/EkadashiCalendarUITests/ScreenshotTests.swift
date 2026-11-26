@@ -638,6 +638,24 @@ final class ScreenshotTests: XCTestCase {
         return Double(white) / Double(width * height)
     }
 
+    /// Settings > About & legal: Terms and Privacy open in the in-app Safari
+    /// sheet too (26 Nov 2026).
+    func testSettingsLegalLinksOpenInTheInAppBrowser() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        glassTab(4)
+        let safari = XCUIApplication(bundleIdentifier: "com.apple.mobilesafari")
+        for id in ["settings_terms", "settings_privacy"] {
+            let row = app.buttons[id].firstMatch
+            for _ in 0..<6 where !(row.exists && row.isHittable) { app.swipeUp() }
+            row.tap()
+            let done = app.buttons["Done"].firstMatch
+            XCTAssertTrue(done.waitForExistence(timeout: 15), "\(id) opens inside the app")
+            XCTAssertNotEqual(safari.state, .runningForeground, "\(id) must not open the Safari app")
+            done.tap()
+            XCTAssertTrue(row.waitForExistence(timeout: 10), "back in Settings")
+        }
+    }
+
     /// Report issue 9 (Arun, 26 Nov 2026): Terms and Privacy open in an
     /// in-app Safari sheet (as X opens links), not in the Safari app; Done
     /// returns to the plans page.
