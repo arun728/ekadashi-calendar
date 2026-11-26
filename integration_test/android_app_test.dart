@@ -125,7 +125,18 @@ void main() {
     // Settings > Notifications has its own page (25 Nov 2026): the
     // Android-only guide/settings pair and the master switch live there.
     final notificationsRow = find.byKey(const Key('settings_notifications'));
-    await tester.ensureVisible(notificationsRow);
+    // The row sits above Appearance; scrolling to Dark Mode may have taken it
+    // out of the lazy list, so scroll back up to it.
+    await tester.scrollUntilVisible(
+      notificationsRow,
+      -180,
+      scrollable: find
+          .descendant(
+            of: find.byType(ListView).hitTestable(),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
     await pumpUi(tester);
     await tester.tap(notificationsRow);
     await pumpUi(tester);
