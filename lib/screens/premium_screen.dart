@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/language_service.dart';
 import '../services/premium_service.dart';
+import '../services/in_app_browser.dart';
 import '../services/play_billing_service.dart';
 import '../widgets/app_icons.dart';
 
@@ -686,12 +687,15 @@ class _PremiumScreenState extends State<PremiumScreen> {
                             _linkRow([
                               _link(
                                 lang.translate('terms_of_service'),
-                                () => _open(Uri.parse(PremiumScreen.termsUrl)),
+                                () => InAppBrowser.open(
+                                  Uri.parse(PremiumScreen.termsUrl),
+                                ),
                               ),
                               _link(
                                 lang.translate('privacy_policy'),
-                                () =>
-                                    _open(Uri.parse(PremiumScreen.privacyUrl)),
+                                () => InAppBrowser.open(
+                                  Uri.parse(PremiumScreen.privacyUrl),
+                                ),
                               ),
                             ]),
                           ],

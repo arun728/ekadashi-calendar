@@ -2,6 +2,8 @@ import 'package:ekadashi_calendar/services/panchang/observance_calendar_service.
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:ekadashi_calendar/services/in_app_browser.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -104,10 +106,23 @@ void main() {
     return opened;
   }
 
-  testWidgets('Paywall opens the Apptinel privacy and terms pages', (
+  // Report issue 9 (Arun, 26 Nov 2026): Terms and Privacy open inside the
+  // app in Chrome Custom Tabs with the page title, as X opens links, not in
+  // the external Chrome app.
+  testWidgets('Paywall opens Terms and Privacy in the in-app browser', (
     tester,
   ) async {
-    final opened = captureExternalLinks();
+    final opened = <(String, LaunchMode, bool)>[];
+    InAppBrowser.opener =
+        (
+          uri, {
+          mode = LaunchMode.platformDefault,
+          browserConfiguration = const BrowserConfiguration(),
+        }) async {
+          opened.add((uri.toString(), mode, browserConfiguration.showTitle));
+          return true;
+        };
+    addTearDown(InAppBrowser.reset);
     await pumpPaywall(tester, freeUser(PremiumFixture()));
     for (final key in ['privacy_policy', 'terms_of_service']) {
       final link = find.text(lang.translate(key));
@@ -116,8 +131,16 @@ void main() {
       await tester.pumpAndSettle();
     }
     expect(opened, [
-      'https://apptinel.com/ekadashi-calendar/privacy-policy/',
-      'https://apptinel.com/ekadashi-calendar/terms-of-service/',
+      (
+        'https://apptinel.com/ekadashi-calendar/privacy-policy/',
+        LaunchMode.inAppBrowserView,
+        true,
+      ),
+      (
+        'https://apptinel.com/ekadashi-calendar/terms-of-service/',
+        LaunchMode.inAppBrowserView,
+        true,
+      ),
     ]);
   });
 
