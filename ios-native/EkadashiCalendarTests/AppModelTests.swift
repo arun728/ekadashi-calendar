@@ -639,3 +639,24 @@ final class GoogleReminderLockTests: XCTestCase {
         XCTAssertTrue(model(freeMonth: "2020-01").reminderLocked(.calendar(.google)), "locked again after the month")
     }
 }
+
+/// The full iOS UI suite (26 Nov 2026) crashed with "Layout requested for
+/// visible navigation bar … when the top item belongs to a different
+/// navigation bar" whenever an ekadashi:// link (a widget tap) arrived: Home
+/// was rebuilt with .id() while the tab switched. A Home link now closes an
+/// open detail screen by emptying Home's navigation path instead.
+@MainActor
+final class HomeLinkNavigationTests: XCTestCase {
+    func testAHomeLinkClosesAnOpenDetailScreenWithoutRebuildingHome() async throws {
+        let model = AppModel(store: InMemoryKeyValueStore(["has_launched": true, "language_code": "en", AppModel.yearKey: "2026"]))
+        model.reload(); await model.waitForLoad()
+        let event = try XCTUnwrap(model.homeEkadashis.last)
+        model.selectedTab = .settings
+        model.homePath.append(HomeDetail(uid: event.occurrenceUid))
+        XCTAssertEqual(model.homePath.count, 1)
+        model.open(.ekadashi(event.occurrenceUid))
+        XCTAssertEqual(model.selectedTab, .today)
+        XCTAssertTrue(model.homePath.isEmpty, "the stale detail screen is closed")
+        XCTAssertEqual(model.homeEkadashis[model.homeIndex].occurrenceUid, event.occurrenceUid)
+    }
+}
