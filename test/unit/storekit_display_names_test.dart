@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test(
-    'StoreKit uses the customer-facing Premium name without changing product IDs',
+    'StoreKit distinguishes the subscription display names without changing product IDs',
     () {
       final config =
           jsonDecode(
@@ -20,17 +20,17 @@ void main() {
         ...config['products'] as List,
         ...group['subscriptions'] as List,
       ];
-      for (final p in products) {
-        expect(
-          (p['localizations'] as List).first['displayName'],
-          'Ekadashi Premium',
-        );
-      }
-      expect(products.map((p) => p['productID']).toSet(), {
-        'ekadashi_premium_monthly',
-        'ekadashi_premium_yearly',
-        'ekadashi_premium_lifetime',
-      });
+      expect(
+        {
+          for (final p in products)
+            p['productID']: (p['localizations'] as List).first['displayName'],
+        },
+        {
+          'ekadashi_premium_monthly': 'Ekadashi Premium - Monthly',
+          'ekadashi_premium_yearly': 'Ekadashi Premium - Yearly',
+          'ekadashi_premium_lifetime': 'Ekadashi Premium',
+        },
+      );
     },
   );
 }

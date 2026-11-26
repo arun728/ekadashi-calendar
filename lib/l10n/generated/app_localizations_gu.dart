@@ -154,6 +154,18 @@ class AppLocalizationsGu extends AppLocalizations {
   String get about => 'વિશે';
 
   @override
+  String get settings_about_legal => 'વિશે અને કાનૂની';
+
+  @override
+  String get settings_contact_support => 'સહાયનો સંપર્ક કરો';
+
+  @override
+  String get settings_contact_support_desc => 'મદદ માટે અમને ઈમેલ કરો';
+
+  @override
+  String get settings_reminders_not_arriving => 'રિમાઇન્ડર નથી આવતાં?';
+
+  @override
   String get app_update_available => 'અપડેટ ઉપલબ્ધ છે';
 
   @override
@@ -866,10 +878,6 @@ class AppLocalizationsGu extends AppLocalizations {
       'એકાદશી પ્રીમિયમમાં બધું અનલૉક કરો. એકાદશીની તારીખો, રિમાઇન્ડર, વિજેટ, તમારી નોંધો અને સાચવેલો વ્રત ઇતિહાસ મફત રહે છે.';
 
   @override
-  String get premium_free_achievements =>
-      'તમારી પ્રથમ ત્રણ વ્રત નોંધ અને પ્રથમ ત્રણ સિદ્ધિઓ મફત છે. બાકીનું પ્રીમિયમથી અનલૉક થાય છે.';
-
-  @override
   String get premium_monthly => 'માસિક';
 
   @override
@@ -900,13 +908,13 @@ class AppLocalizationsGu extends AppLocalizations {
   String get premium_restore => 'ખરીદી પુનઃસ્થાપિત કરો';
 
   @override
-  String get premium_manage => 'ગૂગલ પ્લે માં સબ્સ્ક્રિપ્શન સંભાળો';
+  String get premium_manage => 'સબ્સ્ક્રિપ્શન સંભાળો';
 
   @override
   String get premium_active => 'પ્રીમિયમ ઍક્સેસ ચાલુ';
 
   @override
-  String get premium_current_plan => 'તમારો હાલનો પ્લાન';
+  String get premium_current_plan => 'હાલનો પ્લાન';
 
   @override
   String get premium_best_value => 'સૌથી વધુ ફાયદાકારક';
@@ -925,7 +933,15 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get premium_cancelled_body =>
-      'તમે ચૂકવેલા સમયગાળાના અંત સુધી પ્રીમિયમ ચાલુ રહેશે. ચાલુ રાખવા ગમે ત્યારે ફરી સક્રિય કરો.';
+      'તમે ચૂકવેલા સમયગાળાના અંત સુધી પ્રીમિયમ ચાલુ રહેશે. તારીખ ગૂગલ પ્લેમાં જુઓ. ચાલુ રાખવા ગમે ત્યારે ફરી સક્રિય કરો.';
+
+  @override
+  String get premium_cancelled_body_play_switch =>
+      'તમે ચૂકવેલા સમયગાળાના અંત સુધી પ્રીમિયમ ચાલુ રહેશે. તારીખ ગૂગલ પ્લેમાં જુઓ.';
+
+  @override
+  String get premium_play_switch_cancelled_note =>
+      'આ પ્લાન માસિકમાં બદલાઈ રહ્યો હતો, તેથી ગૂગલ પ્લે તેને ફરી ચાલુ કે બદલી શકતું નથી. તે પૂરો થયા પછી ફરી પ્લાન પસંદ કરો.';
 
   @override
   String get premium_reactivate => 'ફરી સક્રિય કરો';
@@ -977,6 +993,31 @@ class AppLocalizationsGu extends AppLocalizations {
   String get premium_buy_lifetime_anyway => 'આજીવન ખરીદો';
 
   @override
+  String get premium_switch_now_title => 'પ્લાન બદલવો છે?';
+
+  @override
+  String get premium_switch_at_renewal_body =>
+      'આગામી નવીનીકરણ સુધી વાર્ષિક પ્લાન ચાલુ રહેશે. પછી ગૂગલ પ્લે માસિક પ્લાન શરૂ કરશે અને તેનો ચાર્જ લેશે.';
+
+  @override
+  String get premium_upcoming_plan => 'આગામી પ્લાન';
+
+  @override
+  String get premium_monthly_switch_scheduled =>
+      'નવીનીકરણ વખતે માસિક પ્લાન શરૂ થશે. નવીનીકરણની તારીખ ગૂગલ પ્લેમાં જુઓ.';
+
+  @override
+  String get premium_renewal_in_play =>
+      'આગામી નવીનીકરણ અને નક્કી કરેલો ફેરફાર ગૂગલ પ્લેમાં જુઓ.';
+
+  @override
+  String get premium_switch_now_body =>
+      'તમારો નવો પ્લાન આજથી શરૂ થશે અને આજે જ ચુકવણી લેવાશે. હાલના પ્લાનનો બાકી સમય તેમાં ઉમેરાશે.';
+
+  @override
+  String get premium_switch_now_confirm => 'પ્લાન બદલો';
+
+  @override
   String get premium_unavailable =>
       'હાલમાં ખરીદી ઉપલબ્ધ નથી. ગૂગલ પ્લે પરથી એપ ઇન્સ્ટોલ કરીને ફરી પ્રયાસ કરો. મફત સુવિધાઓ ચાલુ રહે છે.';
 
@@ -1026,7 +1067,7 @@ class AppLocalizationsGu extends AppLocalizations {
   String get premium_coins => 'સિક્કા';
 
   @override
-  String get premium_more_achievements => 'પ્રીમિયમ સાથે વધુ સિદ્ધિઓ';
+  String get premium_more_achievements => 'પ્રીમિયમ સાથે સિદ્ધિઓ અનલૉક કરો';
 
   @override
   String get premium_reward_example =>
@@ -1037,8 +1078,7 @@ class AppLocalizationsGu extends AppLocalizations {
       'તમારા આખા સબ્સ્ક્રિપ્શન વર્ષ માટે ગૂગલ કેલેન્ડર સિંક (એક મહિનાનું સિંક મફત)';
 
   @override
-  String get premium_feature_vrat =>
-      'અમર્યાદિત વ્રત નોંધ (પ્રથમ ત્રણ મફત) અને બધી સિદ્ધિઓ';
+  String get premium_feature_vrat => 'અમર્યાદિત વ્રત નોંધ (પ્રથમ ત્રણ મફત)';
 
   @override
   String get premium_feature_panchang =>
@@ -1580,7 +1620,7 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get notifications_premium_events =>
-      'તહેવાર અને પંચાંગ રિમાઇન્ડર પ્રીમિયમનો ભાગ છે. તમારી કેલેન્ડર નોંધોના રિમાઇન્ડર મફત છે.';
+      'તહેવાર, પંચાંગ અને ગૂગલ કેલેન્ડર રિમાઇન્ડર પ્રીમિયમનો ભાગ છે. તમારી પોતાની નોંધોના રિમાઇન્ડર મફત છે.';
 
   @override
   String get notifications_no_events => 'હજી કોઈ રિમાઇન્ડર નથી';
@@ -1826,7 +1866,7 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get ios_journey_premium_desc =>
-      'અમર્યાદિત નોંધો, સંપૂર્ણ પદક સંગ્રહ અને તમારું વાર્ષિક મંડળ.';
+      'અમર્યાદિત વ્રત નોંધ અને સંપૂર્ણ પદક સંગ્રહ';
 
   @override
   String get ios_journey_haptics => 'પદક મળતાં સ્પર્શ પ્રતિસાદ';

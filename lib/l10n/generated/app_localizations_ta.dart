@@ -154,6 +154,19 @@ class AppLocalizationsTa extends AppLocalizations {
   String get about => 'பற்றி';
 
   @override
+  String get settings_about_legal => 'பற்றி மற்றும் சட்டம்';
+
+  @override
+  String get settings_contact_support => 'உதவியைத் தொடர்புகொள்ளுங்கள்';
+
+  @override
+  String get settings_contact_support_desc =>
+      'உதவிக்கு எங்களுக்கு மின்னஞ்சல் அனுப்புங்கள்';
+
+  @override
+  String get settings_reminders_not_arriving => 'நினைவூட்டல்கள் வரவில்லையா?';
+
+  @override
   String get app_update_available => 'புதுப்பிப்பு கிடைக்கிறது';
 
   @override
@@ -876,10 +889,6 @@ class AppLocalizationsTa extends AppLocalizations {
       'ஏகாதசி பிரீமியம் மூலம் அனைத்தையும் திறக்கவும். ஏகாதசி தேதிகள், நினைவூட்டல்கள், விட்ஜெட்டுகள், தனிப்பட்ட பதிவுகள் மற்றும் சேமித்த விரத வரலாறு இலவசமாகவே இருக்கும்.';
 
   @override
-  String get premium_free_achievements =>
-      'உங்கள் முதல் மூன்று விரதப் பதிவுகளும் முதல் மூன்று சாதனைகளும் இலவசம். மற்றவை பிரீமியத்தில் திறக்கும்.';
-
-  @override
   String get premium_monthly => 'மாதந்தோறும்';
 
   @override
@@ -910,13 +919,13 @@ class AppLocalizationsTa extends AppLocalizations {
   String get premium_restore => 'வாங்கியவற்றை மீட்டெடுக்கவும்';
 
   @override
-  String get premium_manage => 'கூகுள் பிளேயில் சந்தாவை நிர்வகிக்கவும்';
+  String get premium_manage => 'சந்தாவை நிர்வகிக்கவும்';
 
   @override
   String get premium_active => 'பிரீமியம் அணுகல் செயலில் உள்ளது';
 
   @override
-  String get premium_current_plan => 'உங்கள் தற்போதைய திட்டம்';
+  String get premium_current_plan => 'தற்போதைய திட்டம்';
 
   @override
   String get premium_best_value => 'சிறந்த மதிப்பு';
@@ -935,7 +944,15 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get premium_cancelled_body =>
-      'நீங்கள் செலுத்திய காலம் முடியும் வரை பிரீமியம் செயலில் இருக்கும். தொடர எப்போது வேண்டுமானாலும் மீண்டும் இயக்கலாம்.';
+      'நீங்கள் செலுத்திய காலம் முடியும் வரை பிரீமியம் செயலில் இருக்கும். தேதியைக் கூகுள் பிளேயில் பார்க்கவும். தொடர எப்போது வேண்டுமானாலும் மீண்டும் இயக்கலாம்.';
+
+  @override
+  String get premium_cancelled_body_play_switch =>
+      'நீங்கள் செலுத்திய காலம் முடியும் வரை பிரீமியம் செயலில் இருக்கும். தேதியைக் கூகுள் பிளேயில் பார்க்கவும்.';
+
+  @override
+  String get premium_play_switch_cancelled_note =>
+      'இந்தத் திட்டம் மாதந்தோறும் என மாறிக்கொண்டிருந்ததால், கூகுள் பிளே இதை மீண்டும் இயக்கவோ மாற்றவோ முடியாது. இது முடிந்த பிறகு மீண்டும் ஒரு திட்டத்தைத் தேர்ந்தெடுக்கவும்.';
 
   @override
   String get premium_reactivate => 'மீண்டும் இயக்கு';
@@ -986,6 +1003,31 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get premium_buy_lifetime_anyway => 'வாழ்நாள் திட்டத்தை வாங்கு';
+
+  @override
+  String get premium_switch_now_title => 'திட்டத்தை மாற்றவா?';
+
+  @override
+  String get premium_switch_at_renewal_body =>
+      'அடுத்த புதுப்பிப்பு வரை ஆண்டுத் திட்டம் செயலில் இருக்கும். அதன் பிறகு கூகுள் பிளே மாதத் திட்டத்தைத் தொடங்கி அதற்கான கட்டணத்தை வசூலிக்கும்.';
+
+  @override
+  String get premium_upcoming_plan => 'அடுத்த திட்டம்';
+
+  @override
+  String get premium_monthly_switch_scheduled =>
+      'புதுப்பிக்கும்போது மாதத் திட்டம் தொடங்கும். புதுப்பிப்புத் தேதியைக் கூகுள் பிளேயில் பார்க்கவும்.';
+
+  @override
+  String get premium_renewal_in_play =>
+      'அடுத்த புதுப்பிப்பையும் திட்டமிட்ட மாற்றத்தையும் கூகுள் பிளேயில் பார்க்கவும்.';
+
+  @override
+  String get premium_switch_now_body =>
+      'உங்கள் புதிய திட்டம் இன்றே தொடங்கும், இன்றே கட்டணம் வசூலிக்கப்படும். தற்போதைய திட்டத்தில் மீதமுள்ள காலம் அதில் சேர்க்கப்படும்.';
+
+  @override
+  String get premium_switch_now_confirm => 'திட்டத்தை மாற்று';
 
   @override
   String get premium_unavailable =>
@@ -1039,7 +1081,8 @@ class AppLocalizationsTa extends AppLocalizations {
   String get premium_coins => 'நாணயங்கள்';
 
   @override
-  String get premium_more_achievements => 'பிரீமியத்துடன் கூடுதல் சாதனைகள்';
+  String get premium_more_achievements =>
+      'பிரீமியத்துடன் சாதனைகளைத் திறக்கவும்';
 
   @override
   String get premium_reward_example =>
@@ -1051,7 +1094,7 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get premium_feature_vrat =>
-      'வரம்பற்ற விரதப் பதிவுகள் (முதல் மூன்று இலவசம்) மற்றும் அனைத்து சாதனைகளும்';
+      'வரம்பற்ற விரதப் பதிவுகள் (முதல் மூன்று இலவசம்)';
 
   @override
   String get premium_feature_panchang =>
@@ -1598,7 +1641,7 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get notifications_premium_events =>
-      'பண்டிகை மற்றும் பஞ்சாங்க நினைவூட்டல்கள் பிரீமியத்தின் பகுதி. உங்கள் நாட்காட்டி பதிவுகளுக்கான நினைவூட்டல்கள் இலவசம்.';
+      'பண்டிகை, பஞ்சாங்கம் மற்றும் கூகுள் நாள்காட்டி நினைவூட்டல்கள் பிரீமியத்தின் பகுதி. உங்கள் சொந்தப் பதிவுகளுக்கான நினைவூட்டல்கள் இலவசம்.';
 
   @override
   String get notifications_no_events => 'இன்னும் நினைவூட்டல்கள் இல்லை';
@@ -1849,7 +1892,7 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get ios_journey_premium_desc =>
-      'வரம்பற்ற பதிவுகள், முழுப் பதக்கத் தொகுப்பு மற்றும் உங்கள் ஆண்டு மண்டலம்.';
+      'வரம்பற்ற விரதப் பதிவுகள் மற்றும் முழுப் பதக்கத் தொகுப்பு';
 
   @override
   String get ios_journey_haptics => 'பதக்கக் கொண்டாட்ட அதிர்வு';

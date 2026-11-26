@@ -1,0 +1,268 @@
+{
+  "_about": "Approved billing and Journey copy (Arun, 25 Nov 2026). Shared keys are identical on both apps; store keys differ only in the store name. No billing string shows a date: Google Play and the App Store show them. Checked by test/unit/billing_copy_test.dart and EkadashiCoreTests/BillingCopyTests.swift.",
+  "removed_keys": [
+    "ios_premium_cancelled_until",
+    "ios_premium_current_until",
+    "ios_premium_scheduled_plan",
+    "ios_premium_scheduled_plan_date",
+    "ios_premium_starts_on",
+    "ios_premium_switch_note",
+    "ios_premium_renewal_unknown",
+    "premium_next_renewal_date",
+    "premium_free_achievements"
+  ],
+  "en": {
+    "premium_feature_vrat": {
+      "both": "Unlimited Vrat entries (the first three are free)"
+    },
+    "premium_more_achievements": {
+      "both": "Unlock Achievements with Premium"
+    },
+    "ios_journey_premium_desc": {
+      "both": "Unlimited Vrat entries and complete badge collection"
+    },
+    "premium_cancelled_body": {
+      "android": "Premium stays on until the end of the period you paid for. See the date in Google Play. Reactivate anytime to keep it.",
+      "ios": "Premium stays on until the end of the period you paid for. See the date in the App Store. Reactivate anytime to keep it."
+    },
+    "premium_renewal_in_play": {
+      "android": "See your next renewal and any scheduled change in Google Play.",
+      "ios": "See your next renewal and any scheduled change in the App Store."
+    },
+    "premium_monthly_switch_scheduled": {
+      "android": "Switching to Monthly at renewal. See the renewal date in Google Play.",
+      "ios": "Switching to Monthly at renewal. See the renewal date in the App Store."
+    },
+    "premium_switch_at_renewal_body": {
+      "android": "Yearly stays active until your next renewal. Google Play then starts Monthly and charges for it.",
+      "ios": "Yearly stays active until your next renewal. The App Store then starts Monthly and charges for it."
+    },
+    "premium_monthly_terms": {
+      "android": "Full price charged each month. Automatically renews until cancelled in Google Play.",
+      "ios": "Full price charged each month. Automatically renews until cancelled in your Apple ID settings."
+    },
+    "premium_yearly_terms": {
+      "android": "Full price charged each year. Automatically renews until cancelled in Google Play.",
+      "ios": "Full price charged each year. Automatically renews until cancelled in your Apple ID settings."
+    },
+    "premium_manage": {
+      "both": "Manage subscription"
+    },
+    "notifications_premium_events": {
+      "both": "Festival, Panchang and Google Calendar reminders are part of Premium. Reminders for your own entries are free."
+    },
+    "premium_play_switch_cancelled_note": {
+      "android": "Google Play can't reactivate or change this plan because it was switching to Monthly. Choose a plan again after it ends.",
+      "ios": "Google Play can't reactivate or change this plan because it was switching to Monthly. Choose a plan again after it ends."
+    },
+    "premium_cancelled_body_play_switch": {
+      "android": "Premium stays on until the end of the period you paid for. See the date in Google Play.",
+      "ios": "Premium stays on until the end of the period you paid for. See the date in Google Play."
+    }
+  },
+  "hi": {
+    "premium_feature_vrat": {
+      "both": "असीमित व्रत प्रविष्टियाँ (पहली तीन मुफ़्त)"
+    },
+    "premium_more_achievements": {
+      "both": "प्रीमियम के साथ उपलब्धियाँ खोलें"
+    },
+    "ios_journey_premium_desc": {
+      "both": "असीमित व्रत प्रविष्टियाँ और पूरा पदक संग्रह"
+    },
+    "premium_cancelled_body": {
+      "android": "भुगतान की गई अवधि के अंत तक प्रीमियम चालू रहेगा। तारीख गूगल प्ले में देखें। इसे बनाए रखने के लिए कभी भी फिर से चालू करें।",
+      "ios": "भुगतान की गई अवधि के अंत तक प्रीमियम चालू रहेगा। तारीख ऐप स्टोर में देखें। इसे बनाए रखने के लिए कभी भी फिर से चालू करें।"
+    },
+    "premium_renewal_in_play": {
+      "android": "अगला नवीनीकरण और तय किया गया बदलाव गूगल प्ले में देखें।",
+      "ios": "अगला नवीनीकरण और तय किया गया बदलाव ऐप स्टोर में देखें।"
+    },
+    "premium_monthly_switch_scheduled": {
+      "android": "नवीनीकरण पर मासिक प्लान शुरू होगा। नवीनीकरण की तारीख गूगल प्ले में देखें।",
+      "ios": "नवीनीकरण पर मासिक प्लान शुरू होगा। नवीनीकरण की तारीख ऐप स्टोर में देखें।"
+    },
+    "premium_switch_at_renewal_body": {
+      "android": "सालाना प्लान अगले नवीनीकरण तक चालू रहेगा। उसके बाद गूगल प्ले मासिक प्लान शुरू करेगा और उसका शुल्क लेगा।",
+      "ios": "सालाना प्लान अगले नवीनीकरण तक चालू रहेगा। उसके बाद ऐप स्टोर मासिक प्लान शुरू करेगा और उसका शुल्क लेगा।"
+    },
+    "premium_manage": {
+      "both": "सदस्यता प्रबंधित करें"
+    },
+    "notifications_premium_events": {
+      "both": "त्योहार, पंचांग और गूगल कैलेंडर रिमाइंडर प्रीमियम का हिस्सा हैं। आपकी अपनी प्रविष्टियों के रिमाइंडर मुफ़्त हैं।"
+    },
+    "premium_play_switch_cancelled_note": {
+      "android": "गूगल प्ले इस प्लान को फिर से चालू या बदल नहीं सकता, क्योंकि यह मासिक में बदल रहा था। इसके खत्म होने के बाद फिर से प्लान चुनें।",
+      "ios": "गूगल प्ले इस प्लान को फिर से चालू या बदल नहीं सकता, क्योंकि यह मासिक में बदल रहा था। इसके खत्म होने के बाद फिर से प्लान चुनें।"
+    },
+    "premium_cancelled_body_play_switch": {
+      "android": "भुगतान की गई अवधि के अंत तक प्रीमियम चालू रहेगा। तारीख गूगल प्ले में देखें।",
+      "ios": "भुगतान की गई अवधि के अंत तक प्रीमियम चालू रहेगा। तारीख गूगल प्ले में देखें।"
+    }
+  },
+  "ta": {
+    "premium_feature_vrat": {
+      "both": "வரம்பற்ற விரதப் பதிவுகள் (முதல் மூன்று இலவசம்)"
+    },
+    "premium_more_achievements": {
+      "both": "பிரீமியத்துடன் சாதனைகளைத் திறக்கவும்"
+    },
+    "ios_journey_premium_desc": {
+      "both": "வரம்பற்ற விரதப் பதிவுகள் மற்றும் முழுப் பதக்கத் தொகுப்பு"
+    },
+    "premium_cancelled_body": {
+      "android": "நீங்கள் செலுத்திய காலம் முடியும் வரை பிரீமியம் செயலில் இருக்கும். தேதியைக் கூகுள் பிளேயில் பார்க்கவும். தொடர எப்போது வேண்டுமானாலும் மீண்டும் இயக்கலாம்.",
+      "ios": "நீங்கள் செலுத்திய காலம் முடியும் வரை பிரீமியம் செயலில் இருக்கும். தேதியை ஆப் ஸ்டோரில் பார்க்கவும். தொடர எப்போது வேண்டுமானாலும் மீண்டும் இயக்கலாம்."
+    },
+    "premium_renewal_in_play": {
+      "android": "அடுத்த புதுப்பிப்பையும் திட்டமிட்ட மாற்றத்தையும் கூகுள் பிளேயில் பார்க்கவும்.",
+      "ios": "அடுத்த புதுப்பிப்பையும் திட்டமிட்ட மாற்றத்தையும் ஆப் ஸ்டோரில் பார்க்கவும்."
+    },
+    "premium_monthly_switch_scheduled": {
+      "android": "புதுப்பிக்கும்போது மாதத் திட்டம் தொடங்கும். புதுப்பிப்புத் தேதியைக் கூகுள் பிளேயில் பார்க்கவும்.",
+      "ios": "புதுப்பிக்கும்போது மாதத் திட்டம் தொடங்கும். புதுப்பிப்புத் தேதியை ஆப் ஸ்டோரில் பார்க்கவும்."
+    },
+    "premium_switch_at_renewal_body": {
+      "android": "அடுத்த புதுப்பிப்பு வரை ஆண்டுத் திட்டம் செயலில் இருக்கும். அதன் பிறகு கூகுள் பிளே மாதத் திட்டத்தைத் தொடங்கி அதற்கான கட்டணத்தை வசூலிக்கும்.",
+      "ios": "அடுத்த புதுப்பிப்பு வரை ஆண்டுத் திட்டம் செயலில் இருக்கும். அதன் பிறகு ஆப் ஸ்டோர் மாதத் திட்டத்தைத் தொடங்கி அதற்கான கட்டணத்தை வசூலிக்கும்."
+    },
+    "premium_manage": {
+      "both": "சந்தாவை நிர்வகிக்கவும்"
+    },
+    "notifications_premium_events": {
+      "both": "பண்டிகை, பஞ்சாங்கம் மற்றும் கூகுள் நாள்காட்டி நினைவூட்டல்கள் பிரீமியத்தின் பகுதி. உங்கள் சொந்தப் பதிவுகளுக்கான நினைவூட்டல்கள் இலவசம்."
+    },
+    "premium_play_switch_cancelled_note": {
+      "android": "இந்தத் திட்டம் மாதந்தோறும் என மாறிக்கொண்டிருந்ததால், கூகுள் பிளே இதை மீண்டும் இயக்கவோ மாற்றவோ முடியாது. இது முடிந்த பிறகு மீண்டும் ஒரு திட்டத்தைத் தேர்ந்தெடுக்கவும்.",
+      "ios": "இந்தத் திட்டம் மாதந்தோறும் என மாறிக்கொண்டிருந்ததால், கூகுள் பிளே இதை மீண்டும் இயக்கவோ மாற்றவோ முடியாது. இது முடிந்த பிறகு மீண்டும் ஒரு திட்டத்தைத் தேர்ந்தெடுக்கவும்."
+    },
+    "premium_cancelled_body_play_switch": {
+      "android": "நீங்கள் செலுத்திய காலம் முடியும் வரை பிரீமியம் செயலில் இருக்கும். தேதியைக் கூகுள் பிளேயில் பார்க்கவும்.",
+      "ios": "நீங்கள் செலுத்திய காலம் முடியும் வரை பிரீமியம் செயலில் இருக்கும். தேதியைக் கூகுள் பிளேயில் பார்க்கவும்."
+    }
+  },
+  "te": {
+    "premium_feature_vrat": {
+      "both": "అపరిమిత వ్రత ఎంట్రీలు (మొదటి మూడు ఉచితం)"
+    },
+    "premium_more_achievements": {
+      "both": "ప్రీమియంతో విజయాలను అన్‌లాక్ చేయండి"
+    },
+    "ios_journey_premium_desc": {
+      "both": "అపరిమిత వ్రత ఎంట్రీలు మరియు పూర్తి పతకాల సేకరణ"
+    },
+    "premium_cancelled_body": {
+      "android": "మీరు చెల్లించిన వ్యవధి ముగిసే వరకు ప్రీమియం ఉంటుంది. తేదీని గూగుల్ ప్లేలో చూడండి. కొనసాగించడానికి ఎప్పుడైనా మళ్లీ ప్రారంభించండి.",
+      "ios": "మీరు చెల్లించిన వ్యవధి ముగిసే వరకు ప్రీమియం ఉంటుంది. తేదీని యాప్ స్టోర్‌లో చూడండి. కొనసాగించడానికి ఎప్పుడైనా మళ్లీ ప్రారంభించండి."
+    },
+    "premium_renewal_in_play": {
+      "android": "తదుపరి పునరుద్ధరణను, నిర్ణయించిన మార్పును గూగుల్ ప్లేలో చూడండి.",
+      "ios": "తదుపరి పునరుద్ధరణను, నిర్ణయించిన మార్పును యాప్ స్టోర్‌లో చూడండి."
+    },
+    "premium_monthly_switch_scheduled": {
+      "android": "పునరుద్ధరణ సమయంలో నెలవారీ ప్లాన్ మొదలవుతుంది. పునరుద్ధరణ తేదీని గూగుల్ ప్లేలో చూడండి.",
+      "ios": "పునరుద్ధరణ సమయంలో నెలవారీ ప్లాన్ మొదలవుతుంది. పునరుద్ధరణ తేదీని యాప్ స్టోర్‌లో చూడండి."
+    },
+    "premium_switch_at_renewal_body": {
+      "android": "తదుపరి పునరుద్ధరణ వరకు వార్షిక ప్లాన్ సక్రియంగా ఉంటుంది. ఆ తర్వాత గూగుల్ ప్లే నెలవారీ ప్లాన్‌ను ప్రారంభించి దాని రుసుమును వసూలు చేస్తుంది.",
+      "ios": "తదుపరి పునరుద్ధరణ వరకు వార్షిక ప్లాన్ సక్రియంగా ఉంటుంది. ఆ తర్వాత యాప్ స్టోర్ నెలవారీ ప్లాన్‌ను ప్రారంభించి దాని రుసుమును వసూలు చేస్తుంది."
+    },
+    "premium_manage": {
+      "both": "సభ్యత్వాన్ని నిర్వహించండి"
+    },
+    "notifications_premium_events": {
+      "both": "పండుగ, పంచాంగం మరియు గూగుల్ క్యాలెండర్ రిమైండర్‌లు ప్రీమియంలో భాగం. మీ సొంత ఎంట్రీల రిమైండర్‌లు ఉచితం."
+    },
+    "premium_play_switch_cancelled_note": {
+      "android": "ఈ ప్లాన్ నెలవారీకి మారుతున్నందున గూగుల్ ప్లే దీన్ని మళ్లీ సక్రియం చేయలేదు లేదా మార్చలేదు. ఇది ముగిసిన తర్వాత మళ్లీ ప్లాన్‌ను ఎంచుకోండి.",
+      "ios": "ఈ ప్లాన్ నెలవారీకి మారుతున్నందున గూగుల్ ప్లే దీన్ని మళ్లీ సక్రియం చేయలేదు లేదా మార్చలేదు. ఇది ముగిసిన తర్వాత మళ్లీ ప్లాన్‌ను ఎంచుకోండి."
+    },
+    "premium_cancelled_body_play_switch": {
+      "android": "మీరు చెల్లించిన వ్యవధి ముగిసే వరకు ప్రీమియం ఉంటుంది. తేదీని గూగుల్ ప్లేలో చూడండి.",
+      "ios": "మీరు చెల్లించిన వ్యవధి ముగిసే వరకు ప్రీమియం ఉంటుంది. తేదీని గూగుల్ ప్లేలో చూడండి."
+    }
+  },
+  "gu": {
+    "premium_feature_vrat": {
+      "both": "અમર્યાદિત વ્રત નોંધ (પ્રથમ ત્રણ મફત)"
+    },
+    "premium_more_achievements": {
+      "both": "પ્રીમિયમ સાથે સિદ્ધિઓ અનલૉક કરો"
+    },
+    "ios_journey_premium_desc": {
+      "both": "અમર્યાદિત વ્રત નોંધ અને સંપૂર્ણ પદક સંગ્રહ"
+    },
+    "premium_cancelled_body": {
+      "android": "તમે ચૂકવેલા સમયગાળાના અંત સુધી પ્રીમિયમ ચાલુ રહેશે. તારીખ ગૂગલ પ્લેમાં જુઓ. ચાલુ રાખવા ગમે ત્યારે ફરી સક્રિય કરો.",
+      "ios": "તમે ચૂકવેલા સમયગાળાના અંત સુધી પ્રીમિયમ ચાલુ રહેશે. તારીખ એપ સ્ટોરમાં જુઓ. ચાલુ રાખવા ગમે ત્યારે ફરી સક્રિય કરો."
+    },
+    "premium_renewal_in_play": {
+      "android": "આગામી નવીનીકરણ અને નક્કી કરેલો ફેરફાર ગૂગલ પ્લેમાં જુઓ.",
+      "ios": "આગામી નવીનીકરણ અને નક્કી કરેલો ફેરફાર એપ સ્ટોરમાં જુઓ."
+    },
+    "premium_monthly_switch_scheduled": {
+      "android": "નવીનીકરણ વખતે માસિક પ્લાન શરૂ થશે. નવીનીકરણની તારીખ ગૂગલ પ્લેમાં જુઓ.",
+      "ios": "નવીનીકરણ વખતે માસિક પ્લાન શરૂ થશે. નવીનીકરણની તારીખ એપ સ્ટોરમાં જુઓ."
+    },
+    "premium_switch_at_renewal_body": {
+      "android": "આગામી નવીનીકરણ સુધી વાર્ષિક પ્લાન ચાલુ રહેશે. પછી ગૂગલ પ્લે માસિક પ્લાન શરૂ કરશે અને તેનો ચાર્જ લેશે.",
+      "ios": "આગામી નવીનીકરણ સુધી વાર્ષિક પ્લાન ચાલુ રહેશે. પછી એપ સ્ટોર માસિક પ્લાન શરૂ કરશે અને તેનો ચાર્જ લેશે."
+    },
+    "premium_manage": {
+      "both": "સબ્સ્ક્રિપ્શન સંભાળો"
+    },
+    "notifications_premium_events": {
+      "both": "તહેવાર, પંચાંગ અને ગૂગલ કેલેન્ડર રિમાઇન્ડર પ્રીમિયમનો ભાગ છે. તમારી પોતાની નોંધોના રિમાઇન્ડર મફત છે."
+    },
+    "premium_play_switch_cancelled_note": {
+      "android": "આ પ્લાન માસિકમાં બદલાઈ રહ્યો હતો, તેથી ગૂગલ પ્લે તેને ફરી ચાલુ કે બદલી શકતું નથી. તે પૂરો થયા પછી ફરી પ્લાન પસંદ કરો.",
+      "ios": "આ પ્લાન માસિકમાં બદલાઈ રહ્યો હતો, તેથી ગૂગલ પ્લે તેને ફરી ચાલુ કે બદલી શકતું નથી. તે પૂરો થયા પછી ફરી પ્લાન પસંદ કરો."
+    },
+    "premium_cancelled_body_play_switch": {
+      "android": "તમે ચૂકવેલા સમયગાળાના અંત સુધી પ્રીમિયમ ચાલુ રહેશે. તારીખ ગૂગલ પ્લેમાં જુઓ.",
+      "ios": "તમે ચૂકવેલા સમયગાળાના અંત સુધી પ્રીમિયમ ચાલુ રહેશે. તારીખ ગૂગલ પ્લેમાં જુઓ."
+    }
+  },
+  "bn": {
+    "premium_feature_vrat": {
+      "both": "সীমাহীন ব্রত এন্ট্রি (প্রথম তিনটি বিনামূল্যে)"
+    },
+    "premium_more_achievements": {
+      "both": "প্রিমিয়ামে অর্জন আনলক করুন"
+    },
+    "ios_journey_premium_desc": {
+      "both": "সীমাহীন ব্রত এন্ট্রি ও সম্পূর্ণ পদক সংগ্রহ"
+    },
+    "premium_cancelled_body": {
+      "android": "আপনি যে সময়ের জন্য টাকা দিয়েছেন তার শেষ পর্যন্ত প্রিমিয়াম চালু থাকবে। তারিখ গুগল প্লেতে দেখুন। রাখতে চাইলে যেকোনো সময় আবার সক্রিয় করুন।",
+      "ios": "আপনি যে সময়ের জন্য টাকা দিয়েছেন তার শেষ পর্যন্ত প্রিমিয়াম চালু থাকবে। তারিখ অ্যাপ স্টোরে দেখুন। রাখতে চাইলে যেকোনো সময় আবার সক্রিয় করুন।"
+    },
+    "premium_renewal_in_play": {
+      "android": "পরবর্তী নবীকরণ এবং নির্ধারিত পরিবর্তন গুগল প্লেতে দেখুন।",
+      "ios": "পরবর্তী নবীকরণ এবং নির্ধারিত পরিবর্তন অ্যাপ স্টোরে দেখুন।"
+    },
+    "premium_monthly_switch_scheduled": {
+      "android": "নবীকরণের সময় মাসিক প্ল্যান শুরু হবে। নবীকরণের তারিখ গুগল প্লেতে দেখুন।",
+      "ios": "নবীকরণের সময় মাসিক প্ল্যান শুরু হবে। নবীকরণের তারিখ অ্যাপ স্টোরে দেখুন।"
+    },
+    "premium_switch_at_renewal_body": {
+      "android": "পরবর্তী নবীকরণ পর্যন্ত বার্ষিক প্ল্যান চালু থাকবে। এরপর গুগল প্লে মাসিক প্ল্যান চালু করে তার মূল্য নেবে।",
+      "ios": "পরবর্তী নবীকরণ পর্যন্ত বার্ষিক প্ল্যান চালু থাকবে। এরপর অ্যাপ স্টোর মাসিক প্ল্যান চালু করে তার মূল্য নেবে।"
+    },
+    "premium_manage": {
+      "both": "সাবস্ক্রিপশন পরিচালনা করুন"
+    },
+    "notifications_premium_events": {
+      "both": "উৎসব, পঞ্জিকা ও গুগল ক্যালেন্ডারের রিমাইন্ডার প্রিমিয়ামের অংশ। আপনার নিজের এন্ট্রির রিমাইন্ডার বিনামূল্যে।"
+    },
+    "premium_play_switch_cancelled_note": {
+      "android": "এই প্ল্যানটি মাসিকে বদলাচ্ছিল, তাই গুগল প্লে এটি আবার চালু বা বদল করতে পারে না। এটি শেষ হলে আবার একটি প্ল্যান বেছে নিন।",
+      "ios": "এই প্ল্যানটি মাসিকে বদলাচ্ছিল, তাই গুগল প্লে এটি আবার চালু বা বদল করতে পারে না। এটি শেষ হলে আবার একটি প্ল্যান বেছে নিন।"
+    },
+    "premium_cancelled_body_play_switch": {
+      "android": "আপনি যে সময়ের জন্য টাকা দিয়েছেন তার শেষ পর্যন্ত প্রিমিয়াম চালু থাকবে। তারিখ গুগল প্লেতে দেখুন।",
+      "ios": "আপনি যে সময়ের জন্য টাকা দিয়েছেন তার শেষ পর্যন্ত প্রিমিয়াম চালু থাকবে। তারিখ গুগল প্লেতে দেখুন।"
+    }
+  }
+}

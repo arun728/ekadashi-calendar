@@ -13,7 +13,6 @@ struct RootView: View {
         @Bindable var model = model
         TabView(selection: tabSelection) {
             screen(TodayView(), tab: .today)
-                .id(model.homeNavigationRevision)
                 .tabItem { Label(model.t("home"), systemImage: AppSymbol.tabHome) }
                 .tag(AppTab.today)
             screen(CalendarView(), tab: .calendar)
@@ -101,7 +100,7 @@ struct RootView: View {
 
     @ViewBuilder
     private func screen(_ content: some View, tab: AppTab) -> some View {
-        NavigationStack {
+        TabNavigationStack(path: tab == .today ? Bindable(model).homePath : nil) {
             Group {
                 if model.isLoading {
                     VStack(spacing: 16) {
@@ -166,5 +165,20 @@ private struct GlassSystemBarAppearance: ViewModifier {
         // The bottom TabView bar is deliberately identical in both modes.
         // Only the app-owned navigation surface changes with Glass Look.
         content.toolbarBackground(active ? .hidden : .automatic, for: .navigationBar)
+    }
+}
+
+/// A tab's NavigationStack; Home's follows the app's path so links can close
+/// its details.
+private struct TabNavigationStack<Content: View>: View {
+    let path: Binding<NavigationPath>?
+    @ViewBuilder let content: () -> Content
+
+    var body: some View {
+        if let path {
+            NavigationStack(path: path) { content() }
+        } else {
+            NavigationStack { content() }
+        }
     }
 }

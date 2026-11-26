@@ -21,6 +21,22 @@ final class AppLanguageTests: XCTestCase {
         }
     }
 
+    func testPaywallCopyShowsAShortCurrentBadgeAndSendsDatesToTheAppStore() {
+        let expected: [String: (String, String)] = [
+            "en": ("Current plan", "Switching to Monthly at renewal. See the renewal date in the App Store."),
+            "hi": ("मौजूदा प्लान", "नवीनीकरण पर मासिक प्लान शुरू होगा। नवीनीकरण की तारीख ऐप स्टोर में देखें।"),
+            "ta": ("தற்போதைய திட்டம்", "புதுப்பிக்கும்போது மாதத் திட்டம் தொடங்கும். புதுப்பிப்புத் தேதியை ஆப் ஸ்டோரில் பார்க்கவும்."),
+            "te": ("ప్రస్తుత ప్లాన్", "పునరుద్ధరణ సమయంలో నెలవారీ ప్లాన్ మొదలవుతుంది. పునరుద్ధరణ తేదీని యాప్ స్టోర్‌లో చూడండి."),
+            "gu": ("હાલનો પ્લાન", "નવીનીકરણ વખતે માસિક પ્લાન શરૂ થશે. નવીનીકરણની તારીખ એપ સ્ટોરમાં જુઓ."),
+            "bn": ("বর্তমান প্ল্যান", "নবীকরণের সময় মাসিক প্ল্যান শুরু হবে। নবীকরণের তারিখ অ্যাপ স্টোরে দেখুন।"),
+        ]
+        XCTAssertEqual(Set(expected.keys), Set(Localizer.languages))
+        for (language, (badge, renewal)) in expected {
+            XCTAssertEqual(Localizer.shared.translate("premium_current_plan", language: language), badge, "\(language)")
+            XCTAssertEqual(Localizer.shared.translate("premium_monthly_switch_scheduled", language: language), renewal, "\(language)")
+        }
+    }
+
     func testLanguagesKeepTheirOrderAndNewOnesAreAppended() {
         // Never reorder: add Bengali, Gujarati, ... after Telugu.
         XCTAssertEqual(Array(AppLanguage.all.map(\.code).prefix(4)), ["en", "hi", "ta", "te"])

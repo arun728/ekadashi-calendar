@@ -154,6 +154,18 @@ class AppLocalizationsBn extends AppLocalizations {
   String get about => 'সম্পর্কে';
 
   @override
+  String get settings_about_legal => 'সম্পর্কে ও আইনি';
+
+  @override
+  String get settings_contact_support => 'সহায়তায় যোগাযোগ করুন';
+
+  @override
+  String get settings_contact_support_desc => 'সাহায্যের জন্য আমাদের ইমেল করুন';
+
+  @override
+  String get settings_reminders_not_arriving => 'রিমাইন্ডার আসছে না?';
+
+  @override
   String get app_update_available => 'আপডেট পাওয়া যাচ্ছে';
 
   @override
@@ -874,10 +886,6 @@ class AppLocalizationsBn extends AppLocalizations {
       'একাদশী প্রিমিয়ামে সবকিছু আনলক করুন। একাদশীর তারিখ, রিমাইন্ডার, উইজেট, নিজের এন্ট্রি ও সংরক্ষিত ব্রত ইতিহাস বিনামূল্যে থাকবে।';
 
   @override
-  String get premium_free_achievements =>
-      'আপনার প্রথম তিনটি ব্রত এন্ট্রি ও প্রথম তিনটি অর্জন বিনামূল্যে। বাকিগুলো প্রিমিয়ামে আনলক হয়।';
-
-  @override
   String get premium_monthly => 'মাসিক';
 
   @override
@@ -908,13 +916,13 @@ class AppLocalizationsBn extends AppLocalizations {
   String get premium_restore => 'কেনাকাটা পুনরুদ্ধার করুন';
 
   @override
-  String get premium_manage => 'গুগল প্লে-তে সাবস্ক্রিপশন পরিচালনা করুন';
+  String get premium_manage => 'সাবস্ক্রিপশন পরিচালনা করুন';
 
   @override
   String get premium_active => 'প্রিমিয়াম অ্যাক্সেস সক্রিয়';
 
   @override
-  String get premium_current_plan => 'আপনার বর্তমান প্ল্যান';
+  String get premium_current_plan => 'বর্তমান প্ল্যান';
 
   @override
   String get premium_best_value => 'সবচেয়ে সাশ্রয়ী';
@@ -933,7 +941,15 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get premium_cancelled_body =>
-      'আপনি যে সময়ের জন্য টাকা দিয়েছেন তার শেষ পর্যন্ত প্রিমিয়াম চালু থাকবে। রাখতে চাইলে যেকোনো সময় আবার সক্রিয় করুন।';
+      'আপনি যে সময়ের জন্য টাকা দিয়েছেন তার শেষ পর্যন্ত প্রিমিয়াম চালু থাকবে। তারিখ গুগল প্লেতে দেখুন। রাখতে চাইলে যেকোনো সময় আবার সক্রিয় করুন।';
+
+  @override
+  String get premium_cancelled_body_play_switch =>
+      'আপনি যে সময়ের জন্য টাকা দিয়েছেন তার শেষ পর্যন্ত প্রিমিয়াম চালু থাকবে। তারিখ গুগল প্লেতে দেখুন।';
+
+  @override
+  String get premium_play_switch_cancelled_note =>
+      'এই প্ল্যানটি মাসিকে বদলাচ্ছিল, তাই গুগল প্লে এটি আবার চালু বা বদল করতে পারে না। এটি শেষ হলে আবার একটি প্ল্যান বেছে নিন।';
 
   @override
   String get premium_reactivate => 'আবার সক্রিয় করুন';
@@ -987,6 +1003,31 @@ class AppLocalizationsBn extends AppLocalizations {
   String get premium_buy_lifetime_anyway => 'আজীবন কিনুন';
 
   @override
+  String get premium_switch_now_title => 'প্ল্যান বদলাবেন?';
+
+  @override
+  String get premium_switch_at_renewal_body =>
+      'পরবর্তী নবীকরণ পর্যন্ত বার্ষিক প্ল্যান চালু থাকবে। এরপর গুগল প্লে মাসিক প্ল্যান চালু করে তার মূল্য নেবে।';
+
+  @override
+  String get premium_upcoming_plan => 'পরবর্তী প্ল্যান';
+
+  @override
+  String get premium_monthly_switch_scheduled =>
+      'নবীকরণের সময় মাসিক প্ল্যান শুরু হবে। নবীকরণের তারিখ গুগল প্লেতে দেখুন।';
+
+  @override
+  String get premium_renewal_in_play =>
+      'পরবর্তী নবীকরণ এবং নির্ধারিত পরিবর্তন গুগল প্লেতে দেখুন।';
+
+  @override
+  String get premium_switch_now_body =>
+      'আপনার নতুন প্ল্যান আজ থেকেই শুরু হবে এবং আজই টাকা কাটা হবে। বর্তমান প্ল্যানের বাকি সময় এতে যোগ হবে।';
+
+  @override
+  String get premium_switch_now_confirm => 'প্ল্যান বদলান';
+
+  @override
   String get premium_unavailable =>
       'এখন কেনাকাটা করা যাচ্ছে না। গুগল প্লে থেকে অ্যাপটি ইনস্টল করে আবার চেষ্টা করুন। বিনামূল্যের সুবিধাগুলো চালু থাকবে।';
 
@@ -1036,7 +1077,7 @@ class AppLocalizationsBn extends AppLocalizations {
   String get premium_coins => 'কয়েন';
 
   @override
-  String get premium_more_achievements => 'প্রিমিয়ামে আরও অর্জন';
+  String get premium_more_achievements => 'প্রিমিয়ামে অর্জন আনলক করুন';
 
   @override
   String get premium_reward_example =>
@@ -1048,7 +1089,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get premium_feature_vrat =>
-      'সীমাহীন ব্রত এন্ট্রি (প্রথম তিনটি বিনামূল্যে) এবং সব অর্জন';
+      'সীমাহীন ব্রত এন্ট্রি (প্রথম তিনটি বিনামূল্যে)';
 
   @override
   String get premium_feature_panchang =>
@@ -1589,7 +1630,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get notifications_premium_events =>
-      'উৎসব ও পঞ্জিকার রিমাইন্ডার প্রিমিয়ামের অংশ। আপনার ক্যালেন্ডার এন্ট্রির রিমাইন্ডার বিনামূল্যে।';
+      'উৎসব, পঞ্জিকা ও গুগল ক্যালেন্ডারের রিমাইন্ডার প্রিমিয়ামের অংশ। আপনার নিজের এন্ট্রির রিমাইন্ডার বিনামূল্যে।';
 
   @override
   String get notifications_no_events => 'এখনও কোনো রিমাইন্ডার নেই';
@@ -1839,7 +1880,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get ios_journey_premium_desc =>
-      'সীমাহীন নথিভুক্তি, সম্পূর্ণ পদক সংগ্রহ ও আপনার বার্ষিক মণ্ডল।';
+      'সীমাহীন ব্রত এন্ট্রি ও সম্পূর্ণ পদক সংগ্রহ';
 
   @override
   String get ios_journey_haptics => 'পদক উদ্‌যাপনে স্পর্শ প্রতিক্রিয়া';

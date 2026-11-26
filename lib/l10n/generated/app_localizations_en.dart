@@ -154,6 +154,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get about => 'About';
 
   @override
+  String get settings_about_legal => 'About & legal';
+
+  @override
+  String get settings_contact_support => 'Contact support';
+
+  @override
+  String get settings_contact_support_desc => 'Email us for help';
+
+  @override
+  String get settings_reminders_not_arriving => 'Reminders not arriving?';
+
+  @override
   String get app_update_available => 'Update available';
 
   @override
@@ -873,10 +885,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Unlock everything in Ekadashi Premium. Ekadashi dates, reminders, widgets, custom entries and your saved Vrat history stay free.';
 
   @override
-  String get premium_free_achievements =>
-      'Your first three Vrat entries and first three achievements are free. Premium unlocks the rest.';
-
-  @override
   String get premium_monthly => 'Monthly';
 
   @override
@@ -887,11 +895,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premium_monthly_terms =>
-      'Full price charged each month. Automatically renews until canceled in Google Play.';
+      'Full price charged each month. Automatically renews until cancelled in Google Play.';
 
   @override
   String get premium_yearly_terms =>
-      'Full price charged each year. Automatically renews until canceled in Google Play.';
+      'Full price charged each year. Automatically renews until cancelled in Google Play.';
 
   @override
   String get premium_lifetime_terms =>
@@ -907,13 +915,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premium_restore => 'Restore purchases';
 
   @override
-  String get premium_manage => 'Manage subscription in Google Play';
+  String get premium_manage => 'Manage subscription';
 
   @override
   String get premium_active => 'Premium access active';
 
   @override
-  String get premium_current_plan => 'Your current plan';
+  String get premium_current_plan => 'Current plan';
 
   @override
   String get premium_best_value => 'Best value';
@@ -932,7 +940,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premium_cancelled_body =>
-      'Premium stays on until the end of the period you paid for. Reactivate anytime to keep it.';
+      'Premium stays on until the end of the period you paid for. See the date in Google Play. Reactivate anytime to keep it.';
+
+  @override
+  String get premium_cancelled_body_play_switch =>
+      'Premium stays on until the end of the period you paid for. See the date in Google Play.';
+
+  @override
+  String get premium_play_switch_cancelled_note =>
+      'Google Play can\'t reactivate or change this plan because it was switching to Monthly. Choose a plan again after it ends.';
 
   @override
   String get premium_reactivate => 'Reactivate';
@@ -984,6 +1000,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premium_buy_lifetime_anyway => 'Buy lifetime';
 
   @override
+  String get premium_switch_now_title => 'Change your plan?';
+
+  @override
+  String get premium_switch_at_renewal_body =>
+      'Yearly stays active until your next renewal. Google Play then starts Monthly and charges for it.';
+
+  @override
+  String get premium_upcoming_plan => 'Upcoming plan';
+
+  @override
+  String get premium_monthly_switch_scheduled =>
+      'Switching to Monthly at renewal. See the renewal date in Google Play.';
+
+  @override
+  String get premium_renewal_in_play =>
+      'See your next renewal and any scheduled change in Google Play.';
+
+  @override
+  String get premium_switch_now_body =>
+      'Your new plan starts today and is charged today. Any unused time on your current plan is added to it.';
+
+  @override
+  String get premium_switch_now_confirm => 'Change plan';
+
+  @override
   String get premium_unavailable =>
       'Purchases are unavailable right now. Install the app from Google Play and try again. Free features still work.';
 
@@ -1033,7 +1074,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premium_coins => 'Coins';
 
   @override
-  String get premium_more_achievements => 'More achievements with Premium';
+  String get premium_more_achievements => 'Unlock Achievements with Premium';
 
   @override
   String get premium_reward_example =>
@@ -1045,7 +1086,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premium_feature_vrat =>
-      'Unlimited Vrat entries (the first three are free) and all achievements';
+      'Unlimited Vrat entries (the first three are free)';
 
   @override
   String get premium_feature_panchang =>
@@ -1587,7 +1628,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notifications_premium_events =>
-      'Festival and Panchang reminders are part of Premium. Reminders for your calendar entries are free.';
+      'Festival, Panchang and Google Calendar reminders are part of Premium. Reminders for your own entries are free.';
 
   @override
   String get notifications_no_events => 'No reminders yet';
@@ -1833,7 +1874,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ios_journey_premium_desc =>
-      'Unlimited recording, the complete badge collection and your annual mandala.';
+      'Unlimited Vrat entries and complete badge collection';
 
   @override
   String get ios_journey_haptics => 'Badge celebration haptics';

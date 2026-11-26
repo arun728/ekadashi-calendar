@@ -339,6 +339,21 @@ class AppIcons {
   static const tabSettings = CupertinoIcons.gear_alt_fill;
 
   /// bell
+  static const settingsNotifications = CupertinoIcons.bell;
+
+  /// doc.text
+  static const settingsTerms = CupertinoIcons.doc_text;
+
+  /// hand.raised
+  static const settingsPrivacy = CupertinoIcons.hand_raised;
+
+  /// rosette
+  static const settingsBadgeHaptics = CupertinoIcons.rosette;
+
+  /// envelope
+  static const settingsContactSupport = CupertinoIcons.mail;
+
+  /// bell
   static const testNotification = CupertinoIcons.bell;
 
   /// clock
@@ -468,6 +483,11 @@ class AppIcons {
     'tab_journey': tabJourney,
     'tab_panchang': tabPanchang,
     'tab_settings': tabSettings,
+    'settings_notifications': settingsNotifications,
+    'settings_terms': settingsTerms,
+    'settings_privacy': settingsPrivacy,
+    'settings_badge_haptics': settingsBadgeHaptics,
+    'settings_contact_support': settingsContactSupport,
     'test_notification': testNotification,
     'timings': timings,
     'use_current_location': useCurrentLocation,

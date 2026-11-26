@@ -1,5 +1,6 @@
 import 'package:ekadashi_calendar/screens/widgets/settings_premium_card.dart';
 import 'package:ekadashi_calendar/services/language_service.dart';
+import 'package:ekadashi_calendar/services/play_billing_service.dart';
 import 'package:ekadashi_calendar/services/premium_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -13,15 +14,21 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  Future<void> show(WidgetTester tester, PremiumService premium) async {
+  Future<void> show(
+    WidgetTester tester,
+    PremiumService premium, {
+    PlayBillingService? billing,
+    ThemeData? theme,
+  }) async {
     await tester.pumpWidget(
       MultiProvider(
         providers: [
           ChangeNotifierProvider<PremiumService?>.value(value: premium),
+          ChangeNotifierProvider<PlayBillingService?>.value(value: billing),
           ChangeNotifierProvider(create: (_) => LanguageService()),
         ],
         child: MaterialApp(
-          theme: ThemeData.dark(),
+          theme: theme ?? ThemeData.dark(),
           home: const Scaffold(body: SettingsPremiumCard()),
         ),
       ),
@@ -59,4 +66,90 @@ void main() {
     expect(find.widgetWithText(FilledButton, 'Change plan'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  // Arun (25 Nov 2026): teal Manage on the teal card looked disabled next to
+  // Change plan. Like iOS, its label and outline use the primary text colour.
+  for (final dark in [true, false]) {
+    testWidgets('Manage is clearly readable (${dark ? 'dark' : 'light'})', (
+      tester,
+    ) async {
+      final premium = PremiumService(
+        entitlements: PremiumFixture()..premium = true,
+      );
+      addTearDown(premium.dispose);
+      await premium.refresh();
+      await show(
+        tester,
+        premium,
+        theme: dark ? ThemeData.dark() : ThemeData.light(),
+      );
+      final style = tester
+          .widget<OutlinedButton>(
+            find.byKey(const Key('settings_premium_manage')),
+          )
+          .style!;
+      final label = style.foregroundColor!.resolve({})!;
+      final outline = style.side!.resolve({})!.color;
+      final expected = dark ? Colors.white : Colors.black;
+      expect(label.toARGB32() & 0xFFFFFF, expected.toARGB32() & 0xFFFFFF);
+      expect(label.a, greaterThanOrEqualTo(.85));
+      expect(outline.toARGB32() & 0xFFFFFF, expected.toARGB32() & 0xFFFFFF);
+      expect(outline.a, greaterThanOrEqualTo(.8));
+      // Same label size as Change plan, as on iOS.
+      TextStyle? labelStyle(Finder button) => tester
+          .widget<Text>(
+            find.descendant(of: button, matching: find.byType(Text)),
+          )
+          .style;
+      final manage = labelStyle(
+        find.byKey(const Key('settings_premium_manage')),
+      );
+      final change = labelStyle(find.byKey(const Key('settings_premium')));
+      expect(manage?.fontSize, change?.fontSize);
+      expect(manage?.fontWeight, change?.fontWeight);
+    });
+  }
+
+  testWidgets('a cancelled switch leaves out "Reactivate anytime"', (
+    tester,
+  ) async {
+    final premium = PremiumService(entitlements: PremiumFixture())
+      ..applyOwned(
+        {PremiumService.subscriptionId},
+        autoRenewing: {PremiumService.subscriptionId: false},
+      );
+    addTearDown(premium.dispose);
+    final billing = FixtureBilling(premium)..switchCancelledByPlay = true;
+    addTearDown(billing.dispose);
+    await show(tester, premium, billing: billing);
+    expect(find.textContaining('Reactivate anytime'), findsNothing);
+    expect(
+      find.text(
+        'Premium stays on until the end of the period you paid for. '
+        'See the date in Google Play.',
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets(
+    'a scheduled Monthly switch shows the same line as iOS, with no date',
+    (tester) async {
+      final premium = PremiumService(
+        entitlements: PremiumFixture()..premium = true,
+      );
+      addTearDown(premium.dispose);
+      await premium.refresh();
+      final billing = FixtureBilling(premium)..monthlySwitchScheduled = true;
+      addTearDown(billing.dispose);
+      await show(tester, premium, billing: billing);
+      expect(
+        find.text(
+          'Switching to Monthly at renewal. See the renewal date in Google Play.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Switch plans or go lifetime anytime.'), findsNothing);
+    },
+  );
 }

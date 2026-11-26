@@ -85,7 +85,9 @@ final class AppModel {
     var restoredSearch: SearchSession?
     var homeIndex = 0
     /// Rebuild Home navigation when an occurrence link must return to its root.
-    private(set) var homeNavigationRevision = 0
+    /// Home's navigation (the details pushed from a card). A Home link
+    /// empties it; Home is never rebuilt (26 Nov 2026 crash fix).
+    var homePath = NavigationPath()
     var calendarFocus: CivilDate?
     /// A day to open in Panchang (from an event reminder).
     var panchangFocus: CivilDate?
@@ -162,8 +164,39 @@ final class AppModel {
     }
     @ObservationIgnored private var timePickerLocales: [String: Locale] = [:]
 
-    /// The one way every tab shows a date: weekday, date, month and year
-    /// ("Thu, 8 Oct 2026"), as AppStrings.fullDate on Android.
+    /// The paywall's status line. No date: the App Store shows renewal dates
+    /// in its own time zone, which disagreed with ours (Arun, 25 Nov 2026),
+    /// so users see them in Manage.
+    func premiumRenewalMessage(_ state: PremiumState) -> String {
+        if state.subscriptionCancelled { return t("premium_cancelled_body") }
+        if state.scheduledPlan == .monthly { return t("premium_monthly_switch_scheduled") }
+        return t("premium_renewal_in_play")
+    }
+
+    /// The Settings card's line under "Your plan", as on Android.
+    func premiumSettingsMessage(_ state: PremiumState) -> String {
+        if state.subscriptionCancelled { return t("premium_cancelled_body") }
+        if state.scheduledPlan == .monthly { return t("premium_monthly_switch_scheduled") }
+        return t("premium_subscriber_body")
+    }
+
+    /// The plan tiles identify ownership and the upcoming plan, never a date.
+    func premiumPlanBadgeText(_ state: PremiumState, _ plan: PremiumPlanID) -> String? {
+        if plan == state.scheduledPlan && !state.lifetime { return t("premium_upcoming_plan") }
+        return state.planBadge(for: plan) == .none ? nil : t("premium_current_plan")
+    }
+
+    /// Explain the App Store's different billing rules before presenting its
+    /// confirmation.
+    func premiumSwitchNote(_ state: PremiumState, to plan: PremiumPlanID) -> String? {
+        if state.currentPlan == .monthly && plan == .yearly && !state.lifetime {
+            return t("ios_premium_upgrade_refund")
+        }
+        guard case .atRenewal = state.switchTiming(to: plan), state.currentPlan != nil else { return nil }
+        return t("premium_switch_at_renewal_body")
+    }
+
+    /// Weekday, date, month and year in the app language.
     func fullDate(_ date: CivilDate) -> String { PanchangFormat.date(date, language: language) }
 
     func format(_ date: CivilDate, _ pattern: String) -> String {
@@ -585,7 +618,7 @@ final class AppModel {
         let premium = self.premium.isPremium
         let city = panchangCity
         var observances: [DatedObservance] = []
-        if premium && events.reminders.contains(where: \.target.requiresPremium) {
+        if premium && events.reminders.contains(where: { !$0.target.usesCalendarEntries }) {
             let year = city.today().year
             observances = await panchangObservances(year: year, city: city)
             // Near the year's end the next year's festivals are within reach.
@@ -594,7 +627,7 @@ final class AppModel {
         let planned = EventReminderPlanner.plan(
             settings: events, observances: observances, entries: (try? entries.all()) ?? [],
             observanceZone: TimeZone(identifier: city.timeZoneId) ?? .current, entryZone: .current,
-            language: language, premium: premium, now: now)
+            language: language, premium: premium, now: now, freeGoogleMonth: freeGoogleSyncMonth)
         await notifications.schedule(PendingNotification.merge(ekadashi: fasts, events: planned))
     }
 
@@ -661,7 +694,7 @@ final class AppModel {
             selectedTab = .today
             setYear(event.date.year)
             if let index = homeEkadashis.firstIndex(where: { $0.occurrenceUid == uid }) { homeIndex = index }
-            homeNavigationRevision += 1
+            homePath = NavigationPath()
         case .search:
             restoredSearch = nil
             showSearch = true
@@ -830,7 +863,16 @@ final class AppModel {
 
     func entriesChanged() {
         entriesRevision += 1
-        if eventReminders.reminders.contains(where: { !$0.target.requiresPremium }) { Task { await scheduleReminders() } }
+        if eventReminders.reminders.contains(where: \.target.usesCalendarEntries) { Task { await scheduleReminders() } }
+    }
+
+    /// The month of the one free Google sync ("2026-11"), if it was used.
+    var freeGoogleSyncMonth: String? { store.string(forKey: GoogleSyncCoordinator.freeSyncMonthKey) }
+
+    /// Festival, Panchang and Google reminders need Premium; a free user's
+    /// Google reminders stay open during the free sync month (Arun, 25 Nov 2026).
+    func reminderLocked(_ target: EventReminderTarget) -> Bool {
+        target.isLocked(premium: premium.isPremium, freeGoogleMonth: freeGoogleSyncMonth, today: CivilDate.today())
     }
 
     func removeLapsedPremiumImports() {
@@ -894,4 +936,9 @@ final class AppModel {
         guard let first = enabledYears.first, let last = enabledYears.last else { return nil }
         return first...last
     }
+}
+
+/// A detail screen pushed from a Home card, by occurrence.
+struct HomeDetail: Hashable {
+    let uid: String
 }

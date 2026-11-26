@@ -122,8 +122,11 @@ for review, and do not merge it to `dev` or `main`.
   The paywall needs no Google sign-in. Google sign-in is only for Calendar
   import, and disconnecting Google must not affect premium.
 - Products (prices are set in Play Console, never hard-coded): subscription
-  `ekadashi_premium` with base plans `monthly` (INR99) and `yearly` (INR499);
-  one-time `ekadashi_premium_lifetime` (INR999).
+  `ekadashi_premium` with base plans `monthly` and `yearly`, and one-time
+  `ekadashi_premium_lifetime`. The India storefront prices verified on
+  16 November 2026 are INR 100 / 600 / 2,000 on Google Play and
+  INR 99 / 599 / 1,999 on the App Store, in monthly/yearly/lifetime order.
+  Read localized prices from the store and verify them before release.
 - Hide fasting rewards/coins from the app for now (no wallet, redemption or
   cloud account UI). The `backend/` service is dormant and not used by v2.
 - Free vs premium (three premium features for v2):
