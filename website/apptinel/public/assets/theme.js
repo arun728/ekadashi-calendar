@@ -1,30 +1,45 @@
 (() => {
+  // Light or Dark, saved once picked. Until then the page follows the OS colour scheme.
   const key = 'apptinel-theme';
+  const choices = ['light', 'dark'];
   const root = document.documentElement;
+  const media = matchMedia('(prefers-color-scheme: dark)');
+  let saved = null;
   try {
-    if (localStorage.getItem(key) === 'light') root.dataset.theme = 'light';
+    const value = localStorage.getItem(key);
+    if (choices.includes(value)) saved = value;
   } catch {
-    // The switch still works for the current page when storage is unavailable.
+    // Without storage the switch still works for the current page.
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
-    const button = document.querySelector('[data-theme-toggle]');
-    if (!button) return;
-
-    function updateButton() {
-      button.setAttribute('aria-pressed', String(root.dataset.theme === 'light'));
+  const current = () => saved || (media.matches ? 'dark' : 'light');
+  let buttons = [];
+  function apply() {
+    const theme = current();
+    root.dataset.theme = theme;
+    for (const button of buttons) {
+      button.setAttribute('aria-checked', String(button.dataset.themeChoice === theme));
     }
+  }
+  apply();
+  media.addEventListener('change', () => { if (!saved) apply(); });
 
-    button.addEventListener('click', () => {
-      root.dataset.theme = root.dataset.theme === 'light' ? 'dark' : 'light';
-      updateButton();
-      try {
-        localStorage.setItem(key, root.dataset.theme);
-      } catch {
-        // This page still reflects the requested mode.
-      }
-    });
-    updateButton();
-    button.hidden = false;
+  document.addEventListener('DOMContentLoaded', () => {
+    const group = document.querySelector('[data-theme-switch]');
+    if (!group) return;
+    buttons = Array.from(document.querySelectorAll('[data-theme-choice]'));
+    for (const button of buttons) {
+      button.addEventListener('click', () => {
+        saved = button.dataset.themeChoice;
+        apply();
+        try {
+          localStorage.setItem(key, saved);
+        } catch {
+          // This page still reflects the requested mode.
+        }
+      });
+    }
+    apply();
+    group.hidden = false;
   });
 })();
