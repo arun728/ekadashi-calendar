@@ -11,7 +11,7 @@ struct AppUpdatePrompt: ViewModifier {
     @State private var lastCheck: Date?
 
     private var appID: String {
-        Bundle.main.object(forInfoDictionaryKey: "EkadashiAppStoreId") as? String ?? ""
+        AppLinks.appStoreId(configured: Bundle.main.object(forInfoDictionaryKey: "EkadashiAppStoreId") as? String)
     }
 
     private var canCheck: Bool {

@@ -130,7 +130,7 @@ All values are public client identifiers (the same kind Android gets through `--
   - In Firebase Authentication, add the iOS client ID to the Google provider's allowed client IDs, so Firebase accepts its ID tokens.
   - The app asks only for `calendar.readonly`. The paywall never needs Google sign-in.
 - `FIREBASE_API_KEY` and `FIREBASE_PROJECT_ID`: the same Web API key and project as Android, so one Google account's free sync is recorded once across both platforms. Without them, the free sync cannot be verified, and the app offers Premium instead of handing it out.
-- `APP_STORE_ID`, once the app has a listing. It is used by "Rate app" and the share message.
+- `APP_STORE_ID` is set in `Config/App.xcconfig` (6825791305, the id Apple assigned). Rate app, Share app, the share card and the update prompt use it; the link opens once the app is released. Do not override it in `Secrets.xcconfig`.
 
 App Store Connect products:
 

@@ -142,15 +142,16 @@ struct SettingsView: View {
         SettingsRow(symbol: symbol, title: title, subtitle: subtitle)
     }
 
-    private var appStoreId: String { Bundle.main.object(forInfoDictionaryKey: "EkadashiAppStoreId") as? String ?? "" }
+    private var appStoreId: String { AppLinks.appStoreId(configured: Bundle.main.object(forInfoDictionaryKey: "EkadashiAppStoreId") as? String) }
 
     private var appStoreLink: String {
         AppLinks.appStore(id: appStoreId)
     }
 
-    /// The App Store review page when the app has a listing, else the system prompt.
+    /// The App Store page's review sheet (it opens once the app is released),
+    /// else the system prompt.
     private func rate() {
-        if !appStoreId.isEmpty, let url = URL(string: "https://apps.apple.com/app/id\(appStoreId)?action=write-review") {
+        if let url = URL(string: AppLinks.appStoreReview(id: appStoreId)) {
             openURL(url)
         } else {
             requestReview()
