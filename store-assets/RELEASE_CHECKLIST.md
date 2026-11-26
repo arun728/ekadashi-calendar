@@ -20,7 +20,8 @@ Store-asset details live in `STORE_CHECKLIST.md`. PRs #26 and #34 are **not** in
 
 ## 1. Android first (Google Play, update to the live v1)
 
-- [ ] Final build from `main`: version 2.0.0, version code above 6, signed AAB.
+- [ ] Final build from `main`: version 2.0.0, **version code 13 or higher** (12 is on internal
+      testing since 26 Nov 2026, built from PR #50 `00b2509`), signed AAB.
 - [ ] Internal testing: M52 and Arun's wife's phone. Real purchases with the license
       tester, plan switches, restore, free sync, widgets, launch speed, and an upgrade from
       v1 that keeps the data.
