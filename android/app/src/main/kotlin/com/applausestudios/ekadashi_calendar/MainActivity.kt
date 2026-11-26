@@ -103,6 +103,10 @@ class MainActivity: FlutterActivity() {
             AppUpdateManagerFactory.create(this),
             MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.ekadashi.app_update")
         )
+        PlayInAppMessages.attach(
+            this,
+            MethodChannel(flutterEngine.dartExecutor.binaryMessenger, PlayInAppMessages.CHANNEL)
+        )
         flutterEngine.platformViewsController.registry.registerViewFactory(
             "com.ekadashi.widget/preview", com.applausestudios.ekadashi_calendar.widget.ui.WidgetPreviewFactory(flutterEngine.dartExecutor.binaryMessenger))
     }

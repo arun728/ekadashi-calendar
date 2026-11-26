@@ -226,23 +226,28 @@ public final class CitySearchIndex: @unchecked Sendable {
     /// [needle]; 3: no match.
     static func tier(of needle: [UInt8], in field: [UInt8]) -> Int {
         guard !needle.isEmpty, field.count >= needle.count else { return 3 }
-        var best = 3
-        let first = needle[0]
-        var i = 0
-        let last = field.count - needle.count
-        while i <= last {
-            if field[i] == first {
-                var j = 1
-                while j < needle.count && field[i + j] == needle[j] { j += 1 }
-                if j == needle.count {
-                    if i == 0 { return 0 }
-                    let before = field[i - 1]
-                    best = min(best, before == 0x20 || before == 0x28 || before == 0x2D ? 1 : 2)
+        return needle.withUnsafeBufferPointer { query in
+            field.withUnsafeBufferPointer { name in
+                guard let queryStart = query.baseAddress, let nameStart = name.baseAddress else { return 3 }
+                let last = name.count - query.count
+                var best = 3
+                var offset = 0
+                // Both calls stay inside the buffers. Jump between matching
+                // leading bytes instead of checking every byte in Swift.
+                while offset <= last,
+                      let match = memchr(nameStart + offset, Int32(queryStart.pointee), last - offset + 1) {
+                    let index = nameStart.distance(to: match.assumingMemoryBound(to: UInt8.self))
+                    if memcmp(match, queryStart, query.count) == 0 {
+                        if index == 0 { return 0 }
+                        let before = nameStart[index - 1]
+                        if before == 0x20 || before == 0x28 || before == 0x2D { return 1 }
+                        best = 2
+                    }
+                    offset = index + 1
                 }
+                return best
             }
-            i += 1
         }
-        return best
     }
 }
 

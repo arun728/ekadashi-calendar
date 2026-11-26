@@ -388,6 +388,30 @@ abstract class AppLocalizations {
   /// **'About'**
   String get about;
 
+  /// No description provided for @settings_about_legal.
+  ///
+  /// In en, this message translates to:
+  /// **'About & legal'**
+  String get settings_about_legal;
+
+  /// No description provided for @settings_contact_support.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact support'**
+  String get settings_contact_support;
+
+  /// No description provided for @settings_contact_support_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Email us for help'**
+  String get settings_contact_support_desc;
+
+  /// No description provided for @settings_reminders_not_arriving.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminders not arriving?'**
+  String get settings_reminders_not_arriving;
+
   /// No description provided for @app_update_available.
   ///
   /// In en, this message translates to:
@@ -1750,12 +1774,6 @@ abstract class AppLocalizations {
   /// **'Unlock everything in Ekadashi Premium. Ekadashi dates, reminders, widgets, custom entries and your saved Vrat history stay free.'**
   String get premium_benefits;
 
-  /// No description provided for @premium_free_achievements.
-  ///
-  /// In en, this message translates to:
-  /// **'Your first three Vrat entries and first three achievements are free. Premium unlocks the rest.'**
-  String get premium_free_achievements;
-
   /// No description provided for @premium_monthly.
   ///
   /// In en, this message translates to:
@@ -1777,13 +1795,13 @@ abstract class AppLocalizations {
   /// No description provided for @premium_monthly_terms.
   ///
   /// In en, this message translates to:
-  /// **'Full price charged each month. Automatically renews until canceled in Google Play.'**
+  /// **'Full price charged each month. Automatically renews until cancelled in Google Play.'**
   String get premium_monthly_terms;
 
   /// No description provided for @premium_yearly_terms.
   ///
   /// In en, this message translates to:
-  /// **'Full price charged each year. Automatically renews until canceled in Google Play.'**
+  /// **'Full price charged each year. Automatically renews until cancelled in Google Play.'**
   String get premium_yearly_terms;
 
   /// No description provided for @premium_lifetime_terms.
@@ -1813,7 +1831,7 @@ abstract class AppLocalizations {
   /// No description provided for @premium_manage.
   ///
   /// In en, this message translates to:
-  /// **'Manage subscription in Google Play'**
+  /// **'Manage subscription'**
   String get premium_manage;
 
   /// No description provided for @premium_active.
@@ -1825,7 +1843,7 @@ abstract class AppLocalizations {
   /// No description provided for @premium_current_plan.
   ///
   /// In en, this message translates to:
-  /// **'Your current plan'**
+  /// **'Current plan'**
   String get premium_current_plan;
 
   /// No description provided for @premium_best_value.
@@ -1861,8 +1879,20 @@ abstract class AppLocalizations {
   /// No description provided for @premium_cancelled_body.
   ///
   /// In en, this message translates to:
-  /// **'Premium stays on until the end of the period you paid for. Reactivate anytime to keep it.'**
+  /// **'Premium stays on until the end of the period you paid for. See the date in Google Play. Reactivate anytime to keep it.'**
   String get premium_cancelled_body;
+
+  /// No description provided for @premium_cancelled_body_play_switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium stays on until the end of the period you paid for. See the date in Google Play.'**
+  String get premium_cancelled_body_play_switch;
+
+  /// No description provided for @premium_play_switch_cancelled_note.
+  ///
+  /// In en, this message translates to:
+  /// **'Google Play can\'t reactivate or change this plan because it was switching to Monthly. Choose a plan again after it ends.'**
+  String get premium_play_switch_cancelled_note;
 
   /// No description provided for @premium_reactivate.
   ///
@@ -1947,6 +1977,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Buy lifetime'**
   String get premium_buy_lifetime_anyway;
+
+  /// No description provided for @premium_switch_now_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Change your plan?'**
+  String get premium_switch_now_title;
+
+  /// No description provided for @premium_switch_at_renewal_body.
+  ///
+  /// In en, this message translates to:
+  /// **'Yearly stays active until your next renewal. Google Play then starts Monthly and charges for it.'**
+  String get premium_switch_at_renewal_body;
+
+  /// No description provided for @premium_upcoming_plan.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming plan'**
+  String get premium_upcoming_plan;
+
+  /// No description provided for @premium_monthly_switch_scheduled.
+  ///
+  /// In en, this message translates to:
+  /// **'Switching to Monthly at renewal. See the renewal date in Google Play.'**
+  String get premium_monthly_switch_scheduled;
+
+  /// No description provided for @premium_renewal_in_play.
+  ///
+  /// In en, this message translates to:
+  /// **'See your next renewal and any scheduled change in Google Play.'**
+  String get premium_renewal_in_play;
+
+  /// No description provided for @premium_switch_now_body.
+  ///
+  /// In en, this message translates to:
+  /// **'Your new plan starts today and is charged today. Any unused time on your current plan is added to it.'**
+  String get premium_switch_now_body;
+
+  /// No description provided for @premium_switch_now_confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Change plan'**
+  String get premium_switch_now_confirm;
 
   /// No description provided for @premium_unavailable.
   ///
@@ -2035,7 +2107,7 @@ abstract class AppLocalizations {
   /// No description provided for @premium_more_achievements.
   ///
   /// In en, this message translates to:
-  /// **'More achievements with Premium'**
+  /// **'Unlock Achievements with Premium'**
   String get premium_more_achievements;
 
   /// No description provided for @premium_reward_example.
@@ -2053,7 +2125,7 @@ abstract class AppLocalizations {
   /// No description provided for @premium_feature_vrat.
   ///
   /// In en, this message translates to:
-  /// **'Unlimited Vrat entries (the first three are free) and all achievements'**
+  /// **'Unlimited Vrat entries (the first three are free)'**
   String get premium_feature_vrat;
 
   /// No description provided for @premium_feature_panchang.
@@ -3019,7 +3091,7 @@ abstract class AppLocalizations {
   /// No description provided for @notifications_premium_events.
   ///
   /// In en, this message translates to:
-  /// **'Festival and Panchang reminders are part of Premium. Reminders for your calendar entries are free.'**
+  /// **'Festival, Panchang and Google Calendar reminders are part of Premium. Reminders for your own entries are free.'**
   String get notifications_premium_events;
 
   /// No description provided for @notifications_no_events.
@@ -3433,7 +3505,7 @@ abstract class AppLocalizations {
   /// No description provided for @ios_journey_premium_desc.
   ///
   /// In en, this message translates to:
-  /// **'Unlimited recording, the complete badge collection and your annual mandala.'**
+  /// **'Unlimited Vrat entries and complete badge collection'**
   String get ios_journey_premium_desc;
 
   /// No description provided for @ios_journey_haptics.

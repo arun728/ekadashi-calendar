@@ -114,7 +114,7 @@ class EventReminderRows extends StatelessWidget {
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    if (reminder.target.requiresPremium && !premium)
+                    if (service.locked(reminder.target, premium: premium))
                       Padding(
                         padding: const EdgeInsetsDirectional.only(end: 6),
                         child: Icon(
@@ -202,6 +202,7 @@ class _EventReminderEditorState extends State<EventReminderEditor> {
         builder: (_) => EventReminderPicker(
           selection: _target,
           premium: widget.premium,
+          freeGoogleMonth: widget.service.freeGoogleMonth,
           onUpgrade: widget.onUpgrade,
         ),
       ),
@@ -428,11 +429,15 @@ class EventReminderPicker extends StatefulWidget {
     super.key,
     required this.selection,
     required this.premium,
+    this.freeGoogleMonth,
     this.onUpgrade = _openPremium,
   });
 
   final EventReminderTarget? selection;
   final bool premium;
+
+  /// The free Google sync month: its Google reminders are open to free users.
+  final String? freeGoogleMonth;
   final UpgradeAction onUpgrade;
 
   @override
@@ -446,11 +451,17 @@ class _EventReminderPickerState extends State<EventReminderPicker> {
   bool get _premium =>
       context.read<PremiumService?>()?.isPremium ?? widget.premium;
 
+  bool _locked(EventReminderTarget target, {bool? premium}) => target.isLocked(
+    premium: premium ?? _premium,
+    freeGoogleMonth: widget.freeGoogleMonth,
+    today: DateTime.now(),
+  );
+
   Future<void> _choose(EventReminderChoice choice) async {
-    if (choice.requiresPremium && !_premium) {
+    if (_locked(choice.target)) {
       await widget.onUpgrade(context);
       // Selected only if the paywall ended with Premium.
-      if (!mounted || !_premium) return;
+      if (!mounted || _locked(choice.target)) return;
     }
     if (mounted) Navigator.of(context).pop(choice.target);
   }
@@ -564,7 +575,7 @@ class _EventReminderPickerState extends State<EventReminderPicker> {
                                     AppIcons.checkmark,
                                     color: IosColors.teal,
                                   )
-                                : choice.requiresPremium && !premium
+                                : _locked(choice.target, premium: premium)
                                 ? Icon(
                                     AppIcons.lock,
                                     size: IosText.caption,

@@ -1,10 +1,13 @@
 import XCTest
 
 final class YearAndUpdateUITests: XCTestCase {
-    private func launch(at instant: String, newerVersion: String? = nil) -> XCUIApplication {
+    private func launch(at instant: String, newerVersion: String? = nil, pinChennai: Bool = false) -> XCUIApplication {
         continueAfterFailure = false
         let app = XCUIApplication()
         app.launchArguments += ["-ui-testing"]
+        // Pin the default Home city when the same instant is still the
+        // previous calendar day in other time zones.
+        if pinChennai { app.launchArguments.append("-lifecycle-testing") }
         app.launchEnvironment["EKADASHI_UI_TEST_NOW"] = instant
         app.launchEnvironment["EKADASHI_UI_TEST_STORE_VERSION"] = newerVersion
         app.launch()
@@ -34,7 +37,7 @@ final class YearAndUpdateUITests: XCTestCase {
     }
 
     func testJanuaryDefaultAppliesToHomeCalendarSearchAndJourney() {
-        let app = launch(at: "2027-01-01T12:00:00+05:30")
+        let app = launch(at: "2027-01-01T12:00:00+05:30", pinChennai: true)
         let year = app.buttons["home_year_menu"]
         XCTAssertTrue(year.waitForExistence(timeout: 30))
         XCTAssertTrue(year.label.contains("2027"))
@@ -43,7 +46,7 @@ final class YearAndUpdateUITests: XCTestCase {
         app.tabBars.buttons["Calendar"].tap()
         let calendar = app.buttons["calendar_year_selector"]
         XCTAssertTrue(calendar.waitForExistence(timeout: 5))
-        XCTAssertTrue(calendar.label.contains("1 Jan 2027"))
+        XCTAssertTrue(calendar.label.contains("1 Jan 2027"), "Calendar showed \(calendar.label)")
         capture(app, name: "ios-calendar-january-default")
 
         app.tabBars.buttons["Journey"].tap()

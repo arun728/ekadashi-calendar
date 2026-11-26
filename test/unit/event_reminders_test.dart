@@ -31,6 +31,7 @@ void main() {
     bool premium = true,
     bool enabled = true,
     int limit = 64,
+    String? freeGoogleMonth,
   }) => EventReminderPlanner.plan(
     settings: EventReminderSettings(enabled: enabled, reminders: reminders),
     observances: observances,
@@ -42,6 +43,7 @@ void main() {
     now: now,
     limit: limit,
     catalog: catalog,
+    freeGoogleMonth: freeGoogleMonth,
   );
 
   test('settings round-trip as the iOS JSON, with defaults', () {
@@ -201,12 +203,11 @@ void main() {
           .every((c) => c.requiresPremium),
       isTrue,
     );
-    expect(
-      choices
-          .where((c) => c.group == EventReminderGroup.myCalendar)
-          .any((c) => c.requiresPremium),
-      isFalse,
-    );
+    bool premiumFor(CalendarEntrySource source) => choices
+        .firstWhere((c) => c.target == EventReminderTarget.calendar(source))
+        .requiresPremium;
+    expect(premiumFor(CalendarEntrySource.custom), isFalse);
+    expect(premiumFor(CalendarEntrySource.google), isTrue);
     expect(choices.map((c) => c.id).toSet(), hasLength(choices.length));
     expect(choices.any((c) => c.title.startsWith('event_reminder_')), isFalse);
   });
@@ -303,5 +304,75 @@ void main() {
       EventReminderTarget.parse('observance:holi'),
       const EventReminderTarget.observance('holi'),
     );
+  });
+
+  // Arun (25 Nov 2026): Google Calendar reminders are Premium. A free user
+  // who used the one free sync gets reminders for that month's Google events
+  // only; reminders for custom entries are always free. Mirrors iOS.
+  test('Google reminders need Premium except for the free sync month', () {
+    CalendarEntry entry(String id, String local, CalendarEntrySource source) {
+      final start = ist(local);
+      return CalendarEntry(
+        id: id,
+        title: id,
+        startAt: start,
+        endAt: start.add(const Duration(hours: 1)),
+        source: source,
+        updatedAt: start,
+      );
+    }
+
+    final entries = [
+      entry('Nov satsang', '2026-11-28T09:00:00', CalendarEntrySource.google),
+      entry('Dec satsang', '2026-12-05T09:00:00', CalendarEntrySource.google),
+      entry('Dec temple', '2026-12-06T09:00:00', CalendarEntrySource.custom),
+    ];
+    final reminders = [
+      for (final source in [
+        CalendarEntrySource.google,
+        CalendarEntrySource.custom,
+      ])
+        EventReminder(
+          target: EventReminderTarget.calendar(source),
+          daysBefore: const [1],
+        ),
+    ];
+    final now = ist('2026-11-25T10:00:00');
+    List<String> titles(bool premium, [String? month]) => plan(
+      reminders,
+      entries: entries,
+      now: now,
+      premium: premium,
+      freeGoogleMonth: month,
+    ).map((r) => r.title).toList();
+    expect(titles(false), ['Dec temple']);
+    expect(titles(false, '2026-11'), ['Nov satsang', 'Dec temple']);
+    expect(titles(true), ['Nov satsang', 'Dec satsang', 'Dec temple']);
+  });
+
+  test('the Google reminder lock follows Premium and the free sync month', () {
+    const google = EventReminderTarget.calendar(CalendarEntrySource.google);
+    const custom = EventReminderTarget.calendar(CalendarEntrySource.custom);
+    const holi = EventReminderTarget.observance('holi');
+    final november = DateTime(2026, 11, 25), december = DateTime(2026, 12, 1);
+    bool locked(
+      EventReminderTarget target, {
+      bool premium = false,
+      String? month,
+      DateTime? today,
+    }) => target.isLocked(
+      premium: premium,
+      freeGoogleMonth: month,
+      today: today ?? november,
+    );
+    expect(locked(google), isTrue);
+    expect(locked(google, month: '2026-11'), isFalse);
+    expect(locked(google, month: '2026-11', today: december), isTrue);
+    expect(locked(google, month: '2026-12'), isFalse);
+    expect(locked(google, premium: true, today: december), isFalse);
+    expect(locked(custom), isFalse);
+    expect(locked(holi, month: '2026-11'), isTrue);
+    expect(google.usesCalendarEntries && custom.usesCalendarEntries, isTrue);
+    expect(holi.usesCalendarEntries, isFalse);
   });
 }

@@ -42,6 +42,7 @@ void main() {
     PremiumFixture? source,
     Set<String> owned = const {},
     String? reason,
+    ThemeData? theme,
   }) async {
     tester.view.physicalSize = const Size(1179, 2556);
     tester.view.devicePixelRatio = 3;
@@ -60,7 +61,7 @@ void main() {
           ChangeNotifierProvider.value(value: premium),
         ],
         child: MaterialApp(
-          theme: AppTheme.lightTheme,
+          theme: theme ?? AppTheme.lightTheme,
           home: PremiumScreen(billingOverride: billing, reasonKey: reason),
         ),
       ),
@@ -179,7 +180,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('glass plan cards, capsule buy button and leading links', (
+  testWidgets('glass plan cards, capsule buy button and centred links', (
     tester,
   ) async {
     await pump(tester);
@@ -213,9 +214,16 @@ void main() {
     );
     expect(label.style?.fontSize, IosText.headline);
     expect(label.style?.fontWeight, FontWeight.w600);
-    // Links: leading-aligned, 13 pt teal.
-    final links = find.byKey(const Key('premium_links'));
-    expect(tester.widget<Wrap>(links).alignment, WrapAlignment.start);
+    // Links: two centred rows of 13 pt teal, as on iOS (25 Nov 2026).
+    final rows = find.descendant(
+      of: find.byKey(const Key('premium_links')),
+      matching: find.byType(Wrap),
+    );
+    expect(rows, findsNWidgets(2));
+    for (final row in tester.widgetList<Wrap>(rows)) {
+      expect(row.alignment, WrapAlignment.center);
+      expect(row.spacing, greaterThanOrEqualTo(12));
+    }
     final restore = tester.widget<Text>(
       find.text(lang.translate('premium_restore')),
     );
@@ -223,10 +231,35 @@ void main() {
     expect(restore.style?.color, IosColors.teal);
     expect(
       tester.getTopLeft(find.text(lang.translate('premium_restore'))).dx,
-      lessThan(40),
+      greaterThan(40),
+      reason: 'centred, not at the leading edge',
     );
     expect(tester.takeException(), isNull);
   });
+
+  // Arun (26 Nov 2026): "Cancel subscription in Google Play" was not clear on
+  // the orange card; it looks like the Settings card's Manage button.
+  for (final dark in [true, false]) {
+    testWidgets('Cancel subscription is a clear outlined button '
+        '(${dark ? 'dark' : 'light'})', (tester) async {
+      await pump(
+        tester,
+        owned: {PremiumService.subscriptionId, PremiumService.lifetimeId},
+        theme: dark ? AppTheme.darkTheme : AppTheme.lightTheme,
+      );
+      final style = tester
+          .widget<OutlinedButton>(
+            find.byKey(const Key('premium_cancel_subscription')),
+          )
+          .style!;
+      final expected = dark ? Colors.white : Colors.black;
+      final label = style.foregroundColor!.resolve({})!;
+      final outline = style.side!.resolve({})!.color;
+      expect(label.toARGB32() & 0xFFFFFF, expected.toARGB32() & 0xFFFFFF);
+      expect(outline.toARGB32() & 0xFFFFFF, expected.toARGB32() & 0xFFFFFF);
+      expect(outline.a, greaterThanOrEqualTo(.8));
+    });
+  }
 
   testWidgets('member status cards are glass panels', (tester) async {
     await pump(tester, owned: {PremiumService.subscriptionId});

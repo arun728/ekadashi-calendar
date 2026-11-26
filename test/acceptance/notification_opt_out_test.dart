@@ -20,14 +20,12 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byIcon(AppIcons.tabSettings));
       await tester.pumpAndSettle();
-      // Notifications sits below the Premium card and the Appearance section.
+      // Settings > Notifications has its own page (25 Nov 2026).
       await tester.ensureVisible(
-        find.widgetWithText(
-          SwitchListTile,
-          'Enable Notifications',
-          skipOffstage: false,
-        ),
+        find.byKey(const Key('settings_notifications')),
       );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('settings_notifications')));
       await tester.pumpAndSettle();
       await tester.tap(
         find.widgetWithText(SwitchListTile, 'Enable Notifications'),

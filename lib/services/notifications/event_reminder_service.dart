@@ -29,6 +29,30 @@ class EventReminderService extends ChangeNotifier {
   bool _loaded = false;
   Future<void> Function()? _replan;
 
+  /// The month of the one free Google sync ("2026-11"), if it was used
+  /// (stored by the Calendar's free sync, `google_free_sync_month`).
+  String? get freeGoogleMonth => _freeGoogleMonth;
+  String? _freeGoogleMonth;
+  static const freeSyncMonthKey = 'google_free_sync_month';
+
+  /// Festival, Panchang and Google reminders need Premium; a free user's
+  /// Google reminders stay open during the free sync month.
+  bool locked(EventReminderTarget target, {required bool premium}) =>
+      target.isLocked(
+        premium: premium,
+        freeGoogleMonth: _freeGoogleMonth,
+        today: DateTime.now(),
+      );
+
+  Future<void> _readFreeMonth() async {
+    final prefs = await SharedPreferences.getInstance();
+    final month = prefs.getString(freeSyncMonthKey);
+    if (month != _freeGoogleMonth) {
+      _freeGoogleMonth = month;
+      notifyListeners();
+    }
+  }
+
   EventReminderSettings get settings => _settings;
   List<EventReminder> get reminders => _settings.reminders;
 
@@ -40,6 +64,7 @@ class EventReminderService extends ChangeNotifier {
       _settings = EventReminderSettings.decode(
         prefs.getString(EventReminderSettings.prefsKey),
       );
+      _freeGoogleMonth = prefs.getString(freeSyncMonthKey);
       _loaded = true;
       notifyListeners();
     }
@@ -58,8 +83,11 @@ class EventReminderService extends ChangeNotifier {
   /// The app supplies how to plan again with its current state.
   void attach(Future<void> Function() replan) => _replan = replan;
 
-  /// Entries, the Panchang location or Premium changed.
-  Future<void> changed() async => _replan?.call();
+  /// Entries (a free sync, too), the Panchang location or Premium changed.
+  Future<void> changed() async {
+    await _readFreeMonth();
+    await _replan?.call();
+  }
 
   Future<void> upsert(EventReminder reminder) async =>
       _save((await load()).upsert(reminder));
@@ -90,10 +118,11 @@ class EventReminderService extends ChangeNotifier {
     // Without the catalogue nothing can be planned; keep what is scheduled.
     if (await _catalog() == null) return 0;
     final clock = now ?? DateTime.now();
+    await _readFreeMonth();
     final needsObservances =
         enabled &&
         premium &&
-        settings.reminders.any((r) => r.target.requiresPremium);
+        settings.reminders.any((r) => !r.target.usesCalendarEntries);
     final observances = needsObservances
         ? await ObservanceCalendarService.instance.years([
             clock.year,
@@ -108,6 +137,7 @@ class EventReminderService extends ChangeNotifier {
       language: language,
       premium: premium,
       now: clock,
+      freeGoogleMonth: _freeGoogleMonth,
     );
     return _send(planned);
   }

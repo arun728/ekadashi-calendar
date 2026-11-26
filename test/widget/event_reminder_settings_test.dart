@@ -297,6 +297,34 @@ void main() {
     );
   });
 
+  // Arun (25 Nov 2026): Google Calendar reminders are Premium, except while
+  // the free sync month lasts.
+  for (final usedFreeSync in [false, true]) {
+    testWidgets('a free Google reminder is '
+        '${usedFreeSync ? 'open during the free sync month' : 'locked'}', (
+      tester,
+    ) async {
+      final month = DateTime.now().toIso8601String().substring(0, 7);
+      SharedPreferences.setMockInitialValues({
+        if (usedFreeSync) 'google_free_sync_month': month,
+      });
+      await service.upsert(
+        EventReminder(
+          target: const EventReminderTarget.calendar(
+            CalendarEntrySource.google,
+          ),
+        ),
+      );
+      await pump(tester);
+      final row = find.byKey(const Key('event_reminder_row_calendar:google'));
+      expect(row, findsOneWidget);
+      expect(
+        find.descendant(of: row, matching: find.byIcon(AppIcons.lock)),
+        usedFreeSync ? findsNothing : findsOneWidget,
+      );
+    });
+  }
+
   testWidgets('a reminder is edited and deleted from its editor', (
     tester,
   ) async {

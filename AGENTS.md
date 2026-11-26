@@ -122,8 +122,10 @@ for review, and do not merge it to `dev` or `main`.
   The paywall needs no Google sign-in. Google sign-in is only for Calendar
   import, and disconnecting Google must not affect premium.
 - Products (prices are set in Play Console and App Store Connect, never
-  hard-coded): subscription `ekadashi_premium` with base plans `monthly` and
-  `yearly`; one-time `ekadashi_premium_lifetime`.
+  hard-coded): subscriptions `ekadashi_premium_monthly` and
+  `ekadashi_premium_yearly`, and one-time `ekadashi_premium_lifetime`. The
+  older combined `ekadashi_premium` subscription's base plans were
+  deactivated in Play Console on 26 November 2026.
 - Prices (set 16–17 November 2026, same on Google Play and the App Store):
   India ₹99 monthly / ₹599 yearly / ₹1,999 lifetime. In the 28 Indian-diaspora
   countries (United States, United Kingdom, Australia, New Zealand, Singapore,

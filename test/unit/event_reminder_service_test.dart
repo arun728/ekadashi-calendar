@@ -82,4 +82,51 @@ void main() {
       DateTime.parse('2026-10-09T07:00:00+05:30'),
     );
   });
+
+  test(
+    'a free user gets Google reminders for the free sync month only',
+    () async {
+      final google = [
+        for (final (id, day) in [('Nov satsang', 28), ('Dec satsang', 5)])
+          CalendarEntry(
+            id: id,
+            title: id,
+            startAt: DateTime(2026, day == 28 ? 11 : 12, day, 9),
+            endAt: DateTime(2026, day == 28 ? 11 : 12, day, 10),
+            source: CalendarEntrySource.google,
+            updatedAt: now,
+          ),
+      ];
+      SharedPreferences.setMockInitialValues({
+        'google_free_sync_month': '2026-11',
+        'event_reminders': EventReminderSettings(
+          reminders: [
+            EventReminder(
+              target: const EventReminderTarget.calendar(
+                CalendarEntrySource.google,
+              ),
+              daysBefore: const [1],
+            ),
+          ],
+        ).encode(),
+      });
+      late List<PlannedEventReminder> scheduled;
+      final service = EventReminderService(
+        scheduler: (planned) async {
+          scheduled = planned;
+          return planned.length;
+        },
+      );
+      await service.schedule(
+        enabled: true,
+        premium: false,
+        language: 'en',
+        city: PanchangCity.newDelhi,
+        entries: google,
+        now: now,
+      );
+      expect(scheduled.map((r) => r.title), ['Nov satsang']);
+      expect(service.freeGoogleMonth, '2026-11');
+    },
+  );
 }

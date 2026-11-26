@@ -154,6 +154,18 @@ class AppLocalizationsHi extends AppLocalizations {
   String get about => 'बारे में';
 
   @override
+  String get settings_about_legal => 'बारे में और कानूनी';
+
+  @override
+  String get settings_contact_support => 'सहायता से संपर्क करें';
+
+  @override
+  String get settings_contact_support_desc => 'मदद के लिए हमें ईमेल करें';
+
+  @override
+  String get settings_reminders_not_arriving => 'रिमाइंडर नहीं आ रहे?';
+
+  @override
   String get app_update_available => 'अपडेट उपलब्ध है';
 
   @override
@@ -867,10 +879,6 @@ class AppLocalizationsHi extends AppLocalizations {
       'एकादशी प्रीमियम से सब कुछ अनलॉक करें। एकादशी तिथियाँ, रिमाइंडर, विजेट, निजी प्रविष्टियाँ और आपका सहेजा व्रत इतिहास मुफ़्त रहेगा।';
 
   @override
-  String get premium_free_achievements =>
-      'आपकी पहली तीन व्रत प्रविष्टियाँ और पहली तीन उपलब्धियाँ मुफ़्त हैं। बाकी प्रीमियम में खुलती हैं।';
-
-  @override
   String get premium_monthly => 'मासिक';
 
   @override
@@ -901,13 +909,13 @@ class AppLocalizationsHi extends AppLocalizations {
   String get premium_restore => 'खरीदारियाँ बहाल करें';
 
   @override
-  String get premium_manage => 'गूगल प्ले में सदस्यता प्रबंधित करें';
+  String get premium_manage => 'सदस्यता प्रबंधित करें';
 
   @override
   String get premium_active => 'प्रीमियम सुविधा सक्रिय है';
 
   @override
-  String get premium_current_plan => 'आपका मौजूदा प्लान';
+  String get premium_current_plan => 'मौजूदा प्लान';
 
   @override
   String get premium_best_value => 'सबसे किफ़ायती';
@@ -926,7 +934,15 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get premium_cancelled_body =>
-      'भुगतान की गई अवधि के अंत तक प्रीमियम चालू रहेगा। इसे बनाए रखने के लिए कभी भी फिर से चालू करें।';
+      'भुगतान की गई अवधि के अंत तक प्रीमियम चालू रहेगा। तारीख गूगल प्ले में देखें। इसे बनाए रखने के लिए कभी भी फिर से चालू करें।';
+
+  @override
+  String get premium_cancelled_body_play_switch =>
+      'भुगतान की गई अवधि के अंत तक प्रीमियम चालू रहेगा। तारीख गूगल प्ले में देखें।';
+
+  @override
+  String get premium_play_switch_cancelled_note =>
+      'गूगल प्ले इस प्लान को फिर से चालू या बदल नहीं सकता, क्योंकि यह मासिक में बदल रहा था। इसके खत्म होने के बाद फिर से प्लान चुनें।';
 
   @override
   String get premium_reactivate => 'फिर से चालू करें';
@@ -975,6 +991,31 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get premium_buy_lifetime_anyway => 'आजीवन खरीदें';
+
+  @override
+  String get premium_switch_now_title => 'प्लान बदलें?';
+
+  @override
+  String get premium_switch_at_renewal_body =>
+      'सालाना प्लान अगले नवीनीकरण तक चालू रहेगा। उसके बाद गूगल प्ले मासिक प्लान शुरू करेगा और उसका शुल्क लेगा।';
+
+  @override
+  String get premium_upcoming_plan => 'अगला प्लान';
+
+  @override
+  String get premium_monthly_switch_scheduled =>
+      'नवीनीकरण पर मासिक प्लान शुरू होगा। नवीनीकरण की तारीख गूगल प्ले में देखें।';
+
+  @override
+  String get premium_renewal_in_play =>
+      'अगला नवीनीकरण और तय किया गया बदलाव गूगल प्ले में देखें।';
+
+  @override
+  String get premium_switch_now_body =>
+      'आपका नया प्लान आज से शुरू होगा और आज ही भुगतान लिया जाएगा। मौजूदा प्लान का बचा हुआ समय इसमें जोड़ दिया जाएगा।';
+
+  @override
+  String get premium_switch_now_confirm => 'प्लान बदलें';
 
   @override
   String get premium_unavailable =>
@@ -1026,7 +1067,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get premium_coins => 'सिक्के';
 
   @override
-  String get premium_more_achievements => 'प्रीमियम के साथ और उपलब्धियाँ';
+  String get premium_more_achievements => 'प्रीमियम के साथ उपलब्धियाँ खोलें';
 
   @override
   String get premium_reward_example =>
@@ -1038,7 +1079,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get premium_feature_vrat =>
-      'असीमित व्रत प्रविष्टियाँ (पहली तीन मुफ़्त) और सभी उपलब्धियाँ';
+      'असीमित व्रत प्रविष्टियाँ (पहली तीन मुफ़्त)';
 
   @override
   String get premium_feature_panchang =>
@@ -1579,7 +1620,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get notifications_premium_events =>
-      'त्योहार और पंचांग रिमाइंडर प्रीमियम का हिस्सा हैं। आपके कैलेंडर की प्रविष्टियों के रिमाइंडर मुफ़्त हैं।';
+      'त्योहार, पंचांग और गूगल कैलेंडर रिमाइंडर प्रीमियम का हिस्सा हैं। आपकी अपनी प्रविष्टियों के रिमाइंडर मुफ़्त हैं।';
 
   @override
   String get notifications_no_events => 'अभी कोई रिमाइंडर नहीं';
@@ -1826,7 +1867,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get ios_journey_premium_desc =>
-      'असीमित अभिलेख, पूरा पदक संग्रह और आपका वार्षिक मंडल।';
+      'असीमित व्रत प्रविष्टियाँ और पूरा पदक संग्रह';
 
   @override
   String get ios_journey_haptics => 'पदक मिलने पर स्पर्श प्रतिक्रिया';

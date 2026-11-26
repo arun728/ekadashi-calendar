@@ -154,6 +154,18 @@ class AppLocalizationsTe extends AppLocalizations {
   String get about => 'గురించి';
 
   @override
+  String get settings_about_legal => 'గురించి మరియు చట్టపరమైనవి';
+
+  @override
+  String get settings_contact_support => 'సహాయాన్ని సంప్రదించండి';
+
+  @override
+  String get settings_contact_support_desc => 'సహాయం కోసం మాకు ఈమెయిల్ చేయండి';
+
+  @override
+  String get settings_reminders_not_arriving => 'రిమైండర్‌లు రావడం లేదా?';
+
+  @override
   String get app_update_available => 'అప్‌డేట్ అందుబాటులో ఉంది';
 
   @override
@@ -874,10 +886,6 @@ class AppLocalizationsTe extends AppLocalizations {
       'ఏకాదశి ప్రీమియంతో అన్నింటినీ అన్‌లాక్ చేయండి. ఏకాదశి తేదీలు, రిమైండర్లు, విడ్జెట్లు, వ్యక్తిగత ఎంట్రీలు మరియు సేవ్ చేసిన వ్రత చరిత్ర ఉచితంగానే ఉంటాయి.';
 
   @override
-  String get premium_free_achievements =>
-      'మీ మొదటి మూడు వ్రత ఎంట్రీలు మరియు మొదటి మూడు విజయాలు ఉచితం. మిగిలినవి ప్రీమియంలో అన్‌లాక్ అవుతాయి.';
-
-  @override
   String get premium_monthly => 'నెలవారీ';
 
   @override
@@ -908,13 +916,13 @@ class AppLocalizationsTe extends AppLocalizations {
   String get premium_restore => 'కొనుగోళ్లను పునరుద్ధరించండి';
 
   @override
-  String get premium_manage => 'గూగుల్ ప్లేలో సభ్యత్వాన్ని నిర్వహించండి';
+  String get premium_manage => 'సభ్యత్వాన్ని నిర్వహించండి';
 
   @override
   String get premium_active => 'ప్రీమియం సదుపాయం అందుబాటులో ఉంది';
 
   @override
-  String get premium_current_plan => 'మీ ప్రస్తుత ప్లాన్';
+  String get premium_current_plan => 'ప్రస్తుత ప్లాన్';
 
   @override
   String get premium_best_value => 'ఉత్తమ విలువ';
@@ -933,7 +941,15 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get premium_cancelled_body =>
-      'మీరు చెల్లించిన వ్యవధి ముగిసే వరకు ప్రీమియం ఉంటుంది. కొనసాగించడానికి ఎప్పుడైనా మళ్లీ ప్రారంభించండి.';
+      'మీరు చెల్లించిన వ్యవధి ముగిసే వరకు ప్రీమియం ఉంటుంది. తేదీని గూగుల్ ప్లేలో చూడండి. కొనసాగించడానికి ఎప్పుడైనా మళ్లీ ప్రారంభించండి.';
+
+  @override
+  String get premium_cancelled_body_play_switch =>
+      'మీరు చెల్లించిన వ్యవధి ముగిసే వరకు ప్రీమియం ఉంటుంది. తేదీని గూగుల్ ప్లేలో చూడండి.';
+
+  @override
+  String get premium_play_switch_cancelled_note =>
+      'ఈ ప్లాన్ నెలవారీకి మారుతున్నందున గూగుల్ ప్లే దీన్ని మళ్లీ సక్రియం చేయలేదు లేదా మార్చలేదు. ఇది ముగిసిన తర్వాత మళ్లీ ప్లాన్‌ను ఎంచుకోండి.';
 
   @override
   String get premium_reactivate => 'మళ్లీ ప్రారంభించండి';
@@ -988,6 +1004,31 @@ class AppLocalizationsTe extends AppLocalizations {
   String get premium_buy_lifetime_anyway => 'జీవితకాలం కొనండి';
 
   @override
+  String get premium_switch_now_title => 'ప్లాన్ మార్చాలా?';
+
+  @override
+  String get premium_switch_at_renewal_body =>
+      'తదుపరి పునరుద్ధరణ వరకు వార్షిక ప్లాన్ సక్రియంగా ఉంటుంది. ఆ తర్వాత గూగుల్ ప్లే నెలవారీ ప్లాన్‌ను ప్రారంభించి దాని రుసుమును వసూలు చేస్తుంది.';
+
+  @override
+  String get premium_upcoming_plan => 'తదుపరి ప్లాన్';
+
+  @override
+  String get premium_monthly_switch_scheduled =>
+      'పునరుద్ధరణ సమయంలో నెలవారీ ప్లాన్ మొదలవుతుంది. పునరుద్ధరణ తేదీని గూగుల్ ప్లేలో చూడండి.';
+
+  @override
+  String get premium_renewal_in_play =>
+      'తదుపరి పునరుద్ధరణను, నిర్ణయించిన మార్పును గూగుల్ ప్లేలో చూడండి.';
+
+  @override
+  String get premium_switch_now_body =>
+      'మీ కొత్త ప్లాన్ ఈరోజే ప్రారంభమవుతుంది, ఈరోజే ఛార్జీ వసూలు చేయబడుతుంది. ప్రస్తుత ప్లాన్‌లో మిగిలిన సమయం దానికి జోడించబడుతుంది.';
+
+  @override
+  String get premium_switch_now_confirm => 'ప్లాన్ మార్చండి';
+
+  @override
   String get premium_unavailable =>
       'ప్రస్తుతం కొనుగోళ్లు అందుబాటులో లేవు. గూగుల్ ప్లే నుండి యాప్‌ను ఇన్‌స్టాల్ చేసి మళ్లీ ప్రయత్నించండి. ఉచిత ఫీచర్లు పనిచేస్తాయి.';
 
@@ -1037,7 +1078,7 @@ class AppLocalizationsTe extends AppLocalizations {
   String get premium_coins => 'నాణేలు';
 
   @override
-  String get premium_more_achievements => 'ప్రీమియంతో మరిన్ని విజయాలు';
+  String get premium_more_achievements => 'ప్రీమియంతో విజయాలను అన్‌లాక్ చేయండి';
 
   @override
   String get premium_reward_example =>
@@ -1048,8 +1089,7 @@ class AppLocalizationsTe extends AppLocalizations {
       'మీ పూర్తి సబ్‌స్క్రిప్షన్ సంవత్సరానికి గూగుల్ క్యాలెండర్ సింక్ (ఒక నెల సింక్ ఉచితం)';
 
   @override
-  String get premium_feature_vrat =>
-      'అపరిమిత వ్రత ఎంట్రీలు (మొదటి మూడు ఉచితం) మరియు అన్ని విజయాలు';
+  String get premium_feature_vrat => 'అపరిమిత వ్రత ఎంట్రీలు (మొదటి మూడు ఉచితం)';
 
   @override
   String get premium_feature_panchang =>
@@ -1591,7 +1631,7 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get notifications_premium_events =>
-      'పండుగ మరియు పంచాంగ రిమైండర్‌లు ప్రీమియంలో భాగం. మీ క్యాలెండర్ ఎంట్రీల రిమైండర్‌లు ఉచితం.';
+      'పండుగ, పంచాంగం మరియు గూగుల్ క్యాలెండర్ రిమైండర్‌లు ప్రీమియంలో భాగం. మీ సొంత ఎంట్రీల రిమైండర్‌లు ఉచితం.';
 
   @override
   String get notifications_no_events => 'ఇంకా రిమైండర్‌లు లేవు';
@@ -1839,7 +1879,7 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get ios_journey_premium_desc =>
-      'అపరిమిత నమోదులు, పూర్తి పతకాల సేకరణ మరియు మీ వార్షిక మండలం.';
+      'అపరిమిత వ్రత ఎంట్రీలు మరియు పూర్తి పతకాల సేకరణ';
 
   @override
   String get ios_journey_haptics => 'పతకం పొందినప్పుడు స్పర్శ స్పందన';

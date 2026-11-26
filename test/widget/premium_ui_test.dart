@@ -96,8 +96,15 @@ void main() {
           }
 
           await capture('plans');
-          // One call to action and a compact footer; closing is the X.
+          // One call to action and a compact footer; closing is the X. The
+          // button follows the plans, so a narrow 2x screen scrolls to it.
           final buy = find.byKey(const Key('premium_buy'));
+          await tester.scrollUntilVisible(
+            find.text(lang.translate('premium_manage')),
+            200,
+            scrollable: find.byType(Scrollable).first,
+          );
+          await tester.pumpAndSettle();
           expect(buy, findsOneWidget);
           expect(find.text(lang.translate('premium_manage')), findsOneWidget);
           expect(

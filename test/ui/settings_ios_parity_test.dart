@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:ekadashi_calendar/services/in_app_browser.dart';
 import 'package:provider/provider.dart';
 import 'package:ekadashi_calendar/services/language_service.dart';
 import 'package:ekadashi_calendar/widgets/ios_style.dart';
@@ -94,43 +96,72 @@ void main() {
         });
         await capture('full');
 
-        // Section headers sit above their cards, in the iOS order.
-        final headers = [
-          'appearance',
-          'notifications',
-          'notifications_section_ekadashi',
-          'notifications_section_events',
-          'permissions',
-          'about',
-        ];
-        final tubes = {
-          'appearance': 'settings_appearance_tube',
-          'notifications': 'settings_notifications_tube',
-          'notifications_section_ekadashi':
-              'settings_notifications_ekadashi_tube',
-          'notifications_section_events': 'settings_notifications_events_tube',
-          'permissions': 'settings_permission_actions_tube',
-          'about': 'settings_about_tube',
-        };
-        double? previous;
-        for (final name in headers) {
-          final header = find.byKey(Key('settings_header_$name'));
-          expect(header, findsOneWidget, reason: name);
-          expect(
-            find.descendant(
-              of: header,
-              matching: find.text(lang.translate(name)),
-            ),
-            findsOneWidget,
-          );
-          final top = tester.getTopLeft(header).dy;
-          if (previous != null) {
-            expect(top, greaterThan(previous), reason: name);
+        // Settings redesign (25 Nov 2026): the Premium card, a Notifications
+        // row, then Appearance, Google Calendar and About & legal, in the iOS
+        // order. Reminder controls live on the Notifications page.
+        Future<void> checkHeaders(
+          List<String> headers,
+          Map<String, String> tubes,
+        ) async {
+          double? previous;
+          for (final name in headers) {
+            final header = find.byKey(Key('settings_header_$name'));
+            expect(header, findsOneWidget, reason: name);
+            expect(
+              find.descendant(
+                of: header,
+                matching: find.text(lang.translate(name)),
+              ),
+              findsOneWidget,
+            );
+            final top = tester.getTopLeft(header).dy;
+            if (previous != null) {
+              expect(top, greaterThan(previous), reason: name);
+            }
+            previous = top;
+            final tube = find.byKey(Key(tubes[name]!));
+            expect(tester.getTopLeft(tube).dy, greaterThan(top), reason: name);
           }
-          previous = top;
-          final tube = find.byKey(Key(tubes[name]!));
-          expect(tester.getTopLeft(tube).dy, greaterThan(top), reason: name);
         }
+
+        final notificationsRow = find.byKey(
+          const Key('settings_notifications'),
+        );
+        expect(notificationsRow, findsOneWidget);
+        expect(
+          tester.getTopLeft(notificationsRow).dy,
+          greaterThan(
+            tester.getTopLeft(find.byKey(const Key('settings_premium'))).dy,
+          ),
+        );
+        await checkHeaders(
+          ['appearance', 'settings_about_legal'],
+          {
+            'appearance': 'settings_appearance_tube',
+            'settings_about_legal': 'settings_about_tube',
+          },
+        );
+        expect(
+          tester.getTopLeft(notificationsRow).dy,
+          lessThan(
+            tester
+                .getTopLeft(find.byKey(const Key('settings_header_appearance')))
+                .dy,
+          ),
+        );
+        for (final gone in [
+          'notifications',
+          'permissions',
+          'journey_tab',
+          'about',
+        ]) {
+          expect(
+            find.byKey(Key('settings_header_$gone')),
+            findsNothing,
+            reason: gone,
+          );
+        }
+        expect(find.byKey(const Key('notifications_add_event')), findsNothing);
         // No Material dividers between sections (iOS has none).
         expect(
           find.descendant(
@@ -171,6 +202,22 @@ void main() {
                 .dy,
           ),
         );
+        expect(
+          inTube(appearance, find.byKey(const Key('journey_badge_haptics'))),
+          findsOneWidget,
+          reason: 'badge haptics moved from the old Journey section',
+        );
+        // Badge haptics has its badge icon (25 Nov 2026).
+        expect(
+          inTube(appearance, find.byIcon(AppIcons.settingsBadgeHaptics)),
+          findsOneWidget,
+        );
+        // Google Calendar stays in the Calendar tab only (25 Nov 2026).
+        expect(find.byKey(const Key('settings_google_tube')), findsNothing);
+        expect(
+          find.byKey(const Key('settings_header_google_calendar')),
+          findsNothing,
+        );
         // Every switch is drawn as the iOS switch (adaptive, iOS platform).
         final switches = find.byType(Switch);
         expect(switches, findsWidgets);
@@ -178,6 +225,57 @@ void main() {
           expect(Theme.of(element).platform, TargetPlatform.iOS);
         }
 
+        // About: Rate, Share and the Version row inside the same card.
+        final about = find.byKey(const Key('settings_about_tube'));
+        expect(
+          inTube(about, find.text(lang.translate('version'))),
+          findsOneWidget,
+        );
+        expect(inTube(about, find.byIcon(AppIcons.share)), findsOneWidget);
+        expect(inTube(about, find.text('2.0.0')), findsOneWidget);
+        expect(inTube(about, find.text('1.1.1')), findsNothing);
+        for (final key in [
+          'settings_terms',
+          'settings_privacy',
+          'settings_contact_support',
+        ]) {
+          expect(
+            inTube(about, find.byKey(Key(key))),
+            findsOneWidget,
+            reason: key,
+          );
+        }
+
+        // Premium: white label on a capsule button.
+        final cta = tester.widget<FilledButton>(
+          find.byKey(const Key('settings_premium')),
+        );
+        expect(cta.style?.shape?.resolve({}), isA<StadiumBorder>());
+        expect(cta.style?.foregroundColor?.resolve({}), Colors.white);
+
+        // The Notifications page: the master switch, Ekadashi, Festivals and
+        // events, then "Reminders not arriving?".
+        await tester.ensureVisible(notificationsRow);
+        await tester.tap(notificationsRow);
+        await tester.pumpAndSettle();
+        await checkHeaders(
+          [
+            'notifications',
+            'notifications_section_ekadashi',
+            'notifications_section_events',
+            'settings_reminders_not_arriving',
+          ],
+          {
+            'notifications': 'settings_notifications_tube',
+            'notifications_section_ekadashi':
+                'settings_notifications_ekadashi_tube',
+            'notifications_section_events':
+                'settings_notifications_events_tube',
+            'settings_reminders_not_arriving':
+                'settings_permission_actions_tube',
+          },
+        );
+        await capture('notifications');
         // Ekadashi statuses are grey details, as on iOS (not green).
         final status = tester.widget<Text>(
           inTube(
@@ -203,23 +301,6 @@ void main() {
           inTube(permissions, find.text(lang.translate('perm_guide_title'))),
           findsOneWidget,
         );
-
-        // About: Rate, Share and the Version row inside the same card.
-        final about = find.byKey(const Key('settings_about_tube'));
-        expect(
-          inTube(about, find.text(lang.translate('version'))),
-          findsOneWidget,
-        );
-        expect(inTube(about, find.byIcon(AppIcons.share)), findsOneWidget);
-        expect(inTube(about, find.text('2.0.0')), findsOneWidget);
-        expect(inTube(about, find.text('1.1.1')), findsNothing);
-
-        // Premium: white label on a capsule button.
-        final cta = tester.widget<FilledButton>(
-          find.byKey(const Key('settings_premium')),
-        );
-        expect(cta.style?.shape?.resolve({}), isA<StadiumBorder>());
-        expect(cta.style?.foregroundColor?.resolve({}), Colors.white);
 
         // A test notification answers with the iOS toast, not a SnackBar.
         final test = find.text(lang.translate('test_notification'));
@@ -262,4 +343,71 @@ void main() {
       });
     }
   }
+
+  testWidgets(
+    'Contact support emails Apptinel; Terms and Privacy open in app',
+    (tester) async {
+      final opened = <String>[];
+      const channel = MethodChannel('plugins.flutter.io/url_launcher');
+      const androidChannel = BasicMessageChannel<Object?>(
+        'dev.flutter.pigeon.url_launcher_android.UrlLauncherApi.launchUrl',
+        StandardMessageCodec(),
+      );
+      final messenger =
+          TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+      messenger.setMockMethodCallHandler(channel, (call) async {
+        opened.add((call.arguments as Map)['url'] as String);
+        return true;
+      });
+      messenger.setMockDecodedMessageHandler(androidChannel, (message) async {
+        opened.add((message! as List<Object?>).first! as String);
+        return [true];
+      });
+      addTearDown(() {
+        messenger.setMockMethodCallHandler(channel, null);
+        messenger.setMockDecodedMessageHandler(androidChannel, null);
+      });
+      final harness = AppHarness();
+      await tester.runAsync(() => harness.install());
+      addTearDown(harness.uninstall);
+      tester.view.physicalSize = const Size(393, 2300);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(harness.app());
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('glass_tab_4')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('settings_contact_support')));
+      await tester.pumpAndSettle();
+      expect(opened, ['mailto:contact@apptinel.com']);
+
+      // Terms and Privacy open in the in-app browser (26 Nov 2026).
+      final inApp = <(String, LaunchMode)>[];
+      InAppBrowser.opener =
+          (
+            uri, {
+            mode = LaunchMode.platformDefault,
+            browserConfiguration = const BrowserConfiguration(),
+          }) async {
+            inApp.add((uri.toString(), mode));
+            return true;
+          };
+      addTearDown(InAppBrowser.reset);
+      for (final key in ['settings_terms', 'settings_privacy']) {
+        await tester.tap(find.byKey(Key(key)));
+        await tester.pumpAndSettle();
+      }
+      expect(inApp, [
+        (
+          'https://apptinel.com/ekadashi-calendar/terms-of-service/',
+          LaunchMode.inAppBrowserView,
+        ),
+        (
+          'https://apptinel.com/ekadashi-calendar/privacy-policy/',
+          LaunchMode.inAppBrowserView,
+        ),
+      ]);
+    },
+  );
 }
