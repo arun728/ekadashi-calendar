@@ -29,10 +29,12 @@ Store-asset details live in `STORE_CHECKLIST.md`. PRs #26 and #34 are **not** in
 - [ ] Subscriptions `ekadashi_premium_monthly` and `ekadashi_premium_yearly` plus the
       one-time `ekadashi_premium_lifetime` active. India ₹100 / ₹600 / ₹2,000 as on Play
       now, plus diaspora prices.
-- [ ] Once the PR work is done: **deactivate the old combined `ekadashi_premium`
-      subscription** in Play Console so no new buyer sees it (people who already own it
+- [x] Done 26 Nov 2026 (Play API): **deactivated the old combined `ekadashi_premium`
+      subscription** (both base plans inactive) in Play Console so no new buyer sees it (people who already own it
       keep it).
-- [ ] Once the PR work is done: **update the benefits text** on the new subscriptions in
+- [x] Done 26 Nov 2026 (Play API): **updated the benefits text** to "Google Calendar sync for
+      the whole year / Unlimited Vrat entries / Complete badge collection / Full daily
+      Panchang with city timings". Was: on the new subscriptions in
       Play Console. Today it says "Unlimited Vrat entries and achievements"; match the app
       ("Unlimited Vrat entries (the first three are free)", Google Calendar import,
       Panchang details). Who makes these two changes is decided later.
