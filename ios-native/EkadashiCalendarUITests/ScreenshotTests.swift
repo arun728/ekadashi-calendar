@@ -1591,11 +1591,14 @@ final class ScreenshotTests: XCTestCase {
                     thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)))
         }
         let value = enabled ? "1" : "0"
-        if toggle.value as? String != value {
+        // A tap made while the list is still settling can be lost (full UI
+        // suite, 26 Nov 2026); tap once more if the switch has not changed.
+        for _ in 0..<2 where toggle.value as? String != value {
             // Accessibility exposes the whole row. The switch track is
             // centered about 44 points inside its trailing edge.
             toggle.coordinate(withNormalizedOffset: CGVector(dx: 1, dy: 0.5))
                 .withOffset(CGVector(dx: -44, dy: 0)).tap()
+            _ = XCTWaiter.wait(for: [expectation(for: NSPredicate(format: "value == %@", value), evaluatedWith: toggle)], timeout: 2)
         }
         XCTAssertTrue(NSPredicate(format: "value == %@", value).evaluate(with: toggle)
             || XCTWaiter.wait(for: [expectation(for: NSPredicate(format: "value == %@", value), evaluatedWith: toggle)], timeout: 5) == .completed,
@@ -2364,6 +2367,8 @@ final class ScreenshotTests: XCTestCase {
     func testTestNotificationKeepsTheAppRunning() {
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 20))
         tab(4)
+        // Test Notification lives on Settings > Notifications (25 Nov 2026).
+        openNotifications()
         // Found by its title (the row has no identifier of its own).
         let send = app.staticTexts["Test Notification"].firstMatch
         // The row sits just below the first screen, under the floating tab
