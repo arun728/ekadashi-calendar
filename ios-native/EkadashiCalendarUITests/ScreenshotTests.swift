@@ -549,14 +549,16 @@ final class ScreenshotTests: XCTestCase {
 
     /// Settings redesign (Arun, 25 Nov 2026): Premium card, one Notifications
     /// row that opens its own page, Appearance (with the badge haptics),
-    /// Google Calendar, then About & legal with Terms, Privacy and Contact
-    /// support. No Journey section.
+    /// Purchases (Manage subscription and Restore purchases for everyone, 27 Nov
+    /// 2026), then About & legal with Terms, Privacy and Contact support. No
+    /// Journey or Google Calendar section, and no Manage on the Premium card.
     func testSettingsAreGroupedAndNotificationsHaveTheirOwnPage() {
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
         glassTab(4)
         // Google Calendar stays in the Calendar tab only (Arun, 25 Nov 2026).
         let ordered = ["settings_premium", "settings_notifications", "settings_widget_preview", "settings_dark_mode",
-                       "settings_glass_look", "journey_badge_haptics", "settings_rate", "settings_share",
+                       "settings_glass_look", "journey_badge_haptics", "settings_manage_subscription",
+                       "settings_restore_purchases", "settings_rate", "settings_share",
                        "settings_terms", "settings_privacy", "settings_contact_support", "settings_version"]
         // Each row exists and sits below the previous one (checked while
         // both are on screen).
@@ -570,6 +572,10 @@ final class ScreenshotTests: XCTestCase {
             }
             previous = element
         }
+        XCTAssertTrue(app.staticTexts["Purchases"].exists, "Purchases section header")
+        XCTAssertEqual(app.buttons["settings_manage_subscription"].firstMatch.label, "Manage subscription")
+        XCTAssertEqual(app.buttons["settings_restore_purchases"].firstMatch.label, "Restore purchases")
+        XCTAssertFalse(app.buttons["settings_premium_manage"].exists, "No Manage on the Premium card")
         XCTAssertFalse(app.descendants(matching: .any).matching(identifier: "settings_google_import").firstMatch.exists)
         XCTAssertFalse(app.descendants(matching: .any).matching(identifier: "settings_google_disconnect").firstMatch.exists)
         XCTAssertTrue(app.images["settings_badge_haptics_icon"].exists, "Badge haptics has its icon")
@@ -591,11 +597,11 @@ final class ScreenshotTests: XCTestCase {
         snap("settings-notifications-page")
     }
 
-    /// Arun (25 Nov 2026): on the Settings Premium card, Manage looked dimmed
-    /// (teal on teal) next to Change plan. In dark mode its label and outline
-    /// are white.
+    /// Arun (27 Nov 2026): Manage left the Premium card for the Purchases
+    /// section, so a subscriber's card has only Change plan and Purchases has
+    /// Manage subscription and Restore purchases.
     @MainActor
-    func testSettingsPremiumManageIsClearlyReadable() async throws {
+    func testSubscriberCardHasOnlyChangePlanAndPurchasesHasManage() async throws {
         #if !targetEnvironment(simulator)
         throw XCTSkip("Purchases and resets belong only to isolated Simulator test accounts")
         #else
@@ -624,12 +630,17 @@ final class ScreenshotTests: XCTestCase {
                                            evaluatedWith: monthly)], timeout: 60)
         app.buttons["premium_close"].firstMatch.tap()
         for _ in 0..<5 { app.swipeDown() }
-        let manage = app.buttons["settings_premium_manage"].firstMatch
-        XCTAssertTrue(manage.waitForExistence(timeout: 60), "The subscriber card has no Manage button")
-        try await Task.sleep(nanoseconds: 1_000_000_000)
-        let share = whitePixelShare(manage.screenshot().image)
-        snap("settings-premium-manage-dark")
-        XCTAssertGreaterThan(share, 0.03, "Manage is too faint: \(share) of its pixels are white")
+        let changePlan = app.buttons["settings_premium"].firstMatch
+        XCTAssertTrue(changePlan.waitForExistence(timeout: 60))
+        await fulfillment(of: [expectation(for: NSPredicate(format: "label == %@", "Change plan"),
+                                           evaluatedWith: changePlan)], timeout: 60)
+        XCTAssertFalse(app.buttons["settings_premium_manage"].exists, "No Manage on the card")
+        snap("settings-subscriber-card")
+        let manage = app.buttons["settings_manage_subscription"].firstMatch
+        for _ in 0..<6 where !manage.isHittable { app.swipeUp() }
+        XCTAssertTrue(manage.isHittable, "Manage subscription in Purchases")
+        XCTAssertTrue(app.buttons["settings_restore_purchases"].firstMatch.isHittable)
+        snap("settings-subscriber-purchases")
         #endif
     }
 
@@ -668,6 +679,43 @@ final class ScreenshotTests: XCTestCase {
         let share = whitePixelShare(cancel.screenshot().image)
         snap("premium-cancel-subscription-dark")
         XCTAssertGreaterThan(share, 0.03, "Cancel subscription is too faint: \(share) white")
+        // Settings: the Lifetime card points to Manage subscription below.
+        app.buttons["premium_close"].firstMatch.tap()
+        for _ in 0..<5 { app.swipeDown() }
+        let note = app.staticTexts["Your subscription is still active. Cancel it in Manage subscription below."]
+        XCTAssertTrue(note.waitForExistence(timeout: 30), "Lifetime + renewing subscription note")
+        XCTAssertFalse(app.buttons["settings_premium_manage"].exists, "No Manage on the card")
+        XCTAssertFalse(app.buttons["settings_premium"].exists, "No Change plan for Lifetime")
+        snap("settings-lifetime-with-subscription")
+        let manage = app.buttons["settings_manage_subscription"].firstMatch
+        for _ in 0..<6 where !manage.isHittable { app.swipeUp() }
+        XCTAssertTrue(manage.isHittable)
+        snap("settings-lifetime-purchases")
+        #endif
+    }
+
+    /// Restore purchases in Settings works for everyone (Arun, 27 Nov 2026:
+    /// people change phones). With nothing bought it says so.
+    @MainActor
+    func testSettingsRestorePurchasesTellsAFreeUserNothingWasFound() async throws {
+        #if !targetEnvironment(simulator)
+        throw XCTSkip("Purchases and resets belong only to isolated Simulator test accounts")
+        #else
+        let configuration = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("EkadashiCalendar/Resources/Products.storekit")
+        app.terminate()
+        let session = try SKTestSession(contentsOf: configuration)
+        session.resetToDefaultState()
+        session.disableDialogs = true
+        try session.clearTransactions()
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        glassTab(4)
+        let restore = app.buttons["settings_restore_purchases"].firstMatch
+        for _ in 0..<6 where !restore.exists || !restore.isHittable { app.swipeUp() }
+        restore.tap()
+        XCTAssertTrue(app.staticTexts["No purchases found for this Apple ID."].waitForExistence(timeout: 60))
+        snap("settings-restore-none")
         #endif
     }
 

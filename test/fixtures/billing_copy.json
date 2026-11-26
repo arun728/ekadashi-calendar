@@ -1,5 +1,5 @@
 {
-  "_about": "Approved billing and Journey copy (Arun, 25 Nov 2026). Shared keys are identical on both apps; store keys differ only in the store name. No billing string shows a date: Google Play and the App Store show them. Checked by test/unit/billing_copy_test.dart and EkadashiCoreTests/BillingCopyTests.swift.",
+  "_about": "Approved billing and Journey copy (Arun, 25 Nov 2026). Shared keys are identical on both apps; store keys differ only in the store name. No billing string shows a date: Google Play and the App Store show them. Checked by test/unit/billing_copy_test.dart and EkadashiCoreTests/BillingCopyTests.swift. Purchases section and Premium card notes added 27 Nov 2026 (Arun): no Manage on the card, no dates.",
   "removed_keys": [
     "ios_premium_cancelled_until",
     "ios_premium_current_until",
@@ -9,7 +9,8 @@
     "ios_premium_switch_note",
     "ios_premium_renewal_unknown",
     "premium_next_renewal_date",
-    "premium_free_achievements"
+    "premium_free_achievements",
+    "settings_premium_manage"
   ],
   "en": {
     "premium_feature_vrat": {
@@ -58,6 +59,19 @@
     "premium_cancelled_body_play_switch": {
       "android": "Premium stays on until the end of the period you paid for. See the date in Google Play.",
       "ios": "Premium stays on until the end of the period you paid for. See the date in Google Play."
+    },
+    "settings_purchases": {
+      "both": "Purchases"
+    },
+    "settings_premium_cancelled_body": {
+      "android": "Premium stays on until the end of the period you paid for. See the date in Google Play. Reactivate it in Manage subscription below.",
+      "ios": "Premium stays on until the end of the period you paid for. See the date in the App Store. Reactivate it in Manage subscription below."
+    },
+    "settings_premium_lifetime_subscription_active": {
+      "both": "Your subscription is still active. Cancel it in Manage subscription below."
+    },
+    "ios_settings_billing_retry_body": {
+      "ios": "Update your payment method in Manage subscription below to restore Premium."
     }
   },
   "hi": {
@@ -99,6 +113,19 @@
     "premium_cancelled_body_play_switch": {
       "android": "भुगतान की गई अवधि के अंत तक प्रीमियम चालू रहेगा। तारीख गूगल प्ले में देखें।",
       "ios": "भुगतान की गई अवधि के अंत तक प्रीमियम चालू रहेगा। तारीख गूगल प्ले में देखें।"
+    },
+    "settings_purchases": {
+      "both": "खरीदारियाँ"
+    },
+    "settings_premium_cancelled_body": {
+      "android": "भुगतान की गई अवधि के अंत तक प्रीमियम चालू रहेगा। तारीख गूगल प्ले में देखें। इसे फिर से चालू करने के लिए नीचे “सदस्यता प्रबंधित करें” खोलें।",
+      "ios": "भुगतान की गई अवधि के अंत तक प्रीमियम चालू रहेगा। तारीख ऐप स्टोर में देखें। इसे फिर से चालू करने के लिए नीचे “सदस्यता प्रबंधित करें” खोलें।"
+    },
+    "settings_premium_lifetime_subscription_active": {
+      "both": "आपकी सदस्यता अभी भी सक्रिय है। इसे नीचे “सदस्यता प्रबंधित करें” में रद्द करें।"
+    },
+    "ios_settings_billing_retry_body": {
+      "ios": "प्रीमियम वापस पाने के लिए नीचे “सदस्यता प्रबंधित करें” में भुगतान का तरीका अपडेट करें।"
     }
   },
   "ta": {
@@ -140,6 +167,19 @@
     "premium_cancelled_body_play_switch": {
       "android": "நீங்கள் செலுத்திய காலம் முடியும் வரை பிரீமியம் செயலில் இருக்கும். தேதியைக் கூகுள் பிளேயில் பார்க்கவும்.",
       "ios": "நீங்கள் செலுத்திய காலம் முடியும் வரை பிரீமியம் செயலில் இருக்கும். தேதியைக் கூகுள் பிளேயில் பார்க்கவும்."
+    },
+    "settings_purchases": {
+      "both": "வாங்குதல்கள்"
+    },
+    "settings_premium_cancelled_body": {
+      "android": "நீங்கள் செலுத்திய காலம் முடியும் வரை பிரீமியம் செயலில் இருக்கும். தேதியைக் கூகுள் பிளேயில் பார்க்கவும். கீழே உள்ள “சந்தாவை நிர்வகிக்கவும்” என்பதில் அதை மீண்டும் இயக்கலாம்.",
+      "ios": "நீங்கள் செலுத்திய காலம் முடியும் வரை பிரீமியம் செயலில் இருக்கும். தேதியை ஆப் ஸ்டோரில் பார்க்கவும். கீழே உள்ள “சந்தாவை நிர்வகிக்கவும்” என்பதில் அதை மீண்டும் இயக்கலாம்."
+    },
+    "settings_premium_lifetime_subscription_active": {
+      "both": "உங்கள் சந்தா இன்னும் செயலில் உள்ளது. கீழே உள்ள “சந்தாவை நிர்வகிக்கவும்” என்பதில் அதை ரத்துசெய்யவும்."
+    },
+    "ios_settings_billing_retry_body": {
+      "ios": "பிரீமியத்தை மீண்டும் பெற, கீழே உள்ள “சந்தாவை நிர்வகிக்கவும்” என்பதில் கட்டண முறையைப் புதுப்பிக்கவும்."
     }
   },
   "te": {
@@ -181,6 +221,19 @@
     "premium_cancelled_body_play_switch": {
       "android": "మీరు చెల్లించిన వ్యవధి ముగిసే వరకు ప్రీమియం ఉంటుంది. తేదీని గూగుల్ ప్లేలో చూడండి.",
       "ios": "మీరు చెల్లించిన వ్యవధి ముగిసే వరకు ప్రీమియం ఉంటుంది. తేదీని గూగుల్ ప్లేలో చూడండి."
+    },
+    "settings_purchases": {
+      "both": "కొనుగోళ్లు"
+    },
+    "settings_premium_cancelled_body": {
+      "android": "మీరు చెల్లించిన వ్యవధి ముగిసే వరకు ప్రీమియం ఉంటుంది. తేదీని గూగుల్ ప్లేలో చూడండి. కింద ఉన్న “సభ్యత్వాన్ని నిర్వహించండి”లో దాన్ని మళ్లీ ప్రారంభించండి.",
+      "ios": "మీరు చెల్లించిన వ్యవధి ముగిసే వరకు ప్రీమియం ఉంటుంది. తేదీని యాప్ స్టోర్‌లో చూడండి. కింద ఉన్న “సభ్యత్వాన్ని నిర్వహించండి”లో దాన్ని మళ్లీ ప్రారంభించండి."
+    },
+    "settings_premium_lifetime_subscription_active": {
+      "both": "మీ సభ్యత్వం ఇంకా సక్రియంగా ఉంది. కింద ఉన్న “సభ్యత్వాన్ని నిర్వహించండి”లో దాన్ని రద్దు చేయండి."
+    },
+    "ios_settings_billing_retry_body": {
+      "ios": "ప్రీమియంను తిరిగి పొందడానికి కింద ఉన్న “సభ్యత్వాన్ని నిర్వహించండి”లో చెల్లింపు పద్ధతిని నవీకరించండి."
     }
   },
   "gu": {
@@ -222,6 +275,19 @@
     "premium_cancelled_body_play_switch": {
       "android": "તમે ચૂકવેલા સમયગાળાના અંત સુધી પ્રીમિયમ ચાલુ રહેશે. તારીખ ગૂગલ પ્લેમાં જુઓ.",
       "ios": "તમે ચૂકવેલા સમયગાળાના અંત સુધી પ્રીમિયમ ચાલુ રહેશે. તારીખ ગૂગલ પ્લેમાં જુઓ."
+    },
+    "settings_purchases": {
+      "both": "ખરીદીઓ"
+    },
+    "settings_premium_cancelled_body": {
+      "android": "તમે ચૂકવેલા સમયગાળાના અંત સુધી પ્રીમિયમ ચાલુ રહેશે. તારીખ ગૂગલ પ્લેમાં જુઓ. ફરી સક્રિય કરવા નીચે “સબ્સ્ક્રિપ્શન સંભાળો” ખોલો.",
+      "ios": "તમે ચૂકવેલા સમયગાળાના અંત સુધી પ્રીમિયમ ચાલુ રહેશે. તારીખ એપ સ્ટોરમાં જુઓ. ફરી સક્રિય કરવા નીચે “સબ્સ્ક્રિપ્શન સંભાળો” ખોલો."
+    },
+    "settings_premium_lifetime_subscription_active": {
+      "both": "તમારું સબ્સ્ક્રિપ્શન હજુ સક્રિય છે. તેને નીચે “સબ્સ્ક્રિપ્શન સંભાળો”માં રદ કરો."
+    },
+    "ios_settings_billing_retry_body": {
+      "ios": "પ્રીમિયમ ફરી મેળવવા નીચે “સબ્સ્ક્રિપ્શન સંભાળો”માં ચુકવણીની રીત અપડેટ કરો."
     }
   },
   "bn": {
@@ -263,6 +329,19 @@
     "premium_cancelled_body_play_switch": {
       "android": "আপনি যে সময়ের জন্য টাকা দিয়েছেন তার শেষ পর্যন্ত প্রিমিয়াম চালু থাকবে। তারিখ গুগল প্লেতে দেখুন।",
       "ios": "আপনি যে সময়ের জন্য টাকা দিয়েছেন তার শেষ পর্যন্ত প্রিমিয়াম চালু থাকবে। তারিখ গুগল প্লেতে দেখুন।"
+    },
+    "settings_purchases": {
+      "both": "কেনাকাটা"
+    },
+    "settings_premium_cancelled_body": {
+      "android": "আপনি যে সময়ের জন্য টাকা দিয়েছেন তার শেষ পর্যন্ত প্রিমিয়াম চালু থাকবে। তারিখ গুগল প্লেতে দেখুন। আবার সক্রিয় করতে নিচে “সাবস্ক্রিপশন পরিচালনা করুন” খুলুন।",
+      "ios": "আপনি যে সময়ের জন্য টাকা দিয়েছেন তার শেষ পর্যন্ত প্রিমিয়াম চালু থাকবে। তারিখ অ্যাপ স্টোরে দেখুন। আবার সক্রিয় করতে নিচে “সাবস্ক্রিপশন পরিচালনা করুন” খুলুন।"
+    },
+    "settings_premium_lifetime_subscription_active": {
+      "both": "আপনার সাবস্ক্রিপশন এখনও সক্রিয় আছে। নিচে “সাবস্ক্রিপশন পরিচালনা করুন”-এ গিয়ে এটি বাতিল করুন।"
+    },
+    "ios_settings_billing_retry_body": {
+      "ios": "প্রিমিয়াম ফিরে পেতে নিচে “সাবস্ক্রিপশন পরিচালনা করুন”-এ পেমেন্ট পদ্ধতি আপডেট করুন।"
     }
   }
 }
