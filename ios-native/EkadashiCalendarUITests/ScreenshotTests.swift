@@ -309,7 +309,9 @@ final class ScreenshotTests: XCTestCase {
                 prompt.exists || failure.exists || self.app.buttons["Cancel"].firstMatch.exists
                     || authentication.buttons["Cancel"].firstMatch.exists
             }, object: nil)
-            XCTAssertEqual(XCTWaiter.wait(for: [response], timeout: 15), .completed)
+            // The import first re-checks Premium with the App Store, which the
+            // simulator's StoreKit can take minutes to answer (fast on devices).
+            XCTAssertEqual(XCTWaiter.wait(for: [response], timeout: 150), .completed)
             if prompt.exists, prompt.buttons["Cancel"].exists {
                 prompt.buttons["Cancel"].tap()
             } else if app.buttons["Cancel"].firstMatch.exists {
@@ -545,6 +547,50 @@ final class ScreenshotTests: XCTestCase {
         #endif
     }
 
+    /// Settings redesign (Arun, 25 Nov 2026): Premium card, one Notifications
+    /// row that opens its own page, Appearance (with the badge haptics),
+    /// Google Calendar, then About & legal with Terms, Privacy and Contact
+    /// support. No Journey section.
+    func testSettingsAreGroupedAndNotificationsHaveTheirOwnPage() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        glassTab(4)
+        // Google Calendar stays in the Calendar tab only (Arun, 25 Nov 2026).
+        let ordered = ["settings_premium", "settings_notifications", "settings_widget_preview", "settings_dark_mode",
+                       "settings_glass_look", "journey_badge_haptics", "settings_rate", "settings_share",
+                       "settings_terms", "settings_privacy", "settings_contact_support", "settings_version"]
+        // Each row exists and sits below the previous one (checked while
+        // both are on screen).
+        var previous: XCUIElement?
+        for id in ordered {
+            let element = app.descendants(matching: .any).matching(identifier: id).firstMatch
+            for _ in 0..<6 where !element.exists || !element.isHittable { app.swipeUp() }
+            XCTAssertTrue(element.waitForExistence(timeout: 5), id)
+            if let previous, previous.isHittable {
+                XCTAssertLessThan(previous.frame.midY, element.frame.midY, "\(previous.identifier) before \(id)")
+            }
+            previous = element
+        }
+        XCTAssertFalse(app.descendants(matching: .any).matching(identifier: "settings_google_import").firstMatch.exists)
+        XCTAssertFalse(app.descendants(matching: .any).matching(identifier: "settings_google_disconnect").firstMatch.exists)
+        XCTAssertTrue(app.images["settings_badge_haptics_icon"].exists, "Badge haptics has its icon")
+        XCTAssertFalse(app.staticTexts["Journey"].exists && app.switches["journey_badge_haptics"].frame.minY
+                       > app.staticTexts["Journey"].frame.minY, "No Journey section")
+        // The Notifications page holds every reminder control.
+        for _ in 0..<8 { app.swipeDown() }
+        let notifications = app.buttons["settings_notifications"].firstMatch
+        XCTAssertTrue(notifications.waitForExistence(timeout: 5))
+        XCTAssertFalse(app.switches["notifications_master"].exists, "Reminder controls moved to their own page")
+        notifications.tap()
+        for id in ["notifications_master", "notify_toggle_notify_2day", "notifications_add_event", "settings_app_settings",
+                   "settings_permissions_guide"] {
+            let element = app.descendants(matching: .any).matching(identifier: id).firstMatch
+            for _ in 0..<6 where !element.exists || !element.isHittable { app.swipeUp() }
+            XCTAssertTrue(element.waitForExistence(timeout: 5), id)
+        }
+        XCTAssertTrue(app.staticTexts["Reminders not arriving?"].exists)
+        snap("settings-notifications-page")
+    }
+
     /// Arun (25 Nov 2026): on the Settings Premium card, Manage looked dimmed
     /// (teal on teal) next to Change plan. In dark mode its label and outline
     /// are white.
@@ -638,6 +684,24 @@ final class ScreenshotTests: XCTestCase {
         for index in stride(from: 0, to: pixels.count, by: 4)
         where min(pixels[index], pixels[index + 1], pixels[index + 2]) > 215 { white += 1 }
         return Double(white) / Double(width * height)
+    }
+
+    /// Settings > About & legal: Terms and Privacy open in the in-app Safari
+    /// sheet too (26 Nov 2026).
+    func testSettingsLegalLinksOpenInTheInAppBrowser() {
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        glassTab(4)
+        let safari = XCUIApplication(bundleIdentifier: "com.apple.mobilesafari")
+        for id in ["settings_terms", "settings_privacy"] {
+            let row = app.buttons[id].firstMatch
+            for _ in 0..<6 where !(row.exists && row.isHittable) { app.swipeUp() }
+            row.tap()
+            let done = app.buttons["Done"].firstMatch
+            XCTAssertTrue(done.waitForExistence(timeout: 15), "\(id) opens inside the app")
+            XCTAssertNotEqual(safari.state, .runningForeground, "\(id) must not open the Safari app")
+            done.tap()
+            XCTAssertTrue(row.waitForExistence(timeout: 10), "back in Settings")
+        }
     }
 
     /// Report issue 9 (Arun, 26 Nov 2026): Terms and Privacy open in an
@@ -1425,6 +1489,15 @@ final class ScreenshotTests: XCTestCase {
             .withOffset(CGVector(dx: frame.midX, dy: frame.midY)).tap()
     }
 
+    /// Settings > Notifications has its own page since 25 Nov 2026.
+    private func openNotifications() {
+        let row = app.buttons["settings_notifications"].firstMatch
+        for _ in 0..<4 where !(row.exists && row.isHittable) { app.swipeDown() }
+        XCTAssertTrue(row.waitForExistence(timeout: 10), "Settings > Notifications")
+        row.tap()
+        XCTAssertTrue(app.switches["notifications_master"].firstMatch.waitForExistence(timeout: 10))
+    }
+
     private func glassTab(_ index: Int) {
         for _ in 0..<3 {
             let frames = stableNativeTabFrames()
@@ -1518,11 +1591,14 @@ final class ScreenshotTests: XCTestCase {
                     thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)))
         }
         let value = enabled ? "1" : "0"
-        if toggle.value as? String != value {
+        // A tap made while the list is still settling can be lost (full UI
+        // suite, 26 Nov 2026); tap once more if the switch has not changed.
+        for _ in 0..<2 where toggle.value as? String != value {
             // Accessibility exposes the whole row. The switch track is
             // centered about 44 points inside its trailing edge.
             toggle.coordinate(withNormalizedOffset: CGVector(dx: 1, dy: 0.5))
                 .withOffset(CGVector(dx: -44, dy: 0)).tap()
+            _ = XCTWaiter.wait(for: [expectation(for: NSPredicate(format: "value == %@", value), evaluatedWith: toggle)], timeout: 2)
         }
         XCTAssertTrue(NSPredicate(format: "value == %@", value).evaluate(with: toggle)
             || XCTWaiter.wait(for: [expectation(for: NSPredicate(format: "value == %@", value), evaluatedWith: toggle)], timeout: 5) == .completed,
@@ -1614,8 +1690,13 @@ final class ScreenshotTests: XCTestCase {
                     XCTAssertTrue(option.waitForExistence(timeout: 5))
                     option.tap(); current = language
                 }
+                // Wait for the menu to close and Home to redraw in the new
+                // language before the next tap (a tap during the redraw was
+                // lost and left the menu open over Home).
                 let record = app.buttons["home_record_vrat"].firstMatch
-                XCTAssertTrue(record.isHittable)
+                let ready = XCTNSPredicateExpectation(predicate: NSPredicate(format: "hittable == true"), object: record)
+                XCTAssertEqual(XCTWaiter.wait(for: [ready], timeout: 10), .completed, "Home ready after \(language)")
+                Thread.sleep(forTimeInterval: 0.5)
                 let actionsTop = ["view_details", "home_share_card", "home_record_vrat"]
                     .map { app.buttons[$0].firstMatch.frame.minY }.min()!
                 let text = app.staticTexts[message].firstMatch
@@ -2242,6 +2323,7 @@ final class ScreenshotTests: XCTestCase {
     func testEventReminderIsAddedFromSettings() {
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 20))
         tab(4)
+        openNotifications()
         // The Ekadashi switches come first, then Festivals and events.
         let parana = app.descendants(matching: .any)["notify_toggle_notify_parana"].firstMatch
         for _ in 0..<6 where !(parana.exists && parana.isHittable) { app.swipeUp() }
@@ -2285,6 +2367,8 @@ final class ScreenshotTests: XCTestCase {
     func testTestNotificationKeepsTheAppRunning() {
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 20))
         tab(4)
+        // Test Notification lives on Settings > Notifications (25 Nov 2026).
+        openNotifications()
         // Found by its title (the row has no identifier of its own).
         let send = app.staticTexts["Test Notification"].firstMatch
         // The row sits just below the first screen, under the floating tab
@@ -2321,6 +2405,7 @@ final class ScreenshotTests: XCTestCase {
     func testLockedReminderEventOpensThePaywall() {
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 20))
         tab(4)
+        openNotifications()
         let add = app.buttons["notifications_add_event"]
         for _ in 0..<8 where !(add.exists && add.isHittable) { app.swipeUp() }
         XCTAssertTrue(add.waitForExistence(timeout: 5))
@@ -2348,6 +2433,7 @@ final class ScreenshotTests: XCTestCase {
     func testEkadashiRemindersFollowTheMasterSwitch() {
         XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 20))
         tab(4)
+        openNotifications()
         let master = app.switches["notifications_master"].firstMatch
         XCTAssertTrue(reveal(master))
         let initiallyOn = expectation(for: NSPredicate(format: "value == '1'"), evaluatedWith: master)

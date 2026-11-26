@@ -154,6 +154,18 @@ class AppLocalizationsGu extends AppLocalizations {
   String get about => 'વિશે';
 
   @override
+  String get settings_about_legal => 'વિશે અને કાનૂની';
+
+  @override
+  String get settings_contact_support => 'સહાયનો સંપર્ક કરો';
+
+  @override
+  String get settings_contact_support_desc => 'મદદ માટે અમને ઈમેલ કરો';
+
+  @override
+  String get settings_reminders_not_arriving => 'રિમાઇન્ડર નથી આવતાં?';
+
+  @override
   String get app_update_available => 'અપડેટ ઉપલબ્ધ છે';
 
   @override

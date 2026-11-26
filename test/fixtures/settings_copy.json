@@ -1,0 +1,39 @@
+{
+  "_about": "Settings redesign strings (Arun, 25 Nov 2026; translations by Claude). Identical on both apps. Checked by test/unit/settings_copy_test.dart and EkadashiCoreTests/BillingCopyTests.swift (SettingsCopyTests).",
+  "en": {
+    "settings_about_legal": "About & legal",
+    "settings_contact_support": "Contact support",
+    "settings_contact_support_desc": "Email us for help",
+    "settings_reminders_not_arriving": "Reminders not arriving?"
+  },
+  "hi": {
+    "settings_about_legal": "बारे में और कानूनी",
+    "settings_contact_support": "सहायता से संपर्क करें",
+    "settings_contact_support_desc": "मदद के लिए हमें ईमेल करें",
+    "settings_reminders_not_arriving": "रिमाइंडर नहीं आ रहे?"
+  },
+  "ta": {
+    "settings_about_legal": "பற்றி மற்றும் சட்டம்",
+    "settings_contact_support": "உதவியைத் தொடர்புகொள்ளுங்கள்",
+    "settings_contact_support_desc": "உதவிக்கு எங்களுக்கு மின்னஞ்சல் அனுப்புங்கள்",
+    "settings_reminders_not_arriving": "நினைவூட்டல்கள் வரவில்லையா?"
+  },
+  "te": {
+    "settings_about_legal": "గురించి మరియు చట్టపరమైనవి",
+    "settings_contact_support": "సహాయాన్ని సంప్రదించండి",
+    "settings_contact_support_desc": "సహాయం కోసం మాకు ఈమెయిల్ చేయండి",
+    "settings_reminders_not_arriving": "రిమైండర్‌లు రావడం లేదా?"
+  },
+  "gu": {
+    "settings_about_legal": "વિશે અને કાનૂની",
+    "settings_contact_support": "સહાયનો સંપર્ક કરો",
+    "settings_contact_support_desc": "મદદ માટે અમને ઈમેલ કરો",
+    "settings_reminders_not_arriving": "રિમાઇન્ડર નથી આવતાં?"
+  },
+  "bn": {
+    "settings_about_legal": "সম্পর্কে ও আইনি",
+    "settings_contact_support": "সহায়তায় যোগাযোগ করুন",
+    "settings_contact_support_desc": "সাহায্যের জন্য আমাদের ইমেল করুন",
+    "settings_reminders_not_arriving": "রিমাইন্ডার আসছে না?"
+  }
+}

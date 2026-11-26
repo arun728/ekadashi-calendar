@@ -54,6 +54,13 @@ struct TodayView: View {
                 .overlay { if model.isCalculating { ProgressView().tint(Theme.teal) } }
             }
         }
+        // Details open through Home's path so a Home link (widget tap) can
+        // close them without rebuilding Home (26 Nov 2026 crash fix).
+        .navigationDestination(for: HomeDetail.self) { detail in
+            if let event = model.ekadashis.first(where: { $0.occurrenceUid == detail.uid }) {
+                EkadashiDetailsView(event: event)
+            }
+        }
     }
 
     /// An arrow to the card at [target], read out as that Ekadashi's name.
@@ -259,9 +266,7 @@ struct EkadashiCard: View {
             // Keep these independent: a shared GlassEffectContainer blends
             // neighboring interactive surfaces during a press.
             HStack(spacing: 8) {
-                NavigationLink {
-                    EkadashiDetailsView(event: event)
-                } label: {
+                NavigationLink(value: HomeDetail(uid: event.occurrenceUid)) {
                     Text(model.t("view_details")).font(.callout.bold()).frame(maxWidth: .infinity).padding(.vertical, 6)
                 }
                 .primaryActionStyle()

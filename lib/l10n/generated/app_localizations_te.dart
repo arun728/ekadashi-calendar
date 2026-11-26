@@ -154,6 +154,18 @@ class AppLocalizationsTe extends AppLocalizations {
   String get about => 'గురించి';
 
   @override
+  String get settings_about_legal => 'గురించి మరియు చట్టపరమైనవి';
+
+  @override
+  String get settings_contact_support => 'సహాయాన్ని సంప్రదించండి';
+
+  @override
+  String get settings_contact_support_desc => 'సహాయం కోసం మాకు ఈమెయిల్ చేయండి';
+
+  @override
+  String get settings_reminders_not_arriving => 'రిమైండర్‌లు రావడం లేదా?';
+
+  @override
   String get app_update_available => 'అప్‌డేట్ అందుబాటులో ఉంది';
 
   @override

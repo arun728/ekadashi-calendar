@@ -154,6 +154,18 @@ class AppLocalizationsBn extends AppLocalizations {
   String get about => 'সম্পর্কে';
 
   @override
+  String get settings_about_legal => 'সম্পর্কে ও আইনি';
+
+  @override
+  String get settings_contact_support => 'সহায়তায় যোগাযোগ করুন';
+
+  @override
+  String get settings_contact_support_desc => 'সাহায্যের জন্য আমাদের ইমেল করুন';
+
+  @override
+  String get settings_reminders_not_arriving => 'রিমাইন্ডার আসছে না?';
+
+  @override
   String get app_update_available => 'আপডেট পাওয়া যাচ্ছে';
 
   @override

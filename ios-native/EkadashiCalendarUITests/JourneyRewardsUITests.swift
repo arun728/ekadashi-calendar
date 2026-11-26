@@ -118,8 +118,18 @@ final class JourneyRewardsUITests: XCTestCase {
                 app.buttons["journey_row_ekadashi:2026:01"].tap()
                 app.buttons["Delete Record"].tap()
                 app.alerts.buttons["Delete Record"].tap()
+                // The record sheet must finish closing before the next tap.
+                waitUntilGone(app.buttons["Delete Record"])
             }
         }
+    }
+
+    /// Waits for a closing sheet's control to leave the screen (a tap made
+    /// while a sheet is still animating closed is ignored).
+    private func waitUntilGone(_ element: XCUIElement, timeout: TimeInterval = 10) {
+        let gone = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false"), object: element)
+        XCTAssertEqual(XCTWaiter.wait(for: [gone], timeout: timeout), .completed, "\(element) did not close")
+        Thread.sleep(forTimeInterval: 0.6)
     }
 
     func testOverviewAndAchievementCardsHaveUniformSizes() {
@@ -254,6 +264,8 @@ final class JourneyRewardsUITests: XCTestCase {
         app.buttons["journey_row_ekadashi:2026:02"].tap()
         app.buttons["Delete Record"].tap()
         app.alerts.buttons["Delete Record"].tap()
+        // The record sheet must finish closing before the next tap.
+        waitUntilGone(app.buttons["Delete Record"])
         app.buttons["journey_tab_overview"].tap()
         XCTAssertTrue(app.staticTexts["Current consistency streak · 1"].waitForExistence(timeout: 5))
         capture(app, "journey-consistency-after-deletion")

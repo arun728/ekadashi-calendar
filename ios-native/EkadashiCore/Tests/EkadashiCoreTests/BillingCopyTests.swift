@@ -40,3 +40,17 @@ final class BillingCopyTests: XCTestCase {
         }
     }
 }
+
+/// Settings redesign strings (test/fixtures/settings_copy.json, Arun 25 Nov
+/// 2026): the same text on both apps.
+final class SettingsCopyTests: XCTestCase {
+    func testIOSShowsTheSettingsRedesignStringsInEveryLanguage() throws {
+        let copy = try Repo.json("test/fixtures/settings_copy.json") as! [String: Any]
+        for language in Localizer.languages {
+            let rows = try XCTUnwrap(copy[language] as? [String: String], language)
+            for (key, expected) in rows {
+                XCTAssertEqual(Localizer.shared.translate(key, language: language), expected, "\(language) \(key)")
+            }
+        }
+    }
+}

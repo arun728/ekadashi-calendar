@@ -154,6 +154,18 @@ class AppLocalizationsHi extends AppLocalizations {
   String get about => 'बारे में';
 
   @override
+  String get settings_about_legal => 'बारे में और कानूनी';
+
+  @override
+  String get settings_contact_support => 'सहायता से संपर्क करें';
+
+  @override
+  String get settings_contact_support_desc => 'मदद के लिए हमें ईमेल करें';
+
+  @override
+  String get settings_reminders_not_arriving => 'रिमाइंडर नहीं आ रहे?';
+
+  @override
   String get app_update_available => 'अपडेट उपलब्ध है';
 
   @override

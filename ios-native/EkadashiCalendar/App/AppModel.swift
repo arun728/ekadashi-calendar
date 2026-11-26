@@ -85,7 +85,9 @@ final class AppModel {
     var restoredSearch: SearchSession?
     var homeIndex = 0
     /// Rebuild Home navigation when an occurrence link must return to its root.
-    private(set) var homeNavigationRevision = 0
+    /// Home's navigation (the details pushed from a card). A Home link
+    /// empties it; Home is never rebuilt (26 Nov 2026 crash fix).
+    var homePath = NavigationPath()
     var calendarFocus: CivilDate?
     /// A day to open in Panchang (from an event reminder).
     var panchangFocus: CivilDate?
@@ -692,7 +694,7 @@ final class AppModel {
             selectedTab = .today
             setYear(event.date.year)
             if let index = homeEkadashis.firstIndex(where: { $0.occurrenceUid == uid }) { homeIndex = index }
-            homeNavigationRevision += 1
+            homePath = NavigationPath()
         case .search:
             restoredSearch = nil
             showSearch = true
@@ -934,4 +936,9 @@ final class AppModel {
         guard let first = enabledYears.first, let last = enabledYears.last else { return nil }
         return first...last
     }
+}
+
+/// A detail screen pushed from a Home card, by occurrence.
+struct HomeDetail: Hashable {
+    let uid: String
 }

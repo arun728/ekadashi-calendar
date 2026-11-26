@@ -388,6 +388,30 @@ abstract class AppLocalizations {
   /// **'About'**
   String get about;
 
+  /// No description provided for @settings_about_legal.
+  ///
+  /// In en, this message translates to:
+  /// **'About & legal'**
+  String get settings_about_legal;
+
+  /// No description provided for @settings_contact_support.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact support'**
+  String get settings_contact_support;
+
+  /// No description provided for @settings_contact_support_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Email us for help'**
+  String get settings_contact_support_desc;
+
+  /// No description provided for @settings_reminders_not_arriving.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminders not arriving?'**
+  String get settings_reminders_not_arriving;
+
   /// No description provided for @app_update_available.
   ///
   /// In en, this message translates to:

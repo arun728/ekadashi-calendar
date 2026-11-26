@@ -154,6 +154,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get about => 'About';
 
   @override
+  String get settings_about_legal => 'About & legal';
+
+  @override
+  String get settings_contact_support => 'Contact support';
+
+  @override
+  String get settings_contact_support_desc => 'Email us for help';
+
+  @override
+  String get settings_reminders_not_arriving => 'Reminders not arriving?';
+
+  @override
   String get app_update_available => 'Update available';
 
   @override
