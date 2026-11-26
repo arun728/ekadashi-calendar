@@ -8,6 +8,7 @@ import 'widgets/settings_permission_actions.dart';
 import '../widgets/settings_group.dart';
 import 'widget_preview_screen.dart';
 import 'premium_screen.dart';
+import '../services/in_app_browser.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -433,20 +434,15 @@ class _SettingsScreenState extends State<SettingsScreen>
               key: const Key('settings_terms'),
               leading: const SettingsIcon(AppIcons.settingsTerms),
               title: Text(lang.translate('terms_of_service')),
-              onTap: () => launchUrl(
-                Uri.parse(PremiumScreen.termsUrl),
-                mode: LaunchMode.externalApplication,
-              ),
+              onTap: () => InAppBrowser.open(Uri.parse(PremiumScreen.termsUrl)),
             ),
             const SettingsSeparator(inset: SettingsStyle.iconInset),
             ListTile(
               key: const Key('settings_privacy'),
               leading: const SettingsIcon(AppIcons.settingsPrivacy),
               title: Text(lang.translate('privacy_policy')),
-              onTap: () => launchUrl(
-                Uri.parse(PremiumScreen.privacyUrl),
-                mode: LaunchMode.externalApplication,
-              ),
+              onTap: () =>
+                  InAppBrowser.open(Uri.parse(PremiumScreen.privacyUrl)),
             ),
             const SettingsSeparator(inset: SettingsStyle.iconInset),
             ListTile(
