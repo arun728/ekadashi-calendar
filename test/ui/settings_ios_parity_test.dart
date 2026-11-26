@@ -416,19 +416,11 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('glass_tab_4')));
       await tester.pumpAndSettle();
-      // A free user: Google Play's subscriptions page still opens.
+      // A free user: Google Play's list of subscriptions (not the page of a
+      // subscription they never had).
       await tester.tap(find.byKey(const Key('settings_manage_subscription')));
       await tester.pumpAndSettle();
-      expect(opened, hasLength(1));
-      expect(
-        opened.single,
-        startsWith(
-          'https://play.google.com/store/account/subscriptions'
-          '?package=com.applausestudios.ekadashi_calendar',
-        ),
-      );
-      // Restore asks Google Play and always answers (this test has no Play
-      // Store, so the answer is "unavailable" or "none").
+      expect(opened, ['https://play.google.com/store/account/subscriptions']);
       await tester.tap(find.byKey(const Key('settings_restore_purchases')));
       final lang = LanguageService();
       final answers = [
