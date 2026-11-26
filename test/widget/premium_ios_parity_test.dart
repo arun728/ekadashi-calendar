@@ -42,6 +42,7 @@ void main() {
     PremiumFixture? source,
     Set<String> owned = const {},
     String? reason,
+    ThemeData? theme,
   }) async {
     tester.view.physicalSize = const Size(1179, 2556);
     tester.view.devicePixelRatio = 3;
@@ -60,7 +61,7 @@ void main() {
           ChangeNotifierProvider.value(value: premium),
         ],
         child: MaterialApp(
-          theme: AppTheme.lightTheme,
+          theme: theme ?? AppTheme.lightTheme,
           home: PremiumScreen(billingOverride: billing, reasonKey: reason),
         ),
       ),
@@ -235,6 +236,30 @@ void main() {
     );
     expect(tester.takeException(), isNull);
   });
+
+  // Arun (26 Nov 2026): "Cancel subscription in Google Play" was not clear on
+  // the orange card; it looks like the Settings card's Manage button.
+  for (final dark in [true, false]) {
+    testWidgets('Cancel subscription is a clear outlined button '
+        '(${dark ? 'dark' : 'light'})', (tester) async {
+      await pump(
+        tester,
+        owned: {PremiumService.subscriptionId, PremiumService.lifetimeId},
+        theme: dark ? AppTheme.darkTheme : AppTheme.lightTheme,
+      );
+      final style = tester
+          .widget<OutlinedButton>(
+            find.byKey(const Key('premium_cancel_subscription')),
+          )
+          .style!;
+      final expected = dark ? Colors.white : Colors.black;
+      final label = style.foregroundColor!.resolve({})!;
+      final outline = style.side!.resolve({})!.color;
+      expect(label.toARGB32() & 0xFFFFFF, expected.toARGB32() & 0xFFFFFF);
+      expect(outline.toARGB32() & 0xFFFFFF, expected.toARGB32() & 0xFFFFFF);
+      expect(outline.a, greaterThanOrEqualTo(.8));
+    });
+  }
 
   testWidgets('member status cards are glass panels', (tester) async {
     await pump(tester, owned: {PremiumService.subscriptionId});

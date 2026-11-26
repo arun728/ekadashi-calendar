@@ -623,6 +623,44 @@ final class ScreenshotTests: XCTestCase {
         #endif
     }
 
+    /// Arun (26 Nov 2026): "Cancel subscription in the App Store" on the orange
+    /// card was not clear; in dark mode it is white like Manage.
+    @MainActor
+    func testCancelSubscriptionButtonIsClearlyReadable() async throws {
+        #if !targetEnvironment(simulator)
+        throw XCTSkip("Purchases and resets belong only to isolated Simulator test accounts")
+        #else
+        let configuration = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("EkadashiCalendar/Resources/Products.storekit")
+        app.terminate()
+        let session = try SKTestSession(contentsOf: configuration)
+        session.resetToDefaultState()
+        session.disableDialogs = true
+        session.timeRate = .realTime
+        try session.clearTransactions()
+        defer { try? session.clearTransactions() }
+        app.launch()
+        XCTAssertTrue(app.buttons["view_details"].firstMatch.waitForExistence(timeout: 30))
+        glassTab(4)
+        setSwitch(app.switches["settings_dark_mode"].firstMatch, to: true)
+        for _ in 0..<5 { app.swipeDown() }
+        app.buttons["settings_premium"].firstMatch.tap()
+        let monthly = app.buttons["premium_plan_monthly"].firstMatch
+        XCTAssertTrue(monthly.waitForExistence(timeout: 30))
+        monthly.tap(); app.buttons["premium_buy"].firstMatch.tap()
+        await fulfillment(of: [expectation(for: NSPredicate(format: "label CONTAINS %@", "Current plan"),
+                                           evaluatedWith: monthly)], timeout: 60)
+        app.buttons["premium_plan_lifetime"].firstMatch.tap(); app.buttons["premium_buy"].firstMatch.tap()
+        if app.alerts.buttons["Buy lifetime"].waitForExistence(timeout: 5) { app.alerts.buttons["Buy lifetime"].tap() }
+        let cancel = app.buttons["premium_cancel_subscription"].firstMatch
+        XCTAssertTrue(cancel.waitForExistence(timeout: 60), "Lifetime with an active subscription")
+        try await Task.sleep(nanoseconds: 1_000_000_000)
+        let share = whitePixelShare(cancel.screenshot().image)
+        snap("premium-cancel-subscription-dark")
+        XCTAssertGreaterThan(share, 0.03, "Cancel subscription is too faint: \(share) white")
+        #endif
+    }
+
     /// The share of an image's pixels that are near white.
     private func whitePixelShare(_ image: UIImage) -> Double {
         guard let cg = image.cgImage else { return 0 }
