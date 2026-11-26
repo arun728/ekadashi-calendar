@@ -355,11 +355,11 @@ struct SettingsPremiumCard: View {
     }
 }
 
-/// Manage on the Premium card (Arun, 25 Nov 2026: teal on the teal card
-/// looked disabled next to Change plan). The label and outline use the
+/// Manage on the Premium card and Cancel subscription on the plans page
+/// (Arun, 25-26 Nov 2026: teal on a tinted card looked disabled). The label and outline use the
 /// primary text colour, white in dark mode, so it reads as a normal button
 /// that is still less prominent than the filled Change plan.
-private struct PremiumCardOutlineStyle: ButtonStyle {
+struct PremiumCardOutlineStyle: ButtonStyle {
     @Environment(\.isEnabled) private var enabled
     func makeBody(configuration: Configuration) -> some View {
         configuration.label

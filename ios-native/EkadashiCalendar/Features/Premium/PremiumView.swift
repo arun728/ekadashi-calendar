@@ -129,7 +129,7 @@ struct PremiumView: View {
             if state.subscribed {
                 statusCard("premium_active", "premium_cancel_subscription_note", .orange) {
                     Button(model.t("premium_cancel_subscription_action")) { managing = true }
-                        .secondaryActionStyle()
+                        .buttonStyle(PremiumCardOutlineStyle())
                         .accessibilityIdentifier("premium_cancel_subscription")
                 }
             }
