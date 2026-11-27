@@ -43,11 +43,11 @@ Every starting point to every other option. Unless a rule says otherwise,
 | A fresh install calculates only the detected place (not Chennai first) | Gap (Android-only work) | `home_launch_test` "a first launch without a saved city or last fix…" |
 | A fix within 5 km with the same name is the same place (no recalculation) | Gap (Android-only work) | `ekadashi_settings_test` "a fix within 5 km…" |
 | A new place shows its next Ekadashi before its full years | Gap (Android-only work) | `home_launch_test` "a new place shows the next Ekadashi…", `ekadashi_preview_test` |
-| Declined location: Chennai, its next Ekadashi | Gap | Gap |
+| Declined location: Chennai, its next Ekadashi, no other card first | Gap | `home_launch_test` "declining location on a fresh install…" |
 
 ## Opening Home
 
 | Rule | iOS test | Android test |
 |---|---|---|
-| Opens on the next Ekadashi; the year's first (often passed) card never flashes | Gap | `home_launch_test` "Home opens on the next Ekadashi without first showing…" |
+| Opens on the next Ekadashi; the year's first (often passed) card never flashes, also when the full list replaces a new place's first card | Gap | `home_launch_test` "Home opens on the next Ekadashi without first showing…", "a new place shows the next Ekadashi…" |
 | A widget or `ekadashi://` link opens its exact card across years | `AppModelTests.testWidgetDeepLinkSelectsExactHomeCardAcrossYearsWithoutDetailsSheet` | `android_widget_navigation_test` |

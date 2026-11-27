@@ -811,11 +811,14 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           ? shown[_currentPage].occurrenceUid
           : null;
 
+      final replacesPreview = _isPreview;
       setState(() {
         _allEkadashis = ekadashis;
         _ekadashiList = _homeYearList();
         _isPreview = false;
-        if (currentUid == null) _initialPagePending = true;
+        // A new list (also the full one after the first card) is shown only
+        // once Home is on its page, so no other card shows for a frame.
+        if (currentUid == null || replacesPreview) _initialPagePending = true;
         _currentTimezone = city.timeZoneId;
         _isLoading = false;
         _isCalculating = false;

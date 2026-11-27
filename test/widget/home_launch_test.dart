@@ -145,4 +145,28 @@ void main() {
     expect(find.byKey(const Key('home_page_indicator')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  // M52, 27 November 2026: Don't allow on the location prompt.
+  testWidgets('declining location on a fresh install shows Chennai\'s next '
+      'Ekadashi, without another card first', (tester) async {
+    DisplayClock.setTestClock(() => DateTime.utc(2026, 11, 27, 4, 30));
+    await harness.install(preferences: {'has_launched': false});
+    harness.locationGranted = false;
+    await tester.pumpWidget(harness.app());
+    var sawFirstOfYear = false;
+    for (var i = 0; i < 300; i++) {
+      await tester.pump(const Duration(milliseconds: 16));
+      if (find.text('Shattila Ekadashi').evaluate().isNotEmpty) {
+        sawFirstOfYear = true;
+      }
+    }
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<Text>(find.byKey(const Key('home_location_name'))).data,
+      'Chennai (IN)',
+    );
+    expect(find.text('Utpanna Ekadashi'), findsWidgets);
+    expect(sawFirstOfYear, isFalse);
+    expect(tester.takeException(), isNull);
+  });
 }
