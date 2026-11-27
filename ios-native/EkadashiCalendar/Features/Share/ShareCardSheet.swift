@@ -17,7 +17,7 @@ struct ShareCardSheet: View {
 
     private var message: String {
         AppLinks.shareCardMessage(model.t("share_card_message", event.name, model.fullDate(event.date)),
-                                  appStoreId: Bundle.main.object(forInfoDictionaryKey: "EkadashiAppStoreId") as? String ?? "")
+                                  appStoreId: AppLinks.appStoreId(configured: Bundle.main.object(forInfoDictionaryKey: "EkadashiAppStoreId") as? String))
     }
 
     var body: some View {

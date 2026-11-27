@@ -134,10 +134,12 @@ void main() {
             tester.getTopLeft(find.byKey(const Key('settings_premium'))).dy,
           ),
         );
+        // Purchases (27 Nov 2026) sits between Appearance and About & legal.
         await checkHeaders(
-          ['appearance', 'settings_about_legal'],
+          ['appearance', 'settings_purchases', 'settings_about_legal'],
           {
             'appearance': 'settings_appearance_tube',
+            'settings_purchases': 'settings_purchases_tube',
             'settings_about_legal': 'settings_about_tube',
           },
         );
@@ -224,6 +226,42 @@ void main() {
         for (final element in switches.evaluate()) {
           expect(Theme.of(element).platform, TargetPlatform.iOS);
         }
+
+        // Purchases: exactly Manage subscription and Restore purchases, with
+        // their icons and no notes or dates, for every user (27 Nov 2026).
+        final purchases = find.byKey(const Key('settings_purchases_tube'));
+        for (final (key, label, icon) in [
+          (
+            'settings_manage_subscription',
+            'premium_manage',
+            AppIcons.settingsManageSubscription,
+          ),
+          (
+            'settings_restore_purchases',
+            'premium_restore',
+            AppIcons.settingsRestorePurchases,
+          ),
+        ]) {
+          final row = inTube(purchases, find.byKey(Key(key)));
+          expect(row, findsOneWidget, reason: key);
+          expect(
+            find.descendant(
+              of: row,
+              matching: find.text(lang.translate(label)),
+            ),
+            findsOneWidget,
+          );
+          expect(
+            find.descendant(of: row, matching: find.byIcon(icon)),
+            findsOneWidget,
+          );
+        }
+        expect(
+          inTube(purchases, find.byType(Text)),
+          findsNWidgets(2),
+          reason: 'two labels, no notes',
+        );
+        expect(find.byKey(const Key('settings_premium_manage')), findsNothing);
 
         // About: Rate, Share and the Version row inside the same card.
         final about = find.byKey(const Key('settings_about_tube'));
@@ -343,6 +381,66 @@ void main() {
       });
     }
   }
+
+  testWidgets(
+    'Purchases: Manage subscription opens Google Play; Restore answers',
+    (tester) async {
+      final opened = <String>[];
+      const channel = MethodChannel('plugins.flutter.io/url_launcher');
+      const androidChannel = BasicMessageChannel<Object?>(
+        'dev.flutter.pigeon.url_launcher_android.UrlLauncherApi.launchUrl',
+        StandardMessageCodec(),
+      );
+      final messenger =
+          TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+      messenger.setMockMethodCallHandler(channel, (call) async {
+        opened.add((call.arguments as Map)['url'] as String);
+        return true;
+      });
+      messenger.setMockDecodedMessageHandler(androidChannel, (message) async {
+        opened.add((message! as List<Object?>).first! as String);
+        return [true];
+      });
+      addTearDown(() {
+        messenger.setMockMethodCallHandler(channel, null);
+        messenger.setMockDecodedMessageHandler(androidChannel, null);
+      });
+      final harness = AppHarness();
+      await tester.runAsync(() => harness.install());
+      addTearDown(harness.uninstall);
+      tester.view.physicalSize = const Size(393, 2300);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(harness.app());
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('glass_tab_4')));
+      await tester.pumpAndSettle();
+      // A free user: Google Play's list of subscriptions (not the page of a
+      // subscription they never had).
+      await tester.tap(find.byKey(const Key('settings_manage_subscription')));
+      await tester.pumpAndSettle();
+      expect(opened, ['https://play.google.com/store/account/subscriptions']);
+      await tester.tap(find.byKey(const Key('settings_restore_purchases')));
+      final lang = LanguageService();
+      final answers = [
+        'premium_restored',
+        'premium_restore_none',
+        'premium_unavailable',
+      ].map(lang.translate).toList();
+      Finder answer() => find.byWidgetPredicate(
+        (widget) => widget is Text && answers.contains(widget.data),
+      );
+      for (var i = 0; i < 50 && answer().evaluate().isEmpty; i++) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 100)),
+        );
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      expect(answer(), findsOneWidget);
+      await tester.pumpAndSettle(const Duration(seconds: 5));
+    },
+  );
 
   testWidgets(
     'Contact support emails Apptinel; Terms and Privacy open in app',

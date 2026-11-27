@@ -167,6 +167,17 @@ class AppLocalizationsTa extends AppLocalizations {
   String get settings_reminders_not_arriving => 'நினைவூட்டல்கள் வரவில்லையா?';
 
   @override
+  String get settings_purchases => 'வாங்குதல்கள்';
+
+  @override
+  String get settings_premium_cancelled_body =>
+      'நீங்கள் செலுத்திய காலம் முடியும் வரை பிரீமியம் செயலில் இருக்கும். தேதியைக் கூகுள் பிளேயில் பார்க்கவும். கீழே உள்ள “சந்தாவை நிர்வகிக்கவும்” என்பதில் அதை மீண்டும் இயக்கலாம்.';
+
+  @override
+  String get settings_premium_lifetime_subscription_active =>
+      'உங்கள் சந்தா இன்னும் செயலில் உள்ளது. கீழே உள்ள “சந்தாவை நிர்வகிக்கவும்” என்பதில் அதை ரத்துசெய்யவும்.';
+
+  @override
   String get app_update_available => 'புதுப்பிப்பு கிடைக்கிறது';
 
   @override
@@ -1530,9 +1541,6 @@ class AppLocalizationsTa extends AppLocalizations {
   String settings_premium_plan(String value0) {
     return 'உங்கள் திட்டம்: $value0';
   }
-
-  @override
-  String get settings_premium_manage => 'நிர்வகி';
 
   @override
   String get settings_premium_plans => 'திட்டத்தை மாற்று';

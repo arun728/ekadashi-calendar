@@ -15,6 +15,7 @@ analyzer:
     - web/**
     - scripts/**
     - tool/**
+    - store-assets/**
 include: package:flutter_lints/flutter.yaml
 
 linter:

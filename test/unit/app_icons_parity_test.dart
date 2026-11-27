@@ -68,6 +68,7 @@ const _byName = <String, IconData>{
   'mail': CupertinoIcons.mail,
   'bolt_fill': CupertinoIcons.bolt_fill,
   'calendar': CupertinoIcons.calendar,
+  'creditcard': CupertinoIcons.creditcard,
   'calendar_badge_minus': CupertinoIcons.calendar_badge_minus,
   'calendar_badge_plus': CupertinoIcons.calendar_badge_plus,
   'calendar_circle': CupertinoIcons.calendar_circle,

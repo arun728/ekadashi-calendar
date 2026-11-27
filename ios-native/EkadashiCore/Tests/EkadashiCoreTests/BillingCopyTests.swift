@@ -33,7 +33,8 @@ final class BillingCopyTests: XCTestCase {
         let google = ["Google", "गूगल", "கூகுள்", "గూగుల్", "ગૂગલ", "গুগল"]
         for language in Localizer.languages {
             for key in ["premium_renewal_in_play", "premium_monthly_switch_scheduled", "premium_cancelled_body",
-                        "premium_switch_at_renewal_body", "premium_manage", "premium_monthly_terms", "premium_yearly_terms"] {
+                        "premium_switch_at_renewal_body", "premium_manage", "premium_monthly_terms", "premium_yearly_terms",
+                        "settings_premium_cancelled_body", "ios_settings_billing_retry_body"] {
                 let text = Localizer.shared.translate(key, language: language)
                 XCTAssertFalse(google.contains { text.contains($0) }, "\(language) \(key): \(text)")
             }

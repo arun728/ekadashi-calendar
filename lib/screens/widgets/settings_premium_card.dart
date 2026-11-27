@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../l10n/app_language.dart';
 import '../../services/language_service.dart';
@@ -13,7 +12,8 @@ import '../../widgets/app_icons.dart';
 
 /// Premium at the top of Settings (docs/ROADMAP.md Phase 5), like the iOS
 /// SettingsPremiumCard: what it unlocks and the Google Play prices, or the
-/// member's plan with Manage and Change plan.
+/// member's plan with Change plan. Manage lives in the Purchases section
+/// (Arun, 27 Nov 2026); notes point there, never a date.
 class SettingsPremiumCard extends StatelessWidget {
   const SettingsPremiumCard({super.key, this.currentTimezone = 'IST'});
   final String currentTimezone;
@@ -195,18 +195,23 @@ class SettingsPremiumCard extends StatelessWidget {
   ) {
     final billing = context.watch<PlayBillingService?>();
     final plan = billing?.currentPlanId;
-    final primary = Theme.of(context).brightness == Brightness.dark
-        ? Colors.white
-        : Colors.black;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (premium.lifetime)
+        if (premium.lifetime) ...[
           Text(
             lang.translate('premium_lifetime_thanks_body'),
             style: const TextStyle(fontSize: 15),
-          )
-        else ...[
+          ),
+          if (premium.subscribed && !premium.subscriptionCancelled) ...[
+            const SizedBox(height: 8),
+            Text(
+              key: const Key('settings_premium_note'),
+              lang.translate('settings_premium_lifetime_subscription_active'),
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+            ),
+          ],
+        ] else ...[
           if (plan != null)
             Text(
               AppStrings.translateWithArgs(
@@ -226,7 +231,7 @@ class SettingsPremiumCard extends StatelessWidget {
               premium.subscriptionCancelled
                   ? billing?.switchCancelledByPlay == true
                         ? 'premium_cancelled_body_play_switch'
-                        : 'premium_cancelled_body'
+                        : 'settings_premium_cancelled_body'
                   : billing?.monthlySwitchScheduled == true
                   ? 'premium_monthly_switch_scheduled'
                   : 'premium_subscriber_body',
@@ -237,39 +242,10 @@ class SettingsPremiumCard extends StatelessWidget {
             ),
           ),
         ],
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            if (premium.subscribed) ...[
-              Expanded(
-                child: OutlinedButton(
-                  key: const Key('settings_premium_manage'),
-                  // Teal on the teal card looked disabled (Arun, 25 Nov
-                  // 2026): the primary text colour, as on iOS.
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: primary,
-                    shape: const StadiumBorder(),
-                    padding: const EdgeInsets.symmetric(vertical: 11),
-                    side: BorderSide(
-                      color: primary.withValues(alpha: .85),
-                      width: 1.5,
-                    ),
-                  ),
-                  onPressed: () => launchUrl(
-                    PlayBillingService.managementUrl(
-                      premium.subscriptionProductId,
-                    ),
-                    mode: LaunchMode.externalApplication,
-                  ),
-                  child: Text(
-                    lang.translate('settings_premium_manage'),
-                    style: _label,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-            ],
-            if (!premium.lifetime)
+        if (!premium.lifetime) ...[
+          const SizedBox(height: 10),
+          Row(
+            children: [
               Expanded(
                 child: FilledButton(
                   key: const Key('settings_premium'),
@@ -286,8 +262,9 @@ class SettingsPremiumCard extends StatelessWidget {
                   ),
                 ),
               ),
-          ],
-        ),
+            ],
+          ),
+        ],
       ],
     );
   }

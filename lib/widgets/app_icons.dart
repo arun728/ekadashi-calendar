@@ -353,6 +353,12 @@ class AppIcons {
   /// envelope
   static const settingsContactSupport = CupertinoIcons.mail;
 
+  /// creditcard
+  static const settingsManageSubscription = CupertinoIcons.creditcard;
+
+  /// arrow.clockwise.circle
+  static const settingsRestorePurchases = CupertinoIcons.arrow_clockwise_circle;
+
   /// bell
   static const testNotification = CupertinoIcons.bell;
 
@@ -488,6 +494,8 @@ class AppIcons {
     'settings_privacy': settingsPrivacy,
     'settings_badge_haptics': settingsBadgeHaptics,
     'settings_contact_support': settingsContactSupport,
+    'settings_manage_subscription': settingsManageSubscription,
+    'settings_restore_purchases': settingsRestorePurchases,
     'test_notification': testNotification,
     'timings': timings,
     'use_current_location': useCurrentLocation,

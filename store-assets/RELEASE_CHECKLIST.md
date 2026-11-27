@@ -6,22 +6,22 @@ Store-asset details live in `STORE_CHECKLIST.md`. PRs #26 and #34 are **not** in
 
 ## Shared: merge order into `dev` (each with Arun's OK, final tests and CI)
 
-1. [ ] **#42 → #44: billing and payments** (Codex, in progress). Then device testing on the
+1. [x] **#42 → #44: billing and payments** (merged with #50 on 27 Nov 2026) (Codex, in progress). Then device testing on the
        M52 and iPhone: buy, switch plans, restore, cancel and resubscribe, the free Google sync
        and the Vrat limit, on both platforms. After the PR #44 report fixes land, re-test
        every subscription flow end to end, behaviour and strings, on the M52 and the iPhone
        (`docs/review/PR44_BILLING_DEVICE_REPORT.md`).
-2. [ ] **#48**: Firebase email declaration and prices (the website part is already live).
+2. [x] **#48** (merged 27 Nov 2026): Firebase email declaration and prices (the website part is already live).
 3. [ ] **#49**: Android launch speed (review after #44; both touch `main.dart`).
-4. [ ] **#47**: store assets (assets only, can merge any time).
+4. [x] **#47** (merged 27 Nov 2026): store assets (assets only, can merge any time).
 5. [ ] Full CI on `dev`, then `dev` → `main` with Arun's approval.
 6. [ ] Performance pass once every feature is tested: launch, each tab and the heaviest
        screens, on both platforms.
 
 ## 1. Android first (Google Play, update to the live v1)
 
-- [ ] Final build from `main`: version 2.0.0, **version code 14 or higher** (13 is on internal
-      testing since 27 Nov 2026, built from PR #50 `fe203fd`), signed AAB. Upload it with
+- [ ] Final build from `main`: version 2.0.0, **version code 15 or higher** (14 is on internal
+      testing since 27 Nov 2026, built from `claude/app-store-link` `a8d63c8`), signed AAB. Upload it with
       `tool/release/play.py upload` (see `tool/release/README.md`).
 - [ ] Internal testing: M52 and Arun's wife's phone. Real purchases with the license
       tester, plan switches, restore, free sync, widgets, launch speed, and an upgrade from
@@ -29,8 +29,8 @@ Store-asset details live in `STORE_CHECKLIST.md`. PRs #26 and #34 are **not** in
 - [ ] **Data safety**: Email address + User IDs (optional, not shared, deletion on request):
       `android/listing/data-safety.md`.
 - [ ] Subscriptions `ekadashi_premium_monthly` and `ekadashi_premium_yearly` plus the
-      one-time `ekadashi_premium_lifetime` active. India ₹100 / ₹600 / ₹2,000 as on Play
-      now, plus diaspora prices.
+      one-time `ekadashi_premium_lifetime` active. India ₹99 / ₹599 / ₹1,999 (verified in the app on
+      the M52, 27 Nov 2026), plus diaspora prices.
 - [x] Done 26 Nov 2026 (Play API): **deactivated the old combined `ekadashi_premium`
       subscription** (both base plans inactive) in Play Console so no new buyer sees it (people who already own it
       keep it).

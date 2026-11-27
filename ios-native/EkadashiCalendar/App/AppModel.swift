@@ -175,9 +175,19 @@ final class AppModel {
 
     /// The Settings card's line under "Your plan", as on Android.
     func premiumSettingsMessage(_ state: PremiumState) -> String {
-        if state.subscriptionCancelled { return t("premium_cancelled_body") }
+        if state.subscriptionCancelled { return t("settings_premium_cancelled_body") }
         if state.scheduledPlan == .monthly { return t("premium_monthly_switch_scheduled") }
         return t("premium_subscriber_body")
+    }
+
+    /// Settings' Premium card has no Manage (Arun, 27 Nov 2026): this note
+    /// sends a Lifetime member who still renews a subscription, or a subscriber
+    /// whose payment failed, to Manage subscription in the Purchases section.
+    func premiumSettingsNote(_ state: PremiumState) -> String? {
+        if state.lifetime { return state.subscribed && !state.subscriptionCancelled
+            ? t("settings_premium_lifetime_subscription_active") : nil }
+        if state.isInBillingRetry { return t("ios_settings_billing_retry_body") }
+        return nil
     }
 
     /// The plan tiles identify ownership and the upcoming plan, never a date.

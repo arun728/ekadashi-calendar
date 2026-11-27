@@ -203,9 +203,21 @@ void main() {
         0,
       );
     }
-    // Back to Settings: About & legal sits at the end.
+    // Back to Settings: Purchases (Manage subscription and Restore purchases
+    // for every user, 27 Nov 2026), then About & legal at the end.
     await tester.binding.handlePopRoute();
     await pumpUi(tester);
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('settings_purchases_tube')),
+      180,
+      scrollable: pageScroll(),
+    );
+    expect(
+      find.byKey(const Key('settings_manage_subscription')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const Key('settings_restore_purchases')), findsOneWidget);
+    expect(find.byKey(const Key('settings_premium_manage')), findsNothing);
     await tester.scrollUntilVisible(
       find.byKey(const Key('settings_about_tube')),
       180,

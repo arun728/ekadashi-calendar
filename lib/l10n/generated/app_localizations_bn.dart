@@ -166,6 +166,17 @@ class AppLocalizationsBn extends AppLocalizations {
   String get settings_reminders_not_arriving => 'রিমাইন্ডার আসছে না?';
 
   @override
+  String get settings_purchases => 'কেনাকাটা';
+
+  @override
+  String get settings_premium_cancelled_body =>
+      'আপনি যে সময়ের জন্য টাকা দিয়েছেন তার শেষ পর্যন্ত প্রিমিয়াম চালু থাকবে। তারিখ গুগল প্লেতে দেখুন। আবার সক্রিয় করতে নিচে “সাবস্ক্রিপশন পরিচালনা করুন” খুলুন।';
+
+  @override
+  String get settings_premium_lifetime_subscription_active =>
+      'আপনার সাবস্ক্রিপশন এখনও সক্রিয় আছে। নিচে “সাবস্ক্রিপশন পরিচালনা করুন”-এ গিয়ে এটি বাতিল করুন।';
+
+  @override
   String get app_update_available => 'আপডেট পাওয়া যাচ্ছে';
 
   @override
@@ -1521,9 +1532,6 @@ class AppLocalizationsBn extends AppLocalizations {
   String settings_premium_plan(String value0) {
     return 'আপনার প্ল্যান: $value0';
   }
-
-  @override
-  String get settings_premium_manage => 'পরিচালনা';
 
   @override
   String get settings_premium_plans => 'প্ল্যান বদলান';

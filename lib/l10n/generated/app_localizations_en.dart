@@ -166,6 +166,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settings_reminders_not_arriving => 'Reminders not arriving?';
 
   @override
+  String get settings_purchases => 'Purchases';
+
+  @override
+  String get settings_premium_cancelled_body =>
+      'Premium stays on until the end of the period you paid for. See the date in Google Play. Reactivate it in Manage subscription below.';
+
+  @override
+  String get settings_premium_lifetime_subscription_active =>
+      'Your subscription is still active. Cancel it in Manage subscription below.';
+
+  @override
   String get app_update_available => 'Update available';
 
   @override
@@ -1519,9 +1530,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String settings_premium_plan(String value0) {
     return 'Your plan: $value0';
   }
-
-  @override
-  String get settings_premium_manage => 'Manage';
 
   @override
   String get settings_premium_plans => 'Change plan';
