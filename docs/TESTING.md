@@ -152,3 +152,37 @@ PR cancels the older run.
 
 `.github/workflows/backend-tests.yml` runs the dormant billing backend's tests
 only when `backend/` changes.
+
+## Regression prevention (27 November 2026)
+
+See AGENTS.md "Regression prevention". In short: behaviour lists per screen
+in `docs/behaviour/` with a test per rule on each platform; every starting
+point of a menu tested; the same scenarios on both platforms; and, while CI
+is off, a pre-merge gate run locally.
+
+### Pre-merge gate (local, before any merge to dev)
+
+- `flutter analyze`, `dart format --set-exit-if-changed`,
+  `tool/check-generated.sh`, `flutter test`.
+- `swift test` in `ios-native/EkadashiCore`; the iOS app tests and the full
+  iOS UI tests on a simulator (`xcodebuild test -scheme EkadashiCalendar`).
+- Android unit tests (`./gradlew :app:testDebugUnitTest`) and the
+  `integration_test` suite on an emulator or the M52.
+- The device checklist below on the M52 and the iPhone.
+
+### Device checklist (about 10 minutes per phone)
+
+1. Fresh install: permissions; Home shows the right city's next Ekadashi;
+   no other card flashes first.
+2. Year menu: from 2026, 2027 and All years to each other option (see
+   docs/behaviour/HOME.md).
+3. Tradition: switch both ways; Home stays on the same Ekadashi.
+4. City: pick another city, use current location, relaunch (detection
+   wins).
+5. Calendar and Panchang follow Home's city and year.
+6. Journey: record a fast; history, streaks and badges.
+7. Premium: plans page, Settings card and Purchases rows for the current
+   state.
+8. Notifications: Settings test notification; reminder switches.
+9. Switch the app language once; no English in other languages.
+

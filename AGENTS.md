@@ -369,3 +369,28 @@ dashboard upload, which flattens folders). The Cloudflare plugin for Claude
 Code is installed from
 https://developers.cloudflare.com/agent-setup/prompt.md; its MCP sign-in is
 Arun's to approve via `/mcp`. See docs/CLOUDFLARE.md.
+
+## Regression prevention (27 November 2026)
+
+Arun asked for these after "All years" on Home turned out to stay on January
+2027 when picked from 2027 (built that way on 17 November; its only test
+started from the current year). For every agent and every change:
+
+1. **Written behaviour lists.** Each screen has a list of what it must do in
+   `docs/behaviour/` (Home first: `docs/behaviour/HOME.md`), and every rule
+   names its test on iOS and on Android, or says "Gap". A change to a screen
+   updates its list in the same commit; review checks the list as well as
+   the code. Do not change an area with a gap without filling the gap first.
+2. **Every starting point.** For menus and switches (year, tradition, city,
+   language, plan), test going from each option to each other option, not
+   only from the default or current one.
+3. **Same cases on both platforms.** Where a rule exists on both, the iOS and
+   Android tests use the same scenarios (a shared fixture in `test/fixtures/`
+   when practical), so the platforms cannot drift.
+4. **Pre-merge gate while CI is off.** Before anything is merged to `dev`, run
+   the full iOS UI tests on a simulator and the Android `integration_test`
+   suite on an emulator or the M52, as well as the analyzer, `flutter test`,
+   `swift test` and the iOS app tests, and walk the device checklist in
+   docs/TESTING.md on the M52 and the iPhone. Report what ran and what did
+   not.
+
