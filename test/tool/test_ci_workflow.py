@@ -57,6 +57,14 @@ class WorkflowTests(unittest.TestCase):
         self.assertIn("tool/check-generated.sh", flutter)
         self.assertIn("flutter test", flutter)
 
+    def test_the_emulator_jobs_have_room_for_every_device_test(self):
+        # API 35 granted ran every device test in 79 of 90 minutes on
+        # 4 November 2026; with more tests it hit 90 on 27 November (run
+        # 46029130149) with two test files still to run.
+        import re
+        minutes = int(re.search(r"timeout-minutes: (\d+)", job("android-tests")).group(1))
+        self.assertGreaterEqual(minutes, 120)
+
     def test_android_lint_runs(self):
         self.assertIn("lintDebug", job("android-tests"))
 
