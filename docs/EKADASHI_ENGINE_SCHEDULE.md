@@ -101,11 +101,28 @@ The Flutter app follows the iOS design file by file:
   `EkadashiYears`, `ScheduledEkadashi`): the same calculation, identities,
   minute truncation, sunset fallback and `schedule-2` cache key, calculated
   in an isolate and cached in memory and in shared preferences. Two screens
-  asking for the same city and year share one calculation.
+  asking for the same city and year share one calculation. The years of a
+  new place are calculated at the same time, one isolate each
+  (`scheduledYears`), so Home waits for the slowest year rather than all of
+  them in turn.
 - `lib/services/ekadashi_settings.dart` (`EkadashiSettings`, a provider):
   Home's city (picked, else last detected, else Chennai), tradition and year,
-  with the same preference keys as iOS. Choosing a city on Home also sets the
-  Panchang location (`panchangCityRevision`); the Panchang tab follows it.
+  with the same preference keys as iOS. Without a saved city (a first v2
+  launch), the phone's last saved fix (`getCachedLocation`) is the last
+  detected place, so Home does not calculate Chennai first. Without either (a
+  fresh install), Home waits for the launch's detection before calculating.
+  A fix within 5 km of Home's detected city with the same name and zone is
+  the same place (`samePlaceKm`), so GPS drift never recalculates. The city
+  catalog and place-name table are decoded in background isolates at launch.
+  Choosing a city on Home also sets the Panchang location
+  (`panchangCityRevision`); the Panchang tab follows it.
+- Android's `LocationService.kt` asks for a city-level fix
+  (`PRIORITY_BALANCED_POWER_ACCURACY`, at most 5 minutes old), as iOS asks
+  for reduced accuracy, and keeps the saved city name for a fix within 2 km
+  instead of geocoding again. On the M52 a high-accuracy GPS fix took about
+  2.1 s and the name 0.2 s on every launch (27 November 2026).
+- Home builds a new card list offstage and shows it once it has moved to the
+  next Ekadashi, so the year's first (often passed) card never flashes.
 - `lib/main.dart`: Home's four menus in a 2×2 grid
   (`lib/screens/widgets/home_controls.dart`: location over tradition, language
   over year, equal widths per column, equal heights), the "calculating" and

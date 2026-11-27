@@ -36,6 +36,27 @@ final class YearAndUpdateUITests: XCTestCase {
         capture(app, name: "ios-home-all-years")
     }
 
+    /// Arun, 27 November 2026: All years after 2027 stayed on January 2027.
+    func testAllYearsAfter2027OpensOnTheNextEkadashi() {
+        let app = launch(at: "2026-11-27T10:00:00+05:30", pinChennai: true)
+        let year = app.buttons["home_year_menu"]
+        XCTAssertTrue(year.waitForExistence(timeout: 30))
+        let indicator = app.staticTexts["home_page_indicator"]
+        XCTAssertTrue(indicator.waitForExistence(timeout: 30))
+        let next = indicator.label
+        year.tap()
+        app.buttons["2027"].firstMatch.tap()
+        XCTAssertTrue(year.label.contains("2027"))
+        XCTAssertTrue(indicator.label.hasPrefix("1 /"), indicator.label)
+        year.tap()
+        app.buttons["All years"].firstMatch.tap()
+        XCTAssertTrue(year.label.contains("All years"))
+        let page = Int(next.split(separator: "/").first?.trimmingCharacters(in: .whitespaces) ?? "")
+        let allPage = Int(indicator.label.split(separator: "/").first?.trimmingCharacters(in: .whitespaces) ?? "")
+        XCTAssertEqual(allPage, page, "All years opens on the next Ekadashi (\(next)), not \(indicator.label)")
+        capture(app, name: "ios-home-all-years-after-2027")
+    }
+
     func testJanuaryDefaultAppliesToHomeCalendarSearchAndJourney() {
         let app = launch(at: "2027-01-01T12:00:00+05:30", pinChennai: true)
         let year = app.buttons["home_year_menu"]

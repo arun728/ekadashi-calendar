@@ -25,16 +25,22 @@ class PanchangLocationStore {
   }
 
   static Future<List<PanchangCity>> _loadCities() async {
-    final rows =
-        // Not cached by the bundle: a failed read would be kept forever, and
-        // the parsed list is kept here anyway.
-        jsonDecode(
-              await rootBundle.loadString(
-                'assets/panchang/cities.json',
-                cache: false,
-              ),
-            )
-            as List;
+    // rootBundle.load keeps no copy: a failed read is tried again, and the
+    // parsed list is kept here anyway.
+    final bytes = await rootBundle.load('assets/panchang/cities.json');
+    final data = bytes.buffer.asUint8List(
+      bytes.offsetInBytes,
+      bytes.lengthInBytes,
+    );
+    // Decoded off the UI isolate: 34,152 cities stalled the launch's first
+    // frames (widget tests' fake clock never runs other isolates).
+    if (buildIndexInline) return parseCities(data);
+    return Isolate.run(() => parseCities(data));
+  }
+
+  /// The catalog's rows (cities.json) as cities.
+  static List<PanchangCity> parseCities(Uint8List json) {
+    final rows = jsonDecode(utf8.decode(json)) as List;
     return List.unmodifiable(
       rows.map(
         (row) => PanchangCity(

@@ -201,6 +201,24 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   EkadashiSettings? _settings;
   Future<void>? _settingsLoad;
 
+  /// Completes when the launch's place detection has finished (found, denied
+  /// or failed). A fresh install calculates only after it, so Chennai is not
+  /// calculated first and then the detected place.
+  final Completer<void> _launchPlace = Completer<void>();
+
+  /// The cards stay hidden for the frame in which a new list is shown, until
+  /// Home has moved to the next Ekadashi, so the year's first (often passed)
+  /// one never flashes.
+  bool _initialPagePending = false;
+
+  /// Home shows the next weeks of a new place while its full years are
+  /// calculated: the cards are not dimmed but cannot be used yet, and the
+  /// year's page count is hidden.
+  bool _isPreview = false;
+
+  /// Whether Home showed All years at the last settings change.
+  bool _homeShowsAllYears = false;
+
   /// What the latest load calculates, so a settings change reloads only
   /// when the place or tradition really changed.
   String? _requestedPlace;
@@ -229,7 +247,20 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     refresh: () async => _premium?.refresh(),
   );
 
-  final PageController _pageController = PageController(viewportFraction: 1.0);
+  PageController _pageController = PageController(viewportFraction: 1.0);
+
+  /// Bumped with each new pager ([_startPagerAt]): the PageView's key.
+  int _pagerId = 0;
+
+  /// A new pager that opens on [page]: a new list's first frame is already
+  /// on its card, so no other card shows and nothing is hidden.
+  void _startPagerAt(int page) {
+    final old = _pageController;
+    _pageController = PageController(initialPage: page);
+    _pagerId++;
+    WidgetsBinding.instance.addPostFrameCallback((_) => old.dispose());
+  }
+
   final GlobalKey<CalendarScreenState> _calendarKey = GlobalKey();
   final GlobalKey<PanchangScreenState> _panchangKey = GlobalKey();
   bool _panchangOpened = false;
@@ -309,7 +340,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     if (_settings == null) {
       final settings = context.read<EkadashiSettings?>() ?? EkadashiSettings();
       _settings = settings..addListener(_settingsChanged);
-      _settingsLoad = settings.loaded ? Future.value() : settings.load();
+      // A first launch starts from the phone's last fix, if any.
+      _settingsLoad = settings.loaded
+          ? Future.value()
+          : settings.load(lastFix: _locationService.getCachedLocation);
     }
     final langService = Provider.of<LanguageService>(context);
     if (_currentLangCode != langService.currentLocale.languageCode) {
@@ -564,8 +598,12 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     } catch (e) {
       debugPrint('Location error: $e');
     }
-    await _settingsLoad;
-    if (fix != null) await _settings?.useDetected(fix, atLaunch: atLaunch);
+    try {
+      await _settingsLoad;
+      if (fix != null) await _settings?.useDetected(fix, atLaunch: atLaunch);
+    } finally {
+      if (atLaunch && !_launchPlace.isCompleted) _launchPlace.complete();
+    }
     if (mounted) setState(() => _isRequestingLocation = false);
   }
 
@@ -670,9 +708,15 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       );
       return;
     }
+    // All years was just picked: open on the next Ekadashi, whichever year
+    // or card was on screen (AppModel.showAllYearsOnHome on iOS).
+    final openedAllYears = settings.homeShowsAllYears && !_homeShowsAllYears;
+    _homeShowsAllYears = settings.homeShowsAllYears;
     final year = _homeYearList();
     if (!_sameIds(year, _ekadashiList)) {
-      if (settings.homeShowsAllYears && _currentPage < _ekadashiList.length) {
+      if (settings.homeShowsAllYears &&
+          !openedAllYears &&
+          _currentPage < _ekadashiList.length) {
         final visibleUid = _ekadashiList[_currentPage].occurrenceUid;
         final page = year.indexWhere(
           (entry) => entry.occurrenceUid == visibleUid,
@@ -714,10 +758,37 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     if (mounted) setState(() {});
   }
 
-  List<EkadashiDate> _homeYearList() {
+  List<EkadashiDate> _homeYearList() => _homeYearListOf(_allEkadashis);
+
+  List<EkadashiDate> _homeYearListOf(List<EkadashiDate> all) {
     final settings = _settings;
-    if (settings == null || settings.homeShowsAllYears) return _allEkadashis;
-    return _allEkadashis.where((e) => e.date.year == settings.year).toList();
+    if (settings == null || settings.homeShowsAllYears) return all;
+    return all.where((e) => e.date.year == settings.year).toList();
+  }
+
+  /// The page of [list] Home opens on: a widget's Ekadashi, else the one on
+  /// screen ([keepUid]), else the next Ekadashi of [all] when [list] has it.
+  /// Null when the next one is in another year (that path changes the year).
+  int? _openingPage(
+    List<EkadashiDate> list,
+    List<EkadashiDate> all,
+    String? keepUid,
+    String timeZoneId,
+  ) {
+    for (final uid in [_widgetOccurrenceUid, keepUid]) {
+      if (uid == null) continue;
+      final page = list.indexWhere((e) => e.occurrenceUid == uid);
+      if (page >= 0) return page;
+    }
+    if (all.isEmpty) return null;
+    final next =
+        all[EkadashiLifecycle.currentIndex(
+          all,
+          DisplayClock.now(),
+          _getIANATimezone(timeZoneId),
+        )];
+    final page = list.indexWhere((e) => e.occurrenceUid == next.occurrenceUid);
+    return page >= 0 ? page : null;
   }
 
   static bool _sameIds(List<EkadashiDate> a, List<EkadashiDate> b) =>
@@ -736,6 +807,15 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     await _settingsLoad;
     final settings = _settings;
     if (!mounted || settings == null) return;
+    if (!settings.hasSavedCity) {
+      // A fresh install: the detected place, not Chennai first. A prompt
+      // left open falls back to Chennai after a minute.
+      await _launchPlace.future.timeout(
+        const Duration(minutes: 1),
+        onTimeout: () {},
+      );
+      if (!mounted) return;
+    }
     final generation = ++_loadGeneration;
     final city = settings.city, tradition = settings.tradition;
     final years = settings.years;
@@ -750,6 +830,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       );
       _errorMessage = '';
     });
+    if (_isCalculating &&
+        (shouldScrollToNext || _ekadashiList.isEmpty || _isPreview)) {
+      _showPreview(generation, city, tradition);
+    }
 
     try {
       final lang = _currentLangCode.isEmpty ? 'en' : _currentLangCode;
@@ -767,9 +851,31 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           ? shown[_currentPage].occurrenceUid
           : null;
 
+      final replacesPreview = _isPreview;
+      final list = _homeYearListOf(ekadashis);
+      final opening = _openingPage(
+        list,
+        ekadashis,
+        currentUid,
+        city.timeZoneId,
+      );
       setState(() {
         _allEkadashis = ekadashis;
-        _ekadashiList = _homeYearList();
+        _ekadashiList = list;
+        _isPreview = false;
+        if (opening != null) {
+          // The new list's first frame is on its card: a new pager only
+          // when the page moves (a language change keeps the pager).
+          final samePage =
+              !replacesPreview &&
+              _pageController.hasClients &&
+              _pageController.page?.round() == opening;
+          _currentPage = opening;
+          if (!samePage) _startPagerAt(opening);
+        } else {
+          // The next Ekadashi is in another year: shown once moved there.
+          _initialPagePending = true;
+        }
         _currentTimezone = city.timeZoneId;
         _isLoading = false;
         _isCalculating = false;
@@ -790,7 +896,14 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
-        if (_selectWidgetOccurrence()) return;
+        if (opening != null) {
+          _startHomeClock();
+          return;
+        }
+        if (_selectWidgetOccurrence()) {
+          _revealFirstPage();
+          return;
+        }
         final index = currentUid == null
             ? -1
             : _ekadashiList.indexWhere((e) => e.occurrenceUid == currentUid);
@@ -799,24 +912,28 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           setState(() => _currentPage = index);
           _startHomeClock();
         } else {
-          // Use a slight delay to ensure PageView is built with new data
-          Future.delayed(const Duration(milliseconds: 100), () {
-            if (mounted && !_selectWidgetOccurrence()) {
-              _scrollToNextEkadashi(animate: false, includeParana: true);
-            }
-          });
+          // The cards were built offstage in this frame: move to the next
+          // Ekadashi now, then show them.
+          _scrollToNextEkadashi(
+            animate: false,
+            includeParana: true,
+            immediate: true,
+          );
         }
+        _revealFirstPage();
       });
 
       _startHomeClock();
       // Schedule notifications
       _scheduleNotifications();
       _syncSearchAndWidgets();
+      _prepareOtherTradition(city, tradition, years);
     } catch (e) {
       debugPrint('Error loading data: $e');
       if (mounted && generation == _loadGeneration) {
         setState(() {
           _isLoading = false;
+          _isPreview = false;
           _isCalculating = false;
           _errorMessage = context.read<LanguageService>().translate(
             'failed_load',
@@ -834,6 +951,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     int retryCount = 0,
     bool includeParana = true,
     bool acrossYears = true,
+    bool immediate = false,
   }) {
     if (_ekadashiList.isEmpty) return;
 
@@ -875,6 +993,13 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       (e) => e.occurrenceUid == event.occurrenceUid,
     );
     if (indexToScroll < 0) return;
+
+    if (immediate && !animate) {
+      // Called after the frame that built the cards: jump in this frame.
+      _pageController.jumpToPage(indexToScroll);
+      setState(() => _currentPage = indexToScroll);
+      return;
+    }
 
     // Fix for Race Condition: Give the PageView a moment to verify layout before jumping
     Future.delayed(const Duration(milliseconds: 50), () {
@@ -955,6 +1080,70 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       // Event reminders open their day in Panchang.
       if (tab == 3 && date != null) _panchangKey.currentState?.showDate(date);
     });
+  }
+
+  /// The next Ekadashi of a new place while [_loadData] calculates its full
+  /// years: the same engine and place, so its dates and times are those of
+  /// the full list.
+  Future<void> _showPreview(
+    int generation,
+    PanchangCity city,
+    EkadashiTradition tradition,
+  ) async {
+    final now = DisplayClock.now();
+    List<EkadashiDate> preview;
+    try {
+      preview = await _ekadashiService.previewEkadashis(
+        city: city,
+        tradition: tradition,
+        languageCode: _currentLangCode.isEmpty ? 'en' : _currentLangCode,
+        from: now,
+      );
+    } catch (e) {
+      debugPrint('Preview error: $e');
+      return;
+    }
+    if (!mounted ||
+        generation != _loadGeneration ||
+        !_isCalculating ||
+        preview.isEmpty) {
+      return;
+    }
+    final index = EkadashiLifecycle.currentIndex(
+      preview,
+      now,
+      _getIANATimezone(city.timeZoneId),
+    );
+    setState(() {
+      _ekadashiList = preview;
+      _isPreview = true;
+      _isLoading = false;
+      _currentTimezone = city.timeZoneId;
+      _currentPage = index;
+      _startPagerAt(index);
+    });
+  }
+
+  /// Calculates the other tradition of Home's city in the background once
+  /// its own has loaded, so switching tradition is instant; a switch while
+  /// it runs shares the calculation (EkadashiSchedule.scheduled).
+  void _prepareOtherTradition(
+    PanchangCity city,
+    EkadashiTradition tradition,
+    List<int> years,
+  ) {
+    final other = tradition == EkadashiTradition.smarta
+        ? EkadashiTradition.gaudiya
+        : EkadashiTradition.smarta;
+    if (_ekadashiService.isScheduleCached(city, other, years)) return;
+    _ekadashiService.schedule.scheduledYears(city, other, years).ignore();
+  }
+
+  /// Shows the cards hidden while a new list moved to its Ekadashi.
+  void _revealFirstPage() {
+    if (mounted && _initialPagePending) {
+      setState(() => _initialPagePending = false);
+    }
   }
 
   bool _selectWidgetOccurrence() {
@@ -1438,6 +1627,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
     final bool isFirstPage = _currentPage == 0;
     final bool isLastPage = _currentPage >= _ekadashiList.length - 1;
+    final countHidden = _isPreview || _initialPagePending;
 
     return Column(
       children: [
@@ -1446,9 +1636,12 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         // Page indicator
         Padding(
           padding: const EdgeInsets.only(bottom: 8),
+          // Blank while the next weeks are shown (the year's count is not
+          // known yet) and for the frame a new list moves to its page (same
+          // height, so nothing moves).
           child: Text(
-            '${_currentPage + 1} / ${_ekadashiList.length}',
-            key: const Key('home_page_indicator'),
+            countHidden ? ' ' : '${_currentPage + 1} / ${_ekadashiList.length}',
+            key: countHidden ? null : const Key('home_page_indicator'),
             style: TextStyle(
               fontSize: IosText.footnote,
               color: IosColors.secondary(context),
@@ -1464,55 +1657,63 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             child: Stack(
               alignment: Alignment.center,
               children: [
-                Opacity(
-                  opacity: _isCalculating ? 0.5 : 1,
-                  child: Row(
-                    children: [
-                      _homeArrow(
-                        key: const Key('home_previous'),
-                        icon: AppIcons.previous,
-                        target: _currentPage - 1,
-                        enabled: !isFirstPage,
-                        onPressed: () => _pageController.previousPage(
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
-                        ),
-                      ),
-                      Expanded(
-                        child: PageView.builder(
-                          controller: _pageController,
-                          itemCount: _ekadashiList.length,
-                          onPageChanged: (index) {
-                            if (mounted) {
-                              if (_widgetOccurrenceUid != null &&
-                                  _ekadashiList[index].occurrenceUid !=
-                                      _widgetOccurrenceUid) {
-                                _widgetOccurrenceUid = null;
-                              }
-                              setState(() => _currentPage = index);
-                              _startHomeClock();
-                            }
-                          },
-                          itemBuilder: (context, index) => Padding(
-                            padding: const EdgeInsets.all(4),
-                            child: _buildEkadashiCard(_ekadashiList[index]),
+                IgnorePointer(
+                  // The first card of a new place: shown, not usable yet.
+                  ignoring: _isPreview,
+                  child: Opacity(
+                    opacity: _isCalculating && !_isPreview ? 0.5 : 1,
+                    child: Row(
+                      children: [
+                        _homeArrow(
+                          key: const Key('home_previous'),
+                          icon: AppIcons.previous,
+                          target: _currentPage - 1,
+                          enabled: !isFirstPage,
+                          onPressed: () => _pageController.previousPage(
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
                           ),
                         ),
-                      ),
-                      _homeArrow(
-                        key: const Key('home_next'),
-                        icon: AppIcons.next,
-                        target: _currentPage + 1,
-                        enabled: !isLastPage,
-                        onPressed: () => _pageController.nextPage(
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
+                        Expanded(
+                          child: Offstage(
+                            offstage: _initialPagePending,
+                            child: PageView.builder(
+                              key: ValueKey(_pagerId),
+                              controller: _pageController,
+                              itemCount: _ekadashiList.length,
+                              onPageChanged: (index) {
+                                if (mounted) {
+                                  if (_widgetOccurrenceUid != null &&
+                                      _ekadashiList[index].occurrenceUid !=
+                                          _widgetOccurrenceUid) {
+                                    _widgetOccurrenceUid = null;
+                                  }
+                                  setState(() => _currentPage = index);
+                                  _startHomeClock();
+                                }
+                              },
+                              itemBuilder: (context, index) => Padding(
+                                padding: const EdgeInsets.all(4),
+                                child: _buildEkadashiCard(_ekadashiList[index]),
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                    ],
+                        _homeArrow(
+                          key: const Key('home_next'),
+                          icon: AppIcons.next,
+                          target: _currentPage + 1,
+                          enabled: !isLastPage,
+                          onPressed: () => _pageController.nextPage(
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-                if (_isCalculating)
+                if (_isCalculating && !_isPreview)
                   const CircularProgressIndicator(
                     key: Key('home_recalculating'),
                     color: IosColors.teal,

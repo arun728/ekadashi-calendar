@@ -72,6 +72,132 @@ final class AppModelTests: XCTestCase {
         }
     }
 
+    /// A place no earlier run calculated (the schedule is cached on disk).
+    private func freshCity(_ label: String) -> PanchangCity {
+        PanchangCity(id: "detected", label: label, latitude: 26.0 + Double.random(in: 0..<1),
+                     longitude: 91.5 + Double.random(in: 0..<1), timeZoneId: "Asia/Kolkata")
+    }
+
+    /// iPhone (27 November 2026): picking a new city spun about 2 s before any
+    /// card. Its next Ekadashi now shows from the next weeks alone, then the
+    /// full years replace it with the same card.
+    func testPickingANewCityShowsItsNextEkadashiBeforeItsFullYears() async throws {
+        let model = AppModel(store: InMemoryKeyValueStore(["has_launched": true, "language_code": "en", AppModel.yearKey: "2026"]))
+        model.reload(); await model.waitForLoad()
+        let gate = TestGate()
+        AppModel.beforeFullYears = { await gate.wait() }
+        defer { AppModel.beforeFullYears = nil }
+        model.chooseEkadashiCity(freshCity("Guwahati (IN)"))
+        await model.waitForPreview()
+        XCTAssertTrue(model.isPreviewing)
+        XCTAssertTrue(model.isCalculating)
+        let first = model.homeEkadashis[model.homeIndex]
+        await gate.open()
+        await model.waitForLoad()
+        XCTAssertFalse(model.isPreviewing)
+        let full = model.homeEkadashis[model.homeIndex]
+        XCTAssertEqual(full.occurrenceUid, first.occurrenceUid)
+        XCTAssertEqual(full.fastingStartISO, first.fastingStartISO)
+        XCTAssertEqual(full.paranaEndISO, first.paranaEndISO)
+    }
+
+    /// iPhone (27 November 2026): Home's pager selected a page number, so a
+    /// new city's full list (Utpanna on page 23 instead of 2) was a different
+    /// selection: the pager showed January first, then jerked to Utpanna. It
+    /// now selects the Ekadashi itself, which the swap does not change.
+    func testHomeSelectsTheEkadashiItselfThroughANewCitysListSwap() async throws {
+        let model = AppModel(store: InMemoryKeyValueStore(["has_launched": true, "language_code": "en", AppModel.yearKey: "2026"]))
+        model.reload(); await model.waitForLoad()
+        let gate = TestGate()
+        AppModel.beforeFullYears = { await gate.wait() }
+        defer { AppModel.beforeFullYears = nil }
+        model.chooseEkadashiCity(freshCity("Silchar (IN)"))
+        await model.waitForPreview()
+        XCTAssertTrue(model.isPreviewing)
+        let selected = model.homeSelection
+        XCTAssertEqual(selected, model.homeEkadashis[model.homeIndex].occurrenceUid)
+        await gate.open()
+        await model.waitForLoad()
+        XCTAssertEqual(model.homeSelection, selected, "the swap keeps the selected Ekadashi")
+
+        // Swiping sets the selection; Home's index follows.
+        let other = try XCTUnwrap(model.homeEkadashis.first { $0.occurrenceUid != selected })
+        model.homeSelection = other.occurrenceUid
+        XCTAssertEqual(model.homeEkadashis[model.homeIndex].occurrenceUid, other.occurrenceUid)
+    }
+
+    /// iPhone (27 November 2026): after a new city's first card, "23 / 24"
+    /// took 2-3 s: 2026 and 2027 were calculated one after the other, and the
+    /// count waited for both. The years now run at the same time, and the
+    /// count shows once the year on screen is done.
+    func testANewCitysYearsRunTogetherAndTheCountShowsWithTheShownYear() async throws {
+        let model = AppModel(store: InMemoryKeyValueStore(["has_launched": true, "language_code": "en", AppModel.yearKey: "2026"]))
+        model.reload(); await model.waitForLoad()
+        let started = YearLog()
+        let gate2027 = TestGate()
+        AppModel.beforeYear = { year in
+            await started.add(year)
+            if year == 2027 { await gate2027.wait() }
+        }
+        defer { AppModel.beforeYear = nil }
+        model.chooseEkadashiCity(freshCity("Tezpur (IN)"))
+        await model.waitForPreview()
+        let selected = model.homeSelection
+        await model.waitForShownYear()
+        let seen = await started.years
+        XCTAssertEqual(Set(seen), [2026, 2027], "both years started before 2027 finished")
+        XCTAssertTrue(model.isPreviewing, "2027 is still being calculated")
+        XCTAssertTrue(model.showsHomeCount, "the count shows with 2026")
+        XCTAssertEqual(model.homeEkadashis.count, model.homeEkadashis.filter { $0.date.year == 2026 }.count)
+        XCTAssertGreaterThan(model.homeEkadashis.count, 20)
+        XCTAssertEqual(model.homeSelection, selected, "the same Ekadashi stays on screen")
+        await gate2027.open()
+        await model.waitForLoad()
+        XCTAssertFalse(model.isPreviewing)
+        XCTAssertTrue(model.showsHomeCount)
+        XCTAssertEqual(model.homeSelection, selected)
+    }
+
+    /// iPhone and M52 (27 November 2026): the first switch to the other
+    /// tradition in a city spun 1-2 s. It is calculated in the background once
+    /// the city's own tradition has loaded, so the switch is instant.
+    func testTheOtherTraditionIsReadyBeforeTheSwitch() async throws {
+        let model = AppModel(store: InMemoryKeyValueStore(["has_launched": true, "language_code": "en", AppModel.yearKey: "2026"]))
+        model.reload(); await model.waitForLoad()
+        let city = freshCity("Guwahati (IN)")
+        model.chooseEkadashiCity(city)
+        await model.waitForLoad()
+        await model.waitForOtherTradition()
+        let schedule = try XCTUnwrap(model.schedule)
+        for year in model.enabledYears {
+            XCTAssertTrue(schedule.isCached(EkadashiScheduleKey(city: city, tradition: .smarta, year: year)))
+        }
+        model.setTradition(.smarta)
+        XCTAssertFalse(model.isCalculating, "no spinner: Smarta was ready")
+    }
+
+    /// Arun, 27 November 2026: with 2027 picked on Home, All years stayed on
+    /// January 2027's first Ekadashi. All years always opens on the next one.
+    func testAllYearsOpensOnTheNextEkadashiEvenFromAnotherYear() async throws {
+        let model = AppModel(store: InMemoryKeyValueStore(["has_launched": true, "language_code": "en", AppModel.yearKey: "2026"]))
+        model.reload(); await model.waitForLoad()
+        let now = try XCTUnwrap(ISO8601DateFormatter().date(from: "2026-11-27T10:00:00+05:30"))
+        let next = try XCTUnwrap(model.ekadashis.first { $0.paranaEnd.map { now < $0 } ?? false })
+        XCTAssertEqual(next.date, CivilDate(2026, 12, 5))
+
+        model.setYear(2027)
+        XCTAssertEqual(model.homeEkadashis[model.homeIndex].date.year, 2027)
+        model.showAllYearsOnHome(now: now)
+        XCTAssertTrue(model.homeShowsAllYears)
+        XCTAssertEqual(model.homeEkadashis[model.homeIndex].occurrenceUid, next.occurrenceUid)
+
+        // From the current year, and after browsing to another card, too.
+        model.setYear(2026)
+        model.homeIndex = 0
+        model.showAllYearsOnHome(now: now)
+        XCTAssertEqual(model.homeEkadashis[model.homeIndex].occurrenceUid, next.occurrenceUid)
+    }
+
     func testHomeScopeAndCivilYearRollOverAcrossCitiesTraditionsAndLanguages() async throws {
         let places: [(String, Double, Double, String)] = [
             ("Chennai (IN)", 13.08784, 80.27847, "Asia/Kolkata"),
@@ -106,7 +232,7 @@ final class AppModelTests: XCTestCase {
                     XCTAssertEqual(model.homeEkadashis[model.homeIndex].occurrenceUid, first.occurrenceUid, scenario)
 
                     model.selectCurrentOccurrence(now: before)
-                    model.showAllYearsOnHome()
+                    model.showAllYearsOnHome(now: before)
                     XCTAssertEqual(model.homeEkadashis.count, model.ekadashis.count, scenario)
                     model.refreshCurrentOccurrence(previousNow: before, now: end)
                     XCTAssertTrue(model.homeShowsAllYears, scenario)
@@ -684,4 +810,25 @@ final class HomeLinkNavigationTests: XCTestCase {
         XCTAssertTrue(model.homePath.isEmpty, "the stale detail screen is closed")
         XCTAssertEqual(model.homeEkadashis[model.homeIndex].occurrenceUid, event.occurrenceUid)
     }
+}
+
+/// Holds a step until a test opens it.
+actor TestGate {
+    private var isOpen = false
+    private var waiting: [CheckedContinuation<Void, Never>] = []
+    func wait() async {
+        if isOpen { return }
+        await withCheckedContinuation { waiting.append($0) }
+    }
+    func open() {
+        isOpen = true
+        waiting.forEach { $0.resume() }
+        waiting = []
+    }
+}
+
+/// The years a test saw start.
+actor YearLog {
+    private(set) var years: [Int] = []
+    func add(_ year: Int) { years.append(year) }
 }

@@ -178,6 +178,66 @@ void main() {
     expect((await PanchangLocationStore().load())?.label, 'Chennai (IN)');
   });
 
+  // Android launch (24 November 2026): a first v2 launch calculated
+  // Chennai, then calculated again for the place the phone already knew.
+  LocationData mumbaiFix() => LocationData(
+    latitude: 19.0760,
+    longitude: 72.8777,
+    city: 'Mumbai',
+    timezone: 'IST',
+  );
+
+  test('without a saved city, Home starts from the phone\'s last fix '
+      'instead of Chennai', () async {
+    SharedPreferences.setMockInitialValues({});
+    catalogAvailable = true;
+    final settings = EkadashiSettings();
+    await settings.load(lastFix: () async => mumbaiFix());
+    expect(settings.city.label, 'Mumbai (IN)');
+    expect(settings.city.id, EkadashiSettings.detectedCityId);
+    expect(settings.city.latitude, 19.08);
+    expect(settings.isManual, isFalse);
+    expect(settings.loaded, isTrue);
+    // Kept as the last detected city, and it starts the Panchang tab.
+    final again = EkadashiSettings();
+    await again.load();
+    expect(again.city.label, 'Mumbai (IN)');
+    expect((await PanchangLocationStore().load())?.label, 'Mumbai (IN)');
+  });
+
+  test(
+    'a saved city is shown at once; the last fix is not even read',
+    () async {
+      SharedPreferences.setMockInitialValues({});
+      catalogAvailable = true;
+      final first = EkadashiSettings();
+      await first.load();
+      await first.chooseCity(sanJose);
+      var asked = false;
+      final reopened = EkadashiSettings();
+      await reopened.load(
+        lastFix: () async {
+          asked = true;
+          return mumbaiFix();
+        },
+      );
+      expect(reopened.city, sanJose);
+      expect(asked, isFalse);
+    },
+  );
+
+  test('without a saved city or a last fix, Chennai', () async {
+    SharedPreferences.setMockInitialValues({});
+    catalogAvailable = true;
+    final settings = EkadashiSettings();
+    await settings.load(lastFix: () async => null);
+    expect(settings.city, EkadashiSettings.defaultCity);
+    final failing = EkadashiSettings();
+    await failing.load(lastFix: () async => throw Exception('no channel'));
+    expect(failing.city, EkadashiSettings.defaultCity);
+    expect(failing.loaded, isTrue);
+  });
+
   test('city names: country spelled out in the app language, no time zone', () {
     expect(EkadashiSettings.splitCountry('New York City (US)'), (
       'New York City',
@@ -188,5 +248,44 @@ void main() {
       EkadashiSettings.displayName(EkadashiSettings.defaultCity, 'en'),
       'Chennai (IN)',
     );
+  });
+
+  // M52 launch timing (27 November 2026): a fix a kilometre or two from the
+  // last one counted as a new place, so Home calculated everything again and
+  // Parana moved by a minute.
+  test('a fix within 5 km with the same city name keeps Home\'s city; a '
+      'farther fix or another name moves it', () async {
+    SharedPreferences.setMockInitialValues({});
+    catalogAvailable = true;
+    final settings = EkadashiSettings();
+    await settings.load();
+    LocationData at(double lat, double lng, String city) => LocationData(
+      latitude: lat,
+      longitude: lng,
+      city: city,
+      timezone: 'IST',
+    );
+
+    expect(await settings.useDetected(at(13.0129, 80.1615, 'Chennai')), isTrue);
+    final home = settings.city;
+    expect(home.latitude, 13.01);
+
+    // About 2.8 km away, same name: the same place.
+    expect(
+      await settings.useDetected(
+        at(13.0300, 80.1800, 'Chennai'),
+        atLaunch: true,
+      ),
+      isFalse,
+    );
+    expect(settings.city, home);
+
+    // Same name but 13 km away: moved.
+    expect(await settings.useDetected(at(13.0827, 80.2707, 'Chennai')), isTrue);
+    expect(settings.city.latitude, 13.08);
+
+    // Close by but another place's name: moved.
+    expect(await settings.useDetected(at(13.0900, 80.2750, 'Egmore')), isTrue);
+    expect(settings.city.label, 'Egmore (IN)');
   });
 }

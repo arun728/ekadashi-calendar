@@ -27,18 +27,22 @@ struct TodayView: View {
             } else if events.isEmpty {
                 ContentUnavailableView(model.t("no_ekadashi"), systemImage: AppSymbol.noEkadashi)
             } else {
-                Text("\(model.homeIndex + 1) / \(events.count)")
+                // Blank while only a new city's next weeks are shown: the
+                // year's count is not known yet (same height, so nothing moves).
+                Text(model.showsHomeCount ? "\(model.homeIndex + 1) / \(events.count)" : " ")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                     .padding(.bottom, 8)
                     .accessibilityIdentifier("home_page_indicator")
                 HStack(spacing: 0) {
                     arrow(AppSymbol.previous, target: model.homeIndex - 1) { model.homeIndex -= 1 }
-                    TabView(selection: $model.homeIndex) {
+                    // Selects the Ekadashi itself, so a new city's full list
+                    // replacing its first card keeps the pager where it is.
+                    TabView(selection: $model.homeSelection) {
                         ForEach(Array(events.enumerated()), id: \.element.occurrenceUid) { index, event in
                             EkadashiCard(event: event, isVisible: index == model.homeIndex && model.selectedTab == .today)
                                 .padding(4)
-                                .tag(index)
+                                .tag(event.occurrenceUid)
                         }
                     }
                     .tabViewStyle(.page(indexDisplayMode: .never))
@@ -49,9 +53,13 @@ struct TodayView: View {
                 }
                 .padding(.horizontal, 4)
                 .padding(.bottom, 8)
-                .animation(.easeInOut(duration: 0.3), value: model.homeIndex)
-                .opacity(model.isCalculating ? 0.5 : 1)
-                .overlay { if model.isCalculating { ProgressView().tint(Theme.teal) } }
+                // Animates moving to another Ekadashi, not a list swap that
+                // keeps the same one.
+                .animation(.easeInOut(duration: 0.3), value: model.homeSelection)
+                .opacity(model.isCalculating && !model.isPreviewing ? 0.5 : 1)
+                .overlay { if model.isCalculating && !model.isPreviewing { ProgressView().tint(Theme.teal) } }
+                // A new city's first card is shown, not usable yet.
+                .allowsHitTesting(!model.isPreviewing)
             }
         }
         // Details open through Home's path so a Home link (widget tap) can

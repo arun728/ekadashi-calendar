@@ -321,9 +321,7 @@ class EkadashiService {
     required List<int> years,
   }) async {
     if (!_isDataLoaded) await initializeData();
-    for (final year in years) {
-      await schedule.scheduled(EkadashiScheduleKey(city, tradition, year));
-    }
+    await schedule.scheduledYears(city, tradition, years);
     return cachedEngineEkadashis(
       city: city,
       tradition: tradition,
@@ -344,22 +342,47 @@ class EkadashiService {
     for (final year in years) {
       final fasts = schedule.cached(EkadashiScheduleKey(city, tradition, year));
       if (fasts == null) continue;
-      final rows = _repository.rowsForYear(year);
       for (final fast in fasts) {
-        final row =
-            (fast.publishedUid == null
-                ? null
-                : rows
-                      .where((r) => r['occurrence_uid'] == fast.publishedUid)
-                      .firstOrNull) ??
-            _repository.contentRow(fast.contentId) ??
-            const <String, dynamic>{};
-        result.add(fromScheduled(fast, row, languageCode));
+        result.add(fromScheduled(fast, _rowFor(fast, year), languageCode));
       }
     }
     result.sort((a, b) => a.date.compareTo(b.date));
     return result;
   }
+
+  /// The next weeks' Ekadashis at a place whose years are not calculated
+  /// yet (Home's first card meanwhile; EkadashiSchedule.preview). Only for
+  /// display: the full years keep the identities records and reminders use.
+  Future<List<EkadashiDate>> previewEkadashis({
+    required PanchangCity city,
+    required EkadashiTradition tradition,
+    required String languageCode,
+    required DateTime from,
+  }) async {
+    if (!_isDataLoaded) await initializeData();
+    final fasts = await schedule.preview(city, tradition, from);
+    final result = [
+      for (final fast in fasts)
+        fromScheduled(
+          fast,
+          _rowFor(fast, int.parse(fast.date.substring(0, 4))),
+          languageCode,
+        ),
+    ];
+    result.sort((a, b) => a.date.compareTo(b.date));
+    return result;
+  }
+
+  /// The published row of [fast] in [year], else its content's texts.
+  Map<String, dynamic> _rowFor(ScheduledEkadashi fast, int year) =>
+      (fast.publishedUid == null
+          ? null
+          : _repository
+                .rowsForYear(year)
+                .where((r) => r['occurrence_uid'] == fast.publishedUid)
+                .firstOrNull) ??
+      _repository.contentRow(fast.contentId) ??
+      const <String, dynamic>{};
 
   /// A calculated fast with the texts of [row] in [languageCode].
   EkadashiDate fromScheduled(
