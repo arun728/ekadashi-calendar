@@ -36,24 +36,26 @@ struct TodayView: View {
                     .accessibilityIdentifier("home_page_indicator")
                 HStack(spacing: 0) {
                     arrow(AppSymbol.previous, target: model.homeIndex - 1) { model.homeIndex -= 1 }
-                    TabView(selection: $model.homeIndex) {
+                    // Selects the Ekadashi itself, so a new city's full list
+                    // replacing its first card keeps the pager where it is.
+                    TabView(selection: $model.homeSelection) {
                         ForEach(Array(events.enumerated()), id: \.element.occurrenceUid) { index, event in
                             EkadashiCard(event: event, isVisible: index == model.homeIndex && model.selectedTab == .today)
                                 .padding(4)
-                                .tag(index)
+                                .tag(event.occurrenceUid)
                         }
                     }
                     .tabViewStyle(.page(indexDisplayMode: .never))
                     // Years have different page counts. Recreate the pager so
                     // a linked final page is not reset against the previous year.
-                    // Recreated too when a new city's full years replace its
-                    // first card, so the new list opens on its card.
-                    .id("\(model.homeShowsAllYears ? 0 : model.selectedYear)-\(model.isPreviewing)")
+                    .id(model.homeShowsAllYears ? nil : model.selectedYear)
                     arrow(AppSymbol.next, target: model.homeIndex + 1) { model.homeIndex += 1 }
                 }
                 .padding(.horizontal, 4)
                 .padding(.bottom, 8)
-                .animation(.easeInOut(duration: 0.3), value: model.homeIndex)
+                // Animates moving to another Ekadashi, not a list swap that
+                // keeps the same one.
+                .animation(.easeInOut(duration: 0.3), value: model.homeSelection)
                 .opacity(model.isCalculating && !model.isPreviewing ? 0.5 : 1)
                 .overlay { if model.isCalculating && !model.isPreviewing { ProgressView().tint(Theme.teal) } }
                 // A new city's first card is shown, not usable yet.

@@ -285,6 +285,19 @@ final class AppModel {
     }
 
     /// Home lists the selected year's Ekadashis.
+    /// The Ekadashi Home's pager shows, by its id: unlike [homeIndex] it
+    /// stays the same when a new city's full list replaces its first card,
+    /// so the pager does not move. Setting it moves Home to that Ekadashi.
+    var homeSelection: String {
+        get {
+            let home = homeEkadashis
+            return home.indices.contains(homeIndex) ? home[homeIndex].occurrenceUid : ""
+        }
+        set {
+            if let index = homeEkadashis.firstIndex(where: { $0.occurrenceUid == newValue }) { homeIndex = index }
+        }
+    }
+
     var homeEkadashis: [EkadashiOccurrence] {
         if let previewEkadashis { return previewEkadashis }
         return homeShowsAllYears ? ekadashis : ekadashis.filter { $0.date.year == selectedYear }
