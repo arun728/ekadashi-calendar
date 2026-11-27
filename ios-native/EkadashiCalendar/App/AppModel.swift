@@ -413,11 +413,13 @@ final class AppModel {
         reload(scrollToNext: false)
     }
 
-    func showAllYearsOnHome() {
+    /// Home's year menu, All years: every year's cards, opened on the next
+    /// Ekadashi (the current one until its Parana ends), whichever year or
+    /// card was on screen.
+    func showAllYearsOnHome(now: Date = DisplayClock.date(Date())) {
         guard !homeShowsAllYears else { return }
-        let visibleUID = homeEkadashis.indices.contains(homeIndex) ? homeEkadashis[homeIndex].occurrenceUid : nil
         homeShowsAllYears = true
-        homeIndex = homeEkadashis.firstIndex { $0.occurrenceUid == visibleUID } ?? 0
+        homeIndex = HomeSelection.index(of: homeEkadashis, now: now, zone: scheduleZone, includeParana: true)
     }
 
     /// An explicit Home year can also be opened in Calendar.
