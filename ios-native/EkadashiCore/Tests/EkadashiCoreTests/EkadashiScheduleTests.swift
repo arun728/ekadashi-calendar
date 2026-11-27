@@ -192,6 +192,35 @@ final class EkadashiScheduleTests: XCTestCase {
         }
     }
 
+    /// iPhone (27 November 2026): one year took about 2 s, so a new city's
+    /// page count waited that long. A year is now calculated in pieces at the
+    /// same time, one per core; every fast must be exactly what a single
+    /// calculation gives (dates, times, identities), worldwide.
+    func testPiecesCalculatedTogetherMatchOneCalculationExactly() throws {
+        let places: [PanchangCity] = [
+            Self.chennai, Self.newDelhi,
+            PanchangCity(id: "geonames-5128581", label: "New York City (US)", latitude: 40.71427,
+                         longitude: -74.00597, timeZoneId: "America/New_York"),
+            PanchangCity(id: "geonames-2643743", label: "London (GB)", latitude: 51.50853,
+                         longitude: -0.12574, timeZoneId: "Europe/London"),
+            PanchangCity(id: "geonames-2147714", label: "Sydney (AU)", latitude: -33.86785,
+                         longitude: 151.20732, timeZoneId: "Australia/Sydney"),
+        ]
+        for city in places {
+            for tradition in EkadashiTradition.allCases {
+                for year in [2026, 2027] {
+                    let key = EkadashiScheduleKey(city: city, tradition: tradition, year: year)
+                    let start = CivilDate(year, 1, 1)
+                    let days = start.days(until: CivilDate(year + 1, 1, 1))
+                    let one = try schedule.calculate(key, start: start, count: days, pieces: 1)
+                    let pieces = try schedule.calculate(key, start: start, count: days, pieces: 6)
+                    XCTAssertEqual(pieces, one, "\(city.label) \(tradition) \(year)")
+                    XCTAssertGreaterThan(one.count, 22)
+                }
+            }
+        }
+    }
+
     func testCalculatedYearsAreCachedOnDisk() throws {
         let folder = FileManager.default.temporaryDirectory.appendingPathComponent("schedule-\(UUID().uuidString)")
         defer { try? FileManager.default.removeItem(at: folder) }
