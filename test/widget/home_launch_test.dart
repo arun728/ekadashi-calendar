@@ -129,8 +129,18 @@ void main() {
     );
     expect(find.byKey(const Key('home_recalculating')), findsNothing);
 
+    // M52, declined location (27 November 2026): when the full list
+    // replaced the first card, January's Shattila showed for one frame.
     fullYears.complete();
+    var sawFirstOfYear = false;
+    for (var i = 0; i < 200; i++) {
+      await tester.pump(const Duration(milliseconds: 16));
+      if (find.text('Shattila Ekadashi').evaluate().isNotEmpty) {
+        sawFirstOfYear = true;
+      }
+    }
     await tester.pumpAndSettle();
+    expect(sawFirstOfYear, isFalse, reason: 'the passed card flashed');
     expect(find.text('Utpanna Ekadashi'), findsWidgets);
     expect(find.byKey(const Key('home_page_indicator')), findsOneWidget);
     expect(tester.takeException(), isNull);
