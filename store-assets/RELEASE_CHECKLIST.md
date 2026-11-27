@@ -75,7 +75,7 @@ Store-asset details live in `STORE_CHECKLIST.md`. PRs #26 and #34 are **not** in
 ## Housekeeping
 
 - [x] Deleted the untracked `.deploy-tmp/` and the review copies in `store-assets/` from the main folder (27 Nov 2026).
-- [ ] Remove `store-assets/android/preview/chrome-prof/` (a Chrome profile committed by mistake).
+- [x] Removed `store-assets/android/preview/chrome-prof/` (a Chrome profile committed by mistake; now ignored). It stays in git history.
 - [ ] Apple Small Business Program: requested 16 Nov 2026, waiting for Apple's decision email.
       Google Play 15% service fee: enrolled.
 - [ ] Once the iOS listing exists, add its store link where the share texts need it.

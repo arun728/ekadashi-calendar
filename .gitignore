@@ -53,3 +53,6 @@ tool/l10n/out/
 
 # Wrangler local cache
 .wrangler/
+
+# Local Chrome profiles used for headless captures
+chrome-prof/
