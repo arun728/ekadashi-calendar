@@ -135,7 +135,7 @@ jobs:
     # widgets, unit and UI screenshot tests on the newest iPhone simulator.
     runs-on: macos-15
     # The complete multilingual UI suite exceeded 75 minutes on hosted Macs.
-    timeout-minutes: 150
+    timeout-minutes: 210
     steps:
       - uses: actions/checkout@v4
       - name: Select Xcode 26 (iOS 26 SDK, Liquid Glass)
