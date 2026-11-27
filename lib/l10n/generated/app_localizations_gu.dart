@@ -166,6 +166,17 @@ class AppLocalizationsGu extends AppLocalizations {
   String get settings_reminders_not_arriving => 'રિમાઇન્ડર નથી આવતાં?';
 
   @override
+  String get settings_purchases => 'ખરીદીઓ';
+
+  @override
+  String get settings_premium_cancelled_body =>
+      'તમે ચૂકવેલા સમયગાળાના અંત સુધી પ્રીમિયમ ચાલુ રહેશે. તારીખ ગૂગલ પ્લેમાં જુઓ. ફરી સક્રિય કરવા નીચે “સબ્સ્ક્રિપ્શન સંભાળો” ખોલો.';
+
+  @override
+  String get settings_premium_lifetime_subscription_active =>
+      'તમારું સબ્સ્ક્રિપ્શન હજુ સક્રિય છે. તેને નીચે “સબ્સ્ક્રિપ્શન સંભાળો”માં રદ કરો.';
+
+  @override
   String get app_update_available => 'અપડેટ ઉપલબ્ધ છે';
 
   @override
@@ -1511,9 +1522,6 @@ class AppLocalizationsGu extends AppLocalizations {
   String settings_premium_plan(String value0) {
     return 'તમારો પ્લાન: $value0';
   }
-
-  @override
-  String get settings_premium_manage => 'સંભાળો';
 
   @override
   String get settings_premium_plans => 'પ્લાન બદલો';

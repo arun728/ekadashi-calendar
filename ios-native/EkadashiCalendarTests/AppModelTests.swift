@@ -695,7 +695,9 @@ final class PremiumPlanChangeWordingTests: XCTestCase {
             XCTAssertEqual(model.premiumRenewalMessage(state), model.t("premium_monthly_switch_scheduled"), language)
             XCTAssertEqual(model.premiumSettingsMessage(state), model.t("premium_monthly_switch_scheduled"), language)
             state.apply(owned: [OwnedProduct(productId: PremiumProduct.yearly, willAutoRenew: false, expirationDate: end)])
-            XCTAssertEqual(model.premiumSettingsMessage(state), model.t("premium_cancelled_body"), language)
+            // Settings has no Manage button on the card any more (Arun, 27 Nov
+            // 2026): the cancelled text points to Manage subscription below.
+            XCTAssertEqual(model.premiumSettingsMessage(state), model.t("settings_premium_cancelled_body"), language)
             XCTAssertEqual(model.premiumSwitchNote(state, to: .monthly), model.t("premium_switch_at_renewal_body"), language)
             let date = model.fullDate(CivilDate.today(now: end))
             for text in [model.premiumRenewalMessage(state), model.premiumSettingsMessage(state),
@@ -703,6 +705,29 @@ final class PremiumPlanChangeWordingTests: XCTestCase {
                 XCTAssertFalse(text.contains(date), "\(language): \(text)")
             }
         }
+    }
+
+    /// Settings' Premium card has no Manage (Arun, 27 Nov 2026): a note sends
+    /// Lifetime members who still renew a subscription, and subscribers with a
+    /// payment problem, to Manage subscription in the Purchases section.
+    func testSettingsNotesPointToManageSubscriptionBelow() {
+        let model = AppModel(store: InMemoryKeyValueStore(["has_launched": true, "language_code": "en"]))
+        var state = PremiumState()
+        XCTAssertNil(model.premiumSettingsNote(state), "free")
+        state.apply(owned: [OwnedProduct(productId: PremiumProduct.monthly, willAutoRenew: true, expirationDate: end)])
+        XCTAssertNil(model.premiumSettingsNote(state), "subscriber")
+        state.apply(owned: [OwnedProduct(productId: PremiumProduct.lifetime)])
+        XCTAssertNil(model.premiumSettingsNote(state), "lifetime only")
+        state.apply(owned: [OwnedProduct(productId: PremiumProduct.lifetime),
+                            OwnedProduct(productId: PremiumProduct.monthly, willAutoRenew: true, expirationDate: end)])
+        XCTAssertEqual(model.premiumSettingsNote(state),
+                       "Your subscription is still active. Cancel it in Manage subscription below.")
+        state.apply(owned: [OwnedProduct(productId: PremiumProduct.lifetime),
+                            OwnedProduct(productId: PremiumProduct.monthly, willAutoRenew: false, expirationDate: end)])
+        XCTAssertNil(model.premiumSettingsNote(state), "lifetime with a subscription already cancelled")
+        state.apply(owned: [], billingRetry: true)
+        XCTAssertEqual(model.premiumSettingsNote(state),
+                       "Update your payment method in Manage subscription below to restore Premium.")
     }
 
     func testUnknownRenewalStatusSendsUsersToTheAppStore() {

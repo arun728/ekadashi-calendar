@@ -52,7 +52,9 @@ void main() {
     expect(find.byKey(const Key('settings_premium_manage')), findsNothing);
   });
 
-  testWidgets('subscribers see their status, Manage and Change plan', (
+  // Arun (27 Nov 2026): Manage moved to the Purchases section, so the card
+  // keeps one main action and notes point to Manage subscription below.
+  testWidgets('subscribers see their status and only Change plan', (
     tester,
   ) async {
     final premium = PremiumService(
@@ -62,53 +64,78 @@ void main() {
     await premium.refresh();
     await show(tester, premium);
     expect(find.text('You have Premium ✨'), findsOneWidget);
-    expect(find.byKey(const Key('settings_premium_manage')), findsOneWidget);
+    expect(find.byKey(const Key('settings_premium_manage')), findsNothing);
     expect(find.widgetWithText(FilledButton, 'Change plan'), findsOneWidget);
+    expect(find.byType(OutlinedButton), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
-  // Arun (25 Nov 2026): teal Manage on the teal card looked disabled next to
-  // Change plan. Like iOS, its label and outline use the primary text colour.
-  for (final dark in [true, false]) {
-    testWidgets('Manage is clearly readable (${dark ? 'dark' : 'light'})', (
-      tester,
-    ) async {
-      final premium = PremiumService(
-        entitlements: PremiumFixture()..premium = true,
+  testWidgets('a cancelled subscription points to Manage subscription below', (
+    tester,
+  ) async {
+    final premium = PremiumService(entitlements: PremiumFixture())
+      ..applyOwned(
+        {PremiumService.subscriptionId},
+        autoRenewing: {PremiumService.subscriptionId: false},
       );
-      addTearDown(premium.dispose);
-      await premium.refresh();
-      await show(
-        tester,
-        premium,
-        theme: dark ? ThemeData.dark() : ThemeData.light(),
+    addTearDown(premium.dispose);
+    await show(tester, premium);
+    expect(
+      find.text(
+        'Premium stays on until the end of the period you paid for. '
+        'See the date in Google Play. '
+        'Reactivate it in Manage subscription below.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.widgetWithText(FilledButton, 'Change plan'), findsOneWidget);
+    expect(find.byKey(const Key('settings_premium_manage')), findsNothing);
+  });
+
+  const note =
+      'Your subscription is still active. '
+      'Cancel it in Manage subscription below.';
+
+  testWidgets('Lifetime only: the thank-you message and no buttons', (
+    tester,
+  ) async {
+    final premium = PremiumService(entitlements: PremiumFixture())
+      ..applyOwned({PremiumService.lifetimeId});
+    addTearDown(premium.dispose);
+    await show(tester, premium);
+    expect(find.text(note), findsNothing);
+    expect(find.byType(FilledButton), findsNothing);
+    expect(find.byType(OutlinedButton), findsNothing);
+  });
+
+  testWidgets('Lifetime with a renewing subscription: a note, no buttons', (
+    tester,
+  ) async {
+    final premium = PremiumService(entitlements: PremiumFixture())
+      ..applyOwned(
+        {PremiumService.lifetimeId, PremiumService.subscriptionId},
+        autoRenewing: {PremiumService.subscriptionId: true},
       );
-      final style = tester
-          .widget<OutlinedButton>(
-            find.byKey(const Key('settings_premium_manage')),
-          )
-          .style!;
-      final label = style.foregroundColor!.resolve({})!;
-      final outline = style.side!.resolve({})!.color;
-      final expected = dark ? Colors.white : Colors.black;
-      expect(label.toARGB32() & 0xFFFFFF, expected.toARGB32() & 0xFFFFFF);
-      expect(label.a, greaterThanOrEqualTo(.85));
-      expect(outline.toARGB32() & 0xFFFFFF, expected.toARGB32() & 0xFFFFFF);
-      expect(outline.a, greaterThanOrEqualTo(.8));
-      // Same label size as Change plan, as on iOS.
-      TextStyle? labelStyle(Finder button) => tester
-          .widget<Text>(
-            find.descendant(of: button, matching: find.byType(Text)),
-          )
-          .style;
-      final manage = labelStyle(
-        find.byKey(const Key('settings_premium_manage')),
+    addTearDown(premium.dispose);
+    await show(tester, premium);
+    expect(find.text(note), findsOneWidget);
+    expect(find.byKey(const Key('settings_premium_manage')), findsNothing);
+    expect(find.byType(FilledButton), findsNothing);
+    expect(find.byType(OutlinedButton), findsNothing);
+  });
+
+  testWidgets('Lifetime with a cancelled subscription: no note', (
+    tester,
+  ) async {
+    final premium = PremiumService(entitlements: PremiumFixture())
+      ..applyOwned(
+        {PremiumService.lifetimeId, PremiumService.subscriptionId},
+        autoRenewing: {PremiumService.subscriptionId: false},
       );
-      final change = labelStyle(find.byKey(const Key('settings_premium')));
-      expect(manage?.fontSize, change?.fontSize);
-      expect(manage?.fontWeight, change?.fontWeight);
-    });
-  }
+    addTearDown(premium.dispose);
+    await show(tester, premium);
+    expect(find.text(note), findsNothing);
+  });
 
   testWidgets('a cancelled switch leaves out "Reactivate anytime"', (
     tester,

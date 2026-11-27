@@ -35,7 +35,9 @@
   "premium_cancelled_body": "Premium stays on until the end of the period you paid for. See the date in the App Store. Reactivate anytime to keep it.",
   "premium_renewal_in_play": "See your next renewal and any scheduled change in the App Store.",
   "premium_monthly_switch_scheduled": "Switching to Monthly at renewal. See the renewal date in the App Store.",
-  "premium_switch_at_renewal_body": "Yearly stays active until your next renewal. The App Store then starts Monthly and charges for it."
+  "premium_switch_at_renewal_body": "Yearly stays active until your next renewal. The App Store then starts Monthly and charges for it.",
+  "settings_premium_cancelled_body": "Premium stays on until the end of the period you paid for. See the date in the App Store. Reactivate it in Manage subscription below.",
+  "ios_settings_billing_retry_body": "Update your payment method in Manage subscription below to restore Premium."
  },
  "ta": {
   "ios_update_available": "புதுப்பிப்பு கிடைக்கிறது",
@@ -72,7 +74,9 @@
   "premium_cancelled_body": "நீங்கள் செலுத்திய காலம் முடியும் வரை பிரீமியம் செயலில் இருக்கும். தேதியை ஆப் ஸ்டோரில் பார்க்கவும். தொடர எப்போது வேண்டுமானாலும் மீண்டும் இயக்கலாம்.",
   "premium_renewal_in_play": "அடுத்த புதுப்பிப்பையும் திட்டமிட்ட மாற்றத்தையும் ஆப் ஸ்டோரில் பார்க்கவும்.",
   "premium_monthly_switch_scheduled": "புதுப்பிக்கும்போது மாதத் திட்டம் தொடங்கும். புதுப்பிப்புத் தேதியை ஆப் ஸ்டோரில் பார்க்கவும்.",
-  "premium_switch_at_renewal_body": "அடுத்த புதுப்பிப்பு வரை ஆண்டுத் திட்டம் செயலில் இருக்கும். அதன் பிறகு ஆப் ஸ்டோர் மாதத் திட்டத்தைத் தொடங்கி அதற்கான கட்டணத்தை வசூலிக்கும்."
+  "premium_switch_at_renewal_body": "அடுத்த புதுப்பிப்பு வரை ஆண்டுத் திட்டம் செயலில் இருக்கும். அதன் பிறகு ஆப் ஸ்டோர் மாதத் திட்டத்தைத் தொடங்கி அதற்கான கட்டணத்தை வசூலிக்கும்.",
+  "settings_premium_cancelled_body": "நீங்கள் செலுத்திய காலம் முடியும் வரை பிரீமியம் செயலில் இருக்கும். தேதியை ஆப் ஸ்டோரில் பார்க்கவும். கீழே உள்ள “சந்தாவை நிர்வகிக்கவும்” என்பதில் அதை மீண்டும் இயக்கலாம்.",
+  "ios_settings_billing_retry_body": "பிரீமியத்தை மீண்டும் பெற, கீழே உள்ள “சந்தாவை நிர்வகிக்கவும்” என்பதில் கட்டண முறையைப் புதுப்பிக்கவும்."
  },
  "hi": {
   "ios_update_available": "अपडेट उपलब्ध है",
@@ -109,7 +113,9 @@
   "premium_cancelled_body": "भुगतान की गई अवधि के अंत तक प्रीमियम चालू रहेगा। तारीख ऐप स्टोर में देखें। इसे बनाए रखने के लिए कभी भी फिर से चालू करें।",
   "premium_renewal_in_play": "अगला नवीनीकरण और तय किया गया बदलाव ऐप स्टोर में देखें।",
   "premium_monthly_switch_scheduled": "नवीनीकरण पर मासिक प्लान शुरू होगा। नवीनीकरण की तारीख ऐप स्टोर में देखें।",
-  "premium_switch_at_renewal_body": "सालाना प्लान अगले नवीनीकरण तक चालू रहेगा। उसके बाद ऐप स्टोर मासिक प्लान शुरू करेगा और उसका शुल्क लेगा।"
+  "premium_switch_at_renewal_body": "सालाना प्लान अगले नवीनीकरण तक चालू रहेगा। उसके बाद ऐप स्टोर मासिक प्लान शुरू करेगा और उसका शुल्क लेगा।",
+  "settings_premium_cancelled_body": "भुगतान की गई अवधि के अंत तक प्रीमियम चालू रहेगा। तारीख ऐप स्टोर में देखें। इसे फिर से चालू करने के लिए नीचे “सदस्यता प्रबंधित करें” खोलें।",
+  "ios_settings_billing_retry_body": "प्रीमियम वापस पाने के लिए नीचे “सदस्यता प्रबंधित करें” में भुगतान का तरीका अपडेट करें।"
  },
  "te": {
   "ios_update_available": "అప్‌డేట్ అందుబాటులో ఉంది",
@@ -146,7 +152,9 @@
   "premium_cancelled_body": "మీరు చెల్లించిన వ్యవధి ముగిసే వరకు ప్రీమియం ఉంటుంది. తేదీని యాప్ స్టోర్‌లో చూడండి. కొనసాగించడానికి ఎప్పుడైనా మళ్లీ ప్రారంభించండి.",
   "premium_renewal_in_play": "తదుపరి పునరుద్ధరణను, నిర్ణయించిన మార్పును యాప్ స్టోర్‌లో చూడండి.",
   "premium_monthly_switch_scheduled": "పునరుద్ధరణ సమయంలో నెలవారీ ప్లాన్ మొదలవుతుంది. పునరుద్ధరణ తేదీని యాప్ స్టోర్‌లో చూడండి.",
-  "premium_switch_at_renewal_body": "తదుపరి పునరుద్ధరణ వరకు వార్షిక ప్లాన్ సక్రియంగా ఉంటుంది. ఆ తర్వాత యాప్ స్టోర్ నెలవారీ ప్లాన్‌ను ప్రారంభించి దాని రుసుమును వసూలు చేస్తుంది."
+  "premium_switch_at_renewal_body": "తదుపరి పునరుద్ధరణ వరకు వార్షిక ప్లాన్ సక్రియంగా ఉంటుంది. ఆ తర్వాత యాప్ స్టోర్ నెలవారీ ప్లాన్‌ను ప్రారంభించి దాని రుసుమును వసూలు చేస్తుంది.",
+  "settings_premium_cancelled_body": "మీరు చెల్లించిన వ్యవధి ముగిసే వరకు ప్రీమియం ఉంటుంది. తేదీని యాప్ స్టోర్‌లో చూడండి. కింద ఉన్న “సభ్యత్వాన్ని నిర్వహించండి”లో దాన్ని మళ్లీ ప్రారంభించండి.",
+  "ios_settings_billing_retry_body": "ప్రీమియంను తిరిగి పొందడానికి కింద ఉన్న “సభ్యత్వాన్ని నిర్వహించండి”లో చెల్లింపు పద్ధతిని నవీకరించండి."
  },
  "gu": {
   "ios_update_available": "અપડેટ ઉપલબ્ધ છે",
@@ -183,7 +191,9 @@
   "premium_cancelled_body": "તમે ચૂકવેલા સમયગાળાના અંત સુધી પ્રીમિયમ ચાલુ રહેશે. તારીખ એપ સ્ટોરમાં જુઓ. ચાલુ રાખવા ગમે ત્યારે ફરી સક્રિય કરો.",
   "premium_renewal_in_play": "આગામી નવીનીકરણ અને નક્કી કરેલો ફેરફાર એપ સ્ટોરમાં જુઓ.",
   "premium_monthly_switch_scheduled": "નવીનીકરણ વખતે માસિક પ્લાન શરૂ થશે. નવીનીકરણની તારીખ એપ સ્ટોરમાં જુઓ.",
-  "premium_switch_at_renewal_body": "આગામી નવીનીકરણ સુધી વાર્ષિક પ્લાન ચાલુ રહેશે. પછી એપ સ્ટોર માસિક પ્લાન શરૂ કરશે અને તેનો ચાર્જ લેશે."
+  "premium_switch_at_renewal_body": "આગામી નવીનીકરણ સુધી વાર્ષિક પ્લાન ચાલુ રહેશે. પછી એપ સ્ટોર માસિક પ્લાન શરૂ કરશે અને તેનો ચાર્જ લેશે.",
+  "settings_premium_cancelled_body": "તમે ચૂકવેલા સમયગાળાના અંત સુધી પ્રીમિયમ ચાલુ રહેશે. તારીખ એપ સ્ટોરમાં જુઓ. ફરી સક્રિય કરવા નીચે “સબ્સ્ક્રિપ્શન સંભાળો” ખોલો.",
+  "ios_settings_billing_retry_body": "પ્રીમિયમ ફરી મેળવવા નીચે “સબ્સ્ક્રિપ્શન સંભાળો”માં ચુકવણીની રીત અપડેટ કરો."
  },
  "bn": {
   "ios_update_available": "আপডেট পাওয়া যাচ্ছে",
@@ -220,6 +230,8 @@
   "premium_cancelled_body": "আপনি যে সময়ের জন্য টাকা দিয়েছেন তার শেষ পর্যন্ত প্রিমিয়াম চালু থাকবে। তারিখ অ্যাপ স্টোরে দেখুন। রাখতে চাইলে যেকোনো সময় আবার সক্রিয় করুন।",
   "premium_renewal_in_play": "পরবর্তী নবীকরণ এবং নির্ধারিত পরিবর্তন অ্যাপ স্টোরে দেখুন।",
   "premium_monthly_switch_scheduled": "নবীকরণের সময় মাসিক প্ল্যান শুরু হবে। নবীকরণের তারিখ অ্যাপ স্টোরে দেখুন।",
-  "premium_switch_at_renewal_body": "পরবর্তী নবীকরণ পর্যন্ত বার্ষিক প্ল্যান চালু থাকবে। এরপর অ্যাপ স্টোর মাসিক প্ল্যান চালু করে তার মূল্য নেবে।"
+  "premium_switch_at_renewal_body": "পরবর্তী নবীকরণ পর্যন্ত বার্ষিক প্ল্যান চালু থাকবে। এরপর অ্যাপ স্টোর মাসিক প্ল্যান চালু করে তার মূল্য নেবে।",
+  "settings_premium_cancelled_body": "আপনি যে সময়ের জন্য টাকা দিয়েছেন তার শেষ পর্যন্ত প্রিমিয়াম চালু থাকবে। তারিখ অ্যাপ স্টোরে দেখুন। আবার সক্রিয় করতে নিচে “সাবস্ক্রিপশন পরিচালনা করুন” খুলুন।",
+  "ios_settings_billing_retry_body": "প্রিমিয়াম ফিরে পেতে নিচে “সাবস্ক্রিপশন পরিচালনা করুন”-এ পেমেন্ট পদ্ধতি আপডেট করুন।"
  }
 }

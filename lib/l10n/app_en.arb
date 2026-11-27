@@ -65,6 +65,9 @@
   "settings_contact_support": "Contact support",
   "settings_contact_support_desc": "Email us for help",
   "settings_reminders_not_arriving": "Reminders not arriving?",
+  "settings_purchases": "Purchases",
+  "settings_premium_cancelled_body": "Premium stays on until the end of the period you paid for. See the date in Google Play. Reactivate it in Manage subscription below.",
+  "settings_premium_lifetime_subscription_active": "Your subscription is still active. Cancel it in Manage subscription below.",
   "app_update_available": "Update available",
   "app_update_now": "Update",
   "app_update_later": "Later",
@@ -563,7 +566,6 @@
       }
     }
   },
-  "settings_premium_manage": "Manage",
   "settings_premium_plans": "Change plan",
   "widget_today_is_ekadashi": "Today is Ekadashi",
   "widget_days_to_go": "{value0} days to go",

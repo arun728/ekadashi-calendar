@@ -173,7 +173,7 @@ final class LocalizationTests: XCTestCase {
         // premium_play_switch_cancelled_note was added for Google Play's cancelled switch (25 Nov 2026).
         // premium_cancelled_body_play_switch drops "Reactivate anytime" in that case (25 Nov 2026).
         // Four Settings redesign strings (test/fixtures/settings_copy.json).
-        XCTAssertEqual(english.count, 605)
+        XCTAssertEqual(english.count, 607)
         XCTAssertTrue(Set(english).isSuperset(of: [
             "premium_switch_now_title", "premium_switch_now_body", "premium_switch_now_confirm",
         ]))

@@ -320,11 +320,12 @@ Share texts use `AppLinks` in EkadashiCore. Each platform shares only its own
 store link: iOS the App Store link, Android the Play Store link.
 
 - Android (live v1): https://play.google.com/store/apps/details?id=com.applausestudios.ekadashi_calendar
-- iOS: https://apps.apple.com/app/ekadashi-calendar is a **placeholder**. The iOS
-  app has no App Store listing for v1; it launches with v2 at the end of 2026.
-  When it has a listing, replace the placeholder in `AppLinks.appStorePlaceholder`
-  (or set `APP_STORE_ID` in `ios-native/Config/Secrets.xcconfig`) and in the
-  Android port.
+- iOS: https://apps.apple.com/app/id6825791305, the id Apple assigned in App
+  Store Connect (`AppLinks.appStoreId`, `APP_STORE_ID` in
+  `ios-native/Config/App.xcconfig`). Share card, Share app, Rate app and the
+  update prompt always use it (27 November 2026: no placeholder). The page
+  opens once the app is released, with no new build. Never override the id in
+  `Secrets.xcconfig`.
 
 ## Icons, launch location and CI (14 October 2026)
 

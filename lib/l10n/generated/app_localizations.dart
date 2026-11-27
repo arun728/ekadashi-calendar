@@ -412,6 +412,24 @@ abstract class AppLocalizations {
   /// **'Reminders not arriving?'**
   String get settings_reminders_not_arriving;
 
+  /// No description provided for @settings_purchases.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchases'**
+  String get settings_purchases;
+
+  /// No description provided for @settings_premium_cancelled_body.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium stays on until the end of the period you paid for. See the date in Google Play. Reactivate it in Manage subscription below.'**
+  String get settings_premium_cancelled_body;
+
+  /// No description provided for @settings_premium_lifetime_subscription_active.
+  ///
+  /// In en, this message translates to:
+  /// **'Your subscription is still active. Cancel it in Manage subscription below.'**
+  String get settings_premium_lifetime_subscription_active;
+
   /// No description provided for @app_update_available.
   ///
   /// In en, this message translates to:
@@ -2907,12 +2925,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your plan: {value0}'**
   String settings_premium_plan(String value0);
-
-  /// No description provided for @settings_premium_manage.
-  ///
-  /// In en, this message translates to:
-  /// **'Manage'**
-  String get settings_premium_manage;
 
   /// No description provided for @settings_premium_plans.
   ///

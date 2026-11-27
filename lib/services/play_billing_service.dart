@@ -186,11 +186,15 @@ class PlayBillingService extends ChangeNotifier {
   static const yearly = PremiumService.yearlySubscriptionId;
   static const lifetime = PremiumService.lifetimeId;
 
-  static Uri managementUrl(String? activeProductId) =>
-      Uri.https('play.google.com', '/store/account/subscriptions', {
-        'package': 'com.applausestudios.ekadashi_calendar',
-        'sku': activeProductId ?? subscription,
-      });
+  /// That subscription's Google Play page, or Google Play's list of the
+  /// user's subscriptions when there is none (never the page of the old
+  /// combined subscription, which said "We couldn't find your subscription").
+  static Uri managementUrl(String? activeProductId) => activeProductId == null
+      ? Uri.https('play.google.com', '/store/account/subscriptions')
+      : Uri.https('play.google.com', '/store/account/subscriptions', {
+          'package': 'com.applausestudios.ekadashi_calendar',
+          'sku': activeProductId,
+        });
   final PremiumService premium;
   InAppPurchase? _store;
   InAppPurchase get store => _store ??= InAppPurchase.instance;
