@@ -33,6 +33,7 @@ Every starting point to every other option. Unless a rule says otherwise,
 | Vaishnava is the default; a saved choice survives restarts | `AppModelTests.testVaishnavaIsTheDefaultForMissingOrInvalidTraditionAndSavedChoicesSurvive` | `ekadashi_settings_test` "Chennai until something is picked or detected…" |
 | Switching stays on the Ekadashi on screen | Gap | `home_engine_test` "switching the tradition stays on the Ekadashi on screen" |
 | Menu order is Vaishnava, then Smarta | `AppModelTests.testHomeTraditionOrderIsVaishnavaThenSmarta` | `android_home_followup_test` "…menu order…" |
+| The other tradition is calculated in the background once a city loads, so the first switch never spins | `AppModelTests.testTheOtherTraditionIsReadyBeforeTheSwitch` | `home_tradition_test` |
 
 ## City (detected, picked, launch)
 
@@ -42,7 +43,7 @@ Every starting point to every other option. Unless a rule says otherwise,
 | A picked city moves the Panchang tab; "Use current location" lets detection decide | Gap | `ekadashi_settings_test` "a city picked on Home wins over detection…" |
 | A fresh install calculates only the detected place (not Chennai first) | Gap (Android-only work) | `home_launch_test` "a first launch without a saved city or last fix…" |
 | A fix within 5 km with the same name is the same place (no recalculation) | Gap (Android-only work) | `ekadashi_settings_test` "a fix within 5 km…" |
-| A new place shows its next Ekadashi before its full years | Gap (Android-only work) | `home_launch_test` "a new place shows the next Ekadashi…", `ekadashi_preview_test` |
+| A new place shows its next Ekadashi before its full years (iOS: picking a city only) | `AppModelTests.testPickingANewCityShowsItsNextEkadashiBeforeItsFullYears`, `EkadashiScheduleTests.testPreviewOfTheNextWeeksMatchesTheFullYearAndIsNotCached` | `home_launch_test` "a new place shows the next Ekadashi…", `ekadashi_preview_test` |
 | Once the next Ekadashi is on screen it stays there through every list swap (first card, full years, picking a city): never hidden, never another card, count blank or final | Gap (Android-only work) | `home_launch_test` `expectSteadyCard` (fresh install, declined location, "picking a new city keeps the next Ekadashi…") |
 | Declined location: Chennai, its next Ekadashi, no other card first | Gap | `home_launch_test` "declining location on a fresh install…" |
 

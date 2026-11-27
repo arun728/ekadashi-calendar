@@ -927,6 +927,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       // Schedule notifications
       _scheduleNotifications();
       _syncSearchAndWidgets();
+      _prepareOtherTradition(city, tradition, years);
     } catch (e) {
       debugPrint('Error loading data: $e');
       if (mounted && generation == _loadGeneration) {
@@ -1121,6 +1122,21 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       _currentPage = index;
       _startPagerAt(index);
     });
+  }
+
+  /// Calculates the other tradition of Home's city in the background once
+  /// its own has loaded, so switching tradition is instant; a switch while
+  /// it runs shares the calculation (EkadashiSchedule.scheduled).
+  void _prepareOtherTradition(
+    PanchangCity city,
+    EkadashiTradition tradition,
+    List<int> years,
+  ) {
+    final other = tradition == EkadashiTradition.smarta
+        ? EkadashiTradition.gaudiya
+        : EkadashiTradition.smarta;
+    if (_ekadashiService.isScheduleCached(city, other, years)) return;
+    _ekadashiService.schedule.scheduledYears(city, other, years).ignore();
   }
 
   /// Shows the cards hidden while a new list moved to its Ekadashi.
