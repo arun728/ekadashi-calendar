@@ -19,10 +19,10 @@ Every starting point to every other option. Unless a rule says otherwise,
 | 2027 → All years | the next Ekadashi | `AppModelTests.testAllYearsOpensOnTheNextEkadashiEvenFromAnotherYear`, `YearAndUpdateUITests.testAllYearsAfter2027OpensOnTheNextEkadashi` | `home_all_years_test` |
 | 2026 (another card browsed) → All years | the next Ekadashi | `AppModelTests.testAllYearsOpensOnTheNextEkadashiEvenFromAnotherYear` | `home_all_years_test` |
 | 2026 → All years (December, before Parana) | the current Ekadashi | `YearAndUpdateUITests.testHomeStartsInCurrentYearAndAllYearsIncludesBothCalendars` | `year_rollover_test` "All years leads the menu…", `integration_test/year_update_android_test` |
-| All years → 2026 | 2026's next Ekadashi | Gap | Gap |
+| All years → 2026 | 2026's next Ekadashi | Gap | `home_all_years_test` (the 2026 step) |
 | All years → 2027 | 2027's first Ekadashi (when 2026's are all past: its next) | Gap | Gap |
 | 2026 → 2027 | 2027's first Ekadashi | Gap | `home_all_years_test` (the 2027 step) |
-| 2027 → 2026 | 2026's next Ekadashi | Gap | `home_all_years_test` (the 2026 step) |
+| 2027 → 2026 | 2026's next Ekadashi | Gap | Gap |
 | A year → Calendar | Calendar opens on that year | `AppModelTests.testHomeCityTraditionAndYearApplyAcrossTheApp` | `home_engine_test` "the year menu and Calendar stay on the same year" |
 | Parana ends in All years | moves to the next Ekadashi, across New Year | `AppModelTests.testHomeScopeAndCivilYearRollOverAcrossCitiesTraditionsAndLanguages` | `year_rollover_test` "All years leads the menu and survives Parana rollover" |
 
