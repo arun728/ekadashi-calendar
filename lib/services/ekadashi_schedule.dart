@@ -215,6 +215,43 @@ class EkadashiSchedule {
     });
   }
 
+  /// The fasts of the next weeks from [from] (a few days back, so a fast
+  /// still running is included), for Home's first card at a new place while
+  /// its full years are calculated. Not cached: a year is only ever stored
+  /// whole. A range across New Year uses each year's published rows.
+  Future<List<ScheduledEkadashi>> preview(
+    PanchangCity city,
+    EkadashiTradition tradition,
+    DateTime from, {
+    int days = 45,
+  }) {
+    final start = DateTime.utc(
+      from.year,
+      from.month,
+      from.day,
+    ).subtract(const Duration(days: 3));
+    final end = start.add(Duration(days: days));
+    final parts =
+        <(EkadashiScheduleKey, List<Map<String, dynamic>>, DateTime, int)>[];
+    for (var year = start.year; year <= end.year; year++) {
+      final from = year == start.year ? start : DateTime.utc(year);
+      final to = year == end.year ? end : DateTime.utc(year + 1);
+      final count = to.difference(from).inDays;
+      if (count <= 0) continue;
+      parts.add((
+        EkadashiScheduleKey(city, tradition, year),
+        publishedRows(year),
+        from,
+        count,
+      ));
+    }
+    List<ScheduledEkadashi> run() => [
+      for (final (key, rows, from, count) in parts)
+        ...calculateRange(key, rows, from, count),
+    ];
+    return calculateInline ? Future.value(run()) : Isolate.run(run);
+  }
+
   /// Every year in [years] at [city] for [tradition], in that order. The
   /// years not cached yet are calculated at the same time, each in its own
   /// isolate, so a new place waits for the slowest year, not for all of
@@ -265,7 +302,22 @@ class EkadashiSchedule {
     List<Map<String, dynamic>> published,
   ) {
     final start = DateTime.utc(key.year);
-    final days = DateTime.utc(key.year + 1).difference(start).inDays;
+    return calculateRange(
+      key,
+      published,
+      start,
+      DateTime.utc(key.year + 1).difference(start).inDays,
+    );
+  }
+
+  /// [calculate] for [days] days from [start] within [key]'s year. A fast
+  /// matched to a published row gets exactly what the full year gives it.
+  static List<ScheduledEkadashi> calculateRange(
+    EkadashiScheduleKey key,
+    List<Map<String, dynamic>> published,
+    DateTime start,
+    int days,
+  ) {
     final fasts = const CalculatedEkadashiEngine().calculate(
       start,
       days,

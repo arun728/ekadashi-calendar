@@ -211,6 +211,11 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   /// one never flashes.
   bool _initialPagePending = false;
 
+  /// Home shows the next weeks of a new place while its full years are
+  /// calculated: the cards are not dimmed but cannot be used yet, and the
+  /// year's page count is hidden.
+  bool _isPreview = false;
+
   /// What the latest load calculates, so a settings change reloads only
   /// when the place or tradition really changed.
   String? _requestedPlace;
@@ -776,6 +781,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       );
       _errorMessage = '';
     });
+    if (_isCalculating &&
+        (shouldScrollToNext || _ekadashiList.isEmpty || _isPreview)) {
+      _showPreview(generation, city, tradition);
+    }
 
     try {
       final lang = _currentLangCode.isEmpty ? 'en' : _currentLangCode;
@@ -796,6 +805,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       setState(() {
         _allEkadashis = ekadashis;
         _ekadashiList = _homeYearList();
+        _isPreview = false;
         if (currentUid == null) _initialPagePending = true;
         _currentTimezone = city.timeZoneId;
         _isLoading = false;
@@ -849,6 +859,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       if (mounted && generation == _loadGeneration) {
         setState(() {
           _isLoading = false;
+          _isPreview = false;
           _isCalculating = false;
           _errorMessage = context.read<LanguageService>().translate(
             'failed_load',
@@ -994,6 +1005,53 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       if (tab == 1 && date != null) _calendarKey.currentState?.selectDate(date);
       // Event reminders open their day in Panchang.
       if (tab == 3 && date != null) _panchangKey.currentState?.showDate(date);
+    });
+  }
+
+  /// The next Ekadashi of a new place while [_loadData] calculates its full
+  /// years: the same engine and place, so its dates and times are those of
+  /// the full list.
+  Future<void> _showPreview(
+    int generation,
+    PanchangCity city,
+    EkadashiTradition tradition,
+  ) async {
+    final now = DisplayClock.now();
+    List<EkadashiDate> preview;
+    try {
+      preview = await _ekadashiService.previewEkadashis(
+        city: city,
+        tradition: tradition,
+        languageCode: _currentLangCode.isEmpty ? 'en' : _currentLangCode,
+        from: now,
+      );
+    } catch (e) {
+      debugPrint('Preview error: $e');
+      return;
+    }
+    if (!mounted ||
+        generation != _loadGeneration ||
+        !_isCalculating ||
+        preview.isEmpty) {
+      return;
+    }
+    final index = EkadashiLifecycle.currentIndex(
+      preview,
+      now,
+      _getIANATimezone(city.timeZoneId),
+    );
+    setState(() {
+      _ekadashiList = preview;
+      _isPreview = true;
+      _isLoading = false;
+      _currentTimezone = city.timeZoneId;
+      _currentPage = index;
+      _initialPagePending = true;
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (_pageController.hasClients) _pageController.jumpToPage(index);
+      _revealFirstPage();
     });
   }
 
@@ -1493,9 +1551,11 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         // Page indicator
         Padding(
           padding: const EdgeInsets.only(bottom: 8),
+          // Blank while the next weeks are shown: the year's count is not
+          // known yet (same height, so nothing moves).
           child: Text(
-            '${_currentPage + 1} / ${_ekadashiList.length}',
-            key: const Key('home_page_indicator'),
+            _isPreview ? ' ' : '${_currentPage + 1} / ${_ekadashiList.length}',
+            key: _isPreview ? null : const Key('home_page_indicator'),
             style: TextStyle(
               fontSize: IosText.footnote,
               color: IosColors.secondary(context),
@@ -1511,58 +1571,62 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             child: Stack(
               alignment: Alignment.center,
               children: [
-                Opacity(
-                  opacity: _isCalculating ? 0.5 : 1,
-                  child: Row(
-                    children: [
-                      _homeArrow(
-                        key: const Key('home_previous'),
-                        icon: AppIcons.previous,
-                        target: _currentPage - 1,
-                        enabled: !isFirstPage,
-                        onPressed: () => _pageController.previousPage(
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
+                IgnorePointer(
+                  // The first card of a new place: shown, not usable yet.
+                  ignoring: _isPreview,
+                  child: Opacity(
+                    opacity: _isCalculating && !_isPreview ? 0.5 : 1,
+                    child: Row(
+                      children: [
+                        _homeArrow(
+                          key: const Key('home_previous'),
+                          icon: AppIcons.previous,
+                          target: _currentPage - 1,
+                          enabled: !isFirstPage,
+                          onPressed: () => _pageController.previousPage(
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                          ),
                         ),
-                      ),
-                      Expanded(
-                        child: Offstage(
-                          offstage: _initialPagePending,
-                          child: PageView.builder(
-                            controller: _pageController,
-                            itemCount: _ekadashiList.length,
-                            onPageChanged: (index) {
-                              if (mounted) {
-                                if (_widgetOccurrenceUid != null &&
-                                    _ekadashiList[index].occurrenceUid !=
-                                        _widgetOccurrenceUid) {
-                                  _widgetOccurrenceUid = null;
+                        Expanded(
+                          child: Offstage(
+                            offstage: _initialPagePending,
+                            child: PageView.builder(
+                              controller: _pageController,
+                              itemCount: _ekadashiList.length,
+                              onPageChanged: (index) {
+                                if (mounted) {
+                                  if (_widgetOccurrenceUid != null &&
+                                      _ekadashiList[index].occurrenceUid !=
+                                          _widgetOccurrenceUid) {
+                                    _widgetOccurrenceUid = null;
+                                  }
+                                  setState(() => _currentPage = index);
+                                  _startHomeClock();
                                 }
-                                setState(() => _currentPage = index);
-                                _startHomeClock();
-                              }
-                            },
-                            itemBuilder: (context, index) => Padding(
-                              padding: const EdgeInsets.all(4),
-                              child: _buildEkadashiCard(_ekadashiList[index]),
+                              },
+                              itemBuilder: (context, index) => Padding(
+                                padding: const EdgeInsets.all(4),
+                                child: _buildEkadashiCard(_ekadashiList[index]),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      _homeArrow(
-                        key: const Key('home_next'),
-                        icon: AppIcons.next,
-                        target: _currentPage + 1,
-                        enabled: !isLastPage,
-                        onPressed: () => _pageController.nextPage(
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
+                        _homeArrow(
+                          key: const Key('home_next'),
+                          icon: AppIcons.next,
+                          target: _currentPage + 1,
+                          enabled: !isLastPage,
+                          onPressed: () => _pageController.nextPage(
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-                if (_isCalculating)
+                if (_isCalculating && !_isPreview)
                   const CircularProgressIndicator(
                     key: Key('home_recalculating'),
                     color: IosColors.teal,
