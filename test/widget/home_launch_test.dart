@@ -5,6 +5,8 @@ import 'package:ekadashi_calendar/services/ekadashi_schedule.dart';
 import 'package:ekadashi_calendar/services/ekadashi_service.dart';
 import 'package:ekadashi_calendar/services/ekadashi_settings.dart';
 import 'package:ekadashi_calendar/services/panchang/calculated_ekadashi.dart';
+import 'package:provider/provider.dart';
+import 'package:ekadashi_calendar/services/panchang/panchang_location_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -25,6 +27,41 @@ void main() {
     EkadashiSchedule.beforeCalculatingYear = null;
     harness.uninstall();
   });
+
+  /// M52 (27 November 2026): once the next Ekadashi (Utpanna) is on screen,
+  /// every later frame shows it: never hidden (a 50 ms blink), never another
+  /// card; the page count is blank or its final value. [release] lets the
+  /// held full years go at the first frame.
+  Future<void> expectSteadyCard(
+    WidgetTester tester, {
+    required int frames,
+    Completer<void>? release,
+    int releaseAt = 1,
+  }) async {
+    final problems = <String>[];
+    final counts = <String>{};
+    final indicator = find.byKey(const Key('home_page_indicator'));
+    var shown = false;
+    for (var i = 0; i < frames; i++) {
+      if (i == releaseAt && release != null && !release.isCompleted) {
+        release.complete();
+      }
+      await tester.pump(const Duration(milliseconds: 16));
+      final next = find.text('Utpanna Ekadashi').evaluate().isNotEmpty;
+      if (find.text('Shattila Ekadashi').evaluate().isNotEmpty) {
+        problems.add('frame $i: Shattila');
+      }
+      if (shown && !next) problems.add('frame $i: card hidden');
+      shown = shown || next;
+      if (indicator.evaluate().isNotEmpty) {
+        counts.add(tester.widget<Text>(indicator).data!);
+      }
+    }
+    await tester.pumpAndSettle();
+    expect(shown, isTrue, reason: 'the next Ekadashi never showed');
+    expect(problems, isEmpty);
+    expect(counts, {tester.widget<Text>(indicator).data}, reason: 'counts');
+  }
 
   testWidgets('a first launch with a last fix calculates only that place', (
     tester,
@@ -129,29 +166,10 @@ void main() {
     );
     expect(find.byKey(const Key('home_recalculating')), findsNothing);
 
-    // M52, declined location (27 November 2026): when the full list
-    // replaced the first card, January's Shattila showed for one frame.
-    fullYears.complete();
-    var sawFirstOfYear = false;
-    final counts = <String>{};
-    final indicator = find.byKey(const Key('home_page_indicator'));
-    for (var i = 0; i < 200; i++) {
-      await tester.pump(const Duration(milliseconds: 16));
-      if (find.text('Shattila Ekadashi').evaluate().isNotEmpty) {
-        sawFirstOfYear = true;
-      }
-      if (indicator.evaluate().isNotEmpty) {
-        counts.add(tester.widget<Text>(indicator).data!);
-      }
-    }
-    await tester.pumpAndSettle();
-    expect(sawFirstOfYear, isFalse, reason: 'the passed card flashed');
-    expect(find.text('Utpanna Ekadashi'), findsWidgets);
-    expect(indicator, findsOneWidget);
-    // M52, declined location: for one frame the count read "1 / 24".
-    expect(counts, {
-      tester.widget<Text>(indicator).data,
-    }, reason: 'counts seen');
+    // M52 (27 November 2026): when the full list replaced the first card,
+    // January's Shattila showed for a frame; hiding it instead blinked.
+    await expectSteadyCard(tester, frames: 200, release: fullYears);
+    expect(find.byKey(const Key('home_page_indicator')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -162,20 +180,47 @@ void main() {
     await harness.install(preferences: {'has_launched': false});
     harness.locationGranted = false;
     await tester.pumpWidget(harness.app());
-    var sawFirstOfYear = false;
-    for (var i = 0; i < 300; i++) {
-      await tester.pump(const Duration(milliseconds: 16));
-      if (find.text('Shattila Ekadashi').evaluate().isNotEmpty) {
-        sawFirstOfYear = true;
-      }
-    }
-    await tester.pumpAndSettle();
+    await expectSteadyCard(tester, frames: 300);
     expect(
       tester.widget<Text>(find.byKey(const Key('home_location_name'))).data,
       'Chennai (IN)',
     );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('picking a new city keeps the next Ekadashi on screen through '
+      'its first card and full years', (tester) async {
+    DisplayClock.setTestClock(() => DateTime.utc(2026, 11, 27, 4, 30));
+    await tester.pumpWidget(harness.app());
+    await tester.pumpAndSettle();
     expect(find.text('Utpanna Ekadashi'), findsWidgets);
-    expect(sawFirstOfYear, isFalse);
+    final settings = tester
+        .element(find.byKey(const Key('home_location_name')))
+        .read<EkadashiSettings>();
+    final cities = await PanchangLocationStore.cities();
+    final delhi = cities.firstWhere((c) => c.label == 'New Delhi (IN)');
+    final fullYears = Completer<void>();
+    EkadashiSchedule.beforeCalculatingYear = () => fullYears.future;
+    settings.chooseCity(delhi);
+    // Release the full years once Delhi's first card is on screen.
+    await expectSteadyCard(
+      tester,
+      frames: 200,
+      release: fullYears,
+      releaseAt: 60,
+    );
+    expect(
+      EkadashiService().isScheduleCached(
+        delhi,
+        EkadashiTradition.gaudiya,
+        const [2026, 2027],
+      ),
+      isTrue,
+    );
+    expect(
+      tester.widget<Text>(find.byKey(const Key('home_location_name'))).data,
+      'New Delhi (IN)',
+    );
     expect(tester.takeException(), isNull);
   });
 }
