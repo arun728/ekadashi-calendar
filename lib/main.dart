@@ -1555,6 +1555,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
     final bool isFirstPage = _currentPage == 0;
     final bool isLastPage = _currentPage >= _ekadashiList.length - 1;
+    final countHidden = _isPreview || _initialPagePending;
 
     return Column(
       children: [
@@ -1563,11 +1564,12 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         // Page indicator
         Padding(
           padding: const EdgeInsets.only(bottom: 8),
-          // Blank while the next weeks are shown: the year's count is not
-          // known yet (same height, so nothing moves).
+          // Blank while the next weeks are shown (the year's count is not
+          // known yet) and for the frame a new list moves to its page (same
+          // height, so nothing moves).
           child: Text(
-            _isPreview ? ' ' : '${_currentPage + 1} / ${_ekadashiList.length}',
-            key: _isPreview ? null : const Key('home_page_indicator'),
+            countHidden ? ' ' : '${_currentPage + 1} / ${_ekadashiList.length}',
+            key: countHidden ? null : const Key('home_page_indicator'),
             style: TextStyle(
               fontSize: IosText.footnote,
               color: IosColors.secondary(context),
