@@ -10,6 +10,7 @@ const pages = [
   'ekadashi-calendar/',
   'ekadashi-calendar/privacy-policy/',
   'ekadashi-calendar/terms-of-service/',
+  'ekadashi-calendar/delete-account/',
 ];
 
 function read(path) {
@@ -46,6 +47,17 @@ test('the product introduction and legal pages describe both platforms', () => {
   for (const html of [home, privacy, terms]) {
     assert.match(html, /Google Play/);
     assert.match(html, /Android/);
+  }
+});
+
+test('the account deletion page names the app and developer, the steps and what is deleted or kept', () => {
+  const page = read('ekadashi-calendar/delete-account/index.html');
+  for (const item of ['Ekadashi Calendar', 'Apptinel Software Private Limited', 'mailto:contact@apptinel.com', 'Firebase Authentication', 'Firestore', 'Disconnect Google', 'within 30 days', 'Google Play', 'App Store']) {
+    assert.ok(page.includes(item), item);
+  }
+  assert.match(page, /<ol>/);
+  for (const path of ['ekadashi-calendar/privacy-policy/', 'ekadashi-calendar/terms-of-service/', 'ekadashi-calendar/']) {
+    assert.ok(read(path + 'index.html').includes('href="/ekadashi-calendar/delete-account/"'), path + ' links to the deletion page');
   }
 });
 
