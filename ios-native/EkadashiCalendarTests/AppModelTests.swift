@@ -72,6 +72,53 @@ final class AppModelTests: XCTestCase {
         }
     }
 
+    /// A place no earlier run calculated (the schedule is cached on disk).
+    private func freshCity(_ label: String) -> PanchangCity {
+        PanchangCity(id: "detected", label: label, latitude: 26.0 + Double.random(in: 0..<1),
+                     longitude: 91.5 + Double.random(in: 0..<1), timeZoneId: "Asia/Kolkata")
+    }
+
+    /// iPhone (27 November 2026): picking a new city spun about 2 s before any
+    /// card. Its next Ekadashi now shows from the next weeks alone, then the
+    /// full years replace it with the same card.
+    func testPickingANewCityShowsItsNextEkadashiBeforeItsFullYears() async throws {
+        let model = AppModel(store: InMemoryKeyValueStore(["has_launched": true, "language_code": "en", AppModel.yearKey: "2026"]))
+        model.reload(); await model.waitForLoad()
+        let gate = TestGate()
+        AppModel.beforeFullYears = { await gate.wait() }
+        defer { AppModel.beforeFullYears = nil }
+        model.chooseEkadashiCity(freshCity("Guwahati (IN)"))
+        await model.waitForPreview()
+        XCTAssertTrue(model.isPreviewing)
+        XCTAssertTrue(model.isCalculating)
+        let first = model.homeEkadashis[model.homeIndex]
+        await gate.open()
+        await model.waitForLoad()
+        XCTAssertFalse(model.isPreviewing)
+        let full = model.homeEkadashis[model.homeIndex]
+        XCTAssertEqual(full.occurrenceUid, first.occurrenceUid)
+        XCTAssertEqual(full.fastingStartISO, first.fastingStartISO)
+        XCTAssertEqual(full.paranaEndISO, first.paranaEndISO)
+    }
+
+    /// iPhone and M52 (27 November 2026): the first switch to the other
+    /// tradition in a city spun 1-2 s. It is calculated in the background once
+    /// the city's own tradition has loaded, so the switch is instant.
+    func testTheOtherTraditionIsReadyBeforeTheSwitch() async throws {
+        let model = AppModel(store: InMemoryKeyValueStore(["has_launched": true, "language_code": "en", AppModel.yearKey: "2026"]))
+        model.reload(); await model.waitForLoad()
+        let city = freshCity("Guwahati (IN)")
+        model.chooseEkadashiCity(city)
+        await model.waitForLoad()
+        await model.waitForOtherTradition()
+        let schedule = try XCTUnwrap(model.schedule)
+        for year in model.enabledYears {
+            XCTAssertTrue(schedule.isCached(EkadashiScheduleKey(city: city, tradition: .smarta, year: year)))
+        }
+        model.setTradition(.smarta)
+        XCTAssertFalse(model.isCalculating, "no spinner: Smarta was ready")
+    }
+
     /// Arun, 27 November 2026: with 2027 picked on Home, All years stayed on
     /// January 2027's first Ekadashi. All years always opens on the next one.
     func testAllYearsOpensOnTheNextEkadashiEvenFromAnotherYear() async throws {
@@ -680,5 +727,20 @@ final class HomeLinkNavigationTests: XCTestCase {
         XCTAssertEqual(model.selectedTab, .today)
         XCTAssertTrue(model.homePath.isEmpty, "the stale detail screen is closed")
         XCTAssertEqual(model.homeEkadashis[model.homeIndex].occurrenceUid, event.occurrenceUid)
+    }
+}
+
+/// Holds a step until a test opens it.
+actor TestGate {
+    private var isOpen = false
+    private var waiting: [CheckedContinuation<Void, Never>] = []
+    func wait() async {
+        if isOpen { return }
+        await withCheckedContinuation { waiting.append($0) }
+    }
+    func open() {
+        isOpen = true
+        waiting.forEach { $0.resume() }
+        waiting = []
     }
 }

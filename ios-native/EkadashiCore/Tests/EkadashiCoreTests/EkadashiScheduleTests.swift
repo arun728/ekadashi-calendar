@@ -170,6 +170,28 @@ final class EkadashiScheduleTests: XCTestCase {
         }
     }
 
+    /// iPhone (27 November 2026): picking a new city spun about 2 s while
+    /// every Ekadashi of 2026 and 2027 was calculated. The next weeks alone
+    /// give Home's first card, exactly as the full year has it.
+    func testPreviewOfTheNextWeeksMatchesTheFullYearAndIsNotCached() throws {
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let schedule = EkadashiSchedule(repository: Self.repository, cacheDirectory: folder)
+        let udupi = PanchangCity(id: "geonames-1253952", label: "Udupi (IN)", latitude: 13.33467,
+                                 longitude: 74.74617, timeZoneId: "Asia/Kolkata")
+        let preview = try schedule.preview(city: udupi, tradition: .gaudiya, language: "en",
+                                           from: CivilDate(2026, 11, 27))
+        XCTAssertFalse(preview.isEmpty)
+        XCTAssertLessThan(preview.count, 6, "only the next weeks")
+        XCTAssertTrue(preview.contains { $0.contentId == "utpanna-ekadashi" })
+        XCTAssertFalse(schedule.isCached(EkadashiScheduleKey(city: udupi, tradition: .gaudiya, year: 2026)),
+                       "a preview is never kept as a year")
+        let full = try schedule.ekadashis(city: udupi, tradition: .gaudiya, language: "en", years: [2026, 2027])
+        for event in preview {
+            let same = try XCTUnwrap(full.first { $0.occurrenceUid == event.occurrenceUid }, event.occurrenceUid)
+            XCTAssertEqual(event, same)
+        }
+    }
+
     func testCalculatedYearsAreCachedOnDisk() throws {
         let folder = FileManager.default.temporaryDirectory.appendingPathComponent("schedule-\(UUID().uuidString)")
         defer { try? FileManager.default.removeItem(at: folder) }
