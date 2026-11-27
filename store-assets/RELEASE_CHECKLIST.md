@@ -12,7 +12,7 @@ Store-asset details live in `STORE_CHECKLIST.md`. PRs #26 and #34 are **not** in
        every subscription flow end to end, behaviour and strings, on the M52 and the iPhone
        (`docs/review/PR44_BILLING_DEVICE_REPORT.md`).
 2. [x] **#48** (merged 27 Nov 2026): Firebase email declaration and prices (the website part is already live).
-3. [ ] **#49**: Android launch speed (review after #44; both touch `main.dart`).
+3. [x] **#49** (merged with #51 on 27 Nov 2026): Android launch speed.
 4. [x] **#47** (merged 27 Nov 2026): store assets (assets only, can merge any time).
 5. [ ] Full CI on `dev`, then `dev` → `main` with Arun's approval.
 6. [ ] Performance pass once every feature is tested: launch, each tab and the heaviest
@@ -26,8 +26,10 @@ Store-asset details live in `STORE_CHECKLIST.md`. PRs #26 and #34 are **not** in
 - [ ] Internal testing: M52 and Arun's wife's phone. Real purchases with the license
       tester, plan switches, restore, free sync, widgets, launch speed, and an upgrade from
       v1 that keeps the data.
-- [ ] **Data safety**: Email address + User IDs (optional, not shared, deletion on request):
-      `android/listing/data-safety.md`.
+- [x] **Data safety** (saved 28 Nov 2026, waiting in Publishing overview, not sent): Email
+      address + User IDs (optional, not shared, app functionality), OAuth (Google) sign-in,
+      delete-account and delete-data URL https://apptinel.com/ekadashi-calendar/delete-account/
+      (PR #52, deployed). Answers: `android/listing/data-safety.md`.
 - [ ] Subscriptions `ekadashi_premium_monthly` and `ekadashi_premium_yearly` plus the
       one-time `ekadashi_premium_lifetime` active. India ₹99 / ₹599 / ₹1,999 (verified in the app on
       the M52, 27 Nov 2026), plus diaspora prices.
@@ -40,11 +42,15 @@ Store-asset details live in `STORE_CHECKLIST.md`. PRs #26 and #34 are **not** in
       Play Console. Today it says "Unlimited Vrat entries and achievements"; match the app
       ("Unlimited Vrat entries (the first three are free)", Google Calendar import,
       Panchang details). Who makes these two changes is decided later.
-- [ ] Listing: short and full description and release notes, English + Hindi
-      (`android/listing/play-listing.md`). Name stays *Ekadashi Calendar*.
-- [ ] Graphics: pick 8 of the 10 screenshots; feature graphic (ready); video uploaded to
-      YouTube and linked (ask Arun before uploading).
-- [ ] Privacy policy URL: apptinel.com or GitHub Pages (both live).
+- [x] Listing (draft saved 28 Nov 2026): English + Hindi name, short and full description;
+      Hindi feature graphic on the Hindi listing. Release notes go in with the production
+      release. Name stays *Ekadashi Calendar*. Monday: Review step asks for the AI asset
+      declaration, then Save, then send everything from Publishing overview.
+- [x] Graphics (draft): phone screenshots 01, 02, 04, 05, 06, 07, 09, 10; English feature
+      graphic; old v1 tablet screenshots removed (not required). Video uploaded Unlisted to
+      Arun's channel and linked: https://www.youtube.com/watch?v=7f4UFtD4tKE (a 10 MB
+      re-encode of `android/preview/ekadashi-play-video-1080x1920.mp4`).
+- [x] Privacy policy URL set to https://apptinel.com/ekadashi-calendar/privacy-policy/ (in Publishing overview, not sent).
 - [ ] Production: staged rollout (for example 20% → 100%); watch Android vitals.
 
 ## 2. Then iOS (App Store, first v2 launch)
@@ -52,20 +58,24 @@ Store-asset details live in `STORE_CHECKLIST.md`. PRs #26 and #34 are **not** in
 - [ ] Start after the Android release is live and its staged rollout looks healthy.
 - [ ] Final build from `main`: version 2.0.0, new build number, uploaded (Xcode or Transporter).
 - [ ] TestFlight on Arun's iPhone: sandbox purchases, Restore, free Google sync, widgets, 6 languages.
-- [ ] **App Privacy**: Email Address + User ID (linked, app functionality, not tracking).
-      `PrivacyInfo.xcprivacy` is done in #48.
-- [ ] In-app purchases Monthly / Yearly / Lifetime "Ready to Submit" with review screenshots
+- [ ] **App Privacy**: Email Address + User ID (linked, app functionality, not tracking),
+      saved 28 Nov 2026; press Publish on Monday. `PrivacyInfo.xcprivacy` is done in #48.
+- [x] In-app purchases Monthly / Yearly / Lifetime "Ready to Submit" with review screenshots
       (uploaded). Prices ₹99 / ₹599 / ₹1,999; diaspora prices set.
-- [ ] Listing: name *Ekadashi Calendar & Panchang* (set), subtitle, keywords, promotional
+- [x] Listing (saved 28 Nov 2026, en-US + hi): name *Ekadashi Calendar & Panchang* (set), subtitle, keywords, promotional
       text, description, What's New: `ios/listing/` (English + Hindi).
-- [ ] Screenshots 6.9" × 10, iPad 13" × 6 and the preview video: ready in `ios/`.
-- [ ] Support, marketing, privacy and terms URLs on apptinel.com (live), age rating,
-      category, copyright, review notes.
+- [x] Screenshots 6.9" × 10 (en-US + hi), iPad 13" × 6 and the preview video: uploaded 28 Nov 2026.
+- [x] Support, marketing, privacy and terms URLs on apptinel.com (live), age rating (4+),
+      categories (Lifestyle, Reference), copyright, review notes: saved 28 Nov 2026. Check
+      availability (countries) in the UI on Monday.
 - [ ] After the listing has an ID: replace `AppLinks.appStorePlaceholder` (app change).
 - [ ] Optional: Hindi custom product page; In-App Events with this year's dates.
 - [ ] Submit for review, then release (manual or automatic).
 
 ## Housekeeping
 
-- [ ] Delete the untracked `.deploy-tmp/` and the review copies in `store-assets/` from the main folder.
+- [x] Deleted the untracked `.deploy-tmp/` and the review copies in `store-assets/` from the main folder (27 Nov 2026).
+- [ ] Remove `store-assets/android/preview/chrome-prof/` (a Chrome profile committed by mistake).
+- [ ] Apple Small Business Program: requested 16 Nov 2026, waiting for Apple's decision email.
+      Google Play 15% service fee: enrolled.
 - [ ] Once the iOS listing exists, add its store link where the share texts need it.

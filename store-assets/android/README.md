@@ -18,7 +18,7 @@ owned, no prices, Wi-Fi-only status bar (SystemUI demo mode).
       then scale to 1080 × 1920)
 - [x] Video: preview/ekadashi-play-video-1080x1920.mp4 — 9 scenes at 1× (iOS: 11 at up to 4×), 30.6 s, H.264 30 fps + AAC,
       original Bhupali music. Footage: profile build driven by real touches (tools/rec_video.py; the debug test build was too choppy).
-      Panchang shows Chennai (Arun OK'd). For Play it is uploaded to YouTube (ask Arun before uploading).
+      Panchang shows Chennai (Arun OK'd). For Play it is uploaded Unlisted to YouTube (https://www.youtube.com/watch?v=7f4UFtD4tKE, 28 Nov 2026, a 10 MB re-encode).
 - [x] Listing text: listing/play-listing.md (en + hi, no year, counts checked)
 - [x] Data safety: listing/data-safety.md (Email address + User IDs, optional, not shared)
 
