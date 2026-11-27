@@ -151,7 +151,11 @@ struct JourneyMandala: View {
         for (index, segment) in progress.segments.enumerated() {
             let angle = Double(index) / Double(count) * .pi * 2 - .pi / 2
             let half = .pi / Double(count) * 0.78
-            func point(_ r: CGFloat, _ a: Double) -> CGPoint { CGPoint(x: center.x + cos(a) * r, y: center.y + sin(a) * r) }
+            // Explicit Double results: CI's Xcode found cos/sin ambiguous here.
+            func point(_ r: CGFloat, _ a: Double) -> CGPoint {
+                let dx: Double = cos(a), dy: Double = sin(a)
+                return CGPoint(x: center.x + CGFloat(dx) * r, y: center.y + CGFloat(dy) * r)
+            }
             var petal = Path(); petal.move(to: point(inner, angle - half))
             petal.addQuadCurve(to: point(outer, angle), control: point(outer * 0.95, angle - half))
             petal.addQuadCurve(to: point(inner, angle + half), control: point(outer * 0.95, angle + half))
@@ -182,7 +186,8 @@ struct JourneyMandala: View {
         }
         for quarter in progress.quarters {
             let angle = Double(quarter.id - 1) * .pi / 2 - .pi / 2
-            let p = CGPoint(x: center.x + cos(angle) * side * 0.485, y: center.y + sin(angle) * side * 0.485)
+            let dx: Double = cos(angle), dy: Double = sin(angle)
+            let p = CGPoint(x: center.x + CGFloat(dx) * side * 0.485, y: center.y + CGFloat(dy) * side * 0.485)
             let ornament = Path(ellipseIn: CGRect(x: p.x - 3, y: p.y - 3, width: 6, height: 6))
             if quarter.completed { context.fill(ornament, with: .color(Theme.amber)) }
             else { context.stroke(ornament, with: .color(Theme.teal.opacity(0.25)), lineWidth: 1) }
