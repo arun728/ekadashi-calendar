@@ -126,6 +126,37 @@ final class AppModelTests: XCTestCase {
         XCTAssertEqual(model.homeEkadashis[model.homeIndex].occurrenceUid, other.occurrenceUid)
     }
 
+    /// iPhone (27 November 2026): after a new city's first card, "23 / 24"
+    /// took 2-3 s: 2026 and 2027 were calculated one after the other, and the
+    /// count waited for both. The years now run at the same time, and the
+    /// count shows once the year on screen is done.
+    func testANewCitysYearsRunTogetherAndTheCountShowsWithTheShownYear() async throws {
+        let model = AppModel(store: InMemoryKeyValueStore(["has_launched": true, "language_code": "en", AppModel.yearKey: "2026"]))
+        model.reload(); await model.waitForLoad()
+        let started = YearLog()
+        let gate2027 = TestGate()
+        AppModel.beforeYear = { year in
+            await started.add(year)
+            if year == 2027 { await gate2027.wait() }
+        }
+        defer { AppModel.beforeYear = nil }
+        model.chooseEkadashiCity(freshCity("Tezpur (IN)"))
+        await model.waitForPreview()
+        let selected = model.homeSelection
+        await model.waitForShownYear()
+        XCTAssertEqual(Set(await started.years), [2026, 2027], "both years started before 2027 finished")
+        XCTAssertTrue(model.isPreviewing, "2027 is still being calculated")
+        XCTAssertTrue(model.showsHomeCount, "the count shows with 2026")
+        XCTAssertEqual(model.homeEkadashis.count, model.homeEkadashis.filter { $0.date.year == 2026 }.count)
+        XCTAssertGreaterThan(model.homeEkadashis.count, 20)
+        XCTAssertEqual(model.homeSelection, selected, "the same Ekadashi stays on screen")
+        await gate2027.open()
+        await model.waitForLoad()
+        XCTAssertFalse(model.isPreviewing)
+        XCTAssertTrue(model.showsHomeCount)
+        XCTAssertEqual(model.homeSelection, selected)
+    }
+
     /// iPhone and M52 (27 November 2026): the first switch to the other
     /// tradition in a city spun 1-2 s. It is calculated in the background once
     /// the city's own tradition has loaded, so the switch is instant.
@@ -768,4 +799,10 @@ actor TestGate {
         waiting.forEach { $0.resume() }
         waiting = []
     }
+}
+
+/// The years a test saw start.
+actor YearLog {
+    private(set) var years: [Int] = []
+    func add(_ year: Int) { years.append(year) }
 }
