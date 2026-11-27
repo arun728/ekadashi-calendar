@@ -38,6 +38,10 @@ final class AppModel {
     @ObservationIgnored private var otherTradition: (key: String, task: Task<Void, Never>)?
     /// Tests only: awaited before a reload calculates the full years.
     nonisolated(unsafe) static var beforeFullYears: (@Sendable () async -> Void)?
+    /// Tests only: awaited before each year is calculated.
+    nonisolated(unsafe) static var beforeYear: (@Sendable (Int) async -> Void)?
+    /// Shows a new city's year on screen as soon as it is calculated.
+    @ObservationIgnored private var shownYearTask: Task<Void, Never>?
     /// UI tests cannot answer the system permission alert, so they run as if allowed.
     @ObservationIgnored let notifications = NotificationService(
         assumeAuthorized: ProcessInfo.processInfo.arguments.contains("-ui-testing"))
@@ -83,6 +87,12 @@ final class AppModel {
     /// years are calculated: not dimmed, not usable yet, no page count.
     private(set) var isPreviewing = false
     private var previewEkadashis: [EkadashiOccurrence]?
+    /// The preview is the whole year on screen (the other year is still being
+    /// calculated), so Home's page count is known.
+    private var previewIsWholeYear = false
+    /// Home shows its page count: not while only a new city's next weeks are
+    /// known.
+    var showsHomeCount: Bool { !isPreviewing || previewIsWholeYear }
     private(set) var loadError: String?
     private(set) var isLoading = true
     private(set) var reminderSettings: ReminderSettings
@@ -539,9 +549,30 @@ final class AppModel {
         // A switch to the tradition already being calculated in the
         // background waits for it instead of calculating it again.
         let running = otherTradition?.key == Self.placeKey(city, tradition) ? otherTradition?.task : nil
+        // Each year in its own task, at the same time (they were calculated
+        // one after the other).
+        let yearTasks = years.map { year in
+            Task.detached(priority: .userInitiated) {
+                await running?.value
+                await Self.beforeFullYears?()
+                await Self.beforeYear?(year)
+                _ = try? schedule.scheduled(EkadashiScheduleKey(city: city, tradition: tradition, year: year))
+            }
+        }
+        // A new city's year on screen is shown, with its count, as soon as it
+        // is done; the card stays unusable until every year is.
+        shownYearTask = nil
+        if previewFirst, !homeShowsAllYears, let index = years.firstIndex(of: selectedYear) {
+            let year = selectedYear, task = yearTasks[index]
+            shownYearTask = Task {
+                await task.value
+                showYear(year, generation: generation, city: city, tradition: tradition, language: language)
+            }
+        }
+        let shownYear = shownYearTask
         loadTask = Task {
-            await running?.value
-            await Self.beforeFullYears?()
+            for task in yearTasks { await task.value }
+            await shownYear?.value
             let list = await Task.detached(priority: .userInitiated) {
                 try? schedule.ekadashis(city: city, tradition: tradition, language: language, years: years)
             }.value
@@ -550,6 +581,7 @@ final class AppModel {
             if let list { apply(list, scrollToNext: scrollToNext) } else {
                 previewEkadashis = nil
                 isPreviewing = false
+                previewIsWholeYear = false
                 loadError = t("failed_load")
                 isLoading = false
             }
@@ -561,6 +593,22 @@ final class AppModel {
 
     /// Waits for a new city's first card ([startPreview]; tests).
     func waitForPreview() async { await previewTask?.value }
+
+    /// Waits for a new city's year on screen ([showYear]; tests).
+    func waitForShownYear() async { await shownYearTask?.value }
+
+    /// A new city's year on screen, calculated while its other year still
+    /// is: Home shows its cards and count on the same Ekadashi, still not
+    /// usable until every year is calculated ([apply]).
+    private func showYear(_ year: Int, generation: Int, city: PanchangCity, tradition: EkadashiTradition, language: String) {
+        guard generation == loadGeneration, isCalculating, let schedule,
+              let list = try? schedule.ekadashis(city: city, tradition: tradition, language: language, years: [year]),
+              let index = list.firstIndex(where: { $0.occurrenceUid == homeSelection }) else { return }
+        previewEkadashis = list
+        isPreviewing = true
+        previewIsWholeYear = true
+        homeIndex = index
+    }
 
     /// Waits for the other tradition's background calculation (tests).
     func waitForOtherTradition() async { await otherTradition?.task.value }
@@ -578,7 +626,7 @@ final class AppModel {
             let list = await Task.detached(priority: .userInitiated) {
                 try? schedule.preview(city: city, tradition: tradition, language: language, from: from)
             }.value
-            guard generation == loadGeneration, isCalculating, let list, !list.isEmpty else { return }
+            guard generation == loadGeneration, isCalculating, !previewIsWholeYear, let list, !list.isEmpty else { return }
             previewEkadashis = list
             isPreviewing = true
             homeIndex = HomeSelection.index(of: list, now: DisplayClock.date(Date()), zone: city.zone, includeParana: true)
@@ -607,6 +655,7 @@ final class AppModel {
         let current = shown.indices.contains(homeIndex) ? shown[homeIndex].occurrenceUid : nil
         previewEkadashis = nil
         isPreviewing = false
+        previewIsWholeYear = false
         ekadashis = list
         lifecycleScheduleRevision += 1
         loadError = nil

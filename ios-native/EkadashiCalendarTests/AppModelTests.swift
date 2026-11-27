@@ -144,7 +144,8 @@ final class AppModelTests: XCTestCase {
         await model.waitForPreview()
         let selected = model.homeSelection
         await model.waitForShownYear()
-        XCTAssertEqual(Set(await started.years), [2026, 2027], "both years started before 2027 finished")
+        let seen = await started.years
+        XCTAssertEqual(Set(seen), [2026, 2027], "both years started before 2027 finished")
         XCTAssertTrue(model.isPreviewing, "2027 is still being calculated")
         XCTAssertTrue(model.showsHomeCount, "the count shows with 2026")
         XCTAssertEqual(model.homeEkadashis.count, model.homeEkadashis.filter { $0.date.year == 2026 }.count)

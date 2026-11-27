@@ -27,9 +27,9 @@ struct TodayView: View {
             } else if events.isEmpty {
                 ContentUnavailableView(model.t("no_ekadashi"), systemImage: AppSymbol.noEkadashi)
             } else {
-                // Blank while a new city's next weeks are shown: the year's
-                // count is not known yet (same height, so nothing moves).
-                Text(model.isPreviewing ? " " : "\(model.homeIndex + 1) / \(events.count)")
+                // Blank while only a new city's next weeks are shown: the
+                // year's count is not known yet (same height, so nothing moves).
+                Text(model.showsHomeCount ? "\(model.homeIndex + 1) / \(events.count)" : " ")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                     .padding(.bottom, 8)
