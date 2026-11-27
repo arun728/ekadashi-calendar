@@ -247,7 +247,20 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     refresh: () async => _premium?.refresh(),
   );
 
-  final PageController _pageController = PageController(viewportFraction: 1.0);
+  PageController _pageController = PageController(viewportFraction: 1.0);
+
+  /// Bumped with each new pager ([_startPagerAt]): the PageView's key.
+  int _pagerId = 0;
+
+  /// A new pager that opens on [page]: a new list's first frame is already
+  /// on its card, so no other card shows and nothing is hidden.
+  void _startPagerAt(int page) {
+    final old = _pageController;
+    _pageController = PageController(initialPage: page);
+    _pagerId++;
+    WidgetsBinding.instance.addPostFrameCallback((_) => old.dispose());
+  }
+
   final GlobalKey<CalendarScreenState> _calendarKey = GlobalKey();
   final GlobalKey<PanchangScreenState> _panchangKey = GlobalKey();
   bool _panchangOpened = false;
@@ -745,10 +758,37 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     if (mounted) setState(() {});
   }
 
-  List<EkadashiDate> _homeYearList() {
+  List<EkadashiDate> _homeYearList() => _homeYearListOf(_allEkadashis);
+
+  List<EkadashiDate> _homeYearListOf(List<EkadashiDate> all) {
     final settings = _settings;
-    if (settings == null || settings.homeShowsAllYears) return _allEkadashis;
-    return _allEkadashis.where((e) => e.date.year == settings.year).toList();
+    if (settings == null || settings.homeShowsAllYears) return all;
+    return all.where((e) => e.date.year == settings.year).toList();
+  }
+
+  /// The page of [list] Home opens on: a widget's Ekadashi, else the one on
+  /// screen ([keepUid]), else the next Ekadashi of [all] when [list] has it.
+  /// Null when the next one is in another year (that path changes the year).
+  int? _openingPage(
+    List<EkadashiDate> list,
+    List<EkadashiDate> all,
+    String? keepUid,
+    String timeZoneId,
+  ) {
+    for (final uid in [_widgetOccurrenceUid, keepUid]) {
+      if (uid == null) continue;
+      final page = list.indexWhere((e) => e.occurrenceUid == uid);
+      if (page >= 0) return page;
+    }
+    if (all.isEmpty) return null;
+    final next =
+        all[EkadashiLifecycle.currentIndex(
+          all,
+          DisplayClock.now(),
+          _getIANATimezone(timeZoneId),
+        )];
+    final page = list.indexWhere((e) => e.occurrenceUid == next.occurrenceUid);
+    return page >= 0 ? page : null;
   }
 
   static bool _sameIds(List<EkadashiDate> a, List<EkadashiDate> b) =>
@@ -812,13 +852,30 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           : null;
 
       final replacesPreview = _isPreview;
+      final list = _homeYearListOf(ekadashis);
+      final opening = _openingPage(
+        list,
+        ekadashis,
+        currentUid,
+        city.timeZoneId,
+      );
       setState(() {
         _allEkadashis = ekadashis;
-        _ekadashiList = _homeYearList();
+        _ekadashiList = list;
         _isPreview = false;
-        // A new list (also the full one after the first card) is shown only
-        // once Home is on its page, so no other card shows for a frame.
-        if (currentUid == null || replacesPreview) _initialPagePending = true;
+        if (opening != null) {
+          // The new list's first frame is on its card: a new pager only
+          // when the page moves (a language change keeps the pager).
+          final samePage =
+              !replacesPreview &&
+              _pageController.hasClients &&
+              _pageController.page?.round() == opening;
+          _currentPage = opening;
+          if (!samePage) _startPagerAt(opening);
+        } else {
+          // The next Ekadashi is in another year: shown once moved there.
+          _initialPagePending = true;
+        }
         _currentTimezone = city.timeZoneId;
         _isLoading = false;
         _isCalculating = false;
@@ -839,6 +896,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
+        if (opening != null) {
+          _startHomeClock();
+          return;
+        }
         if (_selectWidgetOccurrence()) {
           _revealFirstPage();
           return;
@@ -1058,12 +1119,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       _isLoading = false;
       _currentTimezone = city.timeZoneId;
       _currentPage = index;
-      _initialPagePending = true;
-    });
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      if (_pageController.hasClients) _pageController.jumpToPage(index);
-      _revealFirstPage();
+      _startPagerAt(index);
     });
   }
 
@@ -1606,6 +1662,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                           child: Offstage(
                             offstage: _initialPagePending,
                             child: PageView.builder(
+                              key: ValueKey(_pagerId),
                               controller: _pageController,
                               itemCount: _ekadashiList.length,
                               onPageChanged: (index) {
