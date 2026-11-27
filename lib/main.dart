@@ -216,6 +216,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   /// year's page count is hidden.
   bool _isPreview = false;
 
+  /// Whether Home showed All years at the last settings change.
+  bool _homeShowsAllYears = false;
+
   /// What the latest load calculates, so a settings change reloads only
   /// when the place or tradition really changed.
   String? _requestedPlace;
@@ -692,9 +695,15 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       );
       return;
     }
+    // All years was just picked: open on the next Ekadashi, whichever year
+    // or card was on screen (AppModel.showAllYearsOnHome on iOS).
+    final openedAllYears = settings.homeShowsAllYears && !_homeShowsAllYears;
+    _homeShowsAllYears = settings.homeShowsAllYears;
     final year = _homeYearList();
     if (!_sameIds(year, _ekadashiList)) {
-      if (settings.homeShowsAllYears && _currentPage < _ekadashiList.length) {
+      if (settings.homeShowsAllYears &&
+          !openedAllYears &&
+          _currentPage < _ekadashiList.length) {
         final visibleUid = _ekadashiList[_currentPage].occurrenceUid;
         final page = year.indexWhere(
           (entry) => entry.occurrenceUid == visibleUid,
