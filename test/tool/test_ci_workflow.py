@@ -65,6 +65,13 @@ class WorkflowTests(unittest.TestCase):
         minutes = int(re.search(r"timeout-minutes: (\d+)", job("android-tests")).group(1))
         self.assertGreaterEqual(minutes, 120)
 
+    def test_the_ios_job_has_room_for_every_ui_test(self):
+        # Run 46045231916 (27 November 2026): 87 UI tests took 7,838 s and
+        # finished a minute before the job's 150-minute limit cancelled it.
+        import re
+        minutes = int(re.search(r"timeout-minutes: (\d+)", job("ios-tests")).group(1))
+        self.assertGreaterEqual(minutes, 210)
+
     def test_android_lint_runs(self):
         self.assertIn("lintDebug", job("android-tests"))
 
