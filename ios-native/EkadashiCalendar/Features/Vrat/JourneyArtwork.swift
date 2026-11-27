@@ -122,53 +122,7 @@ struct JourneyMandala: View {
 
     var body: some View {
         ZStack {
-            Canvas { context, size in
-                let side = min(size.width, size.height), center = CGPoint(x: size.width / 2, y: size.height / 2)
-                let inner = side * 0.29, outer = side * 0.45
-                let count = max(1, progress.segments.count)
-                context.stroke(Path(ellipseIn: CGRect(x: center.x - inner + 5, y: center.y - inner + 5,
-                                                      width: inner * 2 - 10, height: inner * 2 - 10)),
-                               with: .color(Theme.teal.opacity(0.2)), lineWidth: 1)
-                for (index, segment) in progress.segments.enumerated() {
-                    let angle = Double(index) / Double(count) * .pi * 2 - .pi / 2
-                    let half = .pi / Double(count) * 0.78
-                    func point(_ r: CGFloat, _ a: Double) -> CGPoint { CGPoint(x: center.x + cos(a) * r, y: center.y + sin(a) * r) }
-                    var petal = Path(); petal.move(to: point(inner, angle - half))
-                    petal.addQuadCurve(to: point(outer, angle), control: point(outer * 0.95, angle - half))
-                    petal.addQuadCurve(to: point(inner, angle + half), control: point(outer * 0.95, angle + half))
-                    petal.addQuadCurve(to: point(inner, angle - half), control: point(inner * 0.83, angle))
-                    let observed = !segment.isFuture && segment.status == .observed
-                    let partial = !segment.isFuture && segment.status == .partial
-                    let color = observed ? Theme.teal : partial ? Theme.partial : Color.secondary
-                    if observed || partial {
-                        context.fill(petal, with: .linearGradient(Gradient(colors: [color.opacity(0.2), color.opacity(0.85)]),
-                                                                 startPoint: point(inner, angle), endPoint: point(outer, angle)))
-                    }
-                    context.stroke(petal, with: .color(color.opacity(segment.isFuture ? 0.2 : 0.7)),
-                                   style: StrokeStyle(lineWidth: 1.3, dash: segment.status == .unrecorded && !segment.isFuture ? [2, 3] : []))
-                    if partial {
-                        var clipped = context; clipped.clip(to: petal)
-                        for offset in stride(from: -side, through: side, by: 6) {
-                            var line = Path(); line.move(to: CGPoint(x: center.x + offset, y: 0))
-                            line.addLine(to: CGPoint(x: center.x + offset + side, y: side))
-                            clipped.stroke(line, with: .color(Color.white.opacity(0.65)), lineWidth: 1)
-                        }
-                    }
-                    if !segment.isFuture && segment.status == .missed {
-                        let dot = point((inner + outer) / 2, angle)
-                        var mark = Path(); mark.move(to: CGPoint(x: dot.x - 2, y: dot.y - 2)); mark.addLine(to: CGPoint(x: dot.x + 2, y: dot.y + 2))
-                        mark.move(to: CGPoint(x: dot.x - 2, y: dot.y + 2)); mark.addLine(to: CGPoint(x: dot.x + 2, y: dot.y - 2))
-                        context.stroke(mark, with: .color(color), lineWidth: 1.2)
-                    }
-                }
-                for quarter in progress.quarters {
-                    let angle = Double(quarter.id - 1) * .pi / 2 - .pi / 2
-                    let p = CGPoint(x: center.x + cos(angle) * side * 0.485, y: center.y + sin(angle) * side * 0.485)
-                    let ornament = Path(ellipseIn: CGRect(x: p.x - 3, y: p.y - 3, width: 6, height: 6))
-                    if quarter.completed { context.fill(ornament, with: .color(Theme.amber)) }
-                    else { context.stroke(ornament, with: .color(Theme.teal.opacity(0.25)), lineWidth: 1) }
-                }
-            }
+            Canvas { context, size in drawMandala(context, size: size) }
             VStack(spacing: 2) {
                 if progress.annualBonus > 0, let badge = JourneyBadgeCatalog.definition("journey_\(progress.year)_full") {
                     JourneyBadgeArt(definition: badge).frame(width: 64, height: 64)
@@ -182,5 +136,56 @@ struct JourneyMandala: View {
         .accessibilityLabel(model.t("ios_journey_mandala"))
         .accessibilityValue(model.t("ios_journey_mandala_summary", "\(progress.segments.count)", "\(progress.observed)", "\(progress.partial)"))
         .accessibilityIdentifier("journey_mandala")
+    }
+
+    /// The mandala's petals and quarter ornaments, in its own function so the
+    /// view body stays simple to type-check (CI's Xcode 26 gave up on it,
+    /// 27 November 2026).
+    private func drawMandala(_ context: GraphicsContext, size: CGSize) {
+        let side = min(size.width, size.height), center = CGPoint(x: size.width / 2, y: size.height / 2)
+        let inner = side * 0.29, outer = side * 0.45
+        let count = max(1, progress.segments.count)
+        context.stroke(Path(ellipseIn: CGRect(x: center.x - inner + 5, y: center.y - inner + 5,
+                                              width: inner * 2 - 10, height: inner * 2 - 10)),
+                       with: .color(Theme.teal.opacity(0.2)), lineWidth: 1)
+        for (index, segment) in progress.segments.enumerated() {
+            let angle = Double(index) / Double(count) * .pi * 2 - .pi / 2
+            let half = .pi / Double(count) * 0.78
+            func point(_ r: CGFloat, _ a: Double) -> CGPoint { CGPoint(x: center.x + cos(a) * r, y: center.y + sin(a) * r) }
+            var petal = Path(); petal.move(to: point(inner, angle - half))
+            petal.addQuadCurve(to: point(outer, angle), control: point(outer * 0.95, angle - half))
+            petal.addQuadCurve(to: point(inner, angle + half), control: point(outer * 0.95, angle + half))
+            petal.addQuadCurve(to: point(inner, angle - half), control: point(inner * 0.83, angle))
+            let observed = !segment.isFuture && segment.status == .observed
+            let partial = !segment.isFuture && segment.status == .partial
+            let color = observed ? Theme.teal : partial ? Theme.partial : Color.secondary
+            if observed || partial {
+                context.fill(petal, with: .linearGradient(Gradient(colors: [color.opacity(0.2), color.opacity(0.85)]),
+                                                         startPoint: point(inner, angle), endPoint: point(outer, angle)))
+            }
+            context.stroke(petal, with: .color(color.opacity(segment.isFuture ? 0.2 : 0.7)),
+                           style: StrokeStyle(lineWidth: 1.3, dash: segment.status == .unrecorded && !segment.isFuture ? [2, 3] : []))
+            if partial {
+                var clipped = context; clipped.clip(to: petal)
+                for offset in stride(from: -side, through: side, by: 6) {
+                    var line = Path(); line.move(to: CGPoint(x: center.x + offset, y: 0))
+                    line.addLine(to: CGPoint(x: center.x + offset + side, y: side))
+                    clipped.stroke(line, with: .color(Color.white.opacity(0.65)), lineWidth: 1)
+                }
+            }
+            if !segment.isFuture && segment.status == .missed {
+                let dot = point((inner + outer) / 2, angle)
+                var mark = Path(); mark.move(to: CGPoint(x: dot.x - 2, y: dot.y - 2)); mark.addLine(to: CGPoint(x: dot.x + 2, y: dot.y + 2))
+                mark.move(to: CGPoint(x: dot.x - 2, y: dot.y + 2)); mark.addLine(to: CGPoint(x: dot.x + 2, y: dot.y - 2))
+                context.stroke(mark, with: .color(color), lineWidth: 1.2)
+            }
+        }
+        for quarter in progress.quarters {
+            let angle = Double(quarter.id - 1) * .pi / 2 - .pi / 2
+            let p = CGPoint(x: center.x + cos(angle) * side * 0.485, y: center.y + sin(angle) * side * 0.485)
+            let ornament = Path(ellipseIn: CGRect(x: p.x - 3, y: p.y - 3, width: 6, height: 6))
+            if quarter.completed { context.fill(ornament, with: .color(Theme.amber)) }
+            else { context.stroke(ornament, with: .color(Theme.teal.opacity(0.25)), lineWidth: 1) }
+        }
     }
 }
