@@ -133,16 +133,25 @@ void main() {
     // replaced the first card, January's Shattila showed for one frame.
     fullYears.complete();
     var sawFirstOfYear = false;
+    final counts = <String>{};
+    final indicator = find.byKey(const Key('home_page_indicator'));
     for (var i = 0; i < 200; i++) {
       await tester.pump(const Duration(milliseconds: 16));
       if (find.text('Shattila Ekadashi').evaluate().isNotEmpty) {
         sawFirstOfYear = true;
       }
+      if (indicator.evaluate().isNotEmpty) {
+        counts.add(tester.widget<Text>(indicator).data!);
+      }
     }
     await tester.pumpAndSettle();
     expect(sawFirstOfYear, isFalse, reason: 'the passed card flashed');
     expect(find.text('Utpanna Ekadashi'), findsWidgets);
-    expect(find.byKey(const Key('home_page_indicator')), findsOneWidget);
+    expect(indicator, findsOneWidget);
+    // M52, declined location: for one frame the count read "1 / 24".
+    expect(counts, {
+      tester.widget<Text>(indicator).data,
+    }, reason: 'counts seen');
     expect(tester.takeException(), isNull);
   });
 
