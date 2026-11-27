@@ -3,8 +3,9 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Item 10 (25 Nov 2026): the v2 release build must have a version code above
-/// every build already on Google Play (internal testing has 13 since 27 Nov
-/// 2026; production 4) and the local debug builds (11).
+/// every build already on Google Play (internal testing has 14 since 27 Nov
+/// 2026; production 4) and the local debug builds (11). 15 is the combined
+/// PR #49 + #51 build for internal testing (27 Nov 2026).
 void main() {
   test('v2.0.0 with a version code above every Play upload', () {
     final line = File(
@@ -12,6 +13,6 @@ void main() {
     ).readAsLinesSync().firstWhere((l) => l.startsWith('version:'));
     final match = RegExp(r'version: (\d+\.\d+\.\d+)\+(\d+)').firstMatch(line)!;
     expect(match.group(1), '2.0.0');
-    expect(int.parse(match.group(2)!), greaterThanOrEqualTo(14));
+    expect(int.parse(match.group(2)!), greaterThanOrEqualTo(15));
   });
 }
