@@ -101,6 +101,31 @@ final class AppModelTests: XCTestCase {
         XCTAssertEqual(full.paranaEndISO, first.paranaEndISO)
     }
 
+    /// iPhone (27 November 2026): Home's pager selected a page number, so a
+    /// new city's full list (Utpanna on page 23 instead of 2) was a different
+    /// selection: the pager showed January first, then jerked to Utpanna. It
+    /// now selects the Ekadashi itself, which the swap does not change.
+    func testHomeSelectsTheEkadashiItselfThroughANewCitysListSwap() async throws {
+        let model = AppModel(store: InMemoryKeyValueStore(["has_launched": true, "language_code": "en", AppModel.yearKey: "2026"]))
+        model.reload(); await model.waitForLoad()
+        let gate = TestGate()
+        AppModel.beforeFullYears = { await gate.wait() }
+        defer { AppModel.beforeFullYears = nil }
+        model.chooseEkadashiCity(freshCity("Silchar (IN)"))
+        await model.waitForPreview()
+        XCTAssertTrue(model.isPreviewing)
+        let selected = model.homeSelection
+        XCTAssertEqual(selected, model.homeEkadashis[model.homeIndex].occurrenceUid)
+        await gate.open()
+        await model.waitForLoad()
+        XCTAssertEqual(model.homeSelection, selected, "the swap keeps the selected Ekadashi")
+
+        // Swiping sets the selection; Home's index follows.
+        let other = try XCTUnwrap(model.homeEkadashis.first { $0.occurrenceUid != selected })
+        model.homeSelection = other.occurrenceUid
+        XCTAssertEqual(model.homeEkadashis[model.homeIndex].occurrenceUid, other.occurrenceUid)
+    }
+
     /// iPhone and M52 (27 November 2026): the first switch to the other
     /// tradition in a city spun 1-2 s. It is calculated in the background once
     /// the city's own tradition has loaded, so the switch is instant.
