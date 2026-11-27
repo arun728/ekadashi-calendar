@@ -31,6 +31,13 @@ final class AppModel {
     @ObservationIgnored let schedule: EkadashiSchedule?
     @ObservationIgnored private var loadGeneration = 0
     @ObservationIgnored private var loadTask: Task<Void, Never>?
+    /// A new city's next weeks, shown while its full years are calculated.
+    @ObservationIgnored private var previewTask: Task<Void, Never>?
+    /// The other tradition of the city on Home, calculated in the background
+    /// after the city loads, so a switch needs no calculation.
+    @ObservationIgnored private var otherTradition: (key: String, task: Task<Void, Never>)?
+    /// Tests only: awaited before a reload calculates the full years.
+    nonisolated(unsafe) static var beforeFullYears: (@Sendable () async -> Void)?
     /// UI tests cannot answer the system permission alert, so they run as if allowed.
     @ObservationIgnored let notifications = NotificationService(
         assumeAuthorized: ProcessInfo.processInfo.arguments.contains("-ui-testing"))
@@ -72,6 +79,10 @@ final class AppModel {
     private(set) var ekadashis: [EkadashiOccurrence] = []
     /// True while a city, tradition or year is being calculated.
     private(set) var isCalculating = false
+    /// Home shows a new city's next weeks ([previewEkadashis]) while its full
+    /// years are calculated: not dimmed, not usable yet, no page count.
+    private(set) var isPreviewing = false
+    private var previewEkadashis: [EkadashiOccurrence]?
     private(set) var loadError: String?
     private(set) var isLoading = true
     private(set) var reminderSettings: ReminderSettings
@@ -275,7 +286,8 @@ final class AppModel {
 
     /// Home lists the selected year's Ekadashis.
     var homeEkadashis: [EkadashiOccurrence] {
-        homeShowsAllYears ? ekadashis : ekadashis.filter { $0.date.year == selectedYear }
+        if let previewEkadashis { return previewEkadashis }
+        return homeShowsAllYears ? ekadashis : ekadashis.filter { $0.date.year == selectedYear }
     }
 
     func traditionName(_ value: EkadashiTradition) -> String { t(value == .smarta ? "tradition_smarta" : "tradition_vaishnava") }
@@ -384,7 +396,7 @@ final class AppModel {
         saveCity(city, manual: true)
         RecentCities(store: store).add(city)
         savePanchangCity(city)
-        reload(scrollToNext: true)
+        reload(scrollToNext: true, previewFirst: true)
     }
 
     /// "Use current location" on Home: detection decides again.
@@ -495,7 +507,7 @@ final class AppModel {
     /// Loads the Ekadashis for the city, tradition and language, keeping the
     /// card on screen unless [scrollToNext]. A city or tradition not yet
     /// calculated is calculated off the main thread (then cached on disk).
-    func reload(scrollToNext: Bool = false) {
+    func reload(scrollToNext: Bool = false, previewFirst: Bool = false) {
         guard let schedule else {
             loadError = t("failed_load")
             isLoading = false
@@ -510,13 +522,21 @@ final class AppModel {
             return
         }
         isCalculating = true
+        if previewFirst { startPreview(generation: generation, city: city, tradition: tradition, language: language) }
+        // A switch to the tradition already being calculated in the
+        // background waits for it instead of calculating it again.
+        let running = otherTradition?.key == Self.placeKey(city, tradition) ? otherTradition?.task : nil
         loadTask = Task {
+            await running?.value
+            await Self.beforeFullYears?()
             let list = await Task.detached(priority: .userInitiated) {
                 try? schedule.ekadashis(city: city, tradition: tradition, language: language, years: years)
             }.value
             guard generation == loadGeneration else { return }
             isCalculating = false
             if let list { apply(list, scrollToNext: scrollToNext) } else {
+                previewEkadashis = nil
+                isPreviewing = false
                 loadError = t("failed_load")
                 isLoading = false
             }
@@ -526,9 +546,54 @@ final class AppModel {
     /// Waits for a calculation started by [reload] (tests, background refresh).
     func waitForLoad() async { await loadTask?.value }
 
+    /// Waits for a new city's first card ([startPreview]; tests).
+    func waitForPreview() async { await previewTask?.value }
+
+    /// Waits for the other tradition's background calculation (tests).
+    func waitForOtherTradition() async { await otherTradition?.task.value }
+
+    private static func placeKey(_ city: PanchangCity, _ tradition: EkadashiTradition) -> String {
+        "\(city.latitude)|\(city.longitude)|\(city.timeZoneId)|\(tradition.rawValue)"
+    }
+
+    /// A new city's next weeks from the same engine, shown at once while
+    /// [reload] calculates its full years; its times are the full list's.
+    private func startPreview(generation: Int, city: PanchangCity, tradition: EkadashiTradition, language: String) {
+        guard let schedule else { return }
+        let from = city.zone.wallClock(DisplayClock.date(Date())).date
+        previewTask = Task {
+            let list = await Task.detached(priority: .userInitiated) {
+                try? schedule.preview(city: city, tradition: tradition, language: language, from: from)
+            }.value
+            guard generation == loadGeneration, isCalculating, let list, !list.isEmpty else { return }
+            previewEkadashis = list
+            isPreviewing = true
+            homeIndex = HomeSelection.index(of: list, now: DisplayClock.date(Date()), zone: city.zone, includeParana: true)
+        }
+    }
+
+    /// Calculates the other tradition of Home's city in the background, once
+    /// its own tradition has loaded, so switching tradition is instant.
+    private func prepareOtherTradition() {
+        guard let schedule else { return }
+        let city = ekadashiCity, years = enabledYears
+        let other: EkadashiTradition = tradition == .smarta ? .gaudiya : .smarta
+        let key = Self.placeKey(city, other)
+        if otherTradition?.key == key { return }
+        if years.allSatisfy({ schedule.isCached(EkadashiScheduleKey(city: city, tradition: other, year: $0)) }) {
+            otherTradition = nil
+            return
+        }
+        otherTradition = (key, Task.detached(priority: .utility) {
+            for year in years { _ = try? schedule.scheduled(EkadashiScheduleKey(city: city, tradition: other, year: year)) }
+        })
+    }
+
     private func apply(_ list: [EkadashiOccurrence], scrollToNext: Bool) {
         let shown = homeEkadashis
         let current = shown.indices.contains(homeIndex) ? shown[homeIndex].occurrenceUid : nil
+        previewEkadashis = nil
+        isPreviewing = false
         ekadashis = list
         lifecycleScheduleRevision += 1
         loadError = nil
@@ -546,6 +611,7 @@ final class AppModel {
         if scrollToNext { selectCurrentOccurrence(now: DisplayClock.date(Date())) }
         syncWidgets()
         Task { await scheduleReminders() }
+        prepareOtherTradition()
         if let route = pendingRoute {
             pendingRoute = nil
             open(route)

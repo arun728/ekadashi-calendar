@@ -123,11 +123,36 @@ public final class EkadashiSchedule: @unchecked Sendable {
         return result.sorted { $0.date < $1.date }
     }
 
+    /// The next weeks' Ekadashis from [from] (3 days back, so a fast still
+    /// running is included), for Home's first card at a new city while its
+    /// full years are calculated. Never cached: a year is only stored whole.
+    /// A fast matched to a published row is exactly as in the full year; a
+    /// range across New Year uses each year's published rows.
+    public func preview(city: PanchangCity, tradition: EkadashiTradition, language: String,
+                        from: CivilDate, days: Int = 45) throws -> [EkadashiOccurrence] {
+        let start = from.adding(days: -3)
+        let end = start.adding(days: days)
+        var result: [EkadashiOccurrence] = []
+        for year in start.year...end.year {
+            let first = year == start.year ? start : CivilDate(year, 1, 1)
+            let last = year == end.year ? end : CivilDate(year + 1, 1, 1)
+            let count = first.days(until: last)
+            guard count > 0 else { continue }
+            let key = EkadashiScheduleKey(city: city, tradition: tradition, year: year)
+            result += try calculate(key, start: first, count: count).map { occurrence($0, year: year, language: language) }
+        }
+        return result.sorted { $0.date < $1.date }
+    }
+
     // MARK: Calculation
 
     func calculate(_ key: EkadashiScheduleKey) throws -> [ScheduledEkadashi] {
         let start = CivilDate(key.year, 1, 1)
-        let days = start.days(until: CivilDate(key.year + 1, 1, 1))
+        return try calculate(key, start: start, count: start.days(until: CivilDate(key.year + 1, 1, 1)))
+    }
+
+    /// [calculate] for [count] days from [start] within [key]'s year.
+    func calculate(_ key: EkadashiScheduleKey, start: CivilDate, count days: Int) throws -> [ScheduledEkadashi] {
         let fasts = try engine.calculate(start: start, count: days, city: key.city, tradition: key.tradition)
         let published = repository.rows(year: key.year)
         var unused = Set(published.indices)

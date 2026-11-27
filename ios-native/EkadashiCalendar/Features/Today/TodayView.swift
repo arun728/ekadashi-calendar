@@ -27,7 +27,9 @@ struct TodayView: View {
             } else if events.isEmpty {
                 ContentUnavailableView(model.t("no_ekadashi"), systemImage: AppSymbol.noEkadashi)
             } else {
-                Text("\(model.homeIndex + 1) / \(events.count)")
+                // Blank while a new city's next weeks are shown: the year's
+                // count is not known yet (same height, so nothing moves).
+                Text(model.isPreviewing ? " " : "\(model.homeIndex + 1) / \(events.count)")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                     .padding(.bottom, 8)
@@ -44,14 +46,18 @@ struct TodayView: View {
                     .tabViewStyle(.page(indexDisplayMode: .never))
                     // Years have different page counts. Recreate the pager so
                     // a linked final page is not reset against the previous year.
-                    .id(model.homeShowsAllYears ? nil : model.selectedYear)
+                    // Recreated too when a new city's full years replace its
+                    // first card, so the new list opens on its card.
+                    .id("\(model.homeShowsAllYears ? 0 : model.selectedYear)-\(model.isPreviewing)")
                     arrow(AppSymbol.next, target: model.homeIndex + 1) { model.homeIndex += 1 }
                 }
                 .padding(.horizontal, 4)
                 .padding(.bottom, 8)
                 .animation(.easeInOut(duration: 0.3), value: model.homeIndex)
-                .opacity(model.isCalculating ? 0.5 : 1)
-                .overlay { if model.isCalculating { ProgressView().tint(Theme.teal) } }
+                .opacity(model.isCalculating && !model.isPreviewing ? 0.5 : 1)
+                .overlay { if model.isCalculating && !model.isPreviewing { ProgressView().tint(Theme.teal) } }
+                // A new city's first card is shown, not usable yet.
+                .allowsHitTesting(!model.isPreviewing)
             }
         }
         // Details open through Home's path so a Home link (widget tap) can
