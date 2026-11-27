@@ -6,8 +6,6 @@ import EkadashiCore
 
 private let logger = Logger(subsystem: "com.applausestudios.ekadashi-calendar", category: "premium")
 
-enum RestoreResult { case restored, none, unavailable }
-
 /// The last premium state, readable from any thread (the Google sync rules
 /// run off the main actor).
 final class PremiumSnapshot: @unchecked Sendable {
@@ -29,12 +27,17 @@ final class PremiumSnapshot: @unchecked Sendable {
 final class StoreKitPremiumService {
     private(set) var state = PremiumState()
     private(set) var products: [PremiumPlanID: Product] = [:]
-    private(set) var pending = false
+    private var pendingPurchase: PendingPremiumPurchase?
+    private var purchasing = false
+    var pending: Bool { pendingPurchase != nil }
     private(set) var busy = false
+    /// Completed entitlement reads (the refresh-churn test reads it).
+    @ObservationIgnored private(set) var refreshCount = 0
     /// Translation key of the last store problem (`premium_unavailable`).
     var error: String?
 
     @ObservationIgnored let snapshot = PremiumSnapshot()
+    @ObservationIgnored private var statusUpdates: Task<Void, Never>?
     @ObservationIgnored private var updates: Task<Void, Never>?
     @ObservationIgnored private var recheck: Task<Void, Never>?
     @ObservationIgnored private var refreshAgain = false
@@ -47,13 +50,24 @@ final class StoreKitPremiumService {
     init() {
         updates = Task { [weak self] in
             for await result in Transaction.updates {
-                if case .verified(let transaction) = result { await transaction.finish() }
+                if case .verified(let transaction) = result {
+                    self?.resolvePending(with: transaction)
+                    await transaction.finish()
+                }
                 await self?.refresh()
             }
         }
     }
 
     func start() async {
+        if statusUpdates == nil {
+            statusUpdates = Task { [weak self] in
+                for await _ in Product.SubscriptionInfo.Status.updates {
+                    guard let self else { return }
+                    await self.refresh()
+                }
+            }
+        }
         await loadProducts()
         await refresh()
     }
@@ -93,6 +107,7 @@ final class StoreKitPremiumService {
             repeat {
                 self.refreshAgain = false
                 await self.readEntitlements()
+                self.refreshCount += 1
             } while self.refreshAgain
             self.busy = false
             self.inFlight = nil
@@ -106,77 +121,113 @@ final class StoreKitPremiumService {
         // came back empty while the history held a verified, unexpired
         // monthly purchase. Ask for the latest transaction of each product
         // too; both are signed by the App Store and verified the same way.
-        var results: [VerificationResult<Transaction>] = []
-        for await result in Transaction.currentEntitlements { results.append(result) }
-        for productId in PremiumProduct.all {
-            if let result = await Transaction.latest(for: productId) { results.append(result) }
-        }
+        // The lookups run together: one after another, a cold StoreKit start
+        // took the sum of them before the paywall knew the user's plan.
+        async let current = Self.currentEntitlements()
+        async let latest = Self.latestTransactions()
+        var results: [(result: VerificationResult<Transaction>, isCurrent: Bool)] = await current.map { ($0, true) }
+        results += await latest.map { ($0, false) }
         var owned: [OwnedProduct] = []
-        for result in results {
+        for (result, isCurrent) in results {
             guard case .verified(let transaction) = result else {
                 if case .unverified(let transaction, let failure) = result {
                     logger.error("Premium refresh: ignored unverified \(transaction.productID, privacy: .public): \(String(describing: failure), privacy: .public)")
                 }
                 continue
             }
-            guard Self.grantsAccess(transaction, now: Date()),
+            resolvePending(with: transaction)
+            guard PremiumProduct.grantsAccess(
+                productId: transaction.productID, revoked: transaction.revocationDate != nil,
+                upgraded: transaction.isUpgraded, expirationDate: transaction.expirationDate,
+                isCurrent: isCurrent, now: Date()
+            ),
                   !owned.contains(where: { $0.productId == transaction.productID }) else { continue }
-            var renews: Bool?
-            if transaction.productType == .autoRenewable {
-                renews = await willAutoRenew(transaction.productID)
+            let renewal = transaction.productType == .autoRenewable ? await renewalRecord(for: transaction) : nil
+            #if DEBUG
+            if let renewal {
+                logger.debug("Premium renewal: current=\(renewal.productID, privacy: .public) willAutoRenew=\(renewal.willRenew, privacy: .public) autoRenewPreference=\(renewal.nextProductID ?? "nil", privacy: .public)")
             }
+            #endif
             let purchased = transaction.productType == .autoRenewable ? transaction.originalPurchaseDate : transaction.purchaseDate
-            owned.append(OwnedProduct(productId: transaction.productID, purchaseDate: purchased, willAutoRenew: renews))
+            owned.append(OwnedProduct(productId: transaction.productID, purchaseDate: purchased,
+                                      willAutoRenew: renewal?.willRenew, expirationDate: transaction.expirationDate,
+                                      transactionDate: transaction.purchaseDate, nextProductID: renewal?.nextProductID, renewalDate: renewal?.renewalDate))
         }
-        if owned.isEmpty, !(await storeConfirmsNoSubscription()) {
-            // The App Store could not confirm: free features stay, but this
-            // is not treated as a lapse (no Premium-imported events removed).
-            state.storeUnavailable()
+        if owned.isEmpty {
+            switch await emptyOwnershipStatus() {
+            case .ended: state.apply(owned: [])
+            case .billingRetry: state.apply(owned: [], billingRetry: true)
+            case .unknown: state.storeUnavailable()
+            }
         } else {
             state.apply(owned: owned)
         }
         snapshot.set(state)
-        pending = false
         logger.info("Premium refresh: owned=\(owned.map(\.productId), privacy: .public) premium=\(self.state.isPremium, privacy: .public) products=\(self.products.count, privacy: .public)")
     }
 
-    /// A verified transaction unlocks Premium while it is one of ours, not
-    /// refunded or revoked, not replaced by an upgrade, and (for a
-    /// subscription) not past its expiry.
-    private static func grantsAccess(_ transaction: Transaction, now: Date) -> Bool {
-        guard PremiumPlanID(productId: transaction.productID) != nil,
-              transaction.revocationDate == nil, !transaction.isUpgraded else { return false }
-        if let expiry = transaction.expirationDate, expiry < now { return false }
-        return true
+    private nonisolated static func currentEntitlements() async -> [VerificationResult<Transaction>] {
+        var list: [VerificationResult<Transaction>] = []
+        for await result in Transaction.currentEntitlements { list.append(result) }
+        return list
     }
 
-    private func willAutoRenew(_ productId: String) async -> Bool? {
-        guard let plan = PremiumPlanID(productId: productId), let product = products[plan],
-              let statuses = try? await product.subscription?.status else { return nil }
+    private nonisolated static func latestTransactions() async -> [VerificationResult<Transaction>] {
+        await withTaskGroup(of: VerificationResult<Transaction>?.self) { group in
+            for productId in PremiumProduct.all { group.addTask { await Transaction.latest(for: productId) } }
+            var list: [VerificationResult<Transaction>] = []
+            for await result in group { if let result { list.append(result) } }
+            return list
+        }
+    }
+
+    private func resolvePending(with transaction: Transaction) {
+        if pendingPurchase?.matches(productId: transaction.productID, purchaseDate: transaction.purchaseDate) == true {
+            pendingPurchase = nil
+        }
+    }
+
+    private func renewalRecord(for transaction: Transaction) async -> PremiumRenewalRecord? {
+        guard let plan = PremiumPlanID(productId: transaction.productID),
+              let statuses = try? await products[plan]?.subscription?.status else { return nil }
+        let records: [PremiumRenewalRecord] = statuses.compactMap { status in
+            guard status.state == .subscribed || status.state == .inGracePeriod,
+                  case .verified(let statusTransaction) = status.transaction,
+                  statusTransaction.revocationDate == nil, !statusTransaction.isUpgraded,
+                  case .verified(let renewal) = status.renewalInfo,
+                  renewal.currentProductID == statusTransaction.productID else { return nil }
+            return PremiumRenewalRecord(originalID: statusTransaction.originalID,
+                                        productID: renewal.currentProductID,
+                                        signedAt: renewal.signedDate, willRenew: renewal.willAutoRenew,
+                                        nextProductID: renewal.autoRenewPreference, renewalDate: renewal.renewalDate)
+        }
+        return PremiumRenewalRecord.resolve(records, originalID: transaction.originalID,
+                                            productID: transaction.productID)
+    }
+
+    private enum EmptyOwnershipStatus { case ended, billingRetry, unknown }
+
+    private func emptyOwnershipStatus() async -> EmptyOwnershipStatus {
+        guard let product = products[.monthly] ?? products[.yearly],
+              let statuses = try? await product.subscription?.status else { return .unknown }
+        var billingRetry = false
         for status in statuses {
-            if case .verified(let renewal) = status.renewalInfo, renewal.currentProductID == productId || renewal.autoRenewPreference == productId {
-                return renewal.willAutoRenew
-            }
+            guard case .verified = status.transaction, case .verified = status.renewalInfo else { return .unknown }
+            if status.state == .subscribed || status.state == .inGracePeriod { return .unknown }
+            if status.state == .inBillingRetryPeriod { billingRetry = true }
         }
-        return nil
+        return billingRetry ? .billingRetry : .ended
     }
 
-    /// True when the subscription status request succeeds and shows no
-    /// active subscription (expired, revoked or never bought).
-    private func storeConfirmsNoSubscription() async -> Bool {
-        guard let product = products[.monthly] ?? products[.yearly], let subscription = product.subscription else { return false }
-        do {
-            let statuses = try await subscription.status
-            return !statuses.contains { $0.state == .subscribed || $0.state == .inGracePeriod || $0.state == .inBillingRetryPeriod }
-        } catch {
-            return false
-        }
+    func canBuy(_ plan: PremiumPlanID) -> Bool {
+        products[plan] != nil && state.canBuy(plan, pending: pending || purchasing)
     }
-
-    func canBuy(_ plan: PremiumPlanID) -> Bool { products[plan] != nil && state.canBuy(plan, pending: pending) }
 
     func buy(_ plan: PremiumPlanID) async {
         guard let product = products[plan], canBuy(plan) else { return }
+        let startedAt = Date()
+        purchasing = true
+        defer { purchasing = false }
         do {
             let outcome = try await product.purchase()
             switch outcome {
@@ -193,7 +244,10 @@ final class StoreKitPremiumService {
                 error = nil
                 await refresh()
             case .pending:
-                pending = true
+                pendingPurchase = PendingPremiumPurchase(productId: product.id, startedAt: startedAt)
+                // Approval can race the purchase result. Check the latest
+                // transactions once, then keep the pending state until approval.
+                await refresh()
             case .userCancelled:
                 break
             @unknown default:
@@ -209,14 +263,14 @@ final class StoreKitPremiumService {
     }
 
     /// Restores from the App Store; no account sign-in inside the app.
-    func restore() async -> RestoreResult {
+    func restore() async -> PremiumRestoreResult {
         do {
             try await AppStore.sync()
         } catch {
             return .unavailable
         }
         await refresh()
-        return state.isPremium ? .restored : .none
+        return state.restoreResult
     }
 
     /// Re-checks every five minutes while the app is open.

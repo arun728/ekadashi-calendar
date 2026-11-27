@@ -9,6 +9,13 @@ import EkadashiCore
 /// domain rules are covered by the EkadashiCore package tests).
 @MainActor
 final class AppModelTests: XCTestCase {
+    func testPremiumLegalLinksUseApptinelPages() {
+        XCTAssertEqual(PremiumView.privacyURL.absoluteString,
+                       "https://apptinel.com/ekadashi-calendar/privacy-policy/")
+        XCTAssertEqual(PremiumView.termsURL.absoluteString,
+                       "https://apptinel.com/ekadashi-calendar/terms-of-service/")
+    }
+
     /// Read the StoreKit-resolved metadata, not only the JSON text. Initializing
     /// a session refreshes local test metadata without buying, cancelling,
     /// clearing, or otherwise changing the device's existing transactions.
@@ -20,8 +27,13 @@ final class AppModelTests: XCTestCase {
             throw XCTSkip("This command-line iOS 26 runner did not provision its local StoreKit catalog; run this catalog integration check on iOS 18.6")
         }
         XCTAssertEqual(Set(products.map(\.id)), Set(PremiumProduct.all))
+        let displayNames = [
+            PremiumProduct.monthly: "Ekadashi Premium - Monthly",
+            PremiumProduct.yearly: "Ekadashi Premium - Yearly",
+            PremiumProduct.lifetime: "Ekadashi Premium",
+        ]
         for product in products {
-            XCTAssertEqual(product.displayName, "Ekadashi Premium", product.id)
+            XCTAssertEqual(product.displayName, displayNames[product.id], product.id)
             if let subscription = product.subscription {
                 XCTAssertEqual(subscription.groupDisplayName, "Ekadashi Premium", product.id)
             }
@@ -428,5 +440,223 @@ final class AppModelTests: XCTestCase {
         XCTAssertEqual(model.calendarFocus?.year, 2027)
         model.calendarShowsYear(2026)
         XCTAssertEqual(model.selectedYear, 2026)
+    }
+}
+
+/// The plans page felt slow and sometimes needed two taps on PR #42
+/// (16 Nov 2026): an idle subscriber must not keep the service refreshing.
+@MainActor
+final class PremiumRefreshChurnTests: XCTestCase {
+    #if targetEnvironment(simulator)
+    static let onSimulator = true
+    #else
+    static let onSimulator = false
+    #endif
+
+    func testStoreKitSwitchesToMonthlyAtTheYearlyRenewal() async throws {
+        // Billing is checked on real devices, the single source of truth
+        // (Arun, 25 Nov 2026): Xcode's test store fails this switch and runs
+        // this check slowly and unreliably, while both pass on his iPhone.
+        try XCTSkipIf(Self.onSimulator, "Verified on device: Xcode's test store is unreliable here")
+        #if targetEnvironment(simulator)
+        let configuration = try XCTUnwrap(Bundle.main.url(forResource: "Products", withExtension: "storekit"))
+        let session = try SKTestSession(contentsOf: configuration)
+        session.resetToDefaultState()
+        session.disableDialogs = true
+        session.timeRate = .realTime
+        session.clearTransactions()
+        defer { session.clearTransactions() }
+
+        print("STOREKIT RENEWAL: cleared isolated transaction history")
+        let service = StoreKitPremiumService()
+        await service.loadProducts()
+        XCTAssertEqual(service.products.count, 3)
+        print("STOREKIT RENEWAL: buying Monthly")
+        _ = try await session.buyProduct(identifier: PremiumProduct.monthly)
+        await service.refresh()
+        XCTAssertEqual(service.state.currentPlan, .monthly)
+        print("STOREKIT RENEWAL: buying Yearly")
+        _ = try await session.buyProduct(identifier: PremiumProduct.yearly)
+        await service.refresh()
+        XCTAssertEqual(service.state.currentPlan, .yearly)
+
+        print("STOREKIT RENEWAL: scheduling Monthly")
+        _ = try await session.buyProduct(identifier: PremiumProduct.monthly)
+        await service.refresh()
+        XCTAssertEqual(service.state.currentPlan, .yearly)
+        XCTAssertEqual(service.state.scheduledPlan, .monthly)
+        XCTAssertNotNil(service.state.nextRenewalDate)
+
+        print("STOREKIT RENEWAL: forcing the Yearly renewal")
+        try session.forceRenewalOfSubscription(productIdentifier: PremiumProduct.yearly)
+        await service.refresh()
+        XCTAssertEqual(service.state.currentPlan, .monthly)
+        XCTAssertNil(service.state.scheduledPlan)
+        XCTAssertTrue(service.state.isPremium)
+        #else
+        throw XCTSkip("Uses Xcode's isolated StoreKit test catalog")
+        #endif
+    }
+
+    func testStoreKitPricesFollowTheStorefrontCurrency() async throws {
+        #if targetEnvironment(simulator)
+        let configuration = try XCTUnwrap(Bundle.main.url(forResource: "Products", withExtension: "storekit"))
+        let session = try SKTestSession(contentsOf: configuration)
+        session.resetToDefaultState()
+        defer { session.resetToDefaultState() }
+        for (storefront, language, currency) in [
+            ("IND", "en_IN", "INR"), ("USA", "en_US", "USD"),
+            ("GBR", "en_GB", "GBP"), ("JPN", "ja_JP", "JPY"),
+        ] {
+            session.storefront = storefront
+            session.locale = Locale(identifier: language)
+            let service = StoreKitPremiumService()
+            await service.loadProducts()
+            let product = try XCTUnwrap(service.products[.yearly], storefront)
+            XCTAssertEqual(product.priceFormatStyle.currencyCode, currency, storefront)
+            XCTAssertFalse(product.displayPrice.isEmpty, storefront)
+        }
+        #else
+        throw XCTSkip("Uses Xcode's isolated StoreKit storefront")
+        #endif
+    }
+
+    func testIdleSubscriberDoesNotKeepRefreshing() async throws {
+        // Billing is checked on real devices, the single source of truth
+        // (Arun, 25 Nov 2026): Xcode's test store fails this switch and runs
+        // this check slowly and unreliably, while both pass on his iPhone.
+        try XCTSkipIf(Self.onSimulator, "Verified on device: Xcode's test store is unreliable here")
+        let configuration = try XCTUnwrap(Bundle.main.url(forResource: "Products", withExtension: "storekit"))
+        let session = try SKTestSession(contentsOf: configuration)
+        session.resetToDefaultState()
+        session.clearTransactions()
+        session.disableDialogs = true
+        defer { session.clearTransactions() }
+        let service = StoreKitPremiumService()
+        await service.start()
+        if service.products.isEmpty {
+            throw XCTSkip("This runner did not provision the local StoreKit catalog; run on the iOS 18.6 simulator")
+        }
+        _ = try await session.buyProduct(identifier: PremiumProduct.monthly)
+        await service.refresh()
+        try await Task.sleep(nanoseconds: 2_000_000_000)
+        let settled = service.refreshCount
+        try await Task.sleep(nanoseconds: 6_000_000_000)
+        XCTAssertLessThanOrEqual(service.refreshCount - settled, 1,
+                                 "An idle subscriber triggered \(service.refreshCount - settled) refreshes in 6 s")
+        XCTAssertFalse(service.busy)
+    }
+}
+
+/// The paywall's plan-change wording (PR #42 review, 16 Nov 2026).
+@MainActor
+final class PremiumPlanChangeWordingTests: XCTestCase {
+    private let end = CivilDate(2027, 11, 16).utcMidnight.addingTimeInterval(12 * 3600)
+
+    /// No billing copy shows a date (Arun, 25 Nov 2026): the App Store shows
+    /// renewal dates in its own time zone, so ours disagreed (25 Nov in IST
+    /// against Apple's 24 November). Users are sent to Manage instead.
+    func testBillingStatusNeverShowsADateInAnyLanguage() {
+        for language in Localizer.languages {
+            let model = AppModel(store: InMemoryKeyValueStore(["has_launched": true, "language_code": language]))
+            var state = PremiumState()
+            state.apply(owned: [OwnedProduct(productId: PremiumProduct.yearly, willAutoRenew: true, expirationDate: end,
+                                             renewalDate: end)])
+            XCTAssertEqual(model.premiumRenewalMessage(state), model.t("premium_renewal_in_play"), language)
+            XCTAssertEqual(model.premiumSettingsMessage(state), model.t("premium_subscriber_body"), language)
+            state.apply(owned: [OwnedProduct(productId: PremiumProduct.yearly, willAutoRenew: true, expirationDate: end,
+                                             nextProductID: PremiumProduct.monthly, renewalDate: end)])
+            XCTAssertEqual(model.premiumRenewalMessage(state), model.t("premium_monthly_switch_scheduled"), language)
+            XCTAssertEqual(model.premiumSettingsMessage(state), model.t("premium_monthly_switch_scheduled"), language)
+            state.apply(owned: [OwnedProduct(productId: PremiumProduct.yearly, willAutoRenew: false, expirationDate: end)])
+            XCTAssertEqual(model.premiumSettingsMessage(state), model.t("premium_cancelled_body"), language)
+            XCTAssertEqual(model.premiumSwitchNote(state, to: .monthly), model.t("premium_switch_at_renewal_body"), language)
+            let date = model.fullDate(CivilDate.today(now: end))
+            for text in [model.premiumRenewalMessage(state), model.premiumSettingsMessage(state),
+                         model.premiumSwitchNote(state, to: .monthly) ?? ""] {
+                XCTAssertFalse(text.contains(date), "\(language): \(text)")
+            }
+        }
+    }
+
+    func testUnknownRenewalStatusSendsUsersToTheAppStore() {
+        let model = AppModel(store: InMemoryKeyValueStore(["has_launched": true, "language_code": "en"]))
+        var state = PremiumState()
+        state.apply(owned: [OwnedProduct(productId: PremiumProduct.monthly, willAutoRenew: nil)])
+        XCTAssertEqual(model.premiumRenewalMessage(state), "See your next renewal and any scheduled change in the App Store.")
+        XCTAssertEqual(model.premiumSettingsMessage(state), "Switch plans or go lifetime anytime.")
+    }
+
+    func testTilesShowShortStatusBadgesInEveryLanguage() {
+        for language in ["en", "hi", "ta", "te", "gu", "bn"] {
+            let model = AppModel(store: InMemoryKeyValueStore(["has_launched": true, "language_code": language]))
+            var state = PremiumState()
+            state.apply(owned: [OwnedProduct(productId: PremiumProduct.yearly, willAutoRenew: true, expirationDate: end,
+                                             nextProductID: PremiumProduct.monthly, renewalDate: end)])
+            let upcoming = model.premiumPlanBadgeText(state, .monthly)
+            let current = model.premiumPlanBadgeText(state, .yearly)
+            XCTAssertEqual(upcoming, model.t("premium_upcoming_plan"), language)
+            XCTAssertEqual(current, model.t("premium_current_plan"), language)
+            XCTAssertNil(model.premiumPlanBadgeText(state, .lifetime))
+            if language == "en" {
+                XCTAssertEqual(upcoming, "Upcoming plan")
+                XCTAssertEqual(current, "Current plan")
+            } else {
+                for text in [upcoming, current] { XCTAssertNil(text?.range(of: "[A-Za-z]", options: .regularExpression), language) }
+            }
+        }
+    }
+
+    func testADowngradeExplainsWhenEachPlanAppliesBeforeCheckout() {
+        let model = AppModel(store: InMemoryKeyValueStore(["has_launched": true, "language_code": "en"]))
+        var state = PremiumState()
+        state.apply(owned: [OwnedProduct(productId: PremiumProduct.yearly, willAutoRenew: true, expirationDate: end)])
+        let downgrade = model.premiumSwitchNote(state, to: .monthly)
+        XCTAssertEqual(downgrade, "Yearly stays active until your next renewal. The App Store then starts Monthly and charges for it.")
+        XCTAssertNil(model.premiumSwitchNote(state, to: .lifetime), "Lifetime starts now")
+        state.apply(owned: [OwnedProduct(productId: PremiumProduct.monthly, willAutoRenew: true, expirationDate: end)])
+        XCTAssertEqual(model.premiumSwitchNote(state, to: .yearly),
+                       "Yearly starts and is charged today. Apple refunds the unused portion of Monthly to your original payment method.")
+    }
+}
+
+/// Arun (25 Nov 2026): Google Calendar reminders are Premium. A free user who
+/// used the one free sync may use them during that month only.
+@MainActor
+final class GoogleReminderLockTests: XCTestCase {
+    private func model(freeMonth: String?) -> AppModel {
+        var seed: [String: Any] = ["has_launched": true, "language_code": "en"]
+        if let freeMonth { seed[GoogleSyncCoordinator.freeSyncMonthKey] = freeMonth }
+        return AppModel(store: InMemoryKeyValueStore(seed))
+    }
+
+    func testAFreeUserGetsGoogleRemindersOnlyDuringTheFreeSyncMonth() {
+        let thisMonth = String(CivilDate.today().iso.prefix(7))
+        XCTAssertTrue(model(freeMonth: nil).reminderLocked(.calendar(.google)))
+        XCTAssertFalse(model(freeMonth: nil).reminderLocked(.calendar(.custom)), "custom entries stay free")
+        XCTAssertFalse(model(freeMonth: thisMonth).reminderLocked(.calendar(.google)))
+        XCTAssertTrue(model(freeMonth: thisMonth).reminderLocked(.observance("holi")))
+        XCTAssertTrue(model(freeMonth: "2020-01").reminderLocked(.calendar(.google)), "locked again after the month")
+    }
+}
+
+/// The full iOS UI suite (26 Nov 2026) crashed with "Layout requested for
+/// visible navigation bar … when the top item belongs to a different
+/// navigation bar" whenever an ekadashi:// link (a widget tap) arrived: Home
+/// was rebuilt with .id() while the tab switched. A Home link now closes an
+/// open detail screen by emptying Home's navigation path instead.
+@MainActor
+final class HomeLinkNavigationTests: XCTestCase {
+    func testAHomeLinkClosesAnOpenDetailScreenWithoutRebuildingHome() async throws {
+        let model = AppModel(store: InMemoryKeyValueStore(["has_launched": true, "language_code": "en", AppModel.yearKey: "2026"]))
+        model.reload(); await model.waitForLoad()
+        let event = try XCTUnwrap(model.homeEkadashis.last)
+        model.selectedTab = .settings
+        model.homePath.append(HomeDetail(uid: event.occurrenceUid))
+        XCTAssertEqual(model.homePath.count, 1)
+        model.open(.ekadashi(event.occurrenceUid))
+        XCTAssertEqual(model.selectedTab, .today)
+        XCTAssertTrue(model.homePath.isEmpty, "the stale detail screen is closed")
+        XCTAssertEqual(model.homeEkadashis[model.homeIndex].occurrenceUid, event.occurrenceUid)
     }
 }

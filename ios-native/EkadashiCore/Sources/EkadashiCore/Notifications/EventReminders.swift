@@ -28,9 +28,30 @@ public enum EventReminderTarget: Hashable, Sendable, Codable {
     }
 
     /// Panchang observances are calculated, so they are Premium like Key days.
+    /// Google Calendar events are Premium too (Arun, 25 Nov 2026), except
+    /// those of the free sync month; custom entries are always free.
     public var requiresPremium: Bool {
-        if case .observance = self { return true }
+        switch self {
+        case .observance, .calendar(.google): return true
+        case .calendar: return false
+        }
+    }
+
+    /// Reminders for the user's calendar entries (custom or Google).
+    public var usesCalendarEntries: Bool {
+        if case .calendar = self { return true }
         return false
+    }
+
+    /// Whether a free user must buy Premium to use this reminder. Google
+    /// reminders stay open while the free sync month ("2026-11") has not
+    /// ended; they lock again after it.
+    public func isLocked(premium: Bool, freeGoogleMonth: String?, today: CivilDate) -> Bool {
+        guard requiresPremium, !premium else { return false }
+        if self == .calendar(.google), let month = freeGoogleMonth, String(today.iso.prefix(7)) <= month {
+            return false
+        }
+        return true
     }
 
     public init(from decoder: Decoder) throws {
@@ -123,8 +144,9 @@ public struct PlannedEventReminder: Equatable, Sendable, Identifiable {
     public let url: URL
 }
 
-/// Plans event reminders, soonest first within [limit]. Panchang reminders
-/// need Premium; calendar reminders are free. The app plans again on every
+/// Plans event reminders, soonest first within [limit]. Panchang and Google
+/// reminders need Premium (a free user's Google reminders cover only the free
+/// sync month, [freeGoogleMonth]); custom entry reminders are free. The app plans again on every
 /// launch and background refresh, as for the Ekadashi reminders.
 public enum EventReminderPlanner {
     /// [observances] are calculated at the Panchang location and fire on its
@@ -132,7 +154,7 @@ public enum EventReminderPlanner {
     public static func plan(settings: EventReminderSettings, observances: [DatedObservance], entries: [CalendarEntry],
                             observanceZone: TimeZone, entryZone: TimeZone, language: String, premium: Bool, now: Date,
                             limit: Int = ReminderPlanner.iosPendingLimit, catalog: SearchCatalog = .bundled,
-                            localizer: Localizer = .shared) -> [PlannedEventReminder] {
+                            localizer: Localizer = .shared, freeGoogleMonth: String? = nil) -> [PlannedEventReminder] {
         guard settings.enabled, limit > 0 else { return [] }
         var result: [PlannedEventReminder] = []
         var observanceDays: [String: [CivilDate]] = [:]
@@ -141,7 +163,9 @@ public enum EventReminderPlanner {
             if observanceDays[entry.key]?.contains(dated.date) != true { observanceDays[entry.key, default: []].append(dated.date) }
         }
         for reminder in settings.reminders {
-            if reminder.target.requiresPremium && !premium { continue }
+            // A free user's Google reminders cover the free sync month only.
+            let freeMonthOnly = !premium && reminder.target == .calendar(.google) ? freeGoogleMonth : nil
+            if reminder.target.requiresPremium && !premium && freeMonthOnly == nil { continue }
             switch reminder.target {
             case .observance(let key):
                 guard let entry = catalog.observances.first(where: { $0.key == key }) else { continue }
@@ -153,6 +177,7 @@ public enum EventReminderPlanner {
             case .calendar(let source):
                 for item in CalendarEntry.withoutDuplicateGoogle(entries) where item.source == source {
                     let day = item.allDayStart ?? CivilDate.today(in: entryZone, now: item.start)
+                    if let month = freeMonthOnly, !day.iso.hasPrefix(month) { continue }
                     result += planned(reminder, name: item.title, day: day, zone: entryZone, url: AppRoute.calendarURL(day),
                                       language: language, now: now, localizer: localizer, entryId: item.id)
                 }

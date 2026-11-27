@@ -193,7 +193,11 @@ class SettingsPremiumCard extends StatelessWidget {
     LanguageService lang,
     PremiumService premium,
   ) {
-    final plan = context.watch<PlayBillingService?>()?.currentPlanId;
+    final billing = context.watch<PlayBillingService?>();
+    final plan = billing?.currentPlanId;
+    final primary = Theme.of(context).brightness == Brightness.dark
+        ? Colors.white
+        : Colors.black;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -220,7 +224,11 @@ class SettingsPremiumCard extends StatelessWidget {
           Text(
             lang.translate(
               premium.subscriptionCancelled
-                  ? 'premium_cancelled_body'
+                  ? billing?.switchCancelledByPlay == true
+                        ? 'premium_cancelled_body_play_switch'
+                        : 'premium_cancelled_body'
+                  : billing?.monthlySwitchScheduled == true
+                  ? 'premium_monthly_switch_scheduled'
                   : 'premium_subscriber_body',
             ),
             style: TextStyle(
@@ -236,26 +244,27 @@ class SettingsPremiumCard extends StatelessWidget {
               Expanded(
                 child: OutlinedButton(
                   key: const Key('settings_premium_manage'),
+                  // Teal on the teal card looked disabled (Arun, 25 Nov
+                  // 2026): the primary text colour, as on iOS.
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: GlassTubeColors.teal,
+                    foregroundColor: primary,
                     shape: const StadiumBorder(),
                     padding: const EdgeInsets.symmetric(vertical: 11),
                     side: BorderSide(
-                      color: GlassTubeColors.teal.withValues(alpha: .5),
+                      color: primary.withValues(alpha: .85),
+                      width: 1.5,
                     ),
                   ),
                   onPressed: () => launchUrl(
-                    Uri.https(
-                      'play.google.com',
-                      '/store/account/subscriptions',
-                      {
-                        'package': 'com.applausestudios.ekadashi_calendar',
-                        'sku': PlayBillingService.subscription,
-                      },
+                    PlayBillingService.managementUrl(
+                      premium.subscriptionProductId,
                     ),
                     mode: LaunchMode.externalApplication,
                   ),
-                  child: Text(lang.translate('settings_premium_manage')),
+                  child: Text(
+                    lang.translate('settings_premium_manage'),
+                    style: _label,
+                  ),
                 ),
               ),
               const SizedBox(width: 10),

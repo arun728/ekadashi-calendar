@@ -39,18 +39,20 @@ void main() {
     await prefs.setString('language_code', 'en');
     app.main();
     await tester.pump();
-    for (
-      var frame = 0;
-      frame < 120 && find.byKey(const Key('glass_tab_2')).evaluate().isEmpty;
-      frame++
-    ) {
+    final home = find.byKey(const Key('home_ekadashi_card'));
+    for (var frame = 0; frame < 120 && home.evaluate().isEmpty; frame++) {
       await tester.pump(const Duration(seconds: 1));
     }
-    expect(find.byKey(const Key('glass_tab_2')), findsOneWidget);
+    expect(home, findsWidgets, reason: 'Wait for the calendar data to load');
     debugPrint('Tracker UI: Home ready');
-    await tester.tap(find.byKey(const Key('glass_tab_2')));
-    await pumpUi(tester);
+    final tab = find.byKey(const Key('glass_tab_2')).hitTestable();
+    expect(tab, findsOneWidget);
+    await tester.tap(tab);
     final screen = find.byType(VratTrackerScreen);
+    for (var frame = 0; frame < 60 && screen.evaluate().isEmpty; frame++) {
+      await tester.pump(const Duration(milliseconds: 150));
+    }
+    expect(screen, findsOneWidget);
     final context = tester.element(screen);
     final tracker = context.read<VratTrackerService>();
     final lang = context.read<LanguageService>();
@@ -100,12 +102,8 @@ void main() {
       reason: 'Save must close the sheet before showing a one-time achievement',
     );
     expect(find.byType(AchievementUnlockDialog), findsOneWidget);
-    // Upper-case caption, as iOS.
-    expect(
-      find.text(lang.translate('achievement_unlocked').toUpperCase()),
-      findsOneWidget,
-    );
-    Navigator.of(tester.element(find.byType(AchievementUnlockDialog))).pop();
+    expect(find.text(lang.translate('achievement_unlocked')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('journey_celebration_close')));
     await pumpUi(tester);
 
     // Free tier: three Vrat entries; the fourth new entry opens the paywall.
@@ -123,7 +121,7 @@ void main() {
     }
     expect(tracker.recordedEntryCount, VratTrackerService.freeEntryLimit);
     final fourth = pastEvents[2];
-    if (!context.mounted) return;
+    expect(context.mounted, isTrue, reason: 'Journey remains open');
     RecordVratDialog.show(
       context,
       ekadashi: fourth,

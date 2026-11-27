@@ -3,21 +3,21 @@ import StoreKit
 import UserNotifications
 import EkadashiCore
 
-/// Settings (settings_screen.dart): Premium, widget preview, dark mode,
-/// notifications (the master switch, then Ekadashi and Festivals and
-/// events), permissions and about.
+/// Settings (settings_screen.dart), regrouped on 25 Nov 2026 (Arun): the
+/// Premium card, one Notifications row opening its own page, Appearance and
+/// About & legal. Google Calendar stays in the Calendar tab.
 struct SettingsView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.requestReview) private var requestReview
     @Environment(\.openURL) private var openURL
     @State private var authorization: UNAuthorizationStatus = .notDetermined
-    @State private var backgroundRefresh: UIBackgroundRefreshStatus = .available
-    @State private var showGuide = false
-    @State private var editingReminder: EventReminderRows.EditorRequest?
+    /// Terms or Privacy in the in-app browser (26 Nov 2026).
+    @State private var webPage: InAppWebPage?
 
     private var hasPermission: Bool { authorization == .authorized || authorization == .provisional || authorization == .ephemeral }
     private var settings: ReminderSettings { model.reminderSettings }
-    private var togglesEnabled: Bool { hasPermission && settings.enabled }
+
+    static let supportEmail = URL(string: "mailto:contact@apptinel.com")!
 
     var body: some View {
         List {
@@ -34,6 +34,16 @@ struct SettingsView: View {
                     .listRowInsets(EdgeInsets())
                     .listRowBackground(Color.clear)
             }
+
+            Section {
+                NavigationLink {
+                    NotificationSettingsView()
+                } label: {
+                    row(AppSymbol.settingsNotifications, model.t("notifications"), notificationsSummary)
+                }
+                .accessibilityIdentifier("settings_notifications")
+            }
+            .glassListRows()
 
             Section(model.t("appearance")) {
                 NavigationLink {
@@ -60,11 +70,131 @@ struct SettingsView: View {
                 }
                 .tint(Theme.teal)
                 .accessibilityIdentifier("settings_glass_look")
+                // Moved here from the old Journey section (25 Nov 2026).
+                Toggle(isOn: Binding(get: { model.badgeHaptics }, set: { model.setBadgeHaptics($0) })) {
+                    Label {
+                        Text(model.t("ios_journey_haptics"))
+                    } icon: {
+                        Image(systemName: AppSymbol.settingsBadgeHaptics)
+                            .accessibilityIdentifier("settings_badge_haptics_icon")
+                    }
+                }
+                .tint(Theme.teal)
+                .accessibilityIdentifier("journey_badge_haptics")
             }
             .glassListRows()
             // Keep identifiers on the individual rows; a Section identifier
             // replaces those of its switches and navigation links.
 
+            Section(model.t("settings_about_legal")) {
+                Button { rate() } label: { row(AppSymbol.rateApp, model.t("rate_app"), model.t("rate_app_desc")) }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("settings_rate")
+                ShareLink(item: model.t("ios_share_message", appStoreLink)) {
+                    row(AppSymbol.share, model.t("share_app"), model.t("share_app_desc"))
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("settings_share")
+                Button { webPage = InAppWebPage(url: PremiumView.termsURL) } label: {
+                    row(AppSymbol.settingsTerms, model.t("terms_of_service"), nil)
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("settings_terms")
+                Button { webPage = InAppWebPage(url: PremiumView.privacyURL) } label: {
+                    row(AppSymbol.settingsPrivacy, model.t("privacy_policy"), nil)
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("settings_privacy")
+                Button { openURL(Self.supportEmail) } label: {
+                    row(AppSymbol.settingsContactSupport, model.t("settings_contact_support"),
+                        model.t("settings_contact_support_desc"))
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("settings_contact_support")
+                HStack {
+                    Text(model.t("version"))
+                    Spacer()
+                    Text(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "").foregroundStyle(.secondary)
+                }
+                .accessibilityElement(children: .combine)
+                .accessibilityIdentifier("settings_version")
+            }
+            .glassListRows()
+        }
+        .scrollContentBackground(.hidden)
+        .contentMargins(.bottom, 80, for: .scrollContent)
+        .inAppBrowser($webPage)
+        .task { authorization = await model.notifications.authorizationStatus() }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
+            Task { authorization = await model.notifications.authorizationStatus() }
+        }
+    }
+
+    /// "4/4 active", or why reminders are off.
+    private var notificationsSummary: String {
+        if !hasPermission { return model.t("notifications_off") }
+        return settings.enabled ? model.t("reminders_active", String(settings.activeCount)) : model.t("status_disabled")
+    }
+
+    /// Titles in the primary colour (white in dark mode), details in grey;
+    /// teal only for icons and switches (docs/ROADMAP.md Phase 5).
+    private func row(_ symbol: String, _ title: String, _ subtitle: String?) -> some View {
+        SettingsRow(symbol: symbol, title: title, subtitle: subtitle)
+    }
+
+    private var appStoreId: String { Bundle.main.object(forInfoDictionaryKey: "EkadashiAppStoreId") as? String ?? "" }
+
+    private var appStoreLink: String {
+        AppLinks.appStore(id: appStoreId)
+    }
+
+    /// The App Store review page when the app has a listing, else the system prompt.
+    private func rate() {
+        if !appStoreId.isEmpty, let url = URL(string: "https://apps.apple.com/app/id\(appStoreId)?action=write-review") {
+            openURL(url)
+        } else {
+            requestReview()
+        }
+    }
+}
+
+/// A Settings row: teal icon, title in the primary colour, details in grey.
+struct SettingsRow: View {
+    let symbol: String
+    let title: String
+    let subtitle: String?
+
+    var body: some View {
+        Label {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title).foregroundStyle(.primary)
+                if let subtitle { Text(subtitle).font(.caption).foregroundStyle(.secondary) }
+            }
+        } icon: {
+            Image(systemName: symbol).foregroundStyle(Theme.teal)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .contentShape(Rectangle())
+    }
+}
+
+/// Settings > Notifications (25 Nov 2026): the master switch and test, the
+/// Ekadashi reminders, Festivals and events, and "Reminders not arriving?"
+/// (app settings, background refresh and the permissions guide).
+struct NotificationSettingsView: View {
+    @Environment(AppModel.self) private var model
+    @Environment(\.openURL) private var openURL
+    @State private var authorization: UNAuthorizationStatus = .notDetermined
+    @State private var backgroundRefresh: UIBackgroundRefreshStatus = .available
+    @State private var showGuide = false
+    @State private var editingReminder: EventReminderRows.EditorRequest?
+
+    private var hasPermission: Bool { authorization == .authorized || authorization == .provisional || authorization == .ephemeral }
+    private var settings: ReminderSettings { model.reminderSettings }
+    private var togglesEnabled: Bool { hasPermission && settings.enabled }
+
+    var body: some View {
+        List {
             Section(model.t("notifications")) {
                 Toggle(isOn: Binding(get: { settings.enabled && hasPermission }, set: { on in Task { await toggleNotifications(on) } })) {
                     VStack(alignment: .leading, spacing: 2) {
@@ -115,11 +245,12 @@ struct SettingsView: View {
                 Text(model.t(model.premium.isPremium ? "notifications_events_desc" : "notifications_premium_events"))
             }
 
-            Section(model.t("permissions")) {
+            Section(model.t("settings_reminders_not_arriving")) {
                 Button { openSettings() } label: {
                     row(AppSymbol.appSettings, model.t("app_settings"), model.t("app_settings_desc"))
                 }
                 .buttonStyle(.plain)
+                .accessibilityIdentifier("settings_app_settings")
                 HStack {
                     row(AppSymbol.backgroundRefresh, model.t("ios_background_refresh"), model.t("ios_background_refresh_desc"))
                     Spacer()
@@ -130,33 +261,14 @@ struct SettingsView: View {
                     row(AppSymbol.info, model.t("perm_guide_title"), nil)
                 }
                 .buttonStyle(.plain)
+                .accessibilityIdentifier("settings_permissions_guide")
             }
-
-            Section(model.t("about")) {
-                Button { rate() } label: { row(AppSymbol.rateApp, model.t("rate_app"), model.t("rate_app_desc")) }
-                    .buttonStyle(.plain)
-                ShareLink(item: model.t("ios_share_message", appStoreLink)) {
-                    row(AppSymbol.share, model.t("share_app"), model.t("share_app_desc"))
-                }
-                .buttonStyle(.plain)
-                HStack {
-                    Text(model.t("version"))
-                    Spacer()
-                    Text(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "").foregroundStyle(.secondary)
-                }
-            }
-            .glassListRows()
-            .accessibilityIdentifier("settings_about_tube")
-
-            Section(model.t("journey_tab")) {
-                Toggle(model.t("ios_journey_haptics"), isOn: Binding(get: { model.badgeHaptics }, set: { model.setBadgeHaptics($0) }))
-                    .tint(Theme.teal)
-                    .accessibilityIdentifier("journey_badge_haptics")
-            }
-            .glassListRows()
         }
         .scrollContentBackground(.hidden)
+        .background(AppBackground())
         .contentMargins(.bottom, 80, for: .scrollContent)
+        .navigationTitle(model.t("notifications"))
+        .navigationBarTitleDisplayMode(.inline)
         .sheet(item: $editingReminder) { request in
             EventReminderEditor(original: request.reminder)
         }
@@ -172,19 +284,8 @@ struct SettingsView: View {
         }
     }
 
-    /// Titles in the primary colour (white in dark mode), details in grey;
-    /// teal only for icons and switches (docs/ROADMAP.md Phase 5).
     private func row(_ symbol: String, _ title: String, _ subtitle: String?) -> some View {
-        Label {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title).foregroundStyle(.primary)
-                if let subtitle { Text(subtitle).font(.caption).foregroundStyle(.secondary) }
-            }
-        } icon: {
-            Image(systemName: symbol).foregroundStyle(Theme.teal)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .contentShape(Rectangle())
+        SettingsRow(symbol: symbol, title: title, subtitle: subtitle)
     }
 
     /// Off, "Disabled" and greyed out while the master switch (or permission)
@@ -234,22 +335,8 @@ struct SettingsView: View {
     private func openSettings() {
         if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
     }
-
-    private var appStoreId: String { Bundle.main.object(forInfoDictionaryKey: "EkadashiAppStoreId") as? String ?? "" }
-
-    private var appStoreLink: String {
-        AppLinks.appStore(id: appStoreId)
-    }
-
-    /// The App Store review page when the app has a listing, else the system prompt.
-    private func rate() {
-        if !appStoreId.isEmpty, let url = URL(string: "https://apps.apple.com/app/id\(appStoreId)?action=write-review") {
-            openURL(url)
-        } else {
-            requestReview()
-        }
-    }
 }
+
 
 /// Premium at the top of Settings: what it unlocks and the store prices
 /// for free users; the plan, its state and Manage for members.
@@ -282,16 +369,25 @@ struct SettingsPremiumCard: View {
             in: RoundedRectangle(cornerRadius: 24, style: .continuous))
         .glassPanel(cornerRadius: 24)
         .manageSubscriptionsSheet(isPresented: $managing)
+        .onChange(of: managing) { _, isPresented in
+            if !isPresented { Task { await model.premium.refresh() } }
+        }
     }
 
     private var subtitleKey: String {
         if state.lifetime { return "premium_lifetime_thanks_title" }
+        if state.isInBillingRetry { return "ios_premium_billing_retry_title" }
         if state.subscribed { return state.subscriptionCancelled ? "premium_cancelled_title" : "premium_subscriber_title" }
         return "settings_premium_subtitle"
     }
 
     private var offer: some View {
         VStack(alignment: .leading, spacing: 10) {
+            if state.isInBillingRetry {
+                Text(model.t("ios_premium_billing_retry_body")).font(.footnote)
+                Button(model.t("settings_premium_manage")) { managing = true }
+                    .buttonStyle(PremiumCardOutlineStyle())
+            }
             benefit(AppSymbol.premiumCalendar, "premium_feature_calendar")
             benefit(AppSymbol.premiumVrat, "premium_feature_vrat")
             benefit(AppSymbol.premiumPanchang, "premium_feature_panchang_v2")
@@ -315,7 +411,7 @@ struct SettingsPremiumCard: View {
             } else if let plan = state.currentPlan {
                 Text(model.t("settings_premium_plan", model.t("premium_\(plan.rawValue)"))).font(.subheadline.weight(.semibold))
                     .foregroundStyle(.primary)
-                Text(model.t(state.subscriptionCancelled ? "premium_cancelled_body" : "premium_subscriber_body"))
+                Text(model.premiumSettingsMessage(state))
                     .font(.footnote).foregroundStyle(.secondary)
             }
             HStack(spacing: 10) {
@@ -323,7 +419,8 @@ struct SettingsPremiumCard: View {
                     Button { managing = true } label: {
                         Text(model.t("settings_premium_manage")).frame(maxWidth: .infinity).padding(.vertical, 4)
                     }
-                    .secondaryActionStyle()
+                    .buttonStyle(PremiumCardOutlineStyle())
+                    .accessibilityIdentifier("settings_premium_manage")
                 }
                 if !state.lifetime {
                     Button { model.openPaywall() } label: {
@@ -342,5 +439,21 @@ struct SettingsPremiumCard: View {
         } icon: {
             Image(systemName: symbol).foregroundStyle(Theme.teal)
         }
+    }
+}
+
+/// Manage on the Premium card and Cancel subscription on the plans page
+/// (Arun, 25-26 Nov 2026: teal on a tinted card looked disabled). The label and outline use the
+/// primary text colour, white in dark mode, so it reads as a normal button
+/// that is still less prominent than the filled Change plan.
+struct PremiumCardOutlineStyle: ButtonStyle {
+    @Environment(\.isEnabled) private var enabled
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .padding(.horizontal, 12).padding(.vertical, 7)
+            .foregroundStyle(.primary)
+            .overlay(Capsule().strokeBorder(.primary.opacity(0.85), lineWidth: 1.5))
+            .contentShape(Capsule())
+            .opacity(configuration.isPressed ? 0.7 : enabled ? 1 : 0.5)
     }
 }

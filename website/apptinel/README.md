@@ -16,9 +16,16 @@ Preview from the repository root with
 `python3 -m http.server 8080 --directory website/apptinel/public`.
 Run `node --test website/apptinel/tests/site.test.mjs` to check the pages.
 
-Production uses the existing `apptinel` Cloudflare Worker. In its Deployments
-view, select New deployment and upload the `website/apptinel/public` folder
-as static assets. The files require no build step. The
-product page and its legal URLs use directory indexes with trailing slashes.
-Confirm the public URLs before updating the iOS paywall and App Store Connect
-metadata to use them.
+Production uses the existing `apptinel` Cloudflare Worker. Deploy with
+Wrangler (not the dashboard upload, which flattens the folders), then verify
+the live pages. Every change to this site is deployed and verified the same
+day. See [docs/CLOUDFLARE.md](../../docs/CLOUDFLARE.md) for the reasons, the
+sign-in and the Cloudflare plugin for Claude Code.
+
+```bash
+cd website/apptinel && npx wrangler@4 deploy --name apptinel --assets ./public --compatibility-date 2026-11-01
+```
+
+The product page and its legal URLs use directory indexes with trailing
+slashes. Confirm the public URLs before updating the iOS paywall and App Store
+Connect metadata to use them.

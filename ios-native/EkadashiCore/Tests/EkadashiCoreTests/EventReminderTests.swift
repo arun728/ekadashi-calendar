@@ -9,10 +9,11 @@ final class EventReminderTests: XCTestCase {
     private let observances = PanchangEngine().observanceCalendar(year: 2026, city: .newDelhi)
 
     private func plan(_ reminders: [EventReminder], entries: [CalendarEntry] = [], now: Date, premium: Bool = true,
-                      enabled: Bool = true, limit: Int = 64) -> [PlannedEventReminder] {
+                      enabled: Bool = true, limit: Int = 64, freeGoogleMonth: String? = nil) -> [PlannedEventReminder] {
         EventReminderPlanner.plan(settings: EventReminderSettings(enabled: enabled, reminders: reminders),
                                   observances: observances, entries: entries, observanceZone: zone, entryZone: zone,
-                                  language: "en", premium: premium, now: now, limit: limit)
+                                  language: "en", premium: premium, now: now, limit: limit,
+                                  freeGoogleMonth: freeGoogleMonth)
     }
 
     func testSettingsRoundTripAndDefaults() {
@@ -61,6 +62,43 @@ final class EventReminderTests: XCTestCase {
         XCTAssertEqual(result.first?.url, AppRoute.calendarURL(CivilDate(2026, 10, 20)))
     }
 
+    /// Arun (25 Nov 2026): Google Calendar reminders are Premium. A free user
+    /// who used the one free sync gets reminders for that month's Google
+    /// events only; reminders for custom entries are always free.
+    func testGoogleRemindersNeedPremiumExceptForTheFreeSyncMonth() {
+        func entry(_ id: String, _ iso: String, _ source: CalendarEntrySource) -> CalendarEntry {
+            let start = instant(iso)
+            return CalendarEntry(id: id, title: id, start: start, end: start.addingTimeInterval(3600), source: source,
+                                 updatedAt: start)
+        }
+        let entries = [entry("Nov satsang", "2026-11-28T09:00:00+05:30", .google),
+                       entry("Dec satsang", "2026-12-05T09:00:00+05:30", .google),
+                       entry("Dec temple", "2026-12-06T09:00:00+05:30", .custom)]
+        let reminders = [EventReminder(target: .calendar(.google), daysBefore: [1], hour: 7, minute: 0),
+                         EventReminder(target: .calendar(.custom), daysBefore: [1], hour: 7, minute: 0)]
+        let now = instant("2026-11-25T10:00:00+05:30")
+        XCTAssertEqual(plan(reminders, entries: entries, now: now, premium: false).map(\.title), ["Dec temple"])
+        XCTAssertEqual(plan(reminders, entries: entries, now: now, premium: false, freeGoogleMonth: "2026-11")
+                        .map(\.title), ["Nov satsang", "Dec temple"])
+        XCTAssertEqual(plan(reminders, entries: entries, now: now, premium: true).map(\.title),
+                       ["Nov satsang", "Dec satsang", "Dec temple"])
+    }
+
+    func testGoogleReminderLockFollowsPremiumAndTheFreeSyncMonth() {
+        let google = EventReminderTarget.calendar(.google), custom = EventReminderTarget.calendar(.custom)
+        let november = CivilDate(2026, 11, 25), december = CivilDate(2026, 12, 1)
+        XCTAssertTrue(google.isLocked(premium: false, freeGoogleMonth: nil, today: november))
+        XCTAssertFalse(google.isLocked(premium: false, freeGoogleMonth: "2026-11", today: november))
+        XCTAssertTrue(google.isLocked(premium: false, freeGoogleMonth: "2026-11", today: december), "locked again")
+        XCTAssertFalse(google.isLocked(premium: false, freeGoogleMonth: "2026-12", today: november), "a later month synced")
+        XCTAssertFalse(google.isLocked(premium: true, freeGoogleMonth: nil, today: december))
+        XCTAssertFalse(custom.isLocked(premium: false, freeGoogleMonth: nil, today: november))
+        XCTAssertTrue(EventReminderTarget.observance("holi").isLocked(premium: false, freeGoogleMonth: "2026-11",
+                                                                      today: november))
+        XCTAssertTrue(google.usesCalendarEntries && custom.usesCalendarEntries)
+        XCTAssertFalse(EventReminderTarget.observance("holi").usesCalendarEntries)
+    }
+
     func testPanchangRemindersNeedPremiumAndTheMasterSwitch() {
         let reminder = EventReminder(target: .observance("purnima"), daysBefore: [1], hour: 7, minute: 0)
         let now = instant("2026-10-08T10:00:00+05:30")
@@ -87,7 +125,8 @@ final class EventReminderTests: XCTestCase {
         XCTAssertTrue(choices.contains { $0.target == .calendar(.google) && $0.group == .myCalendar })
         XCTAssertFalse(choices.contains { $0.group == .festival && $0.target == .observance("amavasya") })
         XCTAssertTrue(choices.filter { $0.group != .myCalendar }.allSatisfy(\.requiresPremium))
-        XCTAssertFalse(choices.filter { $0.group == .myCalendar }.contains(where: \.requiresPremium))
+        XCTAssertFalse(choices.first { $0.target == .calendar(.custom) }!.requiresPremium, "custom entries stay free")
+        XCTAssertTrue(choices.first { $0.target == .calendar(.google) }!.requiresPremium, "Google events are Premium")
         XCTAssertEqual(Set(choices.map(\.id)).count, choices.count)
         XCTAssertFalse(choices.contains { $0.title.hasPrefix("event_reminder_") }, "every title is translated")
     }

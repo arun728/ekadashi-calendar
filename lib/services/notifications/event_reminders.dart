@@ -37,7 +37,30 @@ class EventReminderTarget {
       source == null ? '$_kind:$_value' : '$_kind:${source!.name}';
 
   /// Panchang observances are calculated, so they are Premium like Key days.
-  bool get requiresPremium => source == null;
+  /// Google Calendar events are Premium too (Arun, 25 Nov 2026), except
+  /// those of the free sync month; custom entries are always free.
+  bool get requiresPremium =>
+      source == null || source == CalendarEntrySource.google;
+
+  /// Reminders for the user's calendar entries (custom or Google).
+  bool get usesCalendarEntries => source != null;
+
+  /// Whether a free user must buy Premium to use this reminder. Google
+  /// reminders stay open while the free sync month ("2026-11") has not
+  /// ended; they lock again after it.
+  bool isLocked({
+    required bool premium,
+    String? freeGoogleMonth,
+    required DateTime today,
+  }) {
+    if (!requiresPremium || premium) return false;
+    final month =
+        '${today.year.toString().padLeft(4, '0')}-'
+        '${today.month.toString().padLeft(2, '0')}';
+    return !(source == CalendarEntrySource.google &&
+        freeGoogleMonth != null &&
+        month.compareTo(freeGoogleMonth) <= 0);
+  }
 
   static EventReminderTarget? parse(String key) {
     final index = key.indexOf(':');
@@ -261,6 +284,7 @@ class EventReminderPlanner {
     required DateTime now,
     int limit = pendingLimit,
     SearchCatalog? catalog,
+    String? freeGoogleMonth,
   }) {
     if (!settings.enabled || limit <= 0) return const [];
     final source = catalog ?? SearchCatalog.bundled;
@@ -283,7 +307,14 @@ class EventReminderPlanner {
     final result = <PlannedEventReminder>[];
     for (final reminder in settings.reminders) {
       final target = reminder.target;
-      if (target.requiresPremium && !premium) continue;
+      // A free user's Google reminders cover the free sync month only.
+      final freeMonthOnly =
+          !premium && target.source == CalendarEntrySource.google
+          ? freeGoogleMonth
+          : null;
+      if (target.requiresPremium && !premium && freeMonthOnly == null) {
+        continue;
+      }
       final key = target.observanceKey;
       if (key != null) {
         final entry = source.observanceByKey(key);
@@ -319,6 +350,9 @@ class EventReminderPlanner {
               ? item.startAt.toLocal()
               : tz.TZDateTime.from(item.startAt, entryZone);
           final day = DateTime.utc(start.year, start.month, start.day);
+          if (freeMonthOnly != null && !_iso(day).startsWith(freeMonthOnly)) {
+            continue;
+          }
           result.addAll(
             _planned(
               reminder,

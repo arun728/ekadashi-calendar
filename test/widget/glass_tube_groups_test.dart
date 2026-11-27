@@ -135,15 +135,26 @@ void main() {
           await tester.pumpAndSettle();
           await tester.tap(find.byKey(const Key('glass_tab_4')));
           await tester.pumpAndSettle();
+          // Settings > Notifications has its own page (25 Nov 2026).
           await tester.scrollUntilVisible(
-            find.byKey(const Key('settings_notifications_tube')),
-            200,
-            scrollable: find.byType(Scrollable).last,
+            find.byKey(const Key('settings_notifications')),
+            120,
+            scrollable: find
+                .descendant(
+                  of: find.byType(ListView).hitTestable(),
+                  matching: find.byType(Scrollable),
+                )
+                .first,
           );
+          await tester.pumpAndSettle();
+          await tester.tap(find.byKey(const Key('settings_notifications')));
+          await tester.pumpAndSettle();
           expect(
             find.byKey(const Key('settings_notifications_tube')),
             findsOneWidget,
           );
+          await tester.binding.handlePopRoute();
+          await tester.pumpAndSettle();
           // Lazy settings rows may be below the viewport.
           await tester.scrollUntilVisible(
             find.byKey(const Key('settings_about_tube')),

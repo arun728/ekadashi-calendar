@@ -46,13 +46,13 @@ void main() {
     expect(billing.canBuy(lifetime), isTrue);
   });
 
-  test('a subscriber whose plan is unknown on this phone can switch', () {
+  test('an unknown legacy plan cannot start a replacement purchase', () {
     final premium = PremiumService(entitlements: PremiumFixture())
       ..applyOwned({PremiumService.subscriptionId});
     final billing = billingFor(premium);
-    for (final p in [monthly, yearly, lifetime]) {
-      expect(billing.canBuy(p), isTrue, reason: p.id);
-    }
+    expect(billing.canBuy(monthly), isFalse);
+    expect(billing.canBuy(yearly), isFalse);
+    expect(billing.canBuy(lifetime), isTrue);
   });
 
   test('lifetime owners and pending purchases cannot buy again', () {

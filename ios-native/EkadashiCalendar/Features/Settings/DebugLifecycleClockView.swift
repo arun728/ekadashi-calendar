@@ -10,8 +10,9 @@ struct DebugLifecycleClockView: View {
     @State private var selectedUID = ""
     @State private var rate = 0.0
     private var event: EkadashiOccurrence? {
-        model.ekadashis.first { $0.occurrenceUid == selectedUID }
-            ?? model.ekadashis.last { $0.fastingStart.map { $0 <= Date() } ?? false }
+        let now = DisplayClock.date(Date())
+        return model.ekadashis.first { $0.occurrenceUid == selectedUID }
+            ?? model.ekadashis.last { $0.fastingStart.map { $0 <= now } ?? false }
     }
     var body: some View {
         List {

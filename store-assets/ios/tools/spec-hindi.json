@@ -1,0 +1,132 @@
+[
+ {
+  "out": "h01-kabhi-na-chuke-ekadashi",
+  "src": "hi-01-home.png",
+  "hue": "teal",
+  "tag": "free",
+  "title": "कभी न चूकें<br><em>एकादशी</em>",
+  "sub": "आपके शहर के व्रत और पारण समय",
+  "lang": "hi",
+  "phone": {
+   "y": 960,
+   "w": 980
+  }
+ },
+ {
+  "out": "h02-apki-bhasha",
+  "src": "hi-02-language-menu.png",
+  "hue": "indigo",
+  "tag": "free",
+  "title": "आपकी <em>भाषा</em> में",
+  "sub": "हिंदी, English, தமிழ், తెలుగు, ગુજરાતી, বাংলা",
+  "lang": "hi",
+  "phone": {
+   "y": 960,
+   "w": 980
+  }
+ },
+ {
+  "out": "h03-har-tyohar-calendar",
+  "src": "hi-11-calendar-diwali.png",
+  "hue": "teal",
+  "tag": null,
+  "title": "कैलेंडर में<br><em>हर त्योहार</em>",
+  "sub": "गूगल कैलेंडर की छुट्टियाँ और आपके कार्यक्रम",
+  "lang": "hi",
+  "phone": {
+   "y": 960,
+   "w": 980
+  }
+ },
+ {
+  "out": "h04-pura-panchang",
+  "src": "hi-13-panchang-daily.png",
+  "hue": "gold",
+  "tag": "premium",
+  "title": "हर दिन<br><em>पूरा पंचांग</em>",
+  "sub": "तिथि, नक्षत्र, योग और शुभ समय",
+  "lang": "hi",
+  "phone": {
+   "y": 960,
+   "w": 980
+  }
+ },
+ {
+  "out": "h05-har-tyohar",
+  "src": "hi-12-panchang-keydays.png",
+  "hue": "gold",
+  "tag": "premium",
+  "title": "हर <em>त्योहार</em>,<br>एक नज़र में",
+  "sub": "करवा चौथ, धनतेरस, दीवाली और बहुत कुछ",
+  "lang": "hi",
+  "phone": {
+   "y": 960,
+   "w": 980
+  }
+ },
+ {
+  "out": "h06-muhurat-choghadiya",
+  "src": "hi-14-panchang-muhurta.png",
+  "hue": "gold",
+  "tag": "premium",
+  "title": "<em>मुहूर्त</em> और<br>चौघड़िया",
+  "sub": "दिन और रात के शुभ समय",
+  "lang": "hi",
+  "phone": {
+   "y": 960,
+   "w": 980
+  }
+ },
+ {
+  "out": "h07-har-vrat-yaad",
+  "src": "hi-20-journey-overview.png",
+  "hue": "lotus",
+  "tag": "premium",
+  "title": "हर व्रत,<br><em>याद</em> रहे",
+  "sub": "अंक, स्ट्रीक और बैज",
+  "lang": "hi",
+  "phone": {
+   "y": 960,
+   "w": 980
+  }
+ },
+ {
+  "out": "h08-yatra-share",
+  "src": "hi-21-journey-share.png",
+  "hue": "lotus",
+  "tag": "premium",
+  "title": "अपनी <em>यात्रा</em><br>शेयर करें",
+  "sub": "साल भर के अंक और बैज, एक कार्ड पर",
+  "lang": "hi",
+  "phone": {
+   "y": 960,
+   "w": 980
+  }
+ },
+ {
+  "out": "h09-parivar-share",
+  "src": "hi-04-share-card.png",
+  "hue": "teal",
+  "tag": "free",
+  "title": "परिवार के साथ<br><em>शेयर</em> करें",
+  "sub": "हर एकादशी के लिए सुंदर कार्ड",
+  "lang": "hi",
+  "phone": {
+   "y": 960,
+   "w": 980
+  }
+ },
+ {
+  "out": "h10-widget",
+  "src": "hi-05-widgets.png",
+  "hue": "indigo",
+  "tag": "free",
+  "title": "होम स्क्रीन पर<br><em>विजेट</em>",
+  "sub": "उलटी गिनती, व्रत और पारण एक नज़र में",
+  "lang": "hi",
+  "phone": {
+   "y": 960,
+   "w": 980
+  }
+ }
+]

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'services/play_in_app_messages.dart';
 import 'services/display_clock.dart';
 import 'widgets/home_fasting_progress.dart';
 import 'widgets/play_update_notice.dart';
@@ -223,6 +224,11 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   static const premiumRecheckInterval = Duration(minutes: 5);
   bool _premiumSessionStarted = false;
 
+  /// Google Play's "fix your payment" message after a declined renewal.
+  late final _playMessages = PlayInAppMessages(
+    refresh: () async => _premium?.refresh(),
+  );
+
   final PageController _pageController = PageController(viewportFraction: 1.0);
   final GlobalKey<CalendarScreenState> _calendarKey = GlobalKey();
   final GlobalKey<PanchangScreenState> _panchangKey = GlobalKey();
@@ -296,6 +302,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       if (Platform.isAndroid) {
         Future.microtask(() => _premium?.refresh());
         _startPremiumRecheck();
+        _playMessages.show();
       }
     }
     _achievementTracker ??= context.read<VratTrackerService?>();
@@ -413,6 +420,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       if (Platform.isAndroid) {
         _premium?.refresh();
         _startPremiumRecheck();
+        _playMessages.show();
       }
       // Wait for the first frame to render (ensure engine is attached)
       WidgetsBinding.instance.addPostFrameCallback((_) {

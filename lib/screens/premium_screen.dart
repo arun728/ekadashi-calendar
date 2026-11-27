@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/language_service.dart';
 import '../services/premium_service.dart';
+import '../services/in_app_browser.dart';
 import '../services/play_billing_service.dart';
 import '../widgets/app_icons.dart';
 
@@ -37,9 +38,9 @@ class PremiumScreen extends StatefulWidget {
   final String? reasonKey;
 
   static const privacyUrl =
-      'https://arun728.github.io/ekadashi-calendar/privacy-policy';
+      'https://apptinel.com/ekadashi-calendar/privacy-policy/';
   static const termsUrl =
-      'https://arun728.github.io/ekadashi-calendar/terms-of-service';
+      'https://apptinel.com/ekadashi-calendar/terms-of-service/';
 
   @override
   State<PremiumScreen> createState() => _PremiumScreenState();
@@ -75,18 +76,16 @@ class _PremiumScreenState extends State<PremiumScreen> {
   Future<void> _open(Uri uri) =>
       launchUrl(uri, mode: LaunchMode.externalApplication);
 
-  Future<void> _manage() => _open(
-    Uri.https('play.google.com', '/store/account/subscriptions', {
-      'package': 'com.applausestudios.ekadashi_calendar',
-      'sku': PlayBillingService.subscription,
-    }),
-  );
+  Future<void> _manage() =>
+      _open(PlayBillingService.managementUrl(premium.subscriptionProductId));
 
   String? _selected;
   String? _selectionOwnership;
 
-  /// Suggest the next upgrade after confirmed ownership changes. Retain
-  /// a manual choice otherwise, and keep owned Lifetime selected.
+  /// A tapped plan stays selected through Play refreshes (they can briefly
+  /// report no plan). When ownership changes it is dropped only if that plan
+  /// is now owned; then the next upgrade is suggested. Owned Lifetime stays
+  /// selected.
   PremiumPlan? _selectedPlan() {
     final plans = billing.plans;
     if (plans.isEmpty) return null;
@@ -94,7 +93,12 @@ class _PremiumScreenState extends State<PremiumScreen> {
         '${premium.subscribed}:${premium.lifetime}:${billing.currentPlanId}';
     if (_selectionOwnership != ownership) {
       _selectionOwnership = ownership;
-      _selected = null;
+      final owned =
+          premium.lifetime ||
+          (premium.subscribed &&
+              _selected == billing.currentPlanId &&
+              !premium.subscriptionCancelled);
+      if (owned) _selected = null;
     }
     if (premium.lifetime) {
       for (final plan in plans) {
@@ -150,13 +154,14 @@ class _PremiumScreenState extends State<PremiumScreen> {
       'yearly' => lang.translate('premium_per_year'),
       _ => lang.translate('premium_one_time'),
     };
+    final upcoming = plan.id == 'monthly' && billing.monthlySwitchScheduled;
     final secondary = IosColors.secondary(context);
     return Semantics(
       key: Key('premium_plan_${plan.id}'),
       button: true,
       selected: selected,
       child: Opacity(
-        opacity: billing.canBuy(plan) || current ? 1 : 0.5,
+        opacity: billing.canBuy(plan) || current || upcoming ? 1 : 0.5,
         child: DecoratedBox(
           position: DecorationPosition.foreground,
           decoration: BoxDecoration(
@@ -230,15 +235,39 @@ class _PremiumScreenState extends State<PremiumScreen> {
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: IosText.caption, color: secondary),
                 ),
-                if (current) ...[
+                if (current || upcoming) ...[
                   const SizedBox(height: 6),
-                  Text(
-                    lang.translate('premium_current_plan'),
-                    key: Key('premium_current_${plan.id}'),
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: IosColors.teal,
-                      fontSize: IosText.caption,
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: upcoming
+                          ? IosColors.teal.withValues(alpha: .12)
+                          : IosColors.primary(context).withValues(alpha: .08),
+                      shape: BoxShape.rectangle,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 3,
+                      ),
+                      child: Text(
+                        lang.translate(
+                          upcoming
+                              ? 'premium_upcoming_plan'
+                              : 'premium_current_plan',
+                        ),
+                        key: Key(
+                          'premium_${upcoming ? 'upcoming' : 'current'}_${plan.id}',
+                        ),
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: upcoming
+                              ? IosColors.teal
+                              : IosColors.primary(context),
+                          fontSize: IosText.caption2,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -293,6 +322,45 @@ class _PremiumScreenState extends State<PremiumScreen> {
       );
       if (go != true) return;
     }
+    if (plan.id != 'lifetime' &&
+        premium.subscribed &&
+        !premium.lifetime &&
+        plan.id != billing.currentPlanId) {
+      if (!mounted) return;
+      final go = await showDialog<bool>(
+        context: context,
+        useRootNavigator: true,
+        builder: (context) {
+          final style = TextButton.styleFrom(foregroundColor: IosColors.teal);
+          return AlertDialog(
+            title: Text(lang.translate('premium_switch_now_title')),
+            content: Text(
+              lang.translate(
+                plan.id == 'monthly'
+                    ? 'premium_switch_at_renewal_body'
+                    : 'premium_switch_now_body',
+              ),
+            ),
+            actions: [
+              TextButton(
+                style: style,
+                onPressed: () => Navigator.pop(context, false),
+                child: Text(
+                  lang.translate('cancel'),
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+              TextButton(
+                style: style,
+                onPressed: () => Navigator.pop(context, true),
+                child: Text(lang.translate('premium_switch_now_confirm')),
+              ),
+            ],
+          );
+        },
+      );
+      if (go != true) return;
+    }
     await billing.buy(plan);
   }
 
@@ -336,6 +404,18 @@ class _PremiumScreenState extends State<PremiumScreen> {
   );
 
   /// A footer link: 13 pt teal, as the iOS footnote buttons.
+  static Color _primary(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+      ? Colors.white
+      : Colors.black;
+
+  Widget _linkRow(List<Widget> links) => Wrap(
+    alignment: WrapAlignment.center,
+    spacing: 16,
+    runSpacing: 4,
+    children: links,
+  );
+
   Widget _link(String label, VoidCallback? onPressed) => TextButton(
     onPressed: onPressed,
     style: TextButton.styleFrom(
@@ -360,6 +440,8 @@ class _PremiumScreenState extends State<PremiumScreen> {
       animation: Listenable.merge([premium, billing]),
       builder: (context, _) {
         final selected = _selectedPlan();
+        final scheduled =
+            selected?.id == 'monthly' && billing.monthlySwitchScheduled;
         final showPlans = billing.plans.isNotEmpty;
         final orange = IosColors.orange(context);
         return AppBackground(
@@ -381,182 +463,204 @@ class _PremiumScreenState extends State<PremiumScreen> {
                 onPressed: () => Navigator.maybePop(context),
               ),
             ),
+            // The buy button and links follow the plans (Arun, 25 Nov 2026:
+            // a footer pinned to the bottom left a big empty gap above it).
             body: SafeArea(
-              child: Column(
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
                 children: [
-                  Expanded(
-                    child: ListView(
-                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
-                      children: [
-                        if (premium.lifetime) ...[
-                          _statusCard(
-                            key: const Key('premium_lifetime_thanks'),
-                            title: lang.translate(
-                              'premium_lifetime_thanks_title',
+                  if (premium.lifetime) ...[
+                    _statusCard(
+                      key: const Key('premium_lifetime_thanks'),
+                      title: lang.translate('premium_lifetime_thanks_title'),
+                      body: lang.translate('premium_lifetime_thanks_body'),
+                    ),
+                    if (premium.subscribed) ...[
+                      const SizedBox(height: 12),
+                      _statusCard(
+                        color: orange,
+                        title: lang.translate('premium_active'),
+                        body: lang.translate(
+                          'premium_cancel_subscription_note',
+                        ),
+                        // Clear like the Settings card's Manage (Arun, 26
+                        // Nov 2026): the primary text colour and outline.
+                        action: OutlinedButton(
+                          key: const Key('premium_cancel_subscription'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: _primary(context),
+                            shape: const StadiumBorder(),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 11,
                             ),
-                            body: lang.translate(
-                              'premium_lifetime_thanks_body',
+                            side: BorderSide(
+                              color: _primary(context).withValues(alpha: .85),
+                              width: 1.5,
                             ),
                           ),
-                          if (premium.subscribed) ...[
-                            const SizedBox(height: 12),
-                            _statusCard(
+                          onPressed: _manage,
+                          child: Text(
+                            lang.translate(
+                              'premium_cancel_subscription_action',
+                            ),
+                            style: IosButtons.label,
+                          ),
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 12),
+                  ] else if (premium.subscribed) ...[
+                    Padding(
+                      key: const Key('premium_active'),
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: premium.subscriptionCancelled
+                          ? _statusCard(
                               color: orange,
-                              title: lang.translate('premium_active'),
+                              title: lang.translate('premium_cancelled_title'),
+                              // Reactivate is not possible after a cancelled
+                              // switch, so "Reactivate anytime" is left out.
                               body: lang.translate(
-                                'premium_cancel_subscription_note',
+                                billing.switchCancelledByPlay
+                                    ? 'premium_cancelled_body_play_switch'
+                                    : 'premium_cancelled_body',
                               ),
-                              action: OutlinedButton(
-                                key: const Key('premium_cancel_subscription'),
-                                style: IosButtons.glass(context),
-                                onPressed: _manage,
-                                child: Text(
-                                  lang.translate(
-                                    'premium_cancel_subscription_action',
-                                  ),
-                                  style: IosButtons.label,
+                              action: billing.switchCancelledByPlay
+                                  ? Text(
+                                      lang.translate(
+                                        'premium_play_switch_cancelled_note',
+                                      ),
+                                      key: const Key(
+                                        'premium_switch_cancelled_note',
+                                      ),
+                                      style: TextStyle(
+                                        fontSize: IosText.subheadline,
+                                        fontWeight: FontWeight.w600,
+                                        color: IosColors.primary(context),
+                                      ),
+                                    )
+                                  : null,
+                            )
+                          : _statusCard(
+                              title: lang.translate('premium_subscriber_title'),
+                              body: lang.translate(
+                                billing.monthlySwitchScheduled
+                                    ? 'premium_monthly_switch_scheduled'
+                                    : 'premium_renewal_in_play',
+                              ),
+                            ),
+                    ),
+                  ] else ...[
+                    if (widget.reasonKey != null)
+                      Padding(
+                        key: const Key('premium_reason'),
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(
+                              width: 26,
+                              child: Icon(
+                                AppIcons.info,
+                                color: IosColors.teal,
+                                size: 22,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                lang.translate(widget.reasonKey!),
+                                style: TextStyle(
+                                  fontSize: IosText.body,
+                                  fontWeight: FontWeight.w600,
+                                  color: IosColors.primary(context),
                                 ),
                               ),
                             ),
                           ],
-                          const SizedBox(height: 12),
-                        ] else if (premium.subscribed) ...[
-                          Padding(
-                            key: const Key('premium_active'),
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: premium.subscriptionCancelled
-                                ? _statusCard(
-                                    color: orange,
-                                    title: lang.translate(
-                                      'premium_cancelled_title',
-                                    ),
-                                    body: lang.translate(
-                                      'premium_cancelled_body',
-                                    ),
-                                  )
-                                : _statusCard(
-                                    title: lang.translate(
-                                      'premium_subscriber_title',
-                                    ),
-                                    body: lang.translate(
-                                      'premium_subscriber_body',
-                                    ),
-                                  ),
-                          ),
-                        ] else ...[
-                          if (widget.reasonKey != null)
-                            Padding(
-                              key: const Key('premium_reason'),
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const SizedBox(
-                                    width: 26,
-                                    child: Icon(
-                                      AppIcons.info,
-                                      color: IosColors.teal,
-                                      size: 22,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Text(
-                                      lang.translate(widget.reasonKey!),
-                                      style: TextStyle(
-                                        fontSize: IosText.body,
-                                        fontWeight: FontWeight.w600,
-                                        color: IosColors.primary(context),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          _feature(
-                            AppIcons.premiumCalendar,
-                            lang.translate('premium_feature_calendar'),
-                          ),
-                          _feature(
-                            AppIcons.premiumVrat,
-                            lang.translate('premium_feature_vrat'),
-                          ),
-                          _feature(
-                            AppIcons.premiumPanchang,
-                            lang.translate('premium_feature_panchang_v2'),
-                          ),
-                          const SizedBox(height: 20),
-                        ],
-                        if (premium.busy)
-                          const Padding(
-                            padding: EdgeInsets.only(bottom: 12),
-                            child: Center(
-                              child: SizedBox.square(
-                                dimension: 22,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2.4,
-                                  color: IosColors.teal,
-                                ),
-                              ),
-                            ),
-                          ),
-                        if (billing.pending)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: Text(
-                              lang.translate('premium_pending'),
-                              style: TextStyle(
-                                fontSize: IosText.subheadline,
-                                color: IosColors.primary(context),
-                              ),
-                            ),
-                          ),
-                        if (showPlans)
-                          IntrinsicHeight(
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                for (final plan in billing.plans) ...[
-                                  if (plan != billing.plans.first)
-                                    const SizedBox(width: 8),
-                                  Expanded(
-                                    child: _planTile(
-                                      lang,
-                                      plan,
-                                      plan.id == selected?.id,
-                                    ),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                        if (showPlans && selected != null) ...[
-                          const SizedBox(height: 12),
-                          Text(
-                            lang.translate('premium_${selected.id}_terms'),
-                            style: TextStyle(
-                              fontSize: IosText.caption,
-                              color: IosColors.secondary(context),
-                            ),
-                          ),
-                        ],
-                        if (billing.error != null && !premium.isPremium)
-                          Padding(
-                            key: const Key('premium_status_message'),
-                            padding: const EdgeInsets.only(top: 12),
-                            child: Text(
-                              lang.translate(billing.error!),
-                              style: TextStyle(
-                                fontSize: IosText.subheadline,
-                                color: IosColors.primary(context),
-                              ),
-                            ),
-                          ),
-                      ],
+                        ),
+                      ),
+                    _feature(
+                      AppIcons.premiumCalendar,
+                      lang.translate('premium_feature_calendar'),
                     ),
-                  ),
+                    _feature(
+                      AppIcons.premiumVrat,
+                      lang.translate('premium_feature_vrat'),
+                    ),
+                    _feature(
+                      AppIcons.premiumPanchang,
+                      lang.translate('premium_feature_panchang_v2'),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+                  if (premium.busy)
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 12),
+                      child: Center(
+                        child: SizedBox.square(
+                          dimension: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.4,
+                            color: IosColors.teal,
+                          ),
+                        ),
+                      ),
+                    ),
+                  if (billing.pending)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Text(
+                        lang.translate('premium_pending'),
+                        style: TextStyle(
+                          fontSize: IosText.subheadline,
+                          color: IosColors.primary(context),
+                        ),
+                      ),
+                    ),
+                  if (showPlans)
+                    IntrinsicHeight(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          for (final plan in billing.plans) ...[
+                            if (plan != billing.plans.first)
+                              const SizedBox(width: 8),
+                            Expanded(
+                              child: _planTile(
+                                lang,
+                                plan,
+                                plan.id == selected?.id,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  if (showPlans && selected != null) ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      lang.translate('premium_${selected.id}_terms'),
+                      style: TextStyle(
+                        fontSize: IosText.caption,
+                        color: IosColors.secondary(context),
+                      ),
+                    ),
+                  ],
+                  if (billing.error != null && !premium.isPremium)
+                    Padding(
+                      key: const Key('premium_status_message'),
+                      padding: const EdgeInsets.only(top: 12),
+                      child: Text(
+                        lang.translate(billing.error!),
+                        style: TextStyle(
+                          fontSize: IosText.subheadline,
+                          color: IosColors.primary(context),
+                        ),
+                      ),
+                    ),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
+                    padding: const EdgeInsets.only(top: 12),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
@@ -564,37 +668,54 @@ class _PremiumScreenState extends State<PremiumScreen> {
                           FilledButton(
                             key: const Key('premium_buy'),
                             style: IosButtons.prominent(vertical: 14),
-                            onPressed: billing.canBuy(selected)
-                                ? () => _buy(lang, selected)
+                            onPressed: scheduled
+                                ? _manage
+                                : billing.canBuy(selected)
+                                ? () =>
+                                      premium.subscriptionCancelled &&
+                                          selected.id == billing.currentPlanId
+                                      ? _manage()
+                                      : _buy(lang, selected)
                                 : null,
                             child: Text(
-                              premium.subscriptionCancelled &&
-                                      selected.id == billing.currentPlanId
-                                  ? '${lang.translate('premium_reactivate')} · ${selected.price}'
+                              scheduled
+                                  ? lang.translate('premium_manage')
+                                  : premium.subscriptionCancelled &&
+                                        selected.id == billing.currentPlanId
+                                  ? lang.translate('premium_reactivate')
                                   : '${lang.translate('premium_${selected.id}')} · ${selected.price}',
                               textAlign: TextAlign.center,
                               style: IosButtons.label,
                             ),
                           ),
-                        const SizedBox(height: 4),
-                        Wrap(
+                        const SizedBox(height: 12),
+                        // Two centred rows with room between the links, as
+                        // on iOS; a long translation wraps within its row.
+                        Column(
                           key: const Key('premium_links'),
-                          alignment: WrapAlignment.start,
                           spacing: 4,
                           children: [
-                            _link(
-                              lang.translate('premium_restore'),
-                              premium.busy ? null : () => _restore(lang),
-                            ),
-                            _link(lang.translate('premium_manage'), _manage),
-                            _link(
-                              lang.translate('terms_of_service'),
-                              () => _open(Uri.parse(PremiumScreen.termsUrl)),
-                            ),
-                            _link(
-                              lang.translate('privacy_policy'),
-                              () => _open(Uri.parse(PremiumScreen.privacyUrl)),
-                            ),
+                            _linkRow([
+                              _link(
+                                lang.translate('premium_restore'),
+                                premium.busy ? null : () => _restore(lang),
+                              ),
+                              _link(lang.translate('premium_manage'), _manage),
+                            ]),
+                            _linkRow([
+                              _link(
+                                lang.translate('terms_of_service'),
+                                () => InAppBrowser.open(
+                                  Uri.parse(PremiumScreen.termsUrl),
+                                ),
+                              ),
+                              _link(
+                                lang.translate('privacy_policy'),
+                                () => InAppBrowser.open(
+                                  Uri.parse(PremiumScreen.privacyUrl),
+                                ),
+                              ),
+                            ]),
                           ],
                         ),
                       ],

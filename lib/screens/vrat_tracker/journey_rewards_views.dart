@@ -472,10 +472,6 @@ class _JourneyBadgeCollectionState extends State<JourneyBadgeCollection> {
                 ],
               ),
             ),
-            Text(
-              _t(context, 'premium_free_achievements'),
-              style: _secondary(context, 15),
-            ),
             if (!premium)
               OutlinedButton(
                 key: const Key('journey_more_achievements'),

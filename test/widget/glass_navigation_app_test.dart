@@ -156,7 +156,7 @@ void main() {
     await tester.tap(find.byKey(const Key('glass_tab_4')));
     await tester.pumpAndSettle();
     expect(
-      find.text('Enable Notifications', skipOffstage: false),
+      find.byKey(const Key('settings_notifications'), skipOffstage: false),
       findsOneWidget,
     );
     await tester.tap(find.byKey(const Key('glass_tab_3')));

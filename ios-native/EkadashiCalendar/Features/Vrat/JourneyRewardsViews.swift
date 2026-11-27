@@ -137,7 +137,6 @@ struct JourneyBadgeCollection: View {
                     }
                 }
                 .scrollIndicators(.hidden)
-                Text(model.t("premium_free_achievements")).font(.subheadline).foregroundStyle(.secondary)
                 if !model.premium.isPremium {
                     Button(model.t("premium_more_achievements")) { model.openPaywall() }.secondaryActionStyle()
                 }

@@ -212,4 +212,67 @@ void main() {
       }
     },
   );
+
+  // Arun (16 Nov 2026), on the emulator: every corner of a plan box selects
+  // it, and a tapped plan stays selected while Play refreshes report the
+  // subscription in steps (it briefly has no plan).
+  testWidgets('Android plan boxes answer at their corners and keep a tap', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({'language_code': 'en'});
+    final lang = LanguageService();
+    await lang.changeLanguage('en');
+    final premium = PremiumService(entitlements: PremiumFixture())
+      ..applyOwned({PremiumService.subscriptionId});
+    final billing = FixtureBilling(premium);
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider.value(value: lang),
+          ChangeNotifierProvider.value(value: premium),
+        ],
+        child: MaterialApp(home: PremiumScreen(billingOverride: billing)),
+      ),
+    );
+    await tester.pumpAndSettle();
+    billing.currentPlanId = 'yearly';
+    billing.notifyListeners();
+    await tester.pumpAndSettle();
+    String cta() => tester
+        .widgetList<Text>(
+          find.descendant(
+            of: find.byKey(const Key('premium_buy')),
+            matching: find.byType(Text),
+          ),
+        )
+        .map((t) => t.data)
+        .join();
+    const prices = {'monthly': '₹99', 'lifetime': '₹999'};
+    for (final id in prices.keys) {
+      final box = tester.getRect(find.byKey(Key('premium_plan_$id')));
+      for (final point in [
+        box.topLeft + const Offset(3, 3),
+        box.topRight + const Offset(-3, 3),
+        box.bottomLeft + const Offset(3, -3),
+        box.bottomRight + const Offset(-3, -3),
+      ]) {
+        await tester.tapAt(point);
+        await tester.pumpAndSettle();
+        expect(cta(), contains(prices[id]!), reason: '$id at $point');
+      }
+    }
+    for (final plan in [null, 'yearly', null, 'yearly']) {
+      billing.currentPlanId = plan;
+      billing.notifyListeners();
+      await tester.pumpAndSettle();
+      expect(cta(), contains('₹999'), reason: 'Lifetime kept after $plan');
+    }
+    await binding.convertFlutterSurfaceToImage().timeout(
+      const Duration(seconds: 15),
+    );
+    await tester.pump();
+    await capturePremiumScreenshot(tester, binding, 'premium_tap_kept');
+    billing.dispose();
+    premium.dispose();
+  });
 }
