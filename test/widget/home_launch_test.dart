@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:ekadashi_calendar/services/display_clock.dart';
+import 'package:ekadashi_calendar/services/ekadashi_schedule.dart';
 import 'package:ekadashi_calendar/services/ekadashi_service.dart';
 import 'package:ekadashi_calendar/services/ekadashi_settings.dart';
 import 'package:ekadashi_calendar/services/panchang/calculated_ekadashi.dart';
@@ -19,6 +22,7 @@ void main() {
   });
   tearDown(() {
     DisplayClock.setTestClock(null);
+    EkadashiSchedule.beforeCalculatingYear = null;
     harness.uninstall();
   });
 
@@ -96,6 +100,39 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Utpanna Ekadashi'), findsWidgets);
     expect(sawFirstOfYear, isFalse, reason: 'the passed card flashed first');
+    expect(tester.takeException(), isNull);
+  });
+
+  // M52 first launch (27 November 2026): after the location tap Home showed
+  // "Locating…" for about 2.3 s while every Ekadashi of 2026 and 2027 was
+  // calculated. The next weeks alone give the first card at once.
+  testWidgets('a new place shows the next Ekadashi before its full years are '
+      'calculated, then the full list', (tester) async {
+    DisplayClock.setTestClock(() => DateTime.utc(2026, 11, 27, 4, 30));
+    await harness.install(preferences: {'has_launched': false});
+    // A place no other test calculates (the schedule is kept in memory).
+    harness
+      ..city = 'Bengaluru'
+      ..latitude = 12.9716
+      ..longitude = 77.5946;
+    final fullYears = Completer<void>();
+    EkadashiSchedule.beforeCalculatingYear = () => fullYears.future;
+    await tester.pumpWidget(harness.app());
+    for (var i = 0; i < 100; i++) {
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+    expect(find.text('Utpanna Ekadashi'), findsWidgets);
+    expect(
+      find.byKey(const Key('home_page_indicator')),
+      findsNothing,
+      reason: 'the count of the year is not known yet',
+    );
+    expect(find.byKey(const Key('home_recalculating')), findsNothing);
+
+    fullYears.complete();
+    await tester.pumpAndSettle();
+    expect(find.text('Utpanna Ekadashi'), findsWidgets);
+    expect(find.byKey(const Key('home_page_indicator')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

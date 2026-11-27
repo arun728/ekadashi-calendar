@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:isolate';
 
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -177,6 +178,11 @@ class EkadashiSchedule {
   /// run under fake async).
   static bool calculateInline = false;
 
+  /// Tests only: awaited before a full year is calculated, so a test can
+  /// watch what Home shows meanwhile.
+  @visibleForTesting
+  static Future<void> Function()? beforeCalculatingYear;
+
   /// The content id of an engine name ("Devutthana" is published as Prabodhini).
   static String contentIdForEngineName(String name) {
     final id = name.toLowerCase().replaceAll(' ', '-');
@@ -237,6 +243,7 @@ class EkadashiSchedule {
         } catch (_) {}
       }
     }
+    await beforeCalculatingYear?.call();
     final rows = publishedRows(key.year);
     final custom = calculator;
     final list = custom != null
