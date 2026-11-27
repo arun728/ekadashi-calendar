@@ -249,4 +249,43 @@ void main() {
       'Chennai (IN)',
     );
   });
+
+  // M52 launch timing (27 November 2026): a fix a kilometre or two from the
+  // last one counted as a new place, so Home calculated everything again and
+  // Parana moved by a minute.
+  test('a fix within 5 km with the same city name keeps Home\'s city; a '
+      'farther fix or another name moves it', () async {
+    SharedPreferences.setMockInitialValues({});
+    catalogAvailable = true;
+    final settings = EkadashiSettings();
+    await settings.load();
+    LocationData at(double lat, double lng, String city) => LocationData(
+      latitude: lat,
+      longitude: lng,
+      city: city,
+      timezone: 'IST',
+    );
+
+    expect(await settings.useDetected(at(13.0129, 80.1615, 'Chennai')), isTrue);
+    final home = settings.city;
+    expect(home.latitude, 13.01);
+
+    // About 2.8 km away, same name: the same place.
+    expect(
+      await settings.useDetected(
+        at(13.0300, 80.1800, 'Chennai'),
+        atLaunch: true,
+      ),
+      isFalse,
+    );
+    expect(settings.city, home);
+
+    // Same name but 13 km away: moved.
+    expect(await settings.useDetected(at(13.0827, 80.2707, 'Chennai')), isTrue);
+    expect(settings.city.latitude, 13.08);
+
+    // Close by but another place's name: moved.
+    expect(await settings.useDetected(at(13.0900, 80.2750, 'Egmore')), isTrue);
+    expect(settings.city.label, 'Egmore (IN)');
+  });
 }

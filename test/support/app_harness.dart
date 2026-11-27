@@ -21,6 +21,10 @@ class AppHarness {
   bool gpsAvailable = true;
   String city = 'Chennai';
 
+  /// Where the phone's fix is (Chennai's catalog point unless a test moves it).
+  double latitude = 13.0827;
+  double longitude = 80.2707;
+
   /// The phone's last saved fix (LocationService's cache), if any.
   Map<String, Object>? cachedLocation;
   String timezone = 'IST';
@@ -171,8 +175,8 @@ class AppHarness {
     'success': true,
     'city': city,
     'timezone': timezone,
-    'latitude': 13.0827,
-    'longitude': 80.2707,
+    'latitude': latitude,
+    'longitude': longitude,
   };
 
   Widget app() => MyApp(calendarRepository: MemoryCalendarRepository());
