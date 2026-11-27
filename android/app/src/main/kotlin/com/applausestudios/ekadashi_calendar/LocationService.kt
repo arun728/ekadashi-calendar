@@ -41,6 +41,21 @@ class LocationService(private val context: Context) {
         private const val KEY_TIMEZONE = "cached_timezone"
         private const val KEY_SELECTED_CITY_ID = "selected_city_id"
         private const val KEY_AUTO_DETECT = "auto_detect_location"
+
+        /** A fix this close to the saved one keeps its city name: no geocoding. */
+        private const val SAME_NAME_METERS = 2000.0
+
+        /**
+         * A city-level fix, as on iOS (reduced accuracy): Wi-Fi and cell
+         * networks instead of waiting for GPS, and a fix up to 5 minutes old
+         * is answered at once.
+         */
+        fun currentLocationRequest(): CurrentLocationRequest =
+            CurrentLocationRequest.Builder()
+                .setPriority(Priority.PRIORITY_BALANCED_POWER_ACCURACY)
+                .setMaxUpdateAgeMillis(5 * 60 * 1000L)
+                .setDurationMillis(15_000L)
+                .build()
     }
 
     private val fusedLocationClient: FusedLocationProviderClient by lazy {
@@ -162,11 +177,11 @@ class LocationService(private val context: Context) {
 
     private fun processLocation(location: Location): LocationServiceResult.Success {
         Log.d(TAG, "Processing location: ${location.latitude}, ${location.longitude}")
-        val cityName = getCityName(location.latitude, location.longitude)
+        val cityName = cityName(location.latitude, location.longitude)
         val timezone = detectTimezone(location.latitude, location.longitude)
 
         // Cache the result
-        cacheLocation(location.latitude, location.longitude, cityName, timezone)
+        remember(location.latitude, location.longitude, cityName, timezone)
 
         return LocationServiceResult.Success(
             latitude = location.latitude,
@@ -266,42 +281,15 @@ class LocationService(private val context: Context) {
      * Get fresh location using FusedLocationProviderClient
      */
     @Suppress("MissingPermission")
-    private suspend fun getFreshLocation(): Location? = suspendCancellableCoroutine { continuation ->
-        val locationRequest = LocationRequest.Builder(
-            Priority.PRIORITY_HIGH_ACCURACY,
-            1000L
-        ).apply {
-            setMaxUpdates(1)
-            setMinUpdateIntervalMillis(500L)
-            setWaitForAccurateLocation(false)
-        }.build()
-
-        val locationCallback = object : LocationCallback() {
-            // Use fully qualified name to avoid conflict with our LocationServiceResult
-            override fun onLocationResult(result: com.google.android.gms.location.LocationResult) {
-                fusedLocationClient.removeLocationUpdates(this)
-                // Use locations list and get the last one
-                val location = result.locations.lastOrNull()
-                if (continuation.isActive) {
-                    continuation.resume(location)
-                }
-            }
-        }
-
-        try {
-            fusedLocationClient.requestLocationUpdates(
-                locationRequest,
-                locationCallback,
-                Looper.getMainLooper()
-            )
-
-            continuation.invokeOnCancellation {
-                fusedLocationClient.removeLocationUpdates(locationCallback)
-            }
-        } catch (e: Exception) {
-            if (continuation.isActive) {
-                continuation.resumeWithException(e)
-            }
+    private suspend fun getFreshLocation(): Location? {
+        val cancellation = com.google.android.gms.tasks.CancellationTokenSource()
+        return try {
+            fusedLocationClient
+                .getCurrentLocation(currentLocationRequest(), cancellation.token)
+                .await()
+        } catch (e: CancellationException) {
+            cancellation.cancel()
+            throw e
         }
     }
 
@@ -318,9 +306,9 @@ class LocationService(private val context: Context) {
             val lastLocation = fusedLocationClient.lastLocation.await()
             if (lastLocation != null) {
                 Log.d(TAG, "Got last known location")
-                val cityName = getCityName(lastLocation.latitude, lastLocation.longitude)
+                val cityName = cityName(lastLocation.latitude, lastLocation.longitude)
                 val timezone = detectTimezone(lastLocation.latitude, lastLocation.longitude)
-                cacheLocation(lastLocation.latitude, lastLocation.longitude, cityName, timezone)
+                remember(lastLocation.latitude, lastLocation.longitude, cityName, timezone)
                 return LocationServiceResult.Success(
                     latitude = lastLocation.latitude,
                     longitude = lastLocation.longitude,
@@ -397,7 +385,7 @@ class LocationService(private val context: Context) {
     /**
      * Cache location for fast retrieval
      */
-    private fun cacheLocation(lat: Double, lng: Double, city: String, timezone: String) {
+    internal fun remember(lat: Double, lng: Double, city: String, timezone: String) {
         prefs.edit().apply {
             putFloat(KEY_LATITUDE, lat.toFloat())
             putFloat(KEY_LONGITUDE, lng.toFloat())
@@ -428,6 +416,34 @@ class LocationService(private val context: Context) {
     /**
      * Reverse geocode to get city name
      */
+    /**
+     * The city name for a fix: the saved name when the fix is within 2 km of
+     * the saved one (the same place, so no network lookup), else [geocode].
+     */
+    internal fun cityName(
+        lat: Double,
+        lng: Double,
+        geocode: (Double, Double) -> String = ::getCityName,
+    ): String {
+        val saved = getCachedLocation()
+        if (saved != null && saved.city.isNotBlank() && saved.city != "Unknown") {
+            if (distanceMeters(saved.latitude, saved.longitude, lat, lng) <= SAME_NAME_METERS) {
+                return saved.city
+            }
+        }
+        return geocode(lat, lng)
+    }
+
+    /** Great-circle distance in metres. */
+    private fun distanceMeters(lat1: Double, lng1: Double, lat2: Double, lng2: Double): Double {
+        val dLat = Math.toRadians(lat2 - lat1)
+        val dLng = Math.toRadians(lng2 - lng1)
+        val h = Math.sin(dLat / 2).let { it * it } +
+            Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+            Math.sin(dLng / 2).let { it * it }
+        return 2 * 6_371_000.0 * Math.asin(Math.sqrt(h))
+    }
+
     @Suppress("DEPRECATION")
     private fun getCityName(lat: Double, lng: Double): String {
         try {

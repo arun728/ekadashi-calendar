@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -56,6 +57,15 @@ class EkadashiSettings extends ChangeNotifier {
   int panchangCityRevision = 0;
   bool loaded = false;
 
+  /// A city is saved on the phone (picked or detected). False only before
+  /// the first place is known: a fresh install's launch then waits for the
+  /// detected place instead of calculating Chennai first.
+  bool hasSavedCity = false;
+
+  /// GPS drift: a fix this close to Home's detected city, with the same name,
+  /// is the same place, so nothing is calculated again.
+  static const samePlaceKm = 5.0;
+
   /// Reads the saved settings. Without a saved city, [lastFix] (the phone's
   /// last saved location) is the last detected place, so a first launch
   /// calculates that place instead of Chennai and then the detected one.
@@ -63,6 +73,7 @@ class EkadashiSettings extends ChangeNotifier {
     years = await EkadashiYears.load();
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(cityKey);
+    hasSavedCity = raw != null;
     if (raw != null) {
       try {
         city =
@@ -93,8 +104,30 @@ class EkadashiSettings extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// [detected] is Home's detected city again: same name and zone, within
+  /// [samePlaceKm].
+  static bool _samePlace(PanchangCity current, PanchangCity detected) =>
+      current.id == detectedCityId &&
+      current.label == detected.label &&
+      current.timeZoneId == detected.timeZoneId &&
+      distanceKm(current, detected) <= samePlaceKm;
+
+  /// Great-circle distance between two places in kilometres.
+  static double distanceKm(PanchangCity a, PanchangCity b) {
+    double rad(double degrees) => degrees * math.pi / 180;
+    final dLat = rad(b.latitude - a.latitude);
+    final dLon = rad(b.longitude - a.longitude);
+    final h =
+        math.pow(math.sin(dLat / 2), 2) +
+        math.cos(rad(a.latitude)) *
+            math.cos(rad(b.latitude)) *
+            math.pow(math.sin(dLon / 2), 2);
+    return 2 * 6371 * math.asin(math.sqrt(h));
+  }
+
   Future<void> _saveCity(PanchangCity value, {required bool manual}) async {
     city = value;
+    hasSavedCity = true;
     _observedCivilYear = null;
     isManual = manual;
     final prefs = await SharedPreferences.getInstance();
@@ -136,6 +169,7 @@ class EkadashiSettings extends ChangeNotifier {
     if (isManual && !atLaunch) return false;
     final detected = await cityFromFix(fix);
     if (detected == null) return false;
+    if (!isManual && _samePlace(city, detected)) return false;
     final previous = city;
     final changed =
         detected.latitude != city.latitude ||

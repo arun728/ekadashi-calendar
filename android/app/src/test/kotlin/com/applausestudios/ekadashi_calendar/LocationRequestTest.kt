@@ -42,8 +42,8 @@ class LocationRequestTest {
         assertEquals(1, lookups)
         service.remember(13.0129, 80.1615, "Chennai", "IST")
 
-        // About 2.8 km away: the saved name, no lookup.
-        assertEquals("Chennai", service.cityName(13.0300, 80.1800, geocode))
+        // About 0.9 km away: the saved name, no lookup.
+        assertEquals("Chennai", service.cityName(13.0200, 80.1650, geocode))
         assertEquals(1, lookups)
 
         // 13 km away: looked up again.
