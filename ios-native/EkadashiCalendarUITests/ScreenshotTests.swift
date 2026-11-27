@@ -1088,7 +1088,8 @@ final class ScreenshotTests: XCTestCase {
         app.activate()
         await fulfillment(of: [expectation(for: NSPredicate(format: "label CONTAINS %@", "Current plan"), evaluatedWith: product)], timeout: 60)
         app.buttons["premium_close"].firstMatch.tap()
-        let manage = app.buttons["Manage"].firstMatch
+        // Manage moved off the Premium card to Settings > Purchases (PR #51).
+        let manage = app.buttons["settings_manage_subscription"].firstMatch
         XCTAssertTrue(manage.waitForExistence(timeout: 30))
         for _ in 0..<5 where !manage.isHittable { app.swipeUp() }
         XCTAssertTrue(manage.isHittable)
