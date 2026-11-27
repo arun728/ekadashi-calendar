@@ -300,6 +300,14 @@ void main() {
       await tester.pump();
       final appearance = find.text(language.translate('appearance'));
       await tester.scrollUntilVisible(appearance, 180, scrollable: scrollable);
+      // Scrolled into the viewport is not clear of the floating tab bar: on
+      // CI's Pixel 2 screen (731 pt) the header stopped at 675-699 pt,
+      // under the bar (27 November 2026). Centre it before checking.
+      await Scrollable.ensureVisible(
+        tester.element(appearance),
+        alignment: 0.5,
+      );
+      await tester.pump();
       expect(appearance.hitTestable(), findsOneWidget);
       await binding.takeScreenshot('android_settings_$locale');
     }
