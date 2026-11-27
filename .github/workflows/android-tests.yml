@@ -46,9 +46,9 @@ jobs:
     # Keep collecting native/UI evidence while required Flutter gates are red.
     if: always() && !cancelled()
     runs-on: ubuntu-latest
-    # All ten feature entrypoints now run. The API 33 runner reached 60
-    # minutes while still collecting this expanded suite's evidence.
-    timeout-minutes: 90
+    # Every device test file runs. API 35 granted took 79 minutes on 4
+    # November 2026 and hit 90 on 27 November with two files left.
+    timeout-minutes: 120
     strategy:
       fail-fast: false
       matrix:
