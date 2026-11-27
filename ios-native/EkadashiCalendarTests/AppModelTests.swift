@@ -72,6 +72,28 @@ final class AppModelTests: XCTestCase {
         }
     }
 
+    /// Arun, 27 November 2026: with 2027 picked on Home, All years stayed on
+    /// January 2027's first Ekadashi. All years always opens on the next one.
+    func testAllYearsOpensOnTheNextEkadashiEvenFromAnotherYear() async throws {
+        let model = AppModel(store: InMemoryKeyValueStore(["has_launched": true, "language_code": "en", AppModel.yearKey: "2026"]))
+        model.reload(); await model.waitForLoad()
+        let now = try XCTUnwrap(ISO8601DateFormatter().date(from: "2026-11-27T10:00:00+05:30"))
+        let next = try XCTUnwrap(model.ekadashis.first { $0.paranaEnd.map { now < $0 } ?? false })
+        XCTAssertEqual(next.date, CivilDate(2026, 12, 5))
+
+        model.setYear(2027)
+        XCTAssertEqual(model.homeEkadashis[model.homeIndex].date.year, 2027)
+        model.showAllYearsOnHome(now: now)
+        XCTAssertTrue(model.homeShowsAllYears)
+        XCTAssertEqual(model.homeEkadashis[model.homeIndex].occurrenceUid, next.occurrenceUid)
+
+        // From the current year, and after browsing to another card, too.
+        model.setYear(2026)
+        model.homeIndex = 0
+        model.showAllYearsOnHome(now: now)
+        XCTAssertEqual(model.homeEkadashis[model.homeIndex].occurrenceUid, next.occurrenceUid)
+    }
+
     func testHomeScopeAndCivilYearRollOverAcrossCitiesTraditionsAndLanguages() async throws {
         let places: [(String, Double, Double, String)] = [
             ("Chennai (IN)", 13.08784, 80.27847, "Asia/Kolkata"),
@@ -106,7 +128,7 @@ final class AppModelTests: XCTestCase {
                     XCTAssertEqual(model.homeEkadashis[model.homeIndex].occurrenceUid, first.occurrenceUid, scenario)
 
                     model.selectCurrentOccurrence(now: before)
-                    model.showAllYearsOnHome()
+                    model.showAllYearsOnHome(now: before)
                     XCTAssertEqual(model.homeEkadashis.count, model.ekadashis.count, scenario)
                     model.refreshCurrentOccurrence(previousNow: before, now: end)
                     XCTAssertTrue(model.homeShowsAllYears, scenario)
